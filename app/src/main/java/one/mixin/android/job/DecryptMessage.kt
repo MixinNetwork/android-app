@@ -99,6 +99,9 @@ class DecryptMessage : Injector() {
     private fun processMessage(data: BlazeMessageData) {
         try {
             if (data.category.isIllegalMessageCategory()) {
+                val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
+                    data.data, data.createdAt, MessageStatus.valueOf(data.status))
+                messageDao.insert(message)
                 updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
                 return
             }
