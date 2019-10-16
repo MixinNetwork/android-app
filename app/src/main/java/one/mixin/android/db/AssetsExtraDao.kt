@@ -4,4 +4,4 @@ import androidx.room.Dao
 import one.mixin.android.vo.AssetsExtra
 
 @Dao
-interface AssetDisplayDao : BaseDao<AssetsExtra>
+interface AssetsExtraDao : BaseDao<AssetsExtra>

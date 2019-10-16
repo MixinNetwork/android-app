@@ -11,7 +11,7 @@ import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
-import one.mixin.android.db.AssetDisplayDao
+import one.mixin.android.db.AssetsExtraDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.vo.Address
@@ -26,7 +26,7 @@ class AssetRepository
 constructor(
     private val assetService: AssetService,
     private val assetDao: AssetDao,
-    private val assetDisplayDao: AssetDisplayDao,
+    private val assetsExtraDao: AssetsExtraDao,
     private val snapshotDao: SnapshotDao,
     private val addressDao: AddressDao,
     private val addressService: AddressService,
@@ -88,7 +88,7 @@ constructor(
 
     fun pay(request: TransferRequest) = assetService.pay(request)
 
-    fun updateHidden(id: String, hidden: Boolean) = assetDisplayDao.insert(AssetsExtra(id, hidden))
+    fun updateHidden(id: String, hidden: Boolean) = assetsExtraDao.insert(AssetsExtra(id, hidden))
 
     fun hiddenAssetItems() = assetDao.hiddenAssetItems()
 

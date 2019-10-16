@@ -3,7 +3,6 @@ package one.mixin.android.ui.url
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.FragmentManager
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.isUUID

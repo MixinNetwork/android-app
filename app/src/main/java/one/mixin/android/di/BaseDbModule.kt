@@ -49,7 +49,7 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideAssetDisplyDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.assetDisplayDao()
+    fun provideAssetDisplyDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.assetsExtraDao()
 
     @Singleton
     @Provides
