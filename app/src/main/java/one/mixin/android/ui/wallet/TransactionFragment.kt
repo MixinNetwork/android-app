@@ -6,6 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
+import java.math.BigDecimal
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transaction.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -26,8 +28,6 @@ import one.mixin.android.vo.SnapshotType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColorResource
 import org.jetbrains.anko.uiThread
-import java.math.BigDecimal
-import javax.inject.Inject
 
 class TransactionFragment : BaseFragment() {
     companion object {

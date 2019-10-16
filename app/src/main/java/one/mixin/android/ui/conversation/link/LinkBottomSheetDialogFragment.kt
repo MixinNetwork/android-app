@@ -21,6 +21,7 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Scheme
@@ -53,7 +54,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.toAssetItem
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-import javax.inject.Inject
 
 class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectable {
 

@@ -89,7 +89,7 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
         }
     }
 
-    fun roundClose(){
+    fun roundClose() {
         right_iv.setImageResource(R.drawable.ic_close)
     }
 }

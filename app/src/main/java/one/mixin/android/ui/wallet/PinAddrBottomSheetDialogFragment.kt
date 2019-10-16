@@ -97,7 +97,6 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
         contentView.asset_name.text = label
         contentView.asset_address.text = destination
 
-
         contentView.pin.setListener(object : PinView.OnPinListener {
             override fun onUpdate(index: Int) {
                 if (index != contentView.pin.getCount()) return

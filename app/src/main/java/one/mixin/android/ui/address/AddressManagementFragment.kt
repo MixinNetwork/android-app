@@ -12,6 +12,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_address_management.*
 import kotlinx.android.synthetic.main.item_address.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -29,7 +30,6 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.SearchView
-import javax.inject.Inject
 
 class AddressManagementFragment : BaseFragment() {
 

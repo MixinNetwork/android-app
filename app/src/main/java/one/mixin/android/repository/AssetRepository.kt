@@ -1,6 +1,8 @@
 package one.mixin.android.repository
 
 import androidx.paging.DataSource
+import javax.inject.Inject
+import javax.inject.Singleton
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.TransferRequest
@@ -15,8 +17,6 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class AssetRepository

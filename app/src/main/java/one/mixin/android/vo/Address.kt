@@ -42,9 +42,9 @@ data class Address(
 ) : Parcelable
 
 fun Address.displayAddress(): String {
-    return if (!tag.isNullOrEmpty()){
+    return if (!tag.isNullOrEmpty()) {
         "$destination:$tag"
-    }else{
+    } else {
         destination
     }
 }
