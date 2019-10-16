@@ -146,14 +146,14 @@ class AddressAddFragment : BaseFragment() {
             }
             info.setText(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    R.string.withdrawal_addr_memo_ripple
+                    R.string.withdrawal_addr_tag
                 } else {
                     R.string.withdrawal_addr_memo
                 }
             )
             info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    getString(R.string.withdrawal_addr_memo_link_ripple)
+                    getString(R.string.withdrawal_addr_tag_link)
                 } else {
                     getString(R.string.withdrawal_addr_memo_link)
                 }
@@ -161,7 +161,7 @@ class AddressAddFragment : BaseFragment() {
         } else {
             tag_et.isEnabled = memoEnabled
             tag_rl.isVisible = memoEnabled
-            tag_et.setText(R.string.withdrawal_ne_tag)
+            tag_et.setText(R.string.withdrawal_no_tag)
             tag_iv.isVisible = memoEnabled
             info.setOnClickListener {
                 memoEnabled = true
@@ -171,14 +171,14 @@ class AddressAddFragment : BaseFragment() {
             }
             info.setText(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    R.string.withdrawal_addr_no_memo_ripple
+                    R.string.withdrawal_addr_no_tag
                 } else {
                     R.string.withdrawal_addr_no_memo
                 }
             )
             info.highLight(
                 if (asset.assetId == RIPPLE_CHAIN_ID) {
-                    getString(R.string.withdrawal_addr_no_memo_link_ripple)
+                    getString(R.string.withdrawal_addr_no_tag_link)
                 } else {
                     getString(R.string.withdrawal_addr_no_memo_link)
                 })

@@ -601,10 +601,10 @@
     <string name="withdrawal_addr_no_memo">If you are required to fill in Destination Tag or ID Number or notes, you can Add Memo.</string>
     <string name="withdrawal_addr_memo_link">No Memo</string>
     <string name="withdrawal_addr_no_memo_link">Add Memo</string>
-    <string name="withdrawal_addr_memo_ripple">Destination Tag or ID Number or notes. If not, you can set it No Tag.</string>
-    <string name="withdrawal_addr_no_memo_ripple">If you are required to fill in Destination Tag or ID Number or notes, you can Add Tag.</string>
-    <string name="withdrawal_addr_memo_link_ripple">No Tag</string>
-    <string name="withdrawal_addr_no_memo_link_ripple">Add Tag</string>
+    <string name="withdrawal_addr_tag">Destination Tag or ID Number or notes. If not, you can set it No Tag.</string>
+    <string name="withdrawal_addr_no_tag">If you are required to fill in Destination Tag or ID Number or notes, you can Add Tag.</string>
+    <string name="withdrawal_addr_tag_link">No Tag</string>
+    <string name="withdrawal_addr_no_tag_link">Add Tag</string>
     <string name="withdrawal_addr_memo_hint">Memo</string>
     <string name="withdrawal_addr_tag_hint">Tag</string>
     <string name="withdrawal_success">Withdrawal success</string>
@@ -628,7 +628,7 @@
     <string name="withdrawal_label">Label (e.g. exchanges, wallets, etc.)</string>
     <string name="withdrawal_address">Address</string>
     <string name="withdrawal_tag">Memo</string>
-    <string name="withdrawal_ne_tag">No Memo</string>
+    <string name="withdrawal_no_tag">No Memo</string>
     <string name="deposit_account_attention">Attention: Please try a small amount for the first deposit. Both a Memo and an Address are required to successfully deposit your %1$s to Mixin Messenger.</string>
     <string name="deposit_attention">Please try a small amount for the first deposit.</string>
     <string name="deposit_confirmation">Deposit will arrive after at least %1$d block confirmations</string>
