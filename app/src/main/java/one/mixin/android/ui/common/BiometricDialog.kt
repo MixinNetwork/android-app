@@ -38,7 +38,7 @@ class BiometricDialog<T : BiometricItem>(
             }
             is WithdrawBiometricItem -> {
                 biometricPromptBuilder.setTitle(context.getString(R.string.withdrawal_to, t.label))
-                    .setSubtitle(t.publicKey.formatPublicKey())
+                    .setSubtitle(t.destination.formatPublicKey())
             }
         }
         biometricPromptBuilder.setDescription(getDescription())

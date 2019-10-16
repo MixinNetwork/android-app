@@ -23,7 +23,6 @@ import one.mixin.android.Constants.BIOMETRIC_PIN_CHECK
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.numberFormat
@@ -77,25 +76,26 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         contentView.title_view.right_iv.setOnClickListener { dismiss() }
+        contentView.title_view.roundClose()
         when (t) {
             is TransferBiometricItem -> {
                 (t as TransferBiometricItem).let {
-                    contentView.title_view.showAvatar(it.user)
-                    contentView.title_view.setSubTitle(it.user.fullName
-                        ?: "", it.user.identityNumber)
+                    contentView.title.text = it.user.fullName ?: ""
+                    contentView.sub_title.text = "MixinID:${it.user.identityNumber}"
                 }
+                contentView.pay_tv.setText(R.string.wallet_pay_with_pwd)
             }
             is WithdrawBiometricItem -> {
                 (t as WithdrawBiometricItem).let {
-                    contentView.title_view.showAddressAvatar()
-                    contentView.title_view.setSubTitle(getString(R.string.withdrawal_to, it.label),
-                        it.publicKey.formatPublicKey())
+                    contentView.title.text = getString(R.string.withdrawal_to, it.label)
+                    contentView.sub_title.text = it.destination
                 }
+                contentView.pay_tv.setText(R.string.withdrawal_with_pwd)
             }
         }
-        if (!TextUtils.isEmpty(t.memo)) {
+        if (!TextUtils.isEmpty(t.tag)) {
             contentView.memo.visibility = VISIBLE
-            contentView.memo.text = t.memo
+            contentView.memo.text = t.tag
         }
         contentView.asset_icon.bg.loadImage(t.asset.iconUrl, R.drawable.ic_avatar_place_holder)
         lifecycleScope.launch(Dispatchers.IO) {
@@ -152,11 +152,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         when (t) {
             is TransferBiometricItem ->
                 (t as TransferBiometricItem).let {
-                    bottomViewModel.transfer(t.asset.assetId, it.user.userId, t.amount, pin, t.trace, t.memo)
+                    bottomViewModel.transfer(t.asset.assetId, it.user.userId, t.amount, pin, t.trace, t.tag)
                 }
             else ->
                 (t as WithdrawBiometricItem).let {
-                    bottomViewModel.withdrawal(it.addressId, it.amount, pin, it.trace!!, it.memo)
+                    bottomViewModel.withdrawal(it.addressId, it.amount, pin, it.trace!!, it.tag)
                 }
         }.autoDispose(stopScope)
             .subscribe({

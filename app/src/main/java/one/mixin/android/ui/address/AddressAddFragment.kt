@@ -14,10 +14,13 @@ import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_address_add.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
@@ -66,6 +69,7 @@ class AddressAddFragment : BaseFragment() {
     }
 
     private val type: Int by lazy { arguments!!.getInt(ARGS_TYPE) }
+    private var memoEnabled = true
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_address_add, container, false)
@@ -78,6 +82,7 @@ class AddressAddFragment : BaseFragment() {
 
             if (label_et.isFocused) label_et.hideKeyboard()
             if (addr_et.isFocused) addr_et.hideKeyboard()
+            if (tag_et.isFocused) tag_et.hideKeyboard()
             activity?.onBackPressed()
         }
         title_view.title_tv.text = getString(if (type == ADD) R.string.withdrawal_addr_new
@@ -85,16 +90,22 @@ class AddressAddFragment : BaseFragment() {
         avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         save_tv.setOnClickListener {
-            val bottomSheet = if (noPublicKey()) {
-                PinAddrBottomSheetDialogFragment.newInstance(assetId = asset.assetId, assetName = asset.name,
-                    assetUrl = asset.iconUrl, chainIconUrl = asset.chainIconUrl, type = type,
-                    accountName = label_et.text.toString(), accountTag = addr_et.text.toString())
-            } else {
-                PinAddrBottomSheetDialogFragment.newInstance(asset.assetId, asset.name,
+            val bottomSheet =
+                PinAddrBottomSheetDialogFragment.newInstance(
+                    asset.assetId,
+                    asset.name,
                     assetUrl = asset.iconUrl,
                     chainIconUrl = asset.chainIconUrl,
-                    label = label_et.text.toString(), publicKey = addr_et.text.toString(), type = type)
-            }
+                    label = label_et.text.toString(),
+                    destination = addr_et.text.toString(),
+                    tag = if (memoEnabled) {
+                        tag_et.text.toString()
+                    } else {
+                        ""
+                    },
+                    type = type
+                )
+
             bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
             bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
@@ -102,20 +113,75 @@ class AddressAddFragment : BaseFragment() {
                 }
             }
         }
-        if (!asset.accountName.isNullOrEmpty()) {
-            label_et.hint = getString(R.string.account_name)
-            addr_et.hint = getString(R.string.account_memo)
+
+        if (asset.assetId == RIPPLE_CHAIN_ID) {
+            tag_et.setHint(R.string.withdrawal_addr_tag_hint)
+        } else {
+            tag_et.setHint(R.string.withdrawal_addr_memo_hint)
         }
         label_et.addTextChangedListener(mWatcher)
         addr_et.addTextChangedListener(mWatcher)
-        qr_iv.setOnClickListener { handleClick(true) }
-        label_iv.setOnClickListener { handleClick(false) }
-        label_iv.isVisible = noPublicKey()
-
+        tag_et.addTextChangedListener(mWatcher)
+        addr_iv.setOnClickListener { handleClick(true) }
+        handleMemo(address)
         address?.let {
-            label_et.setText(if (noPublicKey()) it.accountName else it.label)
-            addr_et.setText(if (noPublicKey()) it.accountTag else it.publicKey)
+            label_et.setText(it.label)
+            addr_et.setText(it.destination)
             title_view.title_tv.text = getString(R.string.withdrawal_addr_modify, asset.symbol)
+        }
+        label_et.showKeyboard()
+    }
+
+    private fun handleMemo(address: Address? = null) {
+        if (memoEnabled) {
+            tag_et.isEnabled = memoEnabled
+            tag_rl.isVisible = memoEnabled
+            tag_et.setText(address?.tag ?: "")
+            tag_iv.isVisible = memoEnabled
+            tag_iv.setOnClickListener { handleClick(false) }
+            info.setOnClickListener {
+                memoEnabled = false
+                updateSaveButton()
+                handleMemo()
+            }
+            info.setText(
+                if (asset.assetId == RIPPLE_CHAIN_ID) {
+                    R.string.withdrawal_addr_tag
+                } else {
+                    R.string.withdrawal_addr_memo
+                }
+            )
+            info.highLight(
+                if (asset.assetId == RIPPLE_CHAIN_ID) {
+                    getString(R.string.withdrawal_addr_tag_link)
+                } else {
+                    getString(R.string.withdrawal_addr_memo_link)
+                }
+            )
+        } else {
+            tag_et.isEnabled = memoEnabled
+            tag_rl.isVisible = memoEnabled
+            tag_et.setText(R.string.withdrawal_no_tag)
+            tag_iv.isVisible = memoEnabled
+            info.setOnClickListener {
+                memoEnabled = true
+                updateSaveButton()
+                handleMemo()
+                tag_et.showKeyboard()
+            }
+            info.setText(
+                if (asset.assetId == RIPPLE_CHAIN_ID) {
+                    R.string.withdrawal_addr_no_tag
+                } else {
+                    R.string.withdrawal_addr_no_memo
+                }
+            )
+            info.highLight(
+                if (asset.assetId == RIPPLE_CHAIN_ID) {
+                    getString(R.string.withdrawal_addr_no_tag_link)
+                } else {
+                    getString(R.string.withdrawal_addr_no_memo_link)
+                })
         }
     }
 
@@ -130,12 +196,10 @@ class AddressAddFragment : BaseFragment() {
                 }
                 return
             }
-            val label = data?.getStringExtra(ARGS_ACCOUNT_NAME_RESULT) ?: return
-            label_et.setText(label)
+            val tag = data?.getStringExtra(ARGS_ACCOUNT_NAME_RESULT) ?: return
+            tag_et.setText(tag)
         }
     }
-
-    private fun noPublicKey() = !asset.accountName.isNullOrEmpty()
 
     private fun handleClick(isAddr: Boolean) {
         RxPermissions(requireActivity())
@@ -162,14 +226,17 @@ class AddressAddFragment : BaseFragment() {
 
         override fun afterTextChanged(s: Editable) {
             if (!isAdded) return
+            updateSaveButton()
+        }
+    }
 
-            if (addr_et.text.isNotEmpty() && label_et.text.isNotEmpty()) {
-                save_tv.isEnabled = true
-                save_tv.textColor = requireContext().getColor(R.color.white)
-            } else {
-                save_tv.isEnabled = false
-                save_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-            }
+    private fun updateSaveButton() {
+        if (addr_et.text.isNotEmpty() && label_et.text.isNotEmpty() && (!memoEnabled || tag_et.text.isNotEmpty())) {
+            save_tv.isEnabled = true
+            save_tv.textColor = requireContext().getColor(R.color.white)
+        } else {
+            save_tv.isEnabled = false
+            save_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
         }
     }
 }

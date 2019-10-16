@@ -14,7 +14,8 @@ data class AssetItem(
     val name: String,
     val iconUrl: String,
     val balance: String,
-    val publicKey: String?,
+    val destination: String,
+    val tag: String?,
     val priceBtc: String,
     val priceUsd: String,
     val chainId: String,
@@ -25,8 +26,6 @@ data class AssetItem(
     val chainIconUrl: String?,
     val chainSymbol: String?,
     val chainName: String?,
-    val accountName: String?,
-    val accountTag: String?,
     val assetKey: String?
 ) : Parcelable {
     fun fiat(): BigDecimal {
@@ -37,17 +36,6 @@ data class AssetItem(
 
     fun btc(): BigDecimal {
         return BigDecimal(balance) * BigDecimal(priceBtc)
-    }
-
-    fun toAsset() = Asset(assetId, symbol, name, iconUrl, balance, publicKey, priceBtc, priceUsd,
-        chainId, changeUsd, changeBtc, hidden, confirmations, accountName, accountTag, assetKey)
-
-    fun isPublicKeyAsset(): Boolean {
-        return !publicKey.isNullOrEmpty() && accountName.isNullOrEmpty() && accountTag.isNullOrEmpty()
-    }
-
-    fun isAccountTagAsset(): Boolean {
-        return !accountName.isNullOrEmpty() && !accountTag.isNullOrEmpty() && publicKey.isNullOrEmpty()
     }
 
     companion object {
@@ -63,8 +51,8 @@ data class AssetItem(
 
 fun AssetItem.differentProcess(keyAction: () -> Unit, memoAction: () -> Unit, errorAction: () -> Unit) {
     when {
-        isPublicKeyAsset() -> keyAction()
-        isAccountTagAsset() -> memoAction()
+        destination.isNotEmpty() && !tag.isNullOrEmpty() -> memoAction()
+        destination.isNotEmpty() -> keyAction()
         else -> errorAction()
     }
 }

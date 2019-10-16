@@ -91,8 +91,8 @@ class BottomSheetViewModel @Inject internal constructor(
         }
     }
 
-    fun syncAddr(assetId: String, publicKey: String?, label: String?, code: String, accountName: String?, accountTag: String?): Observable<MixinResponse<Address>> =
-        assetRepository.syncAddr(AddressRequest(assetId, publicKey, label, encryptPin(Session.getPinToken()!!, code)!!, accountName, accountTag))
+    fun syncAddr(assetId: String, destination: String?, label: String?, tag: String?, code: String): Observable<MixinResponse<Address>> =
+        assetRepository.syncAddr(AddressRequest(assetId, destination, tag, label, encryptPin(Session.getPinToken()!!, code)!!))
             .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun saveAddr(addr: Address) = assetRepository.saveAddr(addr)
@@ -209,7 +209,7 @@ class BottomSheetViewModel @Inject internal constructor(
             val response = assetRepository.asset(assetId).execute().body()
             if (response != null && response.isSuccess && response.data != null) {
                 response.data?.let {
-                    assetRepository.upsert(it)
+                    assetRepository.insert(it)
                     return@async assetRepository.findAssetItemById(assetId)
                 }
             }

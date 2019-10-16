@@ -117,7 +117,7 @@ internal constructor(
     fun getAssetItem(assetId: String) = Flowable.just(assetId).map { assetRepository.simpleAssetItem(it) }
         .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
 
-    fun pendingDeposits(asset: String, key: String? = null, name: String? = null, tag: String? = null) = assetRepository.pendingDeposits(asset, key, name, tag)
+    fun pendingDeposits(asset: String, destination: String, tag: String? = null) = assetRepository.pendingDeposits(asset, destination, tag)
         .observeOn(Schedulers.io()).subscribeOn(Schedulers.io())!!
 
     fun insertPendingDeposit(snapshot: List<Snapshot>) = assetRepository.insertPendingDeposit(snapshot)
@@ -173,7 +173,7 @@ internal constructor(
         }
         if (r.isSuccess) {
             r.data?.let {
-                assetRepository.upsert(it)
+                assetRepository.insert(it)
                 return@withContext it.iconUrl
             }
         } else {
@@ -189,7 +189,7 @@ internal constructor(
     }
 
     fun upsetAsset(asset: Asset) = viewModelScope.launch(Dispatchers.IO) {
-        assetRepository.upsert(asset)
+        assetRepository.insert(asset)
     }
 
     fun observeTopAssets() = assetRepository.observeTopAssets()

@@ -24,6 +24,7 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -85,7 +86,6 @@ import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.doAsync
-import javax.inject.Inject
 
 class MainActivity : BlazeBaseActivity() {
 
@@ -221,8 +221,8 @@ class MainActivity : BlazeBaseActivity() {
         appUpdateManager.registerListener(updatedListener)
         val appUpdateInfoTask = appUpdateManager.appUpdateInfo
         appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
-            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
-                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
+                appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
                 try {
                     appUpdateManager.startUpdateFlowForResult(
                         appUpdateInfo,
@@ -234,7 +234,7 @@ class MainActivity : BlazeBaseActivity() {
                 }
             } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
                 popupSnackbarForCompleteUpdate()
-            } else if(appUpdateInfo.installStatus() == InstallStatus.INSTALLED) {
+            } else if (appUpdateInfo.installStatus() == InstallStatus.INSTALLED) {
                 appUpdateManager.unregisterListener(updatedListener)
             }
         }

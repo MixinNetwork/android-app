@@ -3,7 +3,6 @@ package one.mixin.android.ui.url
 import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.FragmentManager
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.isUUID
@@ -101,7 +100,7 @@ fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
         val segments = Uri.parse(url).pathSegments
         if (url.startsWith(Scheme.HTTPS_CODES, true)) {
             segments.size >= 2 && segments[1].isUUID()
-        } else if (url.startsWith(Constants.Scheme.CODES, true)) {
+        } else if (url.startsWith(Scheme.CODES, true)) {
             segments.size >= 1 && segments[0].isUUID()
         } else if (includeTransfer && url.startsWith(Scheme.TRANSFER, true)) {
             segments.size >= 1 && segments[0].isUUID()

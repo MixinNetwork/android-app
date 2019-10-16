@@ -63,9 +63,8 @@ interface AssetService {
     @GET("external/transactions")
     fun pendingDeposits(
         @Query("asset") asset: String,
-        @Query("public_key") key: String? = null,
-        @Query("account_name") name: String? = null,
-        @Query("account_tag") tag: String? = null
+        @Query("destination") key: String? = null,
+        @Query("tag") tag: String? = null
     ): Observable<MixinResponse<List<PendingDeposit>>>
 
     @GET("network/assets/search/{query}")

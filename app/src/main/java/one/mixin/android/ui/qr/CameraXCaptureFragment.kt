@@ -19,6 +19,7 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
 import androidx.camera.core.impl.utils.executor.CameraXExecutors
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
@@ -61,6 +62,12 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
 
     private var alreadyDetected = false
 
+    private val forScan by lazy {
+        arguments?.getBoolean(ARGS_FOR_ADDRESS) == true ||
+            arguments?.getBoolean(ARGS_FOR_ACCOUNT_NAME) == true ||
+            arguments?.getBoolean(ARGS_FOR_MEMO) == true
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
@@ -79,6 +86,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
         view_finder.post {
             bindCameraUseCase()
         }
+        bottom_ll.isVisible = !forScan
     }
 
     override fun onFlashClick() {

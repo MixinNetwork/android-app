@@ -5,6 +5,8 @@ import com.google.gson.reflect.TypeToken
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import okhttp3.Request
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -20,8 +22,6 @@ import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
 import one.mixin.android.vo.Account
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 
 class Session {
     companion object {

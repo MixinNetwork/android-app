@@ -3,7 +3,5 @@
     <item
         android:id="@+id/delete"
         android:title="@string/conversation_delete" />
-    <item
-        android:id="@+id/edit"
-        android:title="@string/edit" />
+
 </menu>

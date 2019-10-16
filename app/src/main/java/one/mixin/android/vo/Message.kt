@@ -216,7 +216,7 @@ enum class MessageCategory {
 }
 
 fun String.isIllegalMessageCategory(): Boolean {
-    return !enumValues<MessageCategory>().any { it.name == this}
+    return !enumValues<MessageCategory>().any { it.name == this }
 }
 
 enum class MessageStatus { SENDING, SENT, DELIVERED, READ, FAILED }

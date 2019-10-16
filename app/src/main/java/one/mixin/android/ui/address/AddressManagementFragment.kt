@@ -26,7 +26,6 @@ import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.DELETE
-import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.MODIFY
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
@@ -92,9 +91,6 @@ class AddressManagementFragment : BaseFragment() {
                 popMenu.setOnMenuItemClickListener {
                     if (it.itemId == R.id.delete) {
                         showBottomSheet(addr, asset)
-                    } else if (it.itemId == R.id.edit) {
-                        activity?.addFragment(this@AddressManagementFragment,
-                            AddressAddFragment.newInstance(asset, addr, MODIFY), AddressAddFragment.TAG)
                     }
                     return@setOnMenuItemClickListener true
                 }
@@ -110,19 +106,13 @@ class AddressManagementFragment : BaseFragment() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val deletePos = viewHolder.adapterPosition
                 val addr = adapter.addresses!![deletePos]
-                if (direction == ItemTouchHelper.START) {
-                    adapter.notifyItemChanged(deletePos)
-                    activity?.addFragment(this@AddressManagementFragment,
-                        AddressAddFragment.newInstance(asset, addr, MODIFY), AddressAddFragment.TAG)
-                } else if (direction == ItemTouchHelper.END) {
-                    val deleteItem = adapter.removeItem(viewHolder.adapterPosition)!!
-                    val bottomSheet = showBottomSheet(addr, asset)
-                    parentFragmentManager.executePendingTransactions()
-                    bottomSheet.dialog.setOnDismissListener {
-                        bottomSheet.dismiss()
-                        if (!deleteSuccess) {
-                            adapter.restoreItem(deleteItem, deletePos)
-                        }
+                val deleteItem = adapter.removeItem(viewHolder.adapterPosition)!!
+                val bottomSheet = showBottomSheet(addr, asset)
+                parentFragmentManager.executePendingTransactions()
+                bottomSheet.dialog.setOnDismissListener {
+                    bottomSheet.dismiss()
+                    if (!deleteSuccess) {
+                        adapter.restoreItem(deleteItem, deletePos)
                     }
                 }
             }
@@ -132,8 +122,8 @@ class AddressManagementFragment : BaseFragment() {
         search_et.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {
                 adapter.addresses = addresses?.filter {
-                    val name = if (asset.isAccountTagAsset()) it.accountName else it.label
-                    name?.contains(s.toString(), ignoreCase = true) ?: false
+                    val name = it.label
+                    name.contains(s.toString(), ignoreCase = true)
                 }?.toMutableList()
             }
 
@@ -147,10 +137,9 @@ class AddressManagementFragment : BaseFragment() {
         val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(addressId = addr.addressId,
             assetUrl = asset.iconUrl,
             chainIconUrl = asset.chainIconUrl,
-            publicKey = addr.publicKey,
+            destination = addr.destination,
             label = addr.label,
-            accountTag = addr.accountTag,
-            accountName = addr.accountName,
+            tag = addr.tag,
             assetName = asset.name, type = DELETE)
         bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
         bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {

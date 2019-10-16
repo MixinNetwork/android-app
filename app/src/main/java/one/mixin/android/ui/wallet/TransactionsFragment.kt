@@ -205,7 +205,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
     private fun refreshPendingDeposits(asset: AssetItem) {
         asset.differentProcess({
-            walletViewModel.pendingDeposits(asset.assetId, key = asset.publicKey).autoDispose(stopScope)
+            walletViewModel.pendingDeposits(asset.assetId, destination = asset.destination).autoDispose(stopScope)
                 .subscribe({ list ->
                     updateData(list.data?.map { it.toSnapshot(asset.assetId) })
                 }, {
@@ -213,7 +213,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     ErrorHandler.handleError(it)
                 })
         }, {
-            walletViewModel.pendingDeposits(asset.assetId, name = asset.accountName, tag = asset.accountTag).autoDispose(stopScope)
+            walletViewModel.pendingDeposits(asset.assetId, destination = asset.destination, tag = asset.tag).autoDispose(stopScope)
                 .subscribe({ list ->
                     updateData(list.data?.map { it.toSnapshot(asset.assetId) })
                 }, {

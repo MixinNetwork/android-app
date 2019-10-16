@@ -21,11 +21,11 @@ data class Address(
     @ColumnInfo(name = "asset_id")
     @SerializedName("asset_id")
     val assetId: String,
-    @ColumnInfo(name = "public_key")
-    @SerializedName("public_key")
-    val publicKey: String?,
+    @ColumnInfo(name = "destination")
+    @SerializedName("destination")
+    val destination: String,
     @ColumnInfo(name = "label")
-    val label: String?,
+    val label: String,
     @ColumnInfo(name = "updated_at")
     @SerializedName("updated_at")
     val updatedAt: String,
@@ -33,13 +33,18 @@ data class Address(
     val reserve: String,
     @ColumnInfo(name = "fee")
     val fee: String,
-    @ColumnInfo(name = "account_name")
-    @SerializedName("account_name")
-    val accountName: String?,
-    @ColumnInfo(name = "account_tag")
-    @SerializedName("account_tag")
-    val accountTag: String?,
+    @ColumnInfo(name = "tag")
+    @SerializedName("tag")
+    val tag: String?,
     @ColumnInfo(name = "dust")
     @SerializedName("dust")
     val dust: String?
 ) : Parcelable
+
+fun Address.displayAddress(): String {
+    return if (!tag.isNullOrEmpty()) {
+        "$destination:$tag"
+    } else {
+        destination
+    }
+}

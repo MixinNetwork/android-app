@@ -13,8 +13,7 @@ object Constants {
     object HelpLink {
         const val CENTER = "https://mixinmessenger.zendesk.com"
         const val EMERGENCY = "https://mixinmessenger.zendesk.com/hc/articles/360029154692"
-        const val DEPOSIT_PUBLIC_KEY = "https://mixinmessenger.zendesk.com/hc/articles/360018789931"
-        const val DEPOSIT_ACCOUNT = "https://mixinmessenger.zendesk.com/hc/articles/360023738212"
+        const val DEPOSIT = "https://mixinmessenger.zendesk.com/hc/articles/360018789931"
     }
 
     object Account {
@@ -62,7 +61,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 23
+        const val CURRENT_VERSION = 24
     }
 
     object BackUp {

@@ -44,29 +44,29 @@ class DepositPublicKeyFragment : DepositFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title.right_animator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT_PUBLIC_KEY) }
+        title.right_animator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
         title.setSubTitle(getString(R.string.filters_deposit), asset.symbol)
         qr_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         qr_avatar.setBorder()
         qr_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         copy_tv.setOnClickListener {
-            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.publicKey))
+            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.destination))
             context?.toast(R.string.copy_success)
         }
-        key_code.text = asset.publicKey
+        key_code.text = asset.destination
         confirm_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
         qr_fl.setOnClickListener {
             DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(parentFragmentManager, DepositQrBottomFragment.TAG)
         }
-        if (asset.publicKey != null) {
-            if (context!!.isQRCodeFileExists(asset.publicKey!!)) {
-                qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath(asset.publicKey!!).absolutePath))
+        if (asset.destination != null) {
+            if (context!!.isQRCodeFileExists(asset.destination)) {
+                qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath(asset.destination).absolutePath))
             } else {
                 qr.post {
                     Observable.create<Bitmap> { e ->
-                        val b = asset.publicKey!!.generateQRCode(qr.width)
+                        val b = asset.destination.generateQRCode(qr.width)
                         if (b != null) {
-                            b.saveQRCode(context!!, asset.publicKey!!)
+                            b.saveQRCode(context!!, asset.destination)
                             e.onNext(b)
                         }
                     }.subscribeOn(Schedulers.io())

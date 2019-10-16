@@ -11,7 +11,7 @@ open class BiometricItem(
     open val amount: String,
     open var pin: String?,
     open val trace: String?,
-    open val memo: String?
+    open val tag: String?
 ) : Parcelable
 
 @Parcelize
@@ -21,17 +21,17 @@ class TransferBiometricItem(
     override val amount: String,
     override var pin: String?,
     override val trace: String?,
-    override val memo: String?
-) : BiometricItem(asset, amount, pin, trace, memo)
+    override val tag: String?
+) : BiometricItem(asset, amount, pin, trace, tag)
 
 @Parcelize
 class WithdrawBiometricItem(
-    val publicKey: String,
+    val destination: String,
     val addressId: String,
     val label: String,
     override val asset: AssetItem,
     override val amount: String,
     override var pin: String?,
     override val trace: String?,
-    override val memo: String?
-) : BiometricItem(asset, amount, pin, trace, memo)
+    override val tag: String?
+) : BiometricItem(asset, amount, pin, trace, tag)

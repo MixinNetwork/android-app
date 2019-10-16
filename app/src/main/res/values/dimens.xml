@@ -13,7 +13,7 @@
     <dimen name="transfer_item_height">80dp</dimen>
     <dimen name="chat_date_size">10sp</dimen>
     <dimen name="item_divider">20dp</dimen>
-    <dimen name="wallet_balance_text">26sp</dimen>
+    <dimen name="wallet_balance_text">22sp</dimen>
     <dimen name="wallet_balance_as_text">14sp</dimen>
     <dimen name="avatar_text_size">22sp</dimen>
     <dimen name="group_avatar_text_size">34sp</dimen>

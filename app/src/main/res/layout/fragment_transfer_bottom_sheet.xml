@@ -18,6 +18,28 @@
         android:gravity="center_horizontal"
         android:orientation="vertical">
 
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="64dp"
+            android:layout_marginEnd="64dp"
+            android:gravity="center"
+            android:singleLine="true"
+            android:textColor="@android:color/black"
+            android:textSize="@dimen/wallet_balance_text" />
+
+        <TextView
+            android:id="@+id/sub_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:textColor="@color/text_gray"
+            android:textSize="12sp" />
+
         <one.mixin.android.widget.BadgeCircleImageView
             android:id="@+id/asset_icon"
             android:layout_width="70dp"
@@ -32,7 +54,6 @@
             android:gravity="center_horizontal"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="@dimen/margin12"
             android:textColor="@android:color/black"
             android:textSize="@dimen/wallet_balance_text"/>
 
@@ -52,13 +73,14 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="@dimen/margin16"
+            android:layout_marginTop="4dp"
             android:layout_gravity="center_horizontal"
             android:gravity="center"
             android:maxLines="3"
             android:ellipsize="end"
             android:visibility="gone"
-            android:textColor="@color/text_gray"/>
+            android:textSize="@dimen/wallet_balance_as_text"
+            android:textColor="@color/text_black"/>
     </LinearLayout>
 
     <LinearLayout
