@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.IntentSender
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
@@ -13,11 +14,16 @@ import androidx.lifecycle.lifecycleScope
 import androidx.work.WorkManager
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.InstallStateUpdatedListener
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.InstallStatus
+import com.google.android.play.core.install.model.UpdateAvailability
 import com.uber.autodispose.autoDispose
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -79,6 +85,7 @@ import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.doAsync
+import javax.inject.Inject
 
 class MainActivity : BlazeBaseActivity() {
 
@@ -99,6 +106,13 @@ class MainActivity : BlazeBaseActivity() {
     lateinit var userRepo: UserRepository
     @Inject
     lateinit var participantDao: ParticipantDao
+
+    private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
+    private val updatedListener = InstallStateUpdatedListener { state ->
+        if (state.installStatus() == InstallStatus.DOWNLOADED) {
+            popupSnackbarForCompleteUpdate()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -162,6 +176,8 @@ class MainActivity : BlazeBaseActivity() {
         refreshStickerAlbum()
         checkRoot()
 
+        checkUpdate()
+
         initView()
         handlerCode(intent)
     }
@@ -169,6 +185,11 @@ class MainActivity : BlazeBaseActivity() {
     override fun onStart() {
         super.onStart()
         getSystemService<NotificationManager>()?.cancelAll()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        appUpdateManager.unregisterListener(updatedListener)
     }
 
     private fun delayShowModifyMobile() = lifecycleScope.launch {
@@ -196,11 +217,47 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
+    private fun checkUpdate() {
+        appUpdateManager.registerListener(updatedListener)
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
+                try {
+                    appUpdateManager.startUpdateFlowForResult(
+                        appUpdateInfo,
+                        AppUpdateType.FLEXIBLE,
+                        this,
+                        0x01
+                    )
+                } catch (ignored: IntentSender.SendIntentException) {
+                }
+            } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
+                popupSnackbarForCompleteUpdate()
+            } else if(appUpdateInfo.installStatus() == InstallStatus.INSTALLED) {
+                appUpdateManager.unregisterListener(updatedListener)
+            }
+        }
+    }
+
+    private fun popupSnackbarForCompleteUpdate() {
+        Snackbar.make(
+            root_view,
+            getString(R.string.update_downloaded),
+            Snackbar.LENGTH_INDEFINITE
+        ).apply {
+            setAction(getString(R.string.restart)) { appUpdateManager.completeUpdate() }
+            setActionTextColor(getColor(R.color.colorAccent))
+            show()
+        }
+    }
+
     private fun refreshStickerAlbum() =
         runIntervalTask(REFRESH_STICKER_ALBUM_PRE_KEY, INTERVAL_24_HOURS) {
             jobManager.addJobInBackground(RefreshStickerAlbumJob())
         }
 
+    @Suppress("SameParameterValue")
     private fun runIntervalTask(
         spKey: String,
         interval: Long,
@@ -224,12 +281,12 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun handlerCode(intent: Intent) {
         if (intent.hasExtra(SCAN)) {
-            val scan = intent.getStringExtra(SCAN)
+            val scan = intent.getStringExtra(SCAN)!!
             bottomSheet?.dismiss()
             bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
             bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
         } else if (intent.hasExtra(URL)) {
-            val url = intent.getStringExtra(URL)
+            val url = intent.getStringExtra(URL)!!
             bottomSheet?.dismiss()
             bottomSheet = LinkBottomSheetDialogFragment.newInstance(url)
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
