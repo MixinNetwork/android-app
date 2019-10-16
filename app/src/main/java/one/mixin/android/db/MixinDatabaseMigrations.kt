@@ -79,7 +79,7 @@ class MixinDatabaseMigrations private constructor() {
                     reserve TEXT NOT NULL, fee TEXT NOT NULL, tag TEXT, dust TEXT, PRIMARY KEY(address_id))
                     """
                 )
-                database.execSQL("CREATE TABLE IF NOT EXISTS assets_extra (asset_id TEXT NOT NULL, hidden INTEGER, PRIMARY KEY(asset_id), FOREIGN KEY(asset_id) REFERENCES assets(asset_id) ON UPDATE NO ACTION ON DELETE NO ACTION)")
+                database.execSQL("CREATE TABLE IF NOT EXISTS assets_extra (asset_id TEXT NOT NULL, hidden INTEGER, PRIMARY KEY(asset_id))")
                 database.execSQL("INSERT INTO assets_extra(asset_id, hidden) SELECT asset_id, hidden FROM assets")
 
                 database.execSQL("DROP TABLE IF EXISTS assets")

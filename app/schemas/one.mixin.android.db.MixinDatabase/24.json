@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 24,
-    "identityHash": "f7b1074abe6256b7e37ab2b306429932",
+    "identityHash": "c43048823b67964e1de0a5a4f67eeadb",
     "entities": [
       {
         "tableName": "users",
@@ -661,7 +661,7 @@
       },
       {
         "tableName": "assets_extra",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `hidden` INTEGER, PRIMARY KEY(`asset_id`), FOREIGN KEY(`asset_id`) REFERENCES `assets`(`asset_id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `hidden` INTEGER, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
             "fieldPath": "assetId",
@@ -683,19 +683,7 @@
           "autoGenerate": false
         },
         "indices": [],
-        "foreignKeys": [
-          {
-            "table": "assets",
-            "onDelete": "NO ACTION",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "asset_id"
-            ],
-            "referencedColumns": [
-              "asset_id"
-            ]
-          }
-        ]
+        "foreignKeys": []
       },
       {
         "tableName": "snapshots",
@@ -1438,7 +1426,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f7b1074abe6256b7e37ab2b306429932')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c43048823b67964e1de0a5a4f67eeadb')"
     ]
   }
 }
