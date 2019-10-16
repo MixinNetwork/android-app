@@ -50,7 +50,7 @@ buildscript {
         ext.threetenabpVersion = '1.2.1'
         ext.signalVersion = '2.7.1'
         ext.fabVersion = '1.6'
-        ext.playVersion = '1.5.0'
+        ext.playVersion = '1.6.3'
         ext.svgVersion = '1.2.1'
         ext.reboundVersion = '0.3.8'
         ext.ktlintVersion = '0.35.0'
