@@ -176,6 +176,8 @@ class MainActivity : BlazeBaseActivity() {
         refreshStickerAlbum()
         checkRoot()
 
+        checkUpdate()
+
         initView()
         handlerCode(intent)
     }
@@ -185,21 +187,9 @@ class MainActivity : BlazeBaseActivity() {
         getSystemService<NotificationManager>()?.cancelAll()
     }
 
-    override fun onResume() {
-        super.onResume()
-        checkUpdate()
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         appUpdateManager.unregisterListener(updatedListener)
-    }
-
-    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 0x01 && resultCode != RESULT_OK) {
-
-        }
     }
 
     private fun delayShowModifyMobile() = lifecycleScope.launch {
