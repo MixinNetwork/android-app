@@ -101,7 +101,7 @@ fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
         val segments = Uri.parse(url).pathSegments
         if (url.startsWith(Scheme.HTTPS_CODES, true)) {
             segments.size >= 2 && segments[1].isUUID()
-        } else if (url.startsWith(Constants.Scheme.CODES, true)) {
+        } else if (url.startsWith(Scheme.CODES, true)) {
             segments.size >= 1 && segments[0].isUUID()
         } else if (includeTransfer && url.startsWith(Scheme.TRANSFER, true)) {
             segments.size >= 1 && segments[0].isUUID()

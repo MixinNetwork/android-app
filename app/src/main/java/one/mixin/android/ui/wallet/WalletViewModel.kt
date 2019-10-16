@@ -173,7 +173,7 @@ internal constructor(
         }
         if (r.isSuccess) {
             r.data?.let {
-                assetRepository.upsert(it)
+                assetRepository.insert(it)
                 return@withContext it.iconUrl
             }
         } else {
@@ -189,7 +189,7 @@ internal constructor(
     }
 
     fun upsetAsset(asset: Asset) = viewModelScope.launch(Dispatchers.IO) {
-        assetRepository.upsert(asset)
+        assetRepository.insert(asset)
     }
 
     fun observeTopAssets() = assetRepository.observeTopAssets()

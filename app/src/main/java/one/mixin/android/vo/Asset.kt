@@ -46,9 +46,6 @@ data class Asset(
     @SerializedName("change_btc")
     @ColumnInfo(name = "change_btc")
     val changeBtc: String,
-    @SerializedName("hidden")
-    @ColumnInfo(name = "hidden")
-    var hidden: Boolean?,
     @ColumnInfo(name = "confirmations")
     val confirmations: Int,
     @SerializedName("asset_key")
@@ -56,7 +53,7 @@ data class Asset(
     val assetKey: String?
 ) : Parcelable
 
-fun Asset.toAssetItem(): AssetItem = AssetItem(assetId, symbol, name, iconUrl, balance, destination, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, hidden,
+fun Asset.toAssetItem(): AssetItem = AssetItem(assetId, symbol, name, iconUrl, balance, destination, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,
     confirmations, null, null, null, assetKey)
 
 fun Asset.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl)

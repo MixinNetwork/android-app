@@ -11,10 +11,12 @@ import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
+import one.mixin.android.db.AssetDisplayDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
+import one.mixin.android.vo.AssetsExtra
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 
@@ -24,6 +26,7 @@ class AssetRepository
 constructor(
     private val assetService: AssetService,
     private val assetDao: AssetDao,
+    private val assetDisplayDao: AssetDisplayDao,
     private val snapshotDao: SnapshotDao,
     private val addressDao: AddressDao,
     private val addressService: AddressService,
@@ -34,11 +37,7 @@ constructor(
 
     fun simpleAssetsWithBalance() = assetDao.simpleAssetsWithBalance()
 
-    fun upsert(asset: Asset) {
-        val a = assetDao.simpleAsset(asset.assetId)
-        if (a != null) {
-            asset.hidden = a.hidden
-        }
+    fun insert(asset: Asset) {
         assetDao.insert(asset)
     }
 
@@ -85,7 +84,7 @@ constructor(
 
     fun pay(request: TransferRequest) = assetService.pay(request)
 
-    fun updateHidden(id: String, hidden: Boolean) = assetDao.updateHidden(id, hidden)
+    fun updateHidden(id: String, hidden: Boolean) = assetDisplayDao.insert(AssetsExtra(id, hidden))
 
     fun hiddenAssetItems() = assetDao.hiddenAssetItems()
 

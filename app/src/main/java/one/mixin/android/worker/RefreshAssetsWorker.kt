@@ -25,7 +25,7 @@ class RefreshAssetsWorker @AssistedInject constructor(
             val response = assetService.asset(assetId).execute().body()
             return if (response != null && response.isSuccess && response.data != null) {
                 response.data.let {
-                    assetRepo.upsert(it!!)
+                    assetRepo.insert(it!!)
                 }
                 Result.success()
             } else {
@@ -36,7 +36,7 @@ class RefreshAssetsWorker @AssistedInject constructor(
             return if (response != null && response.isSuccess && response.data != null) {
                 val list = response.data as List<Asset>
                 for (item in list) {
-                    assetRepo.upsert(item)
+                    assetRepo.insert(item)
                 }
                 Result.success()
             } else {

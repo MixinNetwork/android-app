@@ -209,7 +209,7 @@ class BottomSheetViewModel @Inject internal constructor(
             val response = assetRepository.asset(assetId).execute().body()
             if (response != null && response.isSuccess && response.data != null) {
                 response.data?.let {
-                    assetRepository.upsert(it)
+                    assetRepository.insert(it)
                     return@async assetRepository.findAssetItemById(assetId)
                 }
             }

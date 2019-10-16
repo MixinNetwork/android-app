@@ -23,7 +23,7 @@ class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PR
             val response = assetService.asset(assetId).execute().body()
             if (response != null && response.isSuccess && response.data != null) {
                 response.data?.let {
-                    assetRepo.upsert(it)
+                    assetRepo.insert(it)
                 }
             }
         } else {
@@ -31,7 +31,7 @@ class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PR
             if (response != null && response.isSuccess && response.data != null) {
                 val list = response.data as List<Asset>
                 for (item in list) {
-                    assetRepo.upsert(item)
+                    assetRepo.insert(item)
                 }
             }
         }

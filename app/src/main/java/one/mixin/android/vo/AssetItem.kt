@@ -38,11 +38,6 @@ data class AssetItem(
         return BigDecimal(balance) * BigDecimal(priceBtc)
     }
 
-    fun toAsset() = Asset(
-        assetId, symbol, name, iconUrl, balance, destination, tag, priceBtc, priceUsd,
-        chainId, changeUsd, changeBtc, hidden, confirmations, assetKey
-    )
-
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AssetItem>() {
             override fun areItemsTheSame(oldItem: AssetItem, newItem: AssetItem) =
