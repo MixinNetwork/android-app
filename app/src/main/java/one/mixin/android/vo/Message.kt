@@ -216,9 +216,7 @@ enum class MessageCategory {
 }
 
 fun String.isIllegalMessageCategory(): Boolean {
-    val list = arrayListOf<String>()
-    MessageCategory.values().mapTo(list) { it.name }
-    return !list.contains(this)
+    return enumValues<MessageCategory>().any { it.name == this}
 }
 
 enum class MessageStatus { SENDING, SENT, DELIVERED, READ, FAILED }
