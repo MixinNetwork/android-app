@@ -219,6 +219,10 @@ dependencies {
     implementation "jp.wasabeef:glide-transformations:${glideTransformationsVersion}"
     implementation "com.jakewharton.timber:timber:${timberVersion}"
 
+    implementation "com.facebook.stetho:stetho:${stethoVersion}"
+    implementation("com.facebook.stetho:stetho-okhttp3:${stethoVersion}") {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
     implementation "com.facebook.soloader:soloader:$soloaderVersion"
     debugImplementation "com.facebook.flipper:flipper:$flipperVersion"
     debugImplementation ("com.facebook.flipper:flipper-network-plugin:$flipperVersion") {

@@ -15,6 +15,7 @@ import com.facebook.flipper.plugins.inspector.DescriptorMapping
 import com.facebook.flipper.plugins.inspector.InspectorFlipperPlugin
 import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
 import com.facebook.soloader.SoLoader
+import com.facebook.stetho.Stetho
 import com.google.firebase.FirebaseApp
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.android.DispatchingAndroidInjector
@@ -79,6 +80,7 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
     private fun init() {
         Bugsnag.init(this, BuildConfig.BUGSNAG_API_KEY)
         if (BuildConfig.DEBUG) {
+            Stetho.initializeWithDefaults(this)
             SoLoader.init(this, false)
             if (FlipperUtils.shouldEnableFlipper(this)) {
                 val client = AndroidFlipperClient.getInstance(this)
