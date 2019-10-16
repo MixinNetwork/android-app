@@ -80,7 +80,7 @@ class MixinDatabaseMigrations private constructor() {
                     """
                 )
                 database.execSQL("CREATE TABLE IF NOT EXISTS assets_extra (asset_id TEXT NOT NULL, hidden INTEGER, PRIMARY KEY(asset_id))")
-                database.execSQL("INSERT INTO assets_extra(asset_id, hidden) SELECT asset_id, hidden FROM assets")
+                database.execSQL("INSERT OR REPLACE INTO assets_extra (asset_id, hidden) SELECT asset_id, hidden FROM assets")
 
                 database.execSQL("DROP TABLE IF EXISTS assets")
                 database.execSQL(
