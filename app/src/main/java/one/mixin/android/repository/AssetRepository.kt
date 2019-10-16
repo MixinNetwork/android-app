@@ -41,6 +41,10 @@ constructor(
         assetDao.insert(asset)
     }
 
+    fun insertList(asset: List<Asset>) {
+        assetDao.insertList(asset)
+    }
+
     fun asset(id: String) = assetService.asset(id)
 
     suspend fun getAsset(id: String) = assetService.getAsset(id)
