@@ -247,10 +247,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         } else {
                             unreadCount
                         }
-                        (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                            position,
-                            chat_rv.measuredHeight * 3 / 4
-                        )
+                        if (position >= itemCount - 1) {
+                            (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                                itemCount - 1, 0
+                            )
+                        } else {
+                            (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                                position,
+                                chat_rv.measuredHeight * 3 / 4
+                            )
+                        }
                         chat_rv.visibility = VISIBLE
                     }
                     isBottom -> {
