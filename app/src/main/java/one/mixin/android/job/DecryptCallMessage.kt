@@ -4,7 +4,7 @@ import androidx.collection.ArrayMap
 import com.google.gson.Gson
 import java.util.UUID
 import java.util.concurrent.Executors
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
@@ -28,7 +28,10 @@ import one.mixin.android.websocket.LIST_PENDING_MESSAGES
 import org.webrtc.IceCandidate
 import timber.log.Timber
 
-class DecryptCallMessage(private val callState: CallState) : Injector() {
+class DecryptCallMessage(
+    private val callState: CallState,
+    private val lifecycleScope: CoroutineScope
+) : Injector() {
     companion object {
         const val LIST_PENDING_CALL_DELAY = 2000L
 
@@ -75,7 +78,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                 true
             }
             if (!isExpired && !listPendingOfferHandled) {
-                listPendingJobMap[data.messageId] = Pair(GlobalScope.launch(listPendingDispatcher) {
+                listPendingJobMap[data.messageId] = Pair(lifecycleScope.launch(listPendingDispatcher) {
                     delay(LIST_PENDING_CALL_DELAY)
                     listPendingOfferHandled = true
                     listPendingJobMap.forEach { entry ->

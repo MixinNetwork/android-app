@@ -5,21 +5,20 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import androidx.room.InvalidationTracker
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
 import dagger.android.AndroidInjection
-import java.util.concurrent.Executors
 import javax.inject.Inject
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -52,7 +51,7 @@ import one.mixin.android.websocket.createParamSessionMessage
 import one.mixin.android.websocket.createPlainJsonParam
 import org.jetbrains.anko.notificationManager
 
-class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
+class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
 
     companion object {
         val TAG = BlazeMessageService::class.java.simpleName
@@ -94,7 +93,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     private val accountId = Session.getAccountId()
     private val gson = GsonHelper.customGson
 
-    override fun onBind(intent: Intent?): IBinder? {
+    override fun onBind(intent: Intent): IBinder? {
+        super.onBind(intent)
         return null
     }
 
@@ -109,6 +109,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
         if (intent == null) return START_STICKY
         when (ACTION_TO_BACKGROUND) {
             intent.action -> {
@@ -175,10 +176,6 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         startForeground(FOREGROUND_ID, builder.build())
     }
 
-    private val ackThread by lazy {
-        Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-    }
-
     private fun startAckJob() {
         database.invalidationTracker.addObserver(ackObserver)
     }
@@ -204,7 +201,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         if (ackJob?.isActive == true || !networkConnected()) {
             return
         }
-        ackJob = GlobalScope.launch(ackThread) {
+        ackJob = lifecycleScope.launch(Dispatchers.IO) {
             ackJobBlock()
             Session.getExtensionSessionId()?.let {
                 ackSessionJobBlock()
@@ -280,12 +277,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         }
     }
 
-    private val floodThread by lazy {
-        Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-    }
-
     private val messageDecrypt by lazy { DecryptMessage() }
-    private val callMessageDecrypt by lazy { DecryptCallMessage(callState) }
+    private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
     private val sessionMessageDecrypt by lazy { DecryptSessionMessage() }
 
     private fun startFloodJob() {
@@ -313,7 +306,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         if (floodJob?.isActive == true) {
             return
         }
-        floodJob = GlobalScope.launch(floodThread) {
+        floodJob = lifecycleScope.launch(Dispatchers.IO) {
             try {
                 processFloodMessage()
             } catch (e: Exception) {
