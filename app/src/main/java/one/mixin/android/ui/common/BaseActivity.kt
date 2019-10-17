@@ -1,6 +1,7 @@
 package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -10,8 +11,12 @@ import androidx.lifecycle.Lifecycle
 import com.uber.autodispose.android.lifecycle.scope
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
+import java.util.Locale
 import javax.inject.Inject
+import one.mixin.android.Constants.Account.PREF_LANGUAGE
+import one.mixin.android.Constants.Account.PREF_SET_LANGUAGE
 import one.mixin.android.R
+import one.mixin.android.extension.defaultSharedPreferences
 
 @SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
@@ -22,6 +27,19 @@ open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
 
     override fun androidInjector() = dispatchingAndroidInjector
+
+    override fun attachBaseContext(context: Context) {
+        val setLanguage = context.defaultSharedPreferences.getBoolean(PREF_SET_LANGUAGE, false)
+        if (setLanguage) {
+            val conf = context.resources.configuration
+            val defaultLang = Locale.getDefault().language
+            val language = context.defaultSharedPreferences.getString(PREF_LANGUAGE, defaultLang) ?: defaultLang
+            conf.setLocale(Locale(language))
+            super.attachBaseContext(context.createConfigurationContext(conf))
+        } else {
+            super.attachBaseContext(context)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -38,6 +38,8 @@ object Constants {
         const val PREF_FIAT_SET = "pref_fiat_set"
         const val PREF_CURRENCY = "pref_currency"
         const val PREF_CURRENCY_SYMBOL = "pref_currency_symbol"
+        const val PREF_SET_LANGUAGE = "pref_set_language"
+        const val PREF_LANGUAGE = "pref_language"
     }
 
     object Scheme {

@@ -85,6 +85,7 @@
     <string name="media_date_patten">yyyy年MM月dd日</string>
     <string name="restart">重启应用</string>
     <string name="update_downloaded">一个更新刚下载完成。</string>
+    <string name="language">语言</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
