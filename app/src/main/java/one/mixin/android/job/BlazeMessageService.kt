@@ -103,8 +103,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         super.onCreate()
         webSocket.setWebSocketObserver(this)
         webSocket.connect()
-        startAckJob()
         startFloodJob()
+        startAckJob()
         networkUtil.setListener(this)
     }
 
@@ -138,8 +138,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     override fun onSocketOpen() {
-        runAckJob()
         runFloodJob()
+        runAckJob()
     }
 
     @SuppressLint("NewApi")
@@ -182,43 +182,29 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private fun stopAckJob() {
         database.invalidationTracker.removeObserver(ackObserver)
-        ackJob?.let {
-            if (it.isActive) {
-                it.cancel()
-            }
-        }
-    }
-
-    private val ackObserver =
-        object : InvalidationTracker.Observer("jobs") {
-            override fun onInvalidated(tables: MutableSet<String>) {
-                runAckJob()
-            }
-        }
-
-    @Synchronized
-    private fun runAckJob() {
-        if (ackJob?.isActive == true || !networkConnected()) {
-            return
-        }
-        ackJob = lifecycleScope.launch(Dispatchers.IO) {
-            ackJobBlock()
-            Session.getExtensionSessionId()?.let {
-                ackSessionJobBlock()
-                syncMessageStatusToExtension(it)
-            }
-        }
     }
 
     private var ackJob: Job? = null
-
-    private suspend fun ackJobBlock() {
-        try {
-            processAck()
-        } catch (e: Exception) {
+    private val ackObserver = object : InvalidationTracker.Observer("jobs") {
+        override fun onInvalidated(tables: MutableSet<String>) {
+            if (ackJob?.isActive == true || !networkConnected()) {
+                return
+            }
             runAckJob()
-        } finally {
-            ackJob = null
+        }
+    }
+
+    @Synchronized
+    private fun runAckJob() {
+        try {
+            ackJob = lifecycleScope.launch(Dispatchers.IO) {
+                processAck()
+                Session.getExtensionSessionId()?.let {
+                    ackSessionJobBlock()
+                    syncMessageStatusToExtension(it)
+                }
+            }
+        } catch (e: Exception) {
         }
     }
 
@@ -240,14 +226,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         jobDao.findSessionAckJobs()?.let { list ->
             if (list.isNotEmpty()) {
                 list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-                    try {
-                        deliver(createAckSessionListParamBlazeMessage(it)).let {
-                            jobDao.deleteList(list)
-                        }
-                    } catch (e: Exception) {
-                        runAckJob()
-                    } finally {
-                        ackJob = null
+                    deliver(createAckSessionListParamBlazeMessage(it)).let {
+                        jobDao.deleteList(list)
                     }
                 }
             }
@@ -258,20 +238,14 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         jobDao.findCreatePlainSessionJobs()?.let { list ->
             if (list.isNotEmpty()) {
                 list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-                    try {
-                        val plainText = gson.toJson(TransferPlainAckData(
-                            action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
-                            messages = it
-                        ))
-                        val encoded = Base64.encodeBytes(plainText.toByteArray())
-                        val bm = createParamSessionMessage(createPlainJsonParam(accountId!!, accountId, encoded, sessionId))
-                        jobManager.addJobInBackground(SendSessionStatusMessageJob(bm))
-                        jobDao.deleteList(list)
-                    } catch (e: Exception) {
-                        runAckJob()
-                    } finally {
-                        ackJob = null
-                    }
+                    val plainText = gson.toJson(TransferPlainAckData(
+                        action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
+                        messages = it
+                    ))
+                    val encoded = Base64.encodeBytes(plainText.toByteArray())
+                    val bm = createParamSessionMessage(createPlainJsonParam(accountId!!, accountId, encoded, sessionId))
+                    jobManager.addJobInBackground(SendSessionStatusMessageJob(bm))
+                    jobDao.deleteList(list)
                 }
             }
         }
@@ -287,37 +261,28 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private fun stopFloodJob() {
         database.invalidationTracker.removeObserver(floodObserver)
-        floodJob?.let {
-            if (it.isActive) {
-                it.cancel()
+    }
+
+    private var floodJob: Job? = null
+    private val floodObserver = object : InvalidationTracker.Observer("flood_messages") {
+        override fun onInvalidated(tables: MutableSet<String>) {
+            if (floodJob?.isActive == true) {
+                return
             }
+            runFloodJob()
         }
     }
 
-    private val floodObserver =
-        object : InvalidationTracker.Observer("flood_messages") {
-            override fun onInvalidated(tables: MutableSet<String>) {
-                runFloodJob()
-            }
-        }
-
     @Synchronized
     private fun runFloodJob() {
-        if (floodJob?.isActive == true) {
-            return
-        }
         floodJob = lifecycleScope.launch(Dispatchers.IO) {
             try {
                 processFloodMessage()
             } catch (e: Exception) {
                 runFloodJob()
-            } finally {
-                floodJob = null
             }
         }
     }
-
-    private var floodJob: Job? = null
 
     private tailrec suspend fun processFloodMessage(): Boolean {
         val messages = floodMessageDao.findFloodMessages()
