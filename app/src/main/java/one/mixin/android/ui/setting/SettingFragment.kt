@@ -77,7 +77,7 @@ class SettingFragment : Fragment() {
                 0
             }
         } else {
-            if (Locale.getDefault() == Locale.CHINA) {
+            if (Locale.getDefault().language == Locale.CHINA.language) {
                 1
             } else {
                 0
