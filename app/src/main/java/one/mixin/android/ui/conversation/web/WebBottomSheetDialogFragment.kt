@@ -36,7 +36,7 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
@@ -50,7 +50,6 @@ import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
@@ -259,9 +258,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             WebView.setWebContentsDebuggingEnabled(true)
         }
         if (appId == null) {
-            bottomViewModel.viewModelScope.launch(Dispatchers.Main) {
+            lifecycleScope.launch {
                 val apps = bottomViewModel.searchAppByHost(url)
-                app = apps?.firstOrNull()
+                app = apps.firstOrNull()
                 initView()
             }
         } else {

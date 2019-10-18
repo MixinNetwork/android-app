@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.App
 
 @Dao
@@ -21,6 +22,6 @@ interface AppDao : BaseDao<App> {
     @Query("SELECT * FROM apps WHERE app_id IN(:appIds)")
     fun findAppsByIds(appIds: List<String>): List<App>
 
-    @Query(" SELECT * FROM apps a WHERE a.home_uri LIKE :query")
+    @Query(" SELECT * FROM apps a WHERE a.home_uri LIKE :query $ESCAPE_SUFFIX")
     suspend fun searchAppByHost(query: String): List<App>
 }
