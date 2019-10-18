@@ -65,6 +65,7 @@ fun TextView.highLightClick(
     if (target.isNullOrBlank()) {
         return
     }
+    movementMethod = LinkMovementMethod.getInstance()
     val text = this.text.toString()
     val spannable = SpannableString(text)
     var index = text.indexOf(target, ignoreCase = ignoreCase)

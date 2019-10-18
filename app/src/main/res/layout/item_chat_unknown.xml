@@ -1,23 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingBottom="8dp">
+    android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/chat_info"
+    <RelativeLayout
+        android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="@drawable/chat_bubble_unknown"
-        android:gravity="center"
-        android:maxWidth="300dp"
-        android:padding="4dp"
-        android:paddingEnd="8dp"
-        android:paddingStart="8dp"
-        android:text="@string/unknown_update_app"
-        android:textColor="@color/text_black"
-        android:textSize="12sp"
-        android:translationZ="1dp" />
+        android:layout_gravity="start"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="1.5dp">
 
+        <TextView
+            android:id="@+id/chat_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:lines="1"
+            android:textColor="#19BEF1"
+            android:textSize="15sp"
+            android:maxWidth="280dp"
+            android:minWidth="30dp"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/chat_name"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/chat_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:maxWidth="300dp"
+                android:text="@string/unknown_update_app"
+                android:textColor="@color/text_black"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/chat_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:drawablePadding="3dp"
+                android:textColor="#9B9B9B"
+                android:textSize="@dimen/chat_date_size"
+                tools:ignore="SmallSp" />
+        </LinearLayout>
+    </RelativeLayout>
 </FrameLayout>
