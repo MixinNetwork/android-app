@@ -99,7 +99,6 @@
                 android:id="@+id/language_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:layout_marginTop="@dimen/margin20"
                 android:background="@android:color/white"
                 android:foreground="?attr/selectableItemBackground">
 
@@ -142,7 +141,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/wallet_setting"
+                    android:text="@string/wallet_title"
                     tools:ignore="RelativeOverlap"/>
             </RelativeLayout>
 
