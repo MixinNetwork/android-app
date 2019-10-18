@@ -1,14 +1,11 @@
 package one.mixin.android.repository
 
 import androidx.lifecycle.LiveData
-import io.reactivex.Observable
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
-import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.UserDao
@@ -52,9 +49,6 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
         userDao.findContactByConversationId(conversationId)
 
     fun findSelf(): LiveData<User?> = userDao.findSelf(Session.getAccountId() ?: "")
-
-    fun relationship(request: RelationshipRequest): Observable<MixinResponse<User>> =
-        userService.relationship(request)
 
     suspend fun upsert(user: User) = coroutineScope {
         userDao.insertUpdate(user, appDao)

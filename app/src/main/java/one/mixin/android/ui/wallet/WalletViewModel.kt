@@ -13,7 +13,6 @@ import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
@@ -85,17 +84,15 @@ internal constructor(
 
     fun getUserById(id: String): User? = userRepository.getUserById(id)
 
-    fun checkAndRefreshUsers(userIds: List<String>) = runBlocking {
-        viewModelScope.launch {
-            val existUsers = userRepository.findUserExist(userIds)
-            val queryUsers = userIds.filter {
-                !existUsers.contains(it)
-            }
-            if (queryUsers.isEmpty()) {
-                return@launch
-            }
-            jobManager.addJobInBackground(RefreshUserJob(queryUsers))
+    fun checkAndRefreshUsers(userIds: List<String>) = viewModelScope.launch {
+        val existUsers = userRepository.findUserExist(userIds)
+        val queryUsers = userIds.filter {
+            !existUsers.contains(it)
         }
+        if (queryUsers.isEmpty()) {
+            return@launch
+        }
+        jobManager.addJobInBackground(RefreshUserJob(queryUsers))
     }
 
     fun updateAssetHidden(id: String, hidden: Boolean) = assetRepository.updateHidden(id, hidden)

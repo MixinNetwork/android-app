@@ -37,13 +37,11 @@ class RefreshUserJob(
         refreshUsers(queryUsers)
     }
 
-    private fun refreshUsers(userIds: List<String>) {
+    private suspend fun refreshUsers(userIds: List<String>) {
         val response = userService.getUsers(userIds).execute().body()
         if (response != null && response.isSuccess) {
             response.data?.let { data ->
-                runBlocking {
-                    userRepo.upsertList(data)
-                }
+                userRepo.upsertList(data)
                 conversationId?.let {
                     jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
                 }
