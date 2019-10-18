@@ -36,6 +36,7 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
@@ -49,6 +50,7 @@ import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
+import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
@@ -73,6 +75,7 @@ import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.ui.url.openUrl
+import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -135,17 +138,19 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         arguments!!.getString(CONVERSATION_ID)
     }
     private val appId: String? by lazy {
-        arguments!!.getString(APP_ID)
+        arguments!!.getString(APP_ID) ?: app?.appId
     }
     private val appName: String? by lazy {
-        arguments!!.getString(APP_NAME)
+        arguments!!.getString(APP_NAME) ?: app?.name
     }
     private val appAvatar: String? by lazy {
-        arguments!!.getString(APP_AVATAR)
+        arguments!!.getString(APP_AVATAR) ?: app?.icon_url
     }
     private val appCapabilities: ArrayList<String>? by lazy {
-        arguments!!.getStringArrayList(APP_CAPABILITIES)
+        arguments!!.getStringArrayList(APP_CAPABILITIES) ?: app?.capabilities
     }
+
+    private var app: App? = null
 
     @SuppressLint("RestrictedApi", "SetJavaScriptEnabled")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -252,6 +257,18 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (BuildConfig.DEBUG) {
             WebView.setWebContentsDebuggingEnabled(true)
         }
+        if (appId == null) {
+            lifecycleScope.launch {
+                val apps = bottomViewModel.searchAppByHost(url)
+                app = apps.firstOrNull()
+                initView()
+            }
+        } else {
+            initView()
+        }
+    }
+
+    private fun initView() {
         contentView.web_control.callback = object : WebControlView.Callback {
             override fun onMoreClick() {
                 showBottomSheet()
@@ -268,7 +285,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.settings.mixedContentMode =
             WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         contentView.chat_web_view.settings.mediaPlaybackRequiresUserGesture = false
-        contentView.chat_web_view.settings.userAgentString = contentView.chat_web_view.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME
+        contentView.chat_web_view.settings.userAgentString =
+            contentView.chat_web_view.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME
 
         var immersive = false
         appCapabilities?.let {
@@ -406,13 +424,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.title_ll.isGone = immersive
 
-        dialog.setOnShowListener {
-            val extraHeaders = HashMap<String, String>()
-            conversationId?.let {
-                extraHeaders[Mixin_Conversation_ID_HEADER] = it
-            }
-            contentView.chat_web_view.loadUrl(url, extraHeaders)
-        }
         dialog.setOnDismissListener {
             contentView.hideKeyboard()
             contentView.chat_web_view.stopLoading()
@@ -420,6 +431,12 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.chat_web_view.webChromeClient = null
             dismiss()
         }
+
+        val extraHeaders = HashMap<String, String>()
+        conversationId?.let {
+            extraHeaders[Mixin_Conversation_ID_HEADER] = it
+        }
+        contentView.chat_web_view.loadUrl(url, extraHeaders)
     }
 
     @Override

@@ -84,6 +84,8 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     suspend fun findAppById(id: String) = appDao.findAppById(id)
 
+    suspend fun searchAppByHost(query: String) = appDao.searchAppByHost("%$query%")
+
     fun findContactUsers() = userDao.findContactUsers()
 
     suspend fun getFriendsNotBot() = userDao.getFriendsNotBot()

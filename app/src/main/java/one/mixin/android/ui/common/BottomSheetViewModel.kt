@@ -23,6 +23,7 @@ import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.PaymentResponse
+import one.mixin.android.extension.escapeSql
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
@@ -38,6 +39,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Snapshot
@@ -220,4 +222,9 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun getFiats() = accountRepository.getFiats()
 
     suspend fun preferences(request: AccountUpdateRequest) = accountRepository.preferences(request)
+
+    suspend fun searchAppByHost(query: String): List<App> {
+        val escapedQuery = query.trim().escapeSql()
+        return userRepository.searchAppByHost(escapedQuery)
+    }
 }
