@@ -11,6 +11,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AddressRequest
@@ -220,4 +221,9 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun getFiats() = accountRepository.getFiats()
 
     suspend fun preferences(request: AccountUpdateRequest) = accountRepository.preferences(request)
+
+    suspend fun searchAppByHost(query: String) =
+        withContext(Dispatchers.IO) {
+            userRepository.searchAppByHost(query)
+        }
 }
