@@ -95,6 +95,33 @@
                     tools:ignore="RelativeOverlap"/>
             </RelativeLayout>
 
+            <RelativeLayout
+                android:id="@+id/language_rl"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:background="@android:color/white"
+                android:foreground="?attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/language_tv"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="@string/language"
+                    tools:ignore="RelativeOverlap"/>
+
+                <TextView
+                    android:id="@+id/language_desc_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:textColor="@color/text_gray"/>
+            </RelativeLayout>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/setting_divider"
@@ -114,7 +141,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/wallet_setting"
+                    android:text="@string/wallet_title"
                     tools:ignore="RelativeOverlap"/>
             </RelativeLayout>
 

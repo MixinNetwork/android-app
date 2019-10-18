@@ -13,7 +13,7 @@
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:titleText="@string/wallet_setting"/>
+            app:titleText="@string/wallet_title"/>
 
     <RelativeLayout
             android:id="@+id/biometrics_rl"
