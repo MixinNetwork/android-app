@@ -187,9 +187,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private var ackJob: Job? = null
     private val ackObserver = object : InvalidationTracker.Observer("jobs") {
         override fun onInvalidated(tables: MutableSet<String>) {
-            if (ackJob?.isActive == true || !networkConnected()) {
-                return
-            }
             runAckJob()
         }
     }
@@ -197,6 +194,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     @Synchronized
     private fun runAckJob() {
         try {
+            if (ackJob?.isActive == true || !networkConnected()) {
+                return
+            }
             ackJob = lifecycleScope.launch(Dispatchers.IO) {
                 processAck()
                 Session.getExtensionSessionId()?.let {
@@ -212,8 +212,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         val ackMessages = jobDao.findAckJobs()
         if (!ackMessages.isNullOrEmpty()) {
             ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-                deliver(createAckListParamBlazeMessage(it)).let {
-                    jobDao.deleteList(ackMessages)
+                try {
+                    deliver(createAckListParamBlazeMessage(it)).let {
+                        jobDao.deleteList(ackMessages)
+                    }
+                } catch (e: Exception) {
                 }
             }
             return processAck()
@@ -226,8 +229,11 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         jobDao.findSessionAckJobs()?.let { list ->
             if (list.isNotEmpty()) {
                 list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-                    deliver(createAckSessionListParamBlazeMessage(it)).let {
-                        jobDao.deleteList(list)
+                    try {
+                        deliver(createAckSessionListParamBlazeMessage(it)).let {
+                            jobDao.deleteList(list)
+                        }
+                    } catch (e: Exception) {
                     }
                 }
             }
@@ -266,15 +272,15 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private var floodJob: Job? = null
     private val floodObserver = object : InvalidationTracker.Observer("flood_messages") {
         override fun onInvalidated(tables: MutableSet<String>) {
-            if (floodJob?.isActive == true) {
-                return
-            }
             runFloodJob()
         }
     }
 
     @Synchronized
     private fun runFloodJob() {
+        if (floodJob?.isActive == true) {
+            return
+        }
         floodJob = lifecycleScope.launch(Dispatchers.IO) {
             try {
                 processFloodMessage()
