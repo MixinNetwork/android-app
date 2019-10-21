@@ -46,8 +46,7 @@ class RefreshConversationJob(val conversationId: String) :
                 }
                 var c = conversationDao.findConversationById(data.conversationId)
                 if (c == null) {
-                    val builder = ConversationBuilder(data.conversationId,
-                        data.createdAt, ConversationStatus.SUCCESS.ordinal)
+                    val builder = ConversationBuilder(data.conversationId, data.createdAt, ConversationStatus.SUCCESS.ordinal)
                     c = builder.setOwnerId(ownerId)
                         .setCategory(data.category)
                         .setName(data.name)
@@ -56,8 +55,7 @@ class RefreshConversationJob(val conversationId: String) :
                         .setCodeUrl(data.codeUrl).build()
                     if (c.announcement.isNullOrBlank()) {
                         RxBus.publish(GroupEvent(data.conversationId))
-                        applicationContext.sharedPreferences(PREFERENCES_CONVERSATION)
-                            .putBoolean(data.conversationId, true)
+                        applicationContext.sharedPreferences(PREFERENCES_CONVERSATION).putBoolean(data.conversationId, true)
                     }
                     conversationDao.insert(c)
                 } else {
@@ -68,8 +66,7 @@ class RefreshConversationJob(val conversationId: String) :
                     }
                     if (!data.announcement.isNullOrBlank() && c.announcement != data.announcement) {
                         RxBus.publish(GroupEvent(data.conversationId))
-                        applicationContext.sharedPreferences(PREFERENCES_CONVERSATION)
-                            .putBoolean(data.conversationId, true)
+                        applicationContext.sharedPreferences(PREFERENCES_CONVERSATION).putBoolean(data.conversationId, true)
                     }
                     conversationDao.updateConversation(data.conversationId, ownerId, data.category, data.name,
                         data.announcement, data.muteUntil, data.createdAt, status)
