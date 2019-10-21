@@ -45,7 +45,6 @@
                 android:layout_marginTop="36dp"
                 android:layout_marginBottom="36dp"
                 android:layout_gravity="center_horizontal"
-                android:layout_margin="@dimen/activity_vertical_margin"
                 tools:ignore="ContentDescription"/>
 
             <Button
