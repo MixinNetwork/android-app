@@ -10,6 +10,7 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.GiphyBottomSheetFragment
 import one.mixin.android.ui.conversation.TransferFragment
+import one.mixin.android.ui.conversation.TransferTipBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.UserTransactionsFragment
 import one.mixin.android.ui.conversation.WithdrawalTipBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
@@ -58,6 +59,9 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeWithdrawalTipBottomSheetFragment(): WithdrawalTipBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeTransferTipBottomSheetDialogFragment(): TransferTipBottomSheetDialogFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeProfileFragment(): ProfileFragment
