@@ -140,11 +140,11 @@ class GroupFragment : BaseFragment() {
         if (from == TYPE_ADD || from == TYPE_CREATE) {
             groupViewModel.getFriends().observe(this, Observer {
                 users = it
-                groupFriendAdapter.setData(it, true)
+                filterAndSet(search_et.text.toString(), it)
             })
         } else {
             users = alreadyUsers
-            groupFriendAdapter.setData(alreadyUsers, true)
+            filterAndSet(search_et.text.toString(), alreadyUsers)
         }
         search_et.addTextChangedListener(mWatcher)
 
@@ -168,6 +168,18 @@ class GroupFragment : BaseFragment() {
                     }
                 }
             }
+    }
+
+    private fun filterAndSet(keyword: String, userList: List<User>?) {
+        groupFriendAdapter.setData(
+            userList?.filter {
+                it.fullName!!.contains(keyword, true) || it.identityNumber.contains(
+                    keyword,
+                    true
+                )
+            },
+            keyword.isEmpty()
+        )
     }
 
     override fun onDestroyView() {
@@ -216,15 +228,7 @@ class GroupFragment : BaseFragment() {
 
         override fun afterTextChanged(s: Editable?) {
             val keyword = s.toString().trim()
-            groupFriendAdapter.setData(
-                users?.filter {
-                    it.fullName!!.contains(keyword, true) || it.identityNumber.contains(
-                        keyword,
-                        true
-                    )
-                },
-                s.isNullOrEmpty()
-            )
+            filterAndSet(keyword, users)
         }
     }
 }
