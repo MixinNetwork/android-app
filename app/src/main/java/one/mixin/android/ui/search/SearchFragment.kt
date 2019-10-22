@@ -20,6 +20,7 @@ import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.item_search_app.view.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
@@ -84,9 +85,12 @@ class SearchFragment : BaseFragment() {
         }
     }
 
+    private var searchJob: Job? = null
+
     @Suppress("UNCHECKED_CAST")
     private fun bindData(keyword: String? = this@SearchFragment.keyword) {
-        fuzzySearch(keyword)
+        searchJob?.cancel()
+        searchJob = fuzzySearch(keyword)
     }
 
     private val appAdapter = AppAdapter()

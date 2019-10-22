@@ -24,6 +24,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.SearchMessageDetailItem
+import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 
 class SearchViewModel @Inject
@@ -34,7 +35,7 @@ internal constructor(
     val accountRepository: AccountRepository
 ) : ViewModel() {
 
-    val controlledRunner = ControlledRunner<List<Parcelable>?>()
+    val messageControlledRunner = ControlledRunner<List<SearchMessageItem>?>()
 
     fun findConversationById(conversationId: String): Observable<Conversation> =
         conversationRepository.findConversationById(conversationId)
@@ -44,27 +45,32 @@ internal constructor(
         if (query.isNullOrBlank()) {
             null
         } else {
-            controlledRunner.cancelPreviousThenRun {
-                val escapedQuery = query.trim().escapeSql()
-                when (T::class) {
-                    AssetItem::class -> assetRepository.fuzzySearchAsset("%$escapedQuery%")
-                    User::class -> userRepository.fuzzySearchUser("%$escapedQuery%")
-                    ChatMinimal::class -> conversationRepository.fuzzySearchChat("%$escapedQuery%")
-                    else -> conversationRepository.fuzzySearchMessage("%$escapedQuery%", limit)
+            val escapedQuery = query.trim().escapeSql()
+            when (T::class) {
+                AssetItem::class -> assetRepository.fuzzySearchAsset("%$escapedQuery%")
+                User::class -> userRepository.fuzzySearchUser("%$escapedQuery%")
+                ChatMinimal::class -> conversationRepository.fuzzySearchChat("%$escapedQuery%")
+                else -> messageControlledRunner.cancelPreviousThenRun {
+                    conversationRepository.fuzzySearchMessage("%$escapedQuery%", limit)
                 }
             }
         }
 
     fun findAppsByIds(appIds: List<String>) = userRepository.findAppsByIds(appIds)
 
-    fun fuzzySearchMessageDetailAsync(query: String, conversationId: String): Deferred<LiveData<PagedList<SearchMessageDetailItem>>> =
+    fun fuzzySearchMessageDetailAsync(
+        query: String,
+        conversationId: String
+    ): Deferred<LiveData<PagedList<SearchMessageDetailItem>>> =
         viewModelScope.async(Dispatchers.IO) {
             val escapedQuery = query.trim().escapeSql()
-            LivePagedListBuilder(conversationRepository.fuzzySearchMessageDetail("%$escapedQuery%", conversationId),
+            LivePagedListBuilder(
+                conversationRepository.fuzzySearchMessageDetail("%$escapedQuery%", conversationId),
                 PagedList.Config.Builder()
                     .setPageSize(30)
                     .setEnablePlaceholders(true)
-                    .build())
+                    .build()
+            )
                 .build()
         }
 

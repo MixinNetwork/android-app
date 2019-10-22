@@ -9,7 +9,7 @@ import one.mixin.android.ui.media.MediaFragment
 import one.mixin.android.ui.media.SharedMediaFragment
 
 @Module
-abstract class SharedMediaActvityModule {
+abstract class SharedMediaActivityModule {
     @ContributesAndroidInjector
     internal abstract fun contributeSharedMediaFragment(): SharedMediaFragment
 

@@ -14,7 +14,7 @@ import one.mixin.android.di.module.InviteActivityModule
 import one.mixin.android.di.module.LandingActivityModule
 import one.mixin.android.di.module.MainActivityModule
 import one.mixin.android.di.module.SettingActivityModule
-import one.mixin.android.di.module.SharedMediaActvityModule
+import one.mixin.android.di.module.SharedMediaActivityModule
 import one.mixin.android.di.module.UrlInterpreterActivityModule
 import one.mixin.android.di.module.WalletActivityModule
 import one.mixin.android.ui.address.AddressActivity
@@ -86,9 +86,9 @@ abstract class ActivityModule {
     @ContributesAndroidInjector
     internal abstract fun contributeRestore(): RestoreActivity
 
-    @ContributesAndroidInjector(modules = [(CommonModule::class), (SharedMediaActvityModule::class)])
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (SharedMediaActivityModule::class)])
     internal abstract fun contributeSharedMedia(): SharedMediaActivity
 
-    @ContributesAndroidInjector(modules = [(CommonModule::class), (SharedMediaActvityModule::class)])
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (SharedMediaActivityModule::class)])
     internal abstract fun contributeDragMedia(): DragMediaActivity
 }

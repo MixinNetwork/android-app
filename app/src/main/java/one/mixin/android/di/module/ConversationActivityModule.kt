@@ -2,7 +2,6 @@ package one.mixin.android.di.module
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
-import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationFragment
 import one.mixin.android.ui.conversation.FriendsFragment
 import one.mixin.android.ui.conversation.GiphyFragment
@@ -33,9 +32,6 @@ abstract class ConversationActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeGroupEditFragment(): GroupEditFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeQrBottomSheetDialogFragment(): QrScanBottomSheetDialogFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeFriendsFragment(): FriendsFragment
