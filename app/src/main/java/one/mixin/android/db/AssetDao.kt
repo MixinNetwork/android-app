@@ -50,7 +50,7 @@ interface AssetDao : BaseDao<Asset> {
     fun assetItemsNotHidden(): LiveData<List<AssetItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE a1.balance > 0 AND (a1.name LIKE :name" + ESCAPE_SUFFIX + " OR a1.symbol LIKE :symbol" + ESCAPE_SUFFIX + ") " +
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.balance > 0 AND (a1.symbol LIKE :symbol" + ESCAPE_SUFFIX + " OR a1.name LIKE :name" + ESCAPE_SUFFIX + ") " +
         "ORDER BY a1.price_usd*a1.balance DESC")
     suspend fun fuzzySearchAsset(name: String, symbol: String): List<AssetItem>
 
