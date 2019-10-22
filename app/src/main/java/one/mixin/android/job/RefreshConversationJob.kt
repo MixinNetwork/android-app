@@ -36,6 +36,7 @@ class RefreshConversationJob(val conversationId: String) :
             removeJob()
             return
         }
+        val localData = participantDao.getRealParticipants(conversationId)
         val call = conversationApi.getConversation(conversationId).execute()
         val response = call.body()
         if (response != null && response.isSuccess) {
@@ -95,17 +96,12 @@ class RefreshConversationJob(val conversationId: String) :
                 if (owner == null) {
                     userIdList.add(ownerId)
                 }
-                val local = participantDao.getRealParticipants(data.conversationId)
-                val remoteIds = participants.map { it.userId }
-                val needRemove = local.filter { !remoteIds.contains(it.userId) }
-                if (needRemove.isNotEmpty()) {
-                    participantDao.deleteList(needRemove)
-                }
-                participantDao.insertList(participants)
+                participantDao.replaceAll(data.conversationId, participants)
+
                 if (userIdList.isNotEmpty()) {
                     jobManager.addJobInBackground(RefreshUserJob(userIdList, conversationId))
                 }
-                if (participants.size != local.size || userIdList.isNotEmpty() || needRemove.isNotEmpty()) {
+                if (participants.size != localData.size || userIdList.isNotEmpty()) {
                     jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
                 }
             }

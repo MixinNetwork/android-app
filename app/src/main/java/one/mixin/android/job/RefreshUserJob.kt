@@ -32,6 +32,9 @@ class RefreshUserJob(
             !existUsers.contains(it)
         }
         if (queryUsers.isEmpty()) {
+            conversationId?.let {
+                jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
+            }
             return@runBlocking
         }
         refreshUsers(queryUsers)

@@ -438,9 +438,7 @@ class DecryptMessage : Injector() {
                 signalProtocol.isExistSenderKey(data.conversationId, accountId!!)) {
                 jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.ADD_PARTICIPANT, systemMessage.participantId))
             }
-        } else if (systemMessage.action == SystemConversationAction.REMOVE.name ||
-            systemMessage.action == SystemConversationAction.EXIT.name) {
-
+        } else if (systemMessage.action == SystemConversationAction.REMOVE.name || systemMessage.action == SystemConversationAction.EXIT.name) {
             if (systemMessage.participantId == accountId) {
                 conversationDao.updateConversationStatusById(data.conversationId, ConversationStatus.QUIT.ordinal)
             } else {
