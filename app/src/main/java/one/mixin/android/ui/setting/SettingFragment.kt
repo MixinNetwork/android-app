@@ -67,17 +67,17 @@ class SettingFragment : Fragment() {
     }
 
     private fun showLanguageAlert() {
-        val choice = arrayOf<String>(Locale.ENGLISH.displayLanguage, Locale.CHINA.displayLanguage)
+        val choice = resources.getStringArray(R.array.language_names)
         val setLanguage = defaultSharedPreferences.getBoolean(PREF_SET_LANGUAGE, false)
         val selectItem = if (setLanguage) {
             val language = defaultSharedPreferences.getString(PREF_LANGUAGE, Locale.ENGLISH.language)
-            if (language == Locale.CHINA.language) {
+            if (language == Locale.SIMPLIFIED_CHINESE.language) {
                 1
             } else {
                 0
             }
         } else {
-            if (Locale.getDefault().language == Locale.CHINA.language) {
+            if (Locale.getDefault().language == Locale.SIMPLIFIED_CHINESE.language) {
                 1
             } else {
                 0
