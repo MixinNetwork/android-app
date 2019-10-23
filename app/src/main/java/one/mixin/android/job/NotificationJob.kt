@@ -18,6 +18,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.mainThread
@@ -295,7 +296,7 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
             if (response != null && response.isSuccess) {
                 response.data?.let { data ->
                     for (user in data) {
-                        userRepo.upsert(user)
+                        runBlocking { userRepo.upsert(user) }
                     }
                 }
             }

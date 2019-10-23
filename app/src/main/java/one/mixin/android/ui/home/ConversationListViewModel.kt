@@ -35,7 +35,9 @@ internal constructor(
             val conversation = Conversation(c.conversationId, c.ownerId, c.category, c.name, c.iconUrl,
                 c.announcement, null, c.payType, createAt, null, null,
                 null, 0, ConversationStatus.START.ordinal, null)
-            messageRepository.insertConversation(conversation, mutableList)
+            viewModelScope.launch {
+                messageRepository.insertConversation(conversation, mutableList)
+            }
 
             val participantRequestList = mutableListOf<ParticipantRequest>()
             mutableList.mapTo(participantRequestList) { ParticipantRequest(it.userId, it.role) }
@@ -45,11 +47,11 @@ internal constructor(
         }
     }
 
-    fun deleteConversation(conversationId: String) {
+    fun deleteConversation(conversationId: String) = viewModelScope.launch {
         messageRepository.deleteConversationById(conversationId)
     }
 
-    fun updateConversationPinTimeById(conversationId: String, pinTime: String?) {
+    fun updateConversationPinTimeById(conversationId: String, pinTime: String?) = viewModelScope.launch {
         messageRepository.updateConversationPinTimeById(conversationId, pinTime)
     }
 

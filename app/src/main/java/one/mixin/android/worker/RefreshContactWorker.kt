@@ -19,7 +19,7 @@ class RefreshContactWorker @AssistedInject constructor(
     private val appDao: AppDao
 ) : BaseWork(context, parameters) {
 
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val response = contactService.friends().execute().body()
         return if (response != null && response.isSuccess && response.data != null) {
             val users = response.data as List<User>

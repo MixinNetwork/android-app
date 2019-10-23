@@ -40,7 +40,7 @@ class RefreshUserJob(
         refreshUsers(queryUsers)
     }
 
-    private fun refreshUsers(userIds: List<String>) {
+    private suspend fun refreshUsers(userIds: List<String>) {
         val response = userService.getUsers(userIds).execute().body()
         if (response != null && response.isSuccess) {
             response.data?.let { data ->

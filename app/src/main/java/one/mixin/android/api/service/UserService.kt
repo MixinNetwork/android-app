@@ -22,10 +22,10 @@ interface UserService {
     fun search(@Path("query") query: String): Observable<MixinResponse<User>>
 
     @POST("relationships")
-    fun relationship(@Body request: RelationshipRequest): Observable<MixinResponse<User>>
+    suspend fun relationship(@Body request: RelationshipRequest): MixinResponse<User>
 
     @POST("reports")
-    fun report(@Body request: RelationshipRequest): Observable<MixinResponse<User>>
+    suspend fun report(@Body request: RelationshipRequest): MixinResponse<User>
 
     @GET("blocking_users")
     fun blockingUsers(): Observable<MixinResponse<List<User>>>

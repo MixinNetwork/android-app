@@ -16,7 +16,7 @@ class RefreshTopAssetsWorker @AssistedInject constructor(
     private val topAssetDao: TopAssetDao
 ) : BaseWork(context, parameters) {
 
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val response = assetService.topAssets().execute().body()
         return if (response != null && response.isSuccess && response.data != null) {
             val assetList = response.data as List<TopAsset>

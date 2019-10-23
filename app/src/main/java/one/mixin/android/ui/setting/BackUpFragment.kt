@@ -14,6 +14,7 @@ import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import java.util.Date
@@ -21,7 +22,6 @@ import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_backup.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
@@ -78,7 +78,7 @@ class BackUpFragment : BaseFragment() {
         }
         delete_bn.setOnClickListener {
             delete_bn.visibility = GONE
-            GlobalScope.launch {
+            lifecycleScope.launch {
                 if (delete(requireContext())) {
                     findBackUp()
                 } else {
@@ -130,31 +130,29 @@ class BackUpFragment : BaseFragment() {
     }
 
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    private fun findBackUp() {
-        GlobalScope.launch {
-            val file = findBackup(requireContext(), coroutineContext)
-            withContext(Dispatchers.Main) {
-                if (!isAdded) return@withContext
-                if (file == null) {
-                    backup_info.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
-                    backup_size.visibility = GONE
-                    delete_bn.visibility = GONE
-                } else {
-                    val time = file.lastModified().run {
-                        val now = Date().time
-                        val createTime = file.lastModified()
-                        DateUtils.getRelativeTimeSpanString(createTime, now, when {
-                            ((now - createTime) < 60000L) -> DateUtils.SECOND_IN_MILLIS
-                            ((now - createTime) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
-                            ((now - createTime) < 86400000L) -> DateUtils.HOUR_IN_MILLIS
-                            else -> DateUtils.DAY_IN_MILLIS
-                        })
-                    }
-                    backup_info.text = getString(R.string.backup_external_storage, time)
-                    backup_size.text = getString(R.string.restore_size, file.length().fileSize())
-                    backup_size.visibility = VISIBLE
-                    delete_bn.visibility = VISIBLE
+    private fun findBackUp() = lifecycleScope.launch(Dispatchers.IO) {
+        val file = findBackup(requireContext(), coroutineContext)
+        withContext(Dispatchers.Main) {
+            if (!isAdded) return@withContext
+            if (file == null) {
+                backup_info.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
+                backup_size.visibility = GONE
+                delete_bn.visibility = GONE
+            } else {
+                val time = file.lastModified().run {
+                    val now = Date().time
+                    val createTime = file.lastModified()
+                    DateUtils.getRelativeTimeSpanString(createTime, now, when {
+                        ((now - createTime) < 60000L) -> DateUtils.SECOND_IN_MILLIS
+                        ((now - createTime) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
+                        ((now - createTime) < 86400000L) -> DateUtils.HOUR_IN_MILLIS
+                        else -> DateUtils.DAY_IN_MILLIS
+                    })
                 }
+                backup_info.text = getString(R.string.backup_external_storage, time)
+                backup_size.text = getString(R.string.restore_size, file.length().fileSize())
+                backup_size.visibility = VISIBLE
+                delete_bn.visibility = VISIBLE
             }
         }
     }

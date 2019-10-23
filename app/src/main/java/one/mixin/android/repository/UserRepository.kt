@@ -1,20 +1,17 @@
 package one.mixin.android.repository
 
 import androidx.lifecycle.LiveData
-import io.reactivex.Observable
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.request.RelationshipRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
 import one.mixin.android.db.updateRelationship
-import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.User
@@ -53,31 +50,20 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     fun findSelf(): LiveData<User?> = userDao.findSelf(Session.getAccountId() ?: "")
 
-    fun relationship(request: RelationshipRequest): Observable<MixinResponse<User>> =
-        userService.relationship(request)
-
-    fun upsert(user: User) {
-        GlobalScope.launch(SINGLE_DB_THREAD) {
-            userDao.insertUpdate(user, appDao)
-        }
+    suspend fun upsert(user: User) = coroutineScope {
+        userDao.insertUpdate(user, appDao)
     }
 
-    fun upsertList(users: List<User>) {
-        GlobalScope.launch(SINGLE_DB_THREAD) {
-            userDao.insertUpdateList(users, appDao)
-        }
+    suspend fun upsertList(users: List<User>) = coroutineScope {
+        userDao.insertUpdateList(users, appDao)
     }
 
-    fun insertApp(app: App) {
-        GlobalScope.launch(SINGLE_DB_THREAD) {
-            appDao.insert(app)
-        }
+    suspend fun insertApp(app: App) = coroutineScope {
+        appDao.insert(app)
     }
 
-    fun upsertBlock(user: User) {
-        GlobalScope.launch(SINGLE_DB_THREAD) {
-            userDao.updateRelationship(user, UserRelationship.BLOCKING.name)
-        }
+    suspend fun upsertBlock(user: User) = withContext(Dispatchers.IO) {
+        userDao.updateRelationship(user, UserRelationship.BLOCKING.name)
     }
 
     fun updatePhone(id: String, phone: String) = userDao.updatePhone(id, phone)

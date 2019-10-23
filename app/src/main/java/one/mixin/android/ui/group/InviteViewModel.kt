@@ -1,10 +1,12 @@
 package one.mixin.android.ui.group
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.service.ConversationService
@@ -24,7 +26,7 @@ class InviteViewModel @Inject internal constructor(
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
 
-    fun updateCodeUrl(conversationId: String, codeUrl: String) {
+    fun updateCodeUrl(conversationId: String, codeUrl: String) = viewModelScope.launch {
         conversationRepository.updateCodeUrl(conversationId, codeUrl)
     }
 

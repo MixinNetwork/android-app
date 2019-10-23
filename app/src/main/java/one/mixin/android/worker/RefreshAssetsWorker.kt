@@ -19,7 +19,7 @@ class RefreshAssetsWorker @AssistedInject constructor(
         const val ASSET_ID = "asset_id"
     }
 
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val assetId = inputData.getString(ASSET_ID)
         if (assetId != null) {
             val response = assetService.asset(assetId).execute().body()

@@ -1,7 +1,10 @@
 package one.mixin.android.ui.setting
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
@@ -28,7 +31,9 @@ internal constructor(
 
     suspend fun showEmergency(pin: String) = accountRepository.showEmergency(pin)
 
-    fun upsertUser(u: User) = userRepository.upsert(u)
+    fun upsertUser(u: User) = viewModelScope.launch(Dispatchers.IO) {
+        userRepository.upsert(u)
+    }
 
     suspend fun deleteEmergency(pin: String) = accountRepository.deleteEmergency(pin)
 }

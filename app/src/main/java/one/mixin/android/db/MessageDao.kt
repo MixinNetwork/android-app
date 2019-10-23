@@ -201,7 +201,7 @@ interface MessageDao : BaseDao<Message> {
     fun deleteMessage(id: String)
 
     @Query("DELETE FROM messages WHERE conversation_id = :conversationId")
-    fun deleteMessageByConversationId(conversationId: String)
+    suspend fun deleteMessageByConversationId(conversationId: String)
 
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)

@@ -1,7 +1,7 @@
 package one.mixin.android.worker
 
 import android.content.Context
-import androidx.work.Worker
+import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import java.net.SocketTimeoutException
 import one.mixin.android.api.ClientErrorException
@@ -13,9 +13,9 @@ import one.mixin.android.api.WebSocketException
 abstract class BaseWork(
     context: Context,
     parameters: WorkerParameters
-) : Worker(context, parameters) {
+) : CoroutineWorker(context, parameters) {
 
-    override fun doWork(): Result {
+    override suspend fun doWork(): Result {
         return try {
             onRun()
         } catch (e: Exception) {
@@ -27,7 +27,7 @@ abstract class BaseWork(
         }
     }
 
-    abstract fun onRun(): Result
+    abstract suspend fun onRun(): Result
 
     private fun shouldRetry(throwable: Throwable): Boolean {
         if (throwable is SocketTimeoutException) {

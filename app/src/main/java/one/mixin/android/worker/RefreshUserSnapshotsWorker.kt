@@ -26,7 +26,7 @@ class RefreshUserSnapshotsWorker @AssistedInject constructor(
         const val USER_ID = "user_id"
     }
 
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val userId = inputData.getString(USER_ID) ?: return Result.failure()
         val response = assetService.mutualSnapshots(userId).execute().body()
         return if (response != null && response.isSuccess && response.data != null) {

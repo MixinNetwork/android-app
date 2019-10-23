@@ -22,6 +22,7 @@ import android.view.WindowManager
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.getSystemService
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
@@ -37,7 +38,6 @@ import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_call.*
 import kotlinx.android.synthetic.main.view_call_button.view.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
@@ -72,9 +72,11 @@ class CallActivity : BaseActivity(), SensorEventListener {
         }
         setContentView(R.layout.activity_call)
         @Suppress("DEPRECATION")
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
-            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+        )
         sensorManager = getSystemService<SensorManager>()
         powerManager = getSystemService<PowerManager>()
         wakeLock = powerManager?.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
@@ -142,7 +144,11 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     override fun onResume() {
-        sensorManager?.registerListener(this, sensorManager?.getDefaultSensor(TYPE_PROXIMITY), SensorManager.SENSOR_DELAY_UI)
+        sensorManager?.registerListener(
+            this,
+            sensorManager?.getDefaultSensor(TYPE_PROXIMITY),
+            SensorManager.SENSOR_DELAY_UI
+        )
         if (callState.connectedTime != null) {
             startTimer()
         }
@@ -193,26 +199,24 @@ class CallActivity : BaseActivity(), SensorEventListener {
         callState.handleHangup(this)
     }
 
-    private fun setBlurBg(url: String) {
-        GlobalScope.launch {
-            if (url.isBlank()) return@launch
-            try {
-                val bitmap = Glide.with(applicationContext)
-                    .asBitmap()
-                    .load(url)
-                    .submit()
-                    .get(10, TimeUnit.SECONDS)
-                    .fastBlur(1f, 10)
-                withContext(Dispatchers.Main) {
-                    bitmap?.let { bitmap ->
-                        blur_iv.setImageBitmap(bitmap)
-                    }
+    private fun setBlurBg(url: String) = lifecycleScope.launch(Dispatchers.IO) {
+        if (url.isBlank()) return@launch
+        try {
+            val bitmap = Glide.with(applicationContext)
+                .asBitmap()
+                .load(url)
+                .submit()
+                .get(10, TimeUnit.SECONDS)
+                .fastBlur(1f, 10)
+            withContext(Dispatchers.Main) {
+                bitmap?.let { bitmap ->
+                    blur_iv.setImageBitmap(bitmap)
                 }
-            } catch (e: TimeoutException) {
-                Timber.e(e)
-            } catch (e: GlideException) {
-                Timber.e(e)
             }
+        } catch (e: TimeoutException) {
+            Timber.e(e)
+        } catch (e: GlideException) {
+            Timber.e(e)
         }
     }
 

@@ -5,21 +5,20 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import androidx.room.InvalidationTracker
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
 import dagger.android.AndroidInjection
-import java.util.concurrent.Executors
 import javax.inject.Inject
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -52,7 +51,7 @@ import one.mixin.android.websocket.createParamSessionMessage
 import one.mixin.android.websocket.createPlainJsonParam
 import org.jetbrains.anko.notificationManager
 
-class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
+class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
 
     companion object {
         val TAG = BlazeMessageService::class.java.simpleName
@@ -94,7 +93,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     private val accountId = Session.getAccountId()
     private val gson = GsonHelper.customGson
 
-    override fun onBind(intent: Intent?): IBinder? {
+    override fun onBind(intent: Intent): IBinder? {
+        super.onBind(intent)
         return null
     }
 
@@ -103,12 +103,13 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         super.onCreate()
         webSocket.setWebSocketObserver(this)
         webSocket.connect()
-        startAckJob()
         startFloodJob()
+        startAckJob()
         networkUtil.setListener(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
         if (intent == null) return START_STICKY
         when (ACTION_TO_BACKGROUND) {
             intent.action -> {
@@ -137,8 +138,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     }
 
     override fun onSocketOpen() {
-        runAckJob()
         runFloodJob()
+        runAckJob()
     }
 
     @SuppressLint("NewApi")
@@ -175,53 +176,35 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         startForeground(FOREGROUND_ID, builder.build())
     }
 
-    private val ackThread by lazy {
-        Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-    }
-
     private fun startAckJob() {
         database.invalidationTracker.addObserver(ackObserver)
     }
 
     private fun stopAckJob() {
         database.invalidationTracker.removeObserver(ackObserver)
-        ackJob?.let {
-            if (it.isActive) {
-                it.cancel()
-            }
-        }
-    }
-
-    private val ackObserver =
-        object : InvalidationTracker.Observer("jobs") {
-            override fun onInvalidated(tables: MutableSet<String>) {
-                runAckJob()
-            }
-        }
-
-    @Synchronized
-    private fun runAckJob() {
-        if (ackJob?.isActive == true || !networkConnected()) {
-            return
-        }
-        ackJob = GlobalScope.launch(ackThread) {
-            ackJobBlock()
-            Session.getExtensionSessionId()?.let {
-                ackSessionJobBlock()
-                syncMessageStatusToExtension(it)
-            }
-        }
     }
 
     private var ackJob: Job? = null
-
-    private suspend fun ackJobBlock() {
-        try {
-            processAck()
-        } catch (e: Exception) {
+    private val ackObserver = object : InvalidationTracker.Observer("jobs") {
+        override fun onInvalidated(tables: MutableSet<String>) {
             runAckJob()
-        } finally {
-            ackJob = null
+        }
+    }
+
+    @Synchronized
+    private fun runAckJob() {
+        try {
+            if (ackJob?.isActive == true || !networkConnected()) {
+                return
+            }
+            ackJob = lifecycleScope.launch(Dispatchers.IO) {
+                processAck()
+                Session.getExtensionSessionId()?.let {
+                    ackSessionJobBlock()
+                    syncMessageStatusToExtension(it)
+                }
+            }
+        } catch (e: Exception) {
         }
     }
 
@@ -229,8 +212,11 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         val ackMessages = jobDao.findAckJobs()
         if (!ackMessages.isNullOrEmpty()) {
             ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-                deliver(createAckListParamBlazeMessage(it)).let {
-                    jobDao.deleteList(ackMessages)
+                try {
+                    deliver(createAckListParamBlazeMessage(it)).let {
+                        jobDao.deleteList(ackMessages)
+                    }
+                } catch (e: Exception) {
                 }
             }
             return processAck()
@@ -248,9 +234,6 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
                             jobDao.deleteList(list)
                         }
                     } catch (e: Exception) {
-                        runAckJob()
-                    } finally {
-                        ackJob = null
                     }
                 }
             }
@@ -261,31 +244,21 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         jobDao.findCreatePlainSessionJobs()?.let { list ->
             if (list.isNotEmpty()) {
                 list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-                    try {
-                        val plainText = gson.toJson(TransferPlainAckData(
-                            action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
-                            messages = it
-                        ))
-                        val encoded = Base64.encodeBytes(plainText.toByteArray())
-                        val bm = createParamSessionMessage(createPlainJsonParam(accountId!!, accountId, encoded, sessionId))
-                        jobManager.addJobInBackground(SendSessionStatusMessageJob(bm))
-                        jobDao.deleteList(list)
-                    } catch (e: Exception) {
-                        runAckJob()
-                    } finally {
-                        ackJob = null
-                    }
+                    val plainText = gson.toJson(TransferPlainAckData(
+                        action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
+                        messages = it
+                    ))
+                    val encoded = Base64.encodeBytes(plainText.toByteArray())
+                    val bm = createParamSessionMessage(createPlainJsonParam(accountId!!, accountId, encoded, sessionId))
+                    jobManager.addJobInBackground(SendSessionStatusMessageJob(bm))
+                    jobDao.deleteList(list)
                 }
             }
         }
     }
 
-    private val floodThread by lazy {
-        Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-    }
-
     private val messageDecrypt by lazy { DecryptMessage() }
-    private val callMessageDecrypt by lazy { DecryptCallMessage(callState) }
+    private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
     private val sessionMessageDecrypt by lazy { DecryptSessionMessage() }
 
     private fun startFloodJob() {
@@ -294,37 +267,28 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
 
     private fun stopFloodJob() {
         database.invalidationTracker.removeObserver(floodObserver)
-        floodJob?.let {
-            if (it.isActive) {
-                it.cancel()
-            }
-        }
     }
 
-    private val floodObserver =
-        object : InvalidationTracker.Observer("flood_messages") {
-            override fun onInvalidated(tables: MutableSet<String>) {
-                runFloodJob()
-            }
+    private var floodJob: Job? = null
+    private val floodObserver = object : InvalidationTracker.Observer("flood_messages") {
+        override fun onInvalidated(tables: MutableSet<String>) {
+            runFloodJob()
         }
+    }
 
     @Synchronized
     private fun runFloodJob() {
         if (floodJob?.isActive == true) {
             return
         }
-        floodJob = GlobalScope.launch(floodThread) {
+        floodJob = lifecycleScope.launch(Dispatchers.IO) {
             try {
                 processFloodMessage()
             } catch (e: Exception) {
                 runFloodJob()
-            } finally {
-                floodJob = null
             }
         }
     }
-
-    private var floodJob: Job? = null
 
     private tailrec suspend fun processFloodMessage(): Boolean {
         val messages = floodMessageDao.findFloodMessages()

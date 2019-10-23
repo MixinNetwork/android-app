@@ -6,10 +6,12 @@ import android.content.pm.PackageManager
 import android.text.format.DateUtils.DAY_IN_MILLIS
 import android.text.format.DateUtils.WEEK_IN_MILLIS
 import androidx.annotation.RequiresPermission
+import androidx.annotation.WorkerThread
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
 import java.io.File
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.BackUp.BACKUP_LAST_TIME
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.MixinApplication
@@ -75,8 +77,9 @@ class BackupJob(private val force: Boolean = false) : BaseJob(Params(if (force) 
         }
     }
 
+    @WorkerThread
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    private fun backup(context: Context) {
+    private fun backup(context: Context) = runBlocking {
         try {
             backupLiveData.start()
             BackupNotification.show()

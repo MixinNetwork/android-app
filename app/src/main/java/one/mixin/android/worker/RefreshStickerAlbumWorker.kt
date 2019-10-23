@@ -25,7 +25,7 @@ class RefreshStickerAlbumWorker @AssistedInject constructor(
     private val stickerRelationshipDao: StickerRelationshipDao
 ) : BaseWork(context, parameters) {
 
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val response = accountService.getStickerAlbums().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val albums = response.data as List<StickerAlbum>

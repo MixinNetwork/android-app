@@ -2,21 +2,22 @@ package one.mixin.android.job
 
 import android.annotation.SuppressLint
 import com.birbit.android.jobqueue.Params
-import io.reactivex.schedulers.Schedulers
-import one.mixin.android.api.MixinResponse
+import kotlinx.coroutines.runBlocking
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipAction.ADD
 import one.mixin.android.api.request.RelationshipAction.BLOCK
 import one.mixin.android.api.request.RelationshipAction.REMOVE
 import one.mixin.android.api.request.RelationshipAction.UNBLOCK
 import one.mixin.android.api.request.RelationshipRequest
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
-import timber.log.Timber
 
-class UpdateRelationshipJob(private val request: RelationshipRequest, private val deleteConversationId: String? = null) :
+class UpdateRelationshipJob(
+    private val request: RelationshipRequest,
+    private val deleteConversationId: String? = null
+) :
     BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).groupBy("relationship").requireNetwork()) {
 
     companion object {
@@ -41,47 +42,33 @@ class UpdateRelationshipJob(private val request: RelationshipRequest, private va
     }
 
     @SuppressLint("CheckResult")
-    override fun onRun() {
+    override fun onRun() = runBlocking {
         if (request.user_id == Session.getAccountId()) {
-            return
+            return@runBlocking
         }
-        if (deleteConversationId != null) {
-            userService.report(request)
-                .subscribeOn(Schedulers.io())
-                .subscribe({ r: MixinResponse<User> ->
-                    if (r.isSuccess) {
-                        r.data?.let { u ->
-                            if (u.app != null) {
-                                u.appId = u.app!!.appId
-                                userRepo.insertApp(u.app!!)
-                            }
-                            userRepo.upsert(u)
-                        }
-                        conversationDao.deleteConversationById(deleteConversationId)
-                    } else {
-                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                    }
-                }, { t: Throwable ->
-                    Timber.e(t)
-                })
-        } else {
-            userService.relationship(request)
-                .subscribeOn(Schedulers.io())
-                .subscribe({ r: MixinResponse<User> ->
-                    if (r.isSuccess) {
-                        r.data?.let { u ->
-                            if (u.app != null) {
-                                u.appId = u.app!!.appId
-                                userRepo.insertApp(u.app!!)
-                            }
-                            userRepo.upsert(u)
-                        }
-                    } else {
-                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                    }
-                }, { t: Throwable ->
-                    Timber.e(t)
-                })
+        handleMixinResponse(
+            invokeNetwork = {
+                if (deleteConversationId != null) {
+                    userService.report(request)
+                } else {
+                    userService.relationship(request)
+                }
+            },
+            successBlock = { r ->
+                r.data?.let { u ->
+                    updateUser(u)
+                }
+                if (deleteConversationId != null) {
+                    conversationDao.deleteConversationById(deleteConversationId)
+                }
+            })
+    }
+
+    private suspend fun updateUser(u: User) {
+        if (u.app != null) {
+            u.appId = u.app!!.appId
+            userRepo.insertApp(u.app!!)
         }
+        userRepo.upsert(u)
     }
 }

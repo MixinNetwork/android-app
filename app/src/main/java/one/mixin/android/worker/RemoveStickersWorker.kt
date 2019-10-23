@@ -19,7 +19,7 @@ class RemoveStickersWorker @AssistedInject constructor(
         const val STICKER_IDS = "sticker_ids"
     }
 
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val stickerIds = inputData.getStringArray(STICKER_IDS)?.toList()
         if (stickerIds.isNullOrEmpty()) return Result.failure()
         stickerRelationshipDao.getPersonalAlbumId()?.let { albumId ->

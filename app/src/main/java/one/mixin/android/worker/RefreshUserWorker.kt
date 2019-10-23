@@ -25,16 +25,14 @@ class RefreshUserWorker @AssistedInject constructor(
         const val CONVERSATION_ID = "conversation_id"
     }
 
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val userIds = inputData.getStringArray(USER_IDS) ?: return Result.failure()
         val conversationId = inputData.getString(CONVERSATION_ID)
         val call = userService.getUsers(userIds.toList()).execute()
         val response = call.body()
         return if (response != null && response.isSuccess) {
             response.data?.let { data ->
-                for (u in data) {
-                    userRepo.upsert(u)
-                }
+                userRepo.upsertList(data)
 
                 conversationId?.let {
                     WorkManager.getInstance(MixinApplication.appContext).enqueueAvatarWorkRequest(

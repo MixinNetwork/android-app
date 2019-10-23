@@ -2,10 +2,12 @@ package one.mixin.android.ui.setting
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import one.mixin.android.api.service.UserService
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
@@ -26,7 +28,9 @@ internal constructor(
                     it.data?.let {
                         for (user in it) {
                             user.relationship = UserRelationship.BLOCKING.name
-                            userRepository.upsertBlock(user)
+                            viewModelScope.launch {
+                                userRepository.upsertBlock(user)
+                            }
                         }
                     }
                 }

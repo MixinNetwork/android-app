@@ -9,14 +9,13 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_device.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -51,15 +50,12 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private val coroutineExceptionHandler = CoroutineExceptionHandler { _, exception ->
-        ErrorHandler.handleError(exception)
-    }
-
     private var disposable: Disposable? = null
 
     private var loggedIn = false
 
-    private val sessionPref = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
+    private val sessionPref =
+        MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
 
     private val sessionListener = SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
         if (key == Constants.Account.PREF_EXTENSION_SESSION_ID) {
@@ -86,19 +82,29 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
         contentView.auth_tv.setOnClickListener {
             if (loggedIn) {
                 loadOuting.show()
-                GlobalScope.launch(coroutineExceptionHandler) {
-                    val sessionId = Session.getExtensionSessionId() ?: return@launch
-                    val response = bottomViewModel.logoutAsync(sessionId).await()
+                lifecycleScope.launch {
+                    val sessionId = Session.getExtensionSessionId()
+                    if (sessionId == null) {
+                        loadOuting.dismiss()
+                        toast(R.string.setting_desktop_logout_failed)
+                        return@launch
+                    }
+                    val response = try {
+                        withContext(Dispatchers.IO) {
+                            bottomViewModel.logoutAsync(sessionId).await()
+                        }
+                    } catch (t: Throwable) {
+                        loadOuting.dismiss()
+                        toast(R.string.setting_desktop_logout_failed)
+                        ErrorHandler.handleError(t)
+                        return@launch
+                    }
                     if (response.isSuccess) {
-                        withContext(Dispatchers.Main) {
-                            loadOuting.dismiss()
-                            updateUI(false)
-                        }
+                        loadOuting.dismiss()
+                        updateUI(false)
                     } else {
-                        withContext(Dispatchers.Main) {
-                            loadOuting.dismiss()
-                            toast(R.string.setting_desktop_logout_failed)
-                        }
+                        loadOuting.dismiss()
+                        toast(R.string.setting_desktop_logout_failed)
                     }
                 }
             } else {
@@ -164,8 +170,10 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val loadOuting: Dialog by lazy {
-        indeterminateProgressDialog(message = R.string.pb_dialog_message,
-            title = R.string.setting_desktop_logout).apply {
+        indeterminateProgressDialog(
+            message = R.string.pb_dialog_message,
+            title = R.string.setting_desktop_logout
+        ).apply {
             setCancelable(false)
         }
     }

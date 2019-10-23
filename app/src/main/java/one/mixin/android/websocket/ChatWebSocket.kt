@@ -285,11 +285,10 @@ class ChatWebSocket(
         }
     }
 
+    private var webSocketObserver: WebSocketObserver? = null
     fun setWebSocketObserver(webSocketObserver: WebSocketObserver) {
         this.webSocketObserver = webSocketObserver
     }
-
-    private var webSocketObserver: WebSocketObserver? = null
 
     interface WebSocketObserver {
         fun onSocketClose()

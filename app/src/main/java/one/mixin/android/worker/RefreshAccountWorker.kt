@@ -26,11 +26,12 @@ class RefreshAccountWorker @AssistedInject constructor(
     private val userRepo: UserRepository
 ) : BaseWork(context, parameters) {
 
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val response = accountService.getMe().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val account = response.data
-            userRepo.upsert(account!!.toUser())
+            val u = account!!.toUser()
+            userRepo.upsert(u)
             Session.storeAccount(account)
             if (account.code_id.isNotEmpty()) {
                 val p = Point()

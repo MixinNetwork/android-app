@@ -9,6 +9,7 @@ import android.text.format.DateUtils
 import android.view.View
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import java.io.File
@@ -16,7 +17,6 @@ import java.util.Date
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_restore.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -70,15 +70,13 @@ class RestoreActivity : BaseActivity() {
     }
 
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    private fun findBackup() {
-        GlobalScope.launch {
-            val file = one.mixin.android.util.backup.findBackup(this@RestoreActivity, coroutineContext)
-            withContext(Dispatchers.Main) {
-                if (file == null) {
-                    showErrorAlert(Result.NOT_FOUND)
-                } else {
-                    initUI(file)
-                }
+    private fun findBackup() = lifecycleScope.launch(Dispatchers.IO) {
+        val file = one.mixin.android.util.backup.findBackup(this@RestoreActivity, coroutineContext)
+        withContext(Dispatchers.Main) {
+            if (file == null) {
+                showErrorAlert(Result.NOT_FOUND)
+            } else {
+                initUI(file)
             }
         }
     }
@@ -134,16 +132,7 @@ class RestoreActivity : BaseActivity() {
                     } else {
                         showProgress()
                         BackupNotification.show(false)
-                        restore(this) { result ->
-                            BackupNotification.cancel()
-                            if (result == Result.SUCCESS) {
-                                InitializeActivity.showLoading(this)
-                                defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
-                                finish()
-                            } else {
-                                hideProgress()
-                            }
-                        }
+                        restore()
                     }
                 }, {
                     BackupNotification.cancel()
@@ -155,6 +144,23 @@ class RestoreActivity : BaseActivity() {
             InitializeActivity.showLoading(this)
             defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
             finish()
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    private fun restore() = lifecycleScope.launch {
+        restore(this@RestoreActivity) { result ->
+            BackupNotification.cancel()
+            if (result == Result.SUCCESS) {
+                InitializeActivity.showLoading(this@RestoreActivity)
+                defaultSharedPreferences.putBoolean(
+                    Constants.Account.PREF_RESTORE,
+                    false
+                )
+                finish()
+            } else {
+                hideProgress()
+            }
         }
     }
 

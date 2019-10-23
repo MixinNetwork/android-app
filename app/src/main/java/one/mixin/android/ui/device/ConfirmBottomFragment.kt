@@ -8,11 +8,12 @@ import android.net.UrlQuerySanitizer
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
+import androidx.core.view.isInvisible
+import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_confirm.view.*
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
@@ -45,10 +46,6 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
     @Inject
     lateinit var provisioningService: ProvisioningService
 
-    private val coroutineExceptionHandler = CoroutineExceptionHandler { _, exception ->
-        ErrorHandler.handleError(exception)
-    }
-
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
@@ -56,37 +53,46 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         (dialog as BottomSheet).setCustomView(contentView)
     }
 
-    private fun login() {
+    private fun login() = lifecycleScope.launch {
         val url = arguments!!.getString(AvatarActivity.ARGS_URL)!!
-        GlobalScope.launch(coroutineExceptionHandler) {
-            val response = provisioningService.provisionCodeAsync().await()
-            if (response.isSuccess) {
-                val success = encryptKey(requireContext(), url, response.data!!.code)
-                withContext(Dispatchers.Main) {
-                    confirmCallback?.invoke()
-                    if (success) {
-                        context?.toast(R.string.setting_desktop_sigin_success)
-                    } else {
-                        context?.toast(R.string.setting_desktop_sigin_failed)
-                    }
-                    dismiss()
-                }
-            } else {
-                withContext(Dispatchers.Main) {
-                    context?.toast(R.string.setting_desktop_sigin_failed)
-                    dismiss()
-                }
+        val response = try {
+            withContext(Dispatchers.IO) {
+                provisioningService.provisionCodeAsync().await()
             }
+        } catch (t: Throwable) {
+            context?.toast(R.string.setting_desktop_sigin_failed)
+            refreshUI(false)
+            ErrorHandler.handleError(t)
+            return@launch
+        }
+        if (response.isSuccess) {
+            val success = try {
+                withContext(Dispatchers.IO) {
+                    encryptKey(requireContext(), url, response.data!!.code)
+                }
+            } catch (t: Throwable) {
+                context?.toast(R.string.setting_desktop_sigin_failed)
+                refreshUI(false)
+                ErrorHandler.handleError(t)
+                return@launch
+            }
+            confirmCallback?.invoke()
+            if (success) {
+                context?.toast(R.string.setting_desktop_sigin_success)
+            } else {
+                context?.toast(R.string.setting_desktop_sigin_failed)
+            }
+            dismiss()
+        } else {
+            context?.toast(R.string.setting_desktop_sigin_failed)
+            dismiss()
         }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         contentView.confirm.setOnClickListener {
-            contentView.progress.visibility = View.VISIBLE
-            contentView.confirm.visibility = View.INVISIBLE
-            contentView.cancel.visibility = View.INVISIBLE
-            contentView.close.visibility = View.INVISIBLE
+            refreshUI(true)
             isCancelable = false
             login()
         }
@@ -96,6 +102,14 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         contentView.cancel.setOnClickListener {
             dismiss()
         }
+    }
+
+    private fun refreshUI(showPb: Boolean) {
+        if (!isAdded) return
+        contentView.progress.isVisible = showPb
+        contentView.confirm.isInvisible = showPb
+        contentView.cancel.isInvisible = showPb
+        contentView.close.isInvisible = showPb
     }
 
     private suspend fun encryptKey(
@@ -119,17 +133,26 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         val publicKey = Curve.decodePoint(Base64.decode(publicKeyEncoded), 0)
         val identityKeyPair = IdentityKeyUtil.getIdentityKeyPair(ctx)
         val cipher = ProvisioningCipher(publicKey)
-        val message = ProvisionMessage(identityKeyPair.publicKey.serialize(), identityKeyPair.privateKey.serialize(), account.userId, account.session_id, verificationCode)
+        val message = ProvisionMessage(
+            identityKeyPair.publicKey.serialize(),
+            identityKeyPair.privateKey.serialize(),
+            account.userId,
+            account.session_id,
+            verificationCode
+        )
         val cipherText = cipher.encrypt(message)
         val encoded = Base64.encodeBytes(cipherText)
-        val response = provisioningService.updateProvisioningAsync(ephemeralId, ProvisioningRequest(encoded)).await()
+        val response =
+            provisioningService.updateProvisioningAsync(ephemeralId, ProvisioningRequest(encoded))
+                .await()
         return response.isSuccess
     }
 
     private val sanitizer = UnescapeIgnorePlusUrlQuerySanitizer().apply {
         allowUnregisteredParamaters = true
         unregisteredParameterValueSanitizer = UrlQuerySanitizer.IllegalCharacterValueSanitizer(
-            UrlQuerySanitizer.IllegalCharacterValueSanitizer.ALL_OK)
+            UrlQuerySanitizer.IllegalCharacterValueSanitizer.ALL_OK
+        )
     }
 
     private var confirmCallback: (() -> Unit)? = null

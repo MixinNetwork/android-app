@@ -26,7 +26,7 @@ class RefreshSnapshotsWorker @AssistedInject constructor(
         const val ASSET_ID = "asset_id"
     }
 
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val assetId = inputData.getString(ASSET_ID)
         val response = if (assetId == null) {
             assetService.allSnapshots().execute().body()
