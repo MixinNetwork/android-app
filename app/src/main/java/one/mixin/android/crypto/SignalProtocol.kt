@@ -123,7 +123,6 @@ class SignalProtocol(ctx: Context) {
         dataType: Int,
         cipherText: ByteArray,
         category: String,
-        sessionId: String? = null,
         deviceId: Int = SignalProtocol.DEFAULT_DEVICE_ID,
         callback: DecryptionCallback
     ) {

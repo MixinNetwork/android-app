@@ -486,10 +486,9 @@ class DecryptMessage : Injector() {
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
         val deviceId = data.sessionId.getDeviceId(data.platform)
-
         val (keyType, cipherText, resendMessageId) = SignalProtocol.decodeMessageData(data.data)
         try {
-            signalProtocol.decrypt(data.conversationId, data.userId, keyType, cipherText, data.category, data.sessionId, deviceId, DecryptionCallback {
+            signalProtocol.decrypt(data.conversationId, data.userId, keyType, cipherText, data.category, deviceId, DecryptionCallback {
                 if (data.category != MessageCategory.SIGNAL_KEY.name) {
                     val plaintext = String(it)
                     if (resendMessageId != null) {
