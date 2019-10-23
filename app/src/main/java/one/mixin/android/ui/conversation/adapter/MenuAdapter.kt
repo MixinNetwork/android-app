@@ -44,7 +44,7 @@ class MenuAdapter(
                 addAll(buildInMenus)
             }
             for (app in appList) {
-                menus.add(Menu(MenuType.App, null, null, app.icon_url, app.homeUri, app.name))
+                menus.add(Menu(MenuType.App, null, null, app))
             }
 
             notifyDataSetChanged()
@@ -72,9 +72,9 @@ class MenuAdapter(
             }
         } else {
             view.app_icon.visibility = VISIBLE
-            view.app_icon.loadCircleImage(menu.iconUrl)
+            view.app_icon.loadCircleImage(menu.app?.icon_url)
             view.menu_icon.visibility = GONE
-            view.menu_title.text = menu.name
+            view.menu_title.text = menu.app?.name
         }
         view.setOnClickListener {
             onMenuListener?.onMenuClick(menu)
