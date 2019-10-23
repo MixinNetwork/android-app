@@ -21,7 +21,7 @@ buildscript {
         ext.glideVersion = '4.10.0'
         ext.webpdecoderVesion = '1.6.4.10.0'
         ext.timberVersion = '4.7.1'
-        ext.okhttpVersion = '3.13.1'
+        ext.okhttpVersion = '4.2.2'
         ext.rxJavaVersion = '2.2.13'
         ext.rxAndroidVersion = '2.1.1'
         ext.rxbindingVersion = '3.0.0'
