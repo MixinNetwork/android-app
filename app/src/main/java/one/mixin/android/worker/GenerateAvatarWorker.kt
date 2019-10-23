@@ -37,7 +37,7 @@ class GenerateAvatarWorker @AssistedInject constructor(
     private lateinit var texts: ArrayMap<Int, String>
     private val size = 256
 
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val groupId = inputData.getString(GROUP_ID) ?: return Result.failure()
         val triple = checkGroupAvatar(groupId)
         if (triple.first) {

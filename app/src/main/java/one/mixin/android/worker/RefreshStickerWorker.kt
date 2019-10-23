@@ -22,7 +22,7 @@ class RefreshStickerWorker @AssistedInject constructor(
         const val STICKER_ID = "sticker_id"
     }
 
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val stickerId = inputData.getString(STICKER_ID) ?: return Result.failure()
         val response = accountService.getStickerById(stickerId).execute().body()
         return if (response != null && response.isSuccess && response.data != null) {

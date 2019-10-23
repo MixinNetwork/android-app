@@ -15,7 +15,7 @@ class DownloadAvatarWorker @AssistedInject constructor(
     @Assisted parameters: WorkerParameters
 ) : AvatarWorker(context, parameters) {
 
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val groupId = inputData.getString(GROUP_ID) ?: return Result.failure()
         val triple = checkGroupAvatar(groupId)
         if (triple.first) {

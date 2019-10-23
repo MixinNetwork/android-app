@@ -19,7 +19,7 @@ class RefreshAddressWorker @AssistedInject constructor(
         const val ASSET_ID = "asset_id"
     }
 
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val assetId = inputData.getString(ASSET_ID) ?: return Result.failure()
         val response = assetService.addresses(assetId).execute().body()
         return if (response != null && response.isSuccess && response.data != null) {

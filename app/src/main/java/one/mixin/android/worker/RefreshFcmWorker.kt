@@ -22,7 +22,7 @@ class RefreshFcmWorker @AssistedInject constructor(
     }
 
     @SuppressLint("CheckResult")
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val token = inputData.getString(TOKEN)
         if (token != null) {
             accountService.updateSession(SessionRequest(notificationToken = token))

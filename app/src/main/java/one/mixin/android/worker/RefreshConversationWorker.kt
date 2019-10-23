@@ -44,7 +44,7 @@ class RefreshConversationWorker @AssistedInject constructor(
         const val PREFERENCES_CONVERSATION = "preferences_conversation"
     }
 
-    override fun onRun(): Result {
+    override suspend fun onRun(): Result {
         val conversationId = inputData.getString(CONVERSATION_ID) ?: return Result.failure()
         val call = conversationApi.getConversation(conversationId).execute()
         val response = call.body()
