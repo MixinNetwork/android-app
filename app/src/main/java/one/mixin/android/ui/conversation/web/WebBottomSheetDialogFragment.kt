@@ -257,21 +257,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (BuildConfig.DEBUG) {
             WebView.setWebContentsDebuggingEnabled(true)
         }
-        if (appId == null) {
-            lifecycleScope.launch {
-                try {
-                    val host = Uri.parse(url).host
-                    if (host != null) {
-                        val apps = bottomViewModel.searchAppByHost(host)
-                        app = apps.firstOrNull()
-                    }
-                } finally {
-                    initView()
-                }
-            }
-        } else {
-            initView()
-        }
+        initView()
     }
 
     private fun initView() {
