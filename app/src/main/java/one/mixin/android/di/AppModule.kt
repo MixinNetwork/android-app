@@ -126,7 +126,7 @@ internal class AppModule {
                 }
 
                 if (!response.isSuccessful) {
-                    val code = response.code
+                    val code = response.code()
                     if (code in 500..599) {
                         throw ServerErrorException(code)
                     }

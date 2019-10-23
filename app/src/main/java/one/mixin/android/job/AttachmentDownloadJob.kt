@@ -9,8 +9,7 @@ import okhttp3.Call
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okio.buffer
-import okio.sink
+import okio.Okio
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
@@ -61,7 +60,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
     override fun cancel() {
         isCancel = true
         call?.let {
-            if (!it.isCanceled()) {
+            if (!it.isCanceled) {
                 it.cancel()
             }
         }
@@ -116,8 +115,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
             .readTimeout(30, TimeUnit.SECONDS)
             .addNetworkInterceptor { chain: Interceptor.Chain ->
                 val originalResponse = chain.proceed(chain.request())
-                originalResponse.newBuilder().body(ProgressResponseBody(
-                    originalResponse.body,
+                originalResponse.newBuilder().body(ProgressResponseBody(originalResponse.body(),
                     ProgressListener { bytesRead, contentLength, done ->
                         if (!done) {
                             RxBus.publish(ProgressEvent(message.id,
@@ -138,12 +136,12 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
             return false
         }
-        if (response.code == 404) {
+        if (response.code() == 404) {
             messageDao.updateMediaStatus(MediaStatus.EXPIRED.name, message.id)
             return true
-        } else if (response.isSuccessful && !isCancel && response.body != null) {
-            val sink = destination.sink().buffer()
-            sink.writeAll(response.body!!.source())
+        } else if (response.isSuccessful && !isCancel && response.body() != null) {
+            val sink = Okio.buffer(Okio.sink(destination))
+            sink.writeAll(response.body()!!.source())
             sink.close()
             if (message.category.endsWith("_IMAGE")) {
                 val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_IMAGE.name) {

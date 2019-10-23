@@ -124,9 +124,9 @@ class Session {
             val expire = System.currentTimeMillis() / 1000 + 1800
             val iat = System.currentTimeMillis() / 1000
 
-            var content = "${request.method}${request.url.cutOut()}"
-            if (request.body != null && request.body!!.contentLength() > 0) {
-                content += request.body!!.bodyToString()
+            var content = "${request.method()}${request.url().cutOut()}"
+            if (request.body() != null && request.body()!!.contentLength() > 0) {
+                content += request.body()!!.bodyToString()
             }
             return Jwts.builder()
                 .setClaims(ConcurrentHashMap<String, Any>().apply {
