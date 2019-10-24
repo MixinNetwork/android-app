@@ -1812,9 +1812,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }
                     }
                     MenuType.App -> {
-                        menu.homeUri?.let {
+                        menu.app?.let {
                             chat_control.chat_et.hideKeyboard()
-                            openWebBottomSheet(it, conversationId, parentFragmentManager)
+                            openWebBottomSheet(
+                                it.homeUri,
+                                conversationId,
+                                it.appId,
+                                it.name,
+                                it.icon_url,
+                                it.capabilities,
+                                parentFragmentManager
+                            )
                         }
                     }
                 }

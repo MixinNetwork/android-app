@@ -70,4 +70,9 @@
         <item>S$</item>
         <item>RM</item>
     </string-array>
+
+    <string-array name="language_names">
+        <item>English</item>
+        <item>简体中文</item>
+    </string-array>
 </resources>

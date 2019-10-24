@@ -147,10 +147,14 @@ inline fun openUrl(
 fun openWebBottomSheet(
     url: String,
     conversationId: String?,
+    appId: String? = null,
+    appName: String? = null,
+    appAvatar: String? = null,
+    appCapabilities: ArrayList<String>? = null,
     supportFragmentManager: FragmentManager,
     onDismiss: (() -> Unit)? = null
 ) {
-    val dialog = WebBottomSheetDialogFragment.newInstance(url, conversationId)
+    val dialog = WebBottomSheetDialogFragment.newInstance(url, conversationId, appId, appName, appAvatar, appCapabilities)
     onDismiss?.let {
         dialog.onDismissListener = object : MixinBottomSheetDialogFragment.OnDismissListener {
             override fun onDismiss() {
@@ -166,4 +170,6 @@ fun openUrlWithExtraWeb(
     conversationId: String?,
     supportFragmentManager: FragmentManager,
     onDismiss: (() -> Unit)? = null
-) = openUrl(url, supportFragmentManager) { openWebBottomSheet(url, conversationId, supportFragmentManager, onDismiss) }
+) = openUrl(url, supportFragmentManager) {
+    openWebBottomSheet(url, conversationId, supportFragmentManager = supportFragmentManager, onDismiss = onDismiss)
+}
