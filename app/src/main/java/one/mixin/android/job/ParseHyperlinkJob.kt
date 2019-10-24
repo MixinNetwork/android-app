@@ -13,23 +13,22 @@ class ParseHyperlinkJob(private val hyperlink: String, private val messageId: St
 
     override fun onRun() {
         if (hyperlinkDao.findHyperlinkByLink(hyperlink) == null) {
-            val doc = if (hyperlink.startsWith("https://", true) || hyperlink.startsWith("http://", true)) {
-                Jsoup.connect(hyperlink).ignoreContentType(true).get()
-            } else {
-                Jsoup.connect("http://$hyperlink").ignoreContentType(true).get()
-            }
-            var description: String? = null
             try {
+                val doc = if (hyperlink.startsWith("https://", true) || hyperlink.startsWith("http://", true)) {
+                    Jsoup.connect(hyperlink).ignoreContentType(true).get()
+                } else {
+                    Jsoup.connect("http://$hyperlink").ignoreContentType(true).get()
+                }
+                var description: String? = null
                 description = doc.select("meta[name=description]")[0]
                     .attr("content")
+                if (!doc.title().isNullOrBlank() || !description.isNullOrBlank()) {
+                    hyperlinkDao.insert(Hyperlink(hyperlink, doc.title(), "", description ?: "", null))
+                }
+                messageDao.updateHyperlink(hyperlink, messageId)
             } catch (e: Exception) {
             }
-
-            if (!doc.title().isNullOrBlank() || !description.isNullOrBlank()) {
-                hyperlinkDao.insert(Hyperlink(hyperlink, doc.title(), "", description ?: "", null))
-            }
         }
-        messageDao.updateHyperlink(hyperlink, messageId)
     }
 
     override fun getRetryLimit(): Int {
