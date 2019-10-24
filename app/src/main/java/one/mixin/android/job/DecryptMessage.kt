@@ -408,10 +408,13 @@ class DecryptMessage : Injector() {
     }
 
     private fun processSystemSessionMessage(data: BlazeMessageData, systemSession: SystemSessionMessagePayload) {
-        if (systemSession.action == SystemSessionMessageAction.ADD.name) {
-            sessionDao.insert(one.mixin.android.vo.Session(systemSession.sessionId, systemSession.userId, "Desktop"))
+        if (systemSession.action == SystemSessionMessageAction.PROVISION.name) {
+            Session.storeExtensionSessionId(systemSession.sessionId)
+            signalProtocol.deleteSession(systemSession.userId)
+        } else if (systemSession.action == SystemSessionMessageAction.ADD.name) {
         } else if (systemSession.action == SystemSessionMessageAction.DESTROY.name) {
-            sessionDao.delete(one.mixin.android.vo.Session(systemSession.sessionId, systemSession.userId, ""))
+            Session.deleteExtensionSessionId()
+            signalProtocol.deleteSession(data.userId)
         }
     }
 

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 25,
-    "identityHash": "feb3949ca74d57ded305979497b65992",
+    "identityHash": "db773ff6722bffea1e2bd0fedf0aaa05",
     "entities": [
       {
         "tableName": "users",
@@ -1395,39 +1395,6 @@
         "foreignKeys": []
       },
       {
-        "tableName": "sessions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`session_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `platform` TEXT, PRIMARY KEY(`session_id`, `user_id`))",
-        "fields": [
-          {
-            "fieldPath": "sessionId",
-            "columnName": "session_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "userId",
-            "columnName": "user_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "platform",
-            "columnName": "platform",
-            "affinity": "TEXT",
-            "notNull": false
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "session_id",
-            "user_id"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
         "tableName": "jobs",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`job_id` TEXT NOT NULL, `action` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_id` INTEGER, `priority` INTEGER NOT NULL, `user_id` TEXT, `blaze_message` TEXT, `conversation_id` TEXT, `resend_message_id` TEXT, `run_count` INTEGER NOT NULL, PRIMARY KEY(`job_id`))",
         "fields": [
@@ -1505,7 +1472,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'feb3949ca74d57ded305979497b65992')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'db773ff6722bffea1e2bd0fedf0aaa05')"
     ]
   }
 }
