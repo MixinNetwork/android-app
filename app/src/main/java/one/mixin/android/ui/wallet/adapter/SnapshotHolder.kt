@@ -47,6 +47,10 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 itemView.name.setText(R.string.filters_rebate)
                 itemView.avatar.setNet()
             }
+            snapshot.type == SnapshotType.raw.name -> {
+                itemView.name.setText(R.string.filters_raw)
+                itemView.avatar.setNet()
+            }
             else -> {
                 itemView.name.text = snapshot.type
                 itemView.avatar.setNet()

@@ -52,4 +52,4 @@ data class Snapshot(
 )
 
 @Suppress("EnumEntryName")
-enum class SnapshotType { transfer, deposit, withdrawal, fee, rebate, pending }
+enum class SnapshotType { transfer, deposit, withdrawal, fee, rebate, raw, pending }

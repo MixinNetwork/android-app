@@ -332,6 +332,7 @@
     <string name="wallet_withdrawals_empty">暂无提现记录</string>
     <string name="wallet_fees_empty">暂无手续费记录</string>
     <string name="wallet_rebates_empty">暂无退款记录</string>
+    <string name="wallet_raw_empty">暂无其他记录</string>
     <string name="wallet_add_asset">添加资产</string>
     <string name="wallet_add_asset_symbol">+ 添加资产</string>
     <string name="wallet_already_hidden">已隐藏 %1$s</string>
@@ -647,6 +648,7 @@
     <string name="filters_withdrawal">提现</string>
     <string name="filters_fee">手续费</string>
     <string name="filters_rebate">退款</string>
+    <string name="filters_raw">其他</string>
     <string name="filters_by">筛选</string>
     <string name="sort_by">排序</string>
     <!--Pending-->

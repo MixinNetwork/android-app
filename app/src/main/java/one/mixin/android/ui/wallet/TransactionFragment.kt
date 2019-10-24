@@ -145,6 +145,7 @@ class TransactionFragment : BaseFragment() {
             SnapshotType.withdrawal.name -> R.string.withdrawal
             SnapshotType.fee.name -> R.string.fee
             SnapshotType.rebate.name -> R.string.rebate
+            SnapshotType.raw.name -> R.string.filters_raw
             // SnapshotType.pending can NOT access this page
             else -> R.string.not_any
         }
