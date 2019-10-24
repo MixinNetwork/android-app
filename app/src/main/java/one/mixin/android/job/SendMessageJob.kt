@@ -163,34 +163,10 @@ open class SendMessageJob(
             return
         }
         if (!signalProtocol.isExistSenderKey(message.conversationId, message.userId)) {
-            val conversation = conversationDao.getConversation(message.conversationId) ?: return
-            if (conversation.isGroup()) {
-                syncConversation(conversation)
-            } else {
-                checkConversationExist(conversation)
-            }
+            checkConversation(message.conversationId)
         }
         checkAndSendSenderKey(message.conversationId)
         deliver(encryptNormalMessage())
-    }
-
-    private fun syncConversation(conversation: Conversation) {
-        val response = conversationApi.getConversation(conversation.conversationId).execute().body()
-        if (response != null && response.isSuccess) {
-            response.data?.let { data ->
-                val remote = data.participants.map {
-                    Participant(conversation.conversationId, it.userId, it.role, it.createdAt!!)
-                }
-                participantDao.replaceAll(conversation.conversationId, remote)
-
-                val sessionParticipants = data.participantSessions?.map {
-                    SessionParticipant(conversation.conversationId, it.userId, it.sessionId)
-                }
-                sessionParticipants?.let {
-                    sessionParticipantDao.replaceAll(conversation.conversationId, it)
-                }
-            }
-        }
     }
 
     private fun encryptNormalMessage(): BlazeMessage {

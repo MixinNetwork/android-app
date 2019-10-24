@@ -30,6 +30,7 @@ import one.mixin.android.vo.SentSenderKey
 import one.mixin.android.vo.SentSenderKeyStatus
 import one.mixin.android.vo.SessionParticipant
 import one.mixin.android.vo.createAckJob
+import one.mixin.android.vo.isGroup
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
@@ -334,27 +335,53 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         deliverNoThrow(bm)
     }
 
+    protected fun checkConversation(conversationId: String) {
+        val conversation = conversationDao.getConversation(conversationId) ?: return
+        if (conversation.isGroup()) {
+            syncConversation(conversation)
+        } else {
+            checkConversationExist(conversation)
+        }
+    }
+
     protected fun checkConversationExist(conversation: Conversation) {
         if (conversation.status != ConversationStatus.SUCCESS.ordinal) {
-            val participantRequest = arrayListOf(ParticipantRequest(conversation.ownerId!!, ""))
-            val request = ConversationRequest(
-                conversationId = conversation.conversationId,
-                category = conversation.category, participants = participantRequest
+            val request = ConversationRequest(conversationId = conversation.conversationId,
+                category = conversation.category, participants = arrayListOf(ParticipantRequest(conversation.ownerId!!, ""))
             )
             val response = conversationApi.create(request).execute().body()
             if (response != null && response.isSuccess && response.data != null && !isCancel) {
                 conversationDao.updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
 
-                val sessions = response.data!!.participantSessions?.let { resp ->
+                val sessionParticipants = response.data!!.participantSessions?.let { resp ->
                     resp.map {
                         SessionParticipant(conversation.conversationId, it.userId, it.sessionId)
                     }
                 }
-                sessions?.let {
-                    sessionParticipantDao.insertList(sessions)
+                sessionParticipants?.let {
+                    sessionParticipantDao.replaceAll(conversation.conversationId, it)
                 }
             } else {
                 throw Exception("Create Conversation Exception")
+            }
+        }
+    }
+
+    private fun syncConversation(conversation: Conversation) {
+        val response = conversationApi.getConversation(conversation.conversationId).execute().body()
+        if (response != null && response.isSuccess) {
+            response.data?.let { data ->
+                val remote = data.participants.map {
+                    Participant(conversation.conversationId, it.userId, it.role, it.createdAt!!)
+                }
+                participantDao.replaceAll(conversation.conversationId, remote)
+
+                val sessionParticipants = data.participantSessions?.map {
+                    SessionParticipant(conversation.conversationId, it.userId, it.sessionId)
+                }
+                sessionParticipants?.let {
+                    sessionParticipantDao.replaceAll(conversation.conversationId, it)
+                }
             }
         }
     }
