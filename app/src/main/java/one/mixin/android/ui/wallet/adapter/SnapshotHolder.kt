@@ -48,7 +48,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 itemView.avatar.setNet()
             }
             else -> {
-                itemView.name.text = snapshot.receiver!!.formatPublicKey()
+                itemView.name.text = snapshot.receiver?.formatPublicKey()
                 itemView.avatar.setNet()
             }
         }
