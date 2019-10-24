@@ -338,6 +338,11 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 headerView.group_info_member_title.setText(R.string.filters_rebate)
                 headerView.wallet_transactions_empty.setText(R.string.wallet_rebates_empty)
             }
+            R.id.filters_radio_raw -> {
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+                headerView.group_info_member_title.setText(R.string.filters_raw)
+                headerView.wallet_transactions_empty.setText(R.string.wallet_raw_empty)
+            }
         }
         filtersSheet.dismiss()
     }

@@ -58,25 +58,23 @@ class DepositPublicKeyFragment : DepositFragment() {
         qr_fl.setOnClickListener {
             DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(parentFragmentManager, DepositQrBottomFragment.TAG)
         }
-        if (asset.destination != null) {
-            if (context!!.isQRCodeFileExists(asset.destination)) {
-                qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath(asset.destination).absolutePath))
-            } else {
-                qr.post {
-                    Observable.create<Bitmap> { e ->
-                        val b = asset.destination.generateQRCode(qr.width)
-                        if (b != null) {
-                            b.saveQRCode(context!!, asset.destination)
-                            e.onNext(b)
-                        }
-                    }.subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .autoDispose(scopeProvider)
-                        .subscribe({ r ->
-                            qr.setImageBitmap(r)
-                        }, {
-                        })
-                }
+        if (context!!.isQRCodeFileExists(asset.destination)) {
+            qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath(asset.destination).absolutePath))
+        } else {
+            qr.post {
+                Observable.create<Bitmap> { e ->
+                    val b = asset.destination.generateQRCode(qr.width)
+                    if (b != null) {
+                        b.saveQRCode(context!!, asset.destination)
+                        e.onNext(b)
+                    }
+                }.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDispose(scopeProvider)
+                    .subscribe({ r ->
+                        qr.setImageBitmap(r)
+                    }, {
+                    })
             }
         }
         showTip()

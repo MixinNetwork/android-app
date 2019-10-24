@@ -344,6 +344,7 @@
     <string name="wallet_withdrawals_empty">No withdrawals</string>
     <string name="wallet_fees_empty">No fees</string>
     <string name="wallet_rebates_empty">No rebates</string>
+    <string name="wallet_raw_empty">No raws</string>
     <string name="wallet_add_asset">Add assets</string>
     <string name="wallet_add_asset_symbol">+ Add assets</string>
     <string name="wallet_already_hidden">%1$s has been hidden</string>
@@ -662,6 +663,7 @@
     <string name="filters_withdrawal">Withdrawal</string>
     <string name="filters_fee">Fee</string>
     <string name="filters_rebate">Rebate</string>
+    <string name="filters_raw">Raw</string>
     <string name="filters_by">FILTER BY</string>
     <string name="sort_by">SORT BY</string>
     <!--Pending-->

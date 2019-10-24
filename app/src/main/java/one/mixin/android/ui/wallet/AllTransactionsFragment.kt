@@ -130,6 +130,9 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             R.id.filters_radio_rebate -> {
                 bindLiveData(walletViewModel.allSnapshots(SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
             }
+            R.id.filters_radio_raw -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+            }
         }
         filtersSheet.dismiss()
     }
