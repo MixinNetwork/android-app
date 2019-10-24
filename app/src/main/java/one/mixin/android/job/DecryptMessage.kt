@@ -225,7 +225,7 @@ class DecryptMessage : Injector() {
             val json = Base64.decode(data.data)
             val plainData = gson.fromJson(String(json), TransferPlainData::class.java)
             if (plainData.action == PlainDataAction.RESEND_KEY.name) {
-                if (signalProtocol.containsSession(data.userId)) {
+                if (signalProtocol.containsSession(data.userId, data.sessionId)) {
                     jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.RESEND_KEY))
                 }
             } else if (plainData.action == PlainDataAction.RESEND_MESSAGES.name) {

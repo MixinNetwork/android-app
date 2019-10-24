@@ -360,7 +360,6 @@ fun String.getBotNumber(): String? {
     return null
 }
 
-
 inline fun String?.getDeviceId(platform: String? = null): Int {
     return if (this == null || this.isEmpty() || platform == "Android" || platform == "iOS") {
         1

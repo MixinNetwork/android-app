@@ -44,7 +44,6 @@ import one.mixin.android.websocket.createConsumeSessionSignalKeys
 import one.mixin.android.websocket.createConsumeSignalKeysParam
 import one.mixin.android.websocket.createSignalKeyMessage
 import one.mixin.android.websocket.createSignalKeyMessageParam
-import one.mixin.android.websocket.createSignalKeyParam
 import timber.log.Timber
 
 abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
@@ -141,33 +140,29 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         }
     }
 
-    protected fun sendSenderKey(conversationId: String, recipientId: String, sessionId: String? = null): Boolean {
-        if (!signalProtocol.containsSession(recipientId)) {
+    protected fun sendSenderKey(conversationId: String, recipientId: String, sessionId: String? = null, isForce: Boolean = false): Boolean {
+        if (!signalProtocol.containsSession(recipientId, sessionId) || isForce) {
             val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))))
             val data = signalKeysChannel(blazeMessage) ?: return false
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
-                signalProtocol.processSession(recipientId, preKeyBundle)
+                signalProtocol.processSession(recipientId, preKeyBundle, sessionId.getDeviceId())
             } else {
+                // TODO
                 sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId, SentSenderKeyStatus.UNKNOWN.ordinal))
                 Log.e(TAG, "No any signal key from server" + SentSenderKeyStatus.UNKNOWN.ordinal)
                 return false
             }
         }
 
-        val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, recipientId)
+        val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, recipientId, sessionId)
         if (err) return false
-        val param = createSignalKeyParam(conversationId, recipientId, cipherText!!)
-        val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, param)
+        val signalKeyMessages = createBlazeSignalKeyMessage(recipientId, cipherText!!, senderKeyId, sessionId)
+        val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, arrayListOf(signalKeyMessages)))
         val result = deliverNoThrow(bm)
         if (result) {
-            sentSenderKeyDao.insert(
-                SentSenderKey(
-                    conversationId, recipientId,
-                    SentSenderKeyStatus.SENT.ordinal, senderKeyId
-                )
-            )
+            sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId, SentSenderKeyStatus.SENT.ordinal, senderKeyId))
         }
         return result
     }
@@ -251,35 +246,6 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             }
         }
         return true
-    }
-
-    protected fun redirectSendSenderKey(conversationId: String, recipientId: String): Boolean {
-        val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId))))
-        val data = signalKeysChannel(blazeMessage) ?: return false
-        val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
-        if (keys.isNotEmpty() && keys.count() > 0) {
-            val preKeyBundle = createPreKeyBundle(keys[0])
-            signalProtocol.processSession(recipientId, preKeyBundle)
-        } else {
-            sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId, SentSenderKeyStatus.UNKNOWN.ordinal))
-            Log.e(TAG, "No any signal key from server" + SentSenderKeyStatus.UNKNOWN.ordinal)
-            return false
-        }
-
-        val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, recipientId)
-        if (err) return false
-        val param = createSignalKeyParam(conversationId, recipientId, cipherText!!)
-        val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, param)
-        val result = deliverNoThrow(bm)
-        if (result) {
-            sentSenderKeyDao.insert(
-                SentSenderKey(
-                    conversationId, recipientId,
-                    SentSenderKeyStatus.SENT.ordinal, senderKeyId
-                )
-            )
-        }
-        return result
     }
 
     protected tailrec fun deliverNoThrow(blazeMessage: BlazeMessage): Boolean {

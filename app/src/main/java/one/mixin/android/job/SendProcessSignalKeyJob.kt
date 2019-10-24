@@ -20,7 +20,7 @@ class SendProcessSignalKeyJob(
 
     override fun onRun() {
         if (action == ProcessSignalKeyAction.RESEND_KEY) {
-            val result = redirectSendSenderKey(data.conversationId, data.userId)
+            val result = sendSenderKey(data.conversationId, data.userId, data.sessionId, true)
             if (!result) {
                 sendNoKeyMessage(data.conversationId, data.userId)
             }

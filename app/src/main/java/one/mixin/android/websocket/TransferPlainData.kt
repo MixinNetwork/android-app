@@ -13,7 +13,9 @@ data class TransferPlainData(
     @SerializedName("message_id")
     val messageId: String? = null,
     @SerializedName("status")
-    val status: String? = null
+    val status: String? = null,
+    @SerializedName("session_id")
+    val session_id: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 7L

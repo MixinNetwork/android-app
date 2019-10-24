@@ -20,5 +20,4 @@ interface SessionParticipantDao : BaseDao<SessionParticipant> {
     @Transaction
     @Query("SELECT p.* FROM session_participants p WHERE p.conversation_id = :conversationId AND p.session_id != :sessionId AND p.sent_to_server is NULL ")
     fun getNotSendSessionParticipants(conversationId: String, sessionId: String): List<SessionParticipant>?
-
 }

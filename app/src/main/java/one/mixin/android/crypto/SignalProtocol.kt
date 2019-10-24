@@ -199,7 +199,7 @@ class SignalProtocol(ctx: Context) {
     }
 
     fun encryptSessionMessage(message: Message, recipientId: String, resendMessageId: String? = null, sessionId: String? = null): BlazeMessage {
-        val cipher = encryptSession(message.content!!.toByteArray(), recipientId)
+        val cipher = encryptSession(message.content!!.toByteArray(), recipientId, sessionId)
         val data = encodeMessageData(ComposeMessageData(cipher.type, cipher.serialize(), resendMessageId))
         val blazeParam = BlazeMessageParam(
             message.conversationId,
@@ -207,7 +207,8 @@ class SignalProtocol(ctx: Context) {
             message.id,
             message.category,
             data,
-            quote_message_id = message.quoteMessageId)
+            quote_message_id = message.quoteMessageId,
+            session_id = sessionId)
         return createParamBlazeMessage(blazeParam)
     }
 
