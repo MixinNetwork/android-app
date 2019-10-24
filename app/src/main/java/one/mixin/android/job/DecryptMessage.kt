@@ -37,6 +37,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ResendMessage
 import one.mixin.android.vo.SYSTEM_USER
+import one.mixin.android.vo.SessionParticipant
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.createAckJob
@@ -412,6 +413,13 @@ class DecryptMessage : Injector() {
             Session.storeExtensionSessionId(systemSession.sessionId)
             signalProtocol.deleteSession(systemSession.userId)
         } else if (systemSession.action == SystemSessionMessageAction.ADD.name) {
+            val conversations = participantDao.getConversationsByUserId(systemSession.userId)
+            val sp = conversations?.map {
+                SessionParticipant(it, systemSession.userId, systemSession.sessionId)
+            }
+            sp?.let {
+                sessionParticipantDao.insertList(sp)
+            }
         } else if (systemSession.action == SystemSessionMessageAction.DESTROY.name) {
             Session.deleteExtensionSessionId()
             signalProtocol.deleteSession(data.userId)
