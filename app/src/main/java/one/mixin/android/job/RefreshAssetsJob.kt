@@ -32,8 +32,8 @@ class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PR
                 val list = response.data as List<Asset>
                 assetRepo.insertList(list)
             }
+            refreshFiats()
         }
-        refreshFiats()
         removeJob()
     }
 
