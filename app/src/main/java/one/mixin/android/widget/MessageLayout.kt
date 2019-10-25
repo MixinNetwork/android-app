@@ -5,14 +5,15 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import kotlin.math.max
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import org.jetbrains.anko.dip
+import kotlin.math.max
 
 class MessageLayout : ViewGroup {
     private val offset: Int
     private var lastLineWidth: Float = 0.toFloat()
+    private var isRtl: Boolean = false
     private var maxWidth: Int = 0
     private var contentPadding: Int = 0
 
@@ -57,7 +58,10 @@ class MessageLayout : ViewGroup {
         val layoutHeight: Int
         val layoutWidth: Int
 
-        if (lastLineWidth + offset + secondView.measuredWidth <= firstView.measuredWidth) {
+        if(isRtl) {
+            layoutWidth = firstView.measuredWidth + contentPadding * 2
+            layoutHeight = firstView.measuredHeight + secondView.measuredHeight + contentPadding * 2
+        }else if (lastLineWidth + offset + secondView.measuredWidth <= firstView.measuredWidth) {
             layoutWidth = firstView.measuredWidth + contentPadding * 2
             layoutHeight = firstView.measuredHeight + contentPadding * 2
         } else if (secondView.measuredWidth > firstView.measuredWidth + contentPadding * 2) {
@@ -127,7 +131,10 @@ class MessageLayout : ViewGroup {
     private fun initTextParams(textView: TextView) {
         val layout = textView.layout
         val lastLineIndex = textView.lineCount - 1
-        lastLineWidth = layout.getLineRight(lastLineIndex) - layout.getLineLeft(lastLineIndex)
+        val lastLineRight = layout.getLineRight(lastLineIndex)
+        val lastLineLeft = layout.getLineLeft(lastLineIndex)
+        lastLineWidth = lastLineRight - lastLineLeft
+        isRtl = lastLineLeft > offset
     }
 
     override fun generateDefaultLayoutParams(): MarginLayoutParams {
