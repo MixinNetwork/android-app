@@ -24,7 +24,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getEpochNano
 import one.mixin.android.extension.loadImage
@@ -172,10 +171,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         jobManager.addJobInBackground(RefreshAssetsJob(asset.assetId))
     }
 
-    fun updateData(list: List<Snapshot>?) {
-        runInTransaction {
-            list?.let { data ->
-                walletViewModel.insertPendingDeposit(data)
+    private fun updateData(list: List<Snapshot>?) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            list?.let { it ->
+                walletViewModel.insertPendingDeposit(it)
             }
         }
     }
