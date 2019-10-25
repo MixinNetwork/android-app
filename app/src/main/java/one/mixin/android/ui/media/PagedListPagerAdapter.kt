@@ -4,14 +4,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.paging.PagedList
 import androidx.viewpager.widget.PagerAdapter
-import java.util.SortedSet
-import java.util.TreeSet
+import java.util.TreeMap
 
 abstract class PagedListPagerAdapter<T> : PagerAdapter() {
-    private var pagedList: PagedList<T>? = null
+    var pagedList: PagedList<T>? = null
+        private set
     private var callback = PagerCallback()
 
-    private var visiblePositions: SortedSet<Int> = TreeSet()
+    var visiblePositions = TreeMap<Int, T?>()
+        private set
 
     override fun isViewFromObject(view: View, obj: Any) = view == obj
 
@@ -28,7 +29,7 @@ abstract class PagedListPagerAdapter<T> : PagerAdapter() {
     var submitAction: (() -> Unit)? = null
 
     final override fun instantiateItem(container: ViewGroup, position: Int): Any {
-        visiblePositions.add(position)
+        visiblePositions[position] = getItem(position)
         pagedList?.loadAround(position)
         return createItem(container, position)
     }
@@ -74,7 +75,7 @@ abstract class PagedListPagerAdapter<T> : PagerAdapter() {
 
         private fun isInterleave(start: Int, end: Int) =
             try {
-                start <= visiblePositions.last() && visiblePositions.first() <= end
+                start <= visiblePositions.lastKey() && visiblePositions.firstKey() <= end
             } catch (e: Exception) {
                 false
             }

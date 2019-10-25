@@ -218,6 +218,16 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 conversationRepository.indexMediaMessages(conversationId, messageId, excludeLive)
             conversationRepository.getMediaMessages(conversationId, initialIndex, excludeLive)
                 .observe(this@DragMediaActivity, Observer { list ->
+                    var needReload = false
+                    pagerAdapter.visiblePositions.forEach { entry ->
+                        val oldMessageItem = entry.value
+                        val newMessageItem = list[entry.key]
+                        if (oldMessageItem?.messageId != newMessageItem?.messageId ||
+                            oldMessageItem?.mediaStatus != newMessageItem?.mediaStatus) {
+                            needReload = true
+                            return@forEach
+                        }
+                    }
                     pagerAdapter.submitAction = {
                         if (firstLoad) {
                             firstLoad = false
@@ -226,10 +236,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                             play(initialIndex)
                         }
                     }
-                    if (view_pager.adapter == null) {
-                        view_pager.adapter = pagerAdapter
+                    if (firstLoad || needReload) {
+                        if (view_pager.adapter == null) {
+                            view_pager.adapter = pagerAdapter
+                        }
+                        pagerAdapter.submitList(list)
                     }
-                    pagerAdapter.submitList(list)
                 })
         }
 
