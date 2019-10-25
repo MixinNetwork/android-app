@@ -5,7 +5,6 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_transaction_header.view.*
 import kotlinx.android.synthetic.main.item_wallet_transactions.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.timeAgoDay
 import one.mixin.android.ui.common.recyclerview.NormalHolder

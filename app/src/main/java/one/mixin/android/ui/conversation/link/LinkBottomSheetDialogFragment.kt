@@ -285,7 +285,6 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                 val tag = uri.getQueryParameter("tag").run {
                     Uri.decode(this)
                 }
-
                 if (assetId != null && assetId.isUUID() && !destination.isNullOrEmpty() && !label.isNullOrEmpty()) {
                     linkViewModel.viewModelScope.launch {
                         var asset = linkViewModel.findAssetItemById(assetId)

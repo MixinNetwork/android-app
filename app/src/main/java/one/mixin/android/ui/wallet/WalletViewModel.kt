@@ -114,16 +114,14 @@ internal constructor(
     fun getAssetItem(assetId: String) = Flowable.just(assetId).map { assetRepository.simpleAssetItem(it) }
         .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
 
-    fun pendingDeposits(asset: String, destination: String, tag: String? = null) = assetRepository.pendingDeposits(asset, destination, tag)
-        .observeOn(Schedulers.io()).subscribeOn(Schedulers.io())!!
+    suspend fun pendingDeposits(asset: String, destination: String, tag: String? = null) =
+        assetRepository.pendingDeposits(asset, destination, tag)
 
     fun insertPendingDeposit(snapshot: List<Snapshot>) = assetRepository.insertPendingDeposit(snapshot)
 
-    fun clearPendingDepositsByAssetId(assetId: String) = assetRepository.clearPendingDepositsByAssetId(assetId)
+    suspend fun clearPendingDepositsByAssetId(assetId: String) = assetRepository.clearPendingDepositsByAssetId(assetId)
 
-    fun getAsset(assetId: String): Flowable<MixinResponse<Asset>?> = Flowable.just(assetId).map {
-        assetRepository.asset(assetId).execute().body()
-    }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
+    suspend fun getAsset(assetId: String) = assetRepository.asset(assetId)
 
     fun refreshHotAssets() {
         jobManager.addJobInBackground(RefreshTopAssetsJob())
