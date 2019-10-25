@@ -128,9 +128,9 @@ internal constructor(
         excludeLive: Boolean
     ): LiveData<PagedList<MessageItem>> {
         val dataSource = if (excludeLive) {
-            readMessageDao.getMediaMessagesExcludeLive(conversationId)
+            messageDao.getMediaMessagesExcludeLive(conversationId)
         } else {
-            readMessageDao.getMediaMessages(conversationId)
+            messageDao.getMediaMessages(conversationId)
         }
         val config = PagedList.Config.Builder()
             .setPrefetchDistance(PAGE_SIZE)
