@@ -24,7 +24,7 @@ interface AssetService {
     fun assets(): Call<MixinResponse<List<Asset>>>
 
     @GET("assets/{id}")
-    fun asset(@Path("id") id: String): Call<MixinResponse<Asset>>
+    suspend fun asset(@Path("id") id: String): MixinResponse<Asset>
 
     @GET("assets/{id}")
     suspend fun getAsset(@Path("id") id: String): MixinResponse<Asset>
@@ -61,11 +61,11 @@ interface AssetService {
     fun mutualSnapshots(@Path("id") id: String): Call<MixinResponse<List<Snapshot>>>
 
     @GET("external/transactions")
-    fun pendingDeposits(
+    suspend fun pendingDeposits(
         @Query("asset") asset: String,
         @Query("destination") key: String? = null,
         @Query("tag") tag: String? = null
-    ): Observable<MixinResponse<List<PendingDeposit>>>
+    ): MixinResponse<List<PendingDeposit>>
 
     @GET("network/assets/search/{query}")
     suspend fun queryAssets(@Path("query") query: String): MixinResponse<List<Asset>>

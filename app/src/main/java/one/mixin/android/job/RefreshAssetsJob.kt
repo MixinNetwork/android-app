@@ -18,10 +18,10 @@ class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PR
         jobManager.saveJob(this)
     }
 
-    override fun onRun() {
+    override fun onRun() = runBlocking {
         if (assetId != null) {
-            val response = assetService.asset(assetId).execute().body()
-            if (response != null && response.isSuccess && response.data != null) {
+            val response = assetService.asset(assetId)
+            if (response.isSuccess && response.data != null) {
                 response.data?.let {
                     assetRepo.insert(it)
                 }

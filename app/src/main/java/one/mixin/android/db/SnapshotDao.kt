@@ -48,7 +48,7 @@ interface SnapshotDao : BaseDao<Snapshot> {
     fun snapshotsByUserId(opponentId: String): LiveData<List<SnapshotItem>>
 
     @Query("DELETE FROM snapshots WHERE type = 'pending' AND asset_id = :assetId")
-    fun clearPendingDepositsByAssetId(assetId: String)
+    suspend fun clearPendingDepositsByAssetId(assetId: String)
 
     @Query("DELETE FROM snapshots WHERE type = 'pending' AND transaction_hash = :transactionHash")
     fun deletePendingSnapshotByHash(transactionHash: String)
