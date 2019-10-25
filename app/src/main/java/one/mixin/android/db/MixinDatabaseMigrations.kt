@@ -105,7 +105,7 @@ class MixinDatabaseMigrations private constructor() {
 
         val MIGRATION_24_25: Migration = object : Migration(24, 25) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS session_participants (`conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `sent_to_server` INTEGER, `created_at` TEXT, PRIMARY KEY(`conversation_id`, `user_id`, `session_id`))")
+                database.execSQL("CREATE TABLE IF NOT EXISTS participant_session (`conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `sent_to_server` INTEGER, `created_at` TEXT, PRIMARY KEY(`conversation_id`, `user_id`, `session_id`))")
             }
         }
     }

@@ -35,9 +35,9 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.ResendMessage
 import one.mixin.android.vo.SYSTEM_USER
-import one.mixin.android.vo.SessionParticipant
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.createAckJob
@@ -226,7 +226,7 @@ class DecryptMessage : Injector() {
             val json = Base64.decode(data.data)
             val plainData = gson.fromJson(String(json), TransferPlainData::class.java)
             if (plainData.action == PlainDataAction.RESEND_KEY.name) {
-                if (signalProtocol.containsSession(data.userId, data.sessionId)) {
+                if (signalProtocol.containsSession(data.userId, data.sessionId.getDeviceId())) {
                     jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.RESEND_KEY))
                 }
             } else if (plainData.action == PlainDataAction.RESEND_MESSAGES.name) {
@@ -246,7 +246,7 @@ class DecryptMessage : Injector() {
                     }
                 }
             } else if (plainData.action == PlainDataAction.NO_KEY.name) {
-                ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, data.sessionId.getDeviceId(data.platform)).toString())
+                ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, data.sessionId.getDeviceId()).toString())
             }
 
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
@@ -414,11 +414,11 @@ class DecryptMessage : Injector() {
             signalProtocol.deleteSession(systemSession.userId)
         } else if (systemSession.action == SystemSessionMessageAction.ADD.name) {
             val conversations = participantDao.getConversationsByUserId(systemSession.userId)
-            val sp = conversations?.map {
-                SessionParticipant(it, systemSession.userId, systemSession.sessionId)
+            val ps = conversations?.map {
+                ParticipantSession(it, systemSession.userId, systemSession.sessionId)
             }
-            sp?.let {
-                sessionParticipantDao.insertList(sp)
+            ps?.let {
+                participantSessionDao.insertList(ps)
             }
         } else if (systemSession.action == SystemSessionMessageAction.DESTROY.name) {
             Session.deleteExtensionSessionId()
@@ -496,10 +496,10 @@ class DecryptMessage : Injector() {
         } else {
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
-        val deviceId = data.sessionId.getDeviceId(data.platform)
+        val deviceId = data.sessionId.getDeviceId()
         val (keyType, cipherText, resendMessageId) = SignalProtocol.decodeMessageData(data.data)
         try {
-            signalProtocol.decrypt(data.conversationId, data.userId, keyType, cipherText, data.category, deviceId, DecryptionCallback {
+            signalProtocol.decrypt(data.conversationId, data.userId, keyType, cipherText, data.category, data.sessionId, DecryptionCallback {
                 if (data.category != MessageCategory.SIGNAL_KEY.name) {
                     val plaintext = String(it)
                     if (resendMessageId != null) {

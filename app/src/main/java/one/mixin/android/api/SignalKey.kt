@@ -2,7 +2,7 @@ package one.mixin.android.api
 
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.crypto.Base64
-import one.mixin.android.crypto.SignalProtocol
+import one.mixin.android.extension.getDeviceId
 import org.whispersystems.libsignal.IdentityKey
 import org.whispersystems.libsignal.ecc.Curve
 import org.whispersystems.libsignal.state.PreKeyBundle
@@ -20,7 +20,6 @@ data class SignalKey(
     val userId: String?,
     @SerializedName("session_id")
     val sessionId: String?
-
 ) {
     fun getPreKeyPublic() = Curve.decodePoint(Base64.decode(preKey.pubKey), 0)!!
 
@@ -34,7 +33,7 @@ data class SignalKey(
 fun createPreKeyBundle(key: SignalKey): PreKeyBundle {
     return PreKeyBundle(
         key.registrationId,
-        SignalProtocol.DEFAULT_DEVICE_ID,
+        key.sessionId.getDeviceId(),
         key.preKey.keyId,
         key.getPreKeyPublic(),
         key.signedPreKey.keyId,

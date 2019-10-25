@@ -92,7 +92,8 @@ class SendSessionMessageJob(
         if (!result) {
             return
         }
-        val encrypted = signalProtocol.encryptTransferSessionMessage(message, sessionId, accountId)
-        deliver(encrypted)
+        // TODO
+        // val encrypted = signalProtocol.encryptTransferSessionMessage(message, sessionId, accountId)
+        // deliver(encrypted)
     }
 }

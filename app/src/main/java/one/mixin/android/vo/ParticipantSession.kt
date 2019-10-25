@@ -4,9 +4,9 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import one.mixin.android.extension.nowInUtc
 
-@Entity(tableName = "session_participants",
+@Entity(tableName = "participant_session",
     primaryKeys = ["conversation_id", "user_id", "session_id"])
-data class SessionParticipant(
+data class ParticipantSession (
     @ColumnInfo(name = "conversation_id")
     val conversationId: String,
     @ColumnInfo(name = "user_id")
@@ -19,11 +19,3 @@ data class SessionParticipant(
     val createdAt: String? = nowInUtc()
 )
 
-data class SessionParticipantPart(
-    @ColumnInfo(name = "conversation_id")
-    val conversationId: String,
-    @ColumnInfo(name = "user_id")
-    val userId: String,
-    @ColumnInfo(name = "session_id")
-    val sessionId: String
-)

@@ -360,8 +360,8 @@ fun String.getBotNumber(): String? {
     return null
 }
 
-inline fun String?.getDeviceId(platform: String? = null): Int {
-    return if (this == null || this.isEmpty() || platform == "Android" || platform == "iOS") {
+inline fun String?.getDeviceId(): Int {
+    return if (this == null || this.isEmpty()) {
         1
     } else {
         UUID.fromString(this).hashCode()

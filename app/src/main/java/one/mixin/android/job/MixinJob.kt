@@ -26,9 +26,9 @@ import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SentSenderKey
 import one.mixin.android.vo.SentSenderKeyStatus
-import one.mixin.android.vo.SessionParticipant
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.isGroup
 import one.mixin.android.websocket.BlazeAckMessage
@@ -73,16 +73,16 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         }
     }
 
-    private fun checkSessionSenderKey(conversationId: String) {
-        val participants = sessionParticipantDao.getNotSendSessionParticipants(conversationId, Session.getSessionId()!!) ?: return
+    protected fun checkSessionSenderKey(conversationId: String) {
+        val participants = participantSessionDao.getNotSendSessionParticipants(conversationId, Session.getSessionId()!!) ?: return
         if (participants.isEmpty()) return
         val requestSignalKeyUsers = arrayListOf<BlazeMessageParamSession>()
         val signalKeyMessages = arrayListOf<BlazeSignalKeyMessage>()
         for (p in participants) {
-            if (!signalProtocol.containsSession(p.userId, p.sessionId)) {
+            if (!signalProtocol.containsSession(p.userId, p.sessionId.getDeviceId())) {
                 requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId, p.sessionId))
             } else {
-                val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, p.userId, p.sessionId)
+                val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, p.userId, p.sessionId.getDeviceId())
                 if (err) {
                     requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId, p.sessionId))
                 } else {
@@ -101,7 +101,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                     for (key in signalKeys) {
                         val preKeyBundle = createPreKeyBundle(key)
                         signalProtocol.processSession(key.userId!!, preKeyBundle)
-                        val (cipherText, senderKeyId, _) = signalProtocol.encryptSenderKey(conversationId, key.userId, key.sessionId)
+                        val (cipherText, senderKeyId, _) = signalProtocol.encryptSenderKey(conversationId, key.userId, preKeyBundle.deviceId)
                         signalKeyMessages.add(createBlazeSignalKeyMessage(key.userId, cipherText!!, senderKeyId, key.sessionId))
                         keys.add(BlazeMessageParamSession(key.userId, key.sessionId))
                     }
@@ -112,9 +112,9 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 val noKeyList = requestSignalKeyUsers.filter { !keys.contains(it) }
                 if (noKeyList.isNotEmpty()) {
                     val sentSenderKeys = noKeyList.map {
-                        SessionParticipant(conversationId, it.user_id, it.session_id!!, SentSenderKeyStatus.UNKNOWN.ordinal)
+                        ParticipantSession(conversationId, it.user_id, it.session_id!!, SentSenderKeyStatus.UNKNOWN.ordinal)
                     }
-                    sessionParticipantDao.updateList(sentSenderKeys)
+                    participantSessionDao.updateList(sentSenderKeys)
                 }
             }
         }
@@ -125,14 +125,13 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         val result = deliverNoThrow(bm)
         if (result) {
             val sentSenderKeys = signalKeyMessages.map {
-                SessionParticipant(conversationId, it.recipient_id, it.sessionId!!, SentSenderKeyStatus.SENT.ordinal)
+                ParticipantSession(conversationId, it.recipient_id, it.sessionId!!, SentSenderKeyStatus.SENT.ordinal)
             }
-            sessionParticipantDao.updateList(sentSenderKeys)
+            participantSessionDao.updateList(sentSenderKeys)
         }
     }
 
     protected fun checkAndSendSenderKey(conversationId: String) {
-        checkSessionSenderKey(conversationId)
         val participants = participantDao.getNotSentKeyParticipants(conversationId, Session.getAccountId()!!) ?: return
         if (participants.size == 1) {
             sendSenderKey(conversationId, participants[0].userId)
@@ -142,15 +141,15 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun sendSenderKey(conversationId: String, recipientId: String, sessionId: String? = null, isForce: Boolean = false): Boolean {
-        if (!signalProtocol.containsSession(recipientId, sessionId) || isForce) {
+        if (!signalProtocol.containsSession(recipientId, sessionId.getDeviceId()) || isForce) {
             val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))))
             val data = signalKeysChannel(blazeMessage) ?: return false
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
+            var deviceId = 1
             if (keys.isNotEmpty() && keys.count() > 0) {
-                // TODO device Id
-                val key = keys[0]
-                val preKeyBundle = createPreKeyBundle(key)
-                signalProtocol.processSession(recipientId, preKeyBundle, key.sessionId.getDeviceId())
+                val preKeyBundle = createPreKeyBundle(keys[0])
+                signalProtocol.processSession(recipientId, preKeyBundle)
+                deviceId = preKeyBundle.deviceId
             } else {
                 // TODO
                 sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId, SentSenderKeyStatus.UNKNOWN.ordinal))
@@ -159,7 +158,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             }
         }
 
-        val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, recipientId, sessionId)
+        val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, recipientId, sessionId.getDeviceId())
         if (err) return false
         val signalKeyMessages = createBlazeSignalKeyMessage(recipientId, cipherText!!, senderKeyId, sessionId)
         val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, arrayListOf(signalKeyMessages)))
@@ -196,7 +195,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                     for (key in signalKeys) {
                         val preKeyBundle = createPreKeyBundle(key)
                         signalProtocol.processSession(key.userId!!, preKeyBundle)
-                        val (cipherText, senderKeyId, _) = signalProtocol.encryptSenderKey(conversationId, key.userId)
+                        val (cipherText, senderKeyId, _) = signalProtocol.encryptSenderKey(conversationId, key.userId, key.sessionId.getDeviceId())
                         signalKeyMessages.add(createBlazeSignalKeyMessage(key.userId, cipherText!!, senderKeyId))
                         keys.add(key.userId)
                     }
@@ -230,7 +229,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun checkSignalSession(recipientId: String, sessionId: String? = null): Boolean {
-        if (!signalProtocol.containsSession(recipientId, sessionId)) {
+        if (!signalProtocol.containsSession(recipientId, sessionId.getDeviceId())) {
             val blazeMessage = createConsumeSessionSignalKeys(
                 createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId)))
             )
@@ -239,7 +238,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
-                signalProtocol.processSession(recipientId, preKeyBundle, sessionId.getDeviceId())
+                signalProtocol.processSession(recipientId, preKeyBundle)
             } else {
                 return false
             }
@@ -353,11 +352,11 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
 
                 val sessionParticipants = response.data!!.participantSessions?.let { resp ->
                     resp.map {
-                        SessionParticipant(conversation.conversationId, it.userId, it.sessionId)
+                        ParticipantSession(conversation.conversationId, it.userId, it.sessionId)
                     }
                 }
                 sessionParticipants?.let {
-                    sessionParticipantDao.replaceAll(conversation.conversationId, it)
+                    participantSessionDao.replaceAll(conversation.conversationId, it)
                 }
             } else {
                 throw Exception("Create Conversation Exception")
@@ -375,10 +374,10 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 participantDao.replaceAll(conversation.conversationId, remote)
 
                 val sessionParticipants = data.participantSessions?.map {
-                    SessionParticipant(conversation.conversationId, it.userId, it.sessionId)
+                    ParticipantSession(conversation.conversationId, it.userId, it.sessionId)
                 }
                 sessionParticipants?.let {
-                    sessionParticipantDao.replaceAll(conversation.conversationId, it)
+                    participantSessionDao.replaceAll(conversation.conversationId, it)
                 }
             }
         }

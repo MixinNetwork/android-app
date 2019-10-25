@@ -27,7 +27,12 @@ data class BlazeMessageParam(
     }
 }
 
-data class BlazeMessageParamSession(val user_id: String, val session_id: String? = null)
+data class BlazeMessageParamSession(
+    val user_id: String,
+    val session_id: String? = null,
+    @Transient
+    val platform: String? = null
+)
 
 fun createAckParam(message_id: String, status: String) =
     BlazeMessageParam(null, null, message_id, null, null, status)

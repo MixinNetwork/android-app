@@ -72,7 +72,7 @@ class DecryptSessionMessage : Injector() {
     private fun processSignalMessage(data: BlazeMessageData) {
         val (keyType, cipherText, _) = SignalProtocol.decodeMessageData(data.data)
         try {
-            signalProtocol.decrypt(data.conversationId, data.userId, keyType, cipherText, data.category, data.sessionId.getDeviceId(data.platform), DecryptionCallback {
+            signalProtocol.decrypt(data.conversationId, data.userId, keyType, cipherText, data.category, data.sessionId, DecryptionCallback {
                 if (!data.primitiveId.isNullOrBlank()) {
                     data.userId = data.primitiveId
                 }

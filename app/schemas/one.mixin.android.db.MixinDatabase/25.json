@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 25,
-    "identityHash": "db773ff6722bffea1e2bd0fedf0aaa05",
+    "identityHash": "ed438aa13171c4f7eac153440c70ffcc",
     "entities": [
       {
         "tableName": "users",
@@ -536,7 +536,7 @@
         ]
       },
       {
-        "tableName": "session_participants",
+        "tableName": "participant_session",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `sent_to_server` INTEGER, `created_at` TEXT, PRIMARY KEY(`conversation_id`, `user_id`, `session_id`))",
         "fields": [
           {
@@ -1472,7 +1472,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'db773ff6722bffea1e2bd0fedf0aaa05')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ed438aa13171c4f7eac153440c70ffcc')"
     ]
   }
 }

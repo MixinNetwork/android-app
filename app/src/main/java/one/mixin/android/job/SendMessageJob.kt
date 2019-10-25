@@ -11,13 +11,9 @@ import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
-import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.Participant
-import one.mixin.android.vo.SessionParticipant
 import one.mixin.android.vo.isCall
-import one.mixin.android.vo.isGroup
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isText
@@ -165,7 +161,7 @@ open class SendMessageJob(
         if (!signalProtocol.isExistSenderKey(message.conversationId, message.userId)) {
             checkConversation(message.conversationId)
         }
-        checkAndSendSenderKey(message.conversationId)
+        checkSessionSenderKey(message.conversationId)
         deliver(encryptNormalMessage())
     }
 
