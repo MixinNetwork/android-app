@@ -65,6 +65,7 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
             }
         }
         recycler_view.layoutManager = lm
+        recycler_view.isVerticalScrollBarEnabled = false
         recycler_view.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, false))
         recycler_view.addItemDecoration(StickyRecyclerHeadersDecorationForGrid(adapter, COLUMN))
         recycler_view.adapter = adapter
