@@ -6,14 +6,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_hidden_assets.*
 import kotlinx.android.synthetic.main.view_title.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.navigate
 import one.mixin.android.ui.common.BaseFragment
@@ -21,7 +25,6 @@ import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.vo.AssetItem
-import org.jetbrains.anko.doAsync
 
 class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
@@ -35,9 +38,8 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val walletViewModel: WalletViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(WalletViewModel::class.java)
-    }
+    private val walletViewModel: WalletViewModel by viewModels { viewModelFactory }
+
     private var assets: List<AssetItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(assets_rv, true) }
 
@@ -53,13 +55,13 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 val hiddenPos = viewHolder.adapterPosition
                 val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
                 val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
-                doAsync {
+                lifecycleScope.launch(Dispatchers.IO) {
                     walletViewModel.updateAssetHidden(asset.assetId, false)
                 }
                 Snackbar.make(assets_rv, getString(R.string.wallet_already_shown, asset.symbol), Snackbar.LENGTH_LONG)
                     .setAction(R.string.undo_capital) {
                         assetsAdapter.restoreItem(deleteItem, hiddenPos)
-                        doAsync {
+                        lifecycleScope.launch(Dispatchers.IO) {
                             walletViewModel.updateAssetHidden(asset.assetId, true)
                         }
                     }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {

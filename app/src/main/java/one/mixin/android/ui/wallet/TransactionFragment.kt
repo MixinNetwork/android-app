@@ -5,12 +5,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import java.math.BigDecimal
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transaction.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.loadImage
@@ -25,9 +29,8 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
-import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColorResource
-import org.jetbrains.anko.uiThread
+import javax.inject.Inject
 
 class TransactionFragment : BaseFragment() {
     companion object {
@@ -51,9 +54,7 @@ class TransactionFragment : BaseFragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val walletViewModel: WalletViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(WalletViewModel::class.java)
-    }
+    private val walletViewModel: WalletViewModel by viewModels { viewModelFactory }
 
     private val snapshot: SnapshotItem? by lazy { arguments!!.getParcelable<SnapshotItem>(ARGS_SNAPSHOT) }
     private val asset: AssetItem? by lazy { arguments!!.getParcelable<AssetItem>(ARGS_ASSET) }
@@ -71,10 +72,10 @@ class TransactionFragment : BaseFragment() {
         title_view.right_animator.visibility = View.GONE
         if (snapshot == null || asset == null) {
             if (snapshotId != null && assetId != null) {
-                doAsync {
+                lifecycleScope.launch(Dispatchers.IO) {
                     val asset = walletViewModel.simpleAssetItem(assetId!!)
                     val snapshot = walletViewModel.snapshotLocal(assetId!!, snapshotId!!)
-                    uiThread {
+                    withContext(Dispatchers.Main) {
                         if (asset == null || snapshot == null) {
                             context?.toast(R.string.error_unknown)
                         } else {

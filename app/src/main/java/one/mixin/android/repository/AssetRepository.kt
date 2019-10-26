@@ -88,7 +88,7 @@ constructor(
 
     fun pay(request: TransferRequest) = assetService.pay(request)
 
-    fun updateHidden(id: String, hidden: Boolean) = assetsExtraDao.insert(AssetsExtra(id, hidden))
+    suspend fun updateHidden(id: String, hidden: Boolean) = assetsExtraDao.insertSuspend(AssetsExtra(id, hidden))
 
     fun hiddenAssetItems() = assetDao.hiddenAssetItems()
 

@@ -50,8 +50,7 @@ class SingleFriendSelectFragment : BaseFragment() {
         transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         adapter.listener = object : SingleFriendSelectAdapter.FriendSelectListener {
             override fun onItemClick(user: User) {
-                TransferFragment.newInstance(user.userId)
-                    .showNow(parentFragmentManager, TransferFragment.TAG)
+                TransferFragment.newInstance(user.userId).showNow(parentFragmentManager, TransferFragment.TAG)
                 view?.findNavController()?.navigateUp()
             }
         }
@@ -82,7 +81,7 @@ class SingleFriendSelectFragment : BaseFragment() {
                     it.fullName != null && it.fullName.contains(s.toString(), ignoreCase = true)
                 }
                 adapter.friends = friends?.filter {
-                    it.fullName != null && it.fullName.contains(s.toString(), ignoreCase = true)
+                    it.identityNumber.startsWith(s.toString())  || (it.fullName != null && it.fullName.contains(s.toString(), ignoreCase = true))
                 }
                 adapter.showHeader = s.isNullOrEmpty()
                 adapter.notifyDataSetChanged()

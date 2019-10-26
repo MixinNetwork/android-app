@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
 import com.uber.autodispose.android.lifecycle.scope
 import one.mixin.android.di.Injectable
+import javax.inject.Inject
 
 open class BaseFragment : Fragment(), Injectable {
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)

@@ -95,7 +95,7 @@ internal constructor(
         jobManager.addJobInBackground(RefreshUserJob(queryUsers))
     }
 
-    fun updateAssetHidden(id: String, hidden: Boolean) = assetRepository.updateHidden(id, hidden)
+    suspend fun updateAssetHidden(id: String, hidden: Boolean) = assetRepository.updateHidden(id, hidden)
 
     fun hiddenAssets(): LiveData<List<AssetItem>> = assetRepository.hiddenAssetItems()
 

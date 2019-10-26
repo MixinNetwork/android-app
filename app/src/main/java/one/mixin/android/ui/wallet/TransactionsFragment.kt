@@ -52,7 +52,6 @@ import one.mixin.android.vo.differentProcess
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
-import org.jetbrains.anko.doAsync
 
 class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
 
@@ -241,7 +240,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         val bottomSheet = builder.create()
         view.hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show else R.string.wallet_transactions_hide)
         view.hide.setOnClickListener {
-            doAsync {
+            lifecycleScope.launch(Dispatchers.IO) {
                 walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
             }
             bottomSheet.dismiss()

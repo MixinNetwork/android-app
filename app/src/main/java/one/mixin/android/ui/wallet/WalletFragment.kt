@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
@@ -25,6 +26,9 @@ import kotlinx.android.synthetic.main.fragment_wallet.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_bottom.view.*
 import kotlinx.android.synthetic.main.view_wallet_fragment_header.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -45,7 +49,6 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
-import org.jetbrains.anko.doAsync
 
 class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
@@ -91,20 +94,22 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 val hiddenPos = viewHolder.adapterPosition
                 val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
                 val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
-                doAsync {
+                lifecycleScope.launch(Dispatchers.IO) {
                     walletViewModel.updateAssetHidden(asset.assetId, true)
+                    withContext(Dispatchers.Main) {
+                        Snackbar.make(coins_rv, getString(R.string.wallet_already_hidden, asset.symbol), Snackbar.LENGTH_LONG)
+                            .setAction(R.string.undo_capital) {
+                                assetsAdapter.restoreItem(deleteItem, hiddenPos)
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    walletViewModel.updateAssetHidden(asset.assetId, false)
+                                }
+                            }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                                view.setBackgroundResource(R.color.call_btn_icon_checked)
+                                (view.findViewById(R.id.snackbar_text) as TextView)
+                                    .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                            }.show()
+                    }
                 }
-                Snackbar.make(coins_rv, getString(R.string.wallet_already_hidden, asset.symbol), Snackbar.LENGTH_LONG)
-                    .setAction(R.string.undo_capital) {
-                        assetsAdapter.restoreItem(deleteItem, hiddenPos)
-                        doAsync {
-                            walletViewModel.updateAssetHidden(asset.assetId, false)
-                        }
-                    }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                        view.setBackgroundResource(R.color.call_btn_icon_checked)
-                        (view.findViewById(R.id.snackbar_text) as TextView)
-                            .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                    }.show()
             }
         })).apply { attachToRecyclerView(coins_rv) }
         assetsAdapter.onItemListener = this
