@@ -30,7 +30,7 @@ interface SnapshotDao : BaseDao<Snapshot> {
     fun snapshotsByTypeOrderByAmount(assetId: String, type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId and snapshot_id = :snapshotId")
-    fun snapshotLocal(assetId: String, snapshotId: String): SnapshotItem?
+    suspend fun snapshotLocal(assetId: String, snapshotId: String): SnapshotItem?
 
     @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY s.created_at DESC")
     fun allSnapshots(): DataSource.Factory<Int, SnapshotItem>

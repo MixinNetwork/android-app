@@ -78,7 +78,7 @@ constructor(
         }
     }
 
-    fun snapshotLocal(assetId: String, snapshotId: String) = snapshotDao.snapshotLocal(assetId, snapshotId)
+    suspend fun snapshotLocal(assetId: String, snapshotId: String) = snapshotDao.snapshotLocal(assetId, snapshotId)
 
     fun insertSnapshot(snapshot: Snapshot) = snapshotDao.insert(snapshot)
 
@@ -112,7 +112,7 @@ constructor(
 
     fun assetItem(id: String) = assetDao.assetItem(id)
 
-    fun simpleAssetItem(id: String) = assetDao.simpleAssetItem(id)
+    suspend fun simpleAssetItem(id: String) = assetDao.simpleAssetItem(id)
 
     fun assetItemsWithBalance() = assetDao.assetItemsWithBalance()
 

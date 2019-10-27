@@ -14,7 +14,6 @@ import androidx.paging.PagedList
 import com.google.gson.Gson
 import io.reactivex.Flowable
 import io.reactivex.Observable
-import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.io.File
@@ -518,11 +517,6 @@ internal constructor(
     suspend fun findAppById(id: String) = userRepository.findAppById(id)
 
     fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
-
-    fun simpleAssetItem(assetId: String): Single<AssetItem?> =
-        Single.fromCallable {
-            assetRepository.simpleAssetItem(assetId)
-        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun addStickerAsync(stickerAddRequest: StickerAddRequest) = accountRepository.addStickerAsync(stickerAddRequest)
 

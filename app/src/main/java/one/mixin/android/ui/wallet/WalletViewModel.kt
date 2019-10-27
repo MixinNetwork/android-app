@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -67,11 +66,11 @@ internal constructor(
 
     fun snapshotsByUserId(opponentId: String): LiveData<List<SnapshotItem>> = assetRepository.snapshotsByUserId(opponentId)
 
-    fun snapshotLocal(assetId: String, snapshotId: String) = assetRepository.snapshotLocal(assetId, snapshotId)
+    suspend fun snapshotLocal(assetId: String, snapshotId: String) = assetRepository.snapshotLocal(assetId, snapshotId)
 
     fun assetItem(id: String): LiveData<AssetItem> = assetRepository.assetItem(id)
 
-    fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
+    suspend fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
 
     fun updatePin(pin: String, oldPin: String?): Observable<MixinResponse<Account>> {
         val pinToken = Session.getPinToken()!!
@@ -110,9 +109,6 @@ internal constructor(
             .build())
             .setInitialLoadKey(initialLoadKey)
             .build()
-
-    fun getAssetItem(assetId: String) = Flowable.just(assetId).map { assetRepository.simpleAssetItem(it) }
-        .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
 
     suspend fun pendingDeposits(asset: String, destination: String, tag: String? = null) =
         assetRepository.pendingDeposits(asset, destination, tag)
