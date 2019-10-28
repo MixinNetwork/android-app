@@ -18,6 +18,7 @@ import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
+import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
@@ -66,7 +67,7 @@ class BottomSheetViewModel @Inject internal constructor(
         jobManager.addJobInBackground(RefreshConversationJob(conversationId))
     }
 
-    fun simpleAssetsWithBalance() = assetRepository.simpleAssetsWithBalance()
+    suspend fun simpleAssetsWithBalance() = assetRepository.simpleAssetsWithBalance()
 
     fun transfer(assetId: String, userId: String, amount: String, code: String, trace: String?, memo: String?) =
         assetRepository.transfer(TransferRequest(assetId, userId, amount, encryptPin(Session.getPinToken()!!, code), trace, memo))
@@ -219,4 +220,43 @@ class BottomSheetViewModel @Inject internal constructor(
         val escapedQuery = query.trim().escapeSql()
         return userRepository.searchAppByHost(escapedQuery)
     }
+
+    suspend fun findMultiUsers(
+        senders: Array<String>,
+        receivers: Array<String>
+    ): List<User> {
+        val userIds = mutableSetOf<String>().apply {
+            addAll(senders)
+            addAll(receivers)
+        }
+        val existUserIds = userRepository.findUserExist(userIds.toList())
+        val queryUsers = userIds.filter {
+            !existUserIds.contains(it)
+        }
+        if (queryUsers.isNotEmpty()) {
+            return handleMixinResponse(
+                invokeNetwork = {
+                    userRepository.fetchUser(queryUsers)
+                },
+                successBlock = {
+                    val userList = it.data
+                    if (userList != null) {
+                        userRepository.upsertList(userList)
+                    }
+                    return@handleMixinResponse userRepository.findMultiUsersByIds(userIds)
+                }
+            ) ?: emptyList()
+        } else {
+            return userRepository.findMultiUsersByIds(userIds)
+        }
+    }
+
+    suspend fun signMultisigs(requestId: String, pin: String) =
+        accountRepository.signMultisigs(requestId, PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
+
+    suspend fun unlockMultisigs(requestId: String, pin: String) =
+        accountRepository.unlockMultisigs(requestId, PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
+
+    suspend fun cancelMultisigs(requestId: String) =
+        accountRepository.cancelMultisigs(requestId)
 }

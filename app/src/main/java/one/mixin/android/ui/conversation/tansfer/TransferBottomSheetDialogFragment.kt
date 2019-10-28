@@ -93,9 +93,9 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 contentView.pay_tv.setText(R.string.withdrawal_with_pwd)
             }
         }
-        if (!TextUtils.isEmpty(t.tag)) {
+        if (!TextUtils.isEmpty(t.memo)) {
             contentView.memo.visibility = VISIBLE
-            contentView.memo.text = t.tag
+            contentView.memo.text = t.memo
         }
         contentView.asset_icon.bg.loadImage(t.asset.iconUrl, R.drawable.ic_avatar_place_holder)
         lifecycleScope.launch(Dispatchers.IO) {
@@ -152,11 +152,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         when (t) {
             is TransferBiometricItem ->
                 (t as TransferBiometricItem).let {
-                    bottomViewModel.transfer(t.asset.assetId, it.user.userId, t.amount, pin, t.trace, t.tag)
+                    bottomViewModel.transfer(t.asset.assetId, it.user.userId, t.amount, pin, t.trace, t.memo)
                 }
             else ->
                 (t as WithdrawBiometricItem).let {
-                    bottomViewModel.withdrawal(it.addressId, it.amount, pin, it.trace!!, it.tag)
+                    bottomViewModel.withdrawal(it.addressId, it.amount, pin, it.trace!!, it.memo)
                 }
         }.autoDispose(stopScope)
             .subscribe({
@@ -205,11 +205,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val biometricDialogCallback = object : BiometricDialog.Callback<BiometricItem> {
-        override fun onStartTransfer(t: BiometricItem) {
-            startTransfer(t.pin!!)
+        override fun onStartTransfer(pin: String) {
+            startTransfer(pin)
         }
 
-        override fun showTransferBottom(t: BiometricItem) {
+        override fun showTransferBottom() {
         }
 
         override fun showAuthenticationScreen() {

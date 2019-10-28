@@ -29,4 +29,7 @@ interface UserService {
 
     @GET("blocking_users")
     fun blockingUsers(): Observable<MixinResponse<List<User>>>
+
+    @POST("users/fetch")
+    suspend fun fetchUsers(@Body ids: List<String>): MixinResponse<List<User>>
 }

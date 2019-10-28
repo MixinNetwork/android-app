@@ -1,5 +1,5 @@
 package one.mixin.android.repository
 
 enum class QrCodeType {
-    user, conversation, authorization
+    user, conversation, authorization, multisig_request
 }

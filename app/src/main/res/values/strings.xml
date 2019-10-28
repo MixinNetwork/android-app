@@ -717,5 +717,14 @@
     <!-- live -->
     <string name="live_permission">Mixin needs access to draw above other apps to play videos in Picture-in-Picture mode.</string>
     <string name="live_setting">Setting</string>
+    <!-- multisigs -->
+    <string name="multisig_pay_pin">Multisig by PIN</string>
+    <string name="multisig_pay_biometric">Use Biometric Multisig</string>
+    <string name="multisig_transaction">Multisig Transactions</string>
+    <string name="multisig_revoke_transaction">Revoke Multisig Transaction</string>
+    <string name="multisig_senders">Senders</string>
+    <string name="multisig_receivers">Receivers</string>
+    <string name="multisig_state_signed">This multisig link has already been signed by yourself, you can not make a duplicate operation.</string>
+    <string name="multisig_state_unlocked">This multisig link has already been unlocked by someone, you can not make a duplicate operation.</string>
 </resources>
 

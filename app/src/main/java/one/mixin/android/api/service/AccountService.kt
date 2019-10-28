@@ -86,4 +86,13 @@ interface AccountService {
 
     @GET("pin_logs")
     suspend fun getPinLogs(@Query("offset") offset: Int? = null): MixinResponse<List<PINLogResponse>>
+
+    @POST("multisigs/{id}/cancel")
+    suspend fun cancelMultisigs(@Path("id") id: String): MixinResponse<Void>
+
+    @POST("multisigs/{id}/sign")
+    suspend fun signMultisigs(@Path("id") id: String, @Body pinRequest: PinRequest): MixinResponse<Void>
+
+    @POST("multisigs/{id}/unlock")
+    suspend fun unlockMultisigs(@Path("id") id: String, @Body pinRequest: PinRequest): MixinResponse<Void>
 }

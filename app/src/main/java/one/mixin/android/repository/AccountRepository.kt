@@ -17,6 +17,7 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AuthorizationService
@@ -94,6 +95,10 @@ constructor(
                         val resp = Gson().fromJson(response.data, AuthorizationResponse::class.java)
                         Pair(type, resp)
                     }
+                    QrCodeType.multisig_request.name -> {
+                        val resp = Gson().fromJson(response.data, MultisigsResponse::class.java)
+                        Pair(type, resp)
+                    }
                     else -> Pair("", "")
                 }
                 result
@@ -156,4 +161,13 @@ constructor(
     suspend fun getPinLogs(offset: Int? = null) = accountService.getPinLogs(offset)
 
     suspend fun preferences(request: AccountUpdateRequest) = accountService.preferences(request)
+
+    suspend fun signMultisigs(requestId: String, pinRequest: PinRequest) =
+        accountService.signMultisigs(requestId, pinRequest)
+
+    suspend fun unlockMultisigs(requestId: String, pinRequest: PinRequest) =
+        accountService.unlockMultisigs(requestId, pinRequest)
+
+    suspend fun cancelMultisigs(requestId: String) =
+        accountService.cancelMultisigs(requestId)
 }

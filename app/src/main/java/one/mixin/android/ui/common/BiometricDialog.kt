@@ -10,11 +10,13 @@ import java.security.InvalidKeyException
 import moe.feng.support.biometricprompt.BiometricPromptCompat
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.MultisigsAction
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.common.biometric.BiometricItem
+import one.mixin.android.ui.common.biometric.MultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.util.BiometricUtil
@@ -40,10 +42,25 @@ class BiometricDialog<T : BiometricItem>(
                 biometricPromptBuilder.setTitle(context.getString(R.string.withdrawal_to, t.label))
                     .setSubtitle(t.destination.formatPublicKey())
             }
+            is MultisigsBiometricItem -> {
+                biometricPromptBuilder.setTitle(context.getString(
+                    if (t.action == MultisigsAction.cancel.name) {
+                        R.string.multisig_revoke_transaction
+                    } else {
+                        R.string.multisig_transaction
+                    }
+                )).setSubtitle(t.memo)
+            }
         }
         biometricPromptBuilder.setDescription(getDescription())
-            .setNegativeButton(context.getString(R.string.wallet_pay_with_pwd)) { _, _ ->
-                callback?.showTransferBottom(t)
+            .setNegativeButton(context.getString(
+                if (t is MultisigsBiometricItem) {
+                    R.string.multisig_pay_pin
+                } else {
+                    R.string.wallet_pay_with_pwd
+                }
+            )) { _, _ ->
+                callback?.showTransferBottom()
             }
         val biometricPrompt = biometricPromptBuilder.build()
         val cipher = try {
@@ -80,7 +97,7 @@ class BiometricDialog<T : BiometricItem>(
             } else if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT ||
                 errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT_PERMANENT) {
                 cancellationSignal?.cancel()
-                callback?.showTransferBottom(t)
+                callback?.showTransferBottom()
             } else {
                 errString?.let { context.toast(it) }
             }
@@ -92,8 +109,8 @@ class BiometricDialog<T : BiometricItem>(
                 try {
                     val encrypt = context.defaultSharedPreferences.getString(Constants.BIOMETRICS_PIN, null)
                     val decryptByteArray = cipher.doFinal(Base64.decode(encrypt, Base64.URL_SAFE))
-                    t.pin = decryptByteArray.toString(Charset.defaultCharset())
-                    callback?.onStartTransfer(t)
+                    val pin = decryptByteArray.toString(Charset.defaultCharset())
+                    callback?.onStartTransfer(pin)
                 } catch (e: Exception) {
                     Bugsnag.notify(BiometricException("onAuthenticationSucceeded  ${e.getStackTraceString()}"))
                 }
@@ -108,9 +125,9 @@ class BiometricDialog<T : BiometricItem>(
     }
 
     interface Callback<T : BiometricItem> {
-        fun onStartTransfer(t: T)
+        fun onStartTransfer(pin: String)
 
-        fun showTransferBottom(t: T)
+        fun showTransferBottom()
 
         fun showAuthenticationScreen()
 

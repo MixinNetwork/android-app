@@ -26,6 +26,7 @@
         <attr name="border_color" format="color" />
         <attr name="border_overlay" format="boolean" />
         <attr name="border_text_size" format="dimension" />
+        <attr name="circle_background_color" format="color" />
     </declare-styleable>
     <declare-styleable name="PasswordView">
         <attr name="circleColor" format="color" />
@@ -104,5 +105,10 @@
     </declare-styleable>
     <declare-styleable name="BalanceLayout">
         <attr name="center" format="boolean"/>
+    </declare-styleable>
+    <declare-styleable name="AvatarsView">
+        <attr name="avatar_border_width" format="dimension" />
+        <attr name="avatar_border_color" format="color" />
+        <attr name="avatar_size" format="dimension" />
     </declare-styleable>
 </resources>
