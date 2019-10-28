@@ -11,13 +11,10 @@ import androidx.navigation.findNavController
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
-import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transactions_user.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
@@ -80,20 +77,18 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
 
     override fun <T> onNormalItemClick(item: T) {
         val snapshot = item as SnapshotItem
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             val assetItem = walletViewModel.simpleAssetItem(snapshot.assetId)
             assetItem.let {
-                withContext(Dispatchers.Main) {
-                    try {
-                        view?.findNavController()?.navigate(R.id.action_user_transactions_to_transaction,
-                            Bundle().apply {
-                                putParcelable(TransactionFragment.ARGS_SNAPSHOT, snapshot)
-                                putParcelable(TransactionsFragment.ARGS_ASSET, it)
-                            })
-                    } catch (e: IllegalStateException) {
-                        val fragment = TransactionFragment.newInstance(snapshot, it)
-                        activity?.addFragment(this@UserTransactionsFragment, fragment, TransactionFragment.TAG)
-                    }
+                try {
+                    view?.findNavController()?.navigate(R.id.action_user_transactions_to_transaction,
+                        Bundle().apply {
+                            putParcelable(TransactionFragment.ARGS_SNAPSHOT, snapshot)
+                            putParcelable(TransactionsFragment.ARGS_ASSET, it)
+                        })
+                } catch (e: IllegalStateException) {
+                    val fragment = TransactionFragment.newInstance(snapshot, it)
+                    activity?.addFragment(this@UserTransactionsFragment, fragment, TransactionFragment.TAG)
                 }
             }
         }

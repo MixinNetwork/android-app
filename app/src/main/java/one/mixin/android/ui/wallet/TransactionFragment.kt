@@ -12,9 +12,7 @@ import java.math.BigDecimal
 import kotlinx.android.synthetic.main.fragment_transaction.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.loadImage
@@ -72,15 +70,13 @@ class TransactionFragment : BaseFragment() {
         title_view.right_animator.visibility = View.GONE
         if (snapshot == null || asset == null) {
             if (snapshotId != null && assetId != null) {
-                lifecycleScope.launch(Dispatchers.IO) {
+                lifecycleScope.launch {
                     val asset = walletViewModel.simpleAssetItem(assetId!!)
                     val snapshot = walletViewModel.snapshotLocal(assetId!!, snapshotId!!)
-                    withContext(Dispatchers.Main) {
-                        if (asset == null || snapshot == null) {
-                            context?.toast(R.string.error_unknown)
-                        } else {
-                            updateUI(asset, snapshot)
-                        }
+                    if (asset == null || snapshot == null) {
+                        context?.toast(R.string.error_unknown)
+                    } else {
+                        updateUI(asset, snapshot)
                     }
                 }
             } else {
