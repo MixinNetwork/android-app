@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
@@ -21,6 +22,9 @@ import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_new_group.*
 import kotlinx.android.synthetic.main.item_contact_normal.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getImagePath
@@ -108,18 +112,21 @@ class NewGroupFragment : BaseFragment() {
         dialog?.dismiss()
     }
 
-    private fun createGroup() {
+    private fun createGroup() = lifecycleScope.launch {
         val groupIcon = if (resultUri == null) {
             null
         } else {
             val bitmap = MediaStore.Images.Media.getBitmap(context!!.contentResolver, resultUri)
             Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP)
         }
-        val conversation = groupViewModel.createGroupConversation(name_desc_et.text.toString(),
-            notice_desc_et.text.toString(), groupIcon, adapter.users!!, sender)
-
+        val conversation = withContext(Dispatchers.IO) {
+            groupViewModel.createGroupConversation(
+                name_desc_et.text.toString(),
+                notice_desc_et.text.toString(), groupIcon, adapter.users!!, sender
+            )
+        }
         val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)
-        liveData.observe(this, Observer { c ->
+        liveData.observe(this@NewGroupFragment, Observer { c ->
             if (c != null) {
                 when {
                     c.status == ConversationStatus.START.ordinal -> {
@@ -132,7 +139,7 @@ class NewGroupFragment : BaseFragment() {
                         dialog?.show()
                     }
                     c.status == ConversationStatus.SUCCESS.ordinal -> {
-                        liveData.removeObservers(this)
+                        liveData.removeObservers(this@NewGroupFragment)
                         name_desc_et.hideKeyboard()
                         dialog?.dismiss()
                         startActivity(Intent(context, MainActivity::class.java))

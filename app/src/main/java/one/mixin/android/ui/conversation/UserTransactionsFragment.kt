@@ -11,7 +11,6 @@ import androidx.navigation.findNavController
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
-import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transactions_user.*
 import kotlinx.android.synthetic.main.view_title.view.*

@@ -20,7 +20,6 @@ import one.mixin.android.db.MessageProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.batchMarkReadAndTake
-import one.mixin.android.db.insertConversation
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.util.SINGLE_DB_THREAD
@@ -69,14 +68,14 @@ internal constructor(
     suspend fun insertConversation(conversation: Conversation, participants: List<Participant>) =
         withContext(SINGLE_DB_THREAD) {
             appDatabase.runInTransaction {
-                conversationDao.insertConversation(conversation)
+                conversationDao.insert(conversation)
                 participantDao.insertList(participants)
             }
         }
 
     fun syncInsertConversation(conversation: Conversation, participants: List<Participant>) {
         appDatabase.runInTransaction {
-            conversationDao.insertConversation(conversation)
+            conversationDao.insert(conversation)
             participantDao.insertList(participants)
         }
     }

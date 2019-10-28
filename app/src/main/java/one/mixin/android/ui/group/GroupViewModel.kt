@@ -7,7 +7,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.util.UUID
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationRequest
@@ -36,7 +35,7 @@ internal constructor(
 
     fun getFriends() = userRepository.findFriends()
 
-    fun createGroupConversation(
+    suspend fun createGroupConversation(
         groupName: String,
         announcement: String,
         icon: String?,
@@ -54,14 +53,14 @@ internal constructor(
             .build()
         val mutableList = mutableListOf<Participant>()
         users.mapTo(mutableList) { Participant(conversationId, it.userId, "", createdAt) }
-        viewModelScope.launch(Dispatchers.IO) {
-            conversationRepository.insertConversation(conversation, mutableList)
-        }
+        conversationRepository.insertConversation(conversation, mutableList)
 
         val participantRequestList = mutableListOf<ParticipantRequest>()
         mutableList.mapTo(participantRequestList) { ParticipantRequest(it.userId, it.role) }
-        val request = ConversationRequest(conversationId, ConversationCategory.GROUP.name,
-            groupName, icon, announcement, participantRequestList)
+        val request = ConversationRequest(
+            conversationId, ConversationCategory.GROUP.name,
+            groupName, icon, announcement, participantRequestList
+        )
         jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))
 
         return conversation

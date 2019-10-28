@@ -551,6 +551,10 @@ class ConversationListFragment : LinkFragment() {
                     conversationItem.unseenMessageCount.notEmptyWithElse(
                         { itemView.unread_tv.text = "$it"; itemView.unread_tv.visibility = VISIBLE },
                         { itemView.unread_tv.visibility = GONE })
+
+                    if (conversationItem.isGroup() && conversationItem.status == ConversationStatus.FAILURE.ordinal) {
+                        itemView.msg_tv.text = getText(R.string.group_click_create_tip)
+                    }
                 }
             } else {
                 itemView.msg_pin.visibility = VISIBLE
