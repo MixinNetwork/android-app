@@ -153,7 +153,7 @@ open class SendMessageJob(
 
     private fun sendSignalMessage() {
         if (resendData != null) {
-            if (checkSignalSession(resendData.userId)) {
+            if (checkSignalSession(resendData.userId, resendData.sessionId)) {
                 deliver(encryptNormalMessage())
             }
             return
@@ -161,7 +161,7 @@ open class SendMessageJob(
         if (!signalProtocol.isExistSenderKey(message.conversationId, message.userId)) {
             checkConversation(message.conversationId)
         }
-        checkSessionSenderKey(message.conversationId)
+        checkAndSendSenderKey(message.conversationId)
         deliver(encryptNormalMessage())
     }
 

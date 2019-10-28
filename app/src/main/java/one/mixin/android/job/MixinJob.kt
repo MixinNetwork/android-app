@@ -132,6 +132,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun checkAndSendSenderKey(conversationId: String) {
+        checkSessionSenderKey(conversationId)
         val participants = participantDao.getNotSentKeyParticipants(conversationId, Session.getAccountId()!!) ?: return
         if (participants.size == 1) {
             sendSenderKey(conversationId, participants[0].userId)
@@ -145,13 +146,13 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))))
             val data = signalKeysChannel(blazeMessage) ?: return false
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
-            var deviceId = 1
             if (keys.isNotEmpty() && keys.count() > 0) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
                 signalProtocol.processSession(recipientId, preKeyBundle)
-                deviceId = preKeyBundle.deviceId
             } else {
-                // TODO
+                if (!sessionId.isNullOrBlank()) {
+                    participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SentSenderKeyStatus.UNKNOWN.ordinal))
+                }
                 sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId, SentSenderKeyStatus.UNKNOWN.ordinal))
                 Log.e(TAG, "No any signal key from server" + SentSenderKeyStatus.UNKNOWN.ordinal)
                 return false
@@ -164,6 +165,9 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, arrayListOf(signalKeyMessages)))
         val result = deliverNoThrow(bm)
         if (result) {
+            if (!sessionId.isNullOrBlank()) {
+                participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SentSenderKeyStatus.SENT.ordinal))
+            }
             sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId, SentSenderKeyStatus.SENT.ordinal, senderKeyId))
         }
         return result
