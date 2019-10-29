@@ -101,14 +101,11 @@ constructor(
                 ErrorHandler.handleError(it)
             }
 
-    fun search(query: String): Observable<MixinResponse<User>> =
-        userService.search(query)
+    fun search(query: String): Observable<MixinResponse<User>> = userService.search(query)
 
     fun logoutAsync(sessionId: String) = accountService.logoutAsync(LogoutRequest(sessionId))
 
     fun findUsersByType(relationship: String) = userDao.findUsersByType(relationship)
-
-    fun redeem(code: String): Observable<MixinResponse<Account>> = accountService.invitations(code)
 
     fun updatePin(request: PinRequest) = accountService.updatePin(request)
 

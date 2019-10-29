@@ -51,9 +51,6 @@ interface AccountService {
     @GET("codes/{id}")
     fun code(@Path("id") id: String): Observable<MixinResponse<JsonObject>>
 
-    @POST("invitations/{code}")
-    fun invitations(@Path("code") code: String): Observable<MixinResponse<Account>>
-
     @POST("pin/update")
     fun updatePin(@Body request: PinRequest): Observable<MixinResponse<Account>>
 

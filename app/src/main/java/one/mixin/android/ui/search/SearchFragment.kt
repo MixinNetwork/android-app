@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -49,9 +50,7 @@ class SearchFragment : BaseFragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val searchViewModel: SearchViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(SearchViewModel::class.java)
-    }
+    private val searchViewModel: SearchViewModel by viewModels { viewModelFactory }
 
     private val searchAdapter: SearchAdapter by lazy {
         SearchAdapter()
@@ -147,8 +146,7 @@ class SearchFragment : BaseFragment() {
                                 ContactsActivity.show(requireActivity(), true)
                             } else {
                                 searchViewModel.insertUser(user = data)
-                                UserBottomSheetDialogFragment.newInstance(data)
-                                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                UserBottomSheetDialogFragment.newInstance(data).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                             }
                         }
                         r.errorCode == ErrorHandler.NOT_FOUND -> context?.toast(R.string.error_user_not_found)

@@ -51,10 +51,6 @@ internal constructor(
 
     fun findUserById(id: String): LiveData<User> = userRepository.findUserById(id)
 
-    fun redeem(code: String): Observable<MixinResponse<Account>> =
-        accountRepository.redeem(code).subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-
     fun mute(senderId: String, recipientId: String, duration: Long) {
         viewModelScope.launch(SINGLE_DB_THREAD) {
             var conversationId = conversationRepository.getConversationIdIfExistsSync(recipientId)
