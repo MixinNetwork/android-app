@@ -385,7 +385,7 @@ public class MediaController {
                             outputFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, colorFormat);
                             outputFormat.setInteger(MediaFormat.KEY_BIT_RATE, bitrate > 0 ? bitrate : 1100000);
                             outputFormat.setInteger(MediaFormat.KEY_FRAME_RATE, 25);
-                            outputFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 10);
+                            outputFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 2);
 
                             encoder = MediaCodec.createEncoderByType(MIME_TYPE);
                             encoder.configure(outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
