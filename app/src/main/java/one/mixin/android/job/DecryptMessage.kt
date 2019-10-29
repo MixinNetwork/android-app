@@ -148,7 +148,6 @@ class DecryptMessage : Injector() {
             return
         }
         messageDao.insert(message)
-        sendToExtensionSession(message, data.data)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
         sendNotificationJob(message, data.source)
     }
@@ -157,15 +156,8 @@ class DecryptMessage : Injector() {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
             String(Base64.decode(data.data)), data.createdAt, MessageStatus.DELIVERED)
         messageDao.insert(message)
-        sendToExtensionSession(message, data.data)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
         sendNotificationJob(message, data.source)
-    }
-
-    private fun sendToExtensionSession(message: Message, content: String? = null, dataUserId: String? = null) {
-        if (Session.getExtensionSessionId() != null) {
-            jobManager.addJobInBackground(SendSessionMessageJob(message, content, dataUserId))
-        }
     }
 
     private fun processSystemMessage(data: BlazeMessageData) {
@@ -218,7 +210,6 @@ class DecryptMessage : Injector() {
         }
         val msg = createRecallMessage(data.messageId, data.conversationId, data.userId,
             MessageCategory.MESSAGE_RECALL.name, data.data, MessageStatus.DELIVERED, data.createdAt)
-        sendToExtensionSession(msg)
     }
 
     private fun processPlainMessage(data: BlazeMessageData) {
@@ -294,7 +285,6 @@ class DecryptMessage : Injector() {
                 }
 
                 messageDao.insert(message)
-                sendToExtensionSession(message, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_IMAGE") -> {
@@ -314,7 +304,6 @@ class DecryptMessage : Injector() {
                     jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 }
 
-                sendToExtensionSession(message, plainText, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_VIDEO") -> {
@@ -332,7 +321,6 @@ class DecryptMessage : Injector() {
                 MixinApplication.appContext.autoDownload(autoDownloadVideo) {
                     jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 }
-                sendToExtensionSession(message, plainText, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_DATA") -> {
@@ -347,7 +335,6 @@ class DecryptMessage : Injector() {
                 MixinApplication.appContext.autoDownload(autoDownloadDocument) {
                     jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 }
-                sendToExtensionSession(message, plainText, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_AUDIO") -> {
@@ -358,7 +345,6 @@ class DecryptMessage : Injector() {
                     mediaData.key, mediaData.digest, MediaStatus.PENDING, MessageStatus.DELIVERED)
                 messageDao.insert(message)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
-                sendToExtensionSession(message, plainText, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_STICKER") -> {
@@ -382,7 +368,6 @@ class DecryptMessage : Injector() {
                 }
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
-                sendToExtensionSession(message, plainText, dataUserId = dataUserId)
             }
             data.category.endsWith("_CONTACT") -> {
                 val decoded = Base64.decode(plainText)
@@ -392,7 +377,6 @@ class DecryptMessage : Injector() {
                 messageDao.insert(message)
                 syncUser(contactData.userId)
                 sendNotificationJob(message, data.source)
-                sendToExtensionSession(message, plainText)
             }
             data.category.endsWith("_LIVE") -> {
                 val decoded = Base64.decode(plainText)
@@ -405,7 +389,6 @@ class DecryptMessage : Injector() {
                     liveData.width, liveData.height, liveData.url, liveData.thumbUrl, MessageStatus.DELIVERED, data.createdAt)
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
-                sendToExtensionSession(message, plainText)
             }
         }
     }
@@ -436,7 +419,6 @@ class DecryptMessage : Injector() {
         }
         snapshotDao.insert(snapshot)
         messageDao.insert(message)
-        sendToExtensionSession(message, data.data)
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
 
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
@@ -479,7 +461,6 @@ class DecryptMessage : Injector() {
         } else if (systemMessage.action == SystemConversationAction.CREATE.name) {
         } else if (systemMessage.action == SystemConversationAction.UPDATE.name) {
             jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
-            sendToExtensionSession(message, data.data)
             return
         } else if (systemMessage.action == SystemConversationAction.ROLE.name) {
             participantDao.updateParticipantRole(data.conversationId, systemMessage.participantId!!, systemMessage.role!!)
@@ -488,7 +469,6 @@ class DecryptMessage : Injector() {
             }
         }
         messageDao.insert(message)
-        sendToExtensionSession(message, data.data)
     }
 
     private fun processSignalMessage(data: BlazeMessageData) {

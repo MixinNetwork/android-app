@@ -64,11 +64,6 @@ open class SendMessageJob(
         } else {
             Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
         }
-
-        // TODO deprecated
-        if (Session.getExtensionSessionId() != null) {
-            jobManager.addJobInBackground(SendSessionMessageJob(message))
-        }
     }
 
     private fun recallMessage() {

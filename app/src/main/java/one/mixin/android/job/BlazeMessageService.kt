@@ -260,7 +260,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private val messageDecrypt by lazy { DecryptMessage() }
     private val callMessageDecrypt by lazy { DecryptCallMessage(callState, lifecycleScope) }
-    private val sessionMessageDecrypt by lazy { DecryptSessionMessage() }
 
     private fun startFloodJob() {
         database.invalidationTracker.addObserver(floodObserver)
@@ -298,8 +297,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 val data = gson.fromJson(message.data, BlazeMessageData::class.java)
                 if (data.category.startsWith("WEBRTC_")) {
                     callMessageDecrypt.onRun(data)
-                } else if (data.userId == accountId && !data.sessionId.isNullOrEmpty()) {
-                    sessionMessageDecrypt.onRun(data)
                 } else {
                     messageDecrypt.onRun(data)
                 }

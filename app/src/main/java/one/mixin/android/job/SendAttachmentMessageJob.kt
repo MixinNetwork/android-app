@@ -153,9 +153,6 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
         message.content = encoded
         messageDao.updateMessageContent(encoded, message.id)
         jobManager.addJobInBackground(SendMessageJob(message, null, true))
-        if (Session.getExtensionSessionId() != null) {
-            jobManager.addJobInBackground(SendSessionMessageJob(message))
-        }
         return true
     }
 
