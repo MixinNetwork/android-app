@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -47,9 +48,7 @@ class ContactsFragment : BaseFragment() {
     @Inject
     lateinit var jobManager: MixinJobManager
 
-    private val contactsViewModel: ContactViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ContactViewModel::class.java)
-    }
+    private val contactsViewModel: ContactViewModel by viewModels { viewModelFactory }
 
     private val contactAdapter: ContactsAdapter by lazy {
         ContactsAdapter(context!!, Collections.emptyList(), 0)

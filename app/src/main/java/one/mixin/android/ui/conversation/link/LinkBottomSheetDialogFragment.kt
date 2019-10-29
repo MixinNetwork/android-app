@@ -219,8 +219,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                             val assets = linkViewModel.simpleAssetsWithBalance()
                             uiThread {
                                 activity?.let {
-                                    val scopes = AuthBottomSheetDialogFragment
-                                        .handleAuthorization(it, authorization, assets)
+                                    val scopes = AuthBottomSheetDialogFragment.handleAuthorization(it, authorization, assets)
                                     AuthBottomSheetDialogFragment.newInstance(scopes, authorization)
                                         .showNow(parentFragmentManager, AuthBottomSheetDialogFragment.TAG)
                                     authOrPay = true

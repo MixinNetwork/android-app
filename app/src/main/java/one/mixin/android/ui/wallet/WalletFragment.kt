@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -59,9 +60,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val walletViewModel: WalletViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(WalletViewModel::class.java)
-    }
+    private val walletViewModel: WalletViewModel by viewModels { viewModelFactory }
 
     private var assets: List<AssetItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(coins_rv, false) }

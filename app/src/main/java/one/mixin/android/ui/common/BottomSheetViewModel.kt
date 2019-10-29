@@ -47,7 +47,6 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
-import org.jetbrains.anko.doAsync
 
 class BottomSheetViewModel @Inject internal constructor(
     private val accountRepository: AccountRepository,
@@ -88,12 +87,6 @@ class BottomSheetViewModel @Inject internal constructor(
                 .execute().body()!!
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    fun insertSnapshot(snapshot: Snapshot) {
-        doAsync {
-            assetRepository.insertSnapshot(snapshot)
-        }
-    }
-
     fun syncAddr(assetId: String, destination: String?, label: String?, tag: String?, code: String): Observable<MixinResponse<Address>> =
         assetRepository.syncAddr(AddressRequest(assetId, destination, tag, label, encryptPin(Session.getPinToken()!!, code)!!))
             .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
@@ -112,8 +105,6 @@ class BottomSheetViewModel @Inject internal constructor(
     fun updateRelationship(request: RelationshipRequest, deleteConversationId: String? = null) {
         jobManager.addJobInBackground(UpdateRelationshipJob(request, deleteConversationId))
     }
-
-    fun getLimitParticipants(conversationId: String, limit: Int) = conversationRepo.getLimitParticipants(conversationId, limit)
 
     fun getParticipantsCount(conversationId: String) = conversationRepo.getParticipantsCount(conversationId)
 

@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -23,9 +24,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     lateinit var jobManager: MixinJobManager
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-    protected val walletViewModel: WalletViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(WalletViewModel::class.java)
-    }
+    protected val walletViewModel: WalletViewModel by viewModels  { viewModelFactory }
 
     protected var lastCreatedAt: String? = null
     private var uiOffset = 0L
