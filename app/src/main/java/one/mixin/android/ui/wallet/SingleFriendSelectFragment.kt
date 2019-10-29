@@ -81,7 +81,7 @@ class SingleFriendSelectFragment : BaseFragment() {
                     it.fullName != null && it.fullName.contains(s.toString(), ignoreCase = true)
                 }
                 adapter.friends = friends?.filter {
-                    it.identityNumber.startsWith(s.toString())  || (it.fullName != null && it.fullName.contains(s.toString(), ignoreCase = true))
+                    it.identityNumber.startsWith(s.toString()) || (it.fullName != null && it.fullName.contains(s.toString(), ignoreCase = true))
                 }
                 adapter.showHeader = s.isNullOrEmpty()
                 adapter.notifyDataSetChanged()

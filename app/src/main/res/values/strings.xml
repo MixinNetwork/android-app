@@ -399,6 +399,7 @@
     <string name="group_join">+ Join the group</string>
     <string name="group_already_in">You already in the group</string>
     <string name="group_participants_count">%1$d Participants</string>
+    <string name="group_click_create_tip">Couldn\'t create. Tap to retry.</string>
     <!--setting-->
     <string name="setting_title">Setting</string>
     <string name="setting_blocked">Blocked</string>

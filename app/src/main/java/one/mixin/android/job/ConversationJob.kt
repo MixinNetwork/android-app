@@ -2,14 +2,20 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import java.util.UUID
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantAction
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
-import one.mixin.android.db.insertConversation
 import one.mixin.android.event.ConversationEvent
+import one.mixin.android.extension.networkConnected
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
@@ -37,10 +43,35 @@ class ConversationJob(
         const val TYPE_EXIT = 5
         const val TYPE_DELETE = 6
         const val TYPE_MUTE = 7
+
+        const val CREATE_TIMEOUT_MILLIS = 10000L
+    }
+
+    private var createCheckRunJob: Job? = null
+
+    override fun onAdded() {
+        super.onAdded()
+        if (type == TYPE_CREATE) {
+            if (!MixinApplication.appContext.networkConnected()) {
+                updateConversationStatusFailure()
+                return
+            }
+            createCheckRunJob = GlobalScope.launch(Dispatchers.IO) {
+                delay(CREATE_TIMEOUT_MILLIS)
+                updateConversationStatusFailure()
+            }
+        }
     }
 
     override fun onRun() {
+        createCheckRunJob?.cancel()
         createGroup()
+    }
+
+    private fun updateConversationStatusFailure() {
+        request?.conversationId?.let {
+            conversationDao.updateConversationStatusById(it, ConversationStatus.FAILURE.ordinal)
+        }
     }
 
     private fun createGroup() {
@@ -49,15 +80,27 @@ class ConversationJob(
                 TYPE_CREATE ->
                     conversationApi.create(request!!).execute().body()
                 TYPE_ADD ->
-                    conversationApi.participants(conversationId!!, ParticipantAction.ADD.name, participantRequests!!)
+                    conversationApi.participants(
+                        conversationId!!,
+                        ParticipantAction.ADD.name,
+                        participantRequests!!
+                    )
                         .execute().body()
                 TYPE_REMOVE ->
-                    conversationApi.participants(conversationId!!, ParticipantAction.REMOVE.name, participantRequests!!)
+                    conversationApi.participants(
+                        conversationId!!,
+                        ParticipantAction.REMOVE.name,
+                        participantRequests!!
+                    )
                         .execute().body()
                 TYPE_UPDATE ->
                     conversationApi.update(conversationId!!, request!!).execute().body()
                 TYPE_MAKE_ADMIN ->
-                    conversationApi.participants(conversationId!!, ParticipantAction.ROLE.name, participantRequests!!)
+                    conversationApi.participants(
+                        conversationId!!,
+                        ParticipantAction.ROLE.name,
+                        participantRequests!!
+                    )
                         .execute().body()
                 TYPE_EXIT ->
                     conversationApi.exit(conversationId!!).execute().body()
@@ -67,13 +110,11 @@ class ConversationJob(
             }
             handleResult(response)
         } catch (e: Exception) {
-            if (type != TYPE_CREATE || type != TYPE_MUTE) {
+            if (type == TYPE_CREATE) {
+                updateConversationStatusFailure()
+            } else if (type != TYPE_CREATE || type != TYPE_MUTE) {
                 RxBus.publish(ConversationEvent(type, false))
                 ErrorHandler.handleError(e)
-            } else if (type == TYPE_CREATE) {
-                conversationId?.let {
-                    conversationDao.updateConversationStatusById(it, ConversationStatus.FAILURE.ordinal)
-                }
             }
             Timber.e(e)
         }
@@ -83,8 +124,10 @@ class ConversationJob(
         if (r != null && r.isSuccess && r.data != null) {
             val cr = r.data!!
             if (type == TYPE_CREATE) {
-                val conversation = ConversationBuilder(cr.conversationId,
-                    cr.createdAt, ConversationStatus.SUCCESS.ordinal)
+                val conversation = ConversationBuilder(
+                    cr.conversationId,
+                    cr.createdAt, ConversationStatus.SUCCESS.ordinal
+                )
                     .setOwnerId(cr.creatorId)
                     .setName(cr.name)
                     .setCategory(cr.category)
@@ -93,10 +136,17 @@ class ConversationJob(
                     .setIconUrl(cr.iconUrl)
                     .setCodeUrl(cr.codeUrl)
                     .build()
-                conversationDao.insertConversation(conversation)
+                conversationDao.insert(conversation)
 
                 val participants = mutableListOf<Participant>()
-                cr.participants.mapTo(participants) { Participant(cr.conversationId, it.userId, it.role, cr.createdAt) }
+                cr.participants.mapTo(participants) {
+                    Participant(
+                        cr.conversationId,
+                        it.userId,
+                        it.role,
+                        cr.createdAt
+                    )
+                }
                 participantDao.insertList(participants)
                 jobManager.addJobInBackground(GenerateAvatarJob(cr.conversationId))
             } else if (type == TYPE_MUTE) {
@@ -113,8 +163,10 @@ class ConversationJob(
                 RxBus.publish(ConversationEvent(type, false))
             } else if (type == TYPE_CREATE) {
                 request?.let {
-                    conversationDao.updateConversationStatusById(request.conversationId,
-                        ConversationStatus.FAILURE.ordinal)
+                    conversationDao.updateConversationStatusById(
+                        request.conversationId,
+                        ConversationStatus.FAILURE.ordinal
+                    )
                 }
             }
             if (r?.isSuccess == false) {

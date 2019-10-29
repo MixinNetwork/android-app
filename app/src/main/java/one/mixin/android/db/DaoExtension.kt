@@ -1,7 +1,6 @@
 package one.mixin.android.db
 
 import one.mixin.android.vo.App
-import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 
@@ -37,22 +36,6 @@ fun UserDao.insertUpdateList(
         }
         appDao.insertList(apps)
         insertList(users)
-    }
-}
-
-fun ConversationDao.insertConversation(
-    conversation: Conversation,
-    action: (() -> Unit)? = null,
-    haveAction: ((Conversation) -> Unit)? = null
-) {
-    runInTransaction {
-        val c = findConversationById(conversation.conversationId)
-        if (c == null) {
-            insert(conversation)
-            action?.let { it() }
-        } else {
-            haveAction?.let { it(c) }
-        }
     }
 }
 

@@ -12,7 +12,6 @@ import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.insertConversation
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.di.worker.ChildWorkerFactory
@@ -69,7 +68,7 @@ class RefreshConversationWorker @AssistedInject constructor(
                         applicationContext.sharedPreferences(PREFERENCES_CONVERSATION)
                             .putBoolean(data.conversationId, true)
                     }
-                    conversationDao.insertConversation(c)
+                    conversationDao.insert(c)
                 } else {
                     val status = if (data.participants.find { Session.getAccountId() == it.userId } != null) {
                         ConversationStatus.SUCCESS.ordinal
