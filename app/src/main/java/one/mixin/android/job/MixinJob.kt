@@ -148,7 +148,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
-                signalProtocol.processSession(recipientId, preKeyBundle)
+                signalProtocol.processSession(recipientId, preKeyBundle, sessionId.getDeviceId())
             } else {
                 if (!sessionId.isNullOrBlank()) {
                     participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SentSenderKeyStatus.UNKNOWN.ordinal))
