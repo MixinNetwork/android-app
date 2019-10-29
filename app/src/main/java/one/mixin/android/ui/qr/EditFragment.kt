@@ -154,7 +154,7 @@ class EditFragment : CaptureVisionFragment() {
                 scan()
                 setBg()
             } else {
-                preview_iv.loadImage(path, glideRequestListener)
+                preview_iv.loadImage(path, requestListener = glideRequestListener)
             }
         }
         download_iv.isVisible = !fromGallery
