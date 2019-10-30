@@ -12,7 +12,7 @@ open class IdentityKeyUtil {
 
     companion object {
 
-        fun generateIdentityKeys(ctx: Context) {
+        suspend fun generateIdentityKeys(ctx: Context) {
             val registrationId = KeyHelper.generateRegistrationId(false)
             CryptoPreference.setLocalRegistrationId(ctx, registrationId)
             val identityKeyPair = KeyHelper.generateIdentityKeyPair()
@@ -22,9 +22,7 @@ open class IdentityKeyUtil {
                 identityKeyPair.privateKey.serialize(),
                 0,
                 System.currentTimeMillis())
-            GlobalScope.launch(SINGLE_DB_THREAD) {
-                SignalDatabase.getDatabase(ctx).identityDao().insert(identity)
-            }
+            SignalDatabase.getDatabase(ctx).identityDao().insertSuspend(identity)
         }
 
         fun getIdentityKeyPair(context: Context) =

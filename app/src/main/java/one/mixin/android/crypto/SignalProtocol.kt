@@ -48,7 +48,7 @@ class SignalProtocol(ctx: Context) {
         val TAG = SignalProtocol::class.java.simpleName
         const val DEFAULT_DEVICE_ID = 1
 
-        fun initSignal(context: Context) {
+        suspend fun initSignal(context: Context) {
             IdentityKeyUtil.generateIdentityKeys(context)
         }
 
