@@ -88,10 +88,6 @@ class RefreshConversationJob(val conversationId: String) :
                     }
                 }
 
-                val owner = userDao.findUser(ownerId)
-                if (owner == null) {
-                    userIdList.add(ownerId)
-                }
                 participantDao.replaceAll(data.conversationId, participants)
 
                 if (userIdList.isNotEmpty()) {

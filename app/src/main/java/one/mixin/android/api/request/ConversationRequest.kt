@@ -18,3 +18,11 @@ class ConversationRequest(
     @SerializedName("duration")
     val duration: Long? = null
 )
+
+
+data class ConversationSessionRequest (
+    @SerializedName("action")
+    val action: String,
+    @SerializedName("session_id")
+    val sessionId: String
+)
