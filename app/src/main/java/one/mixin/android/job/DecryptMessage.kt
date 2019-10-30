@@ -397,6 +397,13 @@ class DecryptMessage : Injector() {
         if (systemSession.action == SystemSessionMessageAction.PROVISION.name) {
             Session.storeExtensionSessionId(systemSession.sessionId)
             signalProtocol.deleteSession(systemSession.userId)
+            val conversations = participantDao.getConversationsByUserId(systemSession.userId)
+            val ps = conversations?.map {
+                ParticipantSession(it, systemSession.userId, systemSession.sessionId)
+            }
+            ps?.let {
+                participantSessionDao.insertList(ps)
+            }
         } else if (systemSession.action == SystemSessionMessageAction.ADD.name) {
             val conversations = participantDao.getConversationsByUserId(systemSession.userId)
             val ps = conversations?.map {

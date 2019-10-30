@@ -6,7 +6,7 @@ import one.mixin.android.extension.nowInUtc
 
 @Entity(tableName = "participant_session",
     primaryKeys = ["conversation_id", "user_id", "session_id"])
-data class ParticipantSession (
+data class ParticipantSession(
     @ColumnInfo(name = "conversation_id")
     val conversationId: String,
     @ColumnInfo(name = "user_id")
@@ -18,4 +18,3 @@ data class ParticipantSession (
     @ColumnInfo(name = "created_at")
     val createdAt: String? = nowInUtc()
 )
-
