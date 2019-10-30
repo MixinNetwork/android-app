@@ -58,5 +58,5 @@ interface ConversationService {
     fun mute(@Path("id") id: String, @Body request: ConversationRequest): Call<MixinResponse<ConversationResponse>>
 
     @POST("conversations/{id}/sessions/{action}")
-    fun mute(@Path("id") id: String, @Path("action") action: String, @Body request: ConversationSessionRequest): Call<MixinResponse<ConversationResponse>>
+    fun addSystemSession(@Path("id") id: String, @Path("action") action: String, @Body request: ConversationSessionRequest): Call<MixinResponse<ConversationResponse>>
 }

@@ -130,6 +130,22 @@ open class Injector : Injectable {
         }
     }
 
+    protected fun syncConversationParticipantSession(conversationId: String) {
+        val call = conversationService.getConversation(conversationId).execute()
+        val response = call.body()
+        if (response != null && response.isSuccess) {
+            response.data?.let { data ->
+                val sessionParticipants = data.participantSessions?.map {
+                    ParticipantSession(conversationId, it.userId, it.sessionId)
+                }
+                sessionParticipants?.let {
+                    // should check for update table
+                    participantSessionDao.replaceAll(conversationId, it)
+                }
+            }
+        }
+    }
+
     protected fun isExistMessage(messageId: String): Boolean {
         val id = messageDao.findMessageIdById(messageId)
         val messageHistory = messageHistoryDao.findMessageHistoryById(messageId)
