@@ -22,16 +22,6 @@ fun ImageView.loadImage(uri: String?) {
     Glide.with(this).load(uri).into(this)
 }
 
-fun ImageView.loadImage(uri: String?, holder: String?) {
-    if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri).apply(RequestOptions().dontAnimate()
-        .apply {
-            if (holder != null) {
-                this.placeholder(holder.toDrawable())
-            }
-        }).into(this)
-}
-
 fun ImageView.loadImage(uri: Uri?) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).into(this)
@@ -40,14 +30,6 @@ fun ImageView.loadImage(uri: Uri?) {
 fun ImageView.loadImage(uri: String?, @DrawableRes holder: Int) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply(RequestOptions.placeholderOf(holder)).into(this)
-}
-
-fun ImageView.loadImage(
-    uri: String?,
-    requestListener: RequestListener<Drawable?>
-) {
-    if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri).listener(requestListener).into(this)
 }
 
 fun ImageView.loadImage(uri: String?, width: Int, height: Int) {
@@ -88,13 +70,18 @@ fun ImageView.loadImageCenterCrop(uri: Uri?, @DrawableRes holder: Int? = null) {
 
 fun ImageView.loadImage(
     uri: String?,
+    base64Holder: String? = null,
     requestListener: RequestListener<Drawable?>? = null,
-    base64Holder: String? = null
+    overrideWidth: Int? = null,
+    overrideHeight: Int? = null
 ) {
     if (!isActivityNotDestroyed()) return
     var requestOptions = RequestOptions().dontTransform()
     if (base64Holder != null) {
         requestOptions = requestOptions.fallback(base64Holder.toDrawable())
+    }
+    if (overrideWidth != null && overrideHeight != null) {
+        requestOptions = requestOptions.override(overrideWidth, overrideHeight)
     }
     if (requestListener != null) {
         Glide.with(this).load(uri).apply(requestOptions).listener(requestListener)
@@ -109,7 +96,9 @@ fun ImageView.loadGif(
     requestListener: RequestListener<GifDrawable?>? = null,
     centerCrop: Boolean? = null,
     @DrawableRes holder: Int? = null,
-    base64Holder: String? = null
+    base64Holder: String? = null,
+    overrideWidth: Int? = null,
+    overrideHeight: Int? = null
 ) {
     if (!isActivityNotDestroyed()) return
     var requestOptions = RequestOptions().dontTransform()
@@ -121,6 +110,9 @@ fun ImageView.loadGif(
     }
     if (base64Holder != null) {
         requestOptions = requestOptions.fallback(base64Holder.toDrawable())
+    }
+    if (overrideWidth != null && overrideHeight != null) {
+        requestOptions = requestOptions.override(overrideWidth, overrideHeight)
     }
     if (requestListener != null) {
         Glide.with(this).asGif().load(uri).apply(requestOptions).listener(requestListener)

@@ -142,6 +142,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CircleProgress
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.PhotoView.PhotoView
+import one.mixin.android.widget.PhotoView.PhotoViewAttacher
 import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView.Companion.STATUS_LOADING
 import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
@@ -798,6 +799,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             circleProgress: CircleProgress
         ): PhotoView {
             val imageView = PhotoView(container.context)
+            val photoViewAttacher = PhotoViewAttacher(imageView)
+            photoViewAttacher.isZoomable = false
             imageView.layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
             )
@@ -810,6 +813,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         dataSource: DataSource?,
                         isFirstResource: Boolean
                     ): Boolean {
+                        photoViewAttacher.isZoomable = true
                         if (position == initialIndex) {
                             ViewCompat.setTransitionName(imageView, "transition")
                             setStartPostTransition(imageView)
@@ -825,32 +829,38 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     ): Boolean {
                         return false
                     }
-                }, base64Holder = messageItem.thumbImage)
+                }, base64Holder = messageItem.thumbImage,
+                    overrideWidth = Target.SIZE_ORIGINAL,
+                    overrideHeight = Target.SIZE_ORIGINAL)
             } else {
-                imageView.loadImage(messageItem.mediaUrl, object : RequestListener<Drawable?> {
-                    override fun onResourceReady(
-                        resource: Drawable?,
-                        model: Any?,
-                        target: Target<Drawable?>?,
-                        dataSource: DataSource?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        if (position == initialIndex) {
-                            ViewCompat.setTransitionName(imageView, "transition")
-                            setStartPostTransition(imageView)
+                imageView.loadImage(messageItem.mediaUrl, messageItem.thumbImage,
+                    object : RequestListener<Drawable?> {
+                        override fun onResourceReady(
+                            resource: Drawable?,
+                            model: Any?,
+                            target: Target<Drawable?>?,
+                            dataSource: DataSource?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            photoViewAttacher.isZoomable = true
+                            if (position == initialIndex) {
+                                ViewCompat.setTransitionName(imageView, "transition")
+                                setStartPostTransition(imageView)
+                            }
+                            return false
                         }
-                        return false
-                    }
 
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable?>?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        return false
-                    }
-                }, base64Holder = messageItem.thumbImage)
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: Target<Drawable?>?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            return false
+                        }
+                    },
+                    overrideWidth = Target.SIZE_ORIGINAL,
+                    overrideHeight = Target.SIZE_ORIGINAL)
             }
             if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
                 circleProgress.isVisible = false

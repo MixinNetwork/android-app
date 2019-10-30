@@ -24,7 +24,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     lateinit var jobManager: MixinJobManager
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-    protected val walletViewModel: WalletViewModel by viewModels  { viewModelFactory }
+    protected val walletViewModel: WalletViewModel by viewModels { viewModelFactory }
 
     protected var lastCreatedAt: String? = null
     private var uiOffset = 0L
