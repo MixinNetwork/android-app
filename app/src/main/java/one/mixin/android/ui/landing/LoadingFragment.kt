@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.uber.autodispose.autoDispose
 import javax.inject.Inject
@@ -28,10 +29,7 @@ class LoadingFragment : BaseFragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val loadingViewModel: LoadingViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(LoadingViewModel::class.java)
-    }
+    private val loadingViewModel: LoadingViewModel by viewModels { viewModelFactory }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)

@@ -10,6 +10,7 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.uber.autodispose.autoDispose
 import javax.inject.Inject
@@ -31,10 +32,7 @@ class SetupNameFragment : BaseFragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val mobileViewModel: MobileViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(MobileViewModel::class.java)
-    }
+    private val mobileViewModel: MobileViewModel by viewModels { viewModelFactory }
 
     companion object {
         fun newInstance() = SetupNameFragment()

@@ -14,6 +14,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
@@ -58,10 +59,8 @@ class MobileFragment : BaseFragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
+    private val mobileViewModel: MobileViewModel by viewModels { viewModelFactory }
 
-    private val mobileViewModel: MobileViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(MobileViewModel::class.java)
-    }
     private lateinit var countryPicker: CountryPicker
     private lateinit var mCountry: Country
     private val phoneUtil = PhoneNumberUtil.getInstance()
@@ -145,7 +144,6 @@ class MobileFragment : BaseFragment() {
         val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
         val verificationRequest = VerificationRequest(
             phoneNum,
-            null,
             if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name,
             gRecaptchaResponse)
         mobileViewModel.loginVerification(verificationRequest)

@@ -213,7 +213,6 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
         showLoading()
         val verificationRequest = VerificationRequest(
             arguments!!.getString(ARGS_PHONE_NUM),
-            null,
             if (isPhoneModification()) VerificationPurpose.PHONE.name else VerificationPurpose.SESSION.name,
             gRecaptchaResponse)
         viewModel.verification(verificationRequest)

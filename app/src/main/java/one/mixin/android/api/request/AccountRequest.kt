@@ -5,7 +5,6 @@ import one.mixin.android.BuildConfig
 
 data class AccountRequest(
     val code: String?,
-    val invitation: String? = null,
     val notification_token: String? = null,
     val registration_id: Int? = null,
     val platform: String = "Android",
