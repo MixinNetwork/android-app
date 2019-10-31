@@ -26,7 +26,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.WebSocketException
-import one.mixin.android.crypto.Base64
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
@@ -44,12 +43,7 @@ import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
-import one.mixin.android.websocket.PlainDataAction
-import one.mixin.android.websocket.TransferPlainAckData
 import one.mixin.android.websocket.createAckListParamBlazeMessage
-import one.mixin.android.websocket.createAckSessionListParamBlazeMessage
-import one.mixin.android.websocket.createParamSessionMessage
-import one.mixin.android.websocket.createPlainJsonParam
 import org.jetbrains.anko.notificationManager
 
 class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
@@ -200,10 +194,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
             ackJob = lifecycleScope.launch(Dispatchers.IO) {
                 processAck()
-                Session.getExtensionSessionId()?.let {
-                    ackSessionJobBlock()
-                    syncMessageStatusToExtension(it)
-                }
             }
         } catch (e: Exception) {
         }
@@ -223,38 +213,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             return processAck()
         } else {
             return false
-        }
-    }
-
-    private suspend fun ackSessionJobBlock() {
-        jobDao.findSessionAckJobs()?.let { list ->
-            if (list.isNotEmpty()) {
-                list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-                    try {
-                        deliver(createAckSessionListParamBlazeMessage(it)).let {
-                            jobDao.deleteList(list)
-                        }
-                    } catch (e: Exception) {
-                    }
-                }
-            }
-        }
-    }
-
-    private suspend fun syncMessageStatusToExtension(sessionId: String) {
-        jobDao.findCreatePlainSessionJobs()?.let { list ->
-            if (list.isNotEmpty()) {
-                list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-                    val plainText = gson.toJson(TransferPlainAckData(
-                        action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
-                        messages = it
-                    ))
-                    val encoded = Base64.encodeBytes(plainText.toByteArray())
-                    val bm = createParamSessionMessage(createPlainJsonParam(accountId!!, accountId, encoded, sessionId))
-                    jobManager.addJobInBackground(SendSessionStatusMessageJob(bm))
-                    jobDao.deleteList(list)
-                }
-            }
         }
     }
 
