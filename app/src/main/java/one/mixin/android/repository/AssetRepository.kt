@@ -84,7 +84,7 @@ constructor(
 
     fun getXIN() = assetDao.getXIN()
 
-    fun transfer(transferRequest: TransferRequest) = assetService.transfer(transferRequest)
+    suspend fun transfer(transferRequest: TransferRequest) = assetService.transfer(transferRequest)
 
     fun pay(request: TransferRequest) = assetService.pay(request)
 
@@ -96,7 +96,7 @@ constructor(
 
     fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
-    fun withdrawal(withdrawalRequest: WithdrawalRequest) = assetService.withdrawals(withdrawalRequest)
+    suspend fun withdrawal(withdrawalRequest: WithdrawalRequest) = assetService.withdrawals(withdrawalRequest)
 
     fun saveAddr(addr: Address) = addressDao.insert(addr)
 

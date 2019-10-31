@@ -29,7 +29,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
-import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
@@ -68,7 +67,6 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
-import one.mixin.android.util.encryptPin
 import one.mixin.android.util.image.Compressor
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
@@ -484,10 +482,6 @@ internal constructor(
     }
 
     fun getXIN(): AssetItem? = assetRepository.getXIN()
-
-    fun transfer(assetId: String, userId: String, amount: String, code: String, trace: String?, memo: String?) =
-        assetRepository.transfer(TransferRequest(assetId, userId, amount, encryptPin(Session.getPinToken()!!, code), trace, memo))
-            .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
 
     fun getSystemAlbums() = accountRepository.getSystemAlbums()
 

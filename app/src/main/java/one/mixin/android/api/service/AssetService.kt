@@ -37,7 +37,7 @@ interface AssetService {
     ): Call<MixinResponse<List<Snapshot>>>
 
     @POST("transfers")
-    fun transfer(@Body request: TransferRequest): Observable<MixinResponse<Asset>>
+    suspend fun transfer(@Body request: TransferRequest): MixinResponse<Void>
 
     @POST("payments")
     fun pay(@Body request: TransferRequest): Observable<MixinResponse<PaymentResponse>>
@@ -46,7 +46,7 @@ interface AssetService {
     fun assetsFee(@Path("id") id: String): Observable<MixinResponse<AssetFee>>
 
     @POST("withdrawals")
-    fun withdrawals(@Body request: WithdrawalRequest): Call<MixinResponse<Snapshot>>
+    suspend fun withdrawals(@Body request: WithdrawalRequest): MixinResponse<Void>
 
     @GET("assets/{id}/addresses")
     fun addresses(@Path("id") id: String): Call<MixinResponse<List<Address>>>
