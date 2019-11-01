@@ -26,7 +26,7 @@ class MultisigsResponse(
     val rawTransaction: String,
     @SerializedName("created_at")
     val createdAt: String,
-    val memo: String
+    val memo: String?
 ) : Parcelable
 
 enum class MultisigsAction {

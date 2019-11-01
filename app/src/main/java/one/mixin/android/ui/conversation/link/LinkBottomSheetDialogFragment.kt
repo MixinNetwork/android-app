@@ -12,6 +12,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.annotation.StringRes
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -98,12 +99,10 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
+    private val linkViewModel: BottomSheetViewModel by viewModels { viewModelFactory }
 
     private lateinit var code: String
     private lateinit var contentView: View
-    private val linkViewModel: BottomSheetViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(BottomSheetViewModel::class.java)
-    }
 
     private val url: String by lazy { arguments!!.getString(CODE)!! }
 

@@ -51,7 +51,7 @@ class TransferBottomSheetDialogFragment : BiometricBottomSheetDialogFragment<Bio
             is TransferBiometricItem -> {
                 (t as TransferBiometricItem).let {
                     contentView.title.text = getString(R.string.wallet_bottom_transfer_to, it.user.fullName ?: "")
-                    contentView.sub_title.text = "MixinID:${it.user.identityNumber}"
+                    contentView.sub_title.text = "Mixin ID: ${it.user.identityNumber}"
                 }
                 contentView.pay_tv.setText(R.string.wallet_pay_with_pwd)
             }
