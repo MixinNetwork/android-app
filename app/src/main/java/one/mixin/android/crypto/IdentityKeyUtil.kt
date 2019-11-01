@@ -1,11 +1,8 @@
 package one.mixin.android.crypto
 
 import android.content.Context
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.vo.Identity
-import one.mixin.android.util.SINGLE_DB_THREAD
 import org.whispersystems.libsignal.util.KeyHelper
 
 open class IdentityKeyUtil {

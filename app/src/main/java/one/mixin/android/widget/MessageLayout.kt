@@ -5,10 +5,10 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import kotlin.math.max
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import org.jetbrains.anko.dip
-import kotlin.math.max
 
 class MessageLayout : ViewGroup {
     private val offset: Int
@@ -58,10 +58,10 @@ class MessageLayout : ViewGroup {
         val layoutHeight: Int
         val layoutWidth: Int
 
-        if(isRtl) {
+        if (isRtl) {
             layoutWidth = firstView.measuredWidth + contentPadding * 2
             layoutHeight = firstView.measuredHeight + secondView.measuredHeight + contentPadding * 2
-        }else if (lastLineWidth + offset + secondView.measuredWidth <= firstView.measuredWidth) {
+        } else if (lastLineWidth + offset + secondView.measuredWidth <= firstView.measuredWidth) {
             layoutWidth = firstView.measuredWidth + contentPadding * 2
             layoutHeight = firstView.measuredHeight + contentPadding * 2
         } else if (secondView.measuredWidth > firstView.measuredWidth + contentPadding * 2) {

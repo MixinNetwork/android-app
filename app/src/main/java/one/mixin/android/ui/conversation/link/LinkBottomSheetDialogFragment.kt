@@ -33,7 +33,6 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
-import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isUUID
@@ -169,13 +168,9 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                             linkViewModel.refreshAsset(assetId)
                         }
                         val paymentResponse = r.data!!
-                        if (paymentResponse.status == PaymentStatus.paid.name) {
-                            error(R.string.pay_paid)
-                        } else {
-                            authOrPay = true
-                            showTransferBottom(paymentResponse.recipient, amount, paymentResponse.asset, trace, memo)
-                            dismiss()
-                        }
+                        authOrPay = true
+                        showTransferBottom(paymentResponse.recipient, amount, paymentResponse.asset, trace, memo, paymentResponse.status)
+                        dismiss()
                     }
                 } else {
                     ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
@@ -249,7 +244,8 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                                     multisigs.amount,
                                     null,
                                     null,
-                                    multisigs.memo
+                                    multisigs.memo,
+                                    multisigs.state
                                     )
                                 MultisigsBottomSheetDialogFragment.newInstance(multisigsBiometricItem)
                                     .showNow(parentFragmentManager, MultisigsBottomSheetDialogFragment.TAG)
@@ -365,31 +361,27 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                 linkViewModel.pay(transferRequest).autoDispose(scopeProvider).subscribe({ r ->
                     if (r.isSuccess) {
                         val paymentResponse = r.data!!
-                        if (paymentResponse.status == PaymentStatus.paid.name) {
-                            error(R.string.pay_paid)
-                        } else {
-                            linkViewModel.viewModelScope.launch {
-                                val address = linkViewModel.findAddressById(addressId, assetId)
-                                var asset = linkViewModel.findAssetItemById(assetId)
-                                if (asset == null || asset?.destination.isNullOrEmpty()) {
-                                    asset = linkViewModel.refreshAsset(assetId)
-                                }
-                                if (asset != null) {
-                                    when {
-                                        address == null -> error(R.string.error_address_exists)
-                                        asset == null -> error(R.string.error_asset_exists)
-                                        else -> {
-                                            val biometricItem =
-                                                WithdrawBiometricItem(address.destination, address.addressId,
-                                                    address.label, asset!!, amount, null, traceId, memo)
-                                            val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
-                                            bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
-                                            dismiss()
-                                        }
+                        linkViewModel.viewModelScope.launch {
+                            val address = linkViewModel.findAddressById(addressId, assetId)
+                            var asset = linkViewModel.findAssetItemById(assetId)
+                            if (asset == null || asset?.destination.isNullOrEmpty()) {
+                                asset = linkViewModel.refreshAsset(assetId)
+                            }
+                            if (asset != null) {
+                                when {
+                                    address == null -> error(R.string.error_address_exists)
+                                    asset == null -> error(R.string.error_asset_exists)
+                                    else -> {
+                                        val biometricItem =
+                                            WithdrawBiometricItem(address.destination, address.addressId,
+                                                address.label, asset!!, amount, null, traceId, memo, paymentResponse.status)
+                                        val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
+                                        bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                                        dismiss()
                                     }
-                                } else {
-                                    error()
                                 }
+                            } else {
+                                error()
                             }
                         }
                     } else {
@@ -418,9 +410,9 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
         contentView.link_error_info.visibility = VISIBLE
     }
 
-    private fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String?, memo: String?) {
+    private fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String?, memo: String?, state: String) {
         TransferBottomSheetDialogFragment
-            .newInstance(TransferBiometricItem(user, asset.toAssetItem(), amount, null, trace, memo))
+            .newInstance(TransferBiometricItem(user, asset.toAssetItem(), amount, null, trace, memo, state))
             .showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
     }
 

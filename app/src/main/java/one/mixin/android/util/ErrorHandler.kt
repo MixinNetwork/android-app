@@ -44,88 +44,7 @@ open class ErrorHandler {
         fun handleMixinError(code: Int, message: String) {
             val ctx = MixinApplication.appContext
             ctx.runOnUiThread {
-                when (code) {
-                    TRANSACTION -> {
-                    }
-                    BAD_DATA -> {
-                        toast(getString(R.string.error_bad_data, BAD_DATA))
-                    }
-                    PHONE_SMS_DELIVERY -> {
-                        toast(getString(R.string.error_phone_sms_delivery, PHONE_SMS_DELIVERY))
-                    }
-                    RECAPTCHA_IS_INVALID -> {
-                        toast(getString(R.string.error_recaptcha_is_invalid, RECAPTCHA_IS_INVALID))
-                    }
-                    OLD_VERSION -> {
-                        toast(getString(R.string.error_old_version, OLD_VERSION))
-                    }
-                    PHONE_INVALID_FORMAT -> {
-                        toast(getString(R.string.error_phone_invalid_format, PHONE_INVALID_FORMAT))
-                    }
-                    INSUFFICIENT_IDENTITY_NUMBER -> {
-                    }
-                    INVALID_INVITATION_CODE -> {
-                    }
-                    PHONE_VERIFICATION_CODE_INVALID -> {
-                        toast(getString(R.string.error_phone_verification_code_invalid, PHONE_VERIFICATION_CODE_INVALID))
-                    }
-                    PHONE_VERIFICATION_CODE_EXPIRED -> {
-                        toast(getString(R.string.error_phone_verification_code_expired, PHONE_VERIFICATION_CODE_EXPIRED))
-                    }
-                    INVALID_QR_CODE -> {
-                    }
-                    NOT_FOUND -> {
-                        toast(getString(R.string.error_not_found, NOT_FOUND))
-                    }
-                    GROUP_CHAT_FULL -> {
-                        toast(getString(R.string.error_full_group, GROUP_CHAT_FULL))
-                    }
-                    INSUFFICIENT_BALANCE -> {
-                        toast(getString(R.string.error_insufficient_balance, INSUFFICIENT_BALANCE))
-                    }
-                    INVALID_PIN_FORMAT -> {
-                        toast(getString(R.string.error_invalid_pin_format, INVALID_PIN_FORMAT))
-                    }
-                    PIN_INCORRECT -> {
-                        toast(getString(R.string.error_pin_incorrect, PIN_INCORRECT))
-                    }
-                    TOO_SMALL -> {
-                        toast(getString(R.string.error_too_small, TOO_SMALL))
-                    }
-                    TOO_MANY_REQUEST -> {
-                        toast(getString(R.string.error_too_many_request, TOO_MANY_REQUEST))
-                    }
-                    USED_PHONE -> {
-                        toast(getString(R.string.error_used_phone, USED_PHONE))
-                    }
-                    INSUFFICIENT_TRANSACTION_FEE -> {
-                        toast(getString(R.string.error_insufficient_transaction_fee, INSUFFICIENT_TRANSACTION_FEE))
-                    }
-                    TOO_MANY_STICKERS -> {
-                        toast(getString(R.string.error_too_many_stickers, TOO_MANY_STICKERS))
-                    }
-                    BLOCKCHAIN_ERROR -> {
-                        toast(getString(R.string.error_blockchain, BLOCKCHAIN_ERROR))
-                    }
-                    INVALID_ADDRESS -> {
-                        toast(getString(R.string.error_invalid_address, INVALID_ADDRESS))
-                    }
-                    WITHDRAWAL_AMOUNT_SMALL -> {
-                        toast(getString(R.string.error_too_small_withdraw_amount, WITHDRAWAL_AMOUNT_SMALL))
-                    }
-                    INVALID_CODE_TOO_FREQUENT -> {
-                        toast(getString(R.string.error_invalid_code_too_frequent, INVALID_CODE_TOO_FREQUENT))
-                    }
-                    INVALID_EMERGENCY_CONTACT -> {
-                        toast(getString(R.string.error_invalid_emergency_contact, INVALID_EMERGENCY_CONTACT))
-                    }
-                    WITHDRAWAL_MEMO_FORMAT_INCORRECT -> {
-                        toast(getString(R.string.error_withdrawal_memo_format_incorrect, WITHDRAWAL_MEMO_FORMAT_INCORRECT))
-                    }
-                    else -> {
-                        toast("${getString(R.string.error_unknown_with_code, code)}: $message")
-                    }
-                }
+                toast(getMixinErrorStringByCode(code, message))
             }
         }
 
@@ -167,34 +86,144 @@ open class ErrorHandler {
         const val FORBIDDEN = 403
         const val NOT_FOUND = 404
         const val TOO_MANY_REQUEST = 429
-        private const val SERVER = 500
+        const val SERVER = 500
         const val TIME_INACCURATE = 911
 
-        private const val TRANSACTION = 10001
+        const val TRANSACTION = 10001
         const val BAD_DATA = 10002
-        private const val PHONE_SMS_DELIVERY = 10003
-        private const val RECAPTCHA_IS_INVALID = 10004
+        const val PHONE_SMS_DELIVERY = 10003
+        const val RECAPTCHA_IS_INVALID = 10004
         const val NEED_RECAPTCHA = 10005
-        private const val OLD_VERSION = 10006
-        private const val PHONE_INVALID_FORMAT = 20110
-        private const val INSUFFICIENT_IDENTITY_NUMBER = 20111
-        private const val INVALID_INVITATION_CODE = 20112
+        const val OLD_VERSION = 10006
+        const val PHONE_INVALID_FORMAT = 20110
+        const val INSUFFICIENT_IDENTITY_NUMBER = 20111
+        const val INVALID_INVITATION_CODE = 20112
         const val PHONE_VERIFICATION_CODE_INVALID = 20113
         const val PHONE_VERIFICATION_CODE_EXPIRED = 20114
-        private const val INVALID_QR_CODE = 20115
-        private const val GROUP_CHAT_FULL = 20116
-        private const val INSUFFICIENT_BALANCE = 20117
-        private const val INVALID_PIN_FORMAT = 20118
+        const val INVALID_QR_CODE = 20115
+        const val GROUP_CHAT_FULL = 20116
+        const val INSUFFICIENT_BALANCE = 20117
+        const val INVALID_PIN_FORMAT = 20118
         const val PIN_INCORRECT = 20119
-        private const val TOO_SMALL = 20120
-        private const val USED_PHONE = 20122
-        private const val INSUFFICIENT_TRANSACTION_FEE = 20124
-        private const val TOO_MANY_STICKERS = 20126
-        private const val WITHDRAWAL_AMOUNT_SMALL = 20127
-        private const val INVALID_CODE_TOO_FREQUENT = 20129
-        private const val INVALID_EMERGENCY_CONTACT = 20130
-        private const val WITHDRAWAL_MEMO_FORMAT_INCORRECT = 20131
-        private const val BLOCKCHAIN_ERROR = 30100
-        private const val INVALID_ADDRESS = 30102
+        const val TOO_SMALL = 20120
+        const val USED_PHONE = 20122
+        const val INSUFFICIENT_TRANSACTION_FEE = 20124
+        const val TOO_MANY_STICKERS = 20126
+        const val WITHDRAWAL_AMOUNT_SMALL = 20127
+        const val INVALID_CODE_TOO_FREQUENT = 20129
+        const val INVALID_EMERGENCY_CONTACT = 20130
+        const val WITHDRAWAL_MEMO_FORMAT_INCORRECT = 20131
+        const val BLOCKCHAIN_ERROR = 30100
+        const val INVALID_ADDRESS = 30102
+    }
+}
+
+fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
+    return when (code) {
+        ErrorHandler.TRANSACTION -> "${ErrorHandler.TRANSACTION} TRANSACTION"
+        ErrorHandler.BAD_DATA -> {
+            getString(R.string.error_bad_data, ErrorHandler.BAD_DATA)
+        }
+        ErrorHandler.PHONE_SMS_DELIVERY -> {
+            getString(R.string.error_phone_sms_delivery, ErrorHandler.PHONE_SMS_DELIVERY)
+        }
+        ErrorHandler.RECAPTCHA_IS_INVALID -> {
+            getString(R.string.error_recaptcha_is_invalid,
+                ErrorHandler.RECAPTCHA_IS_INVALID
+            )
+        }
+        ErrorHandler.OLD_VERSION -> {
+            getString(R.string.error_old_version, ErrorHandler.OLD_VERSION)
+        }
+        ErrorHandler.PHONE_INVALID_FORMAT -> {
+            getString(R.string.error_phone_invalid_format,
+                ErrorHandler.PHONE_INVALID_FORMAT
+            )
+        }
+        ErrorHandler.INSUFFICIENT_IDENTITY_NUMBER -> "${ErrorHandler.INSUFFICIENT_IDENTITY_NUMBER} INSUFFICIENT_IDENTITY_NUMBER"
+        ErrorHandler.INVALID_INVITATION_CODE -> "${ErrorHandler.INVALID_INVITATION_CODE} INVALID_INVITATION_CODE"
+        ErrorHandler.PHONE_VERIFICATION_CODE_INVALID -> {
+            getString(R.string.error_phone_verification_code_invalid,
+                ErrorHandler.PHONE_VERIFICATION_CODE_INVALID
+            )
+        }
+        ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED -> {
+            getString(R.string.error_phone_verification_code_expired,
+                ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED
+            )
+        }
+        ErrorHandler.INVALID_QR_CODE -> "${ErrorHandler.INVALID_QR_CODE} INVALID_QR_CODE"
+        ErrorHandler.NOT_FOUND -> {
+            getString(R.string.error_not_found, ErrorHandler.NOT_FOUND)
+        }
+        ErrorHandler.GROUP_CHAT_FULL -> {
+            getString(R.string.error_full_group, ErrorHandler.GROUP_CHAT_FULL)
+        }
+        ErrorHandler.INSUFFICIENT_BALANCE -> {
+            getString(R.string.error_insufficient_balance,
+                ErrorHandler.INSUFFICIENT_BALANCE
+            )
+        }
+        ErrorHandler.INVALID_PIN_FORMAT -> {
+            getString(R.string.error_invalid_pin_format, ErrorHandler.INVALID_PIN_FORMAT)
+        }
+        ErrorHandler.PIN_INCORRECT -> {
+            getString(R.string.error_pin_incorrect, ErrorHandler.PIN_INCORRECT)
+        }
+        ErrorHandler.TOO_SMALL -> {
+            getString(R.string.error_too_small, ErrorHandler.TOO_SMALL)
+        }
+        ErrorHandler.TOO_MANY_REQUEST -> {
+            getString(R.string.error_too_many_request, ErrorHandler.TOO_MANY_REQUEST)
+        }
+        ErrorHandler.USED_PHONE -> {
+            getString(R.string.error_used_phone, ErrorHandler.USED_PHONE)
+        }
+        ErrorHandler.INSUFFICIENT_TRANSACTION_FEE -> {
+            getString(R.string.error_insufficient_transaction_fee,
+                ErrorHandler.INSUFFICIENT_TRANSACTION_FEE
+            )
+        }
+        ErrorHandler.TOO_MANY_STICKERS -> {
+            getString(R.string.error_too_many_stickers, ErrorHandler.TOO_MANY_STICKERS)
+        }
+        ErrorHandler.BLOCKCHAIN_ERROR -> {
+            getString(R.string.error_blockchain, ErrorHandler.BLOCKCHAIN_ERROR)
+        }
+        ErrorHandler.INVALID_ADDRESS -> {
+            getString(R.string.error_invalid_address, ErrorHandler.INVALID_ADDRESS)
+        }
+        ErrorHandler.WITHDRAWAL_AMOUNT_SMALL -> {
+            getString(R.string.error_too_small_withdraw_amount,
+                ErrorHandler.WITHDRAWAL_AMOUNT_SMALL
+            )
+        }
+        ErrorHandler.INVALID_CODE_TOO_FREQUENT -> {
+            getString(R.string.error_invalid_code_too_frequent,
+                ErrorHandler.INVALID_CODE_TOO_FREQUENT
+            )
+        }
+        ErrorHandler.INVALID_EMERGENCY_CONTACT -> {
+            getString(R.string.error_invalid_emergency_contact,
+                ErrorHandler.INVALID_EMERGENCY_CONTACT
+            )
+        }
+        ErrorHandler.WITHDRAWAL_MEMO_FORMAT_INCORRECT -> {
+            getString(R.string.error_withdrawal_memo_format_incorrect,
+                ErrorHandler.WITHDRAWAL_MEMO_FORMAT_INCORRECT
+            )
+        }
+
+        ErrorHandler.FORBIDDEN -> {
+            getString(R.string.error_forbidden)
+        }
+        ErrorHandler.SERVER -> {
+            getString(R.string.error_server_5xx)
+        }
+        ErrorHandler.TIME_INACCURATE -> "${ErrorHandler.TIME_INACCURATE} TIME_INACCURATE"
+
+        else -> {
+            "${getString(R.string.error_unknown_with_code, code)}: $message"
+        }
     }
 }

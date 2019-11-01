@@ -86,6 +86,8 @@
     <string name="restart">重启应用</string>
     <string name="update_downloaded">一个更新刚下载完成。</string>
     <string name="language">语言</string>
+    <string name="try_again">请重试</string>
+    <string name="ok">好的</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>

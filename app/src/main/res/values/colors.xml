@@ -75,6 +75,7 @@
     <color name="toast_bg">#3A3C3E</color>
     <color name="camera_notification_bg">#D8D8D8</color>
     <color name="shared_media_bg">#F6F7FA</color>
+    <color name="text_color_error_tip">#F67070</color>
 
     <array name="name_colors">
         <item>#AA4848</item>

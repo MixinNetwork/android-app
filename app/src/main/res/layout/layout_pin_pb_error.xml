@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ViewAnimator xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/pin_va"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <one.mixin.android.widget.PinView
+            android:id="@+id/pin"
+            android:layout_width="180dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            app:pin_tipVisible="false" />
+
+        <TextView
+            android:id="@+id/pay_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:text="@string/multisig_pay_pin"
+            android:textColor="@color/text_gray" />
+
+        <TextView
+            android:id="@+id/biometric_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin20"
+            android:layout_marginBottom="32dp"
+            android:drawableStart="@drawable/ic_biometric"
+            android:drawablePadding="@dimen/padding8"
+            android:text="@string/multisig_pay_biometric"
+            android:textColor="@color/wallet_blue_secondary"
+            android:textSize="16sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center">
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:theme="@style/AppTheme.BlueAccent" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin20"
+        android:layout_marginBottom="@dimen/margin20"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/error_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_marginEnd="@dimen/margin20"
+            android:background="@drawable/bg_round_8_solid_gray"
+            android:gravity="center"
+            android:paddingStart="@dimen/margin20"
+            android:paddingTop="@dimen/margin10"
+            android:paddingEnd="@dimen/margin20"
+            android:paddingBottom="@dimen/margin10"
+            android:text="@string/multisig_state_signed"
+            android:textColor="@color/text_color_error_tip" />
+
+        <Button
+            android:id="@+id/error_btn"
+            style="@style/AppTheme.MaterialButton"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dp"
+            android:enabled="true"
+            android:text="@string/common_continue"
+            android:textSize="14sp"/>
+    </LinearLayout>
+</ViewAnimator>

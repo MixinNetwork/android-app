@@ -7,9 +7,11 @@ import android.text.TextUtils
 import android.view.View
 import android.view.View.VISIBLE
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
+import kotlinx.android.synthetic.main.layout_pin_pb_error.view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.withArgs
@@ -63,6 +65,12 @@ class TransferBottomSheetDialogFragment : BiometricBottomSheetDialogFragment<Bio
         if (!TextUtils.isEmpty(t.memo)) {
             contentView.memo.visibility = VISIBLE
             contentView.memo.text = t.memo
+        }
+    }
+
+    override fun checkState(state: String) {
+        if (state == PaymentStatus.paid.name) {
+            showErrorInfo(getString(R.string.pay_paid))
         }
     }
 

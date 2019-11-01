@@ -7,14 +7,12 @@ import android.os.Bundle
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import java.math.BigDecimal
-import kotlinx.android.synthetic.main.fragment_multisigs_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.asset_icon
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.balance
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.balance_as
-import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.biometric_tv
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.keyboard
-import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.pin
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.title_view
+import kotlinx.android.synthetic.main.layout_pin_pb_error.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +22,7 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
@@ -35,7 +34,12 @@ import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.util.BiometricUtil
-import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.INSUFFICIENT_BALANCE
+import one.mixin.android.util.ErrorHandler.Companion.INVALID_PIN_FORMAT
+import one.mixin.android.util.ErrorHandler.Companion.PIN_INCORRECT
+import one.mixin.android.util.ErrorHandler.Companion.TOO_MANY_REQUEST
+import one.mixin.android.util.ErrorHandler.Companion.TOO_SMALL
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
@@ -46,9 +50,12 @@ abstract class BiometricBottomSheetDialogFragment<T : BiometricItem> : MixinBott
 
         const val POS_PIN = 0
         const val POS_PB = 1
+        const val POS_ERROR = 2
     }
 
     private var biometricDialog: BiometricDialog<BiometricItem>? = null
+
+    private var keyboardHeight = 0
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -111,13 +118,37 @@ abstract class BiometricBottomSheetDialogFragment<T : BiometricItem> : MixinBott
                 }
             }
         })
+
+        checkState(t.state)
     }
+
+    abstract fun checkState(state: String)
 
     abstract fun getBiometricItem(): T
 
     abstract suspend fun invokeNetwork(pin: String): MixinResponse<Void>
 
     abstract fun doWhenInvokeNetworkSuccess()
+
+    protected fun showErrorInfo(content: String, animate: Boolean = false) {
+        if (!isAdded) return
+
+        contentView.pin_va?.displayedChild = POS_ERROR
+        contentView.error_info?.text = content
+        keyboardHeight = contentView.keyboard.height
+        if (animate) {
+            contentView.keyboard?.animateHeight(keyboardHeight, 0)
+        } else {
+            contentView.keyboard?.isVisible = false
+        }
+    }
+
+    private fun showPin() {
+        if (!isAdded) return
+
+        contentView.pin_va?.displayedChild = POS_PIN
+        contentView.keyboard?.animateHeight(0, keyboardHeight)
+    }
 
     private fun onPinCorrect(pin: String) {
         lifecycleScope.launch {
@@ -148,11 +179,9 @@ abstract class BiometricBottomSheetDialogFragment<T : BiometricItem> : MixinBott
                 },
                 failureBlock = {
                     contentView.pin?.clear()
-                    if (it.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
-                        toast(R.string.error_pin_check_too_many_request)
-                    } else {
-                        ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
-                    }
+                    val errorAction = getErrorAction(it.errorCode)
+                    setErrorButton(errorAction)
+                    showErrorInfo(requireContext().getMixinErrorStringByCode(it.errorCode, it.errorDescription), true)
                     return@handleMixinResponse true
                 },
                 exceptionBlock = {
@@ -161,6 +190,44 @@ abstract class BiometricBottomSheetDialogFragment<T : BiometricItem> : MixinBott
                     return@handleMixinResponse false
                 }
             )
+        }
+    }
+
+    private fun getErrorAction(errorCode: Int): ErrorAction {
+        return when (errorCode) {
+            TOO_MANY_REQUEST -> {
+                ErrorAction.TryLater
+            }
+            INVALID_PIN_FORMAT, PIN_INCORRECT -> {
+                ErrorAction.RetryPin
+            }
+            INSUFFICIENT_BALANCE, TOO_SMALL -> {
+                ErrorAction.ChangeAmount
+            }
+            else -> {
+                ErrorAction.Close
+            }
+        }
+    }
+
+    private fun setErrorButton(errorAction: ErrorAction) {
+        when (errorAction) {
+            ErrorAction.TryLater -> {
+                contentView.error_btn.text = getString(R.string.group_ok)
+                contentView.error_btn.setOnClickListener { dismiss() }
+            }
+            ErrorAction.RetryPin -> {
+                contentView.error_btn.text = getString(R.string.try_again)
+                contentView.error_btn.setOnClickListener { showPin() }
+            }
+            ErrorAction.ChangeAmount -> {
+                contentView.error_btn.text = getString(R.string.bottom_withdrawal_change_amount)
+                contentView.error_btn.setOnClickListener { showPin() }
+            }
+            ErrorAction.Close -> {
+                contentView.error_btn.text = getString(R.string.group_ok)
+                contentView.error_btn.setOnClickListener { dismiss() }
+            }
         }
     }
 
@@ -185,5 +252,9 @@ abstract class BiometricBottomSheetDialogFragment<T : BiometricItem> : MixinBott
 
     interface Callback {
         fun onSuccess()
+    }
+
+    enum class ErrorAction {
+        TryLater, RetryPin, ChangeAmount, Close
     }
 }

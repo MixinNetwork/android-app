@@ -478,10 +478,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
 
         val biometricItem = if (user != null) {
-            TransferBiometricItem(user!!, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo)
+            TransferBiometricItem(user!!, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo, "")
         } else {
             WithdrawBiometricItem(address!!.displayAddress(), address!!.addressId,
-                address!!.label, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo)
+                address!!.label, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo, "")
         }
 
         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)

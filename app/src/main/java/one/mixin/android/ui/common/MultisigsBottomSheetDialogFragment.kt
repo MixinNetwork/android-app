@@ -14,6 +14,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.MultisigsAction
+import one.mixin.android.api.response.MultisigsState
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.MultisigsBiometricItem
@@ -83,6 +84,14 @@ class MultisigsBottomSheetDialogFragment : BiometricBottomSheetDialogFragment<Mu
         }
     }
 
+    override fun checkState(state: String) {
+        if (state == MultisigsState.signed.name) {
+            showErrorInfo(getString(R.string.multisig_state_signed))
+        } else if (state == MultisigsState.unlocked.name) {
+            showErrorInfo(getString(R.string.multisig_state_unlocked))
+        }
+    }
+
     private fun showUserList(userList: ArrayList<User>, isSender: Boolean) {
         val title = getString(if (isSender) R.string.multisig_senders else R.string.multisig_receivers)
         UserListBottomSheetDialogFragment.newInstance(userList, title)
@@ -108,7 +117,9 @@ class MultisigsBottomSheetDialogFragment : BiometricBottomSheetDialogFragment<Mu
 
     override fun onDismiss(dialog: DialogInterface?) {
         super.onDismiss(dialog)
-        if (!success) {
+        if (!success &&
+            t.state != MultisigsState.signed.name &&
+            t.state != MultisigsState.unlocked.name) {
             GlobalScope.launch(Dispatchers.IO) {
                 bottomViewModel.cancelMultisigs(t.requestId)
             }
