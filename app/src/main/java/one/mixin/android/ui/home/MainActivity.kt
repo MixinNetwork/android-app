@@ -161,7 +161,10 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         MixinApplication.get().onlining.set(true)
-        if (!defaultSharedPreferences.getBoolean(LoadingFragment.IS_LOADED, false)) {
+
+        if (!defaultSharedPreferences.getBoolean(LoadingFragment.IS_LOADED, false)
+            // or check session
+        ) {
             InitializeActivity.showLoading(this)
             finish()
             return

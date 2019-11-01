@@ -35,22 +35,22 @@ class InitializeActivity : BaseActivity() {
         }
 
         fun showWongTime(context: Context) {
-            context.startActivity(getIntent(context, false, true))
+            context.startActivity(getIntent(context, setName = false, wrongTime = true))
         }
 
         fun showWongTimeTop(context: Context) {
-            context.startActivity(getIntent(context, false, true).apply {
+            context.startActivity(getIntent(context, setName = false, wrongTime = true).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
             })
         }
 
         fun showLoading(context: Context) {
-            context.startActivity(getIntent(context, false, false))
+            context.startActivity(getIntent(context, setName = false, wrongTime = false))
         }
 
         fun showSetupName(context: Context) {
-            context.startActivity(getIntent(context, true, false))
+            context.startActivity(getIntent(context, setName = true, wrongTime = false))
         }
     }
 }

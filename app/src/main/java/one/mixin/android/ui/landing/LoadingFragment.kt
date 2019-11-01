@@ -6,8 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -33,9 +35,18 @@ class LoadingFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        requireContext().defaultSharedPreferences.putBoolean(IS_LOADED, false)
         MixinApplication.get().onlining.set(true)
-        load()
+        lifecycleScope.launch {
+            // check session and do something
+            // ...
+
+            if (!defaultSharedPreferences.getBoolean(IS_LOADED, false)) {
+                load()
+            } else {
+                MainActivity.show(context!!)
+                activity?.finish()
+            }
+        }
     }
 
     private fun load() {

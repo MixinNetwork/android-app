@@ -44,6 +44,7 @@ class RestoreActivity : BaseActivity() {
             .setMessage(R.string.restore_message)
             .setNegativeButton(R.string.restore_skip) { dialog, _ ->
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
+                defaultSharedPreferences.putBoolean(LoadingFragment.IS_LOADED, false)
                 InitializeActivity.showLoading(this)
                 dialog.dismiss()
                 finish()
@@ -59,6 +60,7 @@ class RestoreActivity : BaseActivity() {
                             findBackup()
                         }
                     }, {
+                        defaultSharedPreferences.putBoolean(LoadingFragment.IS_LOADED, false)
                         InitializeActivity.showLoading(this)
                         finish()
                     })
@@ -101,6 +103,7 @@ class RestoreActivity : BaseActivity() {
             }
             .setPositiveButton(R.string.restore_skip) { dialog, _ ->
                 dialog.dismiss()
+                defaultSharedPreferences.putBoolean(LoadingFragment.IS_LOADED, false)
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                 InitializeActivity.showLoading(this)
             }.create().run {
@@ -141,6 +144,7 @@ class RestoreActivity : BaseActivity() {
         }
         restore_size.text = getString(R.string.restore_size, data.length().fileSize())
         restore_skip.setOnClickListener {
+            defaultSharedPreferences.putBoolean(LoadingFragment.IS_LOADED, false)
             InitializeActivity.showLoading(this)
             defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
             finish()
@@ -152,6 +156,7 @@ class RestoreActivity : BaseActivity() {
         restore(this@RestoreActivity) { result ->
             BackupNotification.cancel()
             if (result == Result.SUCCESS) {
+                defaultSharedPreferences.putBoolean(LoadingFragment.IS_LOADED, false)
                 InitializeActivity.showLoading(this@RestoreActivity)
                 defaultSharedPreferences.putBoolean(
                     Constants.Account.PREF_RESTORE,
