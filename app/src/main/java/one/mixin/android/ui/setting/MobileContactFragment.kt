@@ -35,7 +35,7 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
 
     init {
         lifecycleScope.launchWhenCreated {
-            op_pb.isVisible = true
+            op_pb?.isVisible = true
             handleMixinResponse(
                 invokeNetwork = { viewModel.getContacts() },
                 successBlock = { response ->
