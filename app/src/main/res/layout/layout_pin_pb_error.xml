@@ -47,7 +47,7 @@
         android:layout_gravity="center">
 
         <ProgressBar
-            style="?android:attr/progressBarStyleLarge"
+            style="?android:attr/progressBarStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"

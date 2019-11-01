@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
+import android.view.View.GONE
 import android.view.View.VISIBLE
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.layout_pin_pb_error.view.*
@@ -70,6 +71,7 @@ class TransferBottomSheetDialogFragment : BiometricBottomSheetDialogFragment<Bio
 
     override fun checkState(state: String) {
         if (state == PaymentStatus.paid.name) {
+            contentView.error_btn.visibility = GONE
             showErrorInfo(getString(R.string.pay_paid))
         }
     }

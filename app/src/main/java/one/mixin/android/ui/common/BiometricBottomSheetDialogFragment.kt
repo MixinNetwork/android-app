@@ -222,7 +222,7 @@ abstract class BiometricBottomSheetDialogFragment<T : BiometricItem> : MixinBott
             }
             ErrorAction.ChangeAmount -> {
                 contentView.error_btn.text = getString(R.string.bottom_withdrawal_change_amount)
-                contentView.error_btn.setOnClickListener { showPin() }
+                contentView.error_btn.setOnClickListener { dismiss() }
             }
             ErrorAction.Close -> {
                 contentView.error_btn.text = getString(R.string.group_ok)
