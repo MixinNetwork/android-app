@@ -657,6 +657,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 } catch (e: URISyntaxException) {
                     view.loadUrl(url, extraHeaders)
+                } catch (e: ActivityNotFoundException) {
+                    view.loadUrl(url, extraHeaders)
                 }
             }
 
