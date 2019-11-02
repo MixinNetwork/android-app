@@ -60,6 +60,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
+import one.mixin.android.ui.common.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
@@ -477,15 +478,15 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
 
         val biometricItem = if (user != null) {
-            TransferBiometricItem(user!!, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo)
+            TransferBiometricItem(user!!, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo, "")
         } else {
             WithdrawBiometricItem(address!!.displayAddress(), address!!.addressId,
-                address!!.label, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo)
+                address!!.label, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo, "")
         }
 
         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
         bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
-        bottom.callback = object : TransferBottomSheetDialogFragment.Callback {
+        bottom.callback = object : BiometricBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
                 dialog?.dismiss()
             }

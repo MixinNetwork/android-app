@@ -5,8 +5,10 @@ import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.EditBottomSheetDialogFragment
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
+import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.GiphyBottomSheetFragment
@@ -80,4 +82,10 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeQrScanBottomSheetDialogFragment(): QrScanBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeMultisigsBottomSheetDialogFragment(): MultisigsBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeUserListBottomSheetDialogFragment(): UserListBottomSheetDialogFragment
 }

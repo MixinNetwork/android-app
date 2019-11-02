@@ -86,6 +86,8 @@
     <string name="restart">重启应用</string>
     <string name="update_downloaded">一个更新刚下载完成。</string>
     <string name="language">语言</string>
+    <string name="try_again">请重试</string>
+    <string name="ok">好的</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -702,4 +704,13 @@
     <!-- live -->
     <string name="live_permission">Mixin 需要使用出现在其它应用上的权限以在画中画模式中播放视频。</string>
     <string name="live_setting">设置</string>
+    <!-- multisigs -->
+    <string name="multisig_pay_pin">通过密码签名</string>
+    <string name="multisig_pay_biometric">使用生物识别签名</string>
+    <string name="multisig_transaction">多重签名交易</string>
+    <string name="multisig_revoke_transaction">撤销多重签名交易</string>
+    <string name="multisig_senders">交易发起人</string>
+    <string name="multisig_receivers">交易接收人</string>
+    <string name="multisig_state_signed">您已经对这笔交易进行了签名，您无法再次签名。</string>
+    <string name="multisig_state_unlocked">这笔交易已经被其他人撤销了，您无法再次撤销。</string>
 </resources>

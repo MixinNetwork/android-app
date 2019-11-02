@@ -12,8 +12,10 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.annotation.StringRes
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
@@ -23,13 +25,15 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
-import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isUUID
@@ -40,7 +44,9 @@ import one.mixin.android.repository.QrCodeType
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
+import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.MultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -52,8 +58,6 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toAssetItem
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 
 class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectable {
 
@@ -95,12 +99,10 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
+    private val linkViewModel: BottomSheetViewModel by viewModels { viewModelFactory }
 
     private lateinit var code: String
     private lateinit var contentView: View
-    private val linkViewModel: BottomSheetViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(BottomSheetViewModel::class.java)
-    }
 
     private val url: String by lazy { arguments!!.getString(CODE)!! }
 
@@ -165,13 +167,9 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                             linkViewModel.refreshAsset(assetId)
                         }
                         val paymentResponse = r.data!!
-                        if (paymentResponse.status == PaymentStatus.paid.name) {
-                            error(R.string.pay_paid)
-                        } else {
-                            authOrPay = true
-                            showTransferBottom(paymentResponse.recipient, amount, paymentResponse.asset, trace, memo)
-                            dismiss()
-                        }
+                        authOrPay = true
+                        showTransferBottom(paymentResponse.recipient, amount, paymentResponse.asset, trace, memo, paymentResponse.status)
+                        dismiss()
                     }
                 } else {
                     ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
@@ -215,16 +213,44 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                     }
                     result.first == QrCodeType.authorization.name -> {
                         val authorization = result.second as AuthorizationResponse
-                        doAsync {
-                            val assets = linkViewModel.simpleAssetsWithBalance()
-                            uiThread {
-                                activity?.let {
-                                    val scopes = AuthBottomSheetDialogFragment.handleAuthorization(it, authorization, assets)
-                                    AuthBottomSheetDialogFragment.newInstance(scopes, authorization)
-                                        .showNow(parentFragmentManager, AuthBottomSheetDialogFragment.TAG)
-                                    authOrPay = true
-                                    dismiss()
-                                }
+                        lifecycleScope.launch {
+                            val assets = withContext(Dispatchers.IO) {
+                                linkViewModel.simpleAssetsWithBalance()
+                            }
+                            activity?.let {
+                                val scopes = AuthBottomSheetDialogFragment.handleAuthorization(it, authorization, assets)
+                                AuthBottomSheetDialogFragment.newInstance(scopes, authorization)
+                                    .showNow(parentFragmentManager, AuthBottomSheetDialogFragment.TAG)
+                                authOrPay = true
+                                dismiss()
+                            }
+                        }
+                    }
+                    result.first == QrCodeType.multisig_request.name -> {
+                        val multisigs = result.second as MultisigsResponse
+                        lifecycleScope.launch {
+                            var asset = linkViewModel.findAssetItemById(multisigs.assetId)
+                            if (asset == null || asset.destination.isEmpty()) {
+                                asset = linkViewModel.refreshAsset(multisigs.assetId)
+                            }
+                            if (asset != null && asset.destination.isNotEmpty()) {
+                                val multisigsBiometricItem = MultisigsBiometricItem(
+                                    multisigs.requestId,
+                                    multisigs.action,
+                                    multisigs.senders,
+                                    multisigs.receivers,
+                                    asset,
+                                    multisigs.amount,
+                                    null,
+                                    null,
+                                    multisigs.memo,
+                                    multisigs.state
+                                    )
+                                MultisigsBottomSheetDialogFragment.newInstance(multisigsBiometricItem)
+                                    .showNow(parentFragmentManager, MultisigsBottomSheetDialogFragment.TAG)
+                                dismiss()
+                            } else {
+                                error()
                             }
                         }
                     }
@@ -251,15 +277,15 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                             error(R.string.error_address_exists)
                         } else {
                             var asset = linkViewModel.findAssetItemById(assetId)
-                            if (asset == null || asset.destination.isEmpty()) {
+                            if (asset == null || asset?.destination.isNullOrEmpty()) {
                                 asset = linkViewModel.refreshAsset(assetId)
                             }
-                            if (asset != null) {
+                            if (asset != null && asset!!.destination.isNotEmpty()) {
                                 PinAddrBottomSheetDialogFragment.newInstance(
                                     assetId = assetId,
-                                    assetUrl = asset.iconUrl,
-                                    chainIconUrl = asset.chainIconUrl,
-                                    assetName = asset.name,
+                                    assetUrl = asset!!.iconUrl,
+                                    chainIconUrl = asset!!.chainIconUrl,
+                                    assetName = asset!!.name,
                                     addressId = addressId,
                                     label = address.label,
                                     destination = address.destination,
@@ -285,7 +311,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                     Uri.decode(this)
                 }
                 if (assetId != null && assetId.isUUID() && !destination.isNullOrEmpty() && !label.isNullOrEmpty()) {
-                    linkViewModel.viewModelScope.launch {
+                    lifecycleScope.launch {
                         var asset = linkViewModel.findAssetItemById(assetId)
                         if (asset == null || asset?.destination.isNullOrEmpty()) {
                             asset = linkViewModel.refreshAsset(assetId)
@@ -334,31 +360,27 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                 linkViewModel.pay(transferRequest).autoDispose(scopeProvider).subscribe({ r ->
                     if (r.isSuccess) {
                         val paymentResponse = r.data!!
-                        if (paymentResponse.status == PaymentStatus.paid.name) {
-                            error(R.string.pay_paid)
-                        } else {
-                            linkViewModel.viewModelScope.launch {
-                                val address = linkViewModel.findAddressById(addressId, assetId)
-                                var asset = linkViewModel.findAssetItemById(assetId)
-                                if (asset == null || asset?.destination.isNullOrEmpty()) {
-                                    asset = linkViewModel.refreshAsset(assetId)
-                                }
-                                if (asset != null) {
-                                    when {
-                                        address == null -> error(R.string.error_address_exists)
-                                        asset == null -> error(R.string.error_asset_exists)
-                                        else -> {
-                                            val biometricItem =
-                                                WithdrawBiometricItem(address.destination, address.addressId,
-                                                    address.label, asset!!, amount, null, traceId, memo)
-                                            val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
-                                            bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
-                                            dismiss()
-                                        }
+                        linkViewModel.viewModelScope.launch {
+                            val address = linkViewModel.findAddressById(addressId, assetId)
+                            var asset = linkViewModel.findAssetItemById(assetId)
+                            if (asset == null || asset?.destination.isNullOrEmpty()) {
+                                asset = linkViewModel.refreshAsset(assetId)
+                            }
+                            if (asset != null) {
+                                when {
+                                    address == null -> error(R.string.error_address_exists)
+                                    asset == null -> error(R.string.error_asset_exists)
+                                    else -> {
+                                        val biometricItem =
+                                            WithdrawBiometricItem(address.destination, address.addressId,
+                                                address.label, asset!!, amount, null, traceId, memo, paymentResponse.status)
+                                        val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
+                                        bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                                        dismiss()
                                     }
-                                } else {
-                                    error()
                                 }
+                            } else {
+                                error()
                             }
                         }
                     } else {
@@ -387,9 +409,9 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
         contentView.link_error_info.visibility = VISIBLE
     }
 
-    private fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String?, memo: String?) {
+    private fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String?, memo: String?, state: String) {
         TransferBottomSheetDialogFragment
-            .newInstance(TransferBiometricItem(user, asset.toAssetItem(), amount, null, trace, memo))
+            .newInstance(TransferBiometricItem(user, asset.toAssetItem(), amount, null, trace, memo, state))
             .showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
     }
 

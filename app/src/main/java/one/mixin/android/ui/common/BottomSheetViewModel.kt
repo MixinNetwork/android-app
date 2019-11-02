@@ -18,6 +18,7 @@ import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
+import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
@@ -43,7 +44,6 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
-import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
@@ -66,12 +66,10 @@ class BottomSheetViewModel @Inject internal constructor(
         jobManager.addJobInBackground(RefreshConversationJob(conversationId))
     }
 
-    fun simpleAssetsWithBalance() = assetRepository.simpleAssetsWithBalance()
+    suspend fun simpleAssetsWithBalance() = assetRepository.simpleAssetsWithBalance()
 
-    fun transfer(assetId: String, userId: String, amount: String, code: String, trace: String?, memo: String?) =
+    suspend fun transfer(assetId: String, userId: String, amount: String, code: String, trace: String?, memo: String?) =
         assetRepository.transfer(TransferRequest(assetId, userId, amount, encryptPin(Session.getPinToken()!!, code), trace, memo))
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeOn(Schedulers.io())!!
 
     fun authorize(request: AuthorizeRequest): Observable<MixinResponse<AuthorizationResponse>> =
         accountRepository.authorize(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
@@ -79,13 +77,9 @@ class BottomSheetViewModel @Inject internal constructor(
     fun pay(request: TransferRequest): Observable<MixinResponse<PaymentResponse>> =
         assetRepository.pay(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    fun withdrawal(addressId: String, amount: String, code: String, traceId: String, memo: String?):
-        Observable<MixinResponse<Snapshot>> =
-        Observable.just(Session.getPinToken()).map { pinToken ->
+    suspend fun withdrawal(addressId: String, amount: String, code: String, traceId: String, memo: String?) =
             assetRepository.withdrawal(
-                WithdrawalRequest(addressId, amount, encryptPin(pinToken, code)!!, traceId, memo))
-                .execute().body()!!
-        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                WithdrawalRequest(addressId, amount, encryptPin(Session.getPinToken()!!, code)!!, traceId, memo))
 
     fun syncAddr(assetId: String, destination: String?, label: String?, tag: String?, code: String): Observable<MixinResponse<Address>> =
         assetRepository.syncAddr(AddressRequest(assetId, destination, tag, label, encryptPin(Session.getPinToken()!!, code)!!))
@@ -219,4 +213,43 @@ class BottomSheetViewModel @Inject internal constructor(
         val escapedQuery = query.trim().escapeSql()
         return userRepository.searchAppByHost(escapedQuery)
     }
+
+    suspend fun findMultiUsers(
+        senders: Array<String>,
+        receivers: Array<String>
+    ): List<User> {
+        val userIds = mutableSetOf<String>().apply {
+            addAll(senders)
+            addAll(receivers)
+        }
+        val existUserIds = userRepository.findUserExist(userIds.toList())
+        val queryUsers = userIds.filter {
+            !existUserIds.contains(it)
+        }
+        if (queryUsers.isNotEmpty()) {
+            return handleMixinResponse(
+                invokeNetwork = {
+                    userRepository.fetchUser(queryUsers)
+                },
+                successBlock = {
+                    val userList = it.data
+                    if (userList != null) {
+                        userRepository.upsertList(userList)
+                    }
+                    return@handleMixinResponse userRepository.findMultiUsersByIds(userIds)
+                }
+            ) ?: emptyList()
+        } else {
+            return userRepository.findMultiUsersByIds(userIds)
+        }
+    }
+
+    suspend fun signMultisigs(requestId: String, pin: String) =
+        accountRepository.signMultisigs(requestId, PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
+
+    suspend fun unlockMultisigs(requestId: String, pin: String) =
+        accountRepository.unlockMultisigs(requestId, PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
+
+    suspend fun cancelMultisigs(requestId: String) =
+        accountRepository.cancelMultisigs(requestId)
 }

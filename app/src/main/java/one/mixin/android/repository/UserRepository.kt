@@ -79,4 +79,8 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
     fun findFriendsNotBot() = userDao.findFriendsNotBot()
 
     fun findAppsByIds(appIds: List<String>) = appDao.findAppsByIds(appIds)
+
+    suspend fun findMultiUsersByIds(ids: Set<String>) = userDao.findMultiUsersByIds(ids)
+
+    suspend fun fetchUser(ids: List<String>) = userService.fetchUsers(ids)
 }

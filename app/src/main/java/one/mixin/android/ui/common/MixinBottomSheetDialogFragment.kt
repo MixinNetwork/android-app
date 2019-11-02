@@ -3,6 +3,7 @@ package one.mixin.android.ui.common
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.MixinDialogFragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.manager.SupportRequestManagerFragment
@@ -20,9 +21,7 @@ abstract class MixinBottomSheetDialogFragment : MixinDialogFragment(), Injectabl
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-    protected val bottomViewModel: BottomSheetViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(BottomSheetViewModel::class.java)
-    }
+    protected val bottomViewModel: BottomSheetViewModel by viewModels { viewModelFactory }
 
     override fun getTheme() = R.style.AppTheme_Dialog
 

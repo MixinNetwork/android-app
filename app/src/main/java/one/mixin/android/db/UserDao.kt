@@ -81,4 +81,7 @@ interface UserDao : BaseDao<User> {
             "   INNER JOIN participants p ON p.user_id = u.user_id" +
             "   WHERE p.conversation_id = :conversationId AND u.identity_number = :appNumber")
     fun findUserIdByAppNumber(conversationId: String, appNumber: String): String?
+
+    @Query("SELECT * FROM users WHERE user_id IN (:userIds)")
+    suspend fun findMultiUsersByIds(userIds: Set<String>): List<User>
 }
