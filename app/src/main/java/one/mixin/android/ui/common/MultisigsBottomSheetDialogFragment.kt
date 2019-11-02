@@ -5,8 +5,10 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
+import android.view.View.GONE
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_multisigs_bottom_sheet.view.*
+import kotlinx.android.synthetic.main.layout_pin_pb_error.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -86,8 +88,10 @@ class MultisigsBottomSheetDialogFragment : BiometricBottomSheetDialogFragment<Mu
 
     override fun checkState(state: String) {
         if (state == MultisigsState.signed.name) {
+            contentView.error_btn.visibility = GONE
             showErrorInfo(getString(R.string.multisig_state_signed))
         } else if (state == MultisigsState.unlocked.name) {
+            contentView.error_btn.visibility = GONE
             showErrorInfo(getString(R.string.multisig_state_unlocked))
         }
     }
