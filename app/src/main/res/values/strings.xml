@@ -586,7 +586,7 @@
     <string name="audio">Audio</string>
     <string name="live">Live</string>
     <!--pay-->
-    <string name="pay_paid">This payment link has already been paid by someone,\n you can not make a duplicate payment.</string>
+    <string name="pay_paid">This payment link has already been paid by someone, you can not make a duplicate payment.</string>
 
     <string name="background_connection_enabled">Messaging node running</string>
 
