@@ -24,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
-        android:textColor="@color/text_gray"
+        android:textColor="?attr/text_minor"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/log_title" />
@@ -33,7 +33,7 @@
         android:id="@+id/log_created"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/text_gray"
+        android:textColor="?attr/text_minor"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@id/log_title"
         app:layout_constraintEnd_toEndOf="parent"

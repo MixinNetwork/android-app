@@ -64,6 +64,14 @@ class CallActivity : BaseActivity(), SensorEventListener {
     private var powerManager: PowerManager? = null
     private var wakeLock: PowerManager.WakeLock? = null
 
+    override fun getDefaultThemeId(): Int {
+        return R.style.AppTheme_Call
+    }
+
+    override fun getNightThemeId(): Int {
+        return R.style.AppTheme_Night_Call
+    }
+
     @SuppressLint("InvalidWakeLockTag")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,8 +85,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
         )
-        sensorManager = getSystemService<SensorManager>()
-        powerManager = getSystemService<PowerManager>()
+        sensorManager = getSystemService()
+        powerManager = getSystemService()
         wakeLock = powerManager?.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
         val answer = intent.getParcelableExtra<User?>(ARGS_ANSWER)
         if (answer != null) {

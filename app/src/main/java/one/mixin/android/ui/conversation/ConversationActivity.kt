@@ -8,9 +8,9 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_chat.*
 import one.mixin.android.R
+import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
@@ -20,15 +20,19 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIEN
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ForwardMessage
+import javax.inject.Inject
 
 class ConversationActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
-        container.backgroundImage = resources.getDrawable(R.drawable.bg_chat, null)
+        if (!booleanFromAttribute(R.attr.flag_night)) {
+            container.backgroundImage = resources.getDrawable(R.drawable.bg_chat, theme)
+        }
         showConversation(intent)
-        window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or SYSTEM_UI_FLAG_LAYOUT_STABLE
+        window.decorView.systemUiVisibility =
+            window.decorView.systemUiVisibility or SYSTEM_UI_FLAG_LAYOUT_STABLE
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -48,26 +52,48 @@ class ConversationActivity : BlazeBaseActivity() {
             val userId = bundle.getString(RECIPIENT_ID)!!
             Observable.just(userId).map {
                 userRepository.getUserById(userId)!!
-            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDispose(stopScope)
+            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(stopScope)
                 .subscribe({
                     require(it.userId != Session.getAccountId()) { "error data" }
                     bundle.putParcelable(RECIPIENT, it)
-                    replaceFragment(ConversationFragment.newInstance(bundle), R.id.container, ConversationFragment.TAG)
+                    replaceFragment(
+                        ConversationFragment.newInstance(bundle),
+                        R.id.container,
+                        ConversationFragment.TAG
+                    )
                 }, {
-                    replaceFragment(ConversationFragment.newInstance(intent.extras!!), R.id.container, ConversationFragment.TAG)
+                    replaceFragment(
+                        ConversationFragment.newInstance(intent.extras!!),
+                        R.id.container,
+                        ConversationFragment.TAG
+                    )
                 })
         } else {
             Observable.just(bundle.getString(CONVERSATION_ID)).map {
                 userRepository.findContactByConversationId(it)
-            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDispose(stopScope)
+            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(stopScope)
                 .subscribe({
                     if (it?.userId == Session.getAccountId()) {
-                        throw IllegalArgumentException("error data ${bundle.getString(CONVERSATION_ID)}")
+                        throw IllegalArgumentException(
+                            "error data ${bundle.getString(
+                                CONVERSATION_ID
+                            )}"
+                        )
                     }
                     bundle.putParcelable(RECIPIENT, it)
-                    replaceFragment(ConversationFragment.newInstance(bundle), R.id.container, ConversationFragment.TAG)
+                    replaceFragment(
+                        ConversationFragment.newInstance(bundle),
+                        R.id.container,
+                        ConversationFragment.TAG
+                    )
                 }, {
-                    replaceFragment(ConversationFragment.newInstance(intent.extras!!), R.id.container, ConversationFragment.TAG)
+                    replaceFragment(
+                        ConversationFragment.newInstance(intent.extras!!),
+                        R.id.container,
+                        ConversationFragment.TAG
+                    )
                 })
         }
     }
@@ -85,7 +111,15 @@ class ConversationActivity : BlazeBaseActivity() {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }
             Intent(context, ConversationActivity::class.java).apply {
-                putExtras(ConversationFragment.putBundle(conversationId, recipientId, messageId, keyword, messages))
+                putExtras(
+                    ConversationFragment.putBundle(
+                        conversationId,
+                        recipientId,
+                        messageId,
+                        keyword,
+                        messages
+                    )
+                )
             }.run {
                 context.startActivity(this)
             }
@@ -102,7 +136,15 @@ class ConversationActivity : BlazeBaseActivity() {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }
             return Intent(context, ConversationActivity::class.java).apply {
-                putExtras(ConversationFragment.putBundle(conversationId, recipientId, messageId, keyword, messages))
+                putExtras(
+                    ConversationFragment.putBundle(
+                        conversationId,
+                        recipientId,
+                        messageId,
+                        keyword,
+                        messages
+                    )
+                )
             }
         }
     }

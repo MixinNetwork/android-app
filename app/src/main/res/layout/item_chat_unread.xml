@@ -10,7 +10,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
-        android:background="@color/divider" />
+        android:background="?attr/bg_window" />
 
     <TextView
         android:id="@+id/unread_tv"
@@ -20,12 +20,12 @@
         android:gravity="center"
         android:padding="3dp"
         android:textSize="12sp"
-        android:textColor="@color/text_gray"
+        android:textColor="?attr/text_minor"
         tools:text="new messages" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
-        android:background="@color/divider" />
+        android:background="?attr/bg_window" />
 
 </LinearLayout>

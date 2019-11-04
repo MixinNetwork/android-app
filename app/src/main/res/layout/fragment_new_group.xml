@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray"
+    android:background="?attr/bg_window"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -58,7 +58,7 @@
         android:id="@+id/name_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white">
+        android:background="?attr/bg_white">
 
         <TextView
             android:id="@+id/name_tv"
@@ -92,7 +92,7 @@
         android:id="@+id/notice_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:visibility="gone">
 
         <TextView
@@ -117,7 +117,7 @@
             android:background="@null"
             android:gravity="center_vertical|end"
             android:hint="@string/group_new_notice_tip"
-            android:textColor="@color/text_gray" />
+            android:textColor="?attr/text_minor" />
     </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView

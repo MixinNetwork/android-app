@@ -2,21 +2,26 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
+import com.demo.systemuidemo.SystemUIManager
 import com.uber.autodispose.android.lifecycle.scope
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
-import java.util.Locale
-import javax.inject.Inject
 import one.mixin.android.Constants.Account.PREF_LANGUAGE
 import one.mixin.android.Constants.Account.PREF_SET_LANGUAGE
+import one.mixin.android.Constants.Theme.THEME_CURRENT_ID
+import one.mixin.android.Constants.Theme.THEME_DEFAULT_ID
+import one.mixin.android.Constants.Theme.THEME_NIGHT_ID
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
+import org.jetbrains.anko.configuration
+import java.util.Locale
+import javax.inject.Inject
 
 @SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
@@ -33,7 +38,8 @@ open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
         if (setLanguage) {
             val conf = context.resources.configuration
             val defaultLang = Locale.getDefault().language
-            val language = context.defaultSharedPreferences.getString(PREF_LANGUAGE, defaultLang) ?: defaultLang
+            val language = context.defaultSharedPreferences.getString(PREF_LANGUAGE, defaultLang)
+                ?: defaultLang
             conf.setLocale(Locale(language))
             super.attachBaseContext(context.createConfigurationContext(conf))
         } else {
@@ -43,11 +49,37 @@ open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            window.navigationBarColor = ContextCompat.getColor(this, R.color.white)
-            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        if (defaultSharedPreferences.getInt(THEME_CURRENT_ID, THEME_DEFAULT_ID) == THEME_NIGHT_ID) {
+            setTheme(getNightThemeId())
+        } else {
+            setTheme(getDefaultThemeId())
         }
+
+        if (isNightMode()) {
+            window.navigationBarColor = ContextCompat.getColor(this, R.color.colorPrimaryNight)
+            SystemUIManager.lightUI(window, false)
+        } else {
+            window.navigationBarColor = ContextCompat.getColor(this, R.color.colorPrimary)
+            SystemUIManager.lightUI(window, true)
+        }
+    }
+
+    private fun isNightMode(): Boolean {
+        return if (defaultSharedPreferences.getInt(
+                THEME_CURRENT_ID,
+                THEME_DEFAULT_ID
+            ) == THEME_NIGHT_ID
+        ) {
+            true
+        } else Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+    }
+
+    open fun getNightThemeId(): Int {
+        return R.style.AppTheme_Night_NoActionBar
+    }
+
+    open fun getDefaultThemeId(): Int {
+        return R.style.AppTheme_NoActionBar
     }
 
     override fun onBackPressed() {

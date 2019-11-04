@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
+    android:background="?attr/bg_white"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -16,13 +16,13 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/bg_gray"
+        android:background="?attr/bg_window"
         android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:color/white"
+            android:background="?attr/bg_white"
             android:baselineAligned="false"
             android:orientation="vertical">
 
@@ -59,7 +59,7 @@
                     android:inputType="text"
                     android:paddingStart="@dimen/activity_horizontal_margin"
                     android:paddingEnd="8dp"
-                    android:textColor="@android:color/black"
+                    android:textColor="?attr/text_primary"
                     android:textSize="16sp"/>
 
             </RelativeLayout>
@@ -84,7 +84,7 @@
                     android:hint="@string/withdrawal_address"
                     android:paddingStart="@dimen/activity_horizontal_margin"
                     android:paddingEnd="8dp"
-                    android:textColor="@android:color/black"
+                    android:textColor="?attr/text_primary"
                     android:textSize="16sp"/>
 
                 <ImageView
@@ -118,7 +118,7 @@
                     android:hint="@string/withdrawal_addr_memo_hint"
                     android:paddingStart="@dimen/activity_horizontal_margin"
                     android:paddingEnd="8dp"
-                    android:textColor="@android:color/black"
+                    android:textColor="?attr/text_primary"
                     android:textSize="16sp"/>
 
                 <ImageView
@@ -150,7 +150,7 @@
                 android:layout_gravity="center_horizontal"
                 android:enabled="false"
                 android:text="@string/save"
-                android:textColor="@color/wallet_text_gray"
+                android:textColor="?attr/text_minor"
                 android:textSize="14sp"/>
         </LinearLayout>
     </ScrollView>

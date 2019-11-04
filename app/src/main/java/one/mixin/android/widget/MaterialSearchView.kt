@@ -13,14 +13,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import com.jakewharton.rxbinding3.widget.textChanges
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.view_search.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.appCompatActionBarHeight
@@ -30,6 +28,8 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.translationX
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import org.jetbrains.annotations.NotNull
+import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 
 class MaterialSearchView : FrameLayout {
     var isOpen = false
@@ -61,47 +61,37 @@ class MaterialSearchView : FrameLayout {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         val typedArray = context.obtainStyledAttributes(attributeSet,
             R.styleable.MaterialSearchView, defStyleAttribute, 0)
-        if (typedArray != null) {
-            if (typedArray.hasValue(R.styleable.MaterialSearchView_android_textColor)) {
-                setTextColor(typedArray.getColor(R.styleable.MaterialSearchView_android_textColor,
-                    ContextCompat.getColor(context, R.color.black)))
-            }
-            if (typedArray.hasValue(R.styleable.MaterialSearchView_android_textColorHint)) {
-                setHintTextColor(typedArray.getColor(R.styleable.MaterialSearchView_android_textColorHint,
-                    ContextCompat.getColor(context, R.color.gray_50)))
-            }
-            if (typedArray.hasValue(R.styleable.MaterialSearchView_android_hint)) {
-                setHint(typedArray.getString(R.styleable.MaterialSearchView_android_hint))
-            }
-            if (typedArray.hasValue(R.styleable.MaterialSearchView_searchCloseIcon)) {
-                setCancelIcon(typedArray.getResourceId(
-                    R.styleable.MaterialSearchView_searchCloseIcon,
-                    R.drawable.ic_action_navigation_close)
-                )
-            }
-            if (typedArray.hasValue(R.styleable.MaterialSearchView_searchBackIcon)) {
-                setBackIcon(typedArray.getResourceId(
-                    R.styleable.MaterialSearchView_searchBackIcon,
-                    R.drawable.ic_wallet)
-                )
-            }
-            if (typedArray.hasValue(R.styleable.MaterialSearchView_android_inputType)) {
-                setInputType(typedArray.getInteger(
-                    R.styleable.MaterialSearchView_android_inputType,
-                    InputType.TYPE_CLASS_TEXT)
-                )
-            }
-            if (typedArray.hasValue(R.styleable.MaterialSearchView_searchBarHeight)) {
-                setSearchBarHeight(typedArray.getDimensionPixelSize(
-                    R.styleable.MaterialSearchView_searchBarHeight, context.appCompatActionBarHeight()))
-            } else {
-                setSearchBarHeight(context.appCompatActionBarHeight())
-            }
-            @Suppress("DEPRECATION")
-            ViewCompat.setFitsSystemWindows(this,
-                typedArray.getBoolean(R.styleable.MaterialSearchView_android_fitsSystemWindows, false))
-            typedArray.recycle()
+        if (typedArray.hasValue(R.styleable.MaterialSearchView_android_hint)) {
+            setHint(typedArray.getString(R.styleable.MaterialSearchView_android_hint))
         }
+        if (typedArray.hasValue(R.styleable.MaterialSearchView_searchCloseIcon)) {
+            setCancelIcon(typedArray.getResourceId(
+                R.styleable.MaterialSearchView_searchCloseIcon,
+                R.drawable.ic_action_navigation_close)
+            )
+        }
+        if (typedArray.hasValue(R.styleable.MaterialSearchView_searchBackIcon)) {
+            setBackIcon(typedArray.getResourceId(
+                R.styleable.MaterialSearchView_searchBackIcon,
+                R.drawable.ic_wallet)
+            )
+        }
+        if (typedArray.hasValue(R.styleable.MaterialSearchView_android_inputType)) {
+            setInputType(typedArray.getInteger(
+                R.styleable.MaterialSearchView_android_inputType,
+                InputType.TYPE_CLASS_TEXT)
+            )
+        }
+        if (typedArray.hasValue(R.styleable.MaterialSearchView_searchBarHeight)) {
+            setSearchBarHeight(typedArray.getDimensionPixelSize(
+                R.styleable.MaterialSearchView_searchBarHeight, context.appCompatActionBarHeight()))
+        } else {
+            setSearchBarHeight(context.appCompatActionBarHeight())
+        }
+        @Suppress("DEPRECATION")
+        ViewCompat.setFitsSystemWindows(this,
+            typedArray.getBoolean(R.styleable.MaterialSearchView_android_fitsSystemWindows, false))
+        typedArray.recycle()
     }
 
     override fun onSaveInstanceState(): Parcelable? {
@@ -130,7 +120,7 @@ class MaterialSearchView : FrameLayout {
             }, {})
 
         right_clear.setOnClickListener {
-            if (search_et.text.isNotEmpty()) {
+            if (search_et.text.isNullOrEmpty()) {
                 search_et.setText("")
             }
         }
@@ -150,8 +140,8 @@ class MaterialSearchView : FrameLayout {
 
     fun dragSearch(progress: Float) {
         right_ib.translationX = context.dpToPx(42f) * progress
-        val fastFadeOut = Math.max(1 - 2 * progress, 0f)
-        val fastFadeIn = (Math.max(progress, .5f) - .5f) * 2
+        val fastFadeOut = (1 - 2 * progress).coerceAtLeast(0f)
+        val fastFadeIn = (progress.coerceAtLeast(.5f) - .5f) * 2
         search_tv.isVisible = true
         search_et.isVisible = true
         search_tv.alpha = fastFadeOut
@@ -323,20 +313,12 @@ class MaterialSearchView : FrameLayout {
     private fun adjustAlpha(color: Int, factor: Float): Int {
         if (factor < 0) return color
 
-        val alpha = Math.round(Color.alpha(color) * factor)
+        val alpha = (Color.alpha(color) * factor).roundToInt()
 
         return Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color))
     }
 
-    fun setTextColor(color: Int) {
-        search_et.setTextColor(color)
-    }
-
-    fun setHintTextColor(color: Int) {
-        search_et.setHintTextColor(color)
-    }
-
-    fun setHint(hint: CharSequence?) {
+    private fun setHint(hint: CharSequence?) {
         search_et.hint = hint
     }
 

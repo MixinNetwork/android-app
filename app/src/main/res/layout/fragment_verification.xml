@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="?attr/bg_white">
 
     <ImageView
         android:id="@+id/back_iv"
@@ -39,7 +39,7 @@
                 android:layout_marginEnd="16dp"
                 android:gravity="center_horizontal"
                 android:text="@string/landing_validation_title"
-                android:textColor="@android:color/black"
+                android:textColor="?attr/text_primary"
                 android:textSize="18sp"/>
 
             <one.mixin.android.widget.VerificationCodeView
@@ -53,7 +53,7 @@
                 android:gravity="center_horizontal"
                 app:vcv_inputWidth="30dp"
                 app:vcv_spacing="10dp"
-                app:vcv_textColor="@android:color/black"/>
+                app:vcv_textColor="?attr/text_primary"/>
 
             <TextView
                 android:id="@+id/pin_verification_tip_tv"
@@ -72,7 +72,7 @@
                 android:layout_gravity="center_horizontal"
                 android:padding="@dimen/margin12"
                 android:text="@string/landing_resend_code_enable"
-                android:textColor="@color/text_gray"/>
+                android:textColor="?attr/text_minor"/>
 
             <TextView
                 android:id="@+id/verification_need_help_tv"

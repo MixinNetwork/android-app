@@ -39,7 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="start"
             android:maxWidth="280dp"
-            android:textColor="@color/text_black"
+            android:textColor="?attr/text_primary"
             android:textSize="14sp"
             tools:text="message" />
 
@@ -67,7 +67,7 @@
                 android:layout_toEndOf="@id/line"
                 android:maxWidth="270dp"
                 android:singleLine="true"
-                android:textColor="@android:color/black"
+                android:textColor="?attr/text_primary"
                 android:textSize="15sp"
                 app:layout_constraintStart_toEndOf="@id/line"
                 app:layout_constraintTop_toTopOf="@id/line"

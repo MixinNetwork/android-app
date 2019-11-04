@@ -5,6 +5,7 @@ import android.animation.ValueAnimator
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.view.View
+import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -14,14 +15,17 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.CodeType
+import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageStatus
 
-abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView) {
+abstract class BaseViewHolder constructor(containerView: View) :
+    RecyclerView.ViewHolder(containerView) {
     companion object {
-        private val colors: IntArray = MixinApplication.appContext.resources.getIntArray(R.array.name_colors)
+        private val colors: IntArray =
+            MixinApplication.appContext.resources.getIntArray(R.array.name_colors)
         val HIGHLIGHTED = Color.parseColor("#CCEF8C")
         val LINK_COLOR = Color.parseColor("#5FA7E4")
         val SELECT_COLOR = Color.parseColor("#660D94FC")
@@ -50,6 +54,20 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_bot)?.also {
             it.setBounds(0, 0, dp12, dp12)
         }
+    }
+
+    private val isNightMode by lazy {
+        itemView.context.booleanFromAttribute(R.attr.flag_night)
+    }
+
+    protected fun setItemBackgroundResource(view: View, @DrawableRes defaultBg: Int, @DrawableRes nightBg: Int) {
+        view.setBackgroundResource(
+            if (!isNightMode) {
+                defaultBg
+            } else {
+                nightBg
+            }
+        )
     }
 
     val meId by lazy {
@@ -95,7 +113,12 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
             .setDuration(1200).apply {
                 this.addUpdateListener { valueAnimator ->
                     itemView.setBackgroundColor(
-                        argbEvaluator.evaluate(valueAnimator.animatedValue as Float, Color.TRANSPARENT, SELECT_COLOR) as Int)
+                        argbEvaluator.evaluate(
+                            valueAnimator.animatedValue as Float,
+                            Color.TRANSPARENT,
+                            SELECT_COLOR
+                        ) as Int
+                    )
                 }
             }
     }
@@ -111,25 +134,31 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
             val drawable: Drawable? =
                 when (status) {
                     MessageStatus.SENDING.name ->
-                        AppCompatResources.getDrawable(itemView.context,
+                        AppCompatResources.getDrawable(
+                            itemView.context,
                             if (isWhite) {
                                 R.drawable.ic_status_sending_white
                             } else {
                                 R.drawable.ic_status_sending
-                            })
+                            }
+                        )
                     MessageStatus.SENT.name ->
-                        AppCompatResources.getDrawable(itemView.context,
+                        AppCompatResources.getDrawable(
+                            itemView.context,
                             if (isWhite) {
                                 R.drawable.ic_status_sent_white
                             } else {
                                 R.drawable.ic_status_sent
-                            })
+                            }
+                        )
                     MessageStatus.DELIVERED.name ->
-                        AppCompatResources.getDrawable(itemView.context, if (isWhite) {
-                            R.drawable.ic_status_delivered_white
-                        } else {
-                            R.drawable.ic_status_delivered
-                        })
+                        AppCompatResources.getDrawable(
+                            itemView.context, if (isWhite) {
+                                R.drawable.ic_status_delivered_white
+                            } else {
+                                R.drawable.ic_status_delivered
+                            }
+                        )
                     MessageStatus.READ.name ->
                         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_read)
                     else -> null

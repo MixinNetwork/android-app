@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="?attr/bg_white"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -15,7 +15,7 @@
         android:id="@+id/search_et"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:drawableStart="@drawable/ic_search"
         android:drawablePadding="8dp"
         android:hint="@string/contact_search_hint"
@@ -30,7 +30,7 @@
         android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height=".5dp"
-        android:background="@color/divider"
+        android:background="?attr/bg_window"
         android:paddingBottom="-1dp"/>
 
     <androidx.recyclerview.widget.RecyclerView

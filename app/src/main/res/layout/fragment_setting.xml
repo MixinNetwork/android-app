@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray"
+    android:background="?attr/bg_window"
     android:orientation="vertical">
 
 
@@ -12,7 +12,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_title"/>
+        app:titleText="@string/setting_title" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -27,7 +27,7 @@
                 android:id="@+id/privacy_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white"
+                android:background="?attr/bg_white"
                 android:foreground="?attr/selectableItemBackground">
 
                 <TextView
@@ -38,14 +38,14 @@
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     android:text="@string/setting_privacy_security"
-                    tools:ignore="RelativeOverlap"/>
+                    tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
             <RelativeLayout
                 android:id="@+id/notification_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white"
+                android:background="?attr/bg_white"
                 android:foreground="?attr/selectableItemBackground">
 
                 <TextView
@@ -56,14 +56,14 @@
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     android:text="@string/notification"
-                    tools:ignore="RelativeOverlap"/>
+                    tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
             <RelativeLayout
                 android:id="@+id/backup_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white"
+                android:background="?attr/bg_white"
                 android:foreground="?attr/selectableItemBackground">
 
                 <TextView
@@ -74,14 +74,14 @@
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     android:text="@string/setting_backup"
-                    tools:ignore="RelativeOverlap"/>
+                    tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
             <RelativeLayout
                 android:id="@+id/storage_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white"
+                android:background="?attr/bg_white"
                 android:foreground="?attr/selectableItemBackground">
 
                 <TextView
@@ -92,14 +92,46 @@
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     android:text="@string/setting_data_storage"
-                    tools:ignore="RelativeOverlap"/>
+                    tools:ignore="RelativeOverlap" />
             </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/night_mode_rl"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:background="?attr/bg_white"
+                android:foreground="?attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/night_mode_tv"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="夜间模式"
+                    tools:ignore="RelativeOverlap" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/night_mode_desc_sw"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:textColor="?attr/text_minor" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/setting_divider"
+                android:background="?attr/bg_window" />
 
             <RelativeLayout
                 android:id="@+id/language_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white"
+                android:background="?attr/bg_white"
                 android:foreground="?attr/selectableItemBackground">
 
                 <TextView
@@ -110,7 +142,7 @@
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     android:text="@string/language"
-                    tools:ignore="RelativeOverlap"/>
+                    tools:ignore="RelativeOverlap" />
 
                 <TextView
                     android:id="@+id/language_desc_tv"
@@ -119,19 +151,19 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:textColor="@color/text_gray"/>
+                    android:textColor="?attr/text_minor" />
             </RelativeLayout>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/setting_divider"
-                android:background="@color/bg_gray"/>
+                android:background="?attr/bg_window" />
 
             <RelativeLayout
                 android:id="@+id/wallet_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white"
+                android:background="?attr/bg_white"
                 android:foreground="?attr/selectableItemBackground">
 
                 <TextView
@@ -142,19 +174,19 @@
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     android:text="@string/wallet_title"
-                    tools:ignore="RelativeOverlap"/>
+                    tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/setting_divider"
-                android:background="@color/bg_gray"/>
+                android:background="?attr/bg_window" />
 
             <RelativeLayout
                 android:id="@+id/desktop_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white"
+                android:background="?attr/bg_white"
                 android:foreground="?attr/selectableItemBackground">
 
                 <TextView
@@ -165,19 +197,19 @@
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     android:text="@string/setting_desktop"
-                    tools:ignore="RelativeOverlap"/>
+                    tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/setting_divider"
-                android:background="@color/bg_gray"/>
+                android:background="?attr/bg_window" />
 
             <RelativeLayout
                 android:id="@+id/about_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white"
+                android:background="?attr/bg_white"
                 android:foreground="?attr/selectableItemBackground">
 
                 <TextView
@@ -188,7 +220,7 @@
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     android:text="@string/about"
-                    tools:ignore="RelativeOverlap"/>
+                    tools:ignore="RelativeOverlap" />
             </RelativeLayout>
         </LinearLayout>
     </ScrollView>

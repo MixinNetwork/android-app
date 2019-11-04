@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewOutlineProvider
 import android.widget.RelativeLayout
 import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 
 class ConfirmationBgView : RelativeLayout {
@@ -20,7 +21,7 @@ class ConfirmationBgView : RelativeLayout {
             callback = this@ConfirmationBgView
         } as RippleDrawable
     }
-    private val colorWhite by lazy { context.getColor(R.color.white) }
+    private val colorWhite by lazy { context.colorFromAttribute(R.attr.bg_white) }
     private val colorBlue by lazy { context.getColor(R.color.wallet_blue_light) }
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -73,7 +74,13 @@ class ConfirmationBgView : RelativeLayout {
         if (round) {
             outlineProvider = object : ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: Outline) {
-                    outline.setRoundRect(0, 0, view.width, view.height, context.dpToPx(8f).toFloat())
+                    outline.setRoundRect(
+                        0,
+                        0,
+                        view.width,
+                        view.height,
+                        context.dpToPx(8f).toFloat()
+                    )
                 }
             }
             clipToOutline = true

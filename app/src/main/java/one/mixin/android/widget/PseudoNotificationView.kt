@@ -27,7 +27,7 @@ class PseudoNotificationView : RelativeLayout {
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         LayoutInflater.from(context).inflate(R.layout.view_pseudo_notification, this, true)
-        val d = resources.getDrawable(R.drawable.ic_qr_code_preview, null)
+        val d = resources.getDrawable(R.drawable.ic_qr_code_preview, context.theme)
         val size = context.dip(12)
         d.setBounds(0, 0, size, size)
         title_tv.setCompoundDrawables(d, null, null, null)

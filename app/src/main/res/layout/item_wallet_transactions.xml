@@ -3,7 +3,7 @@
     android:id="@+id/bg"
     android:layout_width="match_parent"
     android:layout_height="62dp"
-    android:background="@android:color/white">
+    android:background="?attr/bg_white">
 
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar"
@@ -22,7 +22,7 @@
         android:ellipsize="end"
         android:maxWidth="200dp"
         android:singleLine="true"
-        android:textColor="@color/wallet_text_dark"
+        android:textColor="?attr/text_primary"
         android:textSize="14sp" />
 
     <TextView
@@ -51,5 +51,5 @@
         android:layout_centerVertical="true"
         android:layout_marginEnd="@dimen/margin20"
         android:textSize="12sp"
-        android:textColor="@color/wallet_text_dark"/>
+        android:textColor="?attr/text_primary"/>
 </one.mixin.android.widget.ConfirmationBgView>

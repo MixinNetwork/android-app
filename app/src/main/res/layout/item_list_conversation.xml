@@ -3,7 +3,7 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="72dp"
-                android:background="@color/white"
+                android:background="?attr/bg_white"
                 android:foreground="?android:attr/selectableItemBackground"
                 tools:layout_editor_absoluteY="81dp">
 
@@ -33,7 +33,7 @@
                 android:layout_marginBottom="2dp"
                 android:maxWidth="220dp"
                 android:singleLine="true"
-                android:textColor="@color/text_black"
+                android:textColor="?attr/text_primary"
                 android:textSize="16sp"/>
 
         <ImageView
@@ -77,7 +77,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginBottom="6dp"
             android:fontFamily="@font/sf_pro_light"
-            android:textColor="@color/text_gray"
+            android:textColor="?attr/text_assist"
             android:textSize="12sp"/>
 
     <LinearLayout
@@ -99,7 +99,7 @@
                 android:fontFamily="@font/sf_pro_light"
                 android:maxWidth="120dp"
                 android:singleLine="true"
-                android:textColor="@color/text_gray"
+                android:textColor="?attr/text_minor"
                 android:textSize="13sp"
                 android:visibility="gone"/>
 
@@ -122,7 +122,7 @@
                 android:ellipsize="end"
                 android:fontFamily="@font/sf_pro_light"
                 android:maxLines="1"
-                android:textColor="@color/text_gray"
+                android:textColor="?attr/text_minor"
                 android:textSize="13sp"/>
 
         <ImageView

@@ -8,107 +8,108 @@
         android:id="@+id/bottom_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:animateLayoutChanges="true"
-        android:minHeight="@dimen/chat_control_height"
-        android:background="@color/white"
         android:layout_gravity="bottom"
+        android:animateLayoutChanges="true"
+        android:background="?attr/bg_white"
+        android:minHeight="@dimen/chat_control_height"
         android:orientation="horizontal">
 
         <ImageView
             android:id="@+id/chat_menu_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="14dp"
-            android:paddingBottom="14dp"
             android:layout_centerVertical="true"
+            android:paddingStart="12dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="14dp"
             android:src="@drawable/ic_chat_more"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
 
         <RelativeLayout
             android:id="@+id/edit_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_toEndOf="@id/chat_menu_iv"
-            android:layout_toStartOf="@id/chat_bot_iv"
+            android:layout_centerVertical="true"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/chat_bot_iv"
+            android:layout_toEndOf="@id/chat_menu_iv"
             android:background="@drawable/bg_input">
 
             <one.mixin.android.widget.ContentEditText
                 android:id="@+id/chat_et"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="36dp"
-                android:layout_toStartOf="@id/chat_sticker_ib"
                 android:layout_centerVertical="true"
+                android:layout_toStartOf="@id/chat_sticker_ib"
+                android:background="@null"
                 android:gravity="center_vertical"
                 android:inputType="textMultiLine|textNoSuggestions"
-                android:background="@null"
                 android:maxLines="5"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
-                android:paddingEnd="12dp"
+                android:minHeight="36dp"
                 android:paddingStart="12dp"
+                android:paddingTop="2dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="2dp"
+                android:textColor="?attr/text_primary"
                 android:textSize="14sp"
-                tools:ignore="LabelFor"/>
+                tools:ignore="LabelFor" />
 
             <ImageView
                 android:id="@+id/chat_sticker_ib"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:background="@null"
+                android:paddingStart="12dp"
+                android:paddingTop="6dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="6dp"
                 android:src="@drawable/ic_chat_sticker"
-                tools:ignore="ContentDescription"/>
+                tools:ignore="ContentDescription" />
         </RelativeLayout>
 
         <ImageView
             android:id="@+id/chat_bot_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="18dp"
-            android:paddingEnd="6dp"
-            android:paddingTop="14dp"
-            android:paddingBottom="14dp"
             android:layout_centerVertical="true"
             android:layout_toStartOf="@id/chat_img_iv"
+            android:paddingStart="18dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="14dp"
             android:src="@drawable/ic_chat_bot"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/chat_img_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="18dp"
-            android:paddingEnd="6dp"
-            android:paddingTop="14dp"
-            android:paddingBottom="14dp"
-            android:layout_toStartOf="@id/chat_send_ib"
             android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/chat_send_ib"
+            android:paddingStart="18dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="6dp"
+            android:paddingBottom="14dp"
             android:src="@drawable/selector_chat_img"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/chat_send_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="14dp"
-            android:paddingBottom="14dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:background="@null"
+            android:paddingStart="12dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="14dp"
             android:src="@drawable/ic_chat_mic"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
     </RelativeLayout>
 
     <one.mixin.android.widget.audio.SlidePanelView
@@ -116,5 +117,5 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/chat_control_height"
         android:layout_gravity="bottom"
-        android:visibility="gone"/>
+        android:visibility="gone" />
 </merge>

@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/item_contact_header_height"
-    android:background="@color/bg_gray"
+    android:background="?attr/bg_window"
     android:orientation="vertical">
 
     <TextView
@@ -11,6 +11,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:textColor="@color/text_gray"
+        android:textColor="?attr/text_minor"
         android:textSize="13sp" />
 </FrameLayout>

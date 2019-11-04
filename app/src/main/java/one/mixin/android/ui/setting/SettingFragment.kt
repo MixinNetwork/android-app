@@ -12,10 +12,14 @@ import kotlinx.android.synthetic.main.fragment_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.Account.PREF_LANGUAGE
 import one.mixin.android.Constants.Account.PREF_SET_LANGUAGE
+import one.mixin.android.Constants.Theme.THEME_CURRENT_ID
+import one.mixin.android.Constants.Theme.THEME_DEFAULT_ID
+import one.mixin.android.Constants.Theme.THEME_NIGHT_ID
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.MainActivity
@@ -30,7 +34,11 @@ class SettingFragment : Fragment() {
         fun newInstance() = SettingFragment()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
         layoutInflater.inflate(R.layout.fragment_setting, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -60,6 +68,15 @@ class SettingFragment : Fragment() {
                 navTo(WalletPasswordFragment.newInstance(false), WalletPasswordFragment.TAG)
             }
         }
+        night_mode_desc_sw.isChecked = defaultSharedPreferences.getInt(THEME_CURRENT_ID, THEME_DEFAULT_ID) == THEME_NIGHT_ID
+        night_mode_desc_sw.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                defaultSharedPreferences.putInt(THEME_CURRENT_ID, THEME_NIGHT_ID)
+            } else {
+                defaultSharedPreferences.putInt(THEME_CURRENT_ID, THEME_DEFAULT_ID)
+            }
+            MainActivity.reopen(requireContext())
+        }
         language_rl.setOnClickListener { showLanguageAlert() }
         notification_rl.setOnClickListener {
             navTo(NotificationsFragment.newInstance(), NotificationsFragment.TAG)
@@ -70,7 +87,8 @@ class SettingFragment : Fragment() {
         val choice = resources.getStringArray(R.array.language_names)
         val setLanguage = defaultSharedPreferences.getBoolean(PREF_SET_LANGUAGE, false)
         val selectItem = if (setLanguage) {
-            val language = defaultSharedPreferences.getString(PREF_LANGUAGE, Locale.ENGLISH.language)
+            val language =
+                defaultSharedPreferences.getString(PREF_LANGUAGE, Locale.ENGLISH.language)
             if (language == Locale.SIMPLIFIED_CHINESE.language) {
                 1
             } else {

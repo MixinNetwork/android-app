@@ -11,14 +11,14 @@
         android:id="@+id/ph"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"/>
+        android:background="?attr/bg_white"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:layout_below="@id/ph"
-        android:background="@color/bg_gray">
+        android:background="?attr/bg_window">
 
         <one.mixin.android.widget.TitleView
             android:id="@+id/title_view"
@@ -43,7 +43,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:gravity="center_vertical"
-            android:background="@android:color/white"
+            android:background="?attr/bg_white"
             android:foreground="?attr/selectableItemBackground"
             android:paddingStart="@dimen/activity_horizontal_margin"
             android:paddingEnd="@dimen/activity_horizontal_margin"
@@ -59,7 +59,7 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:layout_marginTop="8dp"
-            android:textColor="@color/text_gray"
+            android:textColor="?attr/text_minor"
             android:textSize="12sp"/>
     </LinearLayout>
 </RelativeLayout>

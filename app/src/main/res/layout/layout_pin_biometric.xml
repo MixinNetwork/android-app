@@ -23,7 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:textColor="@color/text_gray" />
+            android:textColor="?attr/text_minor" />
 
         <TextView
             android:id="@+id/biometric_tv"

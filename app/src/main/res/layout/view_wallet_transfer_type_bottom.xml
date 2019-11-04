@@ -32,15 +32,15 @@
             android:imeOptions="actionDone"
             android:inputType="text"
             android:maxLines="1"
-            android:textColor="@color/wallet_text_dark"
-            android:textColorHint="@color/text_gray"
+            android:textColor="?attr/text_primary"
+            android:textColorHint="?attr/text_minor"
             android:textSize="14sp"/>
     </RelativeLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height=".5dp"
-        android:background="@color/divider"/>
+        android:background="?attr/bg_window"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/type_rv"

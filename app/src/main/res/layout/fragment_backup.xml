@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray"
+    android:background="?attr/bg_window"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -87,7 +87,7 @@
                 android:layout_marginTop="3dp"
                 android:text="@string/backup_dialog_title"
                 android:textSize="16sp"
-                android:textColor="@color/text_black"
+                android:textColor="?attr/text_primary"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 

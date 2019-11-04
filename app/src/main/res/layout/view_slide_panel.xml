@@ -60,6 +60,6 @@
             android:layout_alignParentBottom="true"
             android:layout_marginStart="@dimen/margin12"
             android:drawablePadding="@dimen/padding8"
-            android:textColor="@android:color/black"
+            android:textColor="?attr/text_primary"
             tools:ignore="RelativeOverlap"/>
 </merge>

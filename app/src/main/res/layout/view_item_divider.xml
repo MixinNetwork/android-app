@@ -7,5 +7,5 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_divider"
-        android:background="@color/bg_gray" />
+        android:background="?attr/bg_window" />
 </merge>

@@ -54,7 +54,7 @@ class PasswordView : View {
         attrs?.let {
             val bgValue = it.getAttributeValue("http://schemas.android.com/apk/res/android", "background")
             if (bgValue == null) {
-                background = resources.getDrawable(R.drawable.bg_view_password, null)
+                background = resources.getDrawable(R.drawable.bg_view_password, context.theme)
             }
         }
 

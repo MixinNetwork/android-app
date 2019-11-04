@@ -38,7 +38,7 @@
         android:layout_marginBottom="2dp"
         android:maxLines="1"
         android:ellipsize="end"
-        android:textColor="@color/wallet_text_dark"/>
+        android:textColor="?attr/text_primary"/>
 
     <TextView
         android:id="@+id/link_tv"

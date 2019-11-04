@@ -24,7 +24,7 @@
         android:layout_marginTop="@dimen/margin12"
         android:layout_centerHorizontal="true"
         android:text="@string/landing_enter_name_title"
-        android:textColor="@android:color/black"
+        android:textColor="?attr/text_primary"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

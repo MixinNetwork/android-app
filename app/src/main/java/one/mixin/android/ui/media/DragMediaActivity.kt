@@ -80,7 +80,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import java.io.File
 import java.io.FileInputStream
-import java.lang.IndexOutOfBoundsException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.math.min
@@ -175,6 +174,14 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private var lastPos: Int = -1
     private val pagerAdapter by lazy {
         MediaAdapter(this@DragMediaActivity)
+    }
+
+    override fun getDefaultThemeId(): Int {
+        return R.style.AppTheme_Photo
+    }
+
+    override fun getNightThemeId(): Int {
+        return R.style.AppTheme_Night_Photo
     }
 
     @Inject

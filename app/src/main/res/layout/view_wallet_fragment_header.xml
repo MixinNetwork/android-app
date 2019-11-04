@@ -8,7 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="?attr/bg_white"
         android:orientation="vertical">
 
         <RelativeLayout
@@ -26,8 +26,8 @@
                 android:layout_marginEnd="@dimen/padding8"
                 android:layout_toStartOf="@+id/total_tv"
                 android:text="$"
-                android:textColor="@color/wallet_text_gray"
-                tools:ignore="HardcodedText"/>
+                android:textColor="?attr/text_minor"
+                tools:ignore="HardcodedText" />
 
             <TextView
                 android:id="@+id/total_tv"
@@ -36,9 +36,9 @@
                 android:layout_centerHorizontal="true"
                 android:fontFamily="@font/mixin_condensed"
                 android:gravity="center"
-                android:textColor="@android:color/black"
+                android:textColor="?attr/text_primary"
                 android:textSize="40sp"
-                tools:text="12345.8"/>
+                tools:text="12345.8" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -57,9 +57,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:fontFamily="@font/mixin_condensed"
-                android:textColor="@color/wallet_text_dark"
+                android:textColor="?attr/text_primary"
                 android:textSize="18sp"
-                tools:text="0.123"/>
+                tools:text="0.123" />
 
             <TextView
                 android:id="@+id/btc_tv"
@@ -69,8 +69,8 @@
                 android:layout_marginStart="@dimen/padding8"
                 android:layout_toEndOf="@+id/total_as_tv"
                 android:text="BTC"
-                android:textColor="@color/wallet_text_gray"
-                tools:ignore="HardcodedText"/>
+                android:textColor="?attr/text_minor"
+                tools:ignore="HardcodedText" />
         </RelativeLayout>
 
         <one.mixin.android.widget.PercentView
@@ -79,7 +79,7 @@
             android:layout_height="20dp"
             android:layout_marginStart="@dimen/margin20"
             android:layout_marginEnd="@dimen/margin20"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="8dp" />
 
         <LinearLayout
             android:id="@+id/pie_item_container"
@@ -89,11 +89,11 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="32dp"
             android:orientation="horizontal"
-            android:visibility="gone"/>
+            android:visibility="gone" />
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="10dp"
-        android:background="@drawable/ic_shadow_divider"/>
+        android:background="?attr/bg_window" />
 </LinearLayout>

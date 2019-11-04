@@ -3,16 +3,40 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">?attr/color_primary</item>
+        <item name="colorPrimaryDark">?attr/color_primary_dark</item>
+        <item name="colorAccent">?attr/color_accent</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:fontFamily">@font/sf_pro_regular</item>
-        <item name="android:windowBackground">@color/white</item>
+        <item name="android:windowBackground">@color/colorPrimary</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:textColorHighlight">@color/blue_highlight</item>
         <item name="android:textViewStyle">@style/NoneHFTextViewStyle</item>
+
+        <item name="color_primary">@color/colorPrimaryDark</item>
+        <item name="color_primary_dark">@color/colorPrimary</item>
+        <item name="color_accent">@color/colorAccent</item>
+        <item name="text_primary">@color/textPrimary</item>
+        <item name="text_minor">@color/textMinor</item>
+        <item name="text_assist">@color/textAssist</item>
+        <item name="text_remarks">@color/textRemarks</item>
+
+
+        <item name="icon_default">@color/colorIcon</item>
+        <item name="icon_light">@color/colorIconLight</item>
+        <item name="icon_dark">@color/colorIconDark</item>
+        <item name="icon_white">@color/colorIconWhite</item>
+        <item name="icon_gray">@color/colorIconGray</item>
+
+        <item name="badger">@color/badger</item>
+
+        <item name="bg_input">@color/bgInput</item>
+        <item name="bg_white">@color/bgWhite</item>
+        <item name="bg_gray">@color/bgGray</item>
+        <item name="bg_window">@color/bgWindow</item>
+        <item name="flag_night">false</item>
     </style>
+
 
     <style name="NoneHFTextViewStyle" parent="Widget.AppCompat.TextView">
         <item name="android:hyphenationFrequency" tools:ignore="NewApi">none</item>
@@ -43,14 +67,14 @@
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:navigationBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">?attr/text_primary</item>
     </style>
 
     <style name="AppTheme.Photo" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:navigationBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">?attr/text_primary</item>
     </style>
 
 
@@ -62,10 +86,11 @@
 
     <style name="MixinAlertDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
         <item name="colorAccent">@color/colorDarkBlue</item>
-        <item name="android:textColorPrimary">@android:color/black</item>
-        <item name="android:background">@android:color/white</item>
+        <item name="android:textColorPrimary">?attr/text_primary</item>
+        <item name="android:background">?attr/bg_white</item>
         <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
     </style>
+
     <style name="PositiveButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
         <item name="android:textColor">@color/selector_dialog_tv</item>
     </style>
@@ -91,7 +116,7 @@
 
     <style name="NormalTextStyle">
         <item name="android:textSize">14sp</item>
-        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textColor">?attr/text_primary</item>
     </style>
 
     <style name="DescTextStyle">
@@ -126,7 +151,7 @@
     </style>
 
     <style name="AppTheme.WhiteAccent">
-        <item name="android:indeterminateTint">@android:color/white</item>
+        <item name="android:indeterminateTint">?attr/bg_white</item>
         <item name="android:indeterminate">true</item>
         <item name="android:indeterminateTintMode">src_atop</item>
     </style>
@@ -180,7 +205,7 @@
 
     <style name="TransactionTitleTextStyle">
         <item name="android:textSize">12sp</item>
-        <item name="android:textColor">@color/wallet_text_gray</item>
+        <item name="android:textColor">?attr/text_minor</item>
         <item name="android:layout_marginStart">20dp</item>
         <item name="android:layout_marginEnd">20dp</item>
         <item name="android:layout_marginTop">18dp</item>
@@ -189,7 +214,7 @@
 
     <style name="TransactionDescTextStyle">
         <item name="android:textSize">14sp</item>
-        <item name="android:textColor">@color/wallet_text_dark</item>
+        <item name="android:textColor">?attr/text_assist</item>
         <item name="android:layout_marginStart">20dp</item>
         <item name="android:layout_marginEnd">20dp</item>
         <item name="android:layout_marginTop">5dp</item>
@@ -199,7 +224,7 @@
     <style name="ProgressTheme" parent="Widget.AppCompat.ProgressBar.Horizontal">
         <item name="colorAccent">@color/colorDarkBlue</item>
     </style>
-    
+
     <style name="AppTheme.MaterialButton" parent="Widget.MaterialComponents.Button">
         <item name="android:background">@drawable/bg_round_blue_btn</item>
     </style>

@@ -23,11 +23,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/bottom_deposit_title"
-                android:textSize="18sp"
                 android:layout_marginTop="70dp"
-                android:textColor="@color/wallet_text_dark"
-                android:textStyle="bold"/>
+                android:text="@string/bottom_deposit_title"
+                android:textColor="?attr/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tips_tv"
@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin16"
                 android:gravity="center_horizontal"
-                android:textColor="@color/wallet_text_dark"
+                android:textColor="?attr/text_primary"
                 android:text="@string/bottom_deposit_tip_common"/>
 
             <TextView

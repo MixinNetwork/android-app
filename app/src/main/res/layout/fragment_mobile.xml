@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="?attr/bg_white"
     android:clickable="true"
     android:focusable="true"
     android:orientation="vertical">
@@ -38,7 +38,7 @@
             android:layout_marginTop="12dp"
             android:gravity="center_horizontal"
             android:text="@string/landing_enter_mobile_number"
-            android:textColor="@android:color/black"
+            android:textColor="?attr/text_primary"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

@@ -7,6 +7,25 @@
     <color name="colorDarkBlue">#1987FF</color>
     <color name="colorGray">#9B9B9B</color>
 
+    <color name="textPrimary">#333333</color>
+    <color name="textMinor">#bbbbbb</color>
+    <color name="textAssist">#B8BDC7</color>
+    <color name="textRemarks">#BCBEC3</color>
+
+    <color name="colorIconLight">#3A3C3E</color>
+    <color name="colorIcon">#FF000000</color>
+    <color name="colorIconDark">#BBBEC3</color>
+    <color name="colorIconWhite">#FFFFFF</color>
+    <color name="colorIconGray">#E5E7EC</color>
+    <color name="colorIconBlack">#000000</color>
+
+    <color name="badger">#397EE4</color>
+
+    <color name="bgInput">#F5F5F5</color>
+    <color name="bgWhite">#FFFFFF</color>
+    <color name="bgWindow">#F6F7FA</color>
+    <color name="bgGray">#E5E5E5</color>
+
     <color name="white">#ffffffff</color>
     <color name="white_45">#73ffffff</color>
     <color name="white_28">#47ffffff</color>
@@ -23,9 +42,6 @@
     <color name="gray_light">#757575</color>
     <color name="color_chat_date">#ff7799A9</color>
     <color name="bg_gray">#F5F5F5</color>
-    <color name="divider">#ECECEC</color>
-    <color name="text_black">#202020</color>
-    <color name="text_gray">#bbbbbb</color>
     <color name="text_white">#EFEFF4</color>
     <color name="text_light_gray">#C5C5C7</color>
     <color name="white_50">#88FFFFFF</color>

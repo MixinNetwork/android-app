@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_below="@id/ph"
-    android:background="@color/bg_gray"
+    android:background="?attr/bg_window"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -16,7 +16,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="?attr/bg_white"
         android:orientation="vertical">
 
         <ImageView
@@ -37,7 +37,7 @@
             android:layout_marginBottom="32dp"
             android:gravity="center"
             android:text="@string/setting_mobile_contact_desc"
-            android:textColor="@color/text_gray" />
+            android:textColor="?attr/text_minor" />
     </LinearLayout>
 
     <RelativeLayout
@@ -45,7 +45,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:layout_marginTop="10dp"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView

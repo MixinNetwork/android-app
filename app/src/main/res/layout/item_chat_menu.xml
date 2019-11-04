@@ -33,6 +33,6 @@
         android:layout_marginBottom="@dimen/margin20"
         android:singleLine="true"
         android:ellipsize="end"
-        android:textColor="@color/gray_black"
+        android:textColor="?attr/text_primary"
         android:maxWidth="64dp"/>
 </LinearLayout>

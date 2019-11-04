@@ -17,7 +17,7 @@
             android:drawableEnd="@drawable/ic_arrow_drop_down"
             android:foreground="?attr/selectableItemBackground"
             android:gravity="center"
-            android:textColor="@color/text_black"
+            android:textColor="?attr/text_primary"
             android:textSize="20sp"/>
 
     </androidx.appcompat.widget.Toolbar>
@@ -26,7 +26,7 @@
         android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
-        android:background="@color/divider"
+        android:background="?attr/bg_window"
         android:layout_below="@id/toolbar"/>
 
     <FrameLayout
@@ -52,7 +52,7 @@
             android:drawableTop="@drawable/ic_hidden_assets"
             android:gravity="center"
             android:text="@string/gallery_empty_text"
-            android:textColor="@color/text_gray"
+            android:textColor="?attr/text_minor"
             android:textSize="16sp"/>
 
     </FrameLayout>

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray"
+    android:background="?attr/bg_window"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -17,7 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_below="@id/title_view"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:drawablePadding="8dp"
         android:drawableStart="@drawable/ic_search"
         android:inputType="number|phone"
@@ -45,7 +45,7 @@
         android:outAnimation="@anim/fade_out"
         android:layout_above="@+id/keyboard"
         android:visibility="gone"
-        android:background="@android:color/white">
+        android:background="?attr/bg_white">
 
         <TextView
             android:id="@+id/search_tv"

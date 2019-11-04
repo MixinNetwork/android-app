@@ -22,7 +22,7 @@
         android:id="@+id/empty_rl"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white">
+        android:background="?attr/bg_white">
 
         <Space
             android:id="@+id/center"
@@ -33,7 +33,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height=".5dp"
-            android:background="@color/wallet_divider"/>
+            android:background="?attr/bg_window"/>
 
         <ImageView
             android:id="@+id/bottom_iv"
@@ -50,7 +50,7 @@
             android:layout_below="@id/bottom_iv"
             android:layout_marginTop="@dimen/margin16"
             android:layout_centerHorizontal="true"
-            android:textColor="@color/wallet_text_gray"
+            android:textColor="?attr/text_minor"
             android:text="@string/wallet_transactions_empty"/>
     </RelativeLayout>
 </LinearLayout>

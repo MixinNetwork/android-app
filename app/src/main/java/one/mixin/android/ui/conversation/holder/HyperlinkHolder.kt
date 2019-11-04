@@ -54,16 +54,30 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
         if (isMe) {
             lp.horizontalBias = 1f
             if (isLast) {
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_me_last)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_me_last,
+                    R.drawable.chat_bubble_me_last_night
+                )
             } else {
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_me)
+                setItemBackgroundResource(
+                    itemView.chat_layout, R.drawable.chat_bubble_me, R.drawable.chat_bubble_me_night
+                )
             }
         } else {
             lp.horizontalBias = 0f
             if (isLast) {
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_other_last)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_other_last,
+                    R.drawable.chat_bubble_other_last_night
+                )
             } else {
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_other)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_other,
+                    R.drawable.chat_bubble_other_night
+                )
             }
         }
     }
@@ -121,8 +135,10 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
                 val start = str.indexOf(k, 0, true)
                 if (start >= 0) {
                     val sp = SpannableString(str)
-                    sp.setSpan(BackgroundColorSpan(HIGHLIGHTED), start,
-                        start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sp.setSpan(
+                        BackgroundColorSpan(HIGHLIGHTED), start,
+                        start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                     itemView.chat_tv.text = sp
                 } else {
                     itemView.chat_tv.text = messageItem.content

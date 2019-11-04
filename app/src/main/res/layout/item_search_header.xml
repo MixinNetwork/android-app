@@ -5,7 +5,7 @@
     android:paddingStart="16dp"
     android:paddingTop="8dp"
     android:paddingBottom="8dp"
-    android:background="@color/bg_gray"
+    android:background="?attr/bg_window"
     android:paddingEnd="16dp">
 
     <TextView

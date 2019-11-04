@@ -38,7 +38,7 @@
                 android:layout_gravity="start"
                 android:maxWidth="300dp"
                 android:text="@string/chat_waiting"
-                android:textColor="@color/text_black"
+                android:textColor="?attr/text_primary"
                 android:textSize="14sp" />
 
             <TextView

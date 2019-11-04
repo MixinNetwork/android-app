@@ -15,8 +15,6 @@ import android.text.TextPaint
 import androidx.collection.ArrayMap
 import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
-import java.io.File
-import java.util.concurrent.TimeUnit
 import one.mixin.android.R
 import one.mixin.android.api.LocalJobException
 import one.mixin.android.extension.CodeType
@@ -27,6 +25,8 @@ import one.mixin.android.extension.saveGroupAvatar
 import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView
 import org.jetbrains.anko.dip
+import java.io.File
+import java.util.concurrent.TimeUnit
 
 class GenerateAvatarJob(private val groupId: String, val list: List<User>? = null) : BaseJob(Params(
     PRIORITY_BACKGROUND).addTags(TAG)) {
@@ -332,7 +332,7 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
     }
 
     private fun getBitmapByPlaceHolder(placeHolder: Int): Bitmap {
-        val d = applicationContext.resources.getDrawable(placeHolder, null)
+        val d = applicationContext.resources.getDrawable(placeHolder, applicationContext.theme)
         if (d is BitmapDrawable) {
             return d.bitmap
         }

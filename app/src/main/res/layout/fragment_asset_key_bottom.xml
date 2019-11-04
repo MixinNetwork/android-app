@@ -19,7 +19,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="?attr/bg_white"
         android:paddingTop="32dp"
         android:paddingBottom="120dp">
 
@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:text="@string/symbol"
             android:gravity="end"
-            android:textColor="@color/wallet_text_gray"
+            android:textColor="?attr/text_minor"
             app:layout_constraintEnd_toStartOf="@+id/guide_line"
             app:layout_constraintHorizontal_bias="0.8"
             app:layout_constraintStart_toStartOf="parent"
@@ -63,7 +63,7 @@
             android:text="@string/chain"
             android:gravity="end"
             android:layout_marginTop="@dimen/margin20"
-            android:textColor="@color/wallet_text_gray"
+            android:textColor="?attr/text_minor"
             app:layout_constraintEnd_toStartOf="@+id/guide_line"
             app:layout_constraintHorizontal_bias="0.8"
             app:layout_constraintStart_toStartOf="parent"
@@ -75,7 +75,7 @@
             android:layout_height="wrap_content"
             android:text="@string/contract"
             android:gravity="end"
-            android:textColor="@color/wallet_text_gray"
+            android:textColor="?attr/text_minor"
             android:layout_marginTop="@dimen/margin20"
             android:layout_marginBottom="50dp"
             app:layout_constraintEnd_toStartOf="@+id/guide_line"

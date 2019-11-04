@@ -9,7 +9,7 @@
         android:id="@+id/top_divider"
         android:layout_width="match_parent"
         android:layout_height="10dp"
-        android:background="@color/bg_gray"
+        android:background="?attr/bg_window"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>

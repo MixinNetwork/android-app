@@ -331,7 +331,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val blockDrawable: Drawable by lazy {
-        val d = resources.getDrawable(R.drawable.ic_bottom_block, null)
+        val d = resources.getDrawable(R.drawable.ic_bottom_block, context?.theme)
         d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
         d
     }

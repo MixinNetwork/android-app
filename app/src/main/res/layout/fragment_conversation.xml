@@ -146,7 +146,7 @@
                     android:id="@+id/mention_rv"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@color/white"
+                    android:background="?attr/bg_white"
                     android:layout_gravity="bottom"/>
             </one.mixin.android.widget.MentionLayout>
 
@@ -162,7 +162,7 @@
                 android:id="@+id/bottom_layout"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/chat_control_height"
-                android:background="@color/white"
+                android:background="?attr/bg_white"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -172,14 +172,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="0.5dp"
                     android:layout_gravity="top"
-                    android:background="@color/divider"/>
+                    android:background="?attr/bg_window"/>
 
                 <TextView
                     android:id="@+id/bottom_cant_send"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
-                    android:background="@color/white"
+                    android:background="?attr/bg_white"
                     android:gravity="center_vertical"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp"
@@ -193,7 +193,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
-                    android:background="@color/white"
+                    android:background="?attr/bg_white"
                     android:gravity="center"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp"

@@ -11,7 +11,7 @@
         android:layout_height="@dimen/item_contact_height"
         android:layout_marginTop="@dimen/item_contact_header_height"
         android:foreground="?attr/selectableItemBackground"
-        android:background="@android:color/white">
+        android:background="?attr/bg_white">
 
         <TextView
             android:layout_width="wrap_content"
@@ -31,6 +31,6 @@
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:text="@string/contact_empty_tip"
-        android:textColor="@color/text_gray"
+        android:textColor="?attr/text_minor"
         android:textSize="13sp" />
 </LinearLayout>

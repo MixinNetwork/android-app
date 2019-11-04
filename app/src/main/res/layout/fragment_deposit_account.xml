@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/wallet_light_bg"
+    android:background="?attr/bg_window"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -27,7 +27,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white">
+                android:background="?attr/bg_white">
 
                 <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/guide_line1"
@@ -43,7 +43,7 @@
                     android:layout_marginStart="32dp"
                     android:layout_marginTop="32dp"
                     android:text="@string/account_name"
-                    android:textColor="@color/wallet_text_gray"
+                    android:textColor="?attr/text_assist"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"/>
 
@@ -57,7 +57,7 @@
                     android:layout_marginEnd="32dp"
                     android:layout_marginBottom="@dimen/margin16"
                     android:layout_toStartOf="@+id/account_name_qr_fl"
-                    android:textColor="@color/wallet_text_dark"
+                    android:textColor="?attr/text_primary"
                     app:layout_constraintBottom_toTopOf="@id/account_name_copy_tv"
                     app:layout_constraintEnd_toStartOf="@id/guide_line1"
                     app:layout_constraintStart_toStartOf="parent"
@@ -109,13 +109,13 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="10dp"
-                android:background="@drawable/ic_shadow_divider"/>
+                android:background="?attr/bg_window"/>
 
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white">
+                android:background="?attr/bg_white">
 
                 <androidx.constraintlayout.widget.Guideline
                     android:id="@+id/guide_line2"
@@ -131,7 +131,7 @@
                     android:layout_marginStart="32dp"
                     android:layout_marginTop="32dp"
                     android:text="@string/account_memo"
-                    android:textColor="@color/wallet_text_gray"
+                    android:textColor="?attr/text_primary"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"/>
 
@@ -145,7 +145,7 @@
                     android:layout_marginEnd="32dp"
                     android:layout_marginBottom="@dimen/margin16"
                     android:layout_toStartOf="@+id/account_memo_qr_fl"
-                    android:textColor="@color/wallet_text_dark"
+                    android:textColor="?attr/text_primary"
                     app:layout_constraintBottom_toTopOf="@id/account_memo_copy_tv"
                     app:layout_constraintEnd_toStartOf="@id/guide_line2"
                     app:layout_constraintStart_toStartOf="parent"
@@ -198,7 +198,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="15dp"
-                android:background="@drawable/ic_shadow_bottom"/>
+                android:background="?attr/bg_window"/>
 
             <TextView
                 android:id="@+id/tip_tv"
@@ -214,7 +214,7 @@
                 android:paddingEnd="8dp"
                 android:paddingBottom="3dp"
                 android:text="@string/bottom_deposit_tip_eos"
-                android:textColor="@color/wallet_text_gray"
+                android:textColor="?attr/text_minor"
                 android:textSize="12sp"/>
 
             <TextView

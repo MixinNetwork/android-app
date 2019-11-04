@@ -25,7 +25,7 @@
                 android:text="@string/setting_emergency"
                 android:textSize="18sp"
                 android:layout_marginTop="70dp"
-                android:textColor="@color/wallet_text_dark"
+                android:textColor="?attr/text_primary"
                 android:textStyle="bold"/>
 
             <TextView
@@ -33,7 +33,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin16"
                 android:gravity="center_horizontal"
-                android:textColor="@color/wallet_text_dark"
+                android:textColor="?attr/text_primary"
                 android:text="@string/setting_emergency_content"/>
 
             <TextView

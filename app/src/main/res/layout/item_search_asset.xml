@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="72dp"
-    android:background="@android:color/white"
+    android:background="?attr/bg_white"
     android:clipChildren="false"
     android:clipToPadding="false"
     android:foreground="?attr/selectableItemBackground"
@@ -33,7 +33,7 @@
         android:maxWidth="200dp"
         android:maxLines="1"
         android:minWidth="50dp"
-        android:textColor="@android:color/black"/>
+        android:textColor="?attr/text_primary"/>
 
     <TextView
         android:id="@+id/balance_as"
@@ -47,7 +47,7 @@
         android:maxWidth="200dp"
         android:maxLines="1"
         android:minWidth="50dp"
-        android:textColor="@color/text_gray"
+        android:textColor="?attr/text_minor"
         android:textSize="12sp"/>
 
     <TextView
@@ -71,6 +71,6 @@
         android:layout_toEndOf="@id/balance_as"
         android:gravity="end"
         android:maxLines="1"
-        android:textColor="@color/text_gray"
+        android:textColor="?attr/text_minor"
         android:textSize="12sp"/>
 </RelativeLayout>

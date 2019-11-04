@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/item_contact_height"
-    android:background="@android:color/white"
+    android:background="?attr/bg_white"
     android:foreground="?attr/selectableItemBackground">
 
     <androidx.legacy.widget.Space
@@ -30,7 +30,7 @@
         android:maxLines="1"
         android:ellipsize="end"
         android:layout_toEndOf="@id/avatar"
-        android:textColor="@android:color/black"/>
+        android:textColor="?attr/text_primary"/>
 
     <TextView
         android:id="@+id/balance_as"
@@ -45,7 +45,7 @@
         android:ellipsize="end"
         android:layout_toEndOf="@id/avatar"
         android:textSize="12sp"
-        android:textColor="@color/text_gray"/>
+        android:textColor="?attr/text_minor"/>
 
     <TextView
         android:id="@+id/price_tv"
@@ -70,6 +70,6 @@
         android:layout_alignParentEnd="true"
         android:gravity="end"
         android:maxLines="1"
-        android:textColor="@color/text_gray"
+        android:textColor="?attr/text_minor"
         android:textSize="12sp"/>
 </RelativeLayout>

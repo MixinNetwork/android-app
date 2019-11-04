@@ -24,7 +24,6 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -87,6 +86,7 @@ import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.doAsync
+import javax.inject.Inject
 
 class MainActivity : BlazeBaseActivity() {
 
@@ -113,6 +113,14 @@ class MainActivity : BlazeBaseActivity() {
         if (state.installStatus() == InstallStatus.DOWNLOADED) {
             popupSnackbarForCompleteUpdate()
         }
+    }
+
+    override fun getDefaultThemeId(): Int {
+        return R.style.AppTheme_NoActionBar
+    }
+
+    override fun getNightThemeId(): Int {
+        return R.style.AppTheme_Night_NoActionBar
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -168,10 +176,14 @@ class MainActivity : BlazeBaseActivity() {
         jobManager.addJobInBackground(BackupJob())
 
         doAsync {
-            WorkManager.getInstance(this@MainActivity).enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
-            WorkManager.getInstance(this@MainActivity).enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
-            WorkManager.getInstance(this@MainActivity).enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
-            WorkManager.getInstance(this@MainActivity).enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>()
+            WorkManager.getInstance(this@MainActivity)
+                .enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
+            WorkManager.getInstance(this@MainActivity)
+                .enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
+            WorkManager.getInstance(this@MainActivity)
+                .enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
+            WorkManager.getInstance(this@MainActivity)
+                .enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>()
         }
 
         refreshStickerAlbum()
@@ -199,8 +211,10 @@ class MainActivity : BlazeBaseActivity() {
             .setTitle(getString(R.string.setting_emergency_change_mobile))
             .setPositiveButton(R.string.change) { dialog, _ ->
                 supportFragmentManager.inTransaction {
-                    setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                        R.anim.slide_in_bottom, R.anim.slide_out_bottom)
+                    setCustomAnimations(
+                        R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                        R.anim.slide_in_bottom, R.anim.slide_out_bottom
+                    )
                         .add(R.id.root_view, VerifyFragment.newInstance(VerifyFragment.FROM_PHONE))
                         .addToBackStack(null)
                     dialog.dismiss()
@@ -213,7 +227,11 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun checkRoot() {
-        if (RootUtil.isDeviceRooted && defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)) {
+        if (RootUtil.isDeviceRooted && defaultSharedPreferences.getBoolean(
+                Constants.Account.PREF_BIOMETRICS,
+                false
+            )
+        ) {
             BiometricUtil.deleteKey(this)
         }
     }
@@ -223,7 +241,8 @@ class MainActivity : BlazeBaseActivity() {
         val appUpdateInfoTask = appUpdateManager.appUpdateInfo
         appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
-                appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
+                appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
+            ) {
                 try {
                     appUpdateManager.startUpdateFlowForResult(
                         appUpdateInfo,
@@ -301,7 +320,11 @@ class MainActivity : BlazeBaseActivity() {
             val userId = intent.getStringExtra(TRANSFER)
             TransferFragment.newInstance(userId, supportSwitchAsset = true)
                 .showNow(supportFragmentManager, TransferFragment.TAG)
-        } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
+        } else if (intent.extras != null && intent.extras!!.getString(
+                "conversation_id",
+                null
+            ) != null
+        ) {
             alertDialog?.dismiss()
             alertDialog = alert(getString(R.string.group_wait)) {}.show()
             val conversationId = intent.extras!!.getString("conversation_id")!!
@@ -309,12 +332,14 @@ class MainActivity : BlazeBaseActivity() {
                 val innerIntent: Intent?
                 var conversation = conversationDao.findConversationById(conversationId)
                 if (conversation == null) {
-                    val response = conversationService.getConversation(conversationId).execute().body()
+                    val response =
+                        conversationService.getConversation(conversationId).execute().body()
                     if (response != null && response.isSuccess) {
                         response.data?.let { data ->
                             var ownerId: String = data.creatorId
                             if (data.category == ConversationCategory.CONTACT.name) {
-                                ownerId = data.participants.find { p -> p.userId != Session.getAccountId() }!!.userId
+                                ownerId =
+                                    data.participants.find { p -> p.userId != Session.getAccountId() }!!.userId
                             } else if (data.category == ConversationCategory.GROUP.name) {
                                 ownerId = data.creatorId
                             }
@@ -335,18 +360,28 @@ class MainActivity : BlazeBaseActivity() {
                                     null,
                                     0,
                                     ConversationStatus.SUCCESS.ordinal,
-                                    null)
+                                    null
+                                )
                                 conversation = c
                                 conversationDao.insert(c)
                             } else {
-                                conversationDao.updateConversation(data.conversationId, ownerId, data.category,
-                                    data.name, data.announcement, data.muteUntil, data.createdAt, ConversationStatus.SUCCESS.ordinal)
+                                conversationDao.updateConversation(
+                                    data.conversationId,
+                                    ownerId,
+                                    data.category,
+                                    data.name,
+                                    data.announcement,
+                                    data.muteUntil,
+                                    data.createdAt,
+                                    ConversationStatus.SUCCESS.ordinal
+                                )
                             }
 
                             val participants = mutableListOf<Participant>()
                             val userIdList = mutableListOf<String>()
                             for (p in data.participants) {
-                                val item = Participant(conversationId, p.userId, p.role, p.createdAt!!)
+                                val item =
+                                    Participant(conversationId, p.userId, p.role, p.createdAt!!)
                                 if (p.role == ParticipantRole.OWNER.name) {
                                     participants.add(0, item)
                                 } else {
@@ -370,7 +405,9 @@ class MainActivity : BlazeBaseActivity() {
                 } else {
                     var user = userDao.findPlainUserByConversationId(conversationId)
                     if (user == null) {
-                        val response = userService.getUsers(arrayListOf(conversation!!.ownerId!!)).execute().body()
+                        val response =
+                            userService.getUsers(arrayListOf(conversation!!.ownerId!!)).execute()
+                                .body()
                         if (response != null && response.isSuccess) {
                             response.data?.let { data ->
                                 for (u in data) {
@@ -411,7 +448,9 @@ class MainActivity : BlazeBaseActivity() {
 
         search_bar.mOnQueryTextListener = object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String): Boolean {
-                (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(newText)
+                (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(
+                    newText
+                )
                 return true
             }
         }
@@ -448,8 +487,10 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     override fun onBackPressed() {
-        val searchMessageFragment = supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
-        val searchSingleFragment = supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG)
+        val searchMessageFragment =
+            supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
+        val searchSingleFragment =
+            supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG)
         when {
             searchMessageFragment != null -> super.onBackPressed()
             searchSingleFragment != null -> super.onBackPressed()
@@ -510,6 +551,15 @@ class MainActivity : BlazeBaseActivity() {
             return Intent(context, MainActivity::class.java).apply {
                 addCategory(Intent.CATEGORY_LAUNCHER)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+            }
+        }
+
+        fun reopen(context: Context) {
+            return Intent(context, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }.run {
+                context.startActivity(this)
             }
         }
     }
