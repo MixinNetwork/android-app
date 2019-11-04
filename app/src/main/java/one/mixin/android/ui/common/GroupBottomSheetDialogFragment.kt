@@ -116,12 +116,12 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             })
         }
         contentView.member_fl.setOnClickListener {
-            dismiss()
             GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
+            dismiss()
         }
         contentView.send_fl.setOnClickListener {
-            dismiss()
             ConversationActivity.show(requireContext(), conversationId)
+            dismiss()
         }
         contentView.detail_tv.movementMethod = LinkMovementMethod()
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
@@ -207,10 +207,12 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         menu = AlertDialog.Builder(requireContext())
             .setItems(choices.toTypedArray()) { _, which ->
+                if (!isAdded) return@setItems
+
                 when (choices[which]) {
                     getString(R.string.participants) -> {
-                        dismiss()
                         GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
+                        dismiss()
                     }
                     getString(R.string.contact_other_search_conversation) -> {
                         startSearchConversation()

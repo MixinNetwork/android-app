@@ -55,7 +55,7 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
             width = size
             height = size
         }
-        if (item.mediaUrl == null) {
+        if (item.mediaUrl == null && item.thumbImage != null) {
             val imageData = Base64.decode(item.thumbImage, Base64.DEFAULT)
             imageView.loadBase64ImageCenterCrop(imageData)
         } else {

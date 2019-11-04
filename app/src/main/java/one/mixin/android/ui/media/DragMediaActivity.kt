@@ -80,6 +80,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import java.io.File
 import java.io.FileInputStream
+import java.lang.IndexOutOfBoundsException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.math.min
@@ -222,7 +223,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     var needReload = false
                     pagerAdapter.visiblePositions.forEach { entry ->
                         val oldMessageItem = entry.value
-                        val newMessageItem = list[entry.key]
+                        val newMessageItem = try {
+                            list[entry.key]
+                        } catch (e: IndexOutOfBoundsException) {
+                            needReload = true
+                            return@forEach
+                        }
                         if (oldMessageItem?.messageId != newMessageItem?.messageId ||
                             oldMessageItem?.mediaStatus != newMessageItem?.mediaStatus) {
                             needReload = true
@@ -507,7 +513,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 if (!messageItem.mediaMimeType.equals(
                         MimeType.GIF.toString(),
                         true
-                    ) && messageItem.mediaHeight!! / messageItem.mediaWidth!!.toFloat() > displayRatio() * 1.5f
+                    ) && messageItem.mediaHeight != null && messageItem.mediaWidth != null &&
+                    messageItem.mediaHeight / messageItem.mediaWidth.toFloat() > displayRatio() * 1.5f
                 ) {
                     createLargeImageView(container, position, messageItem, circleProgress)
                 } else {

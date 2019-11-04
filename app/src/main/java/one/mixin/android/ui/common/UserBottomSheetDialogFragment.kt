@@ -97,11 +97,11 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         conversationId = arguments!!.getString(ARGS_CONVERSATION_ID)
         contentView.title.right_iv.setOnClickListener { dismiss() }
         contentView.avatar.setOnClickListener {
+            if (!isAdded) return@setOnClickListener
+
             user.avatarUrl?.let { url ->
-                if (activity != null) {
-                    AvatarActivity.show(activity!!, url, contentView.avatar)
-                    dismiss()
-                }
+                AvatarActivity.show(requireActivity(), url, contentView.avatar)
+                dismiss()
             }
         }
 
@@ -169,6 +169,8 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         choices.add(getString(R.string.contact_other_report))
         menu = AlertDialog.Builder(context!!)
             .setItems(choices.toTypedArray()) { _, which ->
+                if (!isAdded) return@setItems
+
                 when (choices[which]) {
                     getString(R.string.developer) -> {
                         creator?.let {
