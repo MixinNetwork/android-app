@@ -265,7 +265,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
             override fun onCloseClick() {
-                dialog.dismiss()
+                dialog?.dismiss()
             }
         }
         contentView.chat_web_view.settings.javaScriptEnabled = true
@@ -470,6 +470,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showBottomSheet() {
+        if (!isAdded) return
+
         val builder = BottomSheet.Builder(requireActivity())
         val view = View.inflate(
             ContextThemeWrapper(requireActivity(), R.style.Custom),
