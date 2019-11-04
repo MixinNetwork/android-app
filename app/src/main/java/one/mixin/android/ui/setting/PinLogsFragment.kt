@@ -39,8 +39,10 @@ class PinLogsFragment : BaseViewModelFragment<SettingViewModel>() {
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
         list.adapter = adapter
         list.setOnScrollChangeListener { _, _, _, _, _ ->
-            if (!list.canScrollVertically(1)) {
-                loadMore()
+            if (isAdded) {
+                if (!list.canScrollVertically(1)) {
+                    loadMore()
+                }
             }
         }
         viewModel.viewModelScope.launch {
