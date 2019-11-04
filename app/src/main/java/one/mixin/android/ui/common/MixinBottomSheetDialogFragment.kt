@@ -53,6 +53,7 @@ abstract class MixinBottomSheetDialogFragment : MixinDialogFragment(), Injectabl
                 super.dismiss()
             }
         }
+        super.dismiss()
     }
 
     var onDismissListener: OnDismissListener? = null
