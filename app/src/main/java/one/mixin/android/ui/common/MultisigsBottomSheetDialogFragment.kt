@@ -8,7 +8,7 @@ import android.view.View
 import android.view.View.GONE
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_multisigs_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.layout_pin_pb_error.view.*
+import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -18,12 +18,15 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.MultisigsAction
 import one.mixin.android.api.response.MultisigsState
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.MultisigsBiometricItem
+import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 
-class MultisigsBottomSheetDialogFragment : BiometricBottomSheetDialogFragment<MultisigsBiometricItem>() {
+class MultisigsBottomSheetDialogFragment :
+    ValuableBiometricBottomSheetDialogFragment<MultisigsBiometricItem>() {
     companion object {
         const val TAG = "MultisigsBottomSheetDialogFragment"
 
@@ -97,10 +100,25 @@ class MultisigsBottomSheetDialogFragment : BiometricBottomSheetDialogFragment<Mu
     }
 
     private fun showUserList(userList: ArrayList<User>, isSender: Boolean) {
-        val title = getString(if (isSender) R.string.multisig_senders else R.string.multisig_receivers)
+        val title =
+            getString(if (isSender) R.string.multisig_senders else R.string.multisig_receivers)
         UserListBottomSheetDialogFragment.newInstance(userList, title)
             .showNow(parentFragmentManager, UserListBottomSheetDialogFragment.TAG)
     }
+
+    override fun getBiometricInfo() =
+        BiometricInfo(
+            requireContext().getString(
+                if (t.action == MultisigsAction.cancel.name) {
+                    R.string.multisig_revoke_transaction
+                } else {
+                    R.string.multisig_transaction
+                }
+            ),
+            t.memo ?: "",
+            getDescription(),
+            getString(R.string.multisig_pay_pin)
+        )
 
     override fun getBiometricItem() = t
 
@@ -123,7 +141,8 @@ class MultisigsBottomSheetDialogFragment : BiometricBottomSheetDialogFragment<Mu
         super.onDismiss(dialog)
         if (!success &&
             t.state != MultisigsState.signed.name &&
-            t.state != MultisigsState.unlocked.name) {
+            t.state != MultisigsState.unlocked.name
+        ) {
             GlobalScope.launch(Dispatchers.IO) {
                 bottomViewModel.cancelMultisigs(t.requestId)
             }

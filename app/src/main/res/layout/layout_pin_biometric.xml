@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ViewAnimator xmlns:android="http://schemas.android.com/apk/res/android"
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/pin_va"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -87,4 +86,4 @@
             android:text="@string/common_continue"
             android:textSize="14sp"/>
     </LinearLayout>
-</ViewAnimator>
+</merge>

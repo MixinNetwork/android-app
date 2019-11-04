@@ -32,9 +32,6 @@ public class Keyboard extends RelativeLayout {
         this.context = context;
     }
 
-    /**
-     * 初始化KeyboardView
-     */
     private void initKeyboardView() {
         View view = View.inflate(context, R.layout.view_keyboard, this);
         GridView gvKeyboard = view.findViewById(R.id.gv_keyboard);
@@ -52,11 +49,6 @@ public class Keyboard extends RelativeLayout {
         this.onClickKeyboardListener = onClickKeyboardListener;
     }
 
-    /**
-     * 设置键盘所显示的内容
-     *
-     * @param key
-     */
     public void setKeyboardKeys(String[] key) {
         this.key = key;
         initKeyboardView();
@@ -129,7 +121,7 @@ public class Keyboard extends RelativeLayout {
     static class ViewHolder {
         private TextView tvKey;
 
-        public ViewHolder(View view) {
+        ViewHolder(View view) {
             tvKey = view.findViewById(R.id.tv_keyboard_keys);
             view.setTag(this);
         }

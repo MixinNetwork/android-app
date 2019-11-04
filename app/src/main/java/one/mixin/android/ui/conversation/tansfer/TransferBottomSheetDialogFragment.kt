@@ -8,21 +8,23 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.layout_pin_pb_error.view.*
+import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.BiometricBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
+import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.widget.BottomSheet
 
-class TransferBottomSheetDialogFragment : BiometricBottomSheetDialogFragment<BiometricItem>() {
+class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<BiometricItem>() {
 
     companion object {
         const val TAG = "TransferBottomSheetDialogFragment"
@@ -76,18 +78,43 @@ class TransferBottomSheetDialogFragment : BiometricBottomSheetDialogFragment<Bio
         }
     }
 
+    override fun getBiometricInfo(): BiometricInfo {
+        return when (val t = this.t) {
+            is TransferBiometricItem -> {
+                BiometricInfo(
+                getString(
+                    R.string.wallet_bottom_transfer_to,
+                    t.user.fullName
+                ),
+                getString(
+                    R.string.contact_mixin_id,
+                    t.user.identityNumber
+                ),
+                    getDescription(),
+                    getString(R.string.wallet_pay_with_pwd)
+                )
+            }
+            else -> {
+                t as WithdrawBiometricItem
+                BiometricInfo(
+                getString(R.string.withdrawal_to, t.label),
+                t.destination.formatPublicKey(),
+                getDescription(),
+                getString(R.string.wallet_pay_with_pwd))
+            }
+        }
+    }
+
     override fun getBiometricItem() = t
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<Void> {
-        return when (t) {
+        return when (val t = this.t) {
             is TransferBiometricItem ->
-                (t as TransferBiometricItem).let {
-                    bottomViewModel.transfer(t.asset.assetId, it.user.userId, t.amount, pin, t.trace, t.memo)
-                }
-            else ->
-                (t as WithdrawBiometricItem).let {
-                    bottomViewModel.withdrawal(it.addressId, it.amount, pin, it.trace!!, it.memo)
-                }
+                bottomViewModel.transfer(t.asset.assetId, t.user.userId, t.amount, pin, t.trace, t.memo)
+            else -> {
+                t as WithdrawBiometricItem
+                bottomViewModel.withdrawal(t.addressId, t.amount, pin, t.trace!!, t.memo)
+            }
         }
     }
 
