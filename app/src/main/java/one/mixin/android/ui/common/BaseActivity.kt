@@ -12,6 +12,8 @@ import com.demo.systemuidemo.SystemUIManager
 import com.uber.autodispose.android.lifecycle.scope
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
+import java.util.Locale
+import javax.inject.Inject
 import one.mixin.android.Constants.Account.PREF_LANGUAGE
 import one.mixin.android.Constants.Account.PREF_SET_LANGUAGE
 import one.mixin.android.Constants.Theme.THEME_CURRENT_ID
@@ -20,8 +22,6 @@ import one.mixin.android.Constants.Theme.THEME_NIGHT_ID
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import org.jetbrains.anko.configuration
-import java.util.Locale
-import javax.inject.Inject
 
 @SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
@@ -49,16 +49,12 @@ open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (defaultSharedPreferences.getInt(THEME_CURRENT_ID, THEME_DEFAULT_ID) == THEME_NIGHT_ID) {
-            setTheme(getNightThemeId())
-        } else {
-            setTheme(getDefaultThemeId())
-        }
-
         if (isNightMode()) {
+            setTheme(getNightThemeId())
             window.navigationBarColor = ContextCompat.getColor(this, R.color.colorPrimaryNight)
             SystemUIManager.lightUI(window, false)
         } else {
+            setTheme(getDefaultThemeId())
             window.navigationBarColor = ContextCompat.getColor(this, R.color.colorPrimary)
             SystemUIManager.lightUI(window, true)
         }

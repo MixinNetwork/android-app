@@ -17,6 +17,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import kotlinx.android.synthetic.main.layout_pin.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.hintTextColor
 import org.jetbrains.anko.textColor
@@ -28,7 +29,7 @@ class PinView : LinearLayout {
         const val STAR = "*"
     }
 
-    private var color = Color.BLACK
+    private var color = context.colorFromAttribute(R.attr.text_primary)
     private var count = DEFAULT_COUNT
     // control tip_tv and line visibility
     private var tipVisible = true
@@ -43,7 +44,11 @@ class PinView : LinearLayout {
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
         LayoutInflater.from(context).inflate(R.layout.layout_pin, this, true) as LinearLayout
         val ta = context.obtainStyledAttributes(attrs, R.styleable.PinView)
         ta?.let { typedArray ->
@@ -72,11 +77,11 @@ class PinView : LinearLayout {
                 item.textSize = starSize
                 item.textColor = color
                 item.typeface = Typeface.DEFAULT_BOLD
-                item.hintTextColor = context.getColor(R.color.text_gray)
+                item.hintTextColor = context.colorFromAttribute(R.attr.text_minor)
                 item.hint = STAR
                 item.gravity = Gravity.CENTER
 
-                val params = LinearLayout.LayoutParams(0, MATCH_PARENT)
+                val params = LayoutParams(0, MATCH_PARENT)
                 params.weight = 1f
                 params.gravity = Gravity.BOTTOM
                 container_ll.addView(item, params)

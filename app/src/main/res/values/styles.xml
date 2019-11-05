@@ -21,6 +21,8 @@
         <item name="text_assist">@color/textAssist</item>
         <item name="text_remarks">@color/textRemarks</item>
 
+        <item name="text_default">@color/textPrimary</item>
+        <item name="text_checked">@color/textPrimary</item>
 
         <item name="icon_default">@color/colorIcon</item>
         <item name="icon_light">@color/colorIconLight</item>
@@ -34,6 +36,8 @@
         <item name="bg_white">@color/bgWhite</item>
         <item name="bg_gray">@color/bgGray</item>
         <item name="bg_window">@color/bgWindow</item>
+        <item name="bg_menu">@color/bgMenu</item>
+        <item name="bg_menu_border">@color/bgMenuBorder</item>
         <item name="flag_night">false</item>
     </style>
 

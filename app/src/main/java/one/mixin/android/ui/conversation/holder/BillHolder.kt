@@ -102,7 +102,6 @@ class BillHolder constructor(containerView: View) : BaseViewHolder(containerView
                     R.drawable.chat_bubble_other,
                     R.drawable.chat_bubble_other_night
                 )
-
             }
         }
     }

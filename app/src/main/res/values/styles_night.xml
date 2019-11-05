@@ -11,6 +11,9 @@
         <item name="text_assist">@color/textAssistNight</item>
         <item name="text_remarks">@color/textRemarksNight</item>
 
+        <item name="text_default">@color/textPrimaryNight</item>
+        <item name="text_checked">@color/textPrimary</item>
+
         <item name="icon_default">@color/colorIconNight</item>
         <item name="icon_light">@color/colorIconLightNight</item>
         <item name="icon_dark">@color/colorIconDarkNight</item>
@@ -24,6 +27,8 @@
         <item name="bg_white">@color/bg_whiteNight</item>
         <item name="bg_gray">@color/bg_grayNight</item>
         <item name="bg_window">@color/bg_windowNight</item>
+        <item name="bg_menu">@color/bgMenuNight</item>
+        <item name="bg_menu_border">@color/bgMenuBorderNight</item>
 
         <item name="flag_night">true</item>
     </style>

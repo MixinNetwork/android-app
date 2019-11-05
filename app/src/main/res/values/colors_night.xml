@@ -22,4 +22,7 @@
     <color name="bg_whiteNight">#2c3136</color>
     <color name="bg_windowNight">#23272B</color>
     <color name="bg_grayNight">#3B3F44</color>
+
+    <color name="bgMenuNight">#23272B</color>
+    <color name="bgMenuBorderNight">#3E5264</color>
 </resources>

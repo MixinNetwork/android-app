@@ -11,6 +11,9 @@
     <attr name="text_assist" format="color|reference" />
     <attr name="text_remarks" format="color|reference" />
 
+    <attr name="text_default" format="color|reference" />
+    <attr name="text_checked" format="color|reference" />
+
     <attr name="icon_default" format="color|reference" />
     <attr name="icon_light" format="color|reference" />
     <attr name="icon_dark" format="color|reference" />
@@ -24,6 +27,8 @@
     <attr name="bg_window" format="color|reference" />
     <attr name="bg_white" format="color|reference" />
     <attr name="bg_gray" format="color|reference" />
+    <attr name="bg_menu" format="color|reference" />
+    <attr name="bg_menu_border" format="color|reference" />
 
     <attr name="flag_night" format="boolean|reference" />
 </resources>

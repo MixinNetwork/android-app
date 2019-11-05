@@ -9,7 +9,7 @@
       android:strokeWidth="2"
       android:fillColor="#00000000"
       android:fillType="nonZero"
-      android:strokeColor="?attr/icon_dark"
+      android:strokeColor="?attr/icon_light"
       android:strokeLineCap="round"/>
   <path
       android:pathData="M13,17L13,17A1,1 0,0 1,14 18L14,21A1,1 0,0 1,13 22L13,22A1,1 0,0 1,12 21L12,18A1,1 0,0 1,13 17z"
@@ -23,12 +23,12 @@
       android:strokeWidth="2"
       android:fillColor="#00000000"
       android:fillType="nonZero"
-      android:strokeColor="?attr/icon_dark"
+      android:strokeColor="?attr/icon_light"
       android:strokeLineCap="round"/>
   <path
       android:pathData="M9,21L17,21A1,1 0,0 1,18 22L18,22A1,1 0,0 1,17 23L9,23A1,1 0,0 1,8 22L8,22A1,1 0,0 1,9 21z"
       android:strokeWidth="1"
-      android:fillColor="?attr/icon_light"
+      android:fillColor="?attr/icon_dark"
       android:fillType="evenOdd"
       android:strokeColor="#00000000"/>
 </vector>

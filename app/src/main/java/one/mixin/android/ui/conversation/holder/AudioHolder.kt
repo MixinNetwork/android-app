@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
+import kotlin.math.min
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_audio.view.*
 import one.mixin.android.R
@@ -17,7 +18,6 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.mediaDownloaded
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
-import kotlin.math.min
 
 class AudioHolder constructor(containerView: View) : BaseViewHolder(containerView) {
     init {

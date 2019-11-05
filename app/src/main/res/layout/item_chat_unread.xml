@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingBottom="3dp"
-    android:paddingTop="1dp">
+    android:paddingTop="1dp"
+    android:paddingBottom="3dp">
 
     <View
         android:layout_width="match_parent"
@@ -16,11 +16,11 @@
         android:id="@+id/unread_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FDFDFE"
+        android:background="?attr/bg_white"
         android:gravity="center"
         android:padding="3dp"
-        android:textSize="12sp"
         android:textColor="?attr/text_minor"
+        android:textSize="12sp"
         tools:text="new messages" />
 
     <View

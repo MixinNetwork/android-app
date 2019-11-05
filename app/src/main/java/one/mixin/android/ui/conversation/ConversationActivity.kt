@@ -8,6 +8,7 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_chat.*
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
@@ -20,7 +21,6 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIEN
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ForwardMessage
-import javax.inject.Inject
 
 class ConversationActivity : BlazeBaseActivity() {
 

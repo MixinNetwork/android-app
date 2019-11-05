@@ -12,6 +12,7 @@
             android:paddingEnd="10dp"
             android:gravity="center"
             android:visibility="gone"
+            android:textColor="?attr/text_primary"
             android:text="@string/link_error"/>
 
     <RelativeLayout
@@ -29,6 +30,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginBottom="@dimen/margin16"
                 android:layout_above="@+id/pb"
+                android:textColor="?attr/text_primary"
                 android:text="@string/chat_group_checking"/>
 
         <ProgressBar

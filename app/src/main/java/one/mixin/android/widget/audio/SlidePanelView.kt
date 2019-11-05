@@ -11,6 +11,7 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.RelativeLayout
 import androidx.core.content.ContextCompat
+import kotlin.math.abs
 import kotlinx.android.synthetic.main.view_slide_panel.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
@@ -18,7 +19,6 @@ import one.mixin.android.extension.formatMillis
 import one.mixin.android.widget.AndroidUtilities
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.dip
-import kotlin.math.abs
 
 class SlidePanelView : RelativeLayout {
 

@@ -29,7 +29,6 @@ class WaitingHolder constructor(
                     R.drawable.chat_bubble_other,
                     R.drawable.chat_bubble_other_night
                 )
-
         }
     }
 

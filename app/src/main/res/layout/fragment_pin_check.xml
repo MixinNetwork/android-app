@@ -30,7 +30,7 @@
                     android:paddingStart="24dp"
                     android:paddingTop="16dp"
                     android:text="@string/pin_check_title"
-                    android:textColor="?attr/bg_white"
+                    android:textColor="@color/white"
                     android:textSize="18sp"/>
         </FrameLayout>
 
