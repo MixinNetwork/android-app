@@ -22,7 +22,7 @@ import one.mixin.android.ui.address.adapter.AddressAdapter
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.common.PinBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.DELETE
@@ -142,7 +142,7 @@ class AddressManagementFragment : BaseFragment() {
             tag = addr.tag,
             assetName = asset.name, type = DELETE)
         bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
-        bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
+        bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
                 deleteSuccess = true
             }

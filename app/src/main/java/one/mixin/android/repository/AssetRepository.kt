@@ -100,11 +100,11 @@ constructor(
 
     fun saveAddr(addr: Address) = addressDao.insert(addr)
 
-    fun syncAddr(addressRequest: AddressRequest) = addressService.addresses(addressRequest)
+    suspend fun syncAddr(addressRequest: AddressRequest) = addressService.addresses(addressRequest)
 
-    fun deleteAddr(id: String, pin: String) = addressService.delete(id, Pin(pin))
+    suspend fun deleteAddr(id: String, pin: String) = addressService.delete(id, Pin(pin))
 
-    fun deleteLocalAddr(id: String) = addressDao.deleteById(id)
+    suspend fun deleteLocalAddr(id: String) = addressDao.deleteById(id)
 
     fun assetItems() = assetDao.assetItemsNotHidden()
 

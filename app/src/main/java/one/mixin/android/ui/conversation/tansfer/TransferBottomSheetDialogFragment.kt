@@ -56,6 +56,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                     contentView.sub_title.text = "Mixin ID: ${it.user.identityNumber}"
                 }
                 contentView.pay_tv.setText(R.string.wallet_pay_with_pwd)
+                contentView.biometric_tv.setText(R.string.wallet_pay_with_biometric)
             }
             is WithdrawBiometricItem -> {
                 (t as WithdrawBiometricItem).let {
@@ -63,6 +64,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                     contentView.sub_title.text = it.destination
                 }
                 contentView.pay_tv.setText(R.string.withdrawal_with_pwd)
+                contentView.biometric_tv.setText(R.string.withdrawal_with_biometric)
             }
         }
         if (!TextUtils.isEmpty(t.memo)) {
@@ -107,7 +109,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
 
     override fun getBiometricItem() = t
 
-    override suspend fun invokeNetwork(pin: String): MixinResponse<Void> {
+    override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
         return when (val t = this.t) {
             is TransferBiometricItem ->
                 bottomViewModel.transfer(t.asset.assetId, t.user.userId, t.amount, pin, t.trace, t.memo)
@@ -118,7 +120,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         }
     }
 
-    override fun doWhenInvokeNetworkSuccess() {
+    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String) {
         if (t is WithdrawBiometricItem) {
             updateFirstWithdrawalSet(t as WithdrawBiometricItem)
         }

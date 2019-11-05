@@ -1,6 +1,5 @@
 package one.mixin.android.api.service
 
-import io.reactivex.Observable
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
@@ -13,11 +12,11 @@ import retrofit2.http.Path
 interface AddressService {
 
     @POST("addresses")
-    fun addresses(@Body request: AddressRequest): Observable<MixinResponse<Address>>
+    suspend fun addresses(@Body request: AddressRequest): MixinResponse<Address>
 
     @POST("addresses/{id}/delete")
-    fun delete(@Path("id") id: String, @Body pin: Pin): Observable<MixinResponse<Unit>>
+    suspend fun delete(@Path("id") id: String, @Body pin: Pin): MixinResponse<Unit>
 
     @GET("addresses/{id}")
-    fun address(@Path("id") id: String): Observable<MixinResponse<Address>>
+    suspend fun address(@Path("id") id: String): MixinResponse<Address>
 }

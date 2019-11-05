@@ -4,20 +4,15 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.extension.toast
-import one.mixin.android.extension.updatePinCheck
-import one.mixin.android.ui.common.PinBottomSheetDialogFragment
-import one.mixin.android.util.ErrorHandler
+import one.mixin.android.api.MixinResponse
+import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.widget.PinView
 
-class PinEmergencyBottomSheetDialog : PinBottomSheetDialogFragment() {
+class PinEmergencyBottomSheetDialog : BiometricBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PinEmergencyBottomSheetDialog"
 
@@ -33,44 +28,20 @@ class PinEmergencyBottomSheetDialog : PinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.info_tv.setText(R.string.setting_emergency_pin_tip)
-        contentView.pin.setListener(object : PinView.OnPinListener {
-            override fun onUpdate(index: Int) {
-                if (index == contentView.pin.getCount()) {
-                    verify(contentView.pin.code())
-                }
-            }
-        })
+        contentView.title.setText(R.string.setting_emergency_pin_tip)
+        contentView.biometric_tv.setText(R.string.verify_by_biometric)
     }
 
-    private fun verify(pinCode: String) = lifecycleScope.launch {
-        contentView.pin_va?.displayedChild = POS_PB
-        handleMixinResponse(
-            invokeNetwork = { bottomViewModel.verifyPin(pinCode) },
-            switchContext = Dispatchers.IO,
-            successBlock = {
-                context?.updatePinCheck()
-                pinEmergencyCallback?.onSuccess(pinCode)
-                dismiss()
-            },
-            failureBlock = {
-                if (it.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
-                    toast(R.string.error_pin_check_too_many_request)
-                    return@handleMixinResponse true
-                }
-                return@handleMixinResponse false
-            },
-            exceptionBlock = {
-                contentView.pin_va?.displayedChild = POS_PIN
-                contentView.pin?.clear()
-                return@handleMixinResponse false
-            },
-            doAfterNetworkSuccess = {
-                contentView.pin_va?.displayedChild = POS_PIN
-                contentView.pin?.clear()
-            }
-        )
+    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String) {
+        pinEmergencyCallback?.onSuccess(pin)
     }
+
+    override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
+        return bottomViewModel.verifyPin(pin)
+    }
+
+    override fun getBiometricInfo() =
+        BiometricInfo(getString(R.string.verify_by_biometric), "", "", getString(R.string.verify_by_PIN))
 
     var pinEmergencyCallback: PinEmergencyCallback? = null
 

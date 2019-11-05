@@ -22,7 +22,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.PinBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_ACCOUNT_NAME_RESULT
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_ADDRESS_RESULT
@@ -107,7 +107,7 @@ class AddressAddFragment : BaseFragment() {
                 )
 
             bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
-            bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
+            bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
                     activity?.onBackPressed()
                 }

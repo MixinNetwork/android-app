@@ -22,7 +22,6 @@ import one.mixin.android.di.Injectable
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
-import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
@@ -98,7 +97,7 @@ class PinCheckDialogFragment : DialogFragment(), Injectable {
                 return@handleMixinResponse false
             },
             doAfterNetworkSuccess = {
-                contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PIN
+                contentView.pin_va?.displayedChild = POS_PIN
                 contentView.pin?.clear()
             }
         )

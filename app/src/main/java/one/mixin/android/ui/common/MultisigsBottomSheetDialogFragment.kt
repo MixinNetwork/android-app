@@ -60,6 +60,8 @@ class MultisigsBottomSheetDialogFragment :
             contentView.arrow_iv.setImageResource(R.drawable.ic_multisigs_arrow_right)
         }
         contentView.sub_title.text = t.memo
+        contentView.pay_tv.setText(R.string.multisig_pay_pin)
+        contentView.pay_tv.setText(R.string.multisig_pay_biometric)
 
         lifecycleScope.launch {
             val users = withContext(Dispatchers.IO) {
@@ -122,7 +124,7 @@ class MultisigsBottomSheetDialogFragment :
 
     override fun getBiometricItem() = t
 
-    override suspend fun invokeNetwork(pin: String): MixinResponse<Void> {
+    override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
         return when {
             t.action == MultisigsAction.sign.name -> {
                 bottomViewModel.signMultisigs(t.requestId, pin)
@@ -133,7 +135,7 @@ class MultisigsBottomSheetDialogFragment :
         }
     }
 
-    override fun doWhenInvokeNetworkSuccess() {
+    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String) {
         success = true
     }
 

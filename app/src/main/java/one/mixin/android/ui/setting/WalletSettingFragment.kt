@@ -17,7 +17,7 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.PinBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.BiometricTimeFragment.Companion.X_HOUR
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
@@ -92,7 +92,7 @@ class WalletSettingFragment : BaseFragment() {
         } else {
             val bottomSheet =
                 PinBiometricsBottomSheetDialogFragment.newInstance(true)
-            bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
+            bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
                     biometrics_sc.isChecked = true
                     time_rl.visibility = VISIBLE

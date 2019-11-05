@@ -5,14 +5,13 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putLong
@@ -20,6 +19,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 
 abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -30,6 +30,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         contentView.title_view.right_iv.setOnClickListener { dismiss() }
         contentView.biometric_layout.setKeyboard(contentView.keyboard)
         contentView.biometric_layout.callback = biometricLayoutCallback
+        contentView.post {
+            contentView.biometric_layout.keyboardHeight = contentView.keyboard.height
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -41,9 +44,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     abstract fun getBiometricInfo(): BiometricInfo
 
-    abstract suspend fun invokeNetwork(pin: String): MixinResponse<Void>
+    abstract suspend fun invokeNetwork(pin: String): MixinResponse<*>
 
-    abstract fun doWhenInvokeNetworkSuccess()
+    abstract fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String)
 
     protected fun showErrorInfo(content: String, animate: Boolean = false) {
         if (!isAdded) return
@@ -64,46 +67,39 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         contentView.biometric_layout.showPin(true)
     }
 
-    private fun onPinComplete(pin: String) {
-        lifecycleScope.launch {
-            if (!isAdded) return@launch
+    private fun onPinComplete(pin: String) = lifecycleScope.launch {
+        if (!isAdded) return@launch
 
-            contentView.biometric_layout.showPb()
-            handleMixinResponse(
-                invokeNetwork = {
-                    invokeNetwork(pin)
-                },
-                switchContext = Dispatchers.IO,
-                successBlock = {
-                    defaultSharedPreferences.putLong(
-                        Constants.BIOMETRIC_PIN_CHECK,
-                        System.currentTimeMillis()
-                    )
-                    context?.updatePinCheck()
+        contentView.biometric_layout.showPb()
+        val response = try {
+            withContext(Dispatchers.IO) {
+                invokeNetwork(pin)
+            }
+        } catch (t: Throwable) {
+            contentView.biometric_layout?.showPin(true)
+            ErrorHandler.handleError(t)
+            return@launch
+        }
 
-                    doWhenInvokeNetworkSuccess()
-
-                    dismiss()
-                    callback.notNullWithElse({ action -> action.onSuccess() }, {
-                        toast(R.string.successful)
-                    })
-                },
-                doAfterNetworkSuccess = {
-                    contentView.biometric_layout?.pin?.clear()
-                },
-                failureBlock = {
-                    contentView.biometric_layout?.let { layout ->
-                        layout.setErrorButton(it.errorCode)
-                        layout.showPin(true)
-                    }
-                    showErrorInfo(requireContext().getMixinErrorStringByCode(it.errorCode, it.errorDescription), true)
-                    return@handleMixinResponse true
-                },
-                exceptionBlock = {
-                    contentView.biometric_layout?.showPin(true)
-                    return@handleMixinResponse false
-                }
+        if (response.isSuccess) {
+            defaultSharedPreferences.putLong(
+                Constants.BIOMETRIC_PIN_CHECK,
+                System.currentTimeMillis()
             )
+            context?.updatePinCheck()
+
+            doWhenInvokeNetworkSuccess(response, pin)
+
+            dismiss()
+            callback.notNullWithElse({ action -> action.onSuccess() }, {
+                toast(R.string.successful)
+            })
+        } else {
+            contentView.biometric_layout?.let { layout ->
+                layout.setErrorButton(response.errorCode)
+                layout.showPin(true)
+            }
+            showErrorInfo(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription), true)
         }
     }
 

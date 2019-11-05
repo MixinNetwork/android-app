@@ -22,7 +22,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
 
     var callback: Callback? = null
 
-    private var keyboardHeight = 0
+    var keyboardHeight = 0
     private var keyboard: Keyboard? = null
 
     override fun onFinishInflate() {
@@ -66,7 +66,6 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
     fun showErrorInfo(content: String, animate: Boolean = false) {
         displayedChild = POS_ERROR
         error_info?.text = content
-        keyboardHeight = keyboard?.height ?: 0
         if (animate) {
             keyboard?.animateHeight(keyboardHeight, 0)
         } else {
@@ -79,7 +78,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         if (clearPin) {
             pin.clear()
         }
-        keyboard?.animateHeight(0, keyboardHeight)
+        keyboard?.animateHeight(keyboard?.height ?: 0, keyboardHeight)
     }
 
     fun showPb() {

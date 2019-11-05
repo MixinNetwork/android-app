@@ -5,23 +5,23 @@ import android.app.Dialog
 import android.os.Bundle
 import android.view.View
 import androidx.core.os.bundleOf
-import com.uber.autodispose.autoDispose
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet_address.view.*
+import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
+import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.common.PinBottomSheetDialogFragment
-import one.mixin.android.util.ErrorHandler
+import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.vo.Address
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.widget.PinView
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 
-class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
+class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "PinAddrBottomSheetDialogFragment"
@@ -85,71 +85,65 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.info_tv.setText(getTipTextRes())
         contentView.title_view.right_iv.setOnClickListener { dismiss() }
-        contentView.title_view.setSubTitle(getString(when (type) {
-            ADD -> R.string.withdrawal_addr_add
-            MODIFY -> R.string.withdrawal_addr_modify
-            else -> R.string.withdrawal_addr_delete
-        }, assetName))
+        contentView.title.text = getTitle()
         contentView.asset_icon.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
         contentView.asset_icon.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
         contentView.asset_name.text = label
         contentView.asset_address.text = destination
-
-        contentView.pin.setListener(object : PinView.OnPinListener {
-            override fun onUpdate(index: Int) {
-                if (index != contentView.pin.getCount()) return
-
-                contentView.pin_va?.displayedChild = POS_PB
-                val observable = if (type == ADD || type == MODIFY) {
-                    bottomViewModel.syncAddr(assetId!!, destination, label, addressTag, contentView.pin.code())
-                } else {
-                    bottomViewModel.deleteAddr(addressId!!, contentView.pin.code())
-                }
-                observable.autoDispose(stopScope).subscribe({ r ->
-                    if (r.isSuccess) {
-                        doAsync {
-                            if (type == ADD || type == MODIFY) {
-                                bottomViewModel.saveAddr(r.data as Address)
-                            } else {
-                                bottomViewModel.deleteLocalAddr(addressId!!)
-                            }
-
-                            uiThread {
-                                contentView.pin_va?.displayedChild = POS_PIN
-                                callback.notNullWithElse({ action -> action.onSuccess() }, {
-                                    toast(R.string.successful)
-                                })
-                                dismiss()
-                            }
-                        }
-                    } else {
-                        if (r.errorCode != ErrorHandler.PIN_INCORRECT) {
-                            dismiss()
-                        } else {
-                            contentView.pin_va?.displayedChild = POS_PIN
-                            contentView.pin?.clear()
-                        }
-                        if (r.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
-                            toast(R.string.error_pin_check_too_many_request)
-                        } else {
-                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                        }
-                    }
-                }, { t ->
-                    contentView.pin_va?.displayedChild = POS_PIN
-                    contentView.pin.clear()
-                    ErrorHandler.handleError(t)
-                })
-            }
-        })
+        contentView.pay_tv.text = getTipText()
+        contentView.biometric_tv.text = getBiometricText()
     }
 
-    private fun getTipTextRes(): Int = when (type) {
+    override fun getBiometricInfo(): BiometricInfo {
+        return BiometricInfo(
+            getTitle(),
+            label ?: "",
+            destination ?: "",
+            getTipText()
+        )
+    }
+
+    override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
+        return if (type == ADD || type == MODIFY) {
+            bottomViewModel.syncAddr(assetId!!, destination, label, addressTag, pin)
+        } else {
+            bottomViewModel.deleteAddr(addressId!!, pin)
+        }
+    }
+
+    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String) {
+        lifecycleScope.launch {
+            if (type == ADD || type == MODIFY) {
+                bottomViewModel.saveAddr(response.data as Address)
+            } else {
+                bottomViewModel.deleteLocalAddr(addressId!!)
+            }
+            contentView.biometric_layout.showPin(false)
+            callback.notNullWithElse({ action -> action.onSuccess() }, {
+                toast(R.string.successful)
+            })
+            dismiss()
+        }
+    }
+
+    private fun getTitle() = getString(when (type) {
+        ADD -> R.string.withdrawal_addr_add
+        MODIFY -> R.string.withdrawal_addr_modify
+        else -> R.string.withdrawal_addr_delete
+    }, assetName)
+
+    private fun getTipText() = getString(when (type) {
         ADD -> R.string.withdrawal_addr_pin_add
         DELETE -> R.string.withdrawal_addr_pin_delete
         MODIFY -> R.string.withdrawal_addr_pin_modify
         else -> R.string.withdrawal_addr_pin_add
-    }
+    })
+
+    private fun getBiometricText() = getString(when (type) {
+        ADD -> R.string.withdrawal_addr_biometric_add
+        DELETE -> R.string.withdrawal_addr_biometric_delete
+        MODIFY -> R.string.withdrawal_addr_biometric_modify
+        else -> R.string.withdrawal_addr_biometric_add
+    })
 }

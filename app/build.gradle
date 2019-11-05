@@ -124,7 +124,6 @@ dependencies {
     implementation "androidx.appcompat:appcompat:${appcompatVersion}"
     implementation "androidx.legacy:legacy-support-v4:${supportLibVersion}"
     implementation "com.google.android.material:material:${supportLibVersion}"
-    implementation "androidx.cardview:cardview:${supportLibVersion}"
     implementation "androidx.recyclerview:recyclerview:${supportLibVersion}"
     implementation "androidx.exifinterface:exifinterface:${supportLibVersion}"
     implementation "androidx.browser:browser:${supportLibVersion}"
