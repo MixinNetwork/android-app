@@ -268,20 +268,10 @@ class ChatWebSocket(
         val currentStatus = messageDao.findMessageStatusById(messageId)
         if (currentStatus == MessageStatus.SENDING.name) {
             messageDao.updateMessageStatus(status, messageId)
-            sendSessionAck(status, messageId)
         } else if (currentStatus == MessageStatus.SENT.name && (status == MessageStatus.DELIVERED.name || status == MessageStatus.READ.name)) {
             messageDao.updateMessageStatus(status, messageId)
-            sendSessionAck(status, messageId)
         } else if (currentStatus == MessageStatus.DELIVERED.name && status == MessageStatus.READ.name) {
             messageDao.updateMessageStatus(status, messageId)
-            sendSessionAck(status, messageId)
-        }
-    }
-
-    private fun sendSessionAck(status: String, messageId: String) {
-        val extensionSessionId = Session.getExtensionSessionId()
-        extensionSessionId?.let {
-            jobDao.insert(createAckJob(CREATE_SESSION_MESSAGE, BlazeAckMessage(messageId, status)))
         }
     }
 

@@ -47,7 +47,6 @@ import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createLiveMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
-import one.mixin.android.vo.createRecallMessage
 import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
@@ -208,8 +207,6 @@ class DecryptMessage : Injector() {
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
         }
-        val msg = createRecallMessage(data.messageId, data.conversationId, data.userId,
-            MessageCategory.MESSAGE_RECALL.name, data.data, MessageStatus.DELIVERED, data.createdAt)
     }
 
     private fun processPlainMessage(data: BlazeMessageData) {

@@ -69,11 +69,6 @@ class SendService : IntentService("SendService") {
                         jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(item)))
                     }
                 }
-                Session.getExtensionSessionId()?.let {
-                    list.map { createAckJob(CREATE_SESSION_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
-                        jobDao.insertList(it)
-                    }
-                }
             }
         }
     }

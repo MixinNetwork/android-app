@@ -445,11 +445,6 @@ internal constructor(
                     list.map { createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
                         conversationRepository.insertList(it)
                     }
-                    Session.getExtensionSessionId()?.let {
-                        list.map { createAckJob(CREATE_SESSION_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
-                            conversationRepository.insertList(it)
-                        }
-                    }
                 }
             }
         }
@@ -593,11 +588,6 @@ internal constructor(
                         list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->
                             messages.chunked(100).forEach { list ->
                                 jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(list)))
-                            }
-                        }
-                        Session.getExtensionSessionId()?.let {
-                            list.map { createAckJob(CREATE_SESSION_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
-                                conversationRepository.insertList(it)
                             }
                         }
                     }
