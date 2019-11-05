@@ -1,4 +1,4 @@
-package one.mixin.android.ui.common
+package one.mixin.android.ui.common.biometric
 
 import android.app.Activity
 import android.content.Intent
@@ -18,9 +18,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
-import one.mixin.android.ui.common.biometric.BiometricDialog
-import one.mixin.android.ui.common.biometric.BiometricInfo
-import one.mixin.android.ui.common.biometric.BiometricLayout
+import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.getMixinErrorStringByCode
 

@@ -61,8 +61,8 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
-import one.mixin.android.ui.common.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
