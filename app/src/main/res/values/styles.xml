@@ -124,10 +124,6 @@
         <item name="android:textColor">@color/colorGray</item>
     </style>
 
-    <style name="SwitchStyle">
-        <item name="android:colorControlActivated">@color/colorBlue</item>
-    </style>
-
     <style name="AppTheme.BlueAccent">
         <item name="android:colorAccent">@color/colorBlue</item>
     </style>

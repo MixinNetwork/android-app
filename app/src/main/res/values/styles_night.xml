@@ -37,23 +37,9 @@
         <item name="android:windowTranslucentNavigation">true</item>
     </style>
 
-    <style name="AppTheme.Night.NoAnim" parent="AppTheme.Night.NoActionBar">
-        <item name="android:windowAnimationStyle">@null</item>
-    </style>
-
     <style name="AppTheme.Night.Capture" parent="AppTheme.Night.FullScreen">
         <item name="android:windowFullscreen">true</item>
         <item name="android:immersive">true</item>
-    </style>
-
-    <style name="AppTheme.Night.Avatar" parent="AppTheme.Night.FullScreen">
-        <item name="android:windowAnimationStyle">@null</item>
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:navigationBarColor">?attr/text_primary</item>
     </style>
 
     <style name="AppTheme.Night.Photo" parent="AppTheme.Night.NoActionBar">

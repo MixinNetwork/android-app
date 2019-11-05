@@ -59,16 +59,32 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
         if (isMe) {
             lp.gravity = Gravity.END
             if (isLast) {
-                itemView.chat_msg_layout.setBackgroundResource(R.drawable.chat_bubble_reply_me_last)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_reply_me_last,
+                    R.drawable.chat_bubble_reply_me_last_night
+                )
             } else {
-                itemView.chat_msg_layout.setBackgroundResource(R.drawable.chat_bubble_reply_me)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_reply_me,
+                    R.drawable.chat_bubble_reply_me_night
+                )
             }
         } else {
             lp.gravity = Gravity.START
             if (isLast) {
-                itemView.chat_msg_layout.setBackgroundResource(R.drawable.chat_bubble_reply_other_last)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_reply_other_last,
+                    R.drawable.chat_bubble_reply_other_last_night
+                )
             } else {
-                itemView.chat_msg_layout.setBackgroundResource(R.drawable.chat_bubble_reply_other)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_reply_other,
+                    R.drawable.chat_bubble_reply_other_night
+                )
             }
         }
     }
@@ -141,8 +157,10 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 val start = str.indexOf(k, 0, true)
                 if (start >= 0) {
                     val sp = SpannableString(str)
-                    sp.setSpan(BackgroundColorSpan(HIGHLIGHTED), start,
-                        start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    sp.setSpan(
+                        BackgroundColorSpan(HIGHLIGHTED), start,
+                        start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
                     itemView.chat_tv.text = sp
                 } else {
                     itemView.chat_tv.text = messageItem.content
@@ -200,44 +218,63 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 itemView.reply_content_tv.text = quoteMessage.content
                 itemView.reply_iv.visibility = View.GONE
                 itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
+                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp8
+                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp8
                 setIcon()
             }
             quoteMessage.type == MessageCategory.MESSAGE_RECALL.name -> {
                 itemView.reply_content_tv.setText(R.string.chat_recall_me)
                 itemView.reply_iv.visibility = View.GONE
                 itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
+                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp8
+                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp8
                 setIcon(R.drawable.ic_status_recall)
             }
             quoteMessage.type.endsWith("_IMAGE") -> {
-                itemView.reply_iv.loadImageCenterCrop(quoteMessage.mediaUrl, R.drawable.image_holder)
+                itemView.reply_iv.loadImageCenterCrop(
+                    quoteMessage.mediaUrl,
+                    R.drawable.image_holder
+                )
                 itemView.reply_content_tv.setText(R.string.photo)
                 setIcon(R.drawable.ic_status_pic)
                 itemView.reply_iv.visibility = View.VISIBLE
                 itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
+                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp16
+                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp16
             }
             quoteMessage.type.endsWith("_VIDEO") -> {
-                itemView.reply_iv.loadImageCenterCrop(quoteMessage.mediaUrl, R.drawable.image_holder)
+                itemView.reply_iv.loadImageCenterCrop(
+                    quoteMessage.mediaUrl,
+                    R.drawable.image_holder
+                )
                 itemView.reply_content_tv.setText(R.string.video)
                 setIcon(R.drawable.ic_status_video)
                 itemView.reply_iv.visibility = View.VISIBLE
                 itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
+                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp16
+                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp16
             }
             quoteMessage.type.endsWith("_LIVE") -> {
-                itemView.reply_iv.loadImageCenterCrop(quoteMessage.thumbUrl, R.drawable.image_holder)
+                itemView.reply_iv.loadImageCenterCrop(
+                    quoteMessage.thumbUrl,
+                    R.drawable.image_holder
+                )
                 itemView.reply_content_tv.setText(R.string.live)
                 setIcon(R.drawable.ic_status_live)
                 itemView.reply_iv.visibility = View.VISIBLE
                 itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
+                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp16
+                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp16
             }
             quoteMessage.type.endsWith("_DATA") -> {
                 quoteMessage.mediaName.notNullWithElse({
@@ -248,8 +285,10 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 setIcon(R.drawable.ic_status_file)
                 itemView.reply_iv.visibility = View.GONE
                 itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
+                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp8
+                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp8
             }
             quoteMessage.type.endsWith("_AUDIO") -> {
                 quoteMessage.mediaDuration.notNullWithElse({
@@ -260,35 +299,50 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 setIcon(R.drawable.ic_status_audio)
                 itemView.reply_iv.visibility = View.GONE
                 itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
+                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp8
+                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp8
             }
             quoteMessage.type.endsWith("_STICKER") -> {
                 itemView.reply_content_tv.setText(R.string.conversation_status_sticker)
                 setIcon(R.drawable.ic_status_stiker)
-                itemView.reply_iv.loadImageCenterCrop(quoteMessage.assetUrl, R.drawable.image_holder)
+                itemView.reply_iv.loadImageCenterCrop(
+                    quoteMessage.assetUrl,
+                    R.drawable.image_holder
+                )
                 itemView.reply_iv.visibility = View.VISIBLE
                 itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
+                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp16
+                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp16
             }
             quoteMessage.type.endsWith("_CONTACT") -> {
                 itemView.reply_content_tv.text = quoteMessage.sharedUserIdentityNumber
                 setIcon(R.drawable.ic_status_contact)
-                itemView.reply_avatar.setInfo(quoteMessage.sharedUserFullName, quoteMessage.sharedUserAvatarUrl, quoteMessage.sharedUserId
-                    ?: "0")
+                itemView.reply_avatar.setInfo(
+                    quoteMessage.sharedUserFullName,
+                    quoteMessage.sharedUserAvatarUrl,
+                    quoteMessage.sharedUserId
+                        ?: "0"
+                )
                 itemView.reply_avatar.visibility = View.VISIBLE
                 itemView.reply_iv.visibility = View.INVISIBLE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
+                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp16
+                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp16
             }
             quoteMessage.type == MessageCategory.APP_BUTTON_GROUP.name || quoteMessage.type == MessageCategory.APP_CARD.name -> {
                 itemView.reply_content_tv.setText(R.string.extensions)
                 setIcon(R.drawable.ic_touch_app)
                 itemView.reply_iv.visibility = View.GONE
                 itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
+                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp8
+                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp8
             }
             else -> {
                 itemView.reply_iv.visibility = View.GONE
@@ -301,10 +355,22 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
         icon.notNullWithElse({ drawable ->
             AppCompatResources.getDrawable(itemView.context, drawable).let {
                 it?.setBounds(0, 0, itemView.context.dpToPx(10f), itemView.context.dpToPx(10f))
-                TextViewCompat.setCompoundDrawablesRelative(itemView.reply_content_tv, it, null, null, null)
+                TextViewCompat.setCompoundDrawablesRelative(
+                    itemView.reply_content_tv,
+                    it,
+                    null,
+                    null,
+                    null
+                )
             }
         }, {
-            TextViewCompat.setCompoundDrawablesRelative(itemView.reply_content_tv, null, null, null, null)
+            TextViewCompat.setCompoundDrawablesRelative(
+                itemView.reply_content_tv,
+                null,
+                null,
+                null,
+                null
+            )
         })
     }
 }

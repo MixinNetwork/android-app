@@ -17,8 +17,6 @@
     <string name="fee">手续费</string>
     <string name="memo">备注</string>
     <string name="date">日期</string>
-    <string name="slow">慢</string>
-    <string name="fast">快</string>
     <string name="label">标题</string>
     <string name="address">地址</string>
     <string name="amount">金额</string>
@@ -56,11 +54,8 @@
     <string name="time">时间</string>
     <string name="more">更多</string>
     <string name="successful">成功</string>
-    <string name="failed">失败</string>
-    <string name="loading">加载中</string>
     <string name="no_result">没有结果</string>
     <string name="send_to">发送给 %1$s</string>
-    <string name="edit">编辑</string>
     <string name="transfer_send">转出</string>
     <string name="receive">转入</string>
     <string name="developer">开发者</string>
@@ -102,7 +97,6 @@
     <string name="error_not_found_message">没有找到相应的消息</string>
     <string name="error_too_many_request">错误 %1$d：请求太快啦</string>
     <string name="error_authentication">错误 %1$d：请重新登录</string>
-    <string name="can_not_empty">不能为空</string>
     <string name="can_not_recognize">无法识别二维码</string>
     <string name="error_no_camera">没有相机</string>
     <string name="error_image">文件错误</string>
@@ -154,7 +148,6 @@
     <string name="search_title_assets">资产</string>
     <string name="search_title_chat">会话</string>
     <string name="search_title_contacts">联系人</string>
-    <string name="search_title_group">群组</string>
     <string name="search_title_messages">消息</string>
     <string name="search_title_more">更多</string>
     <string name="search_related_message">%1$d 条相关的消息</string>
@@ -254,7 +247,6 @@
     <string name="chat_recall_delete_alert">所有使用最新版本 Mixin Messenger 的设备都将删除被选中的消息</string>
     <string name="chat_recall_delete_more">了解更多</string>
     <!--contact-->
-    <string name="contact_other_add">添加联系人</string>
     <string name="contact_other_send">发消息</string>
     <string name="contact_other_share">发送名片</string>
     <string name="contact_other_search_conversation">搜索聊天记录</string>
@@ -278,10 +270,6 @@
     <string name="add_people_tip">我的 Mixin ID: %1$s</string>
     <!--wallet-->
     <string name="wallet_title">钱包</string>
-    <string name="wallet_get_free">获得免费的 XIN 代币</string>
-    <string name="wallet_get_free_redeem">兑换邀请码</string>
-    <string name="wallet_redeem">兑换</string>
-    <string name="wallet_get_free_redeem_tip">输入邀请码免费获得 10 个 XIN 代币。</string>
     <string name="wallet_password_set_pin">设置密码</string>
     <string name="wallet_password_set_new_pin">设置新的密码</string>
     <string name="wallet_password_set_pin_desc">设置 6 位数字密码。</string>
@@ -303,11 +291,7 @@
     <string name="wallet_password_old_title">验证旧的密码</string>
     <string name="wallet_password_not_equal">密码不一致, 请重新输入</string>
     <string name="wallet_password_change_tip">请输入6位密码来验证</string>
-    <string name="wallet_fee_regular">Regular</string>
-    <string name="wallet_fee_custom">Custom</string>
-    <string name="wallet_fee_tip">The transaction fee is received by the miner</string>
     <string name="wallet_pay_with_pwd">用密码支付</string>
-    <string name="wallet_pay_with_biometric">生物识别支付</string>
     <string name="wallet_transfer_amount">转账金额</string>
     <string name="wallet_transfer_memo">备注</string>
     <string name="wallet_transfer_tag">Tag</string>
@@ -321,7 +305,6 @@
     <string name="transactions_type">交易类型</string>
     <string name="asset_no_hidden">没有隐藏的资产</string>
     <string name="asset_none">暂无价格</string>
-    <string name="wallet_setting">钱包设置</string>
     <string name="wallet_pay_with_biometrics">用生物识别支付</string>
     <string name="wallet_pin_open_biometrics">请输入密码来启用生物识别支付</string>
     <string name="wallet_pin_modify_biometrics">请输入密码来修改支付密码使用间隔</string>
@@ -396,7 +379,6 @@
     <string name="setting_title">设置</string>
     <string name="setting_blocked">已屏蔽</string>
     <string name="setting_conversation">会话</string>
-    <string name="setting_privacy_title">隐私</string>
     <string name="setting_privacy_tip">谁可以给你发消息或邀请你加入群聊。</string>
     <string name="setting_my_contacts">我的联系人</string>
     <string name="setting_block">屏蔽</string>
@@ -404,14 +386,6 @@
     <string name="setting_block_tip">被屏蔽的用户不能给你发送消息或者邀请你加入群聊</string>
     <string name="setting_conversation_tip">你可以限制谁给你发消息。</string>
     <string name="setting_conversation_group_tip">你可以限制谁邀请你加入群聊。</string>
-    <string name="setting_notification_message">信息通知</string>
-    <string name="setting_notification_group">群组通知</string>
-    <string name="setting_notification_contact">CONTACT NOTIFICATIONS</string>
-    <string name="setting_show_notification">显示通知</string>
-    <string name="setting_show_request_notification">Show Request Contact Notifications</string>
-    <string name="setting_notification_sound">提醒音</string>
-    <string name="setting_show_preview">Show Preview</string>
-    <string name="setting_notification_tip">Message notifications will contain sender and summary when enable.</string>
     <string name="setting_conversation_everybody">任何人</string>
     <string name="conversation_status_pic">照片</string>
     <string name="conversation_status_video">视频</string>
@@ -431,7 +405,6 @@
     <string name="setting_emergency_bottom_change">修改紧急联系人</string>
     <string name="setting_emergency_bottom_remove">移除紧急联系人</string>
     <string name="setting_emergency_remove_tip">确定移除紧急联系人？</string>
-    <string name="setting_emergency_bottom_create">添加紧急联系人</string>
     <string name="setting_emergency_select_contact">选择紧急联系人</string>
     <string name="setting_emergency_contact_mixin_id">请输入紧急联系人的 Mixin ID</string>
     <string name="setting_emergency_send_code">请输入发送至以下 Mixin ID 的 4 位验证码：%1$s</string>
@@ -605,7 +578,6 @@
     <string name="withdrawal_addr_no_tag_link">点击添加标签（Tag）</string>
     <string name="withdrawal_addr_memo_hint">标签（Memo）</string>
     <string name="withdrawal_addr_tag_hint">标签（Tag）</string>
-    <string name="withdrawal_success">提现成功</string>
     <string name="withdrawal_with_pwd">用密码提现</string>
     <string name="withdrawal_with_biometric">用生物识别提现</string>
     <string name="withdrawal_to">提现到 %1$s</string>
@@ -625,7 +597,6 @@
     <string name="account_memo">Memo（标签）</string>
     <string name="withdrawal_label">地址名称，例如 OceanOne</string>
     <string name="withdrawal_address">提现地址</string>
-    <string name="withdrawal_tag">标签（Memo）</string>
     <string name="withdrawal_no_tag">没有标签（Memo）</string>
     <string name="deposit_account_attention">注意：首次充值请小额尝试！地址 和 Memo（标签）同时使用才能充值 %1$s 到 Mixin Messenger。</string>
     <string name="deposit_attention">首次充值请小额尝试！</string>
