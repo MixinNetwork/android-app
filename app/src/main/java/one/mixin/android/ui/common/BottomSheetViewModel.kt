@@ -206,8 +206,6 @@ class BottomSheetViewModel @Inject internal constructor(
         }
     }
 
-    suspend fun getFiats() = accountRepository.getFiats()
-
     suspend fun preferences(request: AccountUpdateRequest) = accountRepository.preferences(request)
 
     suspend fun searchAppByHost(query: String): List<App> {

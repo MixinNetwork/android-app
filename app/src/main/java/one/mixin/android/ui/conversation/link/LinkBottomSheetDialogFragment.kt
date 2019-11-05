@@ -129,9 +129,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                     }
                     user
                 }.observeOn(AndroidSchedulers.mainThread()).autoDispose(scopeProvider).subscribe({
-                    it.notNullWithElse({
-                        UserBottomSheetDialogFragment.newInstance(it)
-                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    it.notNullWithElse( { u ->
+                        UserBottomSheetDialogFragment.newInstance(u).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                         dismiss()
                     }, {
                         context?.toast(R.string.error_user_not_found)
