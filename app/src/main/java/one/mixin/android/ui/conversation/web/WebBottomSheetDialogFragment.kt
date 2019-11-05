@@ -288,7 +288,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.addJavascriptInterface(
             WebAppInterface(
                 requireContext(),
-                dialog,
                 conversationId,
                 immersive
             ), "MixinContext"
@@ -414,7 +413,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.title_ll.isGone = immersive
 
-        dialog.setOnDismissListener {
+        dialog?.setOnDismissListener {
             contentView.hideKeyboard()
             contentView.chat_web_view.stopLoading()
             contentView.chat_web_view.webViewClient = null
@@ -595,7 +594,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         color: Int
     ) {
         context?.runOnUiThread {
-            dialog.window?.decorView?.let {
+            dialog?.window?.decorView?.let {
                 if (dark) {
                     contentView.title_tv.setTextColor(Color.WHITE)
                     it.systemUiVisibility = it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
@@ -675,7 +674,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     class WebAppInterface(
         val context: Context,
-        private val dialog: Dialog,
         val conversationId: String?,
         val immersive: Boolean
     ) {

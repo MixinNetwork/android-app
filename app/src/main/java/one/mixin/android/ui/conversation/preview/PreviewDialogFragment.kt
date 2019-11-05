@@ -9,8 +9,8 @@ import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
 import androidx.core.os.bundleOf
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.MixinDialogFragment
 import com.uber.autodispose.android.lifecycle.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -27,7 +27,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelineView
 
-class PreviewDialogFragment : MixinDialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {
+class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {
 
     companion object {
         const val IS_VIDEO: String = "IS_VIDEO"
@@ -101,12 +101,12 @@ class PreviewDialogFragment : MixinDialogFragment(), VideoTimelineView.VideoTime
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
-        dialog.window?.requestFeature(Window.FEATURE_NO_TITLE)
+        dialog?.window?.requestFeature(Window.FEATURE_NO_TITLE)
         super.onActivityCreated(savedInstanceState)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(0x00000000))
-        dialog.window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
-        dialog.window?.setWindowAnimations(R.style.BottomSheet_Animation)
-        dialog.setOnShowListener {
+        dialog?.window?.setBackgroundDrawable(ColorDrawable(0x00000000))
+        dialog?.window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
+        dialog?.window?.setWindowAnimations(R.style.BottomSheet_Animation)
+        dialog?.setOnShowListener {
             if (isVideo) {
                 val mimeType = getMimeType(uri!!)
                 if (mimeType == null || !mimeType.startsWith("video", true)) {

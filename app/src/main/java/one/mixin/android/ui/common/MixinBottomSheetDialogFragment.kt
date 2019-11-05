@@ -2,19 +2,20 @@ package one.mixin.android.ui.common
 
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.MixinDialogFragment
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.uber.autodispose.android.lifecycle.scope
-import javax.inject.Inject
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.widget.BottomSheet
+import javax.inject.Inject
 
-abstract class MixinBottomSheetDialogFragment : MixinDialogFragment(), Injectable {
+abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
 
     protected lateinit var contentView: View
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
@@ -46,19 +47,20 @@ abstract class MixinBottomSheetDialogFragment : MixinDialogFragment(), Injectabl
 
     override fun dismiss() {
         if (isAdded) {
-            try {
-                dialog.dismiss()
-                onDismissListener?.onDismiss()
-            } catch (e: IllegalStateException) {
-                super.dismiss()
+            dialog?.dismiss()
+            // Prevent dialog slide animation end
+            dialog?.setOnDismissListener {
+                super.dismissAllowingStateLoss()
             }
+        } else {
+            super.dismissAllowingStateLoss()
         }
-        super.dismiss()
     }
 
-    var onDismissListener: OnDismissListener? = null
-
-    interface OnDismissListener {
-        fun onDismiss()
+    override fun showNow(manager: FragmentManager, tag: String?) {
+        try {
+            super.showNow(manager, tag)
+        } catch (e: IllegalStateException) {
+        }
     }
 }

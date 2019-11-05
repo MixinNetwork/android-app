@@ -137,7 +137,7 @@ class MultisigsBottomSheetDialogFragment :
         success = true
     }
 
-    override fun onDismiss(dialog: DialogInterface?) {
+    override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
         if (!success &&
             t.state != MultisigsState.signed.name &&

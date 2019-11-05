@@ -3,11 +3,11 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
-import android.support.v7.app.MixinAppCompatDialogFragment
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import io.reactivex.disposables.CompositeDisposable
@@ -27,7 +27,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 
-class PinCheckDialogFragment : MixinAppCompatDialogFragment(), Injectable {
+class PinCheckDialogFragment : DialogFragment(), Injectable {
 
     companion object {
         const val TAG = "PinCheckDialogFragment"
@@ -107,9 +107,9 @@ class PinCheckDialogFragment : MixinAppCompatDialogFragment(), Injectable {
     override fun onStart() {
         super.onStart()
         val displaySize = context!!.realSize()
-        dialog.window?.setLayout(displaySize.x, MATCH_PARENT)
-        dialog.window?.setBackgroundDrawableResource(R.drawable.bg_transparent_dialog)
-        dialog.window?.setGravity(Gravity.BOTTOM)
+        dialog?.window?.setLayout(displaySize.x, MATCH_PARENT)
+        dialog?.window?.setBackgroundDrawableResource(R.drawable.bg_transparent_dialog)
+        dialog?.window?.setGravity(Gravity.BOTTOM)
 
         // reset top layout position
         contentView.post {
@@ -125,7 +125,7 @@ class PinCheckDialogFragment : MixinAppCompatDialogFragment(), Injectable {
 
     override fun onResume() {
         super.onResume()
-        dialog.setOnKeyListener { _, i, _ ->
+        dialog?.setOnKeyListener { _, i, _ ->
             if (i == KeyEvent.KEYCODE_BACK) {
                 return@setOnKeyListener true
             }

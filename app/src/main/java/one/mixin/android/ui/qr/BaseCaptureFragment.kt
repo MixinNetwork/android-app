@@ -141,7 +141,7 @@ abstract class BaseCaptureFragment : CaptureVisionFragment() {
             confirmBottomFragment.setCallBack {
                 activity?.finish()
             }
-            confirmBottomFragment.show(fragmentManager, ConfirmBottomFragment.TAG)
+            confirmBottomFragment.show(parentFragmentManager, ConfirmBottomFragment.TAG)
         } else {
             pseudoNotificationView.addContent(analysisResult)
             afterSetPseudoView()

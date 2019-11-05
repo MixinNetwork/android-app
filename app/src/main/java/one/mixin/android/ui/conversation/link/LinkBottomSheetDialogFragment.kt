@@ -5,7 +5,6 @@ import android.app.Dialog
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.support.design.MixinBottomSheetDialogFragment
 import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
@@ -16,13 +15,14 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,13 +51,15 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
+import javax.inject.Inject
 
-class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectable {
+class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
     companion object {
         const val TAG = "LinkBottomSheetDialogFragment"
@@ -402,6 +404,21 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
     override fun dismiss() {
         if (isAdded) {
             super.dismiss()
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        if (activity is UrlInterpreterActivity) {
+            var realFragmentCount = 0
+            parentFragmentManager.fragments.forEach { f ->
+                if (f !is SupportRequestManagerFragment) {
+                    realFragmentCount++
+                }
+            }
+            if (realFragmentCount <= 0) {
+                activity?.finish()
+            }
         }
     }
 

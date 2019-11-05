@@ -155,11 +155,9 @@ fun openWebBottomSheet(
     onDismiss: (() -> Unit)? = null
 ) {
     val dialog = WebBottomSheetDialogFragment.newInstance(url, conversationId, appId, appName, appAvatar, appCapabilities)
-    onDismiss?.let {
-        dialog.onDismissListener = object : MixinBottomSheetDialogFragment.OnDismissListener {
-            override fun onDismiss() {
-                it.invoke()
-            }
+    onDismiss?.let { onDismiss ->
+        dialog.dialog?.setOnDismissListener {
+            onDismiss.invoke()
         }
     }
     dialog.showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)

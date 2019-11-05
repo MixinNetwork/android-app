@@ -100,7 +100,7 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    override fun onDismiss(dialog: DialogInterface?) {
+    override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
         if (!isHandle) {
             cancelAction?.invoke()

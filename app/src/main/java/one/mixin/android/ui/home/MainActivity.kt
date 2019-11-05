@@ -9,7 +9,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import androidx.core.content.getSystemService
-import androidx.fragment.app.MixinDialogFragment
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.work.WorkManager
 import com.bugsnag.android.Bugsnag
@@ -281,7 +281,7 @@ class MainActivity : BlazeBaseActivity() {
         handlerCode(intent)
     }
 
-    private var bottomSheet: MixinDialogFragment? = null
+    private var bottomSheet: DialogFragment? = null
     private var alertDialog: AlertDialog? = null
 
     private fun handlerCode(intent: Intent) {

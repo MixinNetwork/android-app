@@ -109,7 +109,7 @@ class AddressManagementFragment : BaseFragment() {
                 val deleteItem = adapter.removeItem(viewHolder.adapterPosition)!!
                 val bottomSheet = showBottomSheet(addr, asset)
                 parentFragmentManager.executePendingTransactions()
-                bottomSheet.dialog.setOnDismissListener {
+                bottomSheet.dialog?.setOnDismissListener {
                     bottomSheet.dismiss()
                     if (!deleteSuccess) {
                         adapter.restoreItem(deleteItem, deletePos)
