@@ -5,12 +5,9 @@ import android.app.Dialog
 import android.os.Bundle
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_deposit_tip_bottom_sheet.view.*
-import one.mixin.android.Constants.Account.PREF_SHOW_DEPOSIT_TIP_CHAIN_SET
 import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID
 import one.mixin.android.R
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getTipsByAsset
-import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -43,17 +40,6 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.title_tv.text = getString(R.string.bottom_deposit_title, asset.symbol)
         contentView.tips_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
         contentView.continue_tv.setOnClickListener { dismiss() }
-        contentView.hide_tv.setOnClickListener {
-            var depositChainSet = defaultSharedPreferences.getStringSet(PREF_SHOW_DEPOSIT_TIP_CHAIN_SET, null)
-            val chainId = asset.chainId
-            if (depositChainSet == null) {
-                depositChainSet = setOf(chainId)
-            } else {
-                depositChainSet.add(chainId)
-            }
-            defaultSharedPreferences.putStringSet(PREF_SHOW_DEPOSIT_TIP_CHAIN_SET, depositChainSet)
-            dismiss()
-        }
         contentView.warning_tv.text = if (asset.chainId == EOS_CHAIN_ID) {
             getString(R.string.deposit_account_attention, asset.symbol)
         } else {
