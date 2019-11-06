@@ -43,6 +43,8 @@ import one.mixin.android.websocket.TransferPlainData
 import one.mixin.android.websocket.createBlazeSignalKeyMessage
 import one.mixin.android.websocket.createConsumeSessionSignalKeys
 import one.mixin.android.websocket.createConsumeSignalKeysParam
+import one.mixin.android.websocket.createSessionSyncMessage
+import one.mixin.android.websocket.createSessionSyncMessageParam
 import one.mixin.android.websocket.createSignalKeyMessage
 import one.mixin.android.websocket.createSignalKeyMessageParam
 import timber.log.Timber
@@ -323,6 +325,13 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             MessageCategory.PLAIN_JSON.name, encoded, MessageStatus.SENDING.name
         )
         val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, params)
+        deliverNoThrow(bm)
+    }
+
+    protected fun sendSessionSyncMessage(userId: String) {
+        val conversations = conversationDao.getLastestConversations(userId) ?: return
+        val param = createSessionSyncMessageParam(conversations)
+        val bm = createSessionSyncMessage(param)
         deliverNoThrow(bm)
     }
 

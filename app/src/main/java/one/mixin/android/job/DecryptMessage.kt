@@ -127,6 +127,8 @@ class DecryptMessage : Injector() {
                 processAppCard(data)
             } else if (data.category == MessageCategory.MESSAGE_RECALL.name) {
                 processRecallMessage(data)
+            } else if (data.category == MessageCategory.SESSION_SYNC.name) {
+                processSessionSyncMessage(data)
             }
         } catch (e: Exception) {
             Timber.e("Process error: $e")
@@ -174,6 +176,13 @@ class DecryptMessage : Injector() {
             processSystemSessionMessage(data, systemSession)
         }
 
+        updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+    }
+
+    private fun processSessionSyncMessage(data: BlazeMessageData) {
+        if (data.category == MessageCategory.SESSION_SYNC.name) {
+            syncConversationParticipantSession(data.conversationId)
+        }
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
     }
 
@@ -394,26 +403,25 @@ class DecryptMessage : Injector() {
         if (systemSession.action == SystemSessionMessageAction.PROVISION.name) {
             Session.storeExtensionSessionId(systemSession.sessionId)
             signalProtocol.deleteSession(systemSession.userId)
-            val conversations = participantDao.getConversationsByUserId(systemSession.userId)
+            val conversations = conversationDao.getConversationsByUserId(systemSession.userId)
             val ps = conversations?.map {
                 ParticipantSession(it, systemSession.userId, systemSession.sessionId)
             }
             ps?.let {
-                participantSessionDao.insertList(ps)
+                participantSessionDao.insertList(it)
             }
-            // send to other conversation ADD session
-        } else if (systemSession.action == SystemSessionMessageAction.ADD.name) {
-            val conversations = participantDao.getConversationsByUserId(systemSession.userId)
-            val ps = conversations?.map {
-                ParticipantSession(it, systemSession.userId, systemSession.sessionId)
-            }
-            ps?.let {
-                participantSessionDao.insertList(ps)
-            }
-            // receive other data.conversationId action
+            jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.SESSION_SYNC, systemSession.userId))
         } else if (systemSession.action == SystemSessionMessageAction.DESTROY.name) {
             Session.deleteExtensionSessionId()
             signalProtocol.deleteSession(data.userId)
+            val conversations = conversationDao.getConversationsByUserId(systemSession.userId)
+            val ps = conversations?.map {
+                ParticipantSession(it, systemSession.userId, systemSession.sessionId)
+            }
+            ps?.let {
+                participantSessionDao.deleteList(it)
+            }
+            jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.SESSION_SYNC, systemSession.userId))
         }
     }
 

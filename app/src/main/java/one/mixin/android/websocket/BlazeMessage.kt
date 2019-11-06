@@ -35,6 +35,7 @@ const val CONSUME_SESSION_SIGNAL_KEYS = "CONSUME_SESSION_SIGNAL_KEYS"
 const val SYNC_SIGNAL_KEYS = "SYNC_SIGNAL_KEYS"
 const val CREATE_SIGNAL_KEY_MESSAGES = "CREATE_SIGNAL_KEY_MESSAGES"
 const val CREATE_CALL = "CREATE_CALL"
+const val CREATE_SESSION_SYNC_MESSAGES = "CREATE_SESSION_SYNC_MESSAGES"
 
 fun createAckParamBlazeMessage(messageId: String, status: MessageStatus) =
     BlazeMessage(UUID.randomUUID().toString(), ACKNOWLEDGE_MESSAGE_RECEIPT, createAckParam(messageId, status.name))
@@ -62,3 +63,6 @@ fun createSignalKeyMessage(param: BlazeMessageParam) =
 
 fun createCallMessage(param: BlazeMessageParam) =
     BlazeMessage(UUID.randomUUID().toString(), CREATE_CALL, param)
+
+fun createSessionSyncMessage(param: BlazeMessageParam) =
+    BlazeMessage(UUID.randomUUID().toString(), CREATE_SESSION_SYNC_MESSAGES, param)

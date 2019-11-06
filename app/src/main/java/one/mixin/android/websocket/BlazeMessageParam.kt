@@ -7,18 +7,19 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 
 data class BlazeMessageParam(
-    val conversation_id: String?,
-    val recipient_id: String?,
-    val message_id: String?,
-    val category: String?,
-    val data: String?,
+    val conversation_id: String? = null,
+    val recipient_id: String? = null,
+    val message_id: String? = null,
+    val category: String? = null,
+    val data: String? = null,
     val status: String? = null,
     val recipients: ArrayList<BlazeMessageParamSession>? = null,
     val keys: SignalKeyRequest? = null,
     val messages: List<Any>? = null,
     val quote_message_id: String? = null,
     val session_id: String? = null,
-    var representative_id: String? = null
+    var representative_id: String? = null,
+    val conversations: List<String>? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 6L
@@ -54,3 +55,6 @@ fun createSyncSignalKeysParam(keys: SignalKeyRequest?) =
 
 fun createSignalKeyMessageParam(conversationId: String, messages: ArrayList<BlazeSignalKeyMessage>) =
     BlazeMessageParam(conversationId, null, null, null, null, null, null, null, messages)
+
+fun createSessionSyncMessageParam(conversations: List<String>) =
+    BlazeMessageParam(conversations = conversations)
