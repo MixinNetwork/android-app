@@ -11,6 +11,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.crypto.db.SessionDao
+import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.common.BaseFragment
@@ -32,6 +34,7 @@ class LoadingFragment : BaseFragment() {
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val loadingViewModel: LoadingViewModel by viewModels { viewModelFactory }
 
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         MixinApplication.get().onlining.set(true)
@@ -39,8 +42,7 @@ class LoadingFragment : BaseFragment() {
             if (!defaultSharedPreferences.getBoolean(IS_LOADED, false)) {
                 load()
             }
-            // check session and do something
-            // ...
+            
 
             // Go to home page
             MainActivity.show(context!!)

@@ -23,4 +23,7 @@ interface SessionDao : BaseDao<Session> {
 
     @Query("DELETE FROM sessions WHERE address = :address")
     fun deleteSession(address: String)
+
+    @Query("SELECT address FROM sessions WHERE device = 1")
+    suspend fun syncGetSessionAddress(): List<String>?
 }
