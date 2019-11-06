@@ -80,7 +80,10 @@ class GroupFragment : BaseFragment() {
     }
 
     private val groupFriendAdapter: GroupFriendAdapter by lazy {
-        GroupFriendAdapter().apply { isAdd = from == TYPE_ADD }
+        GroupFriendAdapter().apply {
+            isAdd = from == TYPE_ADD
+            isCreate = from == TYPE_CREATE
+        }
     }
 
     private var users: List<User>? = null

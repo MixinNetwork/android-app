@@ -16,12 +16,18 @@ import one.mixin.android.vo.showVerifiedOrBot
 class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHolder>(),
     StickyRecyclerHeadersAdapter<GroupFriendAdapter.HeaderViewHolder> {
 
+    companion object {
+        const val MAX_CHECKED = 50
+    }
+
     private var data: List<User>? = null
     private var mShowHeader: Boolean = false
     private var mListener: GroupFriendListener? = null
     private val mCheckedMap: HashMap<String, Boolean> = HashMap()
     var alreadyUserIds: List<String>? = null
     var isAdd: Boolean = true
+    var isCreate: Boolean = false
+    var selectCount = 0
 
     fun setData(data: List<User>?, showHeader: Boolean) {
         this.data = data
@@ -65,11 +71,31 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
             return
         }
         val user = data!![position]
-        holder.bind(user, mListener, mCheckedMap, alreadyUserIds, isAdd)
+        holder.bind(user, mCheckedMap, alreadyUserIds, isAdd, View.OnClickListener { itemView ->
+            if (isCreate && selectCount >= MAX_CHECKED && !itemView.cb.isChecked) {
+                return@OnClickListener
+            }
+            itemView.cb.isChecked = !itemView.cb.isChecked
+            mCheckedMap[user.identityNumber] = itemView.cb.isChecked
+            if (isCreate) {
+                if (itemView.cb.isChecked) {
+                    selectCount++
+                } else {
+                    selectCount--
+                }
+            }
+            mListener?.onItemClick(user, itemView.cb.isChecked)
+        })
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendViewHolder =
-        FriendViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_group_friend, parent, false))
+        FriendViewHolder(
+            LayoutInflater.from(parent.context).inflate(
+                R.layout.item_group_friend,
+                parent,
+                false
+            )
+        )
 
     fun setGroupFriendListener(listener: GroupFriendListener) {
         mListener = listener
@@ -78,10 +104,10 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
     class FriendViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(
             user: User,
-            listener: GroupFriendListener?,
             checkedMap: HashMap<String, Boolean>,
             alreadyUserIds: List<String>?,
-            isAdd: Boolean
+            isAdd: Boolean,
+            onClickListener: View.OnClickListener
         ) {
             itemView.name.text = user.fullName
             itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
@@ -103,11 +129,7 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
             }
             user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
             itemView.cb.isClickable = false
-            itemView.setOnClickListener {
-                itemView.cb.isChecked = !itemView.cb.isChecked
-                checkedMap[user.identityNumber] = itemView.cb.isChecked
-                listener?.onItemClick(user, itemView.cb.isChecked)
-            }
+            itemView.setOnClickListener(onClickListener)
         }
     }
 
