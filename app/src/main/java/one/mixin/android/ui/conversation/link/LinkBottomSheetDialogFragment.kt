@@ -129,7 +129,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                     }
                     user
                 }.observeOn(AndroidSchedulers.mainThread()).autoDispose(scopeProvider).subscribe({
-                    it.notNullWithElse( { u ->
+                    it.notNullWithElse({ u ->
                         UserBottomSheetDialogFragment.newInstance(u).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                         dismiss()
                     }, {

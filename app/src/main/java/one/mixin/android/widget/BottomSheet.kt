@@ -46,7 +46,11 @@ import one.mixin.android.extension.statusBarHeight
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.displayMetrics
 
-class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(context, R.style.TransparentDialog) {
+class BottomSheet(
+    context: Context,
+    private val focusable: Boolean,
+    private val softInputResize: Boolean
+) : Dialog(context, R.style.TransparentDialog) {
 
     private var startAnimationRunnable: Runnable? = null
     private var curSheetAnimation: AnimatorSet? = null
@@ -196,7 +200,7 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
             super.show()
         } catch (ignored: Exception) {
         }
-        if (focusable) {
+        if (softInputResize) {
             window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         }
         isDismissed = false
@@ -363,11 +367,11 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
         private var bottomSheet: BottomSheet
 
         constructor(context: Context) {
-            bottomSheet = BottomSheet(context, false)
+            bottomSheet = BottomSheet(context, focusable = false, softInputResize = true)
         }
 
-        constructor(context: Context, needFocus: Boolean) {
-            bottomSheet = BottomSheet(context, needFocus)
+        constructor(context: Context, needFocus: Boolean, softInputResize: Boolean) {
+            bottomSheet = BottomSheet(context, needFocus, softInputResize)
         }
 
         fun setCustomView(view: View): Builder {
