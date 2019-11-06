@@ -63,20 +63,10 @@
                 android:layout_height="40dp"
                 android:layout_gravity="center_horizontal|bottom"
                 android:layout_marginTop="32dp"
+                android:layout_marginBottom="40dp"
                 android:text="@string/got_it"
                 android:textColor="@color/white"
                 android:textSize="14sp"/>
-
-            <TextView
-                android:id="@+id/hide_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:layout_marginBottom="40dp"
-                android:layout_marginTop="@dimen/margin16"
-                android:layout_gravity="center_horizontal"
-                android:textColor="@color/colorDarkBlue"
-                android:text="@string/dont_remind"/>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
