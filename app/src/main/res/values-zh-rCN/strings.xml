@@ -106,6 +106,8 @@
     <string name="error_image">文件错误</string>
     <string name="error_format">不支持该格式</string>
     <string name="error_full_group">错误 %1$d：群组已满</string>
+    <string name="error_create_full_group">你不能添加这个成员，因为一次最多只能加 50 个联系人</string>
+    <string name="error_create_full_group_add">你不能添加这个成员，因为群已经满员了</string>
     <string name="error_insufficient_balance">错误 %1$d：余额不足</string>
     <string name="error_invalid_pin_format">错误 %1$d：无效密码格式</string>
     <string name="error_pin_incorrect">错误 %1$d：密码不正确</string>

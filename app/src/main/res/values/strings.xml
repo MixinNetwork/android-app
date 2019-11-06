@@ -111,6 +111,8 @@
     <string name="error_image">File error</string>
     <string name="error_format">Format not supported</string>
     <string name="error_full_group">ERROR %1$d: The group chat is full.</string>
+    <string name="error_create_full_group">You can’t add this participant because only add up to 50 contacts at a time.</string>
+    <string name="error_create_full_group_add">You can’t add this participant because this group is full.</string>
     <string name="error_insufficient_balance">ERROR %1$d: Insufficient balance</string>
     <string name="error_invalid_pin_format">ERROR %1$d: Invalid PIN format</string>
     <string name="error_pin_incorrect">ERROR %1$d: PIN incorrect</string>

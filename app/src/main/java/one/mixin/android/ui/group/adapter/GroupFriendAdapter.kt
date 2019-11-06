@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.item_group_friend.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.toast
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
@@ -18,6 +19,7 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
 
     companion object {
         const val MAX_CHECKED = 50
+        const val MAX_USER_COUNT = 256
     }
 
     private var data: List<User>? = null
@@ -73,11 +75,20 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
         val user = data!![position]
         holder.bind(user, mCheckedMap, alreadyUserIds, isAdd, View.OnClickListener { itemView ->
             if (isCreate && selectCount >= MAX_CHECKED && !itemView.cb.isChecked) {
+                itemView.context.toast(R.string.error_create_full_group)
+                return@OnClickListener
+            } else if (isAdd && !itemView.cb.isChecked && selectCount + alreadyUserIds.notNullWithElse(
+                    { it.size },
+                    0
+                ) >= MAX_USER_COUNT
+            ) {
+                itemView.context.toast(R.string.error_create_full_group_add)
                 return@OnClickListener
             }
+
             itemView.cb.isChecked = !itemView.cb.isChecked
             mCheckedMap[user.identityNumber] = itemView.cb.isChecked
-            if (isCreate) {
+            if (isCreate || isAdd) {
                 if (itemView.cb.isChecked) {
                     selectCount++
                 } else {
