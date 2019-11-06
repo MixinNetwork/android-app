@@ -78,7 +78,7 @@ class SingleFriendSelectFragment : BaseFragment() {
         search_et.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {
                 adapter.conversations = conversations?.filter {
-                    it.fullName != null && it.fullName.contains(s.toString(), ignoreCase = true)
+                    (it.fullName != null && it.fullName.contains(s.toString(), ignoreCase = true)) || it.identityNumber.startsWith(s.toString())
                 }
                 adapter.friends = friends?.filter {
                     it.identityNumber.startsWith(s.toString()) || (it.fullName != null && it.fullName.contains(s.toString(), ignoreCase = true))

@@ -20,6 +20,8 @@
         android:drawablePadding="8dp"
         android:hint="@string/contact_search_hint"
         android:maxLines="1"
+        android:imeOptions="actionSearch"
+        android:inputType="text"
         android:paddingStart="@dimen/activity_horizontal_margin"
         android:paddingEnd="@dimen/activity_horizontal_margin"
         android:textSize="14sp"/>
