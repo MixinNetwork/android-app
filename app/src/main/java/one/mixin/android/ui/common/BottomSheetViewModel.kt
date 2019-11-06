@@ -81,16 +81,17 @@ class BottomSheetViewModel @Inject internal constructor(
             assetRepository.withdrawal(
                 WithdrawalRequest(addressId, amount, encryptPin(Session.getPinToken()!!, code)!!, traceId, memo))
 
-    fun syncAddr(assetId: String, destination: String?, label: String?, tag: String?, code: String): Observable<MixinResponse<Address>> =
+    suspend fun syncAddr(assetId: String, destination: String?, label: String?, tag: String?, code: String): MixinResponse<Address> =
         assetRepository.syncAddr(AddressRequest(assetId, destination, tag, label, encryptPin(Session.getPinToken()!!, code)!!))
-            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    fun saveAddr(addr: Address) = assetRepository.saveAddr(addr)
+    suspend fun saveAddr(addr: Address) = withContext(Dispatchers.IO) {
+        assetRepository.saveAddr(addr)
+    }
 
-    fun deleteAddr(id: String, code: String): Observable<MixinResponse<Unit>> =
-        assetRepository.deleteAddr(id, encryptPin(Session.getPinToken()!!, code)!!).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+    suspend fun deleteAddr(id: String, code: String): MixinResponse<Unit> =
+        assetRepository.deleteAddr(id, encryptPin(Session.getPinToken()!!, code)!!)
 
-    fun deleteLocalAddr(id: String) = assetRepository.deleteLocalAddr(id)
+    suspend fun deleteLocalAddr(id: String) = assetRepository.deleteLocalAddr(id)
 
     suspend fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
 
@@ -204,8 +205,6 @@ class BottomSheetViewModel @Inject internal constructor(
             result
         }
     }
-
-    suspend fun getFiats() = accountRepository.getFiats()
 
     suspend fun preferences(request: AccountUpdateRequest) = accountRepository.preferences(request)
 

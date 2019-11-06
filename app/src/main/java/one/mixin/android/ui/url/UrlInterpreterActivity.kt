@@ -8,7 +8,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
@@ -155,11 +154,9 @@ fun openWebBottomSheet(
     onDismiss: (() -> Unit)? = null
 ) {
     val dialog = WebBottomSheetDialogFragment.newInstance(url, conversationId, appId, appName, appAvatar, appCapabilities)
-    onDismiss?.let {
-        dialog.onDismissListener = object : MixinBottomSheetDialogFragment.OnDismissListener {
-            override fun onDismiss() {
-                it.invoke()
-            }
+    onDismiss?.let { onDismiss ->
+        dialog.dialog?.setOnDismissListener {
+            onDismiss.invoke()
         }
     }
     dialog.showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)

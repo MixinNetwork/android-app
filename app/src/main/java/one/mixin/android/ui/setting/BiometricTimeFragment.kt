@@ -17,7 +17,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.PinBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 
 class BiometricTimeFragment : BaseFragment() {
@@ -59,7 +59,7 @@ class BiometricTimeFragment : BaseFragment() {
 
             val bottomSheet =
                 PinBiometricsBottomSheetDialogFragment.newInstance(false)
-            bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
+            bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
                     val intervalMillis = (VALUES[i] * X_HOUR).toLong()
                     defaultSharedPreferences.putLong(BIOMETRIC_INTERVAL, intervalMillis)
@@ -70,9 +70,7 @@ class BiometricTimeFragment : BaseFragment() {
                     activity?.onBackPressed()
                 }
             }
-            bottomSheet.showNow(parentFragmentManager,
-                PinBiometricsBottomSheetDialogFragment.TAG
-            )
+            bottomSheet.showNow(parentFragmentManager, PinBiometricsBottomSheetDialogFragment.TAG)
         }
         setSelectedPos()
     }

@@ -238,7 +238,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         }
         if (cur - last > interval) {
             val pinCheckDialog = PinCheckDialogFragment.newInstance()
-            pinCheckDialog.show(activity?.supportFragmentManager, PinCheckDialogFragment.TAG)
+            pinCheckDialog.show(parentFragmentManager, PinCheckDialogFragment.TAG)
         }
     }
 

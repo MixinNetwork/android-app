@@ -88,6 +88,8 @@
     <string name="language">语言</string>
     <string name="try_again">请重试</string>
     <string name="ok">好的</string>
+    <string name="verify_by_PIN">用密码来验证</string>
+    <string name="verify_by_biometric">用生物识别来验证</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -590,6 +592,9 @@
     <string name="withdrawal_addr_pin_add">请输入密码来完成添加</string>
     <string name="withdrawal_addr_pin_delete">请输入密码来完成删除</string>
     <string name="withdrawal_addr_pin_modify">请输入密码来完成修改</string>
+    <string name="withdrawal_addr_biometric_add">使用生物识别来完成添加</string>
+    <string name="withdrawal_addr_biometric_delete">使用生物识别来完成删除</string>
+    <string name="withdrawal_addr_biometric_modify">使用生物识别来完成修改</string>
     <string name="withdrawal_addr_memo">地址标签、数字 ID 或备注。如果没有，点击不使用标签（Memo）。</string>
     <string name="withdrawal_addr_no_memo">如果你需要填写地址标签、数字 ID 或备注，点击添加标签（Memo）。</string>
     <string name="withdrawal_addr_memo_link">点击不使用标签（Memo）</string>
@@ -602,6 +607,7 @@
     <string name="withdrawal_addr_tag_hint">标签（Tag）</string>
     <string name="withdrawal_success">提现成功</string>
     <string name="withdrawal_with_pwd">用密码提现</string>
+    <string name="withdrawal_with_biometric">用生物识别提现</string>
     <string name="withdrawal_to">提现到 %1$s</string>
     <string name="group_info_add">添加群公告</string>
     <string name="group_info_edit">编辑群公告</string>

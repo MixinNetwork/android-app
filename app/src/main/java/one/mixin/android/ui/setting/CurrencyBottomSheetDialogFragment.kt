@@ -41,7 +41,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val currencyAdapter = CurrencyAdapter()
     private val currencies = arrayListOf<Currency>()
 
-    override fun setupDialog(dialog: Dialog?, style: Int) {
+    override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_currency_bottom_sheet, null)
         (dialog as BottomSheet).setCustomView(contentView)

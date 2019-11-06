@@ -21,7 +21,7 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
         fun newInstance() = EmergencyContactTipBottomSheetDialogFragment()
     }
 
-    override fun setupDialog(dialog: Dialog?, style: Int) {
+    override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_emergency_contact_bottom, null)
         (dialog as BottomSheet).setCustomView(contentView)

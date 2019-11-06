@@ -31,9 +31,6 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT user_id FROM users WHERE user_id IN (:userIds)")
     suspend fun findUserExist(userIds: List<String>): List<String>
 
-    @Query("SELECT * FROM users WHERE user_id = :id AND relationship = 'FRIEND'")
-    fun findFriend(id: String): User?
-
     @Query("SELECT * FROM users WHERE relationship = :relationship")
     fun findUsersByType(relationship: String): LiveData<List<User>>
 
@@ -49,9 +46,6 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE user_id != :id AND relationship = 'FRIEND' AND (full_name LIKE :username" + ESCAPE_SUFFIX + "OR " +
         "identity_number like :identityNumber" + ESCAPE_SUFFIX + ")")
     suspend fun fuzzySearchUser(username: String, identityNumber: String, id: String): List<User>
-
-    @Query("SELECT * FROM users WHERE relationship = 'FRIEND'")
-    fun syncFindFriends(): List<User>
 
     @Query("UPDATE users SET relationship = :relationship WHERE user_id = :id")
     fun updateUserRelationship(id: String, relationship: String)

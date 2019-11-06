@@ -12,7 +12,7 @@ interface AddressDao : BaseDao<Address> {
     fun addresses(id: String): LiveData<List<Address>>
 
     @Query("DELETE FROM addresses WHERE address_id = :id")
-    fun deleteById(id: String)
+    suspend fun deleteById(id: String)
 
     @Query("DELETE FROM addresses")
     fun deleteAll()

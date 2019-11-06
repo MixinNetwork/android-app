@@ -26,7 +26,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.common.BiometricException
+import one.mixin.android.ui.common.biometric.BiometricException
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
 

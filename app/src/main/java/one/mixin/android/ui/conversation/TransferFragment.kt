@@ -3,6 +3,7 @@ package one.mixin.android.ui.conversation
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
@@ -60,8 +61,8 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
-import one.mixin.android.ui.common.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
@@ -110,15 +111,14 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         (dialog as BottomSheet).apply {
             fullScreen = true
             setCustomView(contentView)
-
-            onDismissListener = object : OnDismissListener {
-                override fun onDismiss() {
-                    if (isAdded) {
-                        operateKeyboard(false)
-                    }
-                }
-            }
         }
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        if (isAdded) {
+            operateKeyboard(false)
+        }
+        super.onDismiss(dialog)
     }
 
     @Inject
@@ -154,7 +154,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val assetsBottomSheet: BottomSheet by lazy {
-        val builder = BottomSheet.Builder(requireActivity(), true)
+        val builder = BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = false)
         val bottomSheet = builder.create()
         builder.setCustomView(assetsView)
         bottomSheet.setOnDismissListener {

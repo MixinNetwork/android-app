@@ -184,7 +184,7 @@ class ProfileFragment : BaseFragment() {
         biographyFragment.changeAction = {
             update(it, TYPE_BIOGRAPHY)
         }
-        biographyFragment.show(fragmentManager, EditBottomSheetDialogFragment.TAG)
+        biographyFragment.show(parentFragmentManager, EditBottomSheetDialogFragment.TAG)
     }
 
     @SuppressLint("RestrictedApi")
@@ -196,7 +196,7 @@ class ProfileFragment : BaseFragment() {
         biographyFragment.changeAction = {
             update(it, TYPE_NAME)
         }
-        biographyFragment.show(fragmentManager, EditBottomSheetDialogFragment.TAG)
+        biographyFragment.show(parentFragmentManager, EditBottomSheetDialogFragment.TAG)
     }
 
     private fun update(content: String, type: Int) {

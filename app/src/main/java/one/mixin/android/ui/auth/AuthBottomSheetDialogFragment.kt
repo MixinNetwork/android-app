@@ -127,7 +127,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.title_view.right_iv.setOnClickListener { dialog.dismiss() }
+        contentView.title_view.right_iv.setOnClickListener { dismiss() }
         contentView.avatar.loadCircleImage(auth.app.icon_url, R.mipmap.ic_launcher_round)
         contentView.scope_rv.adapter = scopeAdapter
         scopeAdapter.onScopeListener = object : OnScopeListener {
@@ -163,7 +163,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    override fun onDismiss(dialog: DialogInterface?) {
+    override fun onDismiss(dialog: DialogInterface) {
         if (!success && isAdded) {
             val request = AuthorizeRequest(auth.authorizationId, listOf())
             bottomViewModel.authorize(request)

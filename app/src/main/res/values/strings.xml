@@ -93,6 +93,8 @@
     <string name="language">Language</string>
     <string name="try_again">Try Again</string>
     <string name="ok">OK</string>
+    <string name="verify_by_PIN">Verify by PIN</string>
+    <string name="verify_by_biometric">Verify by Biometric</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -599,9 +601,12 @@
     <string name="withdrawal_addr_modify">Modify %1$s Address</string>
     <string name="withdrawal_addr_delete">Delete %1$s Address</string>
     <string name="withdrawal_enter_pin">Enter your PIN</string>
-    <string name="withdrawal_addr_pin_add">Please enter PIN to save address</string>
-    <string name="withdrawal_addr_pin_delete">Please enter PIN to delete address</string>
-    <string name="withdrawal_addr_pin_modify">Please enter PIN to modify address</string>
+    <string name="withdrawal_addr_pin_add">Enter PIN to save address</string>
+    <string name="withdrawal_addr_pin_delete">Enter PIN to delete address</string>
+    <string name="withdrawal_addr_pin_modify">Enter PIN to modify address</string>
+    <string name="withdrawal_addr_biometric_add">Use Biometric to save address</string>
+    <string name="withdrawal_addr_biometric_delete">Use Biometric to delete address</string>
+    <string name="withdrawal_addr_biometric_modify">Use Biometric to modify address</string>
     <string name="withdrawal_addr_memo">Destination Tag or ID Number or notes. If not, you can set it No Memo.</string>
     <string name="withdrawal_addr_no_memo">If you are required to fill in Destination Tag or ID Number or notes, you can Add Memo.</string>
     <string name="withdrawal_addr_memo_link">No Memo</string>
@@ -614,6 +619,7 @@
     <string name="withdrawal_addr_tag_hint">Tag</string>
     <string name="withdrawal_success">Withdrawal success</string>
     <string name="withdrawal_with_pwd">Withdrawal with PIN</string>
+    <string name="withdrawal_with_biometric">Withdrawal with Biometric</string>
     <string name="withdrawal_to">Withdrawal to %1$s</string>
     <string name="group_info_add">Add group description</string>
     <string name="group_info_edit">Edit group description</string>
