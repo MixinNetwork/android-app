@@ -34,9 +34,9 @@ open class ErrorHandler {
                             handleErrorCode(throwable.code, ctx)
                         }
                         is NetworkException -> toast(R.string.error_no_connection)
-                        else -> toast(R.string.error_unknown)
+                        else -> toast(getString(R.string.error_unknown, throwable.message))
                     }
-                    else -> toast(R.string.error_unknown)
+                    else -> toast(getString(R.string.error_unknown, throwable.message))
                 }
             }
         }

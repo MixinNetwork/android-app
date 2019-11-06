@@ -221,7 +221,7 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
             }, {
                 Timber.e(it)
                 dialog.dismiss()
-                toast(R.string.error_unknown)
+                toast(getString(R.string.error_unknown, selectSet.toString()))
             })
     }
 
