@@ -13,7 +13,7 @@
         android:padding="@dimen/margin12"
         android:background="@drawable/mixin_ripple"
         android:contentDescription="@string/landing_back_content_desc"
-        app:srcCompat="@drawable/ic_arrow_back_black_24dp"/>
+        app:srcCompat="@drawable/ic_arrow_back"/>
 
     <TextView
         android:id="@+id/id_title_tv"

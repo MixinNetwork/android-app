@@ -304,6 +304,7 @@
     <string name="wallet_password_not_equal">The PIN did not match the re-typed PIN, please try again.</string>
     <string name="wallet_password_change_tip">Please enter the 6 digit PIN to verify.</string>
     <string name="wallet_pay_with_pwd">Pay with PIN</string>
+    <string name="wallet_pay_with_biometric">Biometric Payment</string>
     <string name="wallet_transfer_amount">Transfer Amount</string>
     <string name="wallet_transfer_memo">Memo</string>
     <string name="wallet_transfer_tag">Tag</string>

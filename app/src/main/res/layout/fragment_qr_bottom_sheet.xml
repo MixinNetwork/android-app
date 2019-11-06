@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_upper_round"
         app:need_divider="false"
-        app:leftIcon="@drawable/ic_close_black_24dp"
+        app:leftIcon="@drawable/ic_close_black"
         app:rightIcon="@drawable/ic_more"
         app:titleText="@string/contact_my_qr_title"/>
 

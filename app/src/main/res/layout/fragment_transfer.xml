@@ -16,7 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/ph"
-        app:left_icon="@drawable/ic_close_black_24dp"
+        app:left_icon="@drawable/ic_close_black"
         app:need_divider="false"
         app:titleText="@string/transfer"/>
 

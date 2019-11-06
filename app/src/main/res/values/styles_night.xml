@@ -12,7 +12,7 @@
         <item name="text_remarks">@color/textRemarksNight</item>
 
         <item name="text_default">@color/textPrimaryNight</item>
-        <item name="text_checked">@color/textPrimary</item>
+        <item name="text_checked">@color/textPrimaryNight</item>
 
         <item name="icon_default">@color/colorIconNight</item>
         <item name="icon_light">@color/colorIconLightNight</item>

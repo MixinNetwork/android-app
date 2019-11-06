@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
-        app:leftIcon="@drawable/ic_arrow_back_black_24dp"
+        app:leftIcon="@drawable/ic_arrow_back"
         app:need_divider="false"
         app:titleText="@string/wallet_hidden_assets"/>
 

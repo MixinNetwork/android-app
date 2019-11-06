@@ -120,7 +120,7 @@ class MaterialSearchView : FrameLayout {
             }, {})
 
         right_clear.setOnClickListener {
-            if (search_et.text.isNullOrEmpty()) {
+            if (!search_et.text.isNullOrEmpty()) {
                 search_et.setText("")
             }
         }

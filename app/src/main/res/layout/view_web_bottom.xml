@@ -15,7 +15,8 @@
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="@string/forward"/>
+        android:text="@string/forward"
+        android:textColor="?attr/text_primary" />
 
     <TextView
         android:id="@+id/share"
@@ -28,7 +29,8 @@
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="@string/share"/>
+        android:text="@string/share"
+        android:textColor="?attr/text_primary" />
 
     <TextView
         android:id="@+id/refresh"
@@ -41,7 +43,8 @@
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="@string/action_refresh"/>
+        android:text="@string/action_refresh"
+        android:textColor="?attr/text_primary" />
 
 
     <TextView
@@ -54,5 +57,6 @@
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="@string/action_open"/>
+        android:text="@string/action_open"
+        android:textColor="?attr/text_primary" />
 </LinearLayout>

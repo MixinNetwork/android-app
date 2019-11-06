@@ -17,7 +17,7 @@
             android:layout_margin="8dp"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
-            android:src="@drawable/ic_close_black_24dp"/>
+            android:src="@drawable/ic_close_black"/>
 
         <one.mixin.android.widget.SearchView
             android:id="@+id/search_et"

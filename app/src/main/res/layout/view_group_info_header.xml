@@ -14,6 +14,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="8dp"
             android:text="@string/group_info_not_in"
+            android:textColor="?attr/text_primary"
             android:visibility="gone"/>
 
     <RelativeLayout

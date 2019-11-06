@@ -25,7 +25,7 @@
         android:layout_marginStart="4dp"
         android:padding="8dp"
         android:visibility="gone"
-        app:srcCompat="@drawable/ic_close_black_24dp"
+        app:srcCompat="@drawable/ic_close_black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/search_et"
         app:layout_constraintTop_toTopOf="@id/search_et"

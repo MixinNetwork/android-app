@@ -17,7 +17,7 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/margin16"
             android:text="@string/hidden"
-            android:textColor="?attr/bg_white"/>
+            android:textColor="@color/white"/>
 
         <TextView
             android:id="@+id/back_right_tv"
@@ -27,7 +27,7 @@
             android:layout_marginEnd="@dimen/margin16"
             android:text="@string/hidden"
             android:layout_alignParentEnd="true"
-            android:textColor="?attr/bg_white"/>
+            android:textColor="@color/white"/>
     </RelativeLayout>
 
     <one.mixin.android.widget.ConfirmationBgView

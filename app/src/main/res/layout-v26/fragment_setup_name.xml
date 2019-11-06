@@ -14,7 +14,7 @@
         android:contentDescription="@string/landing_back_content_desc"
         android:padding="8dp"
         android:visibility="invisible"
-        app:srcCompat="@drawable/ic_arrow_back_black_24dp" />
+        app:srcCompat="@drawable/ic_arrow_back" />
 
     <TextView
         android:id="@+id/name_title_tv"
@@ -51,6 +51,7 @@
             android:hint="@string/landing_enter_name_hint"
             android:importantForAutofill="noExcludeDescendants"
             android:lines="1"
+            android:textColor="?attr/text_primary"
             android:textSize="16sp" />
     </com.google.android.material.textfield.TextInputLayout>
 

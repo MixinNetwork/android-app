@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="72dp"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="?attr/bg_white"
     android:clipChildren="false"
     android:clipToPadding="false"
@@ -59,7 +60,7 @@
         android:layout_toEndOf="@id/balance"
         android:gravity="end"
         android:maxLines="1"
-        android:textColor="#555555"
+        android:textColor="?attr/text_minor"
         android:textSize="12sp"/>
 
     <TextView

@@ -24,7 +24,7 @@
             android:id="@+id/title_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:leftIcon="@drawable/ic_close_black_24dp"
+            app:leftIcon="@drawable/ic_close_black"
             app:titleText="@string/setting_desktop"/>
 
         <ImageView
@@ -47,7 +47,7 @@
             android:foreground="?attr/selectableItemBackground"
             android:paddingStart="@dimen/activity_horizontal_margin"
             android:paddingEnd="@dimen/activity_horizontal_margin"
-            android:textColor="@color/black"
+            android:textColor="?attr/text_primary"
             android:text="@string/setting_scan_qr_code"
             tools:ignore="RelativeOverlap"/>
 

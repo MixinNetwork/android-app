@@ -292,6 +292,7 @@
     <string name="wallet_password_not_equal">密码不一致, 请重新输入</string>
     <string name="wallet_password_change_tip">请输入6位密码来验证</string>
     <string name="wallet_pay_with_pwd">用密码支付</string>
+    <string name="wallet_pay_with_biometric">生物识别支付</string>
     <string name="wallet_transfer_amount">转账金额</string>
     <string name="wallet_transfer_memo">备注</string>
     <string name="wallet_transfer_tag">Tag</string>

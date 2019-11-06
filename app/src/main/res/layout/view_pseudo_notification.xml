@@ -12,7 +12,7 @@
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
             android:drawablePadding="8dp"
-            android:textColor="@color/black"
+            android:textColor="?attr/text_primary"
             android:textSize="12sp"
             android:text="@string/text_qr"/>
 
@@ -25,7 +25,7 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginTop="12dp"
             android:layout_marginBottom="12dp"
-            android:textColor="@color/black"
+            android:textColor="?attr/text_primary"
             android:ellipsize="end"
             android:text="@string/detect_qr_tip"
             android:maxLines="3"/>

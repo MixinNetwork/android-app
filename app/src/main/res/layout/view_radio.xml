@@ -23,5 +23,6 @@
         android:layout_centerVertical="true"
         android:layout_width="match_parent"
         android:gravity="center_vertical"
+        android:textColor="?attr/text_primary"
         android:layout_height="26dp"/>
 </RelativeLayout>

@@ -12,7 +12,7 @@
         android:layout_centerVertical="true"
         android:background="@drawable/mixin_ripple"
         android:padding="16dp"
-        android:src="@drawable/ic_close_black_24dp"
+        android:src="@drawable/ic_close_black"
         tools:ignore="ContentDescription" />
 
     <ImageView

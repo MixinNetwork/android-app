@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.removeEnd
 import one.mixin.android.extension.showKeyboard
@@ -70,6 +71,7 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
         val params = editText.layoutParams as FrameLayout.LayoutParams
         params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)
         editText.layoutParams = params
+        editText.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
         val amountDialog = AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
             .setTitle(getString(R.string.setting_notification_transfer_amount, accountSymbol))
             .setView(frameLayout)

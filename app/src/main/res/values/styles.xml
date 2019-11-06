@@ -28,6 +28,7 @@
         <item name="icon_light">@color/colorIconLight</item>
         <item name="icon_dark">@color/colorIconDark</item>
         <item name="icon_white">@color/colorIconWhite</item>
+        <item name="icon_black">@color/colorIcon</item>
         <item name="icon_gray">@color/colorIconGray</item>
 
         <item name="badger">@color/badger</item>
