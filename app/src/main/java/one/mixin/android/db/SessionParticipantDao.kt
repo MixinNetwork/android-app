@@ -8,6 +8,9 @@ import one.mixin.android.vo.ParticipantSession
 @Dao
 interface ParticipantSessionDao : BaseDao<ParticipantSession> {
 
+    @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId")
+    fun getParticipantSessionsByConversationId(conversationId: String): List<ParticipantSession>?
+
     @Transaction
     fun replaceAll(conversationId: String, list: List<ParticipantSession>) {
         deleteByConversationId(conversationId)

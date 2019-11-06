@@ -131,17 +131,27 @@ open class Injector : Injectable {
     }
 
     protected fun syncConversationParticipantSession(conversationId: String) {
+        val local = participantSessionDao.getParticipantSessionsByConversationId(conversationId)
         val call = conversationService.getConversation(conversationId).execute()
         val response = call.body()
         if (response != null && response.isSuccess) {
             response.data?.let { data ->
-                val sessionParticipants = data.participantSessions?.map {
+                val remote = data.participantSessions?.map {
                     ParticipantSession(conversationId, it.userId, it.sessionId)
                 }
-                sessionParticipants?.let {
-                    // should check for update table
-                    participantSessionDao.replaceAll(conversationId, it)
+                if (remote == null || remote.isEmpty()) {
+                    participantSessionDao.deleteByConversationId(conversationId)
+                    return
                 }
+                if (local == null || local.isEmpty()) {
+                    participantSessionDao.insertList(remote)
+                    return
+                }
+                val common = remote.intersect(local)
+                val remove = local.minus(common)
+                val add = remote.minus(common)
+                participantSessionDao.deleteList(remove)
+                participantSessionDao.insertList(add)
             }
         }
     }

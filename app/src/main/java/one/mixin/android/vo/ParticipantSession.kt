@@ -17,4 +17,11 @@ data class ParticipantSession(
     val sentToServer: Int? = null,
     @ColumnInfo(name = "created_at")
     val createdAt: String? = nowInUtc()
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        return when (other) {
+            is ParticipantSession -> conversationId == other.conversationId && userId == other.userId && sessionId == other.sessionId
+            else -> false
+        }
+    }
+}

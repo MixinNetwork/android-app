@@ -34,10 +34,10 @@ data class BlazeMessageParamSession(
 )
 
 fun createAckParam(message_id: String, status: String) =
-    BlazeMessageParam(null, null, message_id, null, null, status)
+    BlazeMessageParam(message_id = message_id, status = status)
 
 fun createAckListParam(messages: List<BlazeAckMessage>) =
-    BlazeMessageParam(null, null, null, null, null, null, null, null, messages)
+    BlazeMessageParam(messages = messages)
 
 fun createSignalKeyParam(conversationId: String, recipientId: String, cipherText: String) =
     BlazeMessageParam(conversationId, recipientId, UUID.randomUUID().toString(), MessageCategory.SIGNAL_KEY.name,
@@ -48,13 +48,13 @@ fun createPlainJsonParam(conversationId: String, userId: String, encoded: String
         encoded, MessageStatus.SENDING.name, session_id = sessionId)
 
 fun createConsumeSignalKeysParam(recipients: ArrayList<BlazeMessageParamSession>?) =
-    BlazeMessageParam(null, null, null, null, null, null, recipients)
+    BlazeMessageParam( recipients = recipients)
 
 fun createSyncSignalKeysParam(keys: SignalKeyRequest?) =
-    BlazeMessageParam(null, null, null, null, null, null, null, keys)
+    BlazeMessageParam(keys = keys)
 
 fun createSignalKeyMessageParam(conversationId: String, messages: ArrayList<BlazeSignalKeyMessage>) =
-    BlazeMessageParam(conversationId, null, null, null, null, null, null, null, messages)
+    BlazeMessageParam(conversationId, messages = messages)
 
 fun createSessionSyncMessageParam(conversations: List<String>) =
     BlazeMessageParam(conversations = conversations)
