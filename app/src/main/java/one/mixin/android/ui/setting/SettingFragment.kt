@@ -1,11 +1,13 @@
 package one.mixin.android.ui.setting
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import java.util.Locale
 import kotlinx.android.synthetic.main.fragment_setting.*
@@ -68,14 +70,23 @@ class SettingFragment : Fragment() {
                 navTo(WalletPasswordFragment.newInstance(false), WalletPasswordFragment.TAG)
             }
         }
-        night_mode_desc_sw.isChecked = defaultSharedPreferences.getInt(THEME_CURRENT_ID, THEME_DEFAULT_ID) == THEME_NIGHT_ID
-        night_mode_desc_sw.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                defaultSharedPreferences.putInt(THEME_CURRENT_ID, THEME_NIGHT_ID)
-            } else {
-                defaultSharedPreferences.putInt(THEME_CURRENT_ID, THEME_DEFAULT_ID)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            night_mode_rl.isVisible = true
+            night_mode_desc_sw.isChecked =
+                defaultSharedPreferences.getInt(
+                    THEME_CURRENT_ID,
+                    THEME_DEFAULT_ID
+                ) == THEME_NIGHT_ID
+            night_mode_desc_sw.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    defaultSharedPreferences.putInt(THEME_CURRENT_ID, THEME_NIGHT_ID)
+                } else {
+                    defaultSharedPreferences.putInt(THEME_CURRENT_ID, THEME_DEFAULT_ID)
+                }
+                MainActivity.reopen(requireContext())
             }
-            MainActivity.reopen(requireContext())
+        } else {
+            night_mode_rl.isVisible = false
         }
         language_rl.setOnClickListener { showLanguageAlert() }
         notification_rl.setOnClickListener {

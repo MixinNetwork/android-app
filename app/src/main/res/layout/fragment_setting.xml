@@ -100,7 +100,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
+                android:foreground="?attr/selectableItemBackground"
+                android:visibility="gone">
 
                 <TextView
                     android:id="@+id/night_mode_tv"
@@ -109,7 +110,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="夜间模式"
+                    android:text="@string/setting_night"
                     tools:ignore="RelativeOverlap" />
 
                 <androidx.appcompat.widget.SwitchCompat
