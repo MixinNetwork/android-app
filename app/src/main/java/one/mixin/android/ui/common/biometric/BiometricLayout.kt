@@ -78,6 +78,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         if (clearPin) {
             pin.clear()
         }
+        keyboard?.isVisible = true
         keyboard?.animateHeight(keyboard?.height ?: 0, keyboardHeight)
     }
 

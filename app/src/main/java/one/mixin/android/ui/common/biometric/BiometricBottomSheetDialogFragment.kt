@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
+import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -97,7 +98,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         } else {
             contentView.biometric_layout?.let { layout ->
                 layout.setErrorButton(response.errorCode)
-                layout.showPin(true)
+                layout.pin.clear()
             }
             showErrorInfo(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription), true)
         }

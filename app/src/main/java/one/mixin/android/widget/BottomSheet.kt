@@ -145,11 +145,6 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
         container.background = backDrawable
         container.fitsSystemWindows = true
         container.setOnApplyWindowInsetsListener { v, insets ->
-            if (lastInsets == null && customView != null && !fullScreen) {
-                val params = customView!!.layoutParams as FrameLayout.LayoutParams
-                params.topMargin = insets.systemWindowInsetTop
-                customView!!.layoutParams = params
-            }
             lastInsets = insets
             v.requestLayout()
             insets.consumeSystemWindowInsets()
@@ -179,7 +174,7 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
             sheetContainer.addView(customView,
                 FrameLayout.LayoutParams(MATCH_PARENT,
                     if (customViewHeight > 0) customViewHeight else WRAP_CONTENT,
-                    Gravity.START or Gravity.TOP))
+                    Gravity.BOTTOM))
         }
 
         window?.let { window ->
