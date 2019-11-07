@@ -24,7 +24,8 @@ constructor(
     private val accountService: AccountService,
     private val userService: UserService
 ) : ViewModel() {
-    private val sessionDao: SessionDao = SignalDatabase.getDatabase(MixinApplication.appContext).sessionDao()
+    private val sessionDao: SessionDao =
+        SignalDatabase.getDatabase(MixinApplication.appContext).sessionDao()
 
     suspend fun pushAsyncSignalKeys(): MixinResponse<Void> = withContext(Dispatchers.IO) {
         val start = System.currentTimeMillis()
@@ -38,11 +39,21 @@ constructor(
     }
 
     suspend fun updateSignalSession() {
-        val sessions = sessionDao.syncGetSessionAddress()
-        sessions?.let {
-            val sessionChunk = it.chunked(500)
-            for (item in sessionChunk) {
-                userService.fetchSessions(item)
+        withContext(Dispatchers.IO) {
+            val sessions = sessionDao.syncGetSessionAddress()
+            sessions?.let {
+                val sessionChunk = it.chunked(500)
+                for (item in sessionChunk) {
+                    val response = userService.fetchSessions(item)
+                    if (response.isSuccess) {
+                        response.data?.asSequence()?.forEach { item ->
+                            sessionDao.updateSessionDeviceByAddress(
+                                item.session_id.hashCode().toString(),
+                                item.user_id
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -50,7 +61,9 @@ constructor(
     fun pingServer(callback: () -> Unit, elseCallBack: (e: Exception?) -> Unit): Job {
         return viewModelScope.launch {
             try {
-                val response = withContext(coroutineContext + Dispatchers.IO) { accountService.ping().execute() }
+                val response = withContext(coroutineContext + Dispatchers.IO) {
+                    accountService.ping().execute()
+                }
                 response.headers()["X-Server-Time"]?.toLong()?.let { serverTime ->
                     if (abs(serverTime / 1000000 - System.currentTimeMillis()) < 600000L) { // 10 minutes
                         callback.invoke()

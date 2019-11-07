@@ -36,6 +36,8 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
+import one.mixin.android.Constants.Load.IS_LOADED
+import one.mixin.android.Constants.Load.IS_SESSION_SENSED
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.SessionRequest
@@ -72,7 +74,6 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
-import one.mixin.android.ui.landing.LoadingFragment
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchMessageFragment
@@ -162,10 +163,10 @@ class MainActivity : BlazeBaseActivity() {
 
         MixinApplication.get().onlining.set(true)
 
-        if (!defaultSharedPreferences.getBoolean(LoadingFragment.IS_LOADED, false)
-            // or check session
+        if (!defaultSharedPreferences.getBoolean(IS_LOADED, false) ||
+            !defaultSharedPreferences.getBoolean(IS_SESSION_SENSED, false)
         ) {
-            InitializeActivity.showLoading(this)
+            InitializeActivity.showLoading(this, false)
             finish()
             return
         }

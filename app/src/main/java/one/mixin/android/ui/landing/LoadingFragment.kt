@@ -9,10 +9,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Load.IS_LOADED
+import one.mixin.android.Constants.Load.IS_SESSION_SENSED
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.crypto.db.SessionDao
-import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.common.BaseFragment
@@ -23,17 +23,20 @@ class LoadingFragment : BaseFragment() {
 
     companion object {
         const val TAG: String = "LoadingFragment"
-        const val IS_LOADED = "is_loaded"
+
         fun newInstance() = LoadingFragment()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
         inflater.inflate(R.layout.fragment_loading, container, false)
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val loadingViewModel: LoadingViewModel by viewModels { viewModelFactory }
-
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -42,11 +45,21 @@ class LoadingFragment : BaseFragment() {
             if (!defaultSharedPreferences.getBoolean(IS_LOADED, false)) {
                 load()
             }
-            
 
-            // Go to home page
+            if (!defaultSharedPreferences.getBoolean(IS_SESSION_SENSED, false)) {
+                syncSession()
+            }
             MainActivity.show(context!!)
             activity?.finish()
+        }
+    }
+
+    private suspend fun syncSession() {
+        try {
+            loadingViewModel.updateSignalSession()
+            requireContext().defaultSharedPreferences.putBoolean(IS_SESSION_SENSED, true)
+        } catch (e: Exception) {
+            ErrorHandler.handleError(e)
         }
     }
 

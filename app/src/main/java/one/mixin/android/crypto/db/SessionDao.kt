@@ -26,4 +26,7 @@ interface SessionDao : BaseDao<Session> {
 
     @Query("SELECT address FROM sessions WHERE device = 1")
     suspend fun syncGetSessionAddress(): List<String>?
+
+    @Query("UPDATE sessions SET device =:device WHERE address =:address")
+    suspend fun updateSessionDeviceByAddress(device: String, address: String)
 }

@@ -94,6 +94,11 @@ object Constants {
         const val THEME_NIGHT_ID = 1
     }
 
+    object Load {
+        const val IS_LOADED = "is_loaded"
+        const val IS_SESSION_SENSED = "is_session_sensed"
+    }
+
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
 
