@@ -1,9 +1,8 @@
 package one.mixin.android.ui.landing
 
+import androidx.collection.ArrayMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import javax.inject.Inject
-import kotlin.math.abs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -14,9 +13,13 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.crypto.db.SenderKeyDao
 import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase
+import one.mixin.android.crypto.vo.SenderKey
 import one.mixin.android.job.RefreshOneTimePreKeysJob
+import javax.inject.Inject
+import kotlin.math.abs
 
 class LoadingViewModel @Inject internal
 constructor(
@@ -26,6 +29,9 @@ constructor(
 ) : ViewModel() {
     private val sessionDao: SessionDao =
         SignalDatabase.getDatabase(MixinApplication.appContext).sessionDao()
+
+    private val senderKeyDao: SenderKeyDao =
+        SignalDatabase.getDatabase(MixinApplication.appContext).senderKeyDao()
 
     suspend fun pushAsyncSignalKeys(): MixinResponse<Void> = withContext(Dispatchers.IO) {
         val start = System.currentTimeMillis()
@@ -41,15 +47,24 @@ constructor(
     suspend fun updateSignalSession() {
         withContext(Dispatchers.IO) {
             val sessions = sessionDao.syncGetSessionAddress()
-            sessions?.let {
-                val sessionChunk = it.chunked(500)
-                for (item in sessionChunk) {
-                    val response = userService.fetchSessions(item)
-                    if (response.isSuccess) {
-                        response.data?.asSequence()?.forEach { item ->
-                            sessionDao.updateSessionDeviceByAddress(
-                                item.session_id.hashCode().toString(),
-                                item.user_id
+            sessions?.let { list ->
+                val response = userService.fetchSessions(list)
+                if (response.isSuccess) {
+                    val sessionMap = ArrayMap<String, String>()
+                    response.data?.asSequence()?.forEach { item ->
+                        val sessionHash = item.session_id.hashCode().toString()
+                        sessionDao.updateSessionDeviceByAddress(
+                            sessionHash,
+                            item.user_id
+                        )
+                        sessionMap[item.user_id] = sessionHash
+                    }
+                    val senderKeys = senderKeyDao.syncGetSenderKeys()
+                    senderKeys.forEach { key ->
+                        val userId = key.senderId.substring(0, key.senderId.length - 3)
+                        sessionMap[userId]?.let { sessionHash ->
+                            senderKeyDao.insert(
+                                SenderKey(key.groupId, "$userId:$sessionHash", key.record)
                             )
                         }
                     }
