@@ -156,6 +156,7 @@ open class SendMessageJob(
         if (!signalProtocol.isExistSenderKey(message.conversationId, message.userId)) {
             checkConversation(message.conversationId)
         }
+        checkSessionSync(message.conversationId)
         checkAndSendSenderKey(message.conversationId)
         deliver(encryptNormalMessage())
     }

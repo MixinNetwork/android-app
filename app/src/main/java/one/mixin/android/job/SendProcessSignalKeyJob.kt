@@ -31,9 +31,8 @@ class SendProcessSignalKeyJob(
         } else if (action == ProcessSignalKeyAction.ADD_PARTICIPANT) {
             sendSenderKey(data.conversationId, participantId!!)
         } else if (action == ProcessSignalKeyAction.SESSION_SYNC) {
-            participantId?.let {
-                sendSessionSyncMessage(it)
-            }
+            val sessionSyncList = sessionSyncDao.getConversations() ?: return
+            sendSessionSyncMessage(sessionSyncList)
         }
     }
 

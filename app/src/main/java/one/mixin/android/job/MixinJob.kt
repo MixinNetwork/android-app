@@ -29,15 +29,13 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SentSenderKey
 import one.mixin.android.vo.SentSenderKeyStatus
-import one.mixin.android.vo.createAckJob
+import one.mixin.android.vo.SessionSync
 import one.mixin.android.vo.isGroup
-import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.BlazeMessageParamSession
 import one.mixin.android.websocket.BlazeSignalKeyMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
-import one.mixin.android.websocket.CREATE_SESSION_MESSAGE
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.TransferPlainData
 import one.mixin.android.websocket.createBlazeSignalKeyMessage
@@ -131,6 +129,11 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             }
             participantSessionDao.updateList(sentSenderKeys)
         }
+    }
+
+    protected fun checkSessionSync(conversationId: String) {
+        val sessionSync = sessionSyncDao.getByConversationId(conversationId) ?: return
+        sendSessionSyncMessage(sessionSync)
     }
 
     protected fun checkAndSendSenderKey(conversationId: String) {
@@ -328,11 +331,16 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         deliverNoThrow(bm)
     }
 
-    protected fun sendSessionSyncMessage(userId: String) {
-        val conversations = conversationDao.getLastestConversations(userId) ?: return
-        val param = createSessionSyncMessageParam(conversations)
+    protected fun sendSessionSyncMessage(conversations: List<SessionSync>) {
+        val c = conversations.map {
+            it.conversationId
+        }
+        val param = createSessionSyncMessageParam(c)
         val bm = createSessionSyncMessage(param)
-        deliverNoThrow(bm)
+        val result = deliverNoThrow(bm)
+        if (result) {
+            sessionSyncDao.deleteList(conversations)
+        }
     }
 
     protected fun checkConversation(conversationId: String) {

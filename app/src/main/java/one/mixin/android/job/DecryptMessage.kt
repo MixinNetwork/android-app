@@ -405,23 +405,26 @@ class DecryptMessage : Injector() {
             signalProtocol.deleteSession(systemSession.userId)
             val conversations = conversationDao.getConversationsByUserId(systemSession.userId)
             val ps = conversations?.map {
-                ParticipantSession(it, systemSession.userId, systemSession.sessionId)
+                ParticipantSession(it.conversationId, systemSession.userId, systemSession.sessionId)
             }
             ps?.let {
                 participantSessionDao.insertList(it)
+                sessionSyncDao.insertList(conversations)
+                jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.SESSION_SYNC))
             }
-            jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.SESSION_SYNC, systemSession.userId))
+
         } else if (systemSession.action == SystemSessionMessageAction.DESTROY.name) {
             Session.deleteExtensionSessionId()
             signalProtocol.deleteSession(data.userId)
             val conversations = conversationDao.getConversationsByUserId(systemSession.userId)
             val ps = conversations?.map {
-                ParticipantSession(it, systemSession.userId, systemSession.sessionId)
+                ParticipantSession(it.conversationId, systemSession.userId, systemSession.sessionId)
             }
             ps?.let {
                 participantSessionDao.deleteList(it)
+                sessionSyncDao.insertList(conversations)
+                jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.SESSION_SYNC))
             }
-            jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.SESSION_SYNC, systemSession.userId))
         }
     }
 

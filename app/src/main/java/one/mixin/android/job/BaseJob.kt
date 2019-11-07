@@ -35,6 +35,7 @@ import one.mixin.android.db.OffsetDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.SentSenderKeyDao
+import one.mixin.android.db.SessionSyncDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
@@ -93,6 +94,9 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
     @Transient
     @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var conversationDao: ConversationDao
+    @Inject
+    @Transient
+    lateinit var sessionSyncDao: SessionSyncDao
     @Inject
     @Transient
     lateinit var participantDao: ParticipantDao

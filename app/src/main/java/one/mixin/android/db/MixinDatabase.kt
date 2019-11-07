@@ -33,6 +33,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.ResendMessage
 import one.mixin.android.vo.SentSenderKey
+import one.mixin.android.vo.SessionSync
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
@@ -52,6 +53,7 @@ import one.mixin.android.vo.User
     (Snapshot::class),
     (MessageHistory::class),
     (SentSenderKey::class),
+    (SessionSync::class),
     (Sticker::class),
     (StickerAlbum::class),
     (App::class),
@@ -84,6 +86,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun resendMessageDao(): ResendMessageDao
     abstract fun stickerRelationshipDao(): StickerRelationshipDao
     abstract fun topAssetDao(): TopAssetDao
+    abstract fun sessionSyncDao(): SessionSyncDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null
