@@ -26,6 +26,8 @@
             android:paddingEnd="30dp"
             android:layout_marginBottom="16dp"
             android:singleLine="true"
+            android:textColor="?attr/text_primary"
+            android:textColorHighlight="?attr/text_assist"
             android:textSize="14sp" />
 
         <TextView

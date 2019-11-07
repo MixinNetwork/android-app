@@ -25,6 +25,8 @@
         android:hint="@string/add_people_search_hint"
         android:paddingStart="@dimen/activity_horizontal_margin"
         android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:textColor="?attr/text_primary"
+        android:textColorHighlight="?attr/text_assist"
         android:textSize="14sp" />
 
     <TextView
@@ -35,6 +37,7 @@
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:text="@string/add_people_tip"
+        android:textColor="?attr/text_primary"
         android:textSize="12sp" />
 
     <ViewAnimator

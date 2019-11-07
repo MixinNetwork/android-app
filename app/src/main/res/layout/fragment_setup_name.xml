@@ -50,6 +50,7 @@
             android:hint="@string/landing_enter_name_hint"
             android:lines="1"
             android:textColor="?attr/text_primary"
+            android:textColorHighlight="?attr/text_assist"
             android:textSize="16sp" />
     </com.google.android.material.textfield.TextInputLayout>
 

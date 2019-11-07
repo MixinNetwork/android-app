@@ -84,6 +84,8 @@
             android:maxLength="25"
             android:gravity="center_vertical|end"
             android:hint="@string/group_new_name_tip"
+            android:textColor="?attr/text_primary"
+            android:textColorHighlight="?attr/text_assist"
             android:ellipsize="end"
             android:singleLine="true" />
     </RelativeLayout>
@@ -117,7 +119,8 @@
             android:background="@null"
             android:gravity="center_vertical|end"
             android:hint="@string/group_new_notice_tip"
-            android:textColor="?attr/text_minor" />
+            android:textColor="?attr/text_minor"
+            android:textColorHighlight="?attr/text_remarks" />
     </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView

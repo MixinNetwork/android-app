@@ -12,6 +12,8 @@ import com.demo.systemuidemo.SystemUIManager
 import com.uber.autodispose.android.lifecycle.scope
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
+import java.util.Locale
+import javax.inject.Inject
 import one.mixin.android.Constants.Account.PREF_LANGUAGE
 import one.mixin.android.Constants.Account.PREF_SET_LANGUAGE
 import one.mixin.android.Constants.Theme.THEME_CURRENT_ID
@@ -20,8 +22,6 @@ import one.mixin.android.Constants.Theme.THEME_NIGHT_ID
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import org.jetbrains.anko.configuration
-import java.util.Locale
-import javax.inject.Inject
 
 @SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity(), HasAndroidInjector {

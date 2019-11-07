@@ -24,6 +24,8 @@
         android:inputType="text"
         android:paddingStart="@dimen/activity_horizontal_margin"
         android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:textColor="?attr/text_primary"
+        android:textColorHighlight="?attr/text_assist"
         android:textSize="14sp"/>
 
     <View

@@ -8,12 +8,14 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.manager.SupportRequestManagerFragment
+import com.demo.systemuidemo.SystemUIManager
 import com.uber.autodispose.android.lifecycle.scope
-import javax.inject.Inject
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
+import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.widget.BottomSheet
+import javax.inject.Inject
 
 abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
 
@@ -27,7 +29,18 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
     override fun getTheme() = R.style.AppTheme_Dialog
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
-        return BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = true).create()
+        return BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = true)
+            .create()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            SystemUIManager.lightUI(
+                window,
+                !requireContext().booleanFromAttribute(R.attr.flag_night)
+            )
+        }
     }
 
     override fun onDetach() {

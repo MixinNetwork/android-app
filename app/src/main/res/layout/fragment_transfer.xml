@@ -201,7 +201,8 @@
                     android:inputType="text"
                     android:maxLength="140"
                     android:singleLine="true"
-                    android:textColorHint="?attr/text_minor"/>
+                    android:textColor="?attr/text_primary"
+                    android:textColorHighlight="?attr/text_assist" />
 
                 <ImageView
                     android:id="@+id/memo_iv"
