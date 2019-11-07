@@ -3,9 +3,10 @@ package one.mixin.android.widget
 import android.content.Context
 import android.util.AttributeSet
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import one.mixin.android.extension.statusBarHeight
 
-class BottomSheetLinearLayout(context: Context, attributeSet: AttributeSet) : LinearLayout(context, attributeSet) {
+class BottomSheetRelativeLayout(context: Context, attributeSet: AttributeSet) : RelativeLayout(context, attributeSet) {
 
     private val statusBarHeight = context.statusBarHeight()
 
