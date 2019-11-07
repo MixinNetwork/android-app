@@ -78,6 +78,7 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun indexMediaMessages(conversationId: String, messageId: String): Int
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -101,6 +102,7 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun indexMediaMessagesExcludeLive(conversationId: String, messageId: String): Int
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, u.avatar_url AS userAvatarUrl,
@@ -128,6 +130,7 @@ interface MessageDao : BaseDao<Message> {
     )
     fun getLinkMessages(conversationId: String): DataSource.Factory<Int, HyperlinkItem>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
