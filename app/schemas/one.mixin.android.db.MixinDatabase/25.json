@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 25,
-    "identityHash": "adf2e773c6aacfac50778dd892cee447",
+    "identityHash": "f0cacb8b331dc4acb68b1eb2517d7019",
     "entities": [
       {
         "tableName": "users",
@@ -884,7 +884,7 @@
       },
       {
         "tableName": "session_sync",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`conversation_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`conversation_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`conversation_id` TEXT NOT NULL, `created_at` TEXT, PRIMARY KEY(`conversation_id`))",
         "fields": [
           {
             "fieldPath": "conversationId",
@@ -896,7 +896,7 @@
             "fieldPath": "createdAt",
             "columnName": "created_at",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -1498,7 +1498,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'adf2e773c6aacfac50778dd892cee447')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f0cacb8b331dc4acb68b1eb2517d7019')"
     ]
   }
 }
