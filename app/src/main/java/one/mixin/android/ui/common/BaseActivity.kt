@@ -6,22 +6,23 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import com.demo.systemuidemo.SystemUIManager
 import com.uber.autodispose.android.lifecycle.scope
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
-import java.util.Locale
-import javax.inject.Inject
 import one.mixin.android.Constants.Account.PREF_LANGUAGE
 import one.mixin.android.Constants.Account.PREF_SET_LANGUAGE
 import one.mixin.android.Constants.Theme.THEME_CURRENT_ID
 import one.mixin.android.Constants.Theme.THEME_DEFAULT_ID
 import one.mixin.android.Constants.Theme.THEME_NIGHT_ID
 import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import org.jetbrains.anko.configuration
+import timber.log.Timber
+import java.util.Locale
+import javax.inject.Inject
 
 @SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
@@ -51,12 +52,14 @@ open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
         super.onCreate(savedInstanceState)
         if (isNightMode()) {
             setTheme(getNightThemeId())
-            window.navigationBarColor = ContextCompat.getColor(this, R.color.colorPrimaryNight)
             SystemUIManager.lightUI(window, false)
         } else {
             setTheme(getDefaultThemeId())
-            window.navigationBarColor = ContextCompat.getColor(this, R.color.colorPrimary)
             SystemUIManager.lightUI(window, true)
+        }
+        Timber.d(colorFromAttribute(R.attr.bg_white).toString())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
         }
     }
 
