@@ -24,9 +24,7 @@ interface SessionDao : BaseDao<Session> {
     @Query("DELETE FROM sessions WHERE address = :address")
     fun deleteSession(address: String)
 
-    @Query("SELECT address FROM sessions WHERE device = 1")
-    suspend fun syncGetSessionAddress(): List<String>?
-
-    @Query("UPDATE sessions SET device = :device WHERE address = :address and device = 1")
-    suspend fun updateSessionDeviceByAddress(device: Int, address: String)
+    // TODO deprecated
+    @Query("SELECT * FROM sessions WHERE device = 1")
+    suspend fun syncGetSessionAddress(): List<Session>?
 }

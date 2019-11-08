@@ -49,23 +49,29 @@ constructor(
         withContext(Dispatchers.IO) {
             val sessions = sessionDao.syncGetSessionAddress()
             sessions?.let { list ->
-                val response = userService.fetchSessions(list)
+                val userIds = list.map { it.address }
+                val response = userService.fetchSessions(userIds)
+                val sessionMap = ArrayMap<String, Int>()
                 if (response.isSuccess) {
-                    val sessionMap = ArrayMap<String, Int>()
                     response.data?.asSequence()?.forEach { item ->
                         val deviceId = item.session_id.getDeviceId()
-                        sessionDao.updateSessionDeviceByAddress(
-                            deviceId,
-                            item.user_id
-                        )
                         sessionMap[item.user_id] = deviceId
                     }
-                    val senderKeys = senderKeyDao.syncGetSenderKeys()
-                    senderKeys?.forEach { key ->
-                        val userId = key.senderId.substring(0, key.senderId.length - 2)
-                        sessionMap[userId]?.let { d ->
-                            senderKeyDao.insert(SenderKey(key.groupId, "$userId:$d", key.record))
-                        }
+                }
+                if (sessionMap.isEmpty) {
+                    return@withContext
+                }
+                for (s in sessions) {
+                    sessionMap[s.address]?.let { d ->
+                        s.device = d
+                    }
+                }
+                sessionDao.insertList(sessions)
+                val senderKeys = senderKeyDao.syncGetSenderKeys()
+                senderKeys?.forEach { key ->
+                    val userId = key.senderId.substring(0, key.senderId.length - 2)
+                    sessionMap[userId]?.let { d ->
+                        senderKeyDao.insert(SenderKey(key.groupId, "$userId:$d", key.record))
                     }
                 }
             }
