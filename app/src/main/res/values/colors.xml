@@ -26,6 +26,7 @@
     <color name="bgGray">#E5E5E5</color>
     <color name="bgMenu">#F5F7FA</color>
     <color name="bgMenuBorder">#E5E7EC</color>
+    <color name="bgGrayLight">#F5F7FA</color>
 
     <color name="white">#ffffffff</color>
     <color name="white_45">#73ffffff</color>
@@ -74,7 +75,6 @@
     <color name="wallet_green">#29be73</color>
     <color name="wallet_blue_secondary">#397ee4</color>
     <color name="wallet_blue_light">#f2faff</color>
-    <color name="wallet_bg_gray">#F5F7FA</color>
     <color name="wallet_ripple">#F6F8FC</color>
     <color name="wallet_pending_text_color">#B8BDC7</color>
     <color name="gray_black">#3A3C3E</color>

@@ -2,7 +2,6 @@ package one.mixin.android.ui.sticker
 
 import android.app.Dialog
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
@@ -33,6 +32,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
@@ -89,7 +89,7 @@ class StickerAddFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        title_view.right_tv.textColor = Color.BLACK
+        title_view.right_tv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         title_view.right_animator.setOnClickListener {
             if (dialog == null) {

@@ -23,12 +23,13 @@
 
         <item name="badger">@color/badgerNight</item>
 
-        <item name="bg_input">@color/bg_inputNight</item>
-        <item name="bg_white">@color/bg_whiteNight</item>
-        <item name="bg_gray">@color/bg_grayNight</item>
-        <item name="bg_window">@color/bg_windowNight</item>
+        <item name="bg_input">@color/bgInputNight</item>
+        <item name="bg_white">@color/bgWhiteNight</item>
+        <item name="bg_gray">@color/bgGrayNight</item>
+        <item name="bg_window">@color/bgWindowNight</item>
         <item name="bg_menu">@color/bgMenuNight</item>
         <item name="bg_menu_border">@color/bgMenuBorderNight</item>
+        <item name="bg_gray_light">@color/bgGrayLightNight</item>
 
         <item name="flag_night">true</item>
     </style>

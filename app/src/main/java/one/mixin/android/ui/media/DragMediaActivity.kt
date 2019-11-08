@@ -63,7 +63,6 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import one.mixin.android.util.SystemUIManager
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
 import com.google.android.exoplayer2.Player.STATE_ENDED
@@ -128,6 +127,7 @@ import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.Session
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.video.MixinPlayer

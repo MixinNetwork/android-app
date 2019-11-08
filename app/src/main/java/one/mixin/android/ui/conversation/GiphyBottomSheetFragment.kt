@@ -19,7 +19,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.realSize
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.recyclerview.FooterListAdapter
@@ -77,11 +76,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_giphy_search_bottom_sheet, null)
-        (dialog as BottomSheet).apply {
-            setCustomView(contentView)
-            val h = requireContext().realSize().y - requireContext().statusBarHeight() - requireContext().dip(56)
-            setCustomViewHeight(h)
-        }
+        (dialog as BottomSheet).setCustomView(contentView)
     }
 
     override fun onAttach(context: Context) {

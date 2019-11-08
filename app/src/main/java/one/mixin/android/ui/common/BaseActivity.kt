@@ -7,10 +7,11 @@ import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
-import one.mixin.android.util.SystemUIManager
 import com.uber.autodispose.android.lifecycle.scope
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
+import java.util.Locale
+import javax.inject.Inject
 import one.mixin.android.Constants.Account.PREF_LANGUAGE
 import one.mixin.android.Constants.Account.PREF_SET_LANGUAGE
 import one.mixin.android.Constants.Theme.THEME_CURRENT_ID
@@ -19,10 +20,9 @@ import one.mixin.android.Constants.Theme.THEME_NIGHT_ID
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.util.SystemUIManager
 import org.jetbrains.anko.configuration
 import timber.log.Timber
-import java.util.Locale
-import javax.inject.Inject
 
 @SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity(), HasAndroidInjector {

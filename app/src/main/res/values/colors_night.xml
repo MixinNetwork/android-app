@@ -18,11 +18,12 @@
 
     <color name="badgerNight">#3E5264</color>
 
-    <color name="bg_inputNight">#414D5A</color>
-    <color name="bg_whiteNight">#2c3136</color>
-    <color name="bg_windowNight">#23272B</color>
-    <color name="bg_grayNight">#3B3F44</color>
+    <color name="bgInputNight">#414D5A</color>
+    <color name="bgWhiteNight">#2c3136</color>
+    <color name="bgWindowNight">#23272B</color>
+    <color name="bgGrayNight">#3B3F44</color>
 
     <color name="bgMenuNight">#23272B</color>
     <color name="bgMenuBorderNight">#3E5264</color>
+    <color name="bgGrayLightNight">@color/bgGrayNight</color>
 </resources>
