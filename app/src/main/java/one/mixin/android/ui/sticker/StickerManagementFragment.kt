@@ -3,7 +3,6 @@ package one.mixin.android.ui.sticker
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -27,6 +26,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.openGalleryFromSticker
 import one.mixin.android.extension.openPermissionSetting
@@ -72,7 +72,7 @@ class StickerManagementFragment : BaseFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         title_view.left_ib.setOnClickListener { requireActivity().onBackPressed() }
-        title_view.right_tv.textColor = Color.BLACK
+        title_view.right_tv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
         title_view.right_animator.setOnClickListener {
             if (stickerAdapter.editing) {
                 title_view.right_tv.text = getString(R.string.select)

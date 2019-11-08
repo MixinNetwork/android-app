@@ -2,7 +2,6 @@ package one.mixin.android.widget
 
 import android.content.Context
 import android.util.AttributeSet
-import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import one.mixin.android.extension.statusBarHeight
 
