@@ -62,7 +62,7 @@ constructor(
                     }
                     val senderKeys = senderKeyDao.syncGetSenderKeys()
                     senderKeys?.forEach { key ->
-                        val userId = key.senderId.substring(0, key.senderId.length - 3)
+                        val userId = key.senderId.substring(0, key.senderId.length - 2)
                         sessionMap[userId]?.let { d ->
                             senderKeyDao.insert(SenderKey(key.groupId, "$userId:$d", key.record))
                         }
