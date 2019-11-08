@@ -22,7 +22,7 @@
         android:ellipsize="end"
         android:singleLine="true"
         android:maxWidth="40dp"
-        android:textColor="@color/text_black"
+        android:textColor="?attr/text_primary"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="@id/avatar_av"
         app:layout_constraintStart_toStartOf="@id/avatar_av"

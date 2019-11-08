@@ -9,7 +9,7 @@
         android:layout_height="match_parent"
         android:background="@drawable/bg_avatar_1"
         android:gravity="center"
-        android:textColor="@android:color/white"
+        android:textColor="?attr/bg_white"
         android:textSize="@dimen/avatar_text_size" />
 
     <one.mixin.android.widget.CircleImageView

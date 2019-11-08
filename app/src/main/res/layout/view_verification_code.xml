@@ -13,6 +13,7 @@
         android:layout_gravity="center_horizontal"
         android:textSize="26sp"
         android:textStyle="bold"
+        android:textColor="?attr/text_primary"
         tools:text="1" />
 
     <View

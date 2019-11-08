@@ -17,8 +17,6 @@
     <string name="fee">Fee</string>
     <string name="memo">Memo</string>
     <string name="date">Date</string>
-    <string name="slow">Slow</string>
-    <string name="fast">Fast</string>
     <string name="label">Label</string>
     <string name="address">Address</string>
     <string name="amount">Amount</string>
@@ -59,11 +57,8 @@
     <string name="time">Time</string>
     <string name="more">More</string>
     <string name="successful">Successful</string>
-    <string name="failed">Failed</string>
-    <string name="loading">Loading</string>
     <string name="no_result">NO RESULT</string>
     <string name="send_to">Send to %1$s</string>
-    <string name="edit">Edit</string>
     <string name="transfer_send">Send</string>
     <string name="receive">Receive</string>
     <string name="developer">Developer</string>
@@ -107,7 +102,6 @@
     <string name="error_not_found_message">Not found</string>
     <string name="error_too_many_request">ERROR %1$d: Rate limit exceeded</string>
     <string name="error_authentication">ERROR %1$d: Sign in to continue</string>
-    <string name="can_not_empty">Can not be empty</string>
     <string name="can_not_recognize">Can not recognize the QR code</string>
     <string name="error_no_camera">No camera</string>
     <string name="error_image">File error</string>
@@ -160,7 +154,6 @@
     <string name="search_title_assets">ASSETS</string>
     <string name="search_title_chat">CHATS</string>
     <string name="search_title_contacts">CONTACTS</string>
-    <string name="search_title_group">GROUPS</string>
     <string name="search_title_messages">MESSAGES</string>
     <string name="search_title_more">More</string>
     <string name="search_related_message">%1$d related messages</string>
@@ -266,7 +259,6 @@
     <string name="chat_recall_delete_alert">Messages you selected will be deleted for everyone on the latest version of Mixin in this chat.</string>
     <string name="chat_recall_delete_more">Learn More</string>
     <!--contact-->
-    <string name="contact_other_add">Add Contact</string>
     <string name="contact_other_send">Send Message</string>
     <string name="contact_other_share">Share Contact Card</string>
     <string name="contact_other_search_conversation">Search Conversation</string>
@@ -290,10 +282,6 @@
     <string name="add_people_tip">My Mixin ID: %1$s</string>
     <!--wallet-->
     <string name="wallet_title">Wallet</string>
-    <string name="wallet_get_free">Get Free XIN</string>
-    <string name="wallet_get_free_redeem">Redeem Invite Code</string>
-    <string name="wallet_redeem">Redeem</string>
-    <string name="wallet_get_free_redeem_tip">Enter your Invite Code to get free 10 XIN tokens.</string>
     <string name="wallet_password_set_pin">Set PIN</string>
     <string name="wallet_password_set_new_pin">Set a new PIN</string>
     <string name="wallet_password_set_pin_desc">Please set a 6 digit PIN.</string>
@@ -315,9 +303,6 @@
     <string name="wallet_password_old_title">Old PIN</string>
     <string name="wallet_password_not_equal">The PIN did not match the re-typed PIN, please try again.</string>
     <string name="wallet_password_change_tip">Please enter the 6 digit PIN to verify.</string>
-    <string name="wallet_fee_regular">Regular</string>
-    <string name="wallet_fee_custom">Custom</string>
-    <string name="wallet_fee_tip">The transaction fee is received by the miner</string>
     <string name="wallet_pay_with_pwd">Pay with PIN</string>
     <string name="wallet_pay_with_biometric">Biometric Payment</string>
     <string name="wallet_transfer_amount">Transfer Amount</string>
@@ -333,7 +318,6 @@
     <string name="transactions_type">Transaction Type</string>
     <string name="asset_no_hidden">No hidden assets</string>
     <string name="asset_none">N/A</string>
-    <string name="wallet_setting">Wallet Setting</string>
     <string name="wallet_pay_with_biometrics">Pay with Biometrics</string>
     <string name="wallet_pin_open_biometrics">Please enter PIN to open Biometrics</string>
     <string name="wallet_pin_modify_biometrics">Please enter PIN to Modify Pay with PIN interval</string>
@@ -408,7 +392,6 @@
     <string name="setting_title">Setting</string>
     <string name="setting_blocked">Blocked</string>
     <string name="setting_conversation">Conversation</string>
-    <string name="setting_privacy_title">PRIVACY</string>
     <string name="setting_privacy_tip">Change who can add you to conversation and groups.</string>
     <string name="setting_my_contacts">My Contacts</string>
     <string name="setting_block">Block</string>
@@ -416,14 +399,6 @@
     <string name="setting_block_tip">Blocked users can\'t send you messages or add you to groups.</string>
     <string name="setting_conversation_tip">You can restrict who can send message to me.</string>
     <string name="setting_conversation_group_tip">You can restrict who can add me to group chats.</string>
-    <string name="setting_notification_message">MESSAGE NOTIFICATIONS</string>
-    <string name="setting_notification_group">GROUP NOTIFICATIONS</string>
-    <string name="setting_notification_contact">CONTACT NOTIFICATIONS</string>
-    <string name="setting_show_notification">Show Notifications</string>
-    <string name="setting_show_request_notification">Show Request Contact Notifications</string>
-    <string name="setting_notification_sound">Sound</string>
-    <string name="setting_show_preview">Show Preview</string>
-    <string name="setting_notification_tip">Message notifications will contain sender and summary when enable.</string>
     <string name="setting_conversation_everybody">Everybody</string>
     <string name="conversation_status_pic">Photo</string>
     <string name="conversation_status_video">Video</string>
@@ -443,9 +418,7 @@
     <string name="setting_emergency_bottom_change">Change emergency contact</string>
     <string name="setting_emergency_bottom_remove">Remove emergency contact</string>
     <string name="setting_emergency_remove_tip">Remove emergency contact?</string>
-    <string name="setting_emergency_bottom_create">Create emergency contact</string>
     <string name="setting_emergency_select_contact">Select Emergency Contact</string>
-    <string name="setting_emergency_url" translatable="false">https://mixin.one/pages/privacy</string>
     <string name="setting_emergency_contact_mixin_id">Enter your emergency contact Mixin ID</string>
     <string name="setting_emergency_send_code">Enter the 4-digit code send to Mixin ID: %1$s</string>
     <string name="setting_emergency_change_success">Change emergency contact successfully</string>
@@ -493,6 +466,7 @@
     <string name="setting_notification_transfer">Transfer Notifications</string>
     <string name="setting_notification_transfer_desc">Show notifications when receiving a transfer greater than or equal to %1$s.</string>
     <string name="setting_notification_transfer_amount">Transfer Amount(%1$s)</string>
+    <string name="setting_night">Night mode</string>
     <!--about-->
     <string name="about_follow_twitter">Follow us on Twitter</string>
     <string name="about_follow_facebook">Follow us on Facebook</string>
@@ -617,7 +591,6 @@
     <string name="withdrawal_addr_no_tag_link">Add Tag</string>
     <string name="withdrawal_addr_memo_hint">Memo</string>
     <string name="withdrawal_addr_tag_hint">Tag</string>
-    <string name="withdrawal_success">Withdrawal success</string>
     <string name="withdrawal_with_pwd">Withdrawal with PIN</string>
     <string name="withdrawal_with_biometric">Withdrawal with Biometric</string>
     <string name="withdrawal_to">Withdrawal to %1$s</string>
@@ -638,7 +611,6 @@
     <string name="account_memo">Memo</string>
     <string name="withdrawal_label">Label (e.g. exchanges, wallets, etc.)</string>
     <string name="withdrawal_address">Address</string>
-    <string name="withdrawal_tag">Memo</string>
     <string name="withdrawal_no_tag">No Memo</string>
     <string name="deposit_account_attention">Attention: Please try a small amount for the first deposit. Both a Memo and an Address are required to successfully deposit your %1$s to Mixin Messenger.</string>
     <string name="deposit_attention">Please try a small amount for the first deposit.</string>

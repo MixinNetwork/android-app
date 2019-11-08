@@ -1,4 +1,4 @@
-package com.demo.systemuidemo
+package one.mixin.android.util
 
 import android.annotation.SuppressLint
 import android.view.View

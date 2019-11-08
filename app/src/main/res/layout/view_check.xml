@@ -14,6 +14,7 @@
         android:id="@+id/name_tv"
         android:layout_toEndOf="@id/check_box"
         android:maxWidth="120dp"
+        android:textColor="?attr/text_primary"
         android:layout_marginStart="@dimen/margin16"
         android:layout_centerVertical="true"
         android:layout_width="wrap_content"
@@ -23,7 +24,7 @@
         android:id="@+id/storage_tv"
         android:layout_centerVertical="true"
         android:layout_alignParentEnd="true"
-        android:textColor="@color/text_gray"
+        android:textColor="?attr/text_minor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 

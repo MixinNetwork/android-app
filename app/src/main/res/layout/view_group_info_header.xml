@@ -3,7 +3,7 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:background="@color/divider"
+              android:background="?attr/bg_window"
               android:orientation="vertical">
 
     <TextView
@@ -14,13 +14,14 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="8dp"
             android:text="@string/group_info_not_in"
+            android:textColor="?attr/text_primary"
             android:visibility="gone"/>
 
     <RelativeLayout
             android:id="@+id/add_rl"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
+            android:background="?attr/bg_white"
             android:foreground="?attr/selectableItemBackground"
             android:visibility="gone">
 
@@ -40,7 +41,7 @@
             android:id="@+id/invite_item"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
+            android:background="?attr/bg_white"
             android:foreground="?attr/selectableItemBackground"
             android:visibility="gone">
 

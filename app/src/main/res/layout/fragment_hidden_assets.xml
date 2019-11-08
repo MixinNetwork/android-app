@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white"
+    android:background="?attr/bg_white"
     android:clickable="true"
     android:focusable="true">
 
@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
-        app:leftIcon="@drawable/ic_arrow_back_black_24dp"
+        app:leftIcon="@drawable/ic_arrow_back"
         app:need_divider="false"
         app:titleText="@string/wallet_hidden_assets"/>
 
@@ -50,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:text="@string/asset_no_hidden"
-                android:textColor="@color/text_gray"
+                android:textColor="?attr/text_minor"
                 android:textSize="16sp"/>
         </RelativeLayout>
     </ViewAnimator>

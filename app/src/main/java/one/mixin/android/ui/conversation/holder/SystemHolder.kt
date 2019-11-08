@@ -3,13 +3,13 @@ package one.mixin.android.ui.conversation.holder
 import android.content.Context
 import android.graphics.Color
 import android.view.View
-import kotlinx.android.synthetic.main.item_chat_info.view.*
+import kotlinx.android.synthetic.main.item_chat_system.view.*
 import one.mixin.android.R
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.websocket.SystemConversationAction
 
-class InfoHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class SystemHolder constructor(containerView: View) : BaseViewHolder(containerView) {
 
     var context: Context = itemView.context
     private fun getText(id: Int) = context.getText(id).toString()

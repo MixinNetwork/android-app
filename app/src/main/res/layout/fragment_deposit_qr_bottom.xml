@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
-        android:background="@color/white"
+        android:background="?attr/bg_white"
         android:orientation="vertical">
 
         <FrameLayout

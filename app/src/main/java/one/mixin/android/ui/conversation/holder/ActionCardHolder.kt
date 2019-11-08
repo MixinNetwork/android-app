@@ -62,5 +62,10 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
                 onItemListener.onActionClick(actionCard.action)
             }
         }
+        setItemBackgroundResource(
+            itemView.chat_layout,
+            R.drawable.chat_bubble_other,
+            R.drawable.chat_bubble_other_night
+        )
     }
 }

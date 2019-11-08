@@ -63,7 +63,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import com.demo.systemuidemo.SystemUIManager
+import one.mixin.android.util.SystemUIManager
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
 import com.google.android.exoplayer2.Player.STATE_ENDED
@@ -80,7 +80,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import java.io.File
 import java.io.FileInputStream
-import java.lang.IndexOutOfBoundsException
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.math.min
@@ -175,6 +174,14 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private var lastPos: Int = -1
     private val pagerAdapter by lazy {
         MediaAdapter(this@DragMediaActivity)
+    }
+
+    override fun getDefaultThemeId(): Int {
+        return R.style.AppTheme_Photo
+    }
+
+    override fun getNightThemeId(): Int {
+        return R.style.AppTheme_Night_Photo
     }
 
     @Inject

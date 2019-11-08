@@ -12,7 +12,7 @@
         android:layout_marginTop="@dimen/margin12"
         android:padding="@dimen/margin12"
         android:visibility="invisible"
-        app:srcCompat="@drawable/ic_arrow_back_black_24dp" />
+        app:srcCompat="@drawable/ic_arrow_back" />
 
     <TextView
         android:id="@+id/name_title_tv"
@@ -24,7 +24,7 @@
         android:layout_marginTop="@dimen/margin12"
         android:layout_centerHorizontal="true"
         android:text="@string/landing_enter_name_title"
-        android:textColor="@android:color/black"
+        android:textColor="?attr/text_primary"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -49,6 +49,8 @@
             android:layout_height="wrap_content"
             android:hint="@string/landing_enter_name_hint"
             android:lines="1"
+            android:textColor="?attr/text_primary"
+            android:textColorHighlight="?attr/text_assist"
             android:textSize="16sp" />
     </com.google.android.material.textfield.TextInputLayout>
 

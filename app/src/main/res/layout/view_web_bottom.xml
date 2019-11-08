@@ -15,44 +15,48 @@
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="@string/forward"/>
+        android:text="@string/forward"
+        android:textColor="?attr/text_primary" />
 
     <TextView
         android:id="@+id/share"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_gravity="center"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:drawablePadding="16dp"
         android:foreground="?attr/selectableItemBackground"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="@string/share"/>
+        android:text="@string/share"
+        android:textColor="?attr/text_primary" />
 
     <TextView
         android:id="@+id/refresh"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_gravity="center"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:drawablePadding="16dp"
         android:foreground="?attr/selectableItemBackground"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="@string/action_refresh"/>
+        android:text="@string/action_refresh"
+        android:textColor="?attr/text_primary" />
 
 
     <TextView
         android:id="@+id/open"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:drawablePadding="16dp"
         android:foreground="?attr/selectableItemBackground"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:text="@string/action_open"/>
+        android:text="@string/action_open"
+        android:textColor="?attr/text_primary" />
 </LinearLayout>

@@ -38,13 +38,13 @@ class ForwardAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
                 if (it.isGroup()) {
                     it.groupName != null && (it.groupName.contains(name.toString(), ignoreCase = true))
                 } else {
-                    it.name.contains(name.toString(), ignoreCase = true)
-                        || it.ownerIdentityNumber.startsWith(name.toString(), ignoreCase = true)
+                    it.name.contains(name.toString(), ignoreCase = true) ||
+                        it.ownerIdentityNumber.startsWith(name.toString(), ignoreCase = true)
                 }
             }
             friends = sourceFriends?.filter {
-                (it.fullName != null && it.fullName.contains(name.toString(), ignoreCase = true))
-                    || it.identityNumber.startsWith(name.toString(), ignoreCase = true)
+                (it.fullName != null && it.fullName.contains(name.toString(), ignoreCase = true)) ||
+                    it.identityNumber.startsWith(name.toString(), ignoreCase = true)
             }
             showHeader = false
         } else {

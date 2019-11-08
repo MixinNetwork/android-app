@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray"
+    android:background="?attr/bg_window"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -16,7 +16,7 @@
         android:id="@+id/transfer_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -34,7 +34,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:textColor="@color/text_gray"/>
+            android:textColor="?attr/text_minor"/>
     </RelativeLayout>
 
     <TextView
@@ -46,6 +46,6 @@
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:text="@string/setting_notification_transfer_desc"
-        android:textColor="@color/text_gray"
+        android:textColor="?attr/text_minor"
         android:textSize="12sp"/>
 </LinearLayout>

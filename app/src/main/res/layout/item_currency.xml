@@ -34,5 +34,6 @@
         android:layout_toEndOf="@+id/flag_iv"
         android:textSize="16sp"
         android:ellipsize="end"
+        android:textColor="?attr/text_primary"
         android:maxLines="1" />
 </RelativeLayout>

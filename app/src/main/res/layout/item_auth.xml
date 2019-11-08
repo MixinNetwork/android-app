@@ -4,7 +4,7 @@
     android:id="@+id/user_info_rl"
     android:layout_width="match_parent"
     android:layout_height="@dimen/item_contact_height"
-    android:background="@color/white"
+    android:background="?attr/bg_white"
     android:foreground="?attr/selectableItemBackground">
 
     <one.mixin.android.widget.AvatarView
@@ -39,7 +39,7 @@
         android:layout_toStartOf="@id/deauthorize"
         android:layout_toEndOf="@id/avatar"
         android:ellipsize="end"
-        android:textColor="@android:color/black"
+        android:textColor="?attr/text_primary"
         tools:ignore="RelativeOverlap"/>
 
     <TextView
@@ -52,7 +52,7 @@
         android:layout_toStartOf="@id/deauthorize"
         android:layout_toEndOf="@id/avatar"
         android:ellipsize="end"
-        android:textColor="@color/text_gray"
+        android:textColor="?attr/text_minor"
         android:textSize="12sp"
         tools:ignore="RelativeOverlap"/>
 </RelativeLayout>

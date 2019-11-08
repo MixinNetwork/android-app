@@ -9,7 +9,6 @@
     <dimen name="min_custom_keyboard_top_margin">170dp</dimen>
     <dimen name="item_contact_height">60dp</dimen>
     <dimen name="item_contact_header_height">30dp</dimen>
-    <dimen name="quick_camera_shutter_ring_size">52dp</dimen>
     <dimen name="transfer_item_height">80dp</dimen>
     <dimen name="chat_date_size">10sp</dimen>
     <dimen name="item_divider">20dp</dimen>

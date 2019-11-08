@@ -30,7 +30,7 @@
                     android:paddingStart="24dp"
                     android:paddingTop="16dp"
                     android:text="@string/pin_check_title"
-                    android:textColor="@android:color/white"
+                    android:textColor="@color/white"
                     android:textSize="18sp"/>
         </FrameLayout>
 
@@ -80,7 +80,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/pin_check_tip"
                     android:gravity="center"
-                    android:textColor="@android:color/black"/>
+                    android:textColor="?attr/text_primary"/>
 
             <TextView
                     android:id="@+id/got_it_tv"

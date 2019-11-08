@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray"
+    android:background="?attr/bg_window"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -16,7 +16,7 @@
             android:id="@+id/search_et"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:background="@android:color/white"
+            android:background="?attr/bg_white"
             android:drawablePadding="8dp"
             android:drawableStart="@drawable/ic_search"
             android:singleLine="true"
@@ -24,13 +24,15 @@
             android:hint="@string/search"
             android:paddingStart="@dimen/activity_horizontal_margin"
             android:paddingEnd="@dimen/activity_horizontal_margin"
+            android:textColor="?attr/text_primary"
+            android:textColorHighlight="?attr/text_assist"
             android:textSize="14sp" />
 
     <View
             android:id="@+id/divider"
             android:layout_width="match_parent"
             android:layout_height=".5dp"
-            android:background="@color/divider" />
+            android:background="?attr/bg_window" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/group_info_rv"

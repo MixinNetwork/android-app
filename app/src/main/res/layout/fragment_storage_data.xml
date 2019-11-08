@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray"
+    android:background="?attr/bg_window"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -23,7 +23,7 @@
             android:id="@+id/storage_rl"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
+            android:background="?attr/bg_white"
             android:foreground="?attr/selectableItemBackground">
 
             <TextView
@@ -42,7 +42,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@android:color/white"
+            android:background="?attr/bg_white"
             android:padding="16dp">
 
             <TextView
@@ -68,7 +68,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginTop="3dp"
                 android:text="@string/setting_data_info"
-                android:textColor="@color/text_gray"
+                android:textColor="?attr/text_minor"
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -83,7 +83,7 @@
             android:id="@+id/storage_mobile"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
+            android:background="?attr/bg_white"
             android:foreground="?attr/selectableItemBackground">
 
             <TextView
@@ -108,7 +108,7 @@
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="3dp"
                 android:text="@string/setting_data_audio"
-                android:textColor="@color/text_gray"
+                android:textColor="?attr/text_minor"
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -120,7 +120,7 @@
             android:id="@+id/storage_wifi"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
+            android:background="?attr/bg_white"
             android:foreground="?attr/selectableItemBackground">
 
             <TextView
@@ -145,7 +145,7 @@
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="3dp"
                 android:text="@string/setting_data_noting"
-                android:textColor="@color/text_gray"
+                android:textColor="?attr/text_minor"
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -157,7 +157,7 @@
             android:id="@+id/storage_roaming"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
+            android:background="?attr/bg_white"
             android:foreground="?attr/selectableItemBackground">
 
             <TextView
@@ -182,7 +182,7 @@
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="3dp"
                 android:text="@string/setting_data_noting"
-                android:textColor="@color/text_gray"
+                android:textColor="?attr/text_minor"
                 android:textSize="12sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

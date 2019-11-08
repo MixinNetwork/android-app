@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:background="@color/bg_gray"
+    android:background="?attr/bg_window"
     android:clickable="true"
     android:orientation="vertical">
 
@@ -37,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin16"
                 android:text="@string/no_result"
-                android:textColor="@color/wallet_text_gray" />
+                android:textColor="?attr/text_minor" />
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -45,7 +45,7 @@
             android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/white"
+            android:background="?attr/bg_white"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
         <ProgressBar

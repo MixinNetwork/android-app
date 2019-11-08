@@ -84,6 +84,12 @@ object Constants {
         const val ROAMING_DEFAULT = 0x000
     }
 
+    object Theme {
+        const val THEME_CURRENT_ID = "theme_current_id"
+        const val THEME_DEFAULT_ID = 0
+        const val THEME_NIGHT_ID = 1
+    }
+
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
 

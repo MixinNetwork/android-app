@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="?attr/bg_white">
 
     <ImageView
         android:id="@+id/back_iv"
@@ -13,7 +13,7 @@
         android:padding="@dimen/margin12"
         android:background="@drawable/mixin_ripple"
         android:contentDescription="@string/landing_back_content_desc"
-        app:srcCompat="@drawable/ic_arrow_back_black_24dp"/>
+        app:srcCompat="@drawable/ic_arrow_back"/>
 
     <TextView
         android:id="@+id/id_title_tv"
@@ -25,7 +25,7 @@
         android:layout_marginTop="@dimen/margin12"
         android:layout_marginEnd="16dp"
         android:text="@string/setting_emergency_contact_mixin_id"
-        android:textColor="@android:color/black"
+        android:textColor="?attr/text_primary"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

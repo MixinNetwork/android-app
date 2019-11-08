@@ -1,7 +1,6 @@
 package one.mixin.android.widget
 
 import android.content.Context
-import android.graphics.Color
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +10,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.view_reply.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImageCenterCrop
@@ -23,7 +23,7 @@ import org.jetbrains.anko.dip
 class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintLayout(context, attrs) {
     init {
         LayoutInflater.from(context).inflate(R.layout.view_reply, this, true)
-        setBackgroundColor(Color.WHITE)
+        setBackgroundColor(context.colorFromAttribute(R.attr.bg_white))
         reply_view_iv.round(dip(3))
     }
 

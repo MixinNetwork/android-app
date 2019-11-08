@@ -33,13 +33,13 @@ import one.mixin.android.ui.conversation.holder.ContactCardHolder
 import one.mixin.android.ui.conversation.holder.FileHolder
 import one.mixin.android.ui.conversation.holder.HyperlinkHolder
 import one.mixin.android.ui.conversation.holder.ImageHolder
-import one.mixin.android.ui.conversation.holder.InfoHolder
 import one.mixin.android.ui.conversation.holder.MessageHolder
 import one.mixin.android.ui.conversation.holder.RecallHolder
 import one.mixin.android.ui.conversation.holder.ReplyHolder
 import one.mixin.android.ui.conversation.holder.SecretHolder
 import one.mixin.android.ui.conversation.holder.StickerHolder
 import one.mixin.android.ui.conversation.holder.StrangerHolder
+import one.mixin.android.ui.conversation.holder.SystemHolder
 import one.mixin.android.ui.conversation.holder.TimeHolder
 import one.mixin.android.ui.conversation.holder.TransparentHolder
 import one.mixin.android.ui.conversation.holder.UnknownHolder
@@ -148,8 +148,8 @@ class ConversationAdapter(
                     (holder as AudioHolder).bind(it, isFirst(position),
                         isLast(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
-                INFO_TYPE -> {
-                    (holder as InfoHolder).bind(it, selectSet.size > 0, isSelect(position), onItemListener)
+                SYSTEM_TYPE -> {
+                    (holder as SystemHolder).bind(it, selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 CARD_TYPE -> {
                     (holder as CardHolder).bind(it)
@@ -361,9 +361,9 @@ class ConversationAdapter(
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_image, parent, false)
                 ImageHolder(item)
             }
-            INFO_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_info, parent, false)
-                InfoHolder(item)
+            SYSTEM_TYPE -> {
+                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_system, parent, false)
+                SystemHolder(item)
             }
             CARD_TYPE -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_card, parent, false)
@@ -466,7 +466,7 @@ class ConversationAdapter(
                 }
                 item.type == MessageCategory.SIGNAL_IMAGE.name ||
                     item.type == MessageCategory.PLAIN_IMAGE.name -> IMAGE_TYPE
-                item.type == MessageCategory.SYSTEM_CONVERSATION.name -> INFO_TYPE
+                item.type == MessageCategory.SYSTEM_CONVERSATION.name -> SYSTEM_TYPE
                 item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> BILL_TYPE
                 item.type == MessageCategory.SIGNAL_DATA.name ||
                     item.type == MessageCategory.PLAIN_DATA.name -> FILE_TYPE
@@ -495,7 +495,7 @@ class ConversationAdapter(
         const val UNKNOWN_TYPE = -1
         const val MESSAGE_TYPE = 0
         const val IMAGE_TYPE = 1
-        const val INFO_TYPE = 2
+        const val SYSTEM_TYPE = 2
         const val CARD_TYPE = 3
         const val BILL_TYPE = 4
         const val FILE_TYPE = 6

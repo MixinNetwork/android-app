@@ -34,7 +34,7 @@
         android:singleLine="true"
         android:ellipsize="end"
         android:layout_toEndOf="@+id/badge_circle_iv"
-        android:textColor="@color/wallet_text_dark"/>
+        android:textColor="?attr/text_primary"/>
 
     <TextView
         android:id="@+id/name_tv"
@@ -46,6 +46,6 @@
         android:layout_toEndOf="@id/badge_circle_iv"
         android:singleLine="true"
         android:ellipsize="end"
-        android:textColor="@color/wallet_text_gray"
+        android:textColor="?attr/text_minor"
         android:textSize="12sp"/>
 </RelativeLayout>

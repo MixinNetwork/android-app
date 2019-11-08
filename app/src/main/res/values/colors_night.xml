@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimaryNight">#23272b</color>
+    <color name="colorPrimaryDarkNight">#23272b</color>
+    <color name="colorAccentNight">#4191FF</color>
+
+    <color name="textPrimaryNight">#E6FFFFFF</color>
+    <color name="textMinorNight">#7D8B97</color>
+    <color name="textAssistNight">#DFFFFFFF</color>
+    <color name="textRemarksNight">#CCFFFFFF</color>
+
+    <color name="colorIconNight">#EAEAEB</color>
+    <color name="colorIconLightNight">#EAEAEB</color>
+    <color name="colorIconDarkNight">#EAEAEB</color>
+    <color name="colorIconWhiteNight">#22272B</color>
+    <color name="colorIconGrayNight">#555A5E</color>
+    <color name="colorIconBlackNight">#FFFFFF</color>
+
+    <color name="badgerNight">#3E5264</color>
+
+    <color name="bg_inputNight">#414D5A</color>
+    <color name="bg_whiteNight">#2c3136</color>
+    <color name="bg_windowNight">#23272B</color>
+    <color name="bg_grayNight">#3B3F44</color>
+
+    <color name="bgMenuNight">#23272B</color>
+    <color name="bgMenuBorderNight">#3E5264</color>
+</resources>

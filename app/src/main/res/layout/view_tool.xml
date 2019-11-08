@@ -2,7 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="?attr/bg_white">
 
     <ImageView
         android:id="@+id/close_iv"
@@ -11,8 +12,8 @@
         android:layout_centerVertical="true"
         android:background="@drawable/mixin_ripple"
         android:padding="16dp"
-        android:src="@drawable/ic_close_black_24dp"
-        tools:ignore="ContentDescription"/>
+        android:src="@drawable/ic_close_black"
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/delete_iv"
@@ -23,7 +24,7 @@
         android:background="@drawable/mixin_ripple"
         android:padding="16dp"
         android:src="@drawable/ic_msg_delete"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/copy_iv"
@@ -34,7 +35,7 @@
         android:background="@drawable/mixin_ripple"
         android:padding="16dp"
         android:src="@drawable/ic_content_copy"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/forward_iv"
@@ -45,7 +46,7 @@
         android:background="@drawable/mixin_ripple"
         android:padding="16dp"
         android:src="@drawable/ic_forward_black_24dp"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/add_sticker_iv"
@@ -56,7 +57,7 @@
         android:background="@drawable/mixin_ripple"
         android:padding="16dp"
         android:src="@drawable/ic_sticker_add"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/reply_iv"
@@ -67,5 +68,5 @@
         android:background="@drawable/mixin_ripple"
         android:padding="16dp"
         android:src="@drawable/ic_reply"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 </RelativeLayout>

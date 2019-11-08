@@ -332,7 +332,7 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
     }
 
     private fun getBitmapByPlaceHolder(placeHolder: Int): Bitmap {
-        val d = applicationContext.resources.getDrawable(placeHolder, null)
+        val d = applicationContext.resources.getDrawable(placeHolder, applicationContext.theme)
         if (d is BitmapDrawable) {
             return d.bitmap
         }

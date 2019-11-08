@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="?attr/bg_white">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
@@ -25,7 +25,7 @@
         android:layout_marginStart="4dp"
         android:padding="8dp"
         android:visibility="gone"
-        app:srcCompat="@drawable/ic_close_black_24dp"
+        app:srcCompat="@drawable/ic_close_black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/search_et"
         app:layout_constraintTop_toTopOf="@id/search_et"
@@ -43,8 +43,8 @@
         android:paddingEnd="@dimen/margin_start"
         android:paddingStart="@dimen/margin_start"
         android:hint="@string/search_title_messages"
-        android:textColor="@color/wallet_text_dark"
-        android:textColorHint="@color/text_gray"
+        android:textColor="?attr/text_primary"
+        android:textColorHint="?attr/text_minor"
         android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/clear_ib"
@@ -54,7 +54,7 @@
         android:id="@+id/divider"
         android:layout_width="0dp"
         android:layout_height=".5dp"
-        android:background="@color/divider"
+        android:background="?attr/bg_window"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/search_et"

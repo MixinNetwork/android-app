@@ -10,52 +10,53 @@
         android:id="@+id/imageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:src="@drawable/ic_logo"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.25"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/info"
-        android:text="@string/loading_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:gravity="center"
         android:paddingStart="50dp"
         android:paddingEnd="50dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:text="@string/loading_time"
+        android:textColor="?attr/text_primary"
         app:layout_constraintBottom_toTopOf="@id/continue_tv"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/imageView"/>
+        app:layout_constraintTop_toBottomOf="@id/imageView" />
 
     <TextView
         android:id="@+id/continue_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="@string/common_continue"
         android:textColor="@color/selector_tv"
         android:textSize="16sp"
-        android:text="@string/common_continue"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/info"/>
+        app:layout_constraintTop_toBottomOf="@id/info" />
 
     <ProgressBar
         android:id="@+id/everybody_pb"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:visibility="gone"
         android:theme="@style/AppTheme.BlueProgress"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/info"/>
+        app:layout_constraintTop_toBottomOf="@id/info" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

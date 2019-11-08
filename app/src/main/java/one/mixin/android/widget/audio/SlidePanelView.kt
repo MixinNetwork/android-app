@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
-import android.graphics.Color
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.animation.AccelerateInterpolator
@@ -15,6 +14,7 @@ import androidx.core.content.ContextCompat
 import kotlin.math.abs
 import kotlinx.android.synthetic.main.view_slide_panel.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.widget.AndroidUtilities
 import org.jetbrains.anko.backgroundColor
@@ -33,7 +33,7 @@ class SlidePanelView : RelativeLayout {
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         LayoutInflater.from(context).inflate(R.layout.view_slide_panel, this, true)
-        backgroundColor = Color.WHITE
+        backgroundColor = context.colorFromAttribute(R.attr.bg_white)
         isClickable = true
 
         val blinkSize = context.resources.getDimensionPixelSize(R.dimen.blink_size)

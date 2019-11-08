@@ -54,7 +54,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     }
 
     private val refreshDrawable: Drawable by lazy {
-        resources.getDrawable(R.drawable.ic_refresh, null).apply {
+        resources.getDrawable(R.drawable.ic_refresh, context.theme).apply {
             callback = this@PlayView
         }
     }

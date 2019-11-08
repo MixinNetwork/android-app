@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/white">
+    android:background="?attr/bg_white">
 
     <one.mixin.android.widget.media.RecentPhotoRecyclerView
         android:id="@+id/recent_photos"

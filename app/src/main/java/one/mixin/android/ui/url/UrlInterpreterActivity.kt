@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.fragment.app.FragmentManager
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
@@ -27,6 +28,14 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val SEND = "send"
         private const val WITHDRAWAL = "withdrawal"
         private const val ADDRESS = "address"
+    }
+
+    override fun getDefaultThemeId(): Int {
+        return R.style.AppTheme_Night_Transparent
+    }
+
+    override fun getNightThemeId(): Int {
+        return R.style.AppTheme_Transparent
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,7 +76,10 @@ class UrlInterpreterActivity : BaseActivity() {
             }
             SEND -> {
                 uri.getQueryParameter("text")?.let {
-                    ForwardActivity.show(this@UrlInterpreterActivity, arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it)))
+                    ForwardActivity.show(
+                        this@UrlInterpreterActivity,
+                        arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it))
+                    )
                 }
                 finish()
             }
@@ -93,7 +105,8 @@ fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
         url.startsWith(Scheme.DEVICE, true) ||
         url.startsWith(Scheme.SEND, true) ||
         url.startsWith(Scheme.ADDRESS, true) ||
-        url.startsWith(Scheme.WITHDRAWAL, true)) {
+        url.startsWith(Scheme.WITHDRAWAL, true)
+    ) {
         true
     } else {
         val segments = Uri.parse(url).pathSegments
@@ -127,7 +140,10 @@ inline fun openUrl(
         }
     } else if (url.startsWith(Scheme.SEND, true)) {
         Uri.parse(url).getQueryParameter("text")?.let {
-            ForwardActivity.show(MixinApplication.appContext, arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it)))
+            ForwardActivity.show(
+                MixinApplication.appContext,
+                arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it))
+            )
         }
     } else if (url.startsWith(Scheme.DEVICE, true)) {
         ConfirmBottomFragment.newInstance(url)
@@ -168,5 +184,10 @@ fun openUrlWithExtraWeb(
     supportFragmentManager: FragmentManager,
     onDismiss: (() -> Unit)? = null
 ) = openUrl(url, supportFragmentManager) {
-    openWebBottomSheet(url, conversationId, supportFragmentManager = supportFragmentManager, onDismiss = onDismiss)
+    openWebBottomSheet(
+        url,
+        conversationId,
+        supportFragmentManager = supportFragmentManager,
+        onDismiss = onDismiss
+    )
 }

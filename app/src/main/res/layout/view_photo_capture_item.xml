@@ -13,7 +13,7 @@
         android:drawablePadding="8dp"
         android:drawableTop="@drawable/ic_photo_camera"
         android:gravity="center"
-        android:textColor="@color/text_black"
+        android:textColor="?attr/text_primary"
         android:textSize="14sp"/>
 
 </one.mixin.android.widget.gallery.internal.ui.widget.SquareFrameLayout>

@@ -160,7 +160,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             .setOnlyAlertOnce(true)
             .setColor(ContextCompat.getColor(this, R.color.gray_light))
             .setSmallIcon(R.drawable.ic_msg_default)
-            .addAction(R.drawable.ic_close_black_24dp, getString(R.string.exit), exitPendingIntent)
+            .addAction(R.drawable.ic_close_black, getString(R.string.exit), exitPendingIntent)
 
         val pendingIntent = PendingIntent.getActivity(this, 0, MainActivity.getSingleIntent(this), 0)
         builder.setContentIntent(pendingIntent)

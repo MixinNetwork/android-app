@@ -96,16 +96,29 @@ class RecallHolder constructor(containerView: View) : BaseViewHolder(containerVi
         if (isMe) {
             lp.horizontalBias = 1f
             if (isLast) {
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_me_last)
+                setItemBackgroundResource(
+                    itemView.chat_layout, R.drawable.chat_bubble_me_last,
+                    R.drawable.chat_bubble_me_last_night
+                )
             } else {
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_me)
+                setItemBackgroundResource(
+                    itemView.chat_layout, R.drawable.chat_bubble_me, R.drawable.chat_bubble_me_night
+                )
             }
         } else {
             lp.horizontalBias = 0f
             if (isLast) {
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_other_last)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_other_last,
+                    R.drawable.chat_bubble_other_last_night
+                )
             } else {
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_other)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_other,
+                    R.drawable.chat_bubble_other_night
+                )
             }
         }
     }

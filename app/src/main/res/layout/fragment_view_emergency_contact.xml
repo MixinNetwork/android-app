@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray">
+    android:background="?attr/bg_window">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
@@ -12,13 +12,13 @@
         android:layout_height="wrap_content"
         app:titleText="@string/setting_emergency"
         app:need_divider="false"
-        app:rightIcon="@drawable/ic_help_outline_black_24dp"/>
+        app:rightIcon="@drawable/ic_help_outline"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@color/white">
+        android:background="?attr/bg_white">
 
         <one.mixin.android.widget.AvatarView
             android:id="@+id/avatar"
@@ -38,7 +38,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:textSize="@dimen/bottom_name_text_size"
-            android:textColor="@android:color/black"/>
+            android:textColor="?attr/text_primary"/>
 
         <TextView
             android:id="@+id/id_tv"
@@ -48,7 +48,7 @@
             android:layout_marginBottom="42dp"
             android:layout_gravity="center_horizontal"
             android:maxLines="1"
-            android:textColor="@color/text_gray"/>
+            android:textColor="?attr/text_minor"/>
     </LinearLayout>
 
     <TextView
@@ -60,6 +60,6 @@
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:text="@string/setting_emergency_content"
-        android:textColor="@color/text_gray"
+        android:textColor="?attr/text_minor"
         android:textSize="12sp"/>
 </LinearLayout>

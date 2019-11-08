@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/search_view"
+    android:background="?attr/bg_white"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -59,11 +60,11 @@
         android:gravity="center_vertical"
         android:paddingEnd="24dp"
         android:paddingStart="12dp"
-        android:textColor="@color/black"
-        android:textColorHint="@color/text_light_gray"
+        android:textColor="?attr/text_primary"
+        android:textColorHint="?attr/text_minor"
         android:textSize="14sp"/>
 
-    <EditText
+    <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/search_et"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -81,8 +82,8 @@
         android:gravity="center_vertical"
         android:paddingEnd="24dp"
         android:paddingStart="12dp"
-        android:textColor="@color/black"
-        android:textColorHint="@color/gray_50"
+        android:textColor="?attr/text_primary"
+        android:textColorHint="?attr/text_minor"
         android:textSize="14sp"
         android:visibility="invisible"/>
 
@@ -96,6 +97,6 @@
         android:layout_marginEnd="4dp"
         android:layout_marginStart="4dp"
         android:padding="8dp"
-        app:srcCompat="@drawable/ic_close_black_24dp"
+        app:srcCompat="@drawable/ic_close_black"
         tools:ignore="ContentDescription"/>
 </FrameLayout>

@@ -18,9 +18,17 @@ class WaitingHolder constructor(
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isLast) {
-            itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_other_last)
+        setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_other_last,
+                    R.drawable.chat_bubble_other_last_night
+                )
         } else {
-            itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_other)
+         setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_other,
+                    R.drawable.chat_bubble_other_night
+                )
         }
     }
 

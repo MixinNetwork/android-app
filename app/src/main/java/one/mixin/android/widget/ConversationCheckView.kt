@@ -1,7 +1,6 @@
 package one.mixin.android.widget
 
 import android.content.Context
-import android.graphics.Color
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +8,7 @@ import android.widget.Checkable
 import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.view_conversation_check.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.ui.forward.ForwardAdapter
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
@@ -21,7 +21,11 @@ class ConversationCheckView : LinearLayout, Checkable {
 
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    )
 
     init {
         LayoutInflater.from(context).inflate(R.layout.view_conversation_check, this, true)
@@ -34,11 +38,19 @@ class ConversationCheckView : LinearLayout, Checkable {
         checked = b
         if (b) {
             check_iv.visibility = View.VISIBLE
-            layout.setBackgroundColor(Color.parseColor("#F5F5F5"))
+            layout.setBackgroundColor(selectColor)
         } else {
             check_iv.visibility = View.GONE
-            layout.setBackgroundColor(Color.WHITE)
+            layout.setBackgroundColor(defaultColor)
         }
+    }
+
+    private val defaultColor by lazy {
+        context.colorFromAttribute(R.attr.bg_white)
+    }
+
+    private val selectColor by lazy {
+        context.colorFromAttribute(R.attr.bg_gray)
     }
 
     override fun isChecked(): Boolean {

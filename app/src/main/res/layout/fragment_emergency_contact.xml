@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray">
+    android:background="?attr/bg_window">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
@@ -13,14 +13,14 @@
         android:layout_height="wrap_content"
         app:titleText="@string/setting_emergency"
         app:need_divider="false"
-        app:rightIcon="@drawable/ic_help_outline_black_24dp"/>
+        app:rightIcon="@drawable/ic_help_outline"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
         android:orientation="vertical"
-        android:background="@color/white">
+        android:background="?attr/bg_white">
 
         <ImageView
             android:layout_width="92dp"
@@ -40,7 +40,7 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="24dp"
             android:text="@string/setting_emergency_content"
-            android:textColor="@color/text_gray"
+            android:textColor="?attr/text_minor"
             android:textSize="12sp"/>
     </LinearLayout>
 
@@ -48,7 +48,7 @@
         android:id="@+id/enable_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -69,7 +69,7 @@
         android:layout_height="@dimen/item_contact_height"
         android:layout_marginBottom="24dp"
         android:visibility="gone"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -99,7 +99,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:layout_marginBottom="24dp"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:visibility="gone"
         android:foreground="?attr/selectableItemBackground">
 
@@ -118,7 +118,7 @@
         android:id="@+id/delete_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:visibility="gone"
         android:foreground="?attr/selectableItemBackground">
 

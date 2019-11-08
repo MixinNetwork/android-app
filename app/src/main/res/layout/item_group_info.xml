@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="@dimen/item_contact_height"
-    android:background="@android:color/white"
+    android:background="?attr/bg_white"
     android:foreground="?attr/selectableItemBackground">
 
     <one.mixin.android.widget.AvatarView
@@ -31,7 +31,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:text="@string/app_name"
-            android:textColor="@android:color/black" />
+            android:textColor="?attr/text_primary" />
 
         <ImageView
             android:id="@+id/verify_iv"
@@ -62,6 +62,6 @@
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:text="@string/admin"
-        android:textColor="@color/text_gray"
+        android:textColor="?attr/text_minor"
         tools:ignore="ContentDescription" />
 </RelativeLayout>

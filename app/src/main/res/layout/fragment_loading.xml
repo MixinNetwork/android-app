@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:text="@string/loading_init"
-        android:textColor="@color/colorBlue"
+        android:textColor="?attr/color_accent"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -24,6 +24,7 @@
         android:layout_marginTop="8dp"
         android:text="@string/loading_wait"
         app:layout_constraintEnd_toEndOf="parent"
+        android:textColor="?attr/text_primary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/loading_title" />
 

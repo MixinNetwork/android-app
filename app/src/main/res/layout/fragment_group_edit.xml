@@ -14,13 +14,15 @@
 
     <EditText
             android:id="@+id/desc_et"
-            android:background="@android:color/white"
+            android:background="?attr/bg_white"
             android:padding="@dimen/activity_horizontal_margin"
             android:maxLength="1024"
             style="@style/NormalTextStyle"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="start|end"
+            android:textColor="?attr/text_primary"
+            android:textColorHighlight="?attr/text_assist"
             android:hint="@string/group_info_edit"/>
 
 </LinearLayout>

@@ -13,16 +13,18 @@
             android:gravity="center_vertical"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
+            android:textColor="?attr/text_primary"
             android:text="@string/save"/>
 
     <TextView
             android:id="@+id/cancel"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:background="@android:color/white"
+            android:background="?attr/bg_white"
             android:foreground="?attr/selectableItemBackground"
             android:gravity="center_vertical"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
+            android:textColor="?attr/text_primary"
             android:text="@string/cancel"/>
 </LinearLayout>

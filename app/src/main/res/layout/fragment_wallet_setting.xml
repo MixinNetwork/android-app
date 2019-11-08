@@ -6,7 +6,7 @@
               android:layout_height="match_parent"
               android:animateLayoutChanges="true"
               android:clickable="true"
-              android:background="@color/bg_gray"
+              android:background="?attr/bg_window"
               android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -21,7 +21,7 @@
             android:layout_height="@dimen/item_contact_height"
             android:layout_marginTop="@dimen/item_divider"
             android:foreground="?attr/selectableItemBackground"
-            android:background="@android:color/white">
+            android:background="?attr/bg_white">
 
         <TextView
                 style="@style/NormalTextStyle"
@@ -47,7 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:foreground="?attr/selectableItemBackground"
-            android:background="@android:color/white">
+            android:background="?attr/bg_white">
 
         <TextView
                 style="@style/NormalTextStyle"
@@ -68,7 +68,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="@color/text_gray"
+                android:textColor="?attr/text_minor"
                 tools:ignore="RelativeOverlap"/>
     </RelativeLayout>
 
@@ -83,7 +83,7 @@
             android:paddingStart="@dimen/activity_horizontal_margin"
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:foreground="?attr/selectableItemBackground"
-            android:background="@color/white"/>
+            android:background="?attr/bg_white"/>
 
     <TextView
             style="@style/NormalTextStyle"
@@ -95,14 +95,14 @@
             android:paddingStart="@dimen/activity_horizontal_margin"
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:foreground="?attr/selectableItemBackground"
-            android:background="@color/white"/>
+            android:background="?attr/bg_white"/>
 
     <RelativeLayout
         android:id="@+id/currency_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:layout_marginTop="@dimen/margin20"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -122,6 +122,6 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:textColor="@color/text_gray"/>
+            android:textColor="?attr/text_minor"/>
     </RelativeLayout>
 </LinearLayout>

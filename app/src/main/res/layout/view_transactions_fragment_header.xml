@@ -24,7 +24,7 @@
                 android:layout_marginStart="32dp"
                 android:layout_marginTop="28dp"
                 android:layout_marginBottom="16dp"
-                tools:ignore="ContentDescription"/>
+                tools:ignore="ContentDescription" />
 
             <one.mixin.android.widget.BalanceLayout
                 android:id="@+id/balance_rl"
@@ -40,9 +40,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/mixin_condensed"
-                    android:textColor="@color/wallet_text_dark"
+                    android:textColor="?attr/text_primary"
                     android:textSize="40sp"
-                    tools:text="123902813409182345.5518390518"/>
+                    tools:text="123902813409182345.5518390518" />
 
                 <TextView
                     android:id="@+id/symbol_tv"
@@ -51,7 +51,7 @@
                     android:gravity="center"
                     android:paddingStart="2dp"
                     android:paddingEnd="2dp"
-                    android:textColor="@color/black"/>
+                    android:textColor="?attr/text_primary" />
             </one.mixin.android.widget.BalanceLayout>
 
             <TextView
@@ -64,7 +64,7 @@
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginBottom="@dimen/margin16"
                 android:layout_toEndOf="@id/avatar"
-                android:textColor="@color/wallet_text_gray"/>
+                android:textColor="?attr/text_minor" />
 
             <ImageView
                 android:id="@+id/contract_iv"
@@ -73,8 +73,8 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerInParent="true"
                 android:layout_marginEnd="@dimen/margin16"
-                android:src="@drawable/ic_keyboard_arrow_down_gray_24dp"
-                tools:ignore="ContentDescription"/>
+                android:src="@drawable/ic_keyboard_arrow_down"
+                tools:ignore="ContentDescription" />
         </RelativeLayout>
 
         <LinearLayout
@@ -89,13 +89,13 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="@string/transfer_send"
-                android:textColor="@color/wallet_blue_secondary"/>
+                android:textColor="@color/wallet_blue_secondary" />
 
             <View
                 android:layout_width="1dp"
                 android:layout_height="18dp"
                 android:layout_gravity="center_vertical"
-                android:background="#f3f3f3"/>
+                android:background="#f3f3f3" />
 
             <FrameLayout
                 android:layout_width="0dp"
@@ -108,7 +108,7 @@
                     android:layout_height="match_parent"
                     android:gravity="center"
                     android:text="@string/receive"
-                    android:textColor="@color/wallet_blue_secondary"/>
+                    android:textColor="@color/wallet_blue_secondary" />
 
                 <ProgressBar
                     android:id="@+id/receive_progress"
@@ -117,14 +117,14 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:theme="@style/AppTheme.BlueProgress"
-                    android:visibility="gone"/>
+                    android:visibility="gone" />
             </FrameLayout>
         </LinearLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="10dp"
-            android:background="@drawable/ic_shadow_divider"/>
+            android:background="?attr/bg_window" />
     </LinearLayout>
 
     <RelativeLayout
@@ -142,7 +142,7 @@
             android:layout_marginEnd="@dimen/margin12"
             android:background="@drawable/mixin_ripple_small"
             android:padding="8dp"
-            android:src="@drawable/ic_sort"/>
+            android:src="@drawable/ic_sort" />
 
         <TextView
             android:id="@+id/group_info_member_title"
@@ -153,7 +153,8 @@
             android:gravity="bottom"
             android:paddingStart="@dimen/margin20"
             android:paddingEnd="@dimen/margin20"
-            android:text="@string/wallet_transactions_title"/>
+            android:text="@string/wallet_transactions_title"
+            android:textColor="?attr/text_primary" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -167,7 +168,7 @@
             android:id="@+id/center"
             android:layout_width="1dp"
             android:layout_height="1dp"
-            android:layout_centerInParent="true"/>
+            android:layout_centerInParent="true" />
 
         <ImageView
             android:id="@+id/bottom_iv"
@@ -175,7 +176,7 @@
             android:layout_height="125dp"
             android:layout_above="@+id/center"
             android:layout_centerHorizontal="true"
-            android:src="@drawable/ic_transactions_empty"/>
+            android:src="@drawable/ic_transactions_empty" />
 
         <TextView
             android:id="@+id/wallet_transactions_empty"
@@ -185,6 +186,6 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="@dimen/margin16"
             android:text="@string/wallet_transactions_empty"
-            android:textColor="@color/wallet_text_gray"/>
+            android:textColor="?attr/text_minor" />
     </RelativeLayout>
 </RelativeLayout>

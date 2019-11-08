@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray">
+    android:background="?attr/bg_window">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
@@ -17,7 +17,7 @@
         android:id="@+id/blocked_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -38,14 +38,14 @@
             android:layout_centerVertical="true"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:text="@string/none"
-            android:textColor="@color/text_gray"/>
+            android:textColor="?attr/text_minor"/>
     </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/conversation_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -62,7 +62,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/bg_gray">
+        android:background="?attr/bg_window">
 
         <TextView
             android:layout_width="wrap_content"
@@ -72,7 +72,7 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:text="@string/setting_privacy_tip"
-            android:textColor="@color/text_gray"
+            android:textColor="?attr/text_minor"
             android:textSize="12sp"/>
     </FrameLayout>
 
@@ -80,7 +80,7 @@
         android:id="@+id/auth_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -97,13 +97,13 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/setting_divider"
-        android:background="@color/bg_gray"/>
+        android:background="?attr/bg_window"/>
 
     <RelativeLayout
         android:id="@+id/emergency_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -120,13 +120,13 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/setting_divider"
-        android:background="@color/bg_gray"/>
+        android:background="?attr/bg_window"/>
 
     <RelativeLayout
         android:id="@+id/contact_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView

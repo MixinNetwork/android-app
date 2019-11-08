@@ -9,13 +9,13 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/title_home"
         app:leftIcon="@drawable/ic_chat"
-        app:rightIcon="@drawable/ic_settings_black_24dp"/>
+        app:rightIcon="@drawable/ic_settings_black_24dp"
+        app:titleText="@string/title_home" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/contact_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/divider"/>
+        android:background="?attr/bg_window" />
 </LinearLayout>

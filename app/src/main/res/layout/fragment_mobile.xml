@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="?attr/bg_white"
     android:clickable="true"
     android:focusable="true"
     android:orientation="vertical">
@@ -14,35 +14,35 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin12"
-        android:padding="@dimen/margin12"
         android:background="@drawable/mixin_ripple"
         android:contentDescription="@string/landing_back_content_desc"
+        android:padding="@dimen/margin12"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.023"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_arrow_back_black_24dp"/>
+        app:srcCompat="@drawable/ic_arrow_back" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/back_iv"
-        android:orientation="vertical" >
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/mobile_title_tv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="12dp"
+            android:layout_marginEnd="16dp"
             android:gravity="center_horizontal"
             android:text="@string/landing_enter_mobile_number"
-            android:textColor="@android:color/black"
+            android:textColor="?attr/text_primary"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/country_icon_iv"
@@ -50,58 +50,61 @@
             android:layout_height="40dp"
             android:layout_centerVertical="true"
             android:layout_marginStart="16dp"
-            android:paddingBottom="8dp"
-            android:paddingEnd="0dp"
             android:paddingStart="8dp"
             android:paddingTop="8dp"
+            android:paddingEnd="0dp"
+            android:paddingBottom="8dp"
             android:scaleType="centerInside"
             android:src="@drawable/flag_cn"
             app:layout_constraintBottom_toBottomOf="@+id/mobile_et"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/mobile_et"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
 
         <TextView
             android:id="@+id/country_code_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center_vertical"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
-            android:gravity="center_vertical"
+            android:textColor="?attr/text_primary"
             app:layout_constraintBottom_toBottomOf="@+id/mobile_et"
             app:layout_constraintStart_toEndOf="@+id/country_icon_iv"
             app:layout_constraintTop_toTopOf="@+id/mobile_et"
-            tools:text="+86"/>
+            tools:text="+86" />
 
         <one.mixin.android.widget.AutoFillPhoneText
             android:id="@+id/mobile_et"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:minHeight="@dimen/btn_min_height"
-            android:layout_marginEnd="16dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="36dp"
+            android:layout_marginEnd="16dp"
             android:hint="@string/landing_enter_mobile_hint"
             android:inputType="number"
+            android:minHeight="@dimen/btn_min_height"
+            android:textColor="?attr/text_primary"
+            android:textColorHighlight="?attr/text_assist"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@+id/country_code_tv"
-            app:layout_constraintTop_toBottomOf="@+id/mobile_title_tv"/>
+            app:layout_constraintTop_toBottomOf="@+id/mobile_title_tv" />
 
         <TextView
             android:id="@+id/enter_tip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
             android:text="@string/landing_enter_mobile_tip"
             android:textColor="@color/colorGray"
             android:textSize="12sp"
             app:layout_constraintHorizontal_bias="0.206"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/mobile_et"/>
+            app:layout_constraintTop_toBottomOf="@+id/mobile_et" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.github.jorgecastilloprz.FABProgressCircle
@@ -120,7 +123,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:src="@drawable/ic_arrow_forward_white_24dp"
-            app:backgroundTint="@color/colorBlue"/>
+            app:backgroundTint="@color/colorBlue" />
     </com.github.jorgecastilloprz.FABProgressCircle>
 
     <one.mixin.android.widget.Keyboard
@@ -131,7 +134,7 @@
         android:translationY="300dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
     <View
         android:id="@+id/mobile_cover"
@@ -139,6 +142,6 @@
         android:layout_height="match_parent"
         android:background="@android:color/transparent"
         android:clickable="true"
-        android:visibility="invisible"
-        android:focusable="true"/>
+        android:focusable="true"
+        android:visibility="invisible" />
 </RelativeLayout>

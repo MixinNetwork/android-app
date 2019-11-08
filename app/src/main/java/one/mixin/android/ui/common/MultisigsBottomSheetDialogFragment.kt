@@ -61,7 +61,7 @@ class MultisigsBottomSheetDialogFragment :
         }
         contentView.sub_title.text = t.memo
         contentView.pay_tv.setText(R.string.multisig_pay_pin)
-        contentView.pay_tv.setText(R.string.multisig_pay_biometric)
+        contentView.biometric_tv.setText(R.string.multisig_pay_biometric)
 
         lifecycleScope.launch {
             val users = withContext(Dispatchers.IO) {

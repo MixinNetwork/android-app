@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="34dp"
     android:layout_marginEnd="@dimen/margin10"
-    android:background="@color/white">
+    android:background="?attr/bg_white">
 
     <TextView
         android:id="@+id/date_tv"

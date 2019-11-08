@@ -26,5 +26,5 @@
         android:singleLine="true"
         android:ellipsize="end"
         android:gravity="center"
-        android:textColor="@color/gray_black"/>
+        android:textColor="?attr/text_minor"/>
 </LinearLayout>

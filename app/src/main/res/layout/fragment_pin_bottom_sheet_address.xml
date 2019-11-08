@@ -19,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
+            android:background="?attr/bg_white"
             android:orientation="vertical">
 
             <TextView
@@ -29,7 +30,7 @@
                 android:layout_marginEnd="64dp"
                 android:gravity="center"
                 android:singleLine="true"
-                android:textColor="@android:color/black"
+                android:textColor="?attr/text_primary"
                 android:textSize="@dimen/wallet_balance_text" />
 
             <one.mixin.android.widget.BadgeCircleImageView
@@ -45,7 +46,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="@android:color/black"
+                android:textColor="?attr/text_primary"
                 android:textSize="18sp" />
 
             <TextView
@@ -57,7 +58,7 @@
                 android:layout_marginEnd="64dp"
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
                 android:gravity="center"
-                android:textColor="@color/text_gray"
+                android:textColor="?attr/text_minor"
                 android:textSize="@dimen/wallet_balance_as_text" />
 
             <one.mixin.android.ui.common.biometric.BiometricLayout

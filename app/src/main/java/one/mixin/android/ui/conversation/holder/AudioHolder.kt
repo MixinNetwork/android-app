@@ -76,7 +76,8 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
 
         messageItem.mediaDuration?.let {
             (it.toLong()).let {
-                itemView.chat_layout.layoutParams.width = min((minWidth + (it / 1000f) * dp15).toInt(), maxWidth)
+                itemView.chat_layout.layoutParams.width =
+                    min((minWidth + (it / 1000f) * dp15).toInt(), maxWidth)
             }
         }
         setStatusIcon(isMe, messageItem.status, {
@@ -212,17 +213,33 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             if (isLast) {
-                itemView.chat_layout.setBackgroundResource(R.drawable.bill_bubble_me_last)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.bill_bubble_me_last,
+                    R.drawable.bill_bubble_me_last_night
+                )
             } else {
-                itemView.chat_layout.setBackgroundResource(R.drawable.bill_bubble_me)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.bill_bubble_me,
+                    R.drawable.bill_bubble_me_night
+                )
             }
             (itemView.chat_layout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.END
         } else {
             (itemView.chat_layout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.START
             if (isLast) {
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_other_last)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_other_last,
+                    R.drawable.chat_bubble_other_last_night
+                )
             } else {
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_other)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_other,
+                    R.drawable.chat_bubble_other_night
+                )
             }
         }
     }

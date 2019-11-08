@@ -106,11 +106,11 @@ class ChatControlView : FrameLayout {
     private var upBeforeGrant = false
     private var keyboardShown = false
 
-    private val sendDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_send_checked, null) }
-    private val audioDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_mic, null) }
+    private val sendDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_send_checked, context.theme) }
+    private val audioDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_mic, context.theme) }
 
-    private val stickerDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_sticker, null) }
-    private val keyboardDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_keyboard, null) }
+    private val stickerDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_sticker, context.theme) }
+    private val keyboardDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_keyboard, context.theme) }
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)

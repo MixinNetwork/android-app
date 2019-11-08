@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray"
+    android:background="?attr/bg_window"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -16,13 +16,13 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_divider"
-        android:background="@color/bg_gray"/>
+        android:background="?attr/bg_window"/>
 
     <RelativeLayout
         android:id="@+id/photo_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -64,7 +64,7 @@
         android:id="@+id/name_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -98,7 +98,7 @@
                 android:layout_gravity="center|end"
                 android:ellipsize="end"
                 android:singleLine="true"
-                android:textColor="@color/text_gray"/>
+                android:textColor="?attr/text_minor"/>
 
             <ProgressBar
                 style="?android:attr/progressBarStyleSmall"
@@ -117,7 +117,7 @@
         android:paddingStart="16dp"
         android:paddingTop="16dp"
         android:paddingEnd="16dp"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:paddingBottom="16dp"
         android:foreground="?attr/selectableItemBackground">
 
@@ -146,7 +146,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
-                android:textColor="@color/text_gray" />
+                android:textColor="?attr/text_minor" />
 
             <ProgressBar
                 style="?android:attr/progressBarStyleSmall"
@@ -163,7 +163,7 @@
         android:id="@+id/phone_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -184,7 +184,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:textColor="@color/text_gray"
+            android:textColor="?attr/text_minor"
             tools:ignore="RelativeOverlap"/>
     </RelativeLayout>
 </LinearLayout>

@@ -14,6 +14,14 @@ class CaptureActivity : BlazeBaseActivity() {
 
     private lateinit var captureFragment: BaseCaptureFragment
 
+    override fun getDefaultThemeId(): Int {
+        return R.style.AppTheme_Capture
+    }
+
+    override fun getNightThemeId(): Int {
+        return R.style.AppTheme_Night_Capture
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         checkCameraCanUse()

@@ -30,7 +30,7 @@
         android:layout_marginBottom="2dp"
         android:layout_toEndOf="@id/cb"
         android:layout_above="@id/center"
-        android:textColor="@android:color/black"
+        android:textColor="?attr/text_primary"
         android:singleLine="true"
         android:ellipsize="end"
         android:textSize="16sp"
@@ -46,5 +46,5 @@
         android:layout_toEndOf="@id/cb"
         android:singleLine="true"
         android:ellipsize="end"
-        android:textColor="@color/text_gray" />
+        android:textColor="?attr/text_minor" />
 </RelativeLayout>

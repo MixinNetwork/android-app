@@ -75,6 +75,20 @@ fun Context.mainThreadDelayed(runnable: () -> Unit, delayMillis: Long) {
     uiHandler.postDelayed(runnable, delayMillis)
 }
 
+fun Context.colorFromAttribute(attribute: Int): Int {
+    val attributes = obtainStyledAttributes(intArrayOf(attribute))
+    val color = attributes.getColor(0, 0)
+    attributes.recycle()
+    return color
+}
+
+fun Context.booleanFromAttribute(attribute: Int): Boolean {
+    val attributes = obtainStyledAttributes(intArrayOf(attribute))
+    val b = attributes.getBoolean(0, false)
+    attributes.recycle()
+    return b
+}
+
 fun Context.runOnUIThread(runnable: Runnable, delay: Long = 0L) {
     if (delay == 0L) {
         uiHandler.post(runnable)

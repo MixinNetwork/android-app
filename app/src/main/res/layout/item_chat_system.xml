@@ -17,7 +17,7 @@
         android:maxWidth="300dp"
         android:paddingEnd="12dp"
         android:paddingStart="12dp"
-        android:textColor="@color/text_black"
+        android:textColor="@color/textPrimary"
         android:textSize="12sp"
         tools:text="@string/info" />
 

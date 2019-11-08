@@ -15,16 +15,16 @@
       android:pathData="M18.5,23.6672C13.8056,23.6672 10,20.6077 10,16.8336C10,13.0595 13.8056,10 18.5,10C23.1944,10 27,13.0595 27,16.8336C27,18.7728 25.9953,20.5233 24.3816,21.7671C23.9422,22.1057 23,23 23,25.4558C21.1421,24.0554 18.5,23.6672 18.5,23.6672Z"
       android:strokeLineJoin="round"
       android:strokeWidth="2"
-      android:fillColor="#FFFFFF"
-      android:strokeColor="#BBBEC3"
+      android:fillColor="#00000000"
+      android:strokeColor="?attr/icon_gray"
       android:fillType="evenOdd"
       android:strokeLineCap="round"/>
   <path
       android:pathData="M13.5,19.3472C18.7467,19.3472 23,15.9116 23,11.6736C23,7.4356 18.7467,4 13.5,4C8.2533,4 4,7.4356 4,11.6736C4,13.8511 5.1229,15.8168 6.9264,17.2135C7.4175,17.5938 6.9264,17.2135 4.9538,22.4621C10,18.854 10,18.854 10.8566,19.0462C11.7131,19.2384 12.5827,19.3472 13.5,19.3472Z"
       android:strokeLineJoin="round"
       android:strokeWidth="2"
-      android:fillColor="#FFFFFF"
-      android:strokeColor="#3A3C3E"
+      android:fillColor="?attr/icon_white"
+      android:strokeColor="?attr/icon_light"
       android:fillType="evenOdd"
       android:strokeLineCap="round"/>
 </vector>

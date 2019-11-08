@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="AppTheme.Night" parent="AppTheme">
+        <item name="android:windowBackground">@color/colorPrimaryNight</item>
+        <item name="color_primary">@color/colorPrimaryDarkNight</item>
+        <item name="color_primary_dark">@color/colorPrimaryNight</item>
+        <item name="color_accent">@color/colorAccentNight</item>
+        <item name="text_primary">@color/textPrimaryNight</item>
+        <item name="text_minor">@color/textMinorNight</item>
+        <item name="text_assist">@color/textAssistNight</item>
+        <item name="text_remarks">@color/textRemarksNight</item>
+
+        <item name="text_default">@color/textPrimaryNight</item>
+        <item name="text_checked">@color/textPrimaryNight</item>
+
+        <item name="icon_default">@color/colorIconNight</item>
+        <item name="icon_light">@color/colorIconLightNight</item>
+        <item name="icon_dark">@color/colorIconDarkNight</item>
+        <item name="icon_white">@color/colorIconWhiteNight</item>
+        <item name="icon_gray">@color/colorIconGrayNight</item>
+        <item name="icon_black">@color/colorIconBlackNight</item>
+
+        <item name="badger">@color/badgerNight</item>
+
+        <item name="bg_input">@color/bg_inputNight</item>
+        <item name="bg_white">@color/bg_whiteNight</item>
+        <item name="bg_gray">@color/bg_grayNight</item>
+        <item name="bg_window">@color/bg_windowNight</item>
+        <item name="bg_menu">@color/bgMenuNight</item>
+        <item name="bg_menu_border">@color/bgMenuBorderNight</item>
+
+        <item name="flag_night">true</item>
+    </style>
+
+    <style name="AppTheme.Night.NoActionBar" parent="AppTheme.Night">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.Night.FullScreen" parent="AppTheme.Night.NoActionBar">
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
+
+    <style name="AppTheme.Night.Capture" parent="AppTheme.Night.FullScreen">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:immersive">true</item>
+    </style>
+
+    <style name="AppTheme.Night.Photo" parent="AppTheme.Night.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:navigationBarColor">?attr/text_primary</item>
+    </style>
+
+
+    <style name="AppTheme.Night.Call" parent="AppTheme.Night.NoActionBar">
+        <item name="android:windowBackground">@color/call_gray</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="AppTheme.Night.Transparent" parent="AppTheme.Night.FullScreen">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
+    </style>
+
+</resources>

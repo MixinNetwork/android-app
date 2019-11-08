@@ -72,7 +72,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:elevation="8dp"
-            android:src="@drawable/ic_send_white_24dp"
+            android:src="@drawable/ic_send"
             tools:ignore="ContentDescription" />
     </FrameLayout>
 
