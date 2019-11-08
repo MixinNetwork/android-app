@@ -556,8 +556,7 @@ class MainActivity : BlazeBaseActivity() {
 
         fun reopen(context: Context) {
             return Intent(context, MainActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                putExtra(ARGS_RECREATE, true)
             }.run {
                 context.startActivity(this)
             }

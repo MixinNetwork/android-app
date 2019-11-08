@@ -1,6 +1,5 @@
 package one.mixin.android.ui.setting
 
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,7 +8,6 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import java.util.Locale
 import kotlinx.android.synthetic.main.fragment_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.Account.PREF_LANGUAGE
@@ -26,6 +24,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.Session
+import java.util.Locale
 
 class SettingFragment : Fragment() {
     companion object {
@@ -129,9 +128,7 @@ class SettingFragment : Fragment() {
                     )
                     defaultSharedPreferences.putBoolean(PREF_SET_LANGUAGE, true)
 
-                    startActivity(Intent(requireContext(), MainActivity::class.java).apply {
-                        putExtra(ARGS_RECREATE, true)
-                    })
+                    MainActivity.reopen(requireContext())
                 }
                 dialog.dismiss()
             }
