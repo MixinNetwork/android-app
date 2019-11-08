@@ -17,5 +17,5 @@ interface SenderKeyDao : BaseDao<SenderKey> {
     fun delete(groupId: String, senderId: String)
 
     @Query("SELECT * FROM sender_keys")
-    fun syncGetSenderKeys():List<SenderKey>
+    fun syncGetSenderKeys(): List<SenderKey>?
 }

@@ -10,7 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Load.IS_LOADED
-import one.mixin.android.Constants.Load.IS_SESSION_SENSED
+import one.mixin.android.Constants.Load.IS_SYNC_SESSION
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -46,7 +46,7 @@ class LoadingFragment : BaseFragment() {
                 load()
             }
 
-            if (!defaultSharedPreferences.getBoolean(IS_SESSION_SENSED, false)) {
+            if (!defaultSharedPreferences.getBoolean(IS_SYNC_SESSION, false)) {
                 syncSession()
             }
             MainActivity.show(context!!)
@@ -57,7 +57,7 @@ class LoadingFragment : BaseFragment() {
     private suspend fun syncSession() {
         try {
             loadingViewModel.updateSignalSession()
-            requireContext().defaultSharedPreferences.putBoolean(IS_SESSION_SENSED, true)
+            requireContext().defaultSharedPreferences.putBoolean(IS_SYNC_SESSION, true)
         } catch (e: Exception) {
             ErrorHandler.handleError(e)
         }

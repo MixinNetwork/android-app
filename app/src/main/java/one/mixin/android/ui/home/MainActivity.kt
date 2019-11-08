@@ -37,7 +37,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.Constants.Load.IS_LOADED
-import one.mixin.android.Constants.Load.IS_SESSION_SENSED
+import one.mixin.android.Constants.Load.IS_SYNC_SESSION
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.SessionRequest
@@ -164,7 +164,7 @@ class MainActivity : BlazeBaseActivity() {
         MixinApplication.get().onlining.set(true)
 
         if (!defaultSharedPreferences.getBoolean(IS_LOADED, false) ||
-            !defaultSharedPreferences.getBoolean(IS_SESSION_SENSED, false)
+            !defaultSharedPreferences.getBoolean(IS_SYNC_SESSION, false)
         ) {
             InitializeActivity.showLoading(this, false)
             finish()

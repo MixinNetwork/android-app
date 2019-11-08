@@ -96,7 +96,7 @@ object Constants {
 
     object Load {
         const val IS_LOADED = "is_loaded"
-        const val IS_SESSION_SENSED = "is_session_sensed"
+        const val IS_SYNC_SESSION = "is_sync_session"
     }
 
     object ChainId {
