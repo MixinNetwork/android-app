@@ -17,6 +17,7 @@ import one.mixin.android.crypto.db.SenderKeyDao
 import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.vo.SenderKey
+import one.mixin.android.crypto.vo.Session
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import javax.inject.Inject
@@ -61,12 +62,13 @@ constructor(
                 if (sessionMap.isEmpty) {
                     return@withContext
                 }
+                val newSession = mutableListOf<Session>()
                 for (s in sessions) {
                     sessionMap[s.address]?.let { d ->
-                        s.device = d
+                        newSession.add(Session(s.address, d, s.record, s.timestamp))
                     }
                 }
-                sessionDao.insertList(sessions)
+                sessionDao.insertList(newSession)
                 val senderKeys = senderKeyDao.syncGetSenderKeys()
                 senderKeys?.forEach { key ->
                     val userId = key.senderId.substring(0, key.senderId.length - 2)
