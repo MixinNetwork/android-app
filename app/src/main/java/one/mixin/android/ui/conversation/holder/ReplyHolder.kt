@@ -6,7 +6,7 @@ import android.text.Spanned
 import android.text.style.BackgroundColorSpan
 import android.view.Gravity
 import android.view.View
-import android.widget.FrameLayout
+import android.widget.LinearLayout
 import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -55,7 +55,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
-        val lp = (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams)
+        val lp = (itemView.chat_layout.layoutParams as LinearLayout.LayoutParams)
         if (isMe) {
             lp.gravity = Gravity.END
             if (isLast) {

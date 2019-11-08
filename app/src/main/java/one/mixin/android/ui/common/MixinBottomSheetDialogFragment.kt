@@ -63,10 +63,16 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
             dialog?.dismiss()
             // Prevent dialog slide animation end
             dialog?.setOnDismissListener {
-                super.dismissAllowingStateLoss()
+                try {
+                    super.dismissAllowingStateLoss()
+                } catch (e: IllegalStateException) {
+                }
             }
         } else {
-            super.dismissAllowingStateLoss()
+            try {
+                super.dismissAllowingStateLoss()
+            } catch (e : IllegalStateException) {
+            }
         }
     }
 
