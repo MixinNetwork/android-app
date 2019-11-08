@@ -8,7 +8,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.manager.SupportRequestManagerFragment
-import com.demo.systemuidemo.SystemUIManager
+import one.mixin.android.util.SystemUIManager
 import com.uber.autodispose.android.lifecycle.scope
 import javax.inject.Inject
 import one.mixin.android.R
