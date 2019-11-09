@@ -24,8 +24,6 @@ import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadCircleImage
-import one.mixin.android.extension.realSize
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity.Companion.SCOPES
@@ -110,10 +108,6 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         ScopeAdapter(scopes)
     }
 
-    private val maxHeight by lazy {
-        context!!.realSize().y - context!!.statusBarHeight()
-    }
-
     private var success = false
 
     @SuppressLint("RestrictedApi")
@@ -122,7 +116,6 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView = View.inflate(context, R.layout.fragment_auth, null)
         dialog as BottomSheet
         dialog.setCustomView(contentView)
-        dialog.setCustomViewHeight(maxHeight)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
