@@ -71,7 +71,7 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
         } else {
             try {
                 super.dismissAllowingStateLoss()
-            } catch (e : IllegalStateException) {
+            } catch (e: IllegalStateException) {
             }
         }
     }
