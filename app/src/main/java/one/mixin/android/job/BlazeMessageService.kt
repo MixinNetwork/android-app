@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.os.SystemClock
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
@@ -313,13 +314,13 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     private fun deliver(blazeMessage: BlazeMessage): Boolean {
         val bm = webSocket.sendMessage(blazeMessage)
         if (bm == null) {
-            Thread.sleep(Constants.SLEEP_MILLIS)
+            SystemClock.sleep(Constants.SLEEP_MILLIS)
             throw WebSocketException()
         } else if (bm.error != null) {
             if (bm.error.code == ErrorHandler.FORBIDDEN) {
                 return true
             } else {
-                Thread.sleep(Constants.SLEEP_MILLIS)
+                SystemClock.sleep(Constants.SLEEP_MILLIS)
                 throw NetworkException()
             }
         }

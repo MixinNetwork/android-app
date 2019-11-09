@@ -1,5 +1,6 @@
 package one.mixin.android.job
 
+import android.os.SystemClock
 import com.google.gson.JsonElement
 import java.io.IOException
 import javax.inject.Inject
@@ -77,13 +78,13 @@ open class Injector : Injectable {
     protected tailrec fun signalKeysChannel(blazeMessage: BlazeMessage): JsonElement? {
         val bm = chatWebSocket.sendMessage(blazeMessage)
         if (bm == null) {
-            Thread.sleep(SLEEP_MILLIS)
+            SystemClock.sleep(SLEEP_MILLIS)
             return signalKeysChannel(blazeMessage)
         } else if (bm.error != null) {
             return if (bm.error.code == ErrorHandler.FORBIDDEN) {
                 null
             } else {
-                Thread.sleep(SLEEP_MILLIS)
+                SystemClock.sleep(SLEEP_MILLIS)
                 return signalKeysChannel(blazeMessage)
             }
         }

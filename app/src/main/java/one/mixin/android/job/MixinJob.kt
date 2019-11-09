@@ -1,5 +1,6 @@
 package one.mixin.android.job
 
+import android.os.SystemClock
 import android.util.Log
 import com.birbit.android.jobqueue.Params
 import com.google.gson.Gson
@@ -222,13 +223,13 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             if (!MixinApplication.appContext.networkConnected() || !LinkState.isOnline(linkState.state)) {
                 throw WebSocketException()
             }
-            Thread.sleep(SLEEP_MILLIS)
+            SystemClock.sleep(SLEEP_MILLIS)
             return deliverNoThrow(blazeMessage)
         } else if (bm.error != null) {
             return if (bm.error.code == FORBIDDEN) {
                 true
             } else {
-                Thread.sleep(SLEEP_MILLIS)
+                SystemClock.sleep(SLEEP_MILLIS)
                 // warning: may caused job leak if server return error data and come to this branch
                 return deliverNoThrow(blazeMessage)
             }
@@ -240,14 +241,14 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     protected fun deliver(blazeMessage: BlazeMessage): Boolean {
         val bm = chatWebSocket.sendMessage(blazeMessage)
         if (bm == null) {
-            Thread.sleep(SLEEP_MILLIS)
+            SystemClock.sleep(SLEEP_MILLIS)
             throw WebSocketException()
         } else if (bm.error != null) {
             if (bm.error.code == FORBIDDEN) {
                 return true
             } else {
                 Log.e(TAG, bm.toString())
-                Thread.sleep(SLEEP_MILLIS)
+                SystemClock.sleep(SLEEP_MILLIS)
                 throw NetworkException()
             }
         }
@@ -257,14 +258,14 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     private tailrec fun signalKeysChannel(blazeMessage: BlazeMessage): JsonElement? {
         val bm = chatWebSocket.sendMessage(blazeMessage)
         if (bm == null) {
-            Thread.sleep(SLEEP_MILLIS)
+            SystemClock.sleep(SLEEP_MILLIS)
             return signalKeysChannel(blazeMessage)
         } else if (bm.error != null) {
             Log.e(TAG, bm.error.toString())
             return if (bm.error.code == FORBIDDEN) {
                 null
             } else {
-                Thread.sleep(SLEEP_MILLIS)
+                SystemClock.sleep(SLEEP_MILLIS)
                 return signalKeysChannel(blazeMessage)
             }
         }
