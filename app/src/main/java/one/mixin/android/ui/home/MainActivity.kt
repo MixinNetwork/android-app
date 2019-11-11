@@ -250,7 +250,7 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun sendSafetyNetRequest() {
-        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(applicationContext) != ConnectionResult.SUCCESS) {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(applicationContext, 13000000) != ConnectionResult.SUCCESS) {
             return
         }
         val nonce = Util.getRequestNonce(System.currentTimeMillis().toString()) ?: return
