@@ -2230,6 +2230,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         override fun onRecordStart(audio: Boolean) {
             AudioPlayer.get().pause()
             OpusAudioRecorder.get().startRecording(this@ConversationFragment)
+            if (!isCling) {
+                if (!aodWakeLock.isHeld) {
+                    aodWakeLock.acquire()
+                }
+            }
         }
 
         override fun isReady(): Boolean {
@@ -2251,11 +2256,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         override fun onRecordLocked() {
-            if (!isCling) {
-                if (!aodWakeLock.isHeld) {
-                    aodWakeLock.acquire()
-                }
-            }
+            // Left Empty
         }
 
         override fun onCalling() {
