@@ -262,16 +262,9 @@ class MainActivity : BlazeBaseActivity() {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(scopeProvider)
-                .subscribe({
-                    Log.e("Hello", it.data.toString())
-                }, {
-                })
-
-            Log.e("Hello", it.jwsResult)
+                .subscribe({}, {})
         }
-        task.addOnFailureListener {
-            Log.e("Hello", "", it)
-        }
+        task.addOnFailureListener {}
     }
 
     private fun checkUpdate() {
