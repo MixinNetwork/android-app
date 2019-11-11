@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import androidx.core.content.getSystemService
@@ -24,7 +23,6 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
-import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -43,7 +41,6 @@ import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
-import one.mixin.android.crypto.Util
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
@@ -253,17 +250,26 @@ class MainActivity : BlazeBaseActivity() {
         if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(applicationContext, 13000000) != ConnectionResult.SUCCESS) {
             return
         }
-        val nonce = Util.getRequestNonce(System.currentTimeMillis().toString()) ?: return
-        val client = SafetyNet.getClient(this)
-        val task = client.attest(nonce, BuildConfig.SafetyNet_API_KEY)
-        task.addOnSuccessListener {
-            accountRepo.updateSession(SessionRequest(deviceCheckToken = it.jwsResult, deviceCheckNonce = Base64.encodeBytes(nonce)))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(stopScope)
-                .subscribe({}, {})
-        }
-        task.addOnFailureListener {}
+        accountRepo.deviceCheck().subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(stopScope)
+            .subscribe({ resp ->
+                resp.data?.let {
+                    val nonce = Base64.decode(it.nonce)
+                    val client = SafetyNet.getClient(this)
+                    val task = client.attest(nonce, BuildConfig.SafetyNet_API_KEY)
+                    task.addOnSuccessListener { safetyResp ->
+                        accountRepo.updateSession(SessionRequest(deviceCheckToken = safetyResp.jwsResult))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .autoDispose(stopScope)
+                            .subscribe({}, {})
+                    }
+                    task.addOnFailureListener {}
+                }
+            }, {
+
+            })
     }
 
     private fun checkUpdate() {

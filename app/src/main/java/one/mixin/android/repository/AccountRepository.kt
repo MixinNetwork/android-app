@@ -71,6 +71,8 @@ constructor(
 
     fun updateSession(request: SessionRequest) = accountService.updateSession(request)
 
+    fun deviceCheck() = accountService.deviceCheck()
+
     fun join(conversationId: String): Observable<MixinResponse<ConversationResponse>> {
         return conversationService.join(conversationId)
     }

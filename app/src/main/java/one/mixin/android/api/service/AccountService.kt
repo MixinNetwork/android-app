@@ -11,6 +11,7 @@ import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
+import one.mixin.android.api.response.DeviceCheckResponse
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Fiat
@@ -38,6 +39,9 @@ interface AccountService {
 
     @POST("me")
     fun update(@Body request: AccountUpdateRequest): Observable<MixinResponse<Account>>
+
+    @POST("devices")
+    fun deviceCheck(): Observable<MixinResponse<DeviceCheckResponse>>
 
     @POST("me/preferences")
     suspend fun preferences(@Body request: AccountUpdateRequest): MixinResponse<Account>
