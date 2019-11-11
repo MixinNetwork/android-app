@@ -25,6 +25,7 @@
 
     <attr name="bg_input" format="color|reference" />
     <attr name="bg_window" format="color|reference" />
+    <attr name="bg_black" format="color|reference" />
     <attr name="bg_white" format="color|reference" />
     <attr name="bg_gray" format="color|reference" />
     <attr name="bg_menu" format="color|reference" />

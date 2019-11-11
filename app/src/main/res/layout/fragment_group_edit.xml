@@ -22,7 +22,7 @@
             android:layout_height="match_parent"
             android:gravity="start|end"
             android:textColor="?attr/text_primary"
-            android:textColorHighlight="?attr/text_assist"
+            android:textColorHint="?attr/text_assist"
             android:hint="@string/group_info_edit"/>
 
 </LinearLayout>

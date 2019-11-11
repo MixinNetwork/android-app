@@ -2,7 +2,6 @@ package one.mixin.android.widget
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
@@ -16,6 +15,7 @@ import androidx.annotation.MainThread
 import androidx.core.view.updateLayoutParams
 import kotlinx.android.synthetic.main.view_verification_code.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import org.jetbrains.anko.backgroundColor
 
@@ -29,11 +29,11 @@ class VerificationCodeView : LinearLayout {
     private val codes = ArrayList<TextView>()
     private val containers = ArrayList<View>()
 
-    private var inputColor: Int = Color.BLACK
+    private var inputColor: Int = context.colorFromAttribute(R.attr.text_primary)
     private var inputWidth: Int = context.dpToPx(20f)
     private var inputHeight: Int = context.dpToPx(1f)
     private var textSize = 30f
-    private var textColor = Color.GRAY
+    private var textColor = context.colorFromAttribute(R.attr.bg_gray)
     private var spacing = context.dpToPx(5f)
 
     private var listener: OnCodeEnteredListener? = null
@@ -61,18 +61,18 @@ class VerificationCodeView : LinearLayout {
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.VerificationCodeView)
         try {
             count = typedArray.getInteger(R.styleable.VerificationCodeView_vcv_count, DEFAULT_COUNT)
-            inputColor = typedArray.getColor(R.styleable.VerificationCodeView_vcv_inputColor, Color.BLACK)
+            inputColor = typedArray.getColor(R.styleable.VerificationCodeView_vcv_inputColor, inputColor)
             inputWidth = typedArray.getDimensionPixelSize(
                 R.styleable.VerificationCodeView_vcv_inputWidth, context.dpToPx(20f))
             inputHeight = typedArray.getDimensionPixelSize(
                 R.styleable.VerificationCodeView_vcv_inputHeight, context.dpToPx(1f))
             textSize = typedArray.getDimension(R.styleable.VerificationCodeView_vcv_textSize, 30f)
-            textColor = typedArray.getColor(R.styleable.VerificationCodeView_vcv_textColor, Color.GRAY)
+            textColor = typedArray.getColor(R.styleable.VerificationCodeView_vcv_textColor, textColor)
             spacing = typedArray.getDimensionPixelSize(R.styleable.VerificationCodeView_vcv_spacing, context.dpToPx(5f))
 
             setItemViewsByCount()
         } finally {
-            typedArray?.recycle()
+            typedArray.recycle()
         }
         updateSpace(0, true)
     }
@@ -86,7 +86,7 @@ class VerificationCodeView : LinearLayout {
     fun append(value: String) {
         if (index >= codes.size) return
         if (isError) {
-            setColor(resources.getColor(android.R.color.black, null))
+            setColor(context.colorFromAttribute(R.attr.bg_black))
         }
 
         updateSpace(index, false)
@@ -201,6 +201,7 @@ class VerificationCodeView : LinearLayout {
             codes[i].text = ""
             codes[i].backgroundTintList = ColorStateList.valueOf(color)
             spaces[i].backgroundColor = color
+            spaces[i].backgroundColor = inputColor
         }
         isError = false
     }

@@ -202,7 +202,7 @@
                     android:maxLength="140"
                     android:singleLine="true"
                     android:textColor="?attr/text_primary"
-                    android:textColorHighlight="?attr/text_assist" />
+                    android:textColorHint="?attr/text_assist" />
 
                 <ImageView
                     android:id="@+id/memo_iv"

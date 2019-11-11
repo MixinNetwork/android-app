@@ -52,7 +52,7 @@
             android:importantForAutofill="noExcludeDescendants"
             android:lines="1"
             android:textColor="?attr/text_primary"
-            android:textColorHighlight="?attr/text_assist"
+            android:textColorHint="?attr/text_assist"
             android:textSize="16sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
