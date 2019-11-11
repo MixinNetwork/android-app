@@ -259,12 +259,13 @@ class MainActivity : BlazeBaseActivity() {
         val task = client.attest(nonce, BuildConfig.SafetyNet_API_KEY)
         task.addOnSuccessListener {
             accountRepo.updateSession(SessionRequest(deviceCheckToken = it.jwsResult))
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .observeOn(Schedulers.io())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(scopeProvider)
                 .subscribe({
-                    Log.e("Hello", it.toString())
-                }, {})
+                    Log.e("Hello", it.data.toString())
+                }, {
+                })
 
             Log.e("Hello", it.jwsResult)
         }
