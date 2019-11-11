@@ -42,6 +42,7 @@ import one.mixin.android.R
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.Util
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
@@ -125,8 +126,6 @@ class MainActivity : BlazeBaseActivity() {
             popupSnackbarForCompleteUpdate()
         }
     }
-
-    private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_NoActionBar
@@ -258,10 +257,10 @@ class MainActivity : BlazeBaseActivity() {
         val client = SafetyNet.getClient(this)
         val task = client.attest(nonce, BuildConfig.SafetyNet_API_KEY)
         task.addOnSuccessListener {
-            accountRepo.updateSession(SessionRequest(deviceCheckToken = it.jwsResult))
+            accountRepo.updateSession(SessionRequest(deviceCheckToken = it.jwsResult, deviceCheckNonce = Base64.encodeBytes(nonce)))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(scopeProvider)
+                .autoDispose(stopScope)
                 .subscribe({}, {})
         }
         task.addOnFailureListener {}
