@@ -10,5 +10,7 @@ data class SessionRequest(
     @SerializedName("app_version")
     val appVersion: String = BuildConfig.VERSION_NAME,
     @SerializedName("notification_token")
-    val notificationToken: String
+    val notificationToken: String? = null,
+    @SerializedName("device_check_token")
+    val deviceCheckToken: String? = null
 )

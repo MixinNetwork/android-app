@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import androidx.core.content.getSystemService
@@ -14,12 +15,16 @@ import androidx.lifecycle.lifecycleScope
 import androidx.work.WorkManager
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.safetynet.SafetyNet
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
+import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -29,12 +34,15 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.crypto.Util
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
@@ -51,6 +59,7 @@ import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshStickerAlbumJob.Companion.REFRESH_STICKER_ALBUM_PRE_KEY
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.NavigationController
@@ -106,6 +115,8 @@ class MainActivity : BlazeBaseActivity() {
     @Inject
     lateinit var userRepo: UserRepository
     @Inject
+    lateinit var accountRepo: AccountRepository
+    @Inject
     lateinit var participantDao: ParticipantDao
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
@@ -114,6 +125,8 @@ class MainActivity : BlazeBaseActivity() {
             popupSnackbarForCompleteUpdate()
         }
     }
+
+    private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_NoActionBar
@@ -193,6 +206,7 @@ class MainActivity : BlazeBaseActivity() {
 
         initView()
         handlerCode(intent)
+        sendSafetyNetRequest()
     }
 
     override fun onStart() {
@@ -233,6 +247,29 @@ class MainActivity : BlazeBaseActivity() {
             )
         ) {
             BiometricUtil.deleteKey(this)
+        }
+    }
+
+    private fun sendSafetyNetRequest() {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(applicationContext) != ConnectionResult.SUCCESS) {
+            return
+        }
+        val nonce = Util.getRequestNonce(System.currentTimeMillis().toString()) ?: return
+        val client = SafetyNet.getClient(this)
+        val task = client.attest(nonce, BuildConfig.SafetyNet_API_KEY)
+        task.addOnSuccessListener {
+            accountRepo.updateSession(SessionRequest(deviceCheckToken = it.jwsResult))
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(Schedulers.io())
+                .autoDispose(scopeProvider)
+                .subscribe({
+                    Log.e("Hello", it.toString())
+                }, {})
+
+            Log.e("Hello", it.jwsResult)
+        }
+        task.addOnFailureListener {
+            Log.e("Hello", "", it)
         }
     }
 

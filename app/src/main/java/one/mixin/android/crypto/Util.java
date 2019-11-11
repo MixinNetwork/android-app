@@ -69,6 +69,20 @@ public class Util {
         return result;
     }
 
+    public static byte[] getRequestNonce(String data) {
+        SecureRandom random = new SecureRandom();
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+        byte[] bytes = new byte[24];
+        random.nextBytes(bytes);
+        try {
+            byteStream.write(bytes);
+            byteStream.write(data.getBytes());
+        } catch (IOException e) {
+            return null;
+        }
+        return byteStream.toByteArray();
+    }
+
     public static String readFully(InputStream in) throws IOException {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         byte[] buffer              = new byte[4096];
