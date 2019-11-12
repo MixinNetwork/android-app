@@ -30,6 +30,7 @@ class RefreshFcmWorker @AssistedInject constructor(
         } else {
             FirebaseInstanceId.getInstance().instanceId.addOnSuccessListener { result ->
                 accountService.updateSession(SessionRequest(notificationToken = result.token))
+                    .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.io()).subscribe({}, {})
             }
         }
