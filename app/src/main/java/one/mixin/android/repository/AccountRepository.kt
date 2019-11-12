@@ -13,6 +13,7 @@ import one.mixin.android.api.request.DeauthorRequest
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.request.LogoutRequest
 import one.mixin.android.api.request.PinRequest
+import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AuthorizationResponse
@@ -67,6 +68,10 @@ constructor(
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
         accountService.update(request)
+
+    fun updateSession(request: SessionRequest) = accountService.updateSession(request)
+
+    fun deviceCheck() = accountService.deviceCheck()
 
     fun join(conversationId: String): Observable<MixinResponse<ConversationResponse>> {
         return conversationService.join(conversationId)

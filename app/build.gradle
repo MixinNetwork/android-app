@@ -29,10 +29,10 @@ android {
             }
         }
 
-
         buildConfigField 'String', 'BUGSNAG_API_KEY', "\"${propOrEmpty('MIXIN_BUGSNAG_API_KEY')}\""
         buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('MIXIN_RECAPTCHA_KEY')}\""
         buildConfigField 'String', 'GIPHY_KEY', "\"${propOrEmpty('MIXIN_GIPHY_KEY')}\""
+        buildConfigField 'String', 'SafetyNet_API_KEY', "\"${propOrEmpty('MIXIN_SAFETYNET_API_KEY')}\""
 
         packagingOptions {
             exclude 'kotlin/**'
@@ -200,6 +200,7 @@ dependencies {
     }
     implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
     implementation "com.google.android.play:core:${playVersion}"
+    implementation "com.google.android.gms:play-services-safetynet:${google_play_services_version}"
     implementation "com.google.zxing:core:${zxingVersion}"
     implementation "com.github.tougee:sticky-headers-recyclerview:${stickyheadersrecyclerviewVersion}"
     implementation "org.whispersystems:signal-protocol-android:${signalVersion}"

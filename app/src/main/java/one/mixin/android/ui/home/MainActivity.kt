@@ -14,6 +14,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.work.WorkManager
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.safetynet.SafetyNet
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.InstallStateUpdatedListener
@@ -29,12 +32,15 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.crypto.Base64
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
@@ -51,6 +57,7 @@ import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshStickerAlbumJob.Companion.REFRESH_STICKER_ALBUM_PRE_KEY
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.NavigationController
@@ -105,6 +112,8 @@ class MainActivity : BlazeBaseActivity() {
     lateinit var userDao: UserDao
     @Inject
     lateinit var userRepo: UserRepository
+    @Inject
+    lateinit var accountRepo: AccountRepository
     @Inject
     lateinit var participantDao: ParticipantDao
 
@@ -193,6 +202,7 @@ class MainActivity : BlazeBaseActivity() {
 
         initView()
         handlerCode(intent)
+        sendSafetyNetRequest()
     }
 
     override fun onStart() {
@@ -234,6 +244,32 @@ class MainActivity : BlazeBaseActivity() {
         ) {
             BiometricUtil.deleteKey(this)
         }
+    }
+
+    private fun sendSafetyNetRequest() {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(applicationContext, 13000000) != ConnectionResult.SUCCESS) {
+            return
+        }
+        accountRepo.deviceCheck().subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(stopScope)
+            .subscribe({ resp ->
+                resp.data?.let {
+                    val nonce = Base64.decode(it.nonce)
+                    val client = SafetyNet.getClient(this)
+                    val task = client.attest(nonce, BuildConfig.SafetyNet_API_KEY)
+                    task.addOnSuccessListener { safetyResp ->
+                        accountRepo.updateSession(SessionRequest(deviceCheckToken = safetyResp.jwsResult))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .autoDispose(stopScope)
+                            .subscribe({}, {})
+                    }
+                    task.addOnFailureListener {}
+                }
+            }, {
+
+            })
     }
 
     private fun checkUpdate() {
