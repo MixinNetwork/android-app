@@ -393,7 +393,6 @@ fun Context.getAttachment(local: Uri): Attachment? {
         cursor = contentResolver.query(uri, null, null, null, null)
         if (cursor != null && cursor.moveToFirst()) {
             val fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
-            val fileSize = cursor.getLong(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE))
             val mimeType = contentResolver.getType(uri) ?: ""
 
             val copyPath = uri.copyFileUrlWithAuthority(this, fileName)
@@ -402,6 +401,7 @@ fun Context.getAttachment(local: Uri): Attachment? {
             } else {
                 getUriForFile(File(copyPath))
             }
+            val fileSize = File(copyPath).length()
             return Attachment(resultUri, fileName, mimeType, fileSize)
         }
     } catch (e: SecurityException) {
