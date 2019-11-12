@@ -29,7 +29,7 @@
         android:layout_centerHorizontal="true"
         android:layout_below="@id/avatar"
         android:layout_marginBottom="24dp"
-        android:textColor="@color/black"
+        android:textColor="?attr/text_primary"
         android:textSize="18sp"
         android:text="@string/auth_request"/>
 

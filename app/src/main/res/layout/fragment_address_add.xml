@@ -38,7 +38,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:textColor="@color/black" />
+                android:textColor="?attr/text_primary" />
 
             <RelativeLayout
                 android:id="@+id/label_rl"
@@ -60,7 +60,7 @@
                     android:paddingStart="@dimen/activity_horizontal_margin"
                     android:paddingEnd="8dp"
                     android:textColor="?attr/text_primary"
-                    android:textColorHighlight="?attr/text_assist"
+                    android:textColorHint="?attr/text_assist"
                     android:textSize="16sp" />
 
             </RelativeLayout>
@@ -86,7 +86,7 @@
                     android:paddingStart="@dimen/activity_horizontal_margin"
                     android:paddingEnd="8dp"
                     android:textColor="?attr/text_primary"
-                    android:textColorHighlight="?attr/text_assist"
+                    android:textColorHint="?attr/text_assist"
                     android:textSize="16sp" />
 
                 <ImageView
@@ -121,7 +121,7 @@
                     android:paddingStart="@dimen/activity_horizontal_margin"
                     android:paddingEnd="8dp"
                     android:textColor="?attr/text_primary"
-                    android:textColorHighlight="?attr/text_assist"
+                    android:textColorHint="?attr/text_assist"
                     android:textSize="16sp" />
 
                 <ImageView

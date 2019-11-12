@@ -6,8 +6,8 @@
 
     <color name="textPrimaryNight">#E6FFFFFF</color>
     <color name="textMinorNight">#7D8B97</color>
-    <color name="textAssistNight">#DFFFFFFF</color>
-    <color name="textRemarksNight">#CCFFFFFF</color>
+    <color name="textAssistNight">#788691</color>
+    <color name="textRemarksNight">#707883</color>
 
     <color name="colorIconNight">#EAEAEB</color>
     <color name="colorIconLightNight">#EAEAEB</color>
