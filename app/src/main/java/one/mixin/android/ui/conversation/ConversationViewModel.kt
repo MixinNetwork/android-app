@@ -669,4 +669,48 @@ internal constructor(
     fun downloadAttachment(message: Message) {
         jobManager.addJobInBackground(AttachmentDownloadJob(message))
     }
+
+    suspend fun getSortMessagesByIds(messages: Set<MessageItem>): ArrayList<ForwardMessage> {
+        return withContext(Dispatchers.IO) {
+            val list = ArrayList<ForwardMessage>()
+            list.addAll(conversationRepository.getSortMessagesByIds(messages.map { it.messageId }).map {
+                when {
+                    it.category.endsWith("_TEXT") -> ForwardMessage(
+                        ForwardCategory.TEXT.name,
+                        content = it.content
+                    )
+                    it.category.endsWith("_IMAGE") -> ForwardMessage(
+                        ForwardCategory.IMAGE.name,
+                        id = it.id
+                    )
+                    it.category.endsWith("_DATA") -> ForwardMessage(
+                        ForwardCategory.DATA.name,
+                        id = it.id
+                    )
+                    it.category.endsWith("_VIDEO") -> ForwardMessage(
+                        ForwardCategory.VIDEO.name,
+                        id = it.id
+                    )
+                    it.category.endsWith("_CONTACT") -> ForwardMessage(
+                        ForwardCategory.CONTACT.name,
+                        sharedUserId = it.sharedUserId
+                    )
+                    it.category.endsWith("_STICKER") -> ForwardMessage(
+                        ForwardCategory.STICKER.name,
+                        id = it.id
+                    )
+                    it.category.endsWith("_AUDIO") -> ForwardMessage(
+                        ForwardCategory.AUDIO.name,
+                        id = it.id
+                    )
+                    it.category.endsWith("_LIVE") -> ForwardMessage(
+                        ForwardCategory.LIVE.name,
+                        id = it.id
+                    )
+                    else -> ForwardMessage(ForwardCategory.TEXT.name)
+                }
+            })
+            list
+        }
+    }
 }

@@ -1038,46 +1038,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             closeTool()
         }
         tool_view.forward_iv.setOnClickListener {
-            val list = ArrayList<ForwardMessage>()
-            list += chatAdapter.selectSet.sortedBy { it.createdAt }.map {
-                when {
-                    it.type.endsWith("_TEXT") -> ForwardMessage(
-                        ForwardCategory.TEXT.name,
-                        content = it.content
-                    )
-                    it.type.endsWith("_IMAGE") -> ForwardMessage(
-                        ForwardCategory.IMAGE.name,
-                        id = it.messageId
-                    )
-                    it.type.endsWith("_DATA") -> ForwardMessage(
-                        ForwardCategory.DATA.name,
-                        id = it.messageId
-                    )
-                    it.type.endsWith("_VIDEO") -> ForwardMessage(
-                        ForwardCategory.VIDEO.name,
-                        id = it.messageId
-                    )
-                    it.type.endsWith("_CONTACT") -> ForwardMessage(
-                        ForwardCategory.CONTACT.name,
-                        sharedUserId = it.sharedUserId
-                    )
-                    it.type.endsWith("_STICKER") -> ForwardMessage(
-                        ForwardCategory.STICKER.name,
-                        id = it.messageId
-                    )
-                    it.type.endsWith("_AUDIO") -> ForwardMessage(
-                        ForwardCategory.AUDIO.name,
-                        id = it.messageId
-                    )
-                    it.type.endsWith("_LIVE") -> ForwardMessage(
-                        ForwardCategory.LIVE.name,
-                        id = it.messageId
-                    )
-                    else -> ForwardMessage(ForwardCategory.TEXT.name)
-                }
+            lifecycleScope.launch {
+                val list = chatViewModel.getSortMessagesByIds(chatAdapter.selectSet)
+                ForwardActivity.show(requireContext(), list)
+                closeTool()
             }
-            ForwardActivity.show(requireContext(), list)
-            closeTool()
         }
         tool_view.add_sticker_iv.setOnClickListener {
             if (chatAdapter.selectSet.isEmpty()) {
