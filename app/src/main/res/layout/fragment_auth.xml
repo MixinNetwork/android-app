@@ -36,11 +36,11 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/scope_rv"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:minWidth="200dp"
         android:layout_centerHorizontal="true"
-        android:layout_above="@id/confirm_anim"
         android:layout_below="@id/tip_tv"
+        android:layout_above="@id/confirm_anim"
         android:scrollbars="vertical"
         app:layoutManager="LinearLayoutManager"/>
 
@@ -51,11 +51,9 @@
         android:minHeight="40dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:layout_marginBottom="150dp"
-        android:background="@drawable/bg_round_blue_btn">
+        android:layout_marginTop="@dimen/margin20"
+        android:layout_above="@id/bottom"
+        android:layout_centerHorizontal="true">
 
         <TextView
             android:layout_width="wrap_content"
@@ -72,4 +70,9 @@
             android:layout_gravity="center"
             android:theme="@style/AppTheme.WhiteAccent"/>
     </ViewAnimator>
+    <Space
+        android:id="@+id/bottom"
+        android:layout_width="1dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"/>
 </one.mixin.android.widget.BottomSheetRelativeLayout>
