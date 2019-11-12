@@ -195,6 +195,25 @@ fun View.round(radius: Int) {
     round(radius.toFloat())
 }
 
+fun View.roundTopOrBottom(radius: Float, top: Boolean, bottom: Boolean) {
+    this.outlineProvider = object : ViewOutlineProvider() {
+        override fun getOutline(view: View, outline: Outline) {
+            val t = if (!top) {
+                -radius.toInt()
+            } else {
+                0
+            }
+            val b = if (!bottom) {
+                (height + radius).toInt()
+            } else {
+                height
+            }
+            outline.setRoundRect(0, t, view.width, b, radius)
+        }
+    }
+    this.clipToOutline = true
+}
+
 fun EditText.showCursor() {
     this.requestFocus()
     this.isCursorVisible = true
