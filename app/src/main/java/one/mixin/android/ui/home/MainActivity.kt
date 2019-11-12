@@ -268,7 +268,6 @@ class MainActivity : BlazeBaseActivity() {
                     task.addOnFailureListener {}
                 }
             }, {
-
             })
     }
 

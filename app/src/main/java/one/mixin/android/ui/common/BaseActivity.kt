@@ -22,7 +22,6 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.util.SystemUIManager
 import org.jetbrains.anko.configuration
-import timber.log.Timber
 
 @SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
@@ -57,7 +56,6 @@ open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
             setTheme(getDefaultThemeId())
             SystemUIManager.lightUI(window, true)
         }
-        Timber.d(colorFromAttribute(R.attr.bg_white).toString())
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
         }

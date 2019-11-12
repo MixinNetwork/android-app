@@ -282,5 +282,5 @@ internal constructor(
 
     fun getFileMessages(conversationId: String) = messageDao.getFileMessages(conversationId)
 
-    suspend fun getSortMessagesByIds(ids:List<String>) = messageDao.getSortMessagesByIds(ids)
+    suspend fun getSortMessagesByIds(ids: List<String>) = messageDao.getSortMessagesByIds(ids)
 }
