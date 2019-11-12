@@ -386,4 +386,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT count(id) FROM messages WHERE conversation_id =:conversationId AND user_id =:userId")
     suspend fun isSilence(conversationId: String, userId: String): Int
+
+    @Query("SELECT * FROM messages WHERE id IN (:messageIds) ORDER BY created_at, rowid")
+    suspend fun getSortMessagesByIds(messageIds: List<String>): List<Message>
 }
