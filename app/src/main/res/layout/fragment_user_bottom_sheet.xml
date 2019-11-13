@@ -168,12 +168,13 @@
                     android:layout_weight="1">
 
                     <ImageView
+                        android:id="@+id/more_iv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:background="@drawable/mixin_ripple"
                         android:contentDescription="@string/more"
-                        android:src="@drawable/ic_more" />
+                        android:src="@drawable/ic_arrow_down_info" />
                 </FrameLayout>
             </LinearLayout>
         </LinearLayout>

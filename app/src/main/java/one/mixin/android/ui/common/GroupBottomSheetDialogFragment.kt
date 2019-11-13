@@ -9,6 +9,7 @@ import android.text.TextWatcher
 import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.View.GONE
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
@@ -27,9 +28,15 @@ import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
+import one.mixin.android.ui.common.info.MenuStyle
+import one.mixin.android.ui.common.info.createMenuLayout
+import one.mixin.android.ui.common.info.menu
+import one.mixin.android.ui.common.info.menuGroup
+import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.CODE
@@ -76,6 +83,8 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private lateinit var conversation: Conversation
     private var me: Participant? = null
     private var keepDialog: Boolean = false
+
+    private var menuListLayout: ViewGroup? = null
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -178,82 +187,105 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun initMenu() {
-        val choices = mutableListOf<String>()
-        choices.add(getString(R.string.participants))
-        choices.add(getString(R.string.contact_other_search_conversation))
-        choices.add(getString(R.string.contact_other_shared_media))
-        if (me != null) {
-            if (me!!.role == ParticipantRole.OWNER.name || me!!.role == ParticipantRole.ADMIN.name) {
-                if (TextUtils.isEmpty(conversation.announcement)) {
-                    choices.add(getString(R.string.group_info_add))
-                } else {
-                    choices.add(getString(R.string.group_info_edit))
-                }
-                choices.add(getString(R.string.group_edit_name))
-            }
-            if (conversation.muteUntil.notNullWithElse({
-                    Instant.now().isBefore(Instant.parse(it))
-                }, false)) {
-                choices.add(getString(R.string.un_mute))
-            } else {
-                choices.add(getString(R.string.mute))
-            }
-        }
-        choices.add(getString(R.string.group_info_clear_chat))
-        if (me != null) {
-            choices.add(getString(R.string.group_info_exit_group))
-        } else {
-            choices.add(getString(R.string.group_info_delete_group))
-        }
-        menu = AlertDialog.Builder(requireContext())
-            .setItems(choices.toTypedArray()) { _, which ->
-                if (!isAdded) return@setItems
-
-                when (choices[which]) {
-                    getString(R.string.participants) -> {
-                        GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
-                        dismiss()
-                    }
-                    getString(R.string.contact_other_search_conversation) -> {
-                        startSearchConversation()
-                        dismiss()
-                    }
-                    getString(R.string.contact_other_shared_media) -> {
+        val list = menuList {
+            menuGroup {
+                menu {
+                    title = getString(R.string.contact_other_shared_media)
+                    action = {
                         SharedMediaActivity.show(requireContext(), conversationId)
                         dismiss()
                     }
-                    getString(R.string.group_info_add) -> {
-                        activity?.addFragment(this@GroupBottomSheetDialogFragment, GroupEditFragment.newInstance(
-                            conversationId, conversation.announcement), GroupEditFragment.TAG)
+                }
+                menu {
+                    title = getString(R.string.contact_other_search_conversation)
+                    action = {
+                        startSearchConversation()
+                        dismiss()
                     }
-                    getString(R.string.group_info_edit) -> {
-                        activity?.addFragment(this@GroupBottomSheetDialogFragment, GroupEditFragment.newInstance(
-                            conversationId, conversation.announcement), GroupEditFragment.TAG)
+                }
+            }
+        }
+        if (me != null) {
+            if (me!!.role == ParticipantRole.OWNER.name || me!!.role == ParticipantRole.ADMIN.name) {
+                val announcementString = if (TextUtils.isEmpty(conversation.announcement)) {
+                    getString(R.string.group_info_add)
+                } else {
+                    getString(R.string.group_info_edit)
+                }
+                list.groups.add(menuGroup {
+                    menu {
+                        title = announcementString
+                        action = {
+                            activity?.addFragment(this@GroupBottomSheetDialogFragment, GroupEditFragment.newInstance(
+                                conversationId, conversation.announcement), GroupEditFragment.TAG)
+                        }
                     }
-                    getString(R.string.group_edit_name) -> {
-                        keepDialog = true
-                        showDialog(conversation.name)
+                    menu {
+                        title = getString(R.string.group_edit_name)
+                        action = {
+                            keepDialog = true
+                            showDialog(conversation.name)
+                        }
                     }
-                    getString(R.string.un_mute) -> unMute()
-                    getString(R.string.mute) -> {
+                })
+            }
+            val muteMenu = if (conversation.muteUntil.notNullWithElse({
+                    Instant.now().isBefore(Instant.parse(it))
+                }, false)) {
+                menu {
+                    title = getString(R.string.un_mute)
+                    subtitle = conversation.muteUntil?.localTime()
+                    action = { unMute() }
+                }
+            } else {
+                menu {
+                    title = getString(R.string.mute)
+                    action = {
                         keepDialog = true
                         mute()
                     }
-                    getString(R.string.group_info_clear_chat) -> {
-                        bottomViewModel.deleteMessageByConversationId(conversationId)
-                    }
-                    getString(R.string.group_info_exit_group) -> {
-                        bottomViewModel.exitGroup(conversationId)
-                    }
-                    getString(R.string.group_info_delete_group) -> {
-                        bottomViewModel.deleteGroup(conversationId)
-                        callback?.onDelete()
-                    }
                 }
-            }.create()
-        menu?.setOnDismissListener {
-            if (!keepDialog) {
-                dismiss()
+            }
+            list.groups.add(menuGroup {
+                menu(muteMenu)
+            })
+        }
+        val deleteMenu = if (me != null) {
+            menu {
+                title = getString(R.string.group_info_exit_group)
+                style = MenuStyle.Danger
+                action = { bottomViewModel.exitGroup(conversationId) }
+            }
+        } else {
+            menu {
+                title = getString(R.string.group_info_delete_group)
+                style = MenuStyle.Danger
+                action = {
+                    bottomViewModel.deleteGroup(conversationId)
+                    callback?.onDelete()
+                }
+            }
+        }
+        list.groups.add(menuGroup {
+            menu {
+                title = getString(R.string.group_info_clear_chat)
+                style = MenuStyle.Danger
+                action = { bottomViewModel.deleteMessageByConversationId(conversationId) }
+            }
+            menu(deleteMenu)
+        })
+
+        menuListLayout?.removeAllViews()
+        list.createMenuLayout(requireContext()).let { layout ->
+            menuListLayout = layout
+            contentView.scroll_content.addView(layout)
+            contentView.more_fl.setOnClickListener {
+                layout.isVisible = !layout.isVisible
+                contentView.more_iv.animate().rotationX(if (layout.isVisible) {
+                    180f
+                } else {
+                    0f
+                }).start()
             }
         }
     }
