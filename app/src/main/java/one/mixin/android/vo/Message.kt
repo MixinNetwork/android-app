@@ -352,7 +352,7 @@ fun createMediaMessage(
     category: String,
     content: String?,
     mediaUrl: String?,
-    mediaMimeType: String,
+    mediaMimeType: String?,
     mediaSize: Long,
     mediaWidth: Int?,
     mediaHeight: Int?,

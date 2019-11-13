@@ -45,7 +45,7 @@ class MessageBuilder(
         return this
     }
 
-    fun setMediaMimeType(mediaMimeType: String): MessageBuilder {
+    fun setMediaMimeType(mediaMimeType: String?): MessageBuilder {
         this.mediaMimeType = mediaMimeType
         return this
     }
