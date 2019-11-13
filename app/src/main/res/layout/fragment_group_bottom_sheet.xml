@@ -9,117 +9,132 @@
     <one.mixin.android.widget.RoundTitleView
         android:id="@+id/title"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content" />
 
-    <one.mixin.android.widget.AvatarView
-        android:id="@+id/avatar"
-        android:layout_width="@dimen/bottom_avatar_size"
-        android:layout_height="@dimen/bottom_avatar_size"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp"
-        android:transitionName="@string/avatar_transition_name"
-        tools:ignore="ContentDescription"/>
 
-    <TextView
-        android:id="@+id/name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="4dp"
-        android:ellipsize="end"
-        android:maxLength="30"
-        android:singleLine="true"
-        android:textColor="?attr/text_primary"
-        android:textSize="18sp"/>
-
-    <TextView
-        android:id="@+id/count_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="10dp"
-        android:textSize="12sp"
-        android:textColor="?attr/text_minor"/>
-
-    <TextView
-        android:id="@+id/join_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="28dp"
-        android:layout_gravity="center_horizontal"
-        android:background="@drawable/bg_round_gray_14dp"
-        android:drawablePadding="4dp"
-        android:layout_marginBottom="@dimen/margin16"
-        android:gravity="center"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:text="@string/group_join"
-        android:textColor="@color/wallet_blue"/>
-
-    <one.mixin.android.widget.linktext.AutoLinkTextView
-        android:id="@+id/detail_tv"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:gravity="center_horizontal"
-        android:maxLength="1024"
-        android:scrollbars="vertical"
-        android:textColor="?attr/text_primary"
-        android:textIsSelectable="true"/>
+        android:layout_height="wrap_content">
 
-    <LinearLayout
-        android:id="@+id/ops_ll"
-        android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:layout_marginBottom="@dimen/margin20"
-        android:baselineAligned="false"
-        android:orientation="horizontal">
+        <LinearLayout
+            android:id="@+id/scroll_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:animateLayoutChanges="true"
+            android:orientation="vertical">
 
-        <FrameLayout
-            android:id="@+id/member_fl"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1">
+            <one.mixin.android.widget.AvatarView
+                android:id="@+id/avatar"
+                android:layout_width="@dimen/bottom_avatar_size"
+                android:layout_height="@dimen/bottom_avatar_size"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp"
+                android:transitionName="@string/avatar_transition_name"
+                tools:ignore="ContentDescription" />
 
-            <ImageView
+            <TextView
+                android:id="@+id/name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:background="@drawable/mixin_ripple"
-                android:contentDescription="@string/share"
-                android:src="@drawable/ic_group_member"/>
-        </FrameLayout>
+                android:layout_gravity="center_horizontal"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginBottom="4dp"
+                android:ellipsize="end"
+                android:maxLength="30"
+                android:singleLine="true"
+                android:textColor="?attr/text_primary"
+                android:textSize="18sp" />
 
-        <FrameLayout
-            android:id="@+id/send_fl"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1">
-
-            <ImageView
+            <TextView
+                android:id="@+id/count_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:background="@drawable/mixin_ripple"
-                android:contentDescription="@string/contact_other_send"
-                android:src="@drawable/ic_user_send"/>
-        </FrameLayout>
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="10dp"
+                android:textColor="?attr/text_minor"
+                android:textSize="12sp" />
 
-        <FrameLayout
-            android:id="@+id/more_fl"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1">
-
-            <ImageView
+            <TextView
+                android:id="@+id/join_tv"
                 android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="@dimen/margin16"
+                android:background="@drawable/bg_round_gray_14dp"
+                android:drawablePadding="4dp"
+                android:gravity="center"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:text="@string/group_join"
+                android:textColor="@color/wallet_blue" />
+
+            <one.mixin.android.widget.linktext.AutoLinkTextView
+                android:id="@+id/detail_tv"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:background="@drawable/mixin_ripple"
-                android:contentDescription="@string/more"
-                android:src="@drawable/ic_more"/>
-        </FrameLayout>
-    </LinearLayout>
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:gravity="center_horizontal"
+                android:maxLength="1024"
+                android:scrollbars="vertical"
+                android:textColor="?attr/text_primary"
+                android:textIsSelectable="true" />
+
+            <LinearLayout
+                android:id="@+id/ops_ll"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:layout_marginBottom="@dimen/margin20"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <FrameLayout
+                    android:id="@+id/member_fl"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/mixin_ripple"
+                        android:contentDescription="@string/share"
+                        android:src="@drawable/ic_group_member" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:id="@+id/send_fl"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/mixin_ripple"
+                        android:contentDescription="@string/contact_other_send"
+                        android:src="@drawable/ic_user_send" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:id="@+id/more_fl"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <ImageView
+                        android:id="@+id/more_iv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:background="@drawable/mixin_ripple"
+                        android:contentDescription="@string/more"
+                        android:src="@drawable/ic_arrow_down_info" />
+                </FrameLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

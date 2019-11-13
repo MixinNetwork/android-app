@@ -11,13 +11,10 @@ import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.LinearLayout.VERTICAL
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
@@ -27,9 +24,7 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.layout_menu.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.title_tv
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
@@ -40,15 +35,15 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.common.info.Menu
 import one.mixin.android.ui.common.info.MenuStyle
+import one.mixin.android.ui.common.info.createMenuLayout
+import one.mixin.android.ui.common.info.menu
+import one.mixin.android.ui.common.info.menuGroup
+import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
@@ -97,6 +92,8 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var creator: User? = null
 
     private var keepDialog = false
+
+    private var menuListLayout: ViewGroup? = null
 
     var showUserTransactionAction: (() -> Unit)? = null
 
@@ -157,135 +154,169 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun initMenu(u: User) {
-        val list = mutableListOf<List<Menu>>()
-        list.add(arrayListOf(
-            Menu(getString(R.string.contact_other_share), null) {
-                ForwardActivity.show(context!!, arrayListOf(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)), true)
-                dismiss()
-            }))
-        list.add(arrayListOf(Menu(getString(R.string.contact_other_shared_media), null) {
-            SharedMediaActivity.show(requireContext(), conversationId!!)
-            dismiss()
-        }, Menu(getString(R.string.contact_other_search_conversation), null) {
-            startSearchConversation()
-            dismiss()
-        }))
-        val clearMenu = Menu(getString(R.string.group_info_clear_chat), null, MenuStyle.Danger) {
-            bottomViewModel.deleteMessageByConversationId(
-                generateConversationId(
-                    Session.getAccountId()!!,
-                    user.userId
+        val clearMenu = menu {
+            title = getString(R.string.group_info_clear_chat)
+            style = MenuStyle.Danger
+            action = {
+                bottomViewModel.deleteMessageByConversationId(
+                    generateConversationId(
+                        Session.getAccountId()!!,
+                        user.userId
+                    )
                 )
-            )
+            }
         }
         val muteMenu = if (user.muteUntil.notNullWithElse({
                 Instant.now().isBefore(Instant.parse(it))
             }, false)) {
-            Menu(getString(R.string.un_mute), user.muteUntil?.localTime()) {
-                unMute()
+            menu {
+                title = getString(R.string.un_mute)
+                subtitle = user.muteUntil?.localTime()
+                action = { unMute() }
             }
         } else {
-            Menu(getString(R.string.mute), null) {
-                keepDialog = true
-                mute()
+            menu {
+                title = getString(R.string.mute)
+                action = { mute() }
             }
         }
-        val transactionMenu = Menu(getString(R.string.contact_other_transactions), null) {
-            if (showUserTransactionAction != null) {
-                showUserTransactionAction?.invoke()
-            } else {
-                activity?.addFragment(this, UserTransactionsFragment.newInstance(user.userId), UserTransactionsFragment.TAG)
-            }
-            dismiss()
-        }
-        val editNameMenu = Menu(getString(R.string.edit_name), null) {
-            keepDialog = true
-            showDialog(user.fullName)
-        }
-        val developerMenu = Menu(getString(R.string.developer), null) {
-            creator?.let {
-                if (it.userId == Session.getAccountId()) {
-                    activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
+        val transactionMenu = menu {
+            title = getString(R.string.contact_other_transactions)
+            action = {
+                if (showUserTransactionAction != null) {
+                    showUserTransactionAction?.invoke()
                 } else {
-                    UserBottomSheetDialogFragment.newInstance(it).showNow(parentFragmentManager, TAG)
+                    activity?.addFragment(this@UserBottomSheetDialogFragment, UserTransactionsFragment.newInstance(user.userId), UserTransactionsFragment.TAG)
+                }
+                dismiss()
+            }
+        }
+        val editNameMenu = menu {
+            title = getString(R.string.edit_name)
+            action = {
+                keepDialog = true
+                showDialog(user.fullName)
+            }
+        }
+        val developerMenu = menu {
+            title = getString(R.string.developer)
+            action = {
+                creator?.let {
+                    if (it.userId == Session.getAccountId()) {
+                        activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
+                    } else {
+                        UserBottomSheetDialogFragment.newInstance(it).showNow(parentFragmentManager, TAG)
+                    }
+                }
+                dismiss()
+            }
+        }
+        val list = menuList {
+            menuGroup {
+                menu {
+                    title = getString(R.string.contact_other_share)
+                    action = {
+                        ForwardActivity.show(
+                            context!!,
+                            arrayListOf(
+                                ForwardMessage(
+                                    ForwardCategory.CONTACT.name,
+                                    sharedUserId = user.userId
+                                )
+                            ),
+                            true
+                        )
+                        dismiss()
+                    }
                 }
             }
-            dismiss()
+            menuGroup {
+                menu {
+                    title = getString(R.string.contact_other_shared_media)
+                    action = {
+                        SharedMediaActivity.show(requireContext(), conversationId!!)
+                        dismiss()
+                    }
+                }
+                menu {
+                    title = getString(R.string.contact_other_search_conversation)
+                    action = {
+                        startSearchConversation()
+                        dismiss()
+                    }
+                }
+            }
         }
-
         when (user.relationship) {
             UserRelationship.BLOCKING.name -> {
-                list.add(arrayListOf(Menu(getString(R.string.contact_other_unblock), null) {
-                    bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.UNBLOCK.name))
-                }, clearMenu))
+                list.groups.add(menuGroup {
+                    menu {
+                        title = getString(R.string.contact_other_unblock)
+                        action = { bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.UNBLOCK.name)) }
+                    }
+                    menu(clearMenu)
+                })
             }
             UserRelationship.FRIEND.name -> {
-                list.add(arrayListOf(muteMenu, transactionMenu))
+                list.groups.add(menuGroup {
+                    menu(muteMenu)
+                    menu(transactionMenu)
+                })
                 val editDeveloperList = if (u.isBot()) {
-                    arrayListOf(editNameMenu, developerMenu)
+                    menuGroup {
+                        menu(editNameMenu)
+                        menu(developerMenu)
+                    }
                 } else {
-                    arrayListOf(editNameMenu)
+                    menuGroup {
+                        menu(editNameMenu)
+                    }
                 }
-                list.add(editDeveloperList)
-                list.add(arrayListOf(
-                    Menu(getString(R.string.contact_other_remove), null, MenuStyle.Danger) {
-                        updateRelationship(UserRelationship.STRANGER.name)
-                    }, clearMenu))
+                list.groups.add(editDeveloperList)
+                list.groups.add(menuGroup {
+                    menu {
+                        title = getString(R.string.contact_other_remove)
+                        style = MenuStyle.Danger
+                        action = { updateRelationship(UserRelationship.STRANGER.name) }
+                    }
+                    menu(clearMenu)
+                })
             }
             UserRelationship.STRANGER.name -> {
-                list.add(arrayListOf(muteMenu, transactionMenu))
-                list.add(arrayListOf(
-                    Menu(getString(R.string.contact_other_block), null, MenuStyle.Danger) {
-                        bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.BLOCK.name))
-                    }, clearMenu))
-            }
-        }
-        list.add(arrayListOf(Menu(getString(R.string.contact_other_report), null, MenuStyle.Danger) {
-            reportUser(user.userId)
-        }))
-
-        createMenuLayout(list)
-    }
-
-    @SuppressLint("InflateParams")
-    private fun createMenuLayout(list: List<List<Menu>>) {
-        val listLayout = LinearLayout(requireContext()).apply {
-            orientation = VERTICAL
-            visibility = GONE
-        }
-        val dp5 = requireContext().dpToPx(5f)
-        val dp13 = requireContext().dpToPx(13f)
-        val dp16 = requireContext().dpToPx(16f)
-        val dp64 = requireContext().dpToPx(64f)
-        list.forEach { group ->
-            val groupLayout = LinearLayout(requireContext()).apply {
-                orientation = VERTICAL
-            }
-            group.forEachIndexed { index, menu ->
-                val menuLayout = layoutInflater.inflate(R.layout.layout_menu, null, false)
-                menuLayout.title_tv.text = menu.title
-                menuLayout.subtitle_tv.text = menu.subtitle
-                menuLayout.title_tv.setTextColor(if (menu.style == MenuStyle.Normal) {
-                    requireContext().colorFromAttribute(R.attr.text_primary)
-                } else {
-                    resources.getColor(R.color.colorRed, requireContext().theme)
+                list.groups.add(menuGroup {
+                    menu(muteMenu)
+                    menu(transactionMenu)
                 })
-                val top = index == 0
-                val bottom = index == group.size - 1
-                menuLayout.roundTopOrBottom(dp13.toFloat(), top, bottom)
-                menuLayout.setOnClickListener { menu.action.invoke() }
-                groupLayout.addView(menuLayout, LinearLayout.LayoutParams(MATCH_PARENT, dp64))
+                list.groups.add(menuGroup {
+                    menu {
+                        title = getString(R.string.contact_other_block)
+                        style = MenuStyle.Danger
+                        action = { bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.BLOCK.name)) }
+                    }
+                    menu(clearMenu)
+                })
             }
-            listLayout.addView(groupLayout, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
-                marginStart = dp16
-                marginEnd = dp16
-                topMargin = dp5
-                bottomMargin = dp5
-            })
         }
-        contentView.scroll_content.addView(listLayout)
-        contentView.more_fl.setOnClickListener {
-            listLayout.isVisible = !listLayout.isVisible
+        list.groups.add(menuGroup {
+            menu {
+                title = getString(R.string.contact_other_report)
+                style = MenuStyle.Danger
+                action = { reportUser(user.userId) }
+            }
+        })
+
+        menuListLayout?.removeAllViews()
+        list.createMenuLayout(requireContext()).let { layout ->
+            menuListLayout = layout
+            contentView.scroll_content.addView(layout)
+            contentView.more_fl.setOnClickListener {
+                layout.isVisible = !layout.isVisible
+                contentView.more_iv.animate().rotationX(if (layout.isVisible) {
+                    180f
+                } else {
+                    0f
+                }).start()
+            }
         }
     }
 
