@@ -13,6 +13,7 @@
             android:gravity="center_vertical"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
+            android:textColor="@color/colorPrimary"
             android:text="@string/save"/>
 
     <TextView
@@ -24,6 +25,7 @@
         android:gravity="center_vertical"
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
+        android:textColor="@color/colorPrimary"
         android:text="@string/share"/>
 
     <TextView
@@ -35,6 +37,7 @@
             android:gravity="center_vertical"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
+            android:textColor="@color/colorPrimary"
             android:text="@string/contact_sq_scan_title"/>
 
     <TextView
@@ -46,5 +49,6 @@
             android:gravity="center_vertical"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
+            android:textColor="@color/colorPrimary"
             android:text="@string/cancel"/>
 </LinearLayout>
