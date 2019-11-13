@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import kotlin.math.abs
 import kotlinx.android.synthetic.main.view_avatar.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.CodeType
@@ -25,13 +26,20 @@ class AvatarView : ViewAnimator {
         LayoutInflater.from(context).inflate(R.layout.view_avatar, this, true)
         val ta = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
         if (ta.hasValue(R.styleable.CircleImageView_border_text_size)) {
-            avatar_tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, ta.getDimension(R.styleable.CircleImageView_border_text_size,
-                sp(20f).toFloat()))
+            avatar_tv.setTextSize(
+                TypedValue.COMPLEX_UNIT_PX, ta.getDimension(
+                    R.styleable.CircleImageView_border_text_size,
+                    sp(20f).toFloat()
+                )
+            )
         }
         if (ta.hasValue(R.styleable.CircleImageView_border_width)) {
-            avatar_simple.borderWidth = ta.getDimensionPixelSize(R.styleable.CircleImageView_border_width, 0)
-            avatar_simple.borderColor = ta.getColor(R.styleable.CircleImageView_border_color,
-                ContextCompat.getColor(context, android.R.color.white))
+            avatar_simple.borderWidth =
+                ta.getDimensionPixelSize(R.styleable.CircleImageView_border_width, 0)
+            avatar_simple.borderColor = ta.getColor(
+                R.styleable.CircleImageView_border_color,
+                ContextCompat.getColor(context, android.R.color.white)
+            )
             avatar_tv.setBorderInfo(avatar_simple.borderWidth.toFloat(), avatar_simple.borderColor)
         }
 
@@ -51,7 +59,10 @@ class AvatarView : ViewAnimator {
             var step = 0
             for (i in 0 until name.length) {
                 val c = name[i]
-                if (!Character.isLetterOrDigit(c) && !Character.isSpaceChar(c) && !Character.isWhitespace(c)) {
+                if (!Character.isLetterOrDigit(c) && !Character.isSpaceChar(c) && !Character.isWhitespace(
+                        c
+                    )
+                ) {
                     builder.append(c)
                     step++
                     if (step > 1) {
@@ -62,6 +73,22 @@ class AvatarView : ViewAnimator {
                 }
             }
             return if (builder.isEmpty()) name[0].toString() else builder.toString()
+        }
+    }
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        size = abs(right - left)
+    }
+
+    private var size = 0
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        if (size > 0) {
+            val spec = MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY)
+            measureChild(avatar_simple, spec, spec)
+            measureChild(avatar_tv, spec, spec)
         }
     }
 
@@ -112,7 +139,7 @@ class AvatarView : ViewAnimator {
 
     private fun getAvatarPlaceHolderById(code: Int): Int {
         try {
-           return avatarArray.getResourceId(code, -1)
+            return avatarArray.getResourceId(code, -1)
         } catch (e: Exception) {
         }
         return R.drawable.default_avatar

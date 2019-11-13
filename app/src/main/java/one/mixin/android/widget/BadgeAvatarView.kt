@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
+import timber.log.Timber
 
 class BadgeAvatarView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
     init {
@@ -16,12 +17,18 @@ class BadgeAvatarView(context: Context, attrs: AttributeSet?) : FrameLayout(cont
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        measureChild(badge, MeasureSpec.makeMeasureSpec(measuredWidth / 4, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(measuredHeight / 4, MeasureSpec.EXACTLY))
+        val width = MeasureSpec.getSize(widthMeasureSpec)
+        var height = MeasureSpec.getSize(heightMeasureSpec)
+        setMeasuredDimension(width, height)
+        measureChild(
+            badge, MeasureSpec.makeMeasureSpec(measuredWidth / 4, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(measuredHeight / 4, MeasureSpec.EXACTLY)
+        )
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
+        Timber.d("$left $top $right ")
         val i = measuredWidth / 8
         if (pos == START_BOTTOM) {
             badge.layout(0, 5 * i, 2 * i, 7 * i)

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:motion="http://schemas.android.com/apk/res-auto">
+
+    <Transition
+        motion:autoTransition="none"
+        motion:constraintSetEnd="@+id/end"
+        motion:constraintSetStart="@layout/fragment_motion_bottom_sheet"
+        motion:duration="300">
+        <OnSwipe
+            motion:dragDirection="dragUp"
+            motion:moveWhenScrollAtTop="true"
+            motion:touchAnchorId="@id/user_bottom_bg"
+            motion:touchAnchorSide="top" />
+        />
+        <KeyFrameSet>
+            <KeyPosition
+                motion:framePosition="50"
+                motion:keyPositionType="pathRelative"
+                motion:motionTarget="@id/user_bottom_avatar"
+                motion:percentY="-0.05" />
+        </KeyFrameSet>
+        <KeyFrameSet>
+            <KeyPosition
+                motion:framePosition="50"
+                motion:keyPositionType="pathRelative"
+                motion:motionTarget="@id/user_bottom_name"
+                motion:percentY="0.05" />
+        </KeyFrameSet>
+        <KeyFrameSet>
+            <KeyPosition
+                motion:framePosition="50"
+                motion:keyPositionType="pathRelative"
+                motion:motionTarget="@id/user_bottom_number"
+                motion:percentY="0.05" />
+        </KeyFrameSet>
+    </Transition>
+
+    <ConstraintSet android:id="@+id/end">
+        <Constraint android:id="@id/user_bottom_bg">
+            <Layout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                motion:layout_constraintBottom_toBottomOf="parent"
+                motion:layout_constraintTop_toTopOf="parent" />
+        </Constraint>
+
+        <Constraint android:id="@id/user_bottom_avatar">
+            <Layout
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                motion:layout_constraintStart_toStartOf="parent"
+                motion:layout_constraintTop_toTopOf="parent" />
+        </Constraint>
+        <Constraint
+            android:id="@id/user_bottom_name"
+            android:scaleX="0.9"
+            android:scaleY="0.9"
+            android:translationX="-1.5dp"
+            android:translationY="-3dp">
+            <Layout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                motion:layout_constraintStart_toEndOf="@id/user_bottom_avatar"
+                motion:layout_constraintTop_toTopOf="@id/user_bottom_avatar" />
+        </Constraint>
+        <Constraint
+            android:id="@id/user_bottom_number"
+            android:scaleX="0.9"
+            android:scaleY="0.9"
+            android:translationY="3dp">
+            <Layout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                motion:layout_constraintBottom_toBottomOf="@id/user_bottom_avatar"
+                motion:layout_constraintStart_toEndOf="@id/user_bottom_avatar" />
+        </Constraint>
+        <Constraint android:id="@id/user_bottom_menu">
+            <Layout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="8dp"
+                motion:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                motion:layout_constraintBottom_toBottomOf="parent"
+                motion:layout_constraintEnd_toEndOf="parent"
+                motion:layout_constraintStart_toStartOf="parent"
+                motion:layout_constraintTop_toBottomOf="@id/user_bottom_number" />
+        </Constraint>
+        <Constraint
+            android:id="@id/user_bottom_transfer"
+            android:alpha="0">
+            <Layout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/mixin_ripple"
+                android:contentDescription="@string/more"
+                android:src="@drawable/ic_menu_transfer"
+                motion:layout_constraintStart_toStartOf="parent"
+                motion:layout_constraintTop_toBottomOf="@id/user_bottom_number" />
+        </Constraint>
+
+        <Constraint
+            android:id="@id/user_bottom_bot"
+            android:alpha="0">
+            <Layout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/mixin_ripple"
+                android:contentDescription="@string/more"
+                android:src="@drawable/ic_user_bot"
+                motion:layout_constraintEnd_toStartOf="@id/user_bottom_more"
+                motion:layout_constraintStart_toEndOf="@id/user_bottom_transfer"
+                motion:layout_constraintTop_toTopOf="@id/user_bottom_transfer" />
+        </Constraint>
+
+        <Constraint
+            android:id="@id/user_bottom_more"
+            android:alpha="0">
+            <Layout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/mixin_ripple"
+                android:contentDescription="@string/more"
+                android:src="@drawable/ic_more"
+                motion:layout_constraintEnd_toEndOf="parent"
+                motion:layout_constraintTop_toTopOf="@id/user_bottom_transfer" />
+        </Constraint>
+    </ConstraintSet>
+
+</MotionScene>

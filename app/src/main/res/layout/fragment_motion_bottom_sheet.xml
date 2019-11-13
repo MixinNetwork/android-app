@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.motion.widget.MotionLayout
+        android:id="@+id/motion"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutDescription="@xml/scene_user_bottom">
+
+        <View
+            android:id="@+id/user_bottom_status_bar"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
+
+        <View
+            android:id="@+id/user_bottom_empty"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/user_bottom_guide"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/user_bottom_bg"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="?attr/bg_white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="@id/user_bottom_guide"
+            tools:background="@color/bg_gray" />
+
+        <ImageView
+            android:id="@+id/user_bottom_close"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/mixin_ripple"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_close_black"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/user_bottom_bg" />
+
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/user_bottom_avatar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginBottom="32dp"
+            app:layout_constraintBottom_toTopOf="@id/user_bottom_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/user_bottom_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:textColor="?attr/text_primary"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toTopOf="@id/user_bottom_number"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="User Name" />
+
+        <TextView
+            android:id="@+id/user_bottom_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="32dp"
+            android:gravity="bottom"
+            android:textColor="?attr/text_minor"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toTopOf="@id/user_bottom_transfer"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="Mixin ID: 10010" />
+
+        <ImageView
+            android:id="@+id/user_bottom_transfer"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="64dp"
+            android:background="@drawable/mixin_ripple"
+            android:contentDescription="@string/more"
+            android:src="@drawable/ic_menu_transfer"
+            app:layout_constraintBottom_toBottomOf="@id/user_bottom_bg"
+            app:layout_constraintEnd_toStartOf="@id/user_bottom_bot"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageView
+            android:id="@+id/user_bottom_bot"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:background="@drawable/mixin_ripple"
+            android:contentDescription="@string/more"
+            android:src="@drawable/ic_chat"
+            app:layout_constraintEnd_toStartOf="@id/user_bottom_more"
+            app:layout_constraintStart_toEndOf="@id/user_bottom_transfer"
+            app:layout_constraintTop_toTopOf="@id/user_bottom_transfer" />
+
+        <ImageView
+            android:id="@+id/user_bottom_more"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:background="@drawable/mixin_ripple"
+            android:contentDescription="@string/more"
+            android:src="@drawable/ic_more"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/user_bottom_bot"
+            app:layout_constraintTop_toTopOf="@id/user_bottom_transfer" />
+
+        <FrameLayout
+            android:id="@+id/user_bottom_menu"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="24dp"
+            android:background="#EF88E8"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <View
+            android:id="@+id/user_bottom_guide"
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:layout_marginBottom="48dp"
+            app:layout_constraintBottom_toTopOf="@id/user_bottom_avatar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.motion.widget.MotionLayout>
+</FrameLayout>

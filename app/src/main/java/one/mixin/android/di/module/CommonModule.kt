@@ -6,6 +6,7 @@ import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.EditBottomSheetDialogFragment
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
+import one.mixin.android.ui.common.NewUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
@@ -35,6 +36,9 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeUserBottomSheetFragment(): UserBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeNewUserBottomSheetDialogFragment(): NewUserBottomSheetDialogFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeLinkBottomSheetDialogFragment(): LinkBottomSheetDialogFragment

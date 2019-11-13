@@ -35,4 +35,9 @@
     <dimen name="album_item_height">72dp</dimen>
     <dimen name="call_button_size">74dp</dimen>
     <dimen name="setting_divider">16dp</dimen>
+    <dimen name="text_big">16sp</dimen>
+    <dimen name="text_default">14sp</dimen>
+    <dimen name="text_small">12sp</dimen>
+    <dimen name="dp0">0dp</dimen>
+    <dimen name="dp16">16dp</dimen>
 </resources>

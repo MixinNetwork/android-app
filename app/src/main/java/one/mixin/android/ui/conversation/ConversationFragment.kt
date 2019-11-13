@@ -109,6 +109,7 @@ import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
+import one.mixin.android.ui.common.NewUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -1587,8 +1588,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         })
         action_bar.avatar_iv.setOnClickListener {
             hideIfShowBottomSheet()
-            UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+            NewUserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(
+                parentFragmentManager,
+                UserBottomSheetDialogFragment.TAG
+            )
         }
         bottom_unblock.setOnClickListener {
             recipient?.let { user ->
