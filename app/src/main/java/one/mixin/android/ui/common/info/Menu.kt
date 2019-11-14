@@ -3,9 +3,9 @@ package one.mixin.android.ui.common.info
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.layout_menu.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
@@ -77,10 +77,13 @@ enum class MenuStyle {
 }
 
 @SuppressLint("InflateParams")
-fun MenuList.createMenuLayout(context: Context): ViewGroup {
+fun MenuList.createMenuLayout(
+    context: Context,
+    visible: Boolean = false
+): ViewGroup {
     val listLayout = LinearLayout(context).apply {
         orientation = LinearLayout.VERTICAL
-        visibility = View.GONE
+        isVisible = visible
     }
     val dp5 = context.dpToPx(5f)
     val dp13 = context.dpToPx(13f)

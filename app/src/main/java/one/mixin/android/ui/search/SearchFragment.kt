@@ -33,9 +33,9 @@ import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
+import one.mixin.android.ui.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.WalletActivity
@@ -146,7 +146,9 @@ class SearchFragment : BaseFragment() {
                     when {
                         r.isSuccess -> r.data?.let { data ->
                             if (data.userId == Session.getAccountId()) {
-                                ContactsActivity.show(requireActivity(), true)
+                                ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager,
+                                    UserBottomSheetDialogFragment.TAG
+                                )
                             } else {
                                 searchViewModel.insertUser(user = data)
                                 UserBottomSheetDialogFragment.newInstance(data).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)

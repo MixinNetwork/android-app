@@ -257,4 +257,11 @@ class BottomSheetViewModel @Inject internal constructor(
         rawTransactionsRequest.pin = encryptPin(Session.getPinToken()!!, pin)!!
         return accountRepository.transactions(rawTransactionsRequest)
     }
+
+    fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
+        accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+
+    fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
+        userRepository.upsert(user)
+    }
 }

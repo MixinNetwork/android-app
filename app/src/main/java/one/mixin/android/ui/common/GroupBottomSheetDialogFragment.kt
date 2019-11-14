@@ -82,7 +82,6 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val code: String? by lazy { arguments!!.getString(CODE) }
     private lateinit var conversation: Conversation
     private var me: Participant? = null
-    private var keepDialog: Boolean = false
 
     private var menuListLayout: ViewGroup? = null
 
@@ -143,6 +142,8 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         bottomViewModel.getConversationById(conversationId).observe(this, Observer { c ->
             if (c == null) return@Observer
 
+            val changeMenu = menuListLayout == null ||
+                c.muteUntil != conversation.muteUntil
             conversation = c
             val icon = c.iconUrl
             contentView.avatar.setGroup(icon)
@@ -156,7 +157,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 contentView.detail_tv.isVisible = true
                 contentView.detail_tv.text = c.announcement
             }
-            initParticipant()
+            initParticipant(changeMenu)
         })
 
         contentView.post {
@@ -167,18 +168,22 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun initParticipant() = lifecycleScope.launch {
+    private fun initParticipant(changeMenu: Boolean) = lifecycleScope.launch {
         if (!isAdded) return@launch
 
         var participantCount = 0
+        var localMe: Participant? = null
         withContext(Dispatchers.IO) {
-            me = bottomViewModel.findParticipantByIds(conversationId, Session.getAccountId()!!)
+            localMe = bottomViewModel.findParticipantByIds(conversationId, Session.getAccountId()!!)
             participantCount = bottomViewModel.getParticipantsCount(conversationId)
         }
         if (!isAdded) return@launch
 
         contentView.count_tv.text = getString(R.string.group_participants_count, participantCount)
-        initMenu()
+        if (changeMenu || me != localMe) {
+            initMenu(localMe)
+        }
+        me = localMe
         if (me != null) {
             contentView.join_tv.visibility = GONE
         } else {
@@ -186,7 +191,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun initMenu() {
+    private fun initMenu(me: Participant?) {
         val list = menuList {
             menuGroup {
                 menu {
@@ -206,7 +211,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
         if (me != null) {
-            if (me!!.role == ParticipantRole.OWNER.name || me!!.role == ParticipantRole.ADMIN.name) {
+            if (me.role == ParticipantRole.OWNER.name || me.role == ParticipantRole.ADMIN.name) {
                 val announcementString = if (TextUtils.isEmpty(conversation.announcement)) {
                     getString(R.string.group_info_add)
                 } else {
@@ -218,14 +223,12 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         action = {
                             activity?.addFragment(this@GroupBottomSheetDialogFragment, GroupEditFragment.newInstance(
                                 conversationId, conversation.announcement), GroupEditFragment.TAG)
+                            dismiss()
                         }
                     }
                     menu {
                         title = getString(R.string.group_edit_name)
-                        action = {
-                            keepDialog = true
-                            showDialog(conversation.name)
-                        }
+                        action = { showDialog(conversation.name) }
                     }
                 })
             }
@@ -234,16 +237,13 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }, false)) {
                 menu {
                     title = getString(R.string.un_mute)
-                    subtitle = conversation.muteUntil?.localTime()
+                    subtitle = getString(R.string.mute_until, conversation.muteUntil?.localTime())
                     action = { unMute() }
                 }
             } else {
                 menu {
                     title = getString(R.string.mute)
-                    action = {
-                        keepDialog = true
-                        mute()
-                    }
+                    action = { mute() }
                 }
             }
             list.groups.add(menuGroup {
@@ -270,13 +270,16 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             menu {
                 title = getString(R.string.group_info_clear_chat)
                 style = MenuStyle.Danger
-                action = { bottomViewModel.deleteMessageByConversationId(conversationId) }
+                action = {
+                    bottomViewModel.deleteMessageByConversationId(conversationId)
+                    dismiss()
+                }
             }
             menu(deleteMenu)
         })
 
         menuListLayout?.removeAllViews()
-        list.createMenuLayout(requireContext()).let { layout ->
+        list.createMenuLayout(requireContext(), contentView.more_iv.rotationX == 180f).let { layout ->
             menuListLayout = layout
             contentView.scroll_content.addView(layout)
             contentView.more_fl.setOnClickListener {
@@ -338,7 +341,6 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
             .show()
-        alert.setOnDismissListener { dismiss() }
     }
 
     @SuppressLint("RestrictedApi")
@@ -366,7 +368,6 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 dialog.dismiss()
             }
             .show()
-        nameDialog.setOnDismissListener { dismiss() }
         nameDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = false
         editText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
