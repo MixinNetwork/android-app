@@ -10,7 +10,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.job.ConversationJob
@@ -20,7 +19,6 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.vo.Account
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
@@ -37,9 +35,6 @@ internal constructor(
     fun getFriends(): LiveData<List<User>> = userRepository.findFriends()
 
     fun findSelf(): LiveData<User?> = userRepository.findSelf()
-
-    fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
-        accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
         userRepository.upsert(user)

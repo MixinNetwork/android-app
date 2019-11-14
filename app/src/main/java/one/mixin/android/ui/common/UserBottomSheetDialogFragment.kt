@@ -38,12 +38,12 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
+import one.mixin.android.ui.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.MenuStyle
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuGroup
 import one.mixin.android.ui.common.info.menuList
-import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.UserTransactionsFragment
@@ -72,7 +72,7 @@ import java.util.concurrent.TimeUnit
 class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     companion object {
-        const val TAG = "UserBottomSheetDialog"
+        const val TAG = "UserBottomSheetDialogFragment"
 
         const val MUTE_8_HOURS = 8 * 60 * 60
         const val MUTE_1_WEEK = 7 * 24 * 60 * 60
@@ -90,8 +90,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     // bot need conversation id
     private var conversationId: String? = null
     private var creator: User? = null
-
-    private var keepDialog = false
 
     private var menuListLayout: ViewGroup? = null
 
@@ -122,13 +120,17 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (u == null) return@Observer
             // prevent add self
             if (u.userId == Session.getAccountId()) {
-                activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
+                ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, TAG)
                 dismiss()
                 return@Observer
             }
-            user = u
             updateUserInfo(u)
-            initMenu(u)
+            if (menuListLayout == null ||
+                u.relationship != user.relationship ||
+                u.muteUntil != user.muteUntil) {
+                initMenu(u)
+            }
+            user = u
         })
         contentView.transfer_fl.setOnClickListener {
             TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
@@ -161,17 +163,17 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 bottomViewModel.deleteMessageByConversationId(
                     generateConversationId(
                         Session.getAccountId()!!,
-                        user.userId
+                        u.userId
                     )
                 )
             }
         }
-        val muteMenu = if (user.muteUntil.notNullWithElse({
+        val muteMenu = if (u.muteUntil.notNullWithElse({
                 Instant.now().isBefore(Instant.parse(it))
             }, false)) {
             menu {
                 title = getString(R.string.un_mute)
-                subtitle = user.muteUntil?.localTime()
+                subtitle = getString(R.string.mute_until, u.muteUntil?.localTime())
                 action = { unMute() }
             }
         } else {
@@ -186,24 +188,22 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (showUserTransactionAction != null) {
                     showUserTransactionAction?.invoke()
                 } else {
-                    activity?.addFragment(this@UserBottomSheetDialogFragment, UserTransactionsFragment.newInstance(user.userId), UserTransactionsFragment.TAG)
+                    activity?.addFragment(this@UserBottomSheetDialogFragment,
+                        UserTransactionsFragment.newInstance(u.userId), UserTransactionsFragment.TAG)
                 }
                 dismiss()
             }
         }
         val editNameMenu = menu {
             title = getString(R.string.edit_name)
-            action = {
-                keepDialog = true
-                showDialog(user.fullName)
-            }
+            action = { showDialog(u.fullName) }
         }
         val developerMenu = menu {
             title = getString(R.string.developer)
             action = {
                 creator?.let {
                     if (it.userId == Session.getAccountId()) {
-                        activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
+                        ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, TAG)
                     } else {
                         UserBottomSheetDialogFragment.newInstance(it).showNow(parentFragmentManager, TAG)
                     }
@@ -221,7 +221,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             arrayListOf(
                                 ForwardMessage(
                                     ForwardCategory.CONTACT.name,
-                                    sharedUserId = user.userId
+                                    sharedUserId = u.userId
                                 )
                             ),
                             true
@@ -247,12 +247,12 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
         }
-        when (user.relationship) {
+        when (u.relationship) {
             UserRelationship.BLOCKING.name -> {
                 list.groups.add(menuGroup {
                     menu {
                         title = getString(R.string.contact_other_unblock)
-                        action = { bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.UNBLOCK.name)) }
+                        action = { bottomViewModel.updateRelationship(RelationshipRequest(u.userId, RelationshipAction.UNBLOCK.name)) }
                     }
                     menu(clearMenu)
                 })
@@ -291,7 +291,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     menu {
                         title = getString(R.string.contact_other_block)
                         style = MenuStyle.Danger
-                        action = { bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.BLOCK.name)) }
+                        action = { bottomViewModel.updateRelationship(RelationshipRequest(u.userId, RelationshipAction.BLOCK.name)) }
                     }
                     menu(clearMenu)
                 })
@@ -301,12 +301,12 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             menu {
                 title = getString(R.string.contact_other_report)
                 style = MenuStyle.Danger
-                action = { reportUser(user.userId) }
+                action = { reportUser(u.userId) }
             }
         })
 
         menuListLayout?.removeAllViews()
-        list.createMenuLayout(requireContext()).let { layout ->
+        list.createMenuLayout(requireContext(), contentView.more_iv.rotationX == 180f).let { layout ->
             menuListLayout = layout
             contentView.scroll_content.addView(layout)
             contentView.more_fl.setOnClickListener {
@@ -461,7 +461,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 dialog.dismiss()
             }
             .show()
-        nameDialog.setOnDismissListener { dismiss() }
         nameDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = false
         editText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -486,7 +485,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             getString(R.string.contact_mute_1year))
         var duration = MUTE_8_HOURS
         var whichItem = 0
-        val alert = AlertDialog.Builder(context!!)
+        AlertDialog.Builder(context!!)
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
@@ -508,7 +507,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
             .show()
-        alert.setOnDismissListener { dismiss() }
     }
 
     private fun mute() {

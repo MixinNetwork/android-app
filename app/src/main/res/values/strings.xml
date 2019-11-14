@@ -208,7 +208,7 @@
     <!--profile-->
     <string name="profile_my_title">My Profile</string>
     <string name="profile_photo">Profile Photo</string>
-    <string name="profile_phone">Change Number</string>
+    <string name="profile_phone">Change Phone Number</string>
     <string name="profile_modify_name">Modify Name</string>
     <string name="profile_modify_name_hint">Please input name</string>
     <string name="profile_modify_number">Do you want to change your phone number?</string>
@@ -218,6 +218,10 @@
     <string name="edit_name">Edit Name</string>
     <string name="edit_biography">Edit Biography</string>
     <string name="biography">Biography</string>
+    <string name="change_profile_photo_with_camera">Change Profile Photo with Camera</string>
+    <string name="change_profile_photo_with_Library">Change Profile Photo with Library</string>
+    <string name="mute_until">Until %1$s</string>
+    <string name="profile_join_in">Joined in %1$s</string>
     <!-- chat -->
     <string name="chat_waiting">Waiting for %1$s to get online and establish an encrypted session. %2$s.</string>
     <string name="chat_waiting_url" translatable="false">https://mixin.one/pages/1000007</string>

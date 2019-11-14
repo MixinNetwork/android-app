@@ -207,6 +207,10 @@
     <string name="edit_name">修改昵称</string>
     <string name="edit_biography">修改简介</string>
     <string name="biography">简介</string>
+    <string name="change_profile_photo_with_camera">更换头像（相机）</string>
+    <string name="change_profile_photo_with_Library">更换头像（相册）</string>
+    <string name="mute_until">直到 %1$s</string>
+    <string name="profile_join_in">%1$s 加入</string>
     <!-- chat -->
     <string name="chat_waiting">等待%1$s上线后建立加密会话。%2$s。</string>
     <string name="chat_learn">了解更多</string>
