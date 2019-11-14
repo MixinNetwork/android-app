@@ -139,10 +139,10 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         if (disposable == null) {
             disposable = RxBus.listen(ProgressEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    if (it.id == mBindId) {
-                        if (it.status == STATUS_LOADING) {
-                            val progress = (it.progress * mMaxProgress).toInt().let {
+                .subscribe { event ->
+                    if (event.id == mBindId) {
+                        if (event.status == STATUS_LOADING) {
+                            val progress = (event.progress * mMaxProgress).toInt().let {
                                 if (it >= mMaxProgress) {
                                     (mMaxProgress * 0.95).toInt()
                                 } else {
@@ -151,17 +151,23 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
                             }
                             setProgress(progress)
                         } else {
-                            if (it.status == STATUS_PAUSE) {
-                                setPlay()
-                                invalidate()
-                            } else if (it.status == STATUS_PLAY) {
-                                setPause()
-                                invalidate()
+                            when {
+                                event.status == STATUS_PAUSE -> {
+                                    setPlay()
+                                    invalidate()
+                                }
+                                event.status == STATUS_PLAY -> {
+                                    setPause()
+                                    invalidate()
+                                }
+                                event.status == STATUS_ERROR -> {
+                                    setPlay()
+                                    invalidate()
+                                }
                             }
                         }
-                    } else {
-                        if ((this.status == STATUS_PLAY || this.status == STATUS_PAUSE || this.status == STATUS_ERROR) &&
-                            (it.status == STATUS_PAUSE || it.status == STATUS_PLAY || it.status == STATUS_ERROR)) {
+                    } else if (this.status == STATUS_PLAY) {
+                        if (event.status == STATUS_PAUSE || event.status == STATUS_PLAY || event.status == STATUS_ERROR) {
                             setPlay()
                             invalidate()
                         }
@@ -303,6 +309,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
     }
 
     fun setProgress(progress: Int) {
+        status = STATUS_LOADING
         mProgress = if (progress >= mMaxProgress) {
             mMaxProgress
         } else {
