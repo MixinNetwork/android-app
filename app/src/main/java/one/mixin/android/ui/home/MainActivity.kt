@@ -252,18 +252,18 @@ class MainActivity : BlazeBaseActivity() {
         if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(applicationContext, 13000000) != ConnectionResult.SUCCESS) {
             return
         }
-        accountRepo.deviceCheck().subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(stopScope)
-            .subscribe({ resp ->
-                resp.data?.let {
-                    val nonce = Base64.decode(it.nonce)
-                    runIntervalTask(SAFETY_NET_INTERVAL_KEY, INTERVAL_24_HOURS) {
+        runIntervalTask(SAFETY_NET_INTERVAL_KEY, INTERVAL_24_HOURS) {
+            accountRepo.deviceCheck().subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(stopScope)
+                .subscribe({ resp ->
+                    resp.data?.let {
+                        val nonce = Base64.decode(it.nonce)
                         validateSafetyNet(nonce)
                     }
-                }
-            }, {
-            })
+                }, {
+                })
+        }
     }
 
     private fun validateSafetyNet(nonce: ByteArray) {
