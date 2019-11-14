@@ -204,9 +204,7 @@ class MainActivity : BlazeBaseActivity() {
         initView()
         handlerCode(intent)
 
-        runIntervalTask(SAFETY_NET_INTERVAL_KEY, INTERVAL_24_HOURS) {
-            sendSafetyNetRequest()
-        }
+        sendSafetyNetRequest()
     }
 
     override fun onStart() {
@@ -260,21 +258,27 @@ class MainActivity : BlazeBaseActivity() {
             .subscribe({ resp ->
                 resp.data?.let {
                     val nonce = Base64.decode(it.nonce)
-                    val client = SafetyNet.getClient(this)
-                    val task = client.attest(nonce, BuildConfig.SafetyNet_API_KEY)
-                    task.addOnSuccessListener { safetyResp ->
-                        accountRepo.updateSession(SessionRequest(deviceCheckToken = safetyResp.jwsResult))
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .autoDispose(stopScope)
-                            .subscribe({}, {})
-                    }
-                    task.addOnFailureListener { e ->
-                        Bugsnag.notify(e)
+                    runIntervalTask(SAFETY_NET_INTERVAL_KEY, INTERVAL_24_HOURS) {
+                        validateSafetyNet(nonce)
                     }
                 }
             }, {
             })
+    }
+
+    private fun validateSafetyNet(nonce: ByteArray) {
+        val client = SafetyNet.getClient(this)
+        val task = client.attest(nonce, BuildConfig.SafetyNet_API_KEY)
+        task.addOnSuccessListener { safetyResp ->
+            accountRepo.updateSession(SessionRequest(deviceCheckToken = safetyResp.jwsResult))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(stopScope)
+                .subscribe({}, {})
+        }
+        task.addOnFailureListener { e ->
+            Bugsnag.notify(e)
+        }
     }
 
     private fun checkUpdate() {
