@@ -35,6 +35,7 @@ import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.di.Injectable
+import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.notNullWithElse
@@ -56,6 +57,7 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 
@@ -105,6 +107,16 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
     private lateinit var contentView: View
 
     private val url: String by lazy { arguments!!.getString(CODE)!! }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            SystemUIManager.lightUI(
+                window,
+                !requireContext().booleanFromAttribute(R.attr.flag_night)
+            )
+        }
+    }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
