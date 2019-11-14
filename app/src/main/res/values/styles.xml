@@ -166,7 +166,7 @@
 
     <style name="AppTheme.Dialog" parent="Theme.Design.Light.BottomSheetDialog">
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@color/white</item>
+        <item name="android:navigationBarColor">?attr/bg_white</item>
         <item name="android:windowFrame">@null</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:layout_width">match_parent</item>
