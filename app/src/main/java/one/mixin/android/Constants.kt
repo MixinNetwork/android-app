@@ -104,6 +104,8 @@ object Constants {
     const val INTERVAL_48_HOURS: Long = 1000 * 60 * 60 * 48
     const val INTERVAL_10_MINS: Long = 1000 * 60 * 10
 
+    const val SAFETY_NET_INTERVAL_KEY = "safety_net_interval_key"
+
     const val ARGS_USER = "args_user"
     const val ARGS_USER_ID = "args_user_id"
     const val ARGS_CONVERSATION_ID = "args_conversation_id"

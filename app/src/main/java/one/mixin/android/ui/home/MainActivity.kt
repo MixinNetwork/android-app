@@ -35,6 +35,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_24_HOURS
+import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.SessionRequest
@@ -202,7 +203,10 @@ class MainActivity : BlazeBaseActivity() {
 
         initView()
         handlerCode(intent)
-        sendSafetyNetRequest()
+
+        runIntervalTask(SAFETY_NET_INTERVAL_KEY, INTERVAL_24_HOURS) {
+            sendSafetyNetRequest()
+        }
     }
 
     override fun onStart() {
@@ -265,7 +269,9 @@ class MainActivity : BlazeBaseActivity() {
                             .autoDispose(stopScope)
                             .subscribe({}, {})
                     }
-                    task.addOnFailureListener {}
+                    task.addOnFailureListener { e ->
+                        Bugsnag.notify(e)
+                    }
                 }
             }, {
             })
