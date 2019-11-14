@@ -11,6 +11,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.annotation.StringRes
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -414,7 +415,17 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
     override fun dismiss() {
         if (isAdded) {
-            super.dismiss()
+            try {
+                super.dismiss()
+            } catch (e: IllegalStateException) {
+            }
+        }
+    }
+
+    override fun showNow(manager: FragmentManager, tag: String?) {
+        try {
+            super.showNow(manager, tag)
+        } catch (e: IllegalStateException) {
         }
     }
 
