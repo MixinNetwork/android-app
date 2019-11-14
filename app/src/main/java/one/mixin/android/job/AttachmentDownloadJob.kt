@@ -15,7 +15,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.AttachmentResponse
 import one.mixin.android.crypto.attachment.AttachmentCipherInputStream
-import one.mixin.android.event.ProgressEvent
+import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.createDocumentTemp
@@ -36,7 +36,6 @@ import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.widget.CircleProgress.Companion.STATUS_LOADING
 import one.mixin.android.widget.gallery.MimeType
 import org.whispersystems.libsignal.logging.Log
 import org.whispersystems.libsignal.util.guava.Optional
@@ -105,7 +104,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
     override fun onAdded() {
         super.onAdded()
         messageDao.updateMediaStatus(MediaStatus.PENDING.name, message.id)
-        RxBus.publish(ProgressEvent(message.id, 0f, STATUS_LOADING))
+        RxBus.publish(loadingEvent(message.id, 0f))
     }
 
     private fun decryptAttachment(url: String): Boolean {
@@ -118,8 +117,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
                 originalResponse.newBuilder().body(ProgressResponseBody(originalResponse.body(),
                     ProgressListener { bytesRead, contentLength, done ->
                         if (!done) {
-                            RxBus.publish(ProgressEvent(message.id,
-                                bytesRead.toFloat() / contentLength.toFloat(), STATUS_LOADING))
+                            RxBus.publish(loadingEvent(message.id, bytesRead.toFloat() / contentLength.toFloat()))
                         }
                     })).build()
             }

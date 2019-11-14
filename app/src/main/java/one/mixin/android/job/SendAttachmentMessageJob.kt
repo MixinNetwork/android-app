@@ -15,14 +15,13 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.Util
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
-import one.mixin.android.event.ProgressEvent
+import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.TransferAttachmentData
-import one.mixin.android.widget.CircleProgress.Companion.STATUS_LOADING
 
 class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE)
     .addTags(message.id).groupBy("send_media_job").requireNetwork().persist(), message.id) {
@@ -120,7 +119,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
                     AttachmentCipherOutputStreamFactory(key)
                 },
                 PushAttachmentData.ProgressListener { total, progress ->
-                    RxBus.publish(ProgressEvent(message.id, progress.toFloat() / total.toFloat(), STATUS_LOADING))
+                    RxBus.publish(loadingEvent(message.id, progress.toFloat() / total.toFloat()))
                 })
         val digest = try {
             if (isPlain()) {
