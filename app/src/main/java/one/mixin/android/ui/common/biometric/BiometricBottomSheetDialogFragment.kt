@@ -118,7 +118,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         }
 
         override fun onCancel() {
-            contentView.biometric_layout?.isBiometricTextVisible(BiometricUtil.shouldShowBiometric(requireContext()))
+            context?.let {
+                contentView.biometric_layout?.isBiometricTextVisible(BiometricUtil.shouldShowBiometric(it))
+            }
         }
     }
 
