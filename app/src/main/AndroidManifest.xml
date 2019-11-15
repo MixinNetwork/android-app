@@ -70,6 +70,9 @@
                     android:host="users"
                     android:scheme="mixin" />
                 <data
+                    android:host="apps"
+                    android:scheme="mixin" />
+                <data
                     android:host="transfer"
                     android:scheme="mixin" />
                 <data
