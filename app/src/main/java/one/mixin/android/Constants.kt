@@ -50,6 +50,7 @@ object Constants {
         const val SEND = "mixin://send"
         const val ADDRESS = "mixin://address"
         const val WITHDRAWAL = "mixin://withdrawal"
+        const val APPS = "mixin://apps"
 
         const val HTTPS_CODES = "https://mixin.one/codes"
         const val HTTPS_PAY = "https://mixin.one/pay"
@@ -57,6 +58,7 @@ object Constants {
         const val HTTPS_TRANSFER = "https://mixin.one/transfer"
         const val HTTPS_ADDRESS = "https://mixin.one/address"
         const val HTTPS_WITHDRAWAL = "https://mixin.one/withdrawal"
+        const val HTTPS_APPS = "https://mixin.one/apps"
     }
 
     object DataBase {
