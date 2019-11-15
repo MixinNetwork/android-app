@@ -4,20 +4,10 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:background="?attr/bg_window" />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/gv_keyboard"
-        android:background="?attr/bg_window"
+        android:background="?attr/bg_dark"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1px"
-        android:background="?attr/bg_window" />
 
 </LinearLayout>

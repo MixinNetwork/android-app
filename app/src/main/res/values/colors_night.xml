@@ -21,6 +21,7 @@
     <color name="bgInputNight">#414D5A</color>
     <color name="bgWhiteNight">#2c3136</color>
     <color name="bgWindowNight">#23272B</color>
+    <color name="bgDarkNight">#121212</color>
     <color name="bgGrayNight">#3B3F44</color>
 
     <color name="bgMenuNight">#23272B</color>
