@@ -15,12 +15,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.RawTransactionsRequest
 import one.mixin.android.api.response.MultisigsAction
 import one.mixin.android.api.response.MultisigsState
+import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
+import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.MultisigsBiometricItem
+import one.mixin.android.ui.common.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
@@ -52,9 +56,15 @@ class MultisigsBottomSheetDialogFragment :
     @SuppressLint("SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        if (t.action == MultisigsAction.cancel.name) {
-            contentView.title.text = getString(R.string.multisig_revoke_transaction)
-            contentView.arrow_iv.setImageResource(R.drawable.ic_multisigs_arrow_ban)
+        val t = this.t
+        if (t is Multi2MultiBiometricItem) {
+            if (t.action == MultisigsAction.cancel.name) {
+                contentView.title.text = getString(R.string.multisig_revoke_transaction)
+                contentView.arrow_iv.setImageResource(R.drawable.ic_multisigs_arrow_ban)
+            } else {
+                contentView.title.text = getString(R.string.multisig_transaction)
+                contentView.arrow_iv.setImageResource(R.drawable.ic_multisigs_arrow_right)
+            }
         } else {
             contentView.title.text = getString(R.string.multisig_transaction)
             contentView.arrow_iv.setImageResource(R.drawable.ic_multisigs_arrow_right)
@@ -92,12 +102,19 @@ class MultisigsBottomSheetDialogFragment :
     }
 
     override fun checkState(state: String) {
-        if (state == MultisigsState.signed.name) {
-            contentView.error_btn.visibility = GONE
-            showErrorInfo(getString(R.string.multisig_state_signed))
-        } else if (state == MultisigsState.unlocked.name) {
-            contentView.error_btn.visibility = GONE
-            showErrorInfo(getString(R.string.multisig_state_unlocked))
+        when (state) {
+            MultisigsState.signed.name -> {
+                contentView.error_btn.visibility = GONE
+                showErrorInfo(getString(R.string.multisig_state_signed))
+            }
+            MultisigsState.unlocked.name -> {
+                contentView.error_btn.visibility = GONE
+                showErrorInfo(getString(R.string.multisig_state_unlocked))
+            }
+            PaymentStatus.paid.name -> {
+                contentView.error_btn.visibility = GONE
+                showErrorInfo(getString(R.string.pay_paid))
+            }
         }
     }
 
@@ -108,11 +125,16 @@ class MultisigsBottomSheetDialogFragment :
             .showNow(parentFragmentManager, UserListBottomSheetDialogFragment.TAG)
     }
 
-    override fun getBiometricInfo() =
-        BiometricInfo(
+    override fun getBiometricInfo(): BiometricInfo {
+        val t = this.t
+        return BiometricInfo(
             requireContext().getString(
-                if (t.action == MultisigsAction.cancel.name) {
-                    R.string.multisig_revoke_transaction
+                if (t is Multi2MultiBiometricItem) {
+                    if (t.action == MultisigsAction.cancel.name) {
+                        R.string.multisig_revoke_transaction
+                    } else {
+                        R.string.multisig_transaction
+                    }
                 } else {
                     R.string.multisig_transaction
                 }
@@ -121,16 +143,35 @@ class MultisigsBottomSheetDialogFragment :
             getDescription(),
             getString(R.string.multisig_pay_pin)
         )
+    }
 
     override fun getBiometricItem() = t
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
-        return when {
-            t.action == MultisigsAction.sign.name -> {
-                bottomViewModel.signMultisigs(t.requestId, pin)
+        return when (val t = this.t) {
+            is Multi2MultiBiometricItem -> {
+                when (t.action) {
+                    MultisigsAction.sign.name -> {
+                        bottomViewModel.signMultisigs(t.requestId, pin)
+                    }
+                    else -> {
+                        bottomViewModel.unlockMultisigs(t.requestId, pin)
+                    }
+                }
+            }
+            is One2MultiBiometricItem -> {
+                bottomViewModel.transactions(RawTransactionsRequest(
+                    assetId = t.asset.assetId,
+                    receivers = t.receivers,
+                    threshold = t.threshold,
+                    amount = t.amount,
+                    pin = "",
+                    tranceId = t.trace,
+                    memo = t.memo
+                ), pin)
             }
             else -> {
-                bottomViewModel.unlockMultisigs(t.requestId, pin)
+                MixinResponse<Void>()
             }
         }
     }
@@ -141,7 +182,9 @@ class MultisigsBottomSheetDialogFragment :
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
+        val t = this.t
         if (!success &&
+            t is Multi2MultiBiometricItem &&
             t.state != MultisigsState.signed.name &&
             t.state != MultisigsState.unlocked.name
         ) {

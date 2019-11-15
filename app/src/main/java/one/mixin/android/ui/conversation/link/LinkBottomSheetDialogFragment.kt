@@ -35,6 +35,7 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
+import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
@@ -48,7 +49,8 @@ import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.MultisigsBiometricItem
+import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
+import one.mixin.android.ui.common.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -250,18 +252,45 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                 asset = linkViewModel.refreshAsset(multisigs.assetId)
                             }
                             if (asset != null && asset!!.destination.isNotEmpty()) {
-                                val multisigsBiometricItem = MultisigsBiometricItem(
-                                    multisigs.requestId,
-                                    multisigs.action,
-                                    multisigs.senders,
-                                    multisigs.receivers,
-                                    asset!!,
-                                    multisigs.amount,
-                                    null,
-                                    null,
-                                    multisigs.memo,
-                                    multisigs.state
+                                val multisigsBiometricItem = Multi2MultiBiometricItem(
+                                    requestId = multisigs.requestId,
+                                    action = multisigs.action,
+                                    senders = multisigs.senders,
+                                    receivers = multisigs.receivers,
+                                    asset = asset!!,
+                                    amount = multisigs.amount,
+                                    pin = null,
+                                    trace = null,
+                                    memo = multisigs.memo,
+                                    state = multisigs.state
                                     )
+                                MultisigsBottomSheetDialogFragment.newInstance(multisigsBiometricItem)
+                                    .showNow(parentFragmentManager, MultisigsBottomSheetDialogFragment.TAG)
+                                dismiss()
+                            } else {
+                                error()
+                            }
+                        }
+                    }
+                    result.first == QrCodeType.payment.name -> {
+                        val paymentCodeResponse = result.second as PaymentCodeResponse
+                        lifecycleScope.launch {
+                            var asset = linkViewModel.findAssetItemById(paymentCodeResponse.assetId)
+                            if (asset == null || asset!!.destination.isEmpty()) {
+                                asset = linkViewModel.refreshAsset(paymentCodeResponse.assetId)
+                            }
+                            if (asset != null && asset!!.destination.isNotEmpty()) {
+                                val multisigsBiometricItem = One2MultiBiometricItem(
+                                    threshold = paymentCodeResponse.threshold,
+                                    senders = arrayOf(Session.getAccountId()!!),
+                                    receivers = paymentCodeResponse.receivers,
+                                    asset = asset!!,
+                                    amount = paymentCodeResponse.amount,
+                                    pin = null,
+                                    trace = null,
+                                    memo = paymentCodeResponse.memo,
+                                    state = paymentCodeResponse.status
+                                )
                                 MultisigsBottomSheetDialogFragment.newInstance(multisigsBiometricItem)
                                     .showNow(parentFragmentManager, MultisigsBottomSheetDialogFragment.TAG)
                                 dismiss()
