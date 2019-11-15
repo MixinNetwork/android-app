@@ -339,7 +339,7 @@ inline fun <T : Serializable> T.serialize(): String? {
     }
 }
 
-private val escapeSqlChars = arrayOf('\\', '%', '_', '[', ']')
+private val escapeSqlChars = charArrayOf('\\', '%', '_', '[', ']')
 
 fun String.escapeSql(): String {
     var result = this

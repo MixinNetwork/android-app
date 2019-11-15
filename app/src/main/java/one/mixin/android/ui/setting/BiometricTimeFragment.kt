@@ -24,7 +24,7 @@ class BiometricTimeFragment : BaseFragment() {
     companion object {
         const val TAG = "BiometricTimeFragment"
 
-        val VALUES = arrayOf(.25f, .5f, 1f, 2f, 6f, 12f, 24f)
+        val VALUES = floatArrayOf(.25f, .5f, 1f, 2f, 6f, 12f, 24f)
 
         const val X_HOUR = 1000 * 60 * 60
         const val DEFAULT_SELECTED_POS = 3
