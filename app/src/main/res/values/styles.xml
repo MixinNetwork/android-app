@@ -39,6 +39,7 @@
         <item name="bg_gray">@color/bgGray</item>
         <item name="bg_window">@color/bgWindow</item>
         <item name="bg_menu">@color/bgMenu</item>
+        <item name="bg_dark">@color/bgDark</item>
         <item name="bg_menu_border">@color/bgMenuBorder</item>
         <item name="flag_night">false</item>
         <item name="bg_gray_light">@color/bgGrayLight</item>
@@ -218,7 +219,7 @@
 
     <style name="TransactionDescTextStyle">
         <item name="android:textSize">14sp</item>
-        <item name="android:textColor">?attr/text_assist</item>
+        <item name="android:textColor">?attr/text_primary</item>
         <item name="android:layout_marginStart">20dp</item>
         <item name="android:layout_marginEnd">20dp</item>
         <item name="android:layout_marginTop">5dp</item>

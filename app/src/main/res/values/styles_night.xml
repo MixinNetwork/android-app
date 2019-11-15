@@ -28,6 +28,7 @@
         <item name="bg_black">@color/white</item>
         <item name="bg_gray">@color/bgGrayNight</item>
         <item name="bg_window">@color/bgWindowNight</item>
+        <item name="bg_dark">@color/bgDarkNight</item>
         <item name="bg_menu">@color/bgMenuNight</item>
         <item name="bg_menu_border">@color/bgMenuBorderNight</item>
         <item name="bg_gray_light">@color/bgGrayLightNight</item>

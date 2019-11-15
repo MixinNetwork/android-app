@@ -31,11 +31,11 @@ class UrlInterpreterActivity : BaseActivity() {
     }
 
     override fun getDefaultThemeId(): Int {
-        return R.style.AppTheme_Night_Transparent
+        return R.style.AppTheme_Transparent
     }
 
     override fun getNightThemeId(): Int {
-        return R.style.AppTheme_Transparent
+        return R.style.AppTheme_Night_Transparent
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
