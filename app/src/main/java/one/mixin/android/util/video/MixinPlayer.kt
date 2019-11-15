@@ -29,9 +29,13 @@ import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
 import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
+import java.lang.Exception
 
 class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoListener {
 
@@ -159,10 +163,28 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         }
         this.mId = id
         this.url = url
-        val dataSourceFactory = DefaultDataSourceFactory(MixinApplication.appContext, BANDWIDTH_METER,
-            DefaultHttpDataSourceFactory(Util.getUserAgent(MixinApplication.appContext, "Mixin"), BANDWIDTH_METER))
-        mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))
-        player.prepare(mediaSource)
+        doAsync {
+            var contentType = "application/x-mpegURL"
+            try {
+                val client = OkHttpClient.Builder().build()
+                val request = Request.Builder().url(url).build()
+                val response = client.newCall(request).execute()
+                response.header("Content-Type")?.let {
+                    contentType = it
+                }
+            } catch (e: Exception) {
+            }
+            uiThread {
+                val dataSourceFactory = DefaultDataSourceFactory(MixinApplication.appContext, BANDWIDTH_METER,
+                    DefaultHttpDataSourceFactory(Util.getUserAgent(MixinApplication.appContext, "Mixin"), BANDWIDTH_METER))
+                if (contentType.equals("application/x-mpegURL", true) || contentType.equals("application/vnd.apple.mpegurl", true)) {
+                    mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))
+                } else {
+                    mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))
+                }
+                player.prepare(mediaSource)
+            }
+        }
     }
 
     private fun buildDataSourceFactory(bandwidthMeter: DefaultBandwidthMeter): DataSource.Factory {

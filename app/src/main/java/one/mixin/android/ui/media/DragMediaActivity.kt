@@ -1115,11 +1115,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         if (messageItem.isVideo() || messageItem.isLive()) {
             messageItem.mediaUrl?.let {
                 if (messageItem.isLive()) {
-                    VideoPlayer.player()
-                        .loadHlsVideo(it, messageItem.messageId, force)
+                    VideoPlayer.player().loadHlsVideo(it, messageItem.messageId, force)
                 } else {
-                    VideoPlayer.player()
-                        .loadVideo(it, messageItem.messageId, force)
+                    VideoPlayer.player().loadVideo(it, messageItem.messageId, force)
                 }
             }
             setTextureView()
