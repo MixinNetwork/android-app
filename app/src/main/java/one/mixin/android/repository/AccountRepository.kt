@@ -13,12 +13,14 @@ import one.mixin.android.api.request.DeauthorRequest
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.request.LogoutRequest
 import one.mixin.android.api.request.PinRequest
+import one.mixin.android.api.request.RawTransactionsRequest
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
+import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AuthorizationService
@@ -104,6 +106,10 @@ constructor(
                         val resp = Gson().fromJson(response.data, MultisigsResponse::class.java)
                         Pair(type, resp)
                     }
+                    QrCodeType.payment.name -> {
+                        val resp = Gson().fromJson(response.data, PaymentCodeResponse::class.java)
+                        Pair(type, resp)
+                    }
                     else -> Pair("", "")
                 }
                 result
@@ -175,4 +181,7 @@ constructor(
 
     suspend fun cancelMultisigs(requestId: String) =
         accountService.cancelMultisigs(requestId)
+
+    suspend fun transactions(rawTransactionsRequest: RawTransactionsRequest) =
+        accountService.transactions(rawTransactionsRequest)
 }

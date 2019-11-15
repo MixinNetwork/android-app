@@ -19,6 +19,7 @@ import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.PinRequest
+import one.mixin.android.api.request.RawTransactionsRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
@@ -251,4 +252,9 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun cancelMultisigs(requestId: String) =
         accountRepository.cancelMultisigs(requestId)
+
+    suspend fun transactions(rawTransactionsRequest: RawTransactionsRequest, pin: String): MixinResponse<Void> {
+        rawTransactionsRequest.pin = encryptPin(Session.getPinToken()!!, pin)!!
+        return accountRepository.transactions(rawTransactionsRequest)
+    }
 }
