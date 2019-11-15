@@ -315,7 +315,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                     asset = asset!!,
                                     amount = paymentCodeResponse.amount,
                                     pin = null,
-                                    trace = null,
+                                    trace = paymentCodeResponse.traceId,
                                     memo = paymentCodeResponse.memo,
                                     state = paymentCodeResponse.status
                                 )

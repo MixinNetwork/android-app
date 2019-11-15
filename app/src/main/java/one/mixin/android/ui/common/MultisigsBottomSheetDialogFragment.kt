@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.OpponentMultisig
 import one.mixin.android.api.request.RawTransactionsRequest
 import one.mixin.android.api.response.MultisigsAction
 import one.mixin.android.api.response.MultisigsState
@@ -162,11 +163,10 @@ class MultisigsBottomSheetDialogFragment :
             is One2MultiBiometricItem -> {
                 bottomViewModel.transactions(RawTransactionsRequest(
                     assetId = t.asset.assetId,
-                    receivers = t.receivers,
-                    threshold = t.threshold,
+                    opponentMultisig = OpponentMultisig(t.receivers, t.threshold),
                     amount = t.amount,
                     pin = "",
-                    tranceId = t.trace,
+                    traceId = t.trace,
                     memo = t.memo
                 ), pin)
             }
