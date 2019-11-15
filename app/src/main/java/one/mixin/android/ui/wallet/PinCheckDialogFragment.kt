@@ -137,6 +137,13 @@ class PinCheckDialogFragment : DialogFragment(), Injectable {
         disposable.dispose()
     }
 
+    override fun dismiss() {
+        try {
+            super.dismiss()
+        } catch (e: IllegalStateException) {
+        }
+    }
+
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
             context?.vibrate(longArrayOf(0, 30))

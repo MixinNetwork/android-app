@@ -28,6 +28,7 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val SEND = "send"
         private const val WITHDRAWAL = "withdrawal"
         private const val ADDRESS = "address"
+        private const val APPS = "apps"
     }
 
     override fun getDefaultThemeId(): Int {
@@ -46,7 +47,7 @@ class UrlInterpreterActivity : BaseActivity() {
             return
         }
         if (Session.getAccount() == null) {
-            toast(one.mixin.android.R.string.not_logged_in)
+            toast(R.string.not_logged_in)
             finish()
             return
         }
@@ -60,7 +61,7 @@ class UrlInterpreterActivity : BaseActivity() {
 
     private fun interpretIntent(uri: Uri) {
         when (uri.host) {
-            CODE, PAY, USER -> {
+            CODE, PAY, USER, WITHDRAWAL, ADDRESS, APPS -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
@@ -83,16 +84,6 @@ class UrlInterpreterActivity : BaseActivity() {
                 }
                 finish()
             }
-            WITHDRAWAL -> {
-                LinkBottomSheetDialogFragment
-                    .newInstance(uri.toString())
-                    .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-            }
-            ADDRESS -> {
-                LinkBottomSheetDialogFragment
-                    .newInstance(uri.toString())
-                    .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-            }
         }
     }
 }
@@ -105,14 +96,19 @@ fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
         url.startsWith(Scheme.DEVICE, true) ||
         url.startsWith(Scheme.SEND, true) ||
         url.startsWith(Scheme.ADDRESS, true) ||
-        url.startsWith(Scheme.WITHDRAWAL, true)
+        url.startsWith(Scheme.WITHDRAWAL, true) ||
+        url.startsWith(Scheme.APPS, true)
     ) {
         true
     } else {
         val segments = Uri.parse(url).pathSegments
-        if (url.startsWith(Scheme.HTTPS_CODES, true)) {
+        if (url.startsWith(Scheme.HTTPS_CODES, true) ||
+            url.startsWith(Scheme.HTTPS_USERS, true) ||
+            url.startsWith(Scheme.HTTPS_APPS, true)) {
             segments.size >= 2 && segments[1].isUUID()
-        } else if (url.startsWith(Scheme.CODES, true)) {
+        } else if (url.startsWith(Scheme.CODES, true) ||
+            url.startsWith(Scheme.USERS, true) ||
+            url.startsWith(Scheme.APPS, true)) {
             segments.size >= 1 && segments[0].isUUID()
         } else if (includeTransfer && url.startsWith(Scheme.TRANSFER, true)) {
             segments.size >= 1 && segments[0].isUUID()

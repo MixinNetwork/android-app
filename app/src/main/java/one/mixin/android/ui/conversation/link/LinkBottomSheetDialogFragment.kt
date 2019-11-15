@@ -11,6 +11,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.annotation.StringRes
+import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -53,6 +54,7 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
@@ -119,17 +121,25 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
         }
     }
 
+    private fun getUserOrAppNotFoundTip(isApp: Boolean) = if (isApp) R.string.error_app_not_found else R.string.error_user_not_found
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        if (url.startsWith(Scheme.USERS, true) || url.startsWith(Scheme.HTTPS_USERS, true)) {
-            val segments = Uri.parse(url).pathSegments
+        val isUserScheme = url.startsWith(Scheme.USERS, true) || url.startsWith(Scheme.HTTPS_USERS, true)
+        val isAppScheme = url.startsWith(Scheme.APPS, true) || url.startsWith(Scheme.HTTPS_APPS, true)
+        if (isUserScheme || isAppScheme) {
+            val uri = url.toUri()
+            val segments = uri.pathSegments
             val userId = if (segments.size >= 2) {
                 segments[1]
             } else {
                 segments[0]
             }
+
+            var isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
+
             if (!userId.isUUID()) {
-                context?.toast(R.string.error_user_invalid_format)
+                context?.toast(getUserOrAppNotFoundTip(isAppScheme))
                 dismiss()
             } else {
                 Flowable.just(userId).subscribeOn(Schedulers.io()).map {
@@ -143,14 +153,32 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                     user
                 }.observeOn(AndroidSchedulers.mainThread()).autoDispose(scopeProvider).subscribe({
                     it.notNullWithElse({ u ->
-                        UserBottomSheetDialogFragment.newInstance(u).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        if (isOpenApp) {
+                            lifecycleScope.launch {
+                                u.appId?.let { appId ->
+                                    linkViewModel.findAppById(appId)?.let { app ->
+                                        WebBottomSheetDialogFragment.newInstance(
+                                            app.homeUri,
+                                            null,
+                                            app.appId,
+                                            app.name,
+                                            app.icon_url,
+                                            app.capabilities
+                                        ).showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                                    }
+                                }
+                            }
+                        } else {
+                            UserBottomSheetDialogFragment.newInstance(u)
+                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        }
                         dismiss()
                     }, {
-                        context?.toast(R.string.error_user_not_found)
+                        context?.toast(getUserOrAppNotFoundTip(isAppScheme))
                         dismiss()
                     })
                 }, {
-                    context?.toast(R.string.error_user_not_found)
+                    context?.toast(getUserOrAppNotFoundTip(isAppScheme))
                     dismiss()
                 })
             }
