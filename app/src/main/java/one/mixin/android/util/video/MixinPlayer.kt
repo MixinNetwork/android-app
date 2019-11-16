@@ -177,10 +177,12 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
             uiThread {
                 val dataSourceFactory = DefaultDataSourceFactory(MixinApplication.appContext, BANDWIDTH_METER,
                     DefaultHttpDataSourceFactory(Util.getUserAgent(MixinApplication.appContext, "Mixin"), BANDWIDTH_METER))
-                if (contentType.equals("application/x-mpegURL", true) || contentType.equals("application/vnd.apple.mpegurl", true)) {
-                    mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))
+                mediaSource = if (contentType.equals("application/x-mpegURL", true) ||
+                    contentType.equals("application/vnd.apple.mpegurl", true) ||
+                    contentType.equals("binary/octet-stream", ignoreCase = true)) {
+                    HlsMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))
                 } else {
-                    mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))
+                    ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))
                 }
                 player.prepare(mediaSource)
             }

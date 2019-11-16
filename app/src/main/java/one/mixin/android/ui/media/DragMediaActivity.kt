@@ -145,6 +145,7 @@ import one.mixin.android.widget.PhotoView.PhotoView
 import one.mixin.android.widget.PhotoView.PhotoViewAttacher
 import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView.Companion.STATUS_LOADING
+import one.mixin.android.widget.PlayView.Companion.STATUS_PAUSE
 import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
 import one.mixin.android.widget.PlayView.Companion.STATUS_REFRESH
 import one.mixin.android.widget.gallery.MimeType
@@ -998,9 +999,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         findViewPagerChildByTag(pos) {
             val parentView = it.getChildAt(0)
             if (parentView is FrameLayout) {
-                if (parentView.play_view.status == STATUS_REFRESH &&
-                    status == STATUS_IDLE
-                ) {
+                if (parentView.play_view.status == STATUS_REFRESH && status == STATUS_IDLE) {
                     return
                 }
                 parentView.play_view.status = status
@@ -1100,7 +1099,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     }
 
     private fun pause() {
-        setPlayViewStatus(STATUS_IDLE)
+        setPlayViewStatus(STATUS_PAUSE)
         VideoPlayer.player().pause()
     }
 

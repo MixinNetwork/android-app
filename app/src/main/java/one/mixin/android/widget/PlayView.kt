@@ -24,6 +24,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         const val STATUS_LOADING = 1
         const val STATUS_PLAYING = 2
         const val STATUS_REFRESH = 3
+        const val STATUS_PAUSE = 4
     }
 
     var status = STATUS_IDLE
@@ -62,7 +63,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     init {
         setWillNotDraw(false)
         val ta = context.obtainStyledAttributes(attrs, R.styleable.PlayView, defStyleAttr, 0)
-        ta?.let {
+        ta.let {
             if (ta.hasValue(R.styleable.PlayView_bg)) {
                 bg = ta.getColor(R.styleable.PlayView_bg, DEFAULT_BG)
             }
@@ -98,12 +99,15 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         canvas.drawCircle(w / 2f, h / 2f, w / 2f, bgPaint)
         when (status) {
             STATUS_IDLE -> {
-                playDrawable.isPlay = true
-                pb.visibility = GONE
-                playDrawable.draw(canvas)
+                pb.visibility = VISIBLE
             }
             STATUS_LOADING -> {
                 pb.visibility = VISIBLE
+            }
+            STATUS_PAUSE -> {
+                playDrawable.isPlay = true
+                pb.visibility = GONE
+                playDrawable.draw(canvas)
             }
             STATUS_PLAYING -> {
                 playDrawable.isPlay = false
