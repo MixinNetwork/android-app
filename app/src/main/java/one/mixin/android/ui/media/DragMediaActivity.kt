@@ -635,8 +635,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             view.tag = messageItem.isLive()
             if (VideoPlayer.player().mId == messageItem.messageId) {
-                val playbackState = VideoPlayer.player()
-                    .player.playbackState
+                val playbackState = VideoPlayer.player().player.playbackState
                 view.play_view.status = when (playbackState) {
                     STATE_IDLE, STATE_ENDED -> STATUS_IDLE
                     STATE_BUFFERING -> STATUS_LOADING
@@ -644,7 +643,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         if (VideoPlayer.player().isPlaying()) {
                             STATUS_PLAYING
                         } else {
-                            STATUS_IDLE
+                            STATUS_PAUSE
                         }
                     }
                 }
@@ -661,8 +660,14 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         setPreviewIv(false, view_pager.currentItem)
                         play(view_pager.currentItem)
                     }
-                    STATUS_LOADING, STATUS_PLAYING -> {
+                    STATUS_LOADING -> {
+                       pause()
+                    }
+                    STATUS_PLAYING -> {
                         pause()
+                    }
+                    STATUS_PAUSE -> {
+                        play(view_pager.currentItem)
                     }
                     STATUS_REFRESH -> {
                         load(position, force = true) {
@@ -1245,7 +1250,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 fadeOut(parentView, parentView.tag as Boolean)
                 parentView.play_view.status = STATUS_PLAYING
             } else {
-                parentView.play_view.status = STATUS_IDLE
+                parentView.play_view.status = STATUS_PAUSE
             }
         }
     }

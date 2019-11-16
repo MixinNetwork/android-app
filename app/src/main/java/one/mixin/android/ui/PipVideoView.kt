@@ -48,6 +48,7 @@ import one.mixin.android.widget.AspectRatioFrameLayout
 import one.mixin.android.widget.PlayView
 import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView.Companion.STATUS_LOADING
+import one.mixin.android.widget.PlayView.Companion.STATUS_PAUSE
 import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
 import org.jetbrains.anko.dip
 import timber.log.Timber
@@ -314,6 +315,9 @@ class PipVideoView {
                     STATUS_LOADING, STATUS_PLAYING -> {
                         pause()
                     }
+                    STATUS_PAUSE -> {
+                        start()
+                    }
                     PlayView.STATUS_REFRESH -> {
                         mediaUrl?.let {
                             if (isVideo) {
@@ -358,7 +362,7 @@ class PipVideoView {
                             fadeOut()
                             playView?.status = STATUS_PLAYING
                         } else {
-                            playView?.status = STATUS_IDLE
+                            playView?.status = STATUS_PAUSE
                         }
                         if (!aodWakeLock.isHeld) {
                             aodWakeLock.acquire()
@@ -541,7 +545,7 @@ class PipVideoView {
     }
 
     private fun pause() {
-        playView?.status = STATUS_IDLE
+        playView?.status = STATUS_PAUSE
         VideoPlayer.player().pause()
     }
 
