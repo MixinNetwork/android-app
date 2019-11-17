@@ -12,7 +12,6 @@ import com.google.android.exoplayer2.Player.STATE_BUFFERING
 import com.google.android.exoplayer2.Player.STATE_READY
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.Timeline
-import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory
 import com.google.android.exoplayer2.source.BehindLiveWindowException
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
@@ -22,16 +21,13 @@ import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.upstream.DataSource
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
 import java.lang.Exception
-import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import org.jetbrains.anko.doAsync
@@ -48,9 +44,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
                 addVideoListener(this@MixinPlayer)
             }
         } else {
-
-            val videoTrackSelectionFactory = AdaptiveTrackSelection.Factory(BANDWIDTH_METER)
-            val trackSelector = DefaultTrackSelector(videoTrackSelectionFactory)
+            val trackSelector = DefaultTrackSelector(AdaptiveTrackSelection.Factory())
             ExoPlayerFactory.newSimpleInstance(MixinApplication.appContext, trackSelector).apply {
                 volume = 1.0f
                 addListener(this@MixinPlayer)
@@ -133,7 +127,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
             return
         }
         this.url = url
-        mediaSource = ProgressiveMediaSource.Factory(buildDataSourceFactory(BANDWIDTH_METER))
+        mediaSource = ProgressiveMediaSource.Factory(buildDataSourceFactory())
             .createMediaSource(Uri.parse(url))
         player.prepare(mediaSource)
     }
@@ -144,7 +138,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         }
         this.mId = id
         this.url = url
-        mediaSource = ProgressiveMediaSource.Factory(buildDataSourceFactory(BANDWIDTH_METER))
+        mediaSource = ProgressiveMediaSource.Factory(buildDataSourceFactory())
             .createMediaSource(Uri.parse(url))
         player.prepare(mediaSource)
     }
@@ -175,33 +169,20 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
             } catch (e: Exception) {
             }
             uiThread {
-                val dataSourceFactory = DefaultDataSourceFactory(MixinApplication.appContext, BANDWIDTH_METER,
-                    DefaultHttpDataSourceFactory(Util.getUserAgent(MixinApplication.appContext, "Mixin"), BANDWIDTH_METER))
                 mediaSource = if (contentType.contains("application/x-mpegURL", true) ||
                     contentType.contains("application/vnd.apple.mpegurl", true) ||
                     contentType.contains("binary/octet-stream", ignoreCase = true)) {
-                    HlsMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))
+                    HlsMediaSource.Factory(buildDataSourceFactory()).createMediaSource(Uri.parse(url))
                 } else {
-                    ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))
+                    ProgressiveMediaSource.Factory(buildDataSourceFactory()).createMediaSource(Uri.parse(url))
                 }
                 player.prepare(mediaSource)
             }
         }
     }
 
-    private fun buildDataSourceFactory(bandwidthMeter: DefaultBandwidthMeter): DataSource.Factory {
-        return DefaultDataSourceFactory(MixinApplication.appContext, bandwidthMeter, buildOkHttpDataSourceFactory())
-    }
-
-    private fun buildOkHttpDataSourceFactory(): OkHttpDataSourceFactory {
-        val logging = HttpLoggingInterceptor()
-        logging.level = HttpLoggingInterceptor.Level.NONE
-        val okHttpClient = OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .addNetworkInterceptor(logging)
-            .build()
-        return OkHttpDataSourceFactory(okHttpClient, Util.getUserAgent(MixinApplication.appContext, BuildConfig.APPLICATION_ID))
+    private fun buildDataSourceFactory(): DataSource.Factory {
+        return DefaultDataSourceFactory(MixinApplication.appContext, null, DefaultHttpDataSourceFactory(Util.getUserAgent(MixinApplication.appContext, "Mixin"), null))
     }
 
     override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
@@ -394,7 +375,6 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
 
     companion object {
         @SuppressLint("StaticFieldLeak")
-        private val BANDWIDTH_METER = DefaultBandwidthMeter.Builder(MixinApplication.appContext).build()
 
         private fun isBehindLiveWindow(e: ExoPlaybackException): Boolean {
             if (e.type != ExoPlaybackException.TYPE_SOURCE) {

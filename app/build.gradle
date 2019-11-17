@@ -248,9 +248,6 @@ dependencies {
     implementation "com.uber.autodispose:autodispose-lifecycle:${autodisposeVersion}"
     implementation "com.google.android.exoplayer:exoplayer-core:${exoplayerVersion}"
     implementation "com.google.android.exoplayer:exoplayer-hls:${exoplayerVersion}"
-    implementation("com.google.android.exoplayer:extension-okhttp:${exoplayerVersion}") {
-        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
-    }
     implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
     implementation "com.github.SeniorZhai:LargeImage:${largeImageViewVersion}"
     implementation "com.github.tougee:BiometricPromptCompat:${biometricpromptVersion}"
