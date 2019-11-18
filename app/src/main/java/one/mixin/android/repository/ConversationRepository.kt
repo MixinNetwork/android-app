@@ -22,6 +22,7 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ChatMinimal
@@ -273,7 +274,10 @@ internal constructor(
         messageDao.isSilence(conversationId, userId)
 
     suspend fun isSilenceInviter(conversationId: String): Boolean {
-        return getInviter(conversationId)?.relationship != UserRelationship.FRIEND.name
+        return getInviter(conversationId).notNullWithElse(
+            { it.relationship != UserRelationship.FRIEND.name },
+            false
+        )
     }
 
     suspend fun getInviter(conversationId: String) = messageDao.getInviter(

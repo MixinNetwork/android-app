@@ -393,8 +393,11 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT * FROM users WHERE user_id = (SELECT user_id FROM messages WHERE conversation_id =:conversationId AND 
-        category = 'SYSTEM_CONVERSATION' AND `action` = 'ADD' AND participant_id = :selfId ORDER BY created_at DESC LIMIT 1)
+        SELECT * FROM users WHERE user_id = (SELECT m.user_id FROM messages m
+        LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
+        WHERE m.conversation_id =:conversationId AND c.status == 2 
+        AND m.category = 'SYSTEM_CONVERSATION' AND m.`action` = 'ADD' 
+        AND m.participant_id = :selfId ORDER BY m.created_at DESC LIMIT 1)
         """
     )
     suspend fun getInviter(conversationId: String, selfId: String): User?
