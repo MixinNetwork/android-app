@@ -492,14 +492,21 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
 
-            override fun onActionClick(action: String) {
+            override fun onActionClick(action: String, userId: String) {
                 if (action.startsWith("input:")) {
                     val msg = action.substring(6).trim()
                     if (msg.isNotEmpty()) {
                         sendMessage(msg)
                     }
                 } else {
-                    openUrlWithExtraWeb(action, conversationId, parentFragmentManager)
+                    lifecycleScope.launch {
+                        val app = chatViewModel.findAppById(userId)
+                        openUrlWithExtraWeb(action, conversationId, parentFragmentManager,
+                            app?.appId,
+                            app?.name,
+                            app?.icon_url,
+                            app?.capabilities)
+                    }
                 }
             }
 

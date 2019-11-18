@@ -59,7 +59,7 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
             } else {
-                onItemListener.onActionClick(actionCard.action)
+                onItemListener.onActionClick(actionCard.action, messageItem.userId)
             }
         }
         setItemBackgroundResource(

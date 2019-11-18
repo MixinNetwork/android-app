@@ -562,7 +562,7 @@ class ConversationAdapter(
 
         open fun onBlockClick() {}
 
-        open fun onActionClick(action: String) {}
+        open fun onActionClick(action: String, userId: String) {}
 
         open fun onAudioClick(messageItem: MessageItem) {}
 

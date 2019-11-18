@@ -84,7 +84,7 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
                     if (hasSelect) {
                         onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
                     } else {
-                        onItemListener.onActionClick(b.action)
+                        onItemListener.onActionClick(b.action, messageItem.userId)
                     }
                 }
             }
