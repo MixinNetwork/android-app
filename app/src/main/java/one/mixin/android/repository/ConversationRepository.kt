@@ -34,6 +34,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.SearchMessageItem
+import one.mixin.android.vo.UserRelationship
 
 @Singleton
 class ConversationRepository
@@ -270,6 +271,15 @@ internal constructor(
 
     suspend fun isSilence(conversationId: String, userId: String): Int =
         messageDao.isSilence(conversationId, userId)
+
+    suspend fun isSilenceInviter(conversationId: String): Boolean {
+        return getInviter(conversationId)?.relationship != UserRelationship.FRIEND.name
+    }
+
+    suspend fun getInviter(conversationId: String) = messageDao.getInviter(
+        conversationId,
+        Session.getAccountId()!!
+    )
 
     suspend fun findNextAudioMessage(conversationId: String, createdAt: String, messageId: String) =
         messageDao.findNextAudioMessage(conversationId, createdAt, messageId)
