@@ -7,7 +7,6 @@ import android.text.SpannableString
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.View
-import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.appcompat.widget.AppCompatTextView
 import java.util.LinkedList
@@ -32,7 +31,7 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
     private var defaultSelectedColor = Color.LTGRAY
     var clickTime: Long = 0
 
-    override fun setText(text: CharSequence, type: TextView.BufferType) {
+    override fun setText(text: CharSequence, type: BufferType) {
         if (TextUtils.isEmpty(text)) {
             super.setText(text, type)
             return
