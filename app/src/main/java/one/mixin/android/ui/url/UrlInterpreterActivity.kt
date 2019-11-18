@@ -178,11 +178,16 @@ fun openUrlWithExtraWeb(
     url: String,
     conversationId: String?,
     supportFragmentManager: FragmentManager,
+    appId: String? = null,
+    appName: String? = null,
+    appAvatar: String? = null,
+    appCapabilities: ArrayList<String>? = null,
     onDismiss: (() -> Unit)? = null
 ) = openUrl(url, supportFragmentManager) {
     openWebBottomSheet(
         url,
         conversationId,
+        appId, appName, appAvatar, appCapabilities,
         supportFragmentManager = supportFragmentManager,
         onDismiss = onDismiss
     )

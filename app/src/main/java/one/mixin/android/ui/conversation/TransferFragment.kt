@@ -41,6 +41,7 @@ import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
+import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
@@ -76,6 +77,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.displayAddress
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.BottomSheetLinearLayout
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
 import one.mixin.android.worker.RefreshAssetsWorker
@@ -148,8 +150,12 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     private var bottomValue = 0.0
 
     private val assetsView: View by lazy {
-        val view = View.inflate(context, R.layout.view_wallet_transfer_type_bottom, null)
+        val view = View.inflate(context, R.layout.view_wallet_transfer_type_bottom, null) as BottomSheetLinearLayout
         view.type_rv.adapter = adapter
+        context?.let { c ->
+            val topOffset = c.appCompatActionBarHeight()
+            view.heightOffset = topOffset
+        }
         view
     }
 

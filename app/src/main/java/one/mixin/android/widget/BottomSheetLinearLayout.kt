@@ -9,9 +9,17 @@ class BottomSheetLinearLayout(context: Context, attributeSet: AttributeSet) : Li
 
     private val statusBarHeight = context.statusBarHeight()
 
+    var heightOffset: Int = statusBarHeight
+        set(value) {
+            if (field != value) {
+                field = value
+                requestLayout()
+            }
+        }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val parentHeightSpec = MeasureSpec.makeMeasureSpec(
-            MeasureSpec.getSize(heightMeasureSpec) - statusBarHeight,
+            MeasureSpec.getSize(heightMeasureSpec) - heightOffset,
             MeasureSpec.getMode(heightMeasureSpec)
         )
         super.onMeasure(widthMeasureSpec, parentHeightSpec)

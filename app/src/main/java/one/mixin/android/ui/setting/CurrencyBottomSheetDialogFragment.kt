@@ -21,12 +21,15 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.BottomSheetRelativeLayout
 import one.mixin.android.widget.SearchView
 
 class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -43,7 +46,12 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_currency_bottom_sheet, null)
+        val view = View.inflate(context, R.layout.fragment_currency_bottom_sheet, null) as BottomSheetRelativeLayout
+        context?.let { c ->
+            val topOffset = c.statusBarHeight() + c.appCompatActionBarHeight()
+            view.heightOffset = topOffset
+        }
+        contentView = view
         (dialog as BottomSheet).setCustomView(contentView)
     }
 
