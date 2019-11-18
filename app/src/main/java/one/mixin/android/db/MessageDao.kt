@@ -14,6 +14,7 @@ import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
+import one.mixin.android.vo.User
 
 @Dao
 interface MessageDao : BaseDao<Message> {
@@ -389,4 +390,12 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT * FROM messages WHERE id IN (:messageIds) ORDER BY created_at, rowid")
     suspend fun getSortMessagesByIds(messageIds: List<String>): List<Message>
+
+    @Query(
+        """
+        SELECT * FROM users WHERE user_id = (SELECT user_id FROM messages WHERE conversation_id =:conversationId AND 
+        category = 'SYSTEM_CONVERSATION' AND `action` = 'ADD' AND participant_id = :selfId ORDER BY created_at DESC LIMIT 1)
+        """
+    )
+    suspend fun getInviter(conversationId: String, selfId: String): User?
 }
