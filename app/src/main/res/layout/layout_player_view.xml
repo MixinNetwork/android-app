@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <one.mixin.android.widget.AspectRatioFrameLayout
+        android:id="@id/video_aspect_ratio"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center">
+
+        <TextureView
+            android:id="@+id/video_texture"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </one.mixin.android.widget.AspectRatioFrameLayout>
+
+    <one.mixin.android.ui.media.pager.PlayerControlView
+        android:id="@+id/player_control_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</merge>

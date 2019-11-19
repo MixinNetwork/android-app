@@ -124,7 +124,7 @@ import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.media.DragMediaActivity
+import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.url.openUrlWithExtraWeb
@@ -403,7 +403,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             override fun onImageClick(messageItem: MessageItem, view: View) {
                 starTransition = true
                 if (messageItem.isLive()) {
-                    DragMediaActivity.show(
+                    MediaPagerActivity.show(
                         requireActivity(),
                         view,
                         messageItem.conversationId,
@@ -418,7 +418,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 val file = File(path)
                 if (file.exists()) {
-                    DragMediaActivity.show(
+                    MediaPagerActivity.show(
                         requireActivity(),
                         view,
                         messageItem.conversationId,

@@ -115,4 +115,7 @@
         <attr name="avatar_group_size" format="dimension" />
         <attr name="avatar_group_border_color" format="color" />
     </declare-styleable>
+    <declare-styleable name="PlayerView">
+        <attr name="use_controller" format="boolean"/>
+    </declare-styleable>
 </resources>

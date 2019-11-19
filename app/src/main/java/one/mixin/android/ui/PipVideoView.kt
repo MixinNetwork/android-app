@@ -40,7 +40,7 @@ import one.mixin.android.extension.getPixelsInCM
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.media.DragMediaActivity
+import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.video.MixinPlayer
@@ -252,7 +252,7 @@ class PipVideoView {
                 if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
                     appContext.toast(R.string.need_background_permission)
                 }
-                DragMediaActivity.show(
+                MediaPagerActivity.show(
                     MixinApplication.appContext,
                     conversationId,
                     messageId,

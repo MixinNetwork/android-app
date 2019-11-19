@@ -29,8 +29,8 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
-import one.mixin.android.ui.media.DragMediaActivity
 import one.mixin.android.ui.media.SharedMediaActivity
+import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.sticker.StickerActivity
@@ -94,5 +94,5 @@ abstract class ActivityModule {
     internal abstract fun contributeSharedMedia(): SharedMediaActivity
 
     @ContributesAndroidInjector(modules = [(CommonModule::class), (SharedMediaActivityModule::class)])
-    internal abstract fun contributeDragMedia(): DragMediaActivity
+    internal abstract fun contributeMediaPager(): MediaPagerActivity
 }
