@@ -106,10 +106,10 @@ import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.CREATE_SESSION_MESSAGE
-import one.mixin.android.websocket.TransferContactData
-import one.mixin.android.websocket.TransferLiveData
-import one.mixin.android.websocket.TransferRecallData
-import one.mixin.android.websocket.TransferStickerData
+import one.mixin.android.websocket.ContactMessagePayload
+import one.mixin.android.websocket.LiveMessagePayload
+import one.mixin.android.websocket.RecallMessagePayload
+import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
@@ -196,7 +196,7 @@ internal constructor(
     fun sendStickerMessage(
         conversationId: String,
         sender: User,
-        transferStickerData: TransferStickerData,
+        transferStickerData: StickerMessagePayload,
         isPlain: Boolean
     ) {
         val category = if (isPlain) MessageCategory.PLAIN_STICKER.name else MessageCategory.SIGNAL_STICKER.name
@@ -210,7 +210,7 @@ internal constructor(
 
     fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, isPlain: Boolean) {
         val category = if (isPlain) MessageCategory.PLAIN_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
-        val transferContactData = TransferContactData(shareUserId)
+        val transferContactData = ContactMessagePayload(shareUserId)
         val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferContactData).toByteArray())
         val message = createContactMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
             category, encoded, shareUserId, MessageStatus.SENDING, nowInUtc())
@@ -224,7 +224,7 @@ internal constructor(
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
         list.forEach { messageItem ->
-            val transferRecallData = TransferRecallData(messageItem.messageId)
+            val transferRecallData = RecallMessagePayload(messageItem.messageId)
             val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferRecallData).toByteArray())
             val message = createRecallMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
                 MessageCategory.MESSAGE_RECALL.name, encoded, MessageStatus.SENDING, nowInUtc())
@@ -235,7 +235,7 @@ internal constructor(
     private fun sendLiveMessage(
         conversationId: String,
         sender: User,
-        transferLiveData: TransferLiveData,
+        transferLiveData: LiveMessagePayload,
         isPlain: Boolean
     ) {
         val category = if (isPlain) MessageCategory.PLAIN_LIVE.name else MessageCategory.SIGNAL_LIVE.name
@@ -328,7 +328,7 @@ internal constructor(
                             message.mediaUrl.isNullOrBlank()) {
                             return@let 1
                         }
-                        sendLiveMessage(conversationId, sender, TransferLiveData(
+                        sendLiveMessage(conversationId, sender, LiveMessagePayload(
                             message.mediaWidth, message.mediaHeight, message.thumbUrl, message.mediaUrl), isPlain)
                     }
                     message.category.endsWith("_VIDEO") -> {
@@ -356,7 +356,7 @@ internal constructor(
                             null, MediaStatus.PENDING, MessageStatus.SENDING)))
                     }
                     message.category.endsWith("_STICKER") -> {
-                        sendStickerMessage(conversationId, sender, TransferStickerData(name = message.name, stickerId = message.stickerId!!), isPlain)
+                        sendStickerMessage(conversationId, sender, StickerMessagePayload(name = message.name, stickerId = message.stickerId!!), isPlain)
                     }
                     message.category.endsWith("_AUDIO") -> {
                         val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name

@@ -27,10 +27,10 @@ import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.SystemConversationData
 import one.mixin.android.websocket.SystemExtensionSessionAction
-import one.mixin.android.websocket.TransferAttachmentData
+import one.mixin.android.websocket.AttachmentMessagePayload
 import one.mixin.android.websocket.TransferPlainAckData
-import one.mixin.android.websocket.TransferRecallData
-import one.mixin.android.websocket.TransferStickerData
+import one.mixin.android.websocket.RecallMessagePayload
+import one.mixin.android.websocket.StickerMessagePayload
 import org.whispersystems.libsignal.DecryptionCallback
 
 class DecryptSessionMessage : Injector() {
@@ -60,7 +60,7 @@ class DecryptSessionMessage : Injector() {
 
     private fun processRecallMessage(data: BlazeMessageData) {
         val decoded = Base64.decode(data.data)
-        val transferRecallData = gson.fromJson(String(decoded), TransferRecallData::class.java)
+        val transferRecallData = gson.fromJson(String(decoded), RecallMessagePayload::class.java)
         val msg = createRecallMessage(UUID.randomUUID().toString(), data.conversationId, data.userId,
             MessageCategory.MESSAGE_RECALL.name, data.data, MessageStatus.DELIVERED, data.createdAt)
         jobManager.addJobInBackground(SendMessageJob(msg, recallMessageId = transferRecallData.messageId))
@@ -169,7 +169,7 @@ class DecryptSessionMessage : Injector() {
             }
             data.category.endsWith("_STICKER") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), TransferStickerData::class.java)
+                val mediaData = gson.fromJson(String(decoded), StickerMessagePayload::class.java)
                 val message = if (mediaData.stickerId == null) {
                     val sticker = stickerDao.getStickerByAlbumIdAndName(mediaData.albumId!!, mediaData.name!!)
                     if (sticker != null) {
@@ -191,7 +191,7 @@ class DecryptSessionMessage : Injector() {
             }
             data.category.endsWith("_IMAGE") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
                 val message = createMediaMessage(data.messageId,
                     data.conversationId, data.userId, data.category, mediaData.attachmentId, null,
                     mediaData.mimeType, mediaData.size, mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.key, mediaData.digest,
@@ -203,7 +203,7 @@ class DecryptSessionMessage : Injector() {
             }
             data.category.endsWith("_DATA") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
                 val message = createAttachmentMessage(data.messageId, data.conversationId, data.userId, data.category,
                     mediaData.attachmentId, mediaData.name, null,
                     mediaData.mimeType, mediaData.size, data.createdAt, mediaData.key,

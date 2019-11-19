@@ -2,7 +2,7 @@ package one.mixin.android.websocket
 
 import com.google.gson.annotations.SerializedName
 
-data class TransferAttachmentData(
+data class AttachmentMessagePayload(
     @SerializedName("key")
     var key: ByteArray?,
     @SerializedName("digest")
@@ -29,7 +29,7 @@ data class TransferAttachmentData(
     var waveform: ByteArray? = null
 )
 
-fun TransferAttachmentData.invalidData(): Boolean {
+fun AttachmentMessagePayload.invalidData(): Boolean {
     if (width == null || width == 0 || height == null || height == 0) {
         return true
     }
