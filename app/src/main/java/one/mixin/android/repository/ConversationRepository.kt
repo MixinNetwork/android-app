@@ -168,6 +168,12 @@ internal constructor(
     suspend fun deleteConversationById(conversationId: String) =
         conversationDao.deleteConversationById(conversationId)
 
+    suspend fun getMediaUrlByConversationId(conversationId: String) =
+        messageDao.getMediaUrlByConversationId(conversationId)
+
+    suspend fun getMediaUrlReference(mediaUrl: String) =
+        messageDao.getMediaUrlReference(mediaUrl)
+
     suspend fun updateConversationPinTimeById(conversationId: String, pinTime: String?) =
         withContext(SINGLE_DB_THREAD) {
             conversationDao.updateConversationPinTimeById(conversationId, pinTime)
@@ -274,7 +280,8 @@ internal constructor(
     suspend fun findNextAudioMessage(conversationId: String, createdAt: String, messageId: String) =
         messageDao.findNextAudioMessage(conversationId, createdAt, messageId)
 
-    fun getMediaMessagesExcludeLive(conversationId: String) = messageDao.getMediaMessagesExcludeLive(conversationId)
+    fun getMediaMessagesExcludeLive(conversationId: String) =
+        messageDao.getMediaMessagesExcludeLive(conversationId)
 
     fun getAudioMessages(conversationId: String) = messageDao.getAudioMessages(conversationId)
 

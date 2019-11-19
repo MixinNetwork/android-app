@@ -389,4 +389,10 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT * FROM messages WHERE id IN (:messageIds) ORDER BY created_at, rowid")
     suspend fun getSortMessagesByIds(messageIds: List<String>): List<Message>
+
+    @Query("SELECT media_url FROM messages WHERE conversation_id =:conversationId AND media_url IS NOT NULL")
+    suspend fun getMediaUrlByConversationId(conversationId: String): List<String>
+
+    @Query("SELECT count(*) FROM messages WHERE media_url =:mediaUrl")
+    suspend fun getMediaUrlReference(mediaUrl: String): Int
 }

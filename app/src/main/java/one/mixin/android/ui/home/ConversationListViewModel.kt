@@ -2,10 +2,13 @@ package one.mixin.android.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bugsnag.android.Bugsnag
+import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
+import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
@@ -48,6 +51,19 @@ internal constructor(
     }
 
     fun deleteConversation(conversationId: String) = viewModelScope.launch {
+        messageRepository.getMediaUrlByConversationId(conversationId).forEach {
+            if (messageRepository.getMediaUrlReference(it) == 1) {
+                try {
+                    File(it.getFilePath()!!).let { file ->
+                        if (file.exists() && file.isFile) {
+                            file.delete()
+                        }
+                    }
+                } catch (e: Exception) {
+                    Bugsnag.notify(e)
+                }
+            }
+        }
         messageRepository.deleteConversationById(conversationId)
     }
 

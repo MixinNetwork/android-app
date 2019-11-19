@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
 import io.reactivex.Flowable
 import io.reactivex.Observable
@@ -116,6 +117,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import timber.log.Timber
 
+@Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class ConversationViewModel
 @Inject
 internal constructor(
@@ -474,6 +476,17 @@ internal constructor(
     fun deleteMessages(list: List<MessageItem>) {
         viewModelScope.launch(SINGLE_DB_THREAD) {
             list.forEach { item ->
+                if (item.mediaUrl != null) {
+                    try {
+                        File(item.mediaUrl.getFilePath()).let { file ->
+                            if (file.exists() && file.isFile) {
+                                file.delete()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Bugsnag.notify(e)
+                    }
+                }
                 conversationRepository.deleteMessage(item.messageId)
                 jobManager.cancelJobById(item.messageId)
                 notificationManager.cancel(item.userId.hashCode())
