@@ -23,7 +23,11 @@ import one.mixin.android.event.ProgressEvent
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.sp
 
-class CircleProgress @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
+class CircleProgress @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) :
     View(context, attrs, defStyleAttr) {
     private val bounds = RectF()
     private val fBounds = RectF()
@@ -72,11 +76,16 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
     init {
         val a = context.obtainStyledAttributes(attrs, R.styleable.CircleProgress, defStyleAttr, 0)
         mSize = a.getDimensionPixelSize(R.styleable.CircleProgress_size, context.dip(40))
-        mBorderWidth = a.getDimensionPixelSize(R.styleable.CircleProgress_progressWidth,
-            context.dip(DEFAULT_BORDER_WIDTH))
+        mBorderWidth = a.getDimensionPixelSize(
+            R.styleable.CircleProgress_progressWidth,
+            context.dip(DEFAULT_BORDER_WIDTH)
+        )
         mShadowColor = a.getColor(R.styleable.CircleProgress_shadowColor, Color.WHITE)
         mProgressColor = a.getColor(R.styleable.CircleProgress_progressColor, Color.BLUE)
-        mPlayColor = a.getColor(R.styleable.CircleProgress_playColor, context.getColor(R.color.colorDarkBlue))
+        mPlayColor = a.getColor(
+            R.styleable.CircleProgress_playColor,
+            context.getColor(R.color.colorDarkBlue)
+        )
         mBorder = a.getBoolean(R.styleable.CircleProgress_border, false)
         mProgress = a.getInt(R.styleable.CircleProgress_progress, mProgress)
         mMaxProgress = a.getInt(R.styleable.CircleProgress_maxProgress, mMaxProgress)
@@ -139,10 +148,11 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         if (disposable == null) {
             disposable = RxBus.listen(ProgressEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    if (it.id == mBindId) {
-                        if (it.status == STATUS_LOADING) {
-                            val progress = (it.progress * mMaxProgress).toInt().let {
+                .subscribe { event ->
+                    if (event.id == mBindId) {
+                        if (event.status == STATUS_LOADING) {
+                            setLoading()
+                            val progress = (event.progress * mMaxProgress).toInt().let {
                                 if (it >= mMaxProgress) {
                                     (mMaxProgress * 0.95).toInt()
                                 } else {
@@ -151,17 +161,23 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
                             }
                             setProgress(progress)
                         } else {
-                            if (it.status == STATUS_PAUSE) {
-                                setPlay()
-                                invalidate()
-                            } else if (it.status == STATUS_PLAY) {
-                                setPause()
-                                invalidate()
+                            when {
+                                event.status == STATUS_PAUSE -> {
+                                    setPlay()
+                                    invalidate()
+                                }
+                                event.status == STATUS_PLAY -> {
+                                    setPause()
+                                    invalidate()
+                                }
+                                else -> {
+                                    setPlay()
+                                    invalidate()
+                                }
                             }
                         }
-                    } else {
-                        if ((this.status == STATUS_PLAY || this.status == STATUS_PAUSE || this.status == STATUS_ERROR) &&
-                            (it.status == STATUS_PAUSE || it.status == STATUS_PLAY || it.status == STATUS_ERROR)) {
+                    } else if (status == STATUS_PAUSE || status == STATUS_PLAY || status == STATUS_ERROR) {
+                        if (event.status == STATUS_PAUSE || event.status == STATUS_PLAY || event.status == STATUS_ERROR) {
                             setPlay()
                             invalidate()
                         }
@@ -190,8 +206,10 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         super.onSizeChanged(w, h, oldw, oldh)
         val centerX = w / 2
         val centerY = h / 2
-        bounds.set((centerX - mSize / 2).toFloat(), (centerY - mSize / 2).toFloat(),
-            (centerX + mSize / 2).toFloat(), (centerY + mSize / 2).toFloat())
+        bounds.set(
+            (centerX - mSize / 2).toFloat(), (centerY - mSize / 2).toFloat(),
+            (centerX + mSize / 2).toFloat(), (centerY + mSize / 2).toFloat()
+        )
         fBounds.left = bounds.left + mBorderWidth
         fBounds.right = bounds.right - mBorderWidth
         fBounds.top = bounds.top + mBorderWidth
@@ -248,18 +266,23 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
     }
 
     private fun drawStop(canvas: Canvas) {
-        canvas.drawRoundRect(RectF(
-            fBounds.centerX() - fBounds.width() * 0.16f,
-            fBounds.centerY() - fBounds.height() * 0.16f,
-            fBounds.centerX() + fBounds.width() * 0.16f,
-            fBounds.centerY() + fBounds.height() * 0.16f
-        ), cornerRadius, 0f, mPaint)
+        canvas.drawRoundRect(
+            RectF(
+                fBounds.centerX() - fBounds.width() * 0.16f,
+                fBounds.centerY() - fBounds.height() * 0.16f,
+                fBounds.centerX() + fBounds.width() * 0.16f,
+                fBounds.centerY() + fBounds.height() * 0.16f
+            ), cornerRadius, 0f, mPaint
+        )
     }
 
     private fun drawDownArrow(canvas: Canvas) {
         mForkPath.reset()
         mForkPath.moveTo(fBounds.centerX(), fBounds.centerY() - fBounds.height() * 0.25f)
-        mForkPath.lineTo(fBounds.centerX(), fBounds.centerY() + fBounds.height() * 0.25f - mBorderWidth)
+        mForkPath.lineTo(
+            fBounds.centerX(),
+            fBounds.centerY() + fBounds.height() * 0.25f - mBorderWidth
+        )
         mForkPath.moveTo(fBounds.centerX() + fBounds.width() * 0.16f, fBounds.centerY())
         mForkPath.lineTo(fBounds.centerX(), fBounds.centerY() + fBounds.height() * 0.25f)
         mForkPath.lineTo(fBounds.centerX() - fBounds.width() * 0.16f, fBounds.centerY())
@@ -269,7 +292,10 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
     private fun drawUpArrow(canvas: Canvas) {
         mForkPath.reset()
         mForkPath.moveTo(fBounds.centerX(), fBounds.centerY() + fBounds.height() * 0.25f)
-        mForkPath.lineTo(fBounds.centerX(), fBounds.centerY() - fBounds.height() * 0.25f + mBorderWidth)
+        mForkPath.lineTo(
+            fBounds.centerX(),
+            fBounds.centerY() - fBounds.height() * 0.25f + mBorderWidth
+        )
         mForkPath.moveTo(fBounds.centerX() - fBounds.width() * 0.16f, fBounds.centerY())
         mForkPath.lineTo(fBounds.centerX(), fBounds.centerY() - fBounds.height() * 0.25f)
         mForkPath.lineTo(fBounds.centerX() + fBounds.width() * 0.16f, fBounds.centerY())
@@ -329,6 +355,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
     }
 
     private fun setStatus(status: Int) {
+        if (this.status == status) return
         this.status = status
         if (status == STATUS_UPLOAD || status == STATUS_DOWNLOAD) {
             stop()
@@ -362,6 +389,10 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
 
     fun setPause() {
         setStatus(STATUS_PAUSE)
+    }
+
+    fun setLoading() {
+        setStatus(STATUS_LOADING)
     }
 
     companion object {

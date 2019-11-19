@@ -16,7 +16,9 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.event.ProgressEvent
+import one.mixin.android.event.ProgressEvent.Companion.errorEvent
+import one.mixin.android.event.ProgressEvent.Companion.pauseEvent
+import one.mixin.android.event.ProgressEvent.Companion.playEvent
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.fileExists
 import one.mixin.android.extension.openMedia
@@ -107,7 +109,7 @@ class AudioPlayer private constructor() {
         it.setOnVideoPlayerListener(object : MixinPlayer.VideoPlayerListenerWrapper() {
             override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                 if (playbackState == Player.STATE_ENDED) {
-                    RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PAUSE))
+                    id?.let { id -> RxBus.publish(pauseEvent(id)) }
                     stopTimber()
                     status = STATUS_DONE
 
@@ -120,14 +122,14 @@ class AudioPlayer private constructor() {
             override fun onPlayerError(error: ExoPlaybackException) {
                 if (error.cause is UnrecognizedInputFormatException) {
                     status = STATUS_ERROR
-                    RxBus.publish(ProgressEvent(id!!, 0f, STATUS_ERROR))
+                    id?.let { id -> RxBus.publish(errorEvent(id)) }
                     MixinApplication.appContext.toast(R.string.error_not_supported_audio_format)
                     messageItem?.let {
                         MixinApplication.appContext.openMedia(it)
                     }
                 } else {
                     status = STATUS_PAUSE
-                    RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PAUSE))
+                    id?.let { id -> RxBus.publish(pauseEvent(id)) }
                 }
                 stopTimber()
                 it.stop()
@@ -189,8 +191,8 @@ class AudioPlayer private constructor() {
         }
         status = STATUS_PLAY
         player.start()
-        if (id != null) {
-            RxBus.publish(ProgressEvent(id!!, -1f, STATUS_PLAY))
+        id?.let {
+            RxBus.publish(playEvent(it))
         }
         startTimer()
     }
@@ -204,8 +206,8 @@ class AudioPlayer private constructor() {
     fun pause() {
         status = STATUS_PAUSE
         player.pause()
-        if (id != null) {
-            RxBus.publish(ProgressEvent(id!!, -1f, STATUS_PAUSE))
+        id?.let { id ->
+            RxBus.publish(pauseEvent(id))
         }
         stopTimber()
     }
@@ -221,7 +223,7 @@ class AudioPlayer private constructor() {
     fun seekTo(progress: Int, max: Float = 100f) {
         val p = progress * player.duration() / max
         player.seekTo(p.toInt())
-        RxBus.publish(ProgressEvent(id!!, p, STATUS_PLAY))
+        id?.let { id -> RxBus.publish(playEvent(id, p)) }
     }
 
     var timerDisposable: Disposable? = null
@@ -231,7 +233,9 @@ class AudioPlayer private constructor() {
             timerDisposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread()).subscribe {
                     progress = player.getCurrentPos().toFloat() / player.duration()
-                    RxBus.publish(ProgressEvent(id!!, progress, STATUS_PLAY))
+                    id?.let { id ->
+                        RxBus.publish(playEvent(id, progress))
+                    }
                 }
         }
     }
@@ -273,16 +277,17 @@ class AudioPlayer private constructor() {
         currentMessage: MessageItem,
         whenPlayNewAction: ((Message) -> Unit)? = null
     ) = GlobalScope.launch(Dispatchers.IO) {
-            val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
-            if (currentMessage.mediaStatus == MediaStatus.DONE.name) {
-                messageDao.updateMediaStatus(MediaStatus.READ.name, currentMessage.messageId)
-            }
-            val message = messageDao.findNextAudioMessage(
-                currentMessage.conversationId, currentMessage.createdAt, currentMessage.messageId)
-                ?: return@launch
-            if (message.userId == Session.getAccountId()) return@launch
-            if (!mediaDownloaded(message.mediaStatus)) {
-                whenPlayNewAction?.invoke(message)
-            }
+        val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
+        if (currentMessage.mediaStatus == MediaStatus.DONE.name) {
+            messageDao.updateMediaStatus(MediaStatus.READ.name, currentMessage.messageId)
         }
+        val message = messageDao.findNextAudioMessage(
+            currentMessage.conversationId, currentMessage.createdAt, currentMessage.messageId
+        )
+            ?: return@launch
+        if (message.userId == Session.getAccountId()) return@launch
+        if (!mediaDownloaded(message.mediaStatus)) {
+            whenPlayNewAction?.invoke(message)
+        }
+    }
 }
