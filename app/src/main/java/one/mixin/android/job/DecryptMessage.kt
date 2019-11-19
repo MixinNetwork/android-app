@@ -61,12 +61,12 @@ import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.ResendData
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.websocket.SystemConversationData
-import one.mixin.android.websocket.TransferAttachmentData
-import one.mixin.android.websocket.TransferContactData
-import one.mixin.android.websocket.TransferLiveData
+import one.mixin.android.websocket.AttachmentMessagePayload
+import one.mixin.android.websocket.ContactMessagePayload
+import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.TransferPlainData
-import one.mixin.android.websocket.TransferRecallData
-import one.mixin.android.websocket.TransferStickerData
+import one.mixin.android.websocket.RecallMessagePayload
+import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.createCountSignalKeys
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
@@ -182,7 +182,7 @@ class DecryptMessage : Injector() {
     private fun processRecallMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.MESSAGE_RECALL.name) {
             val decoded = Base64.decode(data.data)
-            val transferRecallData = gson.fromJson(String(decoded), TransferRecallData::class.java)
+            val transferRecallData = gson.fromJson(String(decoded), RecallMessagePayload::class.java)
             messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
                 RxBus.publish(RecallEvent(msg.id))
                 messageDao.recallFailedMessage(msg.id)
@@ -287,7 +287,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_IMAGE") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
                 if (mediaData.invalidData()) {
                     return
                 }
@@ -307,7 +307,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_VIDEO") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
                 if (mediaData.invalidData()) {
                     return
                 }
@@ -325,7 +325,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_DATA") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
                 val mimeType = if (mediaData.mimeType.isEmpty()) mediaData.mineType else mediaData.mimeType
                 val message = createAttachmentMessage(data.messageId, data.conversationId, data.userId,
                     data.category, mediaData.attachmentId, mediaData.name, null,
@@ -340,7 +340,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_AUDIO") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
                 val message = createAudioMessage(data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
                     data.category, mediaData.size, null, mediaData.duration.toString(), data.createdAt, mediaData.waveform,
                     mediaData.key, mediaData.digest, MediaStatus.PENDING, MessageStatus.DELIVERED)
@@ -351,7 +351,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_STICKER") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = gson.fromJson(String(decoded), TransferStickerData::class.java)
+                val mediaData = gson.fromJson(String(decoded), StickerMessagePayload::class.java)
                 val message = if (mediaData.stickerId == null) {
                     val sticker = stickerDao.getStickerByAlbumIdAndName(mediaData.albumId!!, mediaData.name!!)
                     if (sticker != null) {
@@ -374,7 +374,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_CONTACT") -> {
                 val decoded = Base64.decode(plainText)
-                val contactData = gson.fromJson(String(decoded), TransferContactData::class.java)
+                val contactData = gson.fromJson(String(decoded), ContactMessagePayload::class.java)
                 val message = createContactMessage(data.messageId, data.conversationId, data.userId, data.category,
                     plainText, contactData.userId, MessageStatus.DELIVERED, data.createdAt)
                 messageDao.insert(message)
@@ -384,7 +384,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_LIVE") -> {
                 val decoded = Base64.decode(plainText)
-                val liveData = gson.fromJson(String(decoded), TransferLiveData::class.java)
+                val liveData = gson.fromJson(String(decoded), LiveMessagePayload::class.java)
                 if (liveData.width <= 0 || liveData.height <= 0) {
                     updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
                     return
@@ -547,7 +547,7 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.SIGNAL_AUDIO.name ||
             data.category == MessageCategory.SIGNAL_DATA.name) {
             val decoded = Base64.decode(plainText)
-            val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
+            val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
             val duration = if (mediaData.duration == null) null else mediaData.duration.toString()
             val mimeType = if (mediaData.mimeType.isEmpty()) mediaData.mineType else mediaData.mimeType
             messageDao.updateAttachmentMessage(messageId, mediaData.attachmentId, mimeType, mediaData.size,
@@ -559,7 +559,7 @@ class DecryptMessage : Injector() {
             }
         } else if (data.category == MessageCategory.SIGNAL_STICKER.name) {
             val decoded = Base64.decode(plainText)
-            val stickerData = gson.fromJson(String(decoded), TransferStickerData::class.java)
+            val stickerData = gson.fromJson(String(decoded), StickerMessagePayload::class.java)
             if (stickerData.stickerId != null) {
                 val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
                 if (sticker == null) {
@@ -569,12 +569,12 @@ class DecryptMessage : Injector() {
             stickerData.stickerId?.let { messageDao.updateStickerMessage(it, MessageStatus.DELIVERED.name, messageId) }
         } else if (data.category == MessageCategory.SIGNAL_CONTACT.name) {
             val decoded = Base64.decode(plainText)
-            val contactData = gson.fromJson(String(decoded), TransferContactData::class.java)
+            val contactData = gson.fromJson(String(decoded), ContactMessagePayload::class.java)
             messageDao.updateContactMessage(contactData.userId, MessageStatus.DELIVERED.name, messageId)
             syncUser(contactData.userId)
         } else if (data.category == MessageCategory.SIGNAL_LIVE.name) {
             val decoded = Base64.decode(plainText)
-            val liveData = gson.fromJson(String(decoded), TransferLiveData::class.java)
+            val liveData = gson.fromJson(String(decoded), LiveMessagePayload::class.java)
             messageDao.updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, MessageStatus.DELIVERED.name, messageId)
         }
         if (messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {

@@ -152,7 +152,7 @@ import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
-import one.mixin.android.websocket.TransferStickerData
+import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.ChatControlView
@@ -1436,7 +1436,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         createConversation {
             chatViewModel.sendStickerMessage(
                 conversationId, sender,
-                TransferStickerData(stickerId), isPlainMessage()
+                StickerMessagePayload(stickerId), isPlainMessage()
             )
             scrollToDown()
             markRead()

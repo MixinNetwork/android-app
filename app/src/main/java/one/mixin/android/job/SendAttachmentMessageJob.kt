@@ -21,7 +21,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.isVideo
-import one.mixin.android.websocket.TransferAttachmentData
+import one.mixin.android.websocket.AttachmentMessagePayload
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_LOADING
 
 class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE)
@@ -147,7 +147,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
         val mimeType = message.mediaMimeType!!
         val duration = if (message.mediaDuration == null) null else message.mediaDuration.toLong()
         val waveform = message.mediaWaveform
-        val transferMediaData = TransferAttachmentData(key, digest, attachmentId,
+        val transferMediaData = AttachmentMessagePayload(key, digest, attachmentId,
             mimeType, mimeType, size, name, width, height, thumbnail, duration, waveform)
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = Base64.encodeBytes(plainText.toByteArray())
