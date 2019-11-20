@@ -197,7 +197,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
             val trace = uri.getQueryParameter("trace")
             val memo = uri.getQueryParameter("memo")
             if (userId == null || assetId == null || amount == null) {
-                error(R.string.bottom_sheet_check_payment_info)
+                error(R.string.link_error)
                 return
             }
             val transferRequest = TransferRequest(assetId, userId, amount, null, trace, memo)
