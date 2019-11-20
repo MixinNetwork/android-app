@@ -157,7 +157,7 @@ open class SendMessageJob(
             checkConversation(message.conversationId)
         }
         checkSessionSync(message.conversationId)
-        checkAndSendSenderKey(message.conversationId)
+        checkSessionSenderKey(message.conversationId)
         deliver(encryptNormalMessage())
     }
 

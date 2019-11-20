@@ -73,7 +73,8 @@ fun MixinDatabase.clearParticipant(
 ) {
     runInTransaction {
         participantDao().deleteById(conversationId, participantId)
-        sentSenderKeyDao().deleteByConversationId(conversationId)
+        participantSessionDao().deleteByUserId(conversationId, participantId)
+        participantSessionDao().updateStatusByConversationId(conversationId)
     }
 }
 

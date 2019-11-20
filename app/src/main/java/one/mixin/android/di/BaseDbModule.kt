@@ -73,10 +73,6 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideSentSenderKeyDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.sentSenderKeyDao()
-
-    @Singleton
-    @Provides
     fun provideStickerAlbumDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.stickerAlbumDao()
 
     @Singleton

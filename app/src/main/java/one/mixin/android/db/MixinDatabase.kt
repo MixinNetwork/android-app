@@ -75,7 +75,6 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun assetsExtraDao(): AssetsExtraDao
     abstract fun snapshotDao(): SnapshotDao
     abstract fun messageHistoryDao(): MessageHistoryDao
-    abstract fun sentSenderKeyDao(): SentSenderKeyDao
     abstract fun stickerDao(): StickerDao
     abstract fun stickerAlbumDao(): StickerAlbumDao
     abstract fun appDao(): AppDao

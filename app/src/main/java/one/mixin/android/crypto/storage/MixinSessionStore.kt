@@ -16,7 +16,7 @@ import org.whispersystems.libsignal.state.SessionStore
 class MixinSessionStore(context: Context) : SessionStore {
 
     private val sessionDao: SessionDao = SignalDatabase.getDatabase(context).sessionDao()
-    private val sentSenderKeyDao = MixinDatabase.getDatabase(context).sentSenderKeyDao()
+    private val participantSessionDao = MixinDatabase.getDatabase(context).participantSessionDao()
 
     override fun loadSession(address: SignalProtocolAddress): SessionRecord {
         synchronized(FILE_LOCK) {
@@ -46,7 +46,8 @@ class MixinSessionStore(context: Context) : SessionStore {
                 return
             }
             if (!session.record.contentEquals(record.serialize())) {
-                sentSenderKeyDao.deleteByUserId(address.name)
+                // TODO should update with session
+                participantSessionDao.updateStatusByUserId(address.name)
                 sessionDao.insert(Session(address.name, address.deviceId, record.serialize(), System.currentTimeMillis()))
             }
         }

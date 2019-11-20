@@ -11,11 +11,20 @@ interface ParticipantSessionDao : BaseDao<ParticipantSession> {
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId")
     fun getParticipantSessionsByConversationId(conversationId: String): List<ParticipantSession>?
 
+    @Query("UPDATE participant_session SET sent_to_server = NULL WHERE user_id = :userId")
+    fun updateStatusByUserId(userId: String)
+
+    @Query("UPDATE participant_session SET sent_to_server = NULL WHERE conversation_id = :conversationId")
+    fun updateStatusByConversationId(conversationId: String)
+
     @Transaction
     fun replaceAll(conversationId: String, list: List<ParticipantSession>) {
         deleteByConversationId(conversationId)
         insertList(list)
     }
+
+    @Query("DELETE FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId")
+    fun deleteByUserId(conversationId: String, userId: String)
 
     @Query("DELETE FROM participant_session WHERE conversation_id = :conversationId")
     fun deleteByConversationId(conversationId: String)

@@ -27,7 +27,6 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
-import one.mixin.android.vo.SentSenderKey
 import one.mixin.android.vo.SentSenderKeyStatus
 import one.mixin.android.vo.SessionSync
 import one.mixin.android.vo.isGroup
@@ -136,16 +135,6 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         sendSessionSyncMessage(sessionSync)
     }
 
-    protected fun checkAndSendSenderKey(conversationId: String) {
-        checkSessionSenderKey(conversationId)
-        val participants = participantDao.getNotSentKeyParticipants(conversationId, Session.getAccountId()!!) ?: return
-        if (participants.size == 1) {
-            sendSenderKey(conversationId, participants[0].userId)
-        } else if (participants.size > 1) {
-            sendBatchSenderKey(conversationId, participants)
-        }
-    }
-
     protected fun sendSenderKey(conversationId: String, recipientId: String, sessionId: String? = null, isForce: Boolean = false): Boolean {
         if (!signalProtocol.containsSession(recipientId, sessionId.getDeviceId()) || isForce) {
             val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))))
@@ -158,7 +147,6 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 if (!sessionId.isNullOrBlank()) {
                     participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SentSenderKeyStatus.UNKNOWN.ordinal))
                 }
-                sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId, SentSenderKeyStatus.UNKNOWN.ordinal))
                 Log.e(TAG, "No any signal key from server" + SentSenderKeyStatus.UNKNOWN.ordinal)
                 return false
             }
@@ -173,68 +161,8 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             if (!sessionId.isNullOrBlank()) {
                 participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SentSenderKeyStatus.SENT.ordinal))
             }
-            sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId, SentSenderKeyStatus.SENT.ordinal, senderKeyId))
         }
         return result
-    }
-
-    private fun sendBatchSenderKey(conversationId: String, participants: List<Participant>) {
-        val requestSignalKeyUsers = arrayListOf<BlazeMessageParamSession>()
-        val signalKeyMessages = ArrayList<BlazeSignalKeyMessage>()
-        for (p in participants) {
-            if (!signalProtocol.containsSession(p.userId)) {
-                requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId))
-            } else {
-                val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, p.userId)
-                if (err) {
-                    requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId))
-                } else {
-                    signalKeyMessages.add(createBlazeSignalKeyMessage(p.userId, cipherText!!, senderKeyId))
-                }
-            }
-        }
-
-        if (requestSignalKeyUsers.isNotEmpty()) {
-            val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(requestSignalKeyUsers))
-            val data = signalKeysChannel(blazeMessage)
-            if (data != null) {
-                val signalKeys = Gson().fromJson<ArrayList<SignalKey>>(data)
-                val keys = arrayListOf<String>()
-                if (signalKeys.isNotEmpty()) {
-                    for (key in signalKeys) {
-                        val preKeyBundle = createPreKeyBundle(key)
-                        signalProtocol.processSession(key.userId!!, preKeyBundle)
-                        val (cipherText, senderKeyId, _) = signalProtocol.encryptSenderKey(conversationId, key.userId, key.sessionId.getDeviceId())
-                        signalKeyMessages.add(createBlazeSignalKeyMessage(key.userId, cipherText!!, senderKeyId))
-                        keys.add(key.userId)
-                    }
-                } else {
-                    Log.e(TAG, "No any group signal key from server")
-                }
-
-                val noKeyList = requestSignalKeyUsers.filter { !keys.contains(it.user_id) }
-                if (noKeyList.isNotEmpty()) {
-                    val sentSenderKeys = noKeyList.map {
-                        SentSenderKey(conversationId, it.user_id, SentSenderKeyStatus.UNKNOWN.ordinal)
-                    }
-                    sentSenderKeyDao.insertList(sentSenderKeys)
-                }
-            }
-        }
-        if (signalKeyMessages.isEmpty()) {
-            return
-        }
-        val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, signalKeyMessages))
-        val result = deliverNoThrow(bm)
-        if (result) {
-            val sentSenderKeys = signalKeyMessages.map {
-                SentSenderKey(
-                    conversationId, it.recipient_id,
-                    SentSenderKeyStatus.SENT.ordinal, it.senderKeyId
-                )
-            }
-            sentSenderKeyDao.insertList(sentSenderKeys)
-        }
     }
 
     protected fun checkSignalSession(recipientId: String, sessionId: String? = null): Boolean {
