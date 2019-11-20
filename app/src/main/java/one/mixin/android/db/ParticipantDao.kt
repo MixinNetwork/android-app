@@ -67,4 +67,7 @@ interface ParticipantDao : BaseDao<Participant> {
 
     @Query("SELECT count(*) FROM participants WHERE conversation_id = :conversationId")
     fun getParticipantsCount(conversationId: String): Int
+
+    @Query("SELECT * FROM participants")
+    suspend fun getAllParticipants(): List<Participant>?
 }

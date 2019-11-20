@@ -20,6 +20,8 @@ import one.mixin.android.crypto.vo.SenderKey
 import one.mixin.android.crypto.vo.Session
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.job.RefreshOneTimePreKeysJob
+import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.vo.ParticipantSession
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -27,7 +29,8 @@ class LoadingViewModel @Inject internal
 constructor(
     private val signalKeyService: SignalKeyService,
     private val accountService: AccountService,
-    private val userService: UserService
+    private val userService: UserService,
+    private val conversationRepo: ConversationRepository
 ) : ViewModel() {
     private val sessionDao: SessionDao =
         SignalDatabase.getDatabase(MixinApplication.appContext).sessionDao()
@@ -53,10 +56,12 @@ constructor(
                 val userIds = list.map { it.address }
                 val response = userService.fetchSessions(userIds)
                 val sessionMap = ArrayMap<String, Int>()
+                val userSessionMap = ArrayMap<String, String>()
                 if (response.isSuccess) {
                     response.data?.asSequence()?.forEach { item ->
                         val deviceId = item.session_id.getDeviceId()
                         sessionMap[item.user_id] = deviceId
+                        userSessionMap[item.user_id] = item.session_id
                     }
                 }
                 if (sessionMap.isEmpty) {
@@ -71,12 +76,26 @@ constructor(
                 sessionDao.insertList(newSession)
                 val senderKeys = senderKeyDao.syncGetSenderKeys()
                 senderKeys?.forEach { key ->
+                    if (!key.senderId.endsWith(":1")) {
+                        return@forEach
+                    }
                     val userId = key.senderId.substring(0, key.senderId.length - 2)
                     sessionMap[userId]?.let { d ->
                         senderKeyDao.insert(SenderKey(key.groupId, "$userId:$d", key.record))
                     }
                 }
+
+                val participants = conversationRepo.getAllParticipants()
+                val newParticipantSession = mutableListOf<ParticipantSession>()
+                participants?.forEach { p ->
+                    userSessionMap[p.userId]?.let {
+                        val ps = ParticipantSession(p.conversationId, p.userId, it)
+                        newParticipantSession.add(ps)
+                    }
+                }
+                conversationRepo.insertParticipantList(newParticipantSession)
             }
+
         }
     }
 
