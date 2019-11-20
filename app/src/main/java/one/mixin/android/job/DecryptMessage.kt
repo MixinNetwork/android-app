@@ -463,8 +463,7 @@ class DecryptMessage : Injector() {
             } else {
                 jobManager.addJobInBackground(RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
             }
-            if (systemMessage.participantId != accountId &&
-                signalProtocol.isExistSenderKey(data.conversationId, accountId!!)) {
+            if (systemMessage.participantId != accountId && signalProtocol.isExistSenderKey(data.conversationId, accountId!!)) {
                 jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.ADD_PARTICIPANT, systemMessage.participantId))
             }
         } else if (systemMessage.action == SystemConversationAction.REMOVE.name || systemMessage.action == SystemConversationAction.EXIT.name) {

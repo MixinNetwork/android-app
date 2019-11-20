@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.RxBus
+import one.mixin.android.api.response.ParticipantSessionResponse
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.sharedPreferences
@@ -11,6 +12,7 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
+import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SYSTEM_USER
 
 class RefreshConversationJob(val conversationId: String) :
@@ -89,6 +91,9 @@ class RefreshConversationJob(val conversationId: String) :
                 }
 
                 participantDao.replaceAll(data.conversationId, participants)
+                data.participantSessions?.let {
+                    syncParticipantSession(it)
+                }
 
                 if (userIdList.isNotEmpty()) {
                     jobManager.addJobInBackground(RefreshUserJob(userIdList, conversationId))
@@ -100,5 +105,25 @@ class RefreshConversationJob(val conversationId: String) :
         }
 
         removeJob()
+    }
+
+    private fun syncParticipantSession(data: List<ParticipantSessionResponse>) {
+            val remote = data.map {
+                ParticipantSession(conversationId, it.userId, it.sessionId)
+            }
+            if (remote.isEmpty()) {
+                participantSessionDao.deleteByConversationId(conversationId)
+                return
+            }
+            val local = participantSessionDao.getParticipantSessionsByConversationId(conversationId)
+            if (local == null || local.isEmpty()) {
+                participantSessionDao.insertList(remote)
+                return
+            }
+            val common = remote.intersect(local)
+            val remove = local.minus(common)
+            val add = remote.minus(common)
+            participantSessionDao.deleteList(remove)
+            participantSessionDao.insertList(add)
     }
 }
