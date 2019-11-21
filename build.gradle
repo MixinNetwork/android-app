@@ -15,7 +15,7 @@ buildscript {
         ext.preference_version = '1.1.0'
         ext.daggerVersion = '2.25.2'
         ext.assistedinjectVersion = '0.5.1'
-        ext.ktxVersion = '1.2.0-beta02'
+        ext.ktxVersion = '1.2.0-rc01'
         ext.espressoVersion = '3.2.0'
         ext.cameraxVersion = '1.0.0-alpha06'
         ext.glideVersion = '4.10.0'
