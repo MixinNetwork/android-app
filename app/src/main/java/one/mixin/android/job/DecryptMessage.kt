@@ -258,17 +258,15 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.PLAIN_STICKER.name ||
             data.category == MessageCategory.PLAIN_CONTACT.name ||
             data.category == MessageCategory.PLAIN_LIVE.name) {
-            var dataUserId: String? = null
             if (!data.representativeId.isNullOrBlank()) {
-                dataUserId = data.userId
                 data.userId = data.representativeId
             }
-            processDecryptSuccess(data, data.data, dataUserId)
+            processDecryptSuccess(data, data.data)
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
 
-    private fun processDecryptSuccess(data: BlazeMessageData, plainText: String, dataUserId: String? = null) {
+    private fun processDecryptSuccess(data: BlazeMessageData, plainText: String) {
         syncUser(data.userId)
         when {
             data.category.endsWith("_TEXT") -> {
@@ -455,12 +453,13 @@ class DecryptMessage : Injector() {
             data.createdAt, MessageStatus.DELIVERED, systemMessage.action, systemMessage.participantId)
 
         val accountId = Session.getAccountId()
-        if (systemMessage.action == SystemConversationAction.ADD.name ||
-            systemMessage.action == SystemConversationAction.JOIN.name) {
+        if (systemMessage.action == SystemConversationAction.ADD.name || systemMessage.action == SystemConversationAction.JOIN.name) {
             participantDao.insert(Participant(data.conversationId, systemMessage.participantId!!, "", data.updatedAt))
             if (systemMessage.participantId == accountId) {
                 jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
             } else {
+                // TODO refresh conversation?
+                jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
                 jobManager.addJobInBackground(RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
             }
             if (systemMessage.participantId != accountId && signalProtocol.isExistSenderKey(data.conversationId, accountId!!)) {
