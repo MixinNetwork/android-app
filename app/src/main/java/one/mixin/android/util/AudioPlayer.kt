@@ -207,7 +207,7 @@ class AudioPlayer private constructor() {
         status = STATUS_PAUSE
         player.pause()
         id?.let { id ->
-            RxBus.publish(pauseEvent(id))
+            RxBus.publish(pauseEvent(id, -1f))
         }
         stopTimber()
     }

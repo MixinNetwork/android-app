@@ -12,10 +12,10 @@ class ProgressEvent private constructor(val id: String, var progress: Float, val
         fun playEvent(id: String, progress: Float = 0f) =
             ProgressEvent(id, progress, CircleProgress.STATUS_PLAY)
 
-        fun pauseEvent(id: String) =
-            ProgressEvent(id, -1f, CircleProgress.STATUS_PAUSE)
+        fun pauseEvent(id: String, progress: Float = 0f) =
+            ProgressEvent(id, progress, CircleProgress.STATUS_PAUSE)
 
         fun errorEvent(id: String): ProgressEvent =
-            ProgressEvent(id, -1f, CircleProgress.STATUS_ERROR)
+            ProgressEvent(id, 0f, CircleProgress.STATUS_ERROR)
     }
 }
