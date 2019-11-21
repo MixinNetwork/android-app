@@ -3,7 +3,6 @@ package one.mixin.android.api.service
 import io.reactivex.Observable
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationRequest
-import one.mixin.android.api.request.ConversationSessionRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.AttachmentResponse
 import one.mixin.android.api.response.ConversationResponse
@@ -56,7 +55,4 @@ interface ConversationService {
 
     @POST("conversations/{id}/mute")
     fun mute(@Path("id") id: String, @Body request: ConversationRequest): Call<MixinResponse<ConversationResponse>>
-
-    @POST("conversations/{id}/sessions/{action}")
-    fun addSystemSession(@Path("id") id: String, @Path("action") action: String, @Body request: ConversationSessionRequest): Call<MixinResponse<ConversationResponse>>
 }
