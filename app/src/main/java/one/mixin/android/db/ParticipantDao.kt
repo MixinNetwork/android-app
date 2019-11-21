@@ -52,11 +52,6 @@ interface ParticipantDao : BaseDao<Participant> {
         "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at LIMIT 4")
     fun getParticipantsAvatar(conversationId: String): List<User>
 
-    @Transaction
-    @Query("SELECT p.* FROM participants p LEFT JOIN users u ON p.user_id = u.user_id WHERE p.conversation_id = :conversationId AND u.app_id IS NULL AND " +
-        "p.user_id NOT IN (SELECT user_id FROM sent_sender_keys WHERE conversation_id= :conversationId) AND p.user_id != :accountId")
-    fun getNotSentKeyParticipants(conversationId: String, accountId: String): List<Participant>?
-
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship FROM participants p, users u " +
         "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at DESC LIMIT :limit")
