@@ -24,4 +24,8 @@ data class ParticipantSession(
             else -> false
         }
     }
+
+    override fun hashCode(): Int {
+        return "$conversationId$userId$sessionId".hashCode()
+    }
 }
