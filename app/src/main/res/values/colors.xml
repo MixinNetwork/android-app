@@ -5,6 +5,7 @@
     <color name="colorAccent">@color/colorBlue</color>
     <color name="colorBlue">#397EE4</color>
     <color name="colorDarkBlue">#1987FF</color>
+    <color name="colorLightBlue">#0D94FC</color>
     <color name="colorGray">#9B9B9B</color>
 
     <color name="textPrimary">#333333</color>

@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.sharedPreferences
@@ -160,7 +161,7 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
         if (loggedIn) {
             contentView.auth_tv.text = getString(R.string.setting_logout_desktop)
             contentView.desc_tv.text = getString(R.string.setting_desktop_signed)
-            contentView.auth_tv.textColor = R.color.colorDarkBlue
+            contentView.auth_tv.textColor = requireContext().colorFromAttribute(R.attr.text_blue)
             contentView.logo_iv.setImageResource(R.drawable.ic_desktop_online)
         } else {
             contentView.auth_tv.text = getString(R.string.setting_scan_qr_code)

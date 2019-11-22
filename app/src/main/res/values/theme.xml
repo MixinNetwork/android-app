@@ -10,6 +10,7 @@
     <attr name="text_minor" format="color|reference" />
     <attr name="text_assist" format="color|reference" />
     <attr name="text_remarks" format="color|reference" />
+    <attr name="text_blue" format="color|reference" />
 
     <attr name="text_default" format="color|reference" />
     <attr name="text_checked" format="color|reference" />

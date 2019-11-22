@@ -184,7 +184,7 @@
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp"
                     android:text="@string/group_cant_send"
-                    android:textColor="@color/black"
+                    android:textColor="?attr/text_primary"
                     android:textSize="12sp"
                     android:visibility="gone"/>
 
