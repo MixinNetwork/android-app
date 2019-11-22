@@ -17,6 +17,9 @@ import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import com.jakewharton.rxbinding3.view.clicks
+import com.uber.autodispose.autoDispose
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -56,6 +59,7 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.margin
 import org.threeten.bp.Instant
+import java.util.concurrent.TimeUnit
 
 class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
@@ -303,12 +307,22 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.open_fl.visibility = VISIBLE
             contentView.transfer_fl.visibility = GONE
             bottomViewModel.findAppById(user.appId!!)?.let { app ->
-                contentView.open_fl.setOnClickListener {
-                    dismiss()
-                    WebBottomSheetDialogFragment
-                        .newInstance(app.homeUri, conversationId, app.appId, app.name, app.icon_url, app.capabilities)
-                        .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
-                }
+                contentView.open_fl.clicks()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .throttleFirst(1, TimeUnit.SECONDS)
+                    .autoDispose(stopScope).subscribe {
+                        dismiss()
+                        WebBottomSheetDialogFragment
+                            .newInstance(
+                                app.homeUri,
+                                conversationId,
+                                app.appId,
+                                app.name,
+                                app.icon_url,
+                                app.capabilities
+                            )
+                            .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                    }
                 bottomViewModel.findUserById(app.creatorId)
                     .observe(this@UserBottomSheetDialogFragment, Observer { u ->
                         creator = u

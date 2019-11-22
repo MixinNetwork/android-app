@@ -1,12 +1,14 @@
 package one.mixin.android.ui.media
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import androidx.paging.PagedListAdapter
+import com.jakewharton.rxbinding3.view.clicks
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
-import kotlin.math.abs
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.item_shared_media_header.view.*
 import kotlinx.android.synthetic.main.item_shared_media_link.view.*
 import one.mixin.android.R
@@ -15,6 +17,8 @@ import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.HyperlinkItem
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 class LinkAdapter(private val onClickListener: (url: String) -> Unit) :
     PagedListAdapter<HyperlinkItem, LinkHolder>(HyperlinkItem.DIFF_CALLBACK),
@@ -57,11 +61,15 @@ class LinkAdapter(private val onClickListener: (url: String) -> Unit) :
 
 class LinkHolder(itemView: View) : NormalHolder(itemView) {
 
+    @SuppressLint("CheckResult")
     fun bind(item: HyperlinkItem, onClickListener: (url: String) -> Unit) {
         itemView.link_tv.text = item.hyperlink
         itemView.desc_tv.text = item.siteName
-        itemView.setOnClickListener {
-            item.hyperlink.let(onClickListener)
-        }
+        itemView.clicks()
+            .observeOn(AndroidSchedulers.mainThread())
+            .throttleFirst(1, TimeUnit.SECONDS)
+            .subscribe {
+                item.hyperlink.let(onClickListener)
+            }
     }
 }
