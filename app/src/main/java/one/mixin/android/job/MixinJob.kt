@@ -213,7 +213,6 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             if (bm.error.code == FORBIDDEN) {
                 return true
             } else {
-                Log.e(TAG, bm.toString())
                 SystemClock.sleep(SLEEP_MILLIS)
                 throw NetworkException()
             }
@@ -260,6 +259,9 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun sendSessionSyncMessage(conversations: List<SessionSync>) {
+        if (conversations.isEmpty()) {
+            return
+        }
         val c = conversations.map {
             it.conversationId
         }
