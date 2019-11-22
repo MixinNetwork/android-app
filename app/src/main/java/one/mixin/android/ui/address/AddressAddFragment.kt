@@ -71,7 +71,11 @@ class AddressAddFragment : BaseFragment() {
     private val type: Int by lazy { arguments!!.getInt(ARGS_TYPE) }
     private var memoEnabled = true
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
         inflater.inflate(R.layout.fragment_address_add, container, false)
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -85,19 +89,14 @@ class AddressAddFragment : BaseFragment() {
             if (tag_et.isFocused) tag_et.hideKeyboard()
             activity?.onBackPressed()
         }
-        title_view.title_tv.text = getString(if (type == ADD) R.string.withdrawal_addr_new
-        else R.string.withdrawal_addr_modify, asset.symbol)
+        title_view.title_tv.text = getString(
+            if (type == ADD) R.string.withdrawal_addr_new
+            else R.string.withdrawal_addr_modify, asset.symbol
+        )
         avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         save_tv.setOnClickListener {
-            val destination = addr_et.text.toString().run {
-                val index = indexOf(":")
-                if (index != -1 && index < length - 1) {
-                    this.substring(index + 1, length)
-                } else {
-                    this
-                }
-            }
+            val destination = addr_et.text.toString().substringAfter(":")
             val bottomSheet =
                 PinAddrBottomSheetDialogFragment.newInstance(
                     asset.assetId,
@@ -189,7 +188,8 @@ class AddressAddFragment : BaseFragment() {
                     getString(R.string.withdrawal_addr_no_tag_link)
                 } else {
                     getString(R.string.withdrawal_addr_no_memo_link)
-                })
+                }
+            )
         }
     }
 
