@@ -65,10 +65,6 @@ import one.mixin.android.websocket.RecallMessagePayload
 import one.mixin.android.websocket.ResendData
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.SystemConversationAction
-import one.mixin.android.websocket.SystemConversationData
-import one.mixin.android.websocket.AttachmentMessagePayload
-import one.mixin.android.websocket.ContactMessagePayload
-import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.SystemConversationMessagePayload
 import one.mixin.android.websocket.SystemSessionMessageAction
 import one.mixin.android.websocket.SystemSessionMessagePayload
