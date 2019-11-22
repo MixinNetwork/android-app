@@ -22,7 +22,6 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.AttachmentMessagePayload
-import one.mixin.android.widget.CircleProgress.Companion.STATUS_LOADING
 
 class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE)
     .addTags(message.id).groupBy("send_media_job").requireNetwork().persist(), message.id) {

@@ -261,7 +261,6 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             SystemClock.sleep(SLEEP_MILLIS)
             return signalKeysChannel(blazeMessage)
         } else if (bm.error != null) {
-            Log.e(TAG, bm.error.toString())
             return if (bm.error.code == FORBIDDEN) {
                 null
             } else {
