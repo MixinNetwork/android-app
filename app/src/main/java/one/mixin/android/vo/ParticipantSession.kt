@@ -29,3 +29,5 @@ data class ParticipantSession(
         return "$conversationId$userId$sessionId".hashCode()
     }
 }
+
+enum class SenderKeyStatus { UNKNOWN, SENT }

@@ -27,7 +27,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
-import one.mixin.android.vo.SentSenderKeyStatus
+import one.mixin.android.vo.SenderKeyStatus
 import one.mixin.android.vo.SessionSync
 import one.mixin.android.vo.isGroup
 import one.mixin.android.websocket.BlazeMessage
@@ -111,7 +111,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 val noKeyList = requestSignalKeyUsers.filter { !keys.contains(it) }
                 if (noKeyList.isNotEmpty()) {
                     val sentSenderKeys = noKeyList.map {
-                        ParticipantSession(conversationId, it.user_id, it.session_id!!, SentSenderKeyStatus.UNKNOWN.ordinal)
+                        ParticipantSession(conversationId, it.user_id, it.session_id!!, SenderKeyStatus.UNKNOWN.ordinal)
                     }
                     participantSessionDao.updateList(sentSenderKeys)
                 }
@@ -124,7 +124,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         val result = deliverNoThrow(bm)
         if (result) {
             val sentSenderKeys = signalKeyMessages.map {
-                ParticipantSession(conversationId, it.recipient_id, it.sessionId!!, SentSenderKeyStatus.SENT.ordinal)
+                ParticipantSession(conversationId, it.recipient_id, it.sessionId!!, SenderKeyStatus.SENT.ordinal)
             }
             participantSessionDao.updateList(sentSenderKeys)
         }
@@ -145,9 +145,9 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 signalProtocol.processSession(recipientId, preKeyBundle, sessionId.getDeviceId())
             } else {
                 if (!sessionId.isNullOrBlank()) {
-                    participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SentSenderKeyStatus.UNKNOWN.ordinal))
+                    participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SenderKeyStatus.UNKNOWN.ordinal))
                 }
-                Log.e(TAG, "No any signal key from server" + SentSenderKeyStatus.UNKNOWN.ordinal)
+                Log.e(TAG, "No any signal key from server" + SenderKeyStatus.UNKNOWN.ordinal)
                 return false
             }
         }
@@ -159,7 +159,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         val result = deliverNoThrow(bm)
         if (result) {
             if (!sessionId.isNullOrBlank()) {
-                participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SentSenderKeyStatus.SENT.ordinal))
+                participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SenderKeyStatus.SENT.ordinal))
             }
         }
         return result

@@ -17,5 +17,3 @@ class SentSenderKey(
     @ColumnInfo(name = "created_at")
     val createdAt: String? = nowInUtc()
 )
-
-enum class SentSenderKeyStatus { UNKNOWN, SENT }
