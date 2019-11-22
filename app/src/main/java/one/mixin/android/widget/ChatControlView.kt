@@ -34,8 +34,10 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import com.bugsnag.android.Bugsnag
+import com.jakewharton.rxbinding3.view.clicks
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.autoDispose
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.fadeIn
@@ -47,6 +49,7 @@ import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.InputAwareLayout
 import org.jetbrains.anko.dip
+import java.util.concurrent.TimeUnit
 
 class ChatControlView : FrameLayout {
 
@@ -123,7 +126,12 @@ class ChatControlView : FrameLayout {
         chat_menu_iv.setOnClickListener(onChatMenuClickListener)
         chat_sticker_ib.setOnClickListener(onStickerClickListener)
         chat_img_iv.setOnClickListener(onChatImgClickListener)
-        chat_bot_iv.setOnClickListener(onChatBotClickListener)
+        chat_bot_iv.clicks()
+            .observeOn(AndroidSchedulers.mainThread())
+            .throttleFirst(1, TimeUnit.SECONDS)
+            .subscribe {
+                callback.onBotClick()
+            }
         chat_slide.callback = chatSlideCallback
 
         remainFocusable()
@@ -504,11 +512,6 @@ class ChatControlView : FrameLayout {
             remainFocusable()
         }
         currentChecked = NONE
-    }
-
-    private val onChatBotClickListener = OnClickListener {
-        callback.onBotClick()
-        remainFocusable()
     }
 
     private val onChatImgClickListener = OnClickListener {

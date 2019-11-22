@@ -7,6 +7,9 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import com.jakewharton.rxbinding3.view.clicks
+import com.uber.autodispose.autoDispose
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.bottom_qr_scan.view.*
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
@@ -18,6 +21,7 @@ import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
+import java.util.concurrent.TimeUnit
 
 class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
@@ -58,11 +62,14 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         if (text.isWebUrl()) {
             contentView.open_fl.visibility = VISIBLE
-            contentView.open.setOnClickListener {
-                WebBottomSheetDialogFragment.newInstance(text, conversationId)
-                    .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
-                dismiss()
-            }
+            contentView.open.clicks()
+                .observeOn(AndroidSchedulers.mainThread())
+                .throttleFirst(1, TimeUnit.SECONDS)
+                .autoDispose(stopScope).subscribe {
+                    WebBottomSheetDialogFragment.newInstance(text, conversationId)
+                        .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                    dismiss()
+                }
         } else {
             contentView.open_fl.visibility = GONE
         }
