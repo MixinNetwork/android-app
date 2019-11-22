@@ -100,12 +100,12 @@ class SignalProtocol(ctx: Context) {
             val cipherMessage = encryptSession(senderKeyDistributionMessage.serialize(), recipientId, deviceId)
             val compose = ComposeMessageData(cipherMessage.type, cipherMessage.serialize())
             val cipher = encodeMessageData(compose)
-            EncryptResult(cipher, senderKeyDistributionMessage.id, false)
+            EncryptResult(cipher, false)
         } catch (e: UntrustedIdentityException) {
             val remoteAddress = SignalProtocolAddress(recipientId, deviceId)
             signalProtocolStore.removeIdentity(remoteAddress)
             signalProtocolStore.deleteSession(remoteAddress)
-            EncryptResult(null, null, true)
+            EncryptResult(null, true)
         }
     }
 

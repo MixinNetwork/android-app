@@ -81,11 +81,11 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             if (!signalProtocol.containsSession(p.userId, p.sessionId.getDeviceId())) {
                 requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId, p.sessionId))
             } else {
-                val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, p.userId, p.sessionId.getDeviceId())
+                val (cipherText, err) = signalProtocol.encryptSenderKey(conversationId, p.userId, p.sessionId.getDeviceId())
                 if (err) {
                     requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId, p.sessionId))
                 } else {
-                    signalKeyMessages.add(createBlazeSignalKeyMessage(p.userId, cipherText!!, senderKeyId, p.sessionId))
+                    signalKeyMessages.add(createBlazeSignalKeyMessage(p.userId, cipherText!!, p.sessionId))
                 }
             }
         }
@@ -100,8 +100,8 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                     for (key in signalKeys) {
                         val preKeyBundle = createPreKeyBundle(key)
                         signalProtocol.processSession(key.userId!!, preKeyBundle)
-                        val (cipherText, senderKeyId, _) = signalProtocol.encryptSenderKey(conversationId, key.userId, preKeyBundle.deviceId)
-                        signalKeyMessages.add(createBlazeSignalKeyMessage(key.userId, cipherText!!, senderKeyId, key.sessionId))
+                        val (cipherText,  _) = signalProtocol.encryptSenderKey(conversationId, key.userId, preKeyBundle.deviceId)
+                        signalKeyMessages.add(createBlazeSignalKeyMessage(key.userId, cipherText!!, key.sessionId))
                         keys.add(BlazeMessageParamSession(key.userId, key.sessionId))
                     }
                 } else {
@@ -152,9 +152,9 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             }
         }
 
-        val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, recipientId, sessionId.getDeviceId())
+        val (cipherText, err) = signalProtocol.encryptSenderKey(conversationId, recipientId, sessionId.getDeviceId())
         if (err) return false
-        val signalKeyMessages = createBlazeSignalKeyMessage(recipientId, cipherText!!, senderKeyId, sessionId)
+        val signalKeyMessages = createBlazeSignalKeyMessage(recipientId, cipherText!!, sessionId)
         val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, arrayListOf(signalKeyMessages)))
         val result = deliverNoThrow(bm)
         if (result) {
