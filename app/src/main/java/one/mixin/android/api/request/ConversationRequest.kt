@@ -18,4 +18,3 @@ class ConversationRequest(
     @SerializedName("duration")
     val duration: Long? = null
 )
-

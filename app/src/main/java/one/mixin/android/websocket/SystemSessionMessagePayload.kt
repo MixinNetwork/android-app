@@ -11,4 +11,4 @@ data class SystemSessionMessagePayload(
     val sessionId: String
 )
 
-enum class SystemSessionMessageAction { PROVISION, ADD, DESTROY }
+enum class SystemSessionMessageAction { PROVISION, DESTROY }

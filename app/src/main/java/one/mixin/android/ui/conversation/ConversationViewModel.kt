@@ -105,7 +105,6 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
-import one.mixin.android.websocket.CREATE_SESSION_MESSAGE
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.RecallMessagePayload

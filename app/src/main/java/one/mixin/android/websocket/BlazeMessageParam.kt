@@ -46,7 +46,7 @@ fun createPlainJsonParam(conversationId: String, userId: String, encoded: String
         encoded, MessageStatus.SENDING.name, session_id = sessionId)
 
 fun createConsumeSignalKeysParam(recipients: ArrayList<BlazeMessageParamSession>?) =
-    BlazeMessageParam( recipients = recipients)
+    BlazeMessageParam(recipients = recipients)
 
 fun createSyncSignalKeysParam(keys: SignalKeyRequest?) =
     BlazeMessageParam(keys = keys)

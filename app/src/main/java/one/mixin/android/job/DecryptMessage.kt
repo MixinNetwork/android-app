@@ -406,7 +406,6 @@ class DecryptMessage : Injector() {
                 sessionSyncDao.insertList(conversations)
                 jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.SESSION_SYNC))
             }
-
         } else if (systemSession.action == SystemSessionMessageAction.DESTROY.name) {
             Session.deleteExtensionSessionId()
             signalProtocol.deleteSession(data.userId)

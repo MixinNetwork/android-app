@@ -3,6 +3,8 @@ package one.mixin.android.ui.landing
 import androidx.collection.ArrayMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import javax.inject.Inject
+import kotlin.math.abs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -22,8 +24,6 @@ import one.mixin.android.extension.getDeviceId
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.vo.ParticipantSession
-import javax.inject.Inject
-import kotlin.math.abs
 
 class LoadingViewModel @Inject internal
 constructor(
@@ -95,7 +95,6 @@ constructor(
                 }
                 conversationRepo.insertParticipantList(newParticipantSession)
             }
-
         }
     }
 

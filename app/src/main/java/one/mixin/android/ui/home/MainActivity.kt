@@ -35,9 +35,9 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_24_HOURS
-import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.Constants.Load.IS_LOADED
 import one.mixin.android.Constants.Load.IS_SYNC_SESSION
+import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.SessionRequest

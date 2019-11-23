@@ -20,10 +20,8 @@ import one.mixin.android.job.NotificationJob.Companion.KEY_REPLY
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createMessage
 import one.mixin.android.websocket.BlazeAckMessage
-import one.mixin.android.websocket.CREATE_SESSION_MESSAGE
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 
 class SendService : IntentService("SendService") {

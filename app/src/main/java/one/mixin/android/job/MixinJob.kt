@@ -100,7 +100,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                     for (key in signalKeys) {
                         val preKeyBundle = createPreKeyBundle(key)
                         signalProtocol.processSession(key.userId!!, preKeyBundle)
-                        val (cipherText,  _) = signalProtocol.encryptSenderKey(conversationId, key.userId, preKeyBundle.deviceId)
+                        val (cipherText, _) = signalProtocol.encryptSenderKey(conversationId, key.userId, preKeyBundle.deviceId)
                         signalKeyMessages.add(createBlazeSignalKeyMessage(key.userId, cipherText!!, key.sessionId))
                         keys.add(BlazeMessageParamSession(key.userId, key.sessionId))
                     }
