@@ -88,7 +88,7 @@ class UrlInterpreterActivity : BaseActivity() {
     }
 }
 
-fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
+fun isMixinUrl(url: String): Boolean {
     return if (url.startsWith(Scheme.HTTPS_PAY, true) ||
         url.startsWith(Scheme.PAY, true) ||
         url.startsWith(Scheme.USERS, true) ||
@@ -110,9 +110,9 @@ fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
             url.startsWith(Scheme.USERS, true) ||
             url.startsWith(Scheme.APPS, true)) {
             segments.size >= 1 && segments[0].isUUID()
-        } else if (includeTransfer && url.startsWith(Scheme.TRANSFER, true)) {
+        } else if (url.startsWith(Scheme.TRANSFER, true)) {
             segments.size >= 1 && segments[0].isUUID()
-        } else if (includeTransfer && url.startsWith(Scheme.HTTPS_TRANSFER, true)) {
+        } else if (url.startsWith(Scheme.HTTPS_TRANSFER, true)) {
             segments.size >= 2 && segments[1].isUUID()
         } else if (url.startsWith(Scheme.HTTPS_ADDRESS, true)) {
             true
@@ -120,19 +120,16 @@ fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
     }
 }
 
-inline fun openUrl(
-    url: String,
-    supportFragmentManager: FragmentManager,
-    extraAction: () -> Unit
-) {
-    if (url.startsWith(Scheme.TRANSFER, true)) {
+inline fun openUrl(url: String, supportFragmentManager: FragmentManager, extraAction: () -> Unit) {
+    if (url.startsWith(Scheme.TRANSFER, true) || url.startsWith(Scheme.HTTPS_TRANSFER, true)) {
         val segments = Uri.parse(url).pathSegments
-        if (segments.size >= 1) {
-            val data = segments[0]
-            if (data.isUUID()) {
-                TransferFragment.newInstance(data, supportSwitchAsset = true)
-                    .showNow(supportFragmentManager, TransferFragment.TAG)
-            }
+        val data = when {
+            segments.size >= 2 -> segments[1]
+            segments.size >= 1 -> segments[0]
+            else -> ""
+        }
+        if (data.isUUID()) {
+            TransferFragment.newInstance(data, supportSwitchAsset = true).showNow(supportFragmentManager, TransferFragment.TAG)
         }
     } else if (url.startsWith(Scheme.SEND, true)) {
         Uri.parse(url).getQueryParameter("text")?.let {
@@ -145,7 +142,7 @@ inline fun openUrl(
         ConfirmBottomFragment.newInstance(url)
             .showNow(supportFragmentManager, ConfirmBottomFragment.TAG)
     } else {
-        if (isMixinUrl(url, false)) {
+        if (isMixinUrl(url)) {
             LinkBottomSheetDialogFragment
                 .newInstance(url)
                 .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
