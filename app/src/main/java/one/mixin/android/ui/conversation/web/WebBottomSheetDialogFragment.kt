@@ -271,9 +271,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.settings.javaScriptEnabled = true
         contentView.chat_web_view.settings.domStorageEnabled = true
         contentView.chat_web_view.settings.useWideViewPort = true
-        contentView.chat_web_view.settings.loadWithOverviewMode = true
-        contentView.chat_web_view.settings.mixedContentMode =
-            WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+       contentView.chat_web_view.settings.loadWithOverviewMode = true
+        contentView.chat_web_view.settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         contentView.chat_web_view.settings.mediaPlaybackRequiresUserGesture = false
         contentView.chat_web_view.settings.userAgentString =
             contentView.chat_web_view.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME
@@ -609,6 +608,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    @Suppress("DEPRECATION")
     class WebViewClientImpl(
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
@@ -627,7 +627,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
             if (view == null || url == null) {
-                return false
+                return super.shouldOverrideUrlLoading(view, url)
             }
             if (isMixinUrl(url)) {
                 openUrl(url, fragmentManager, {})
@@ -646,14 +646,13 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
 
                     if (intent != null) {
-                        view.stopLoading()
-
                         val packageManager = context.packageManager
                         val info = packageManager.resolveActivity(
                             intent,
                             PackageManager.MATCH_DEFAULT_ONLY
                         )
                         if (info != null) {
+                            view.stopLoading()
                             context.startActivity(intent)
                         }
                     }
@@ -663,7 +662,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     view.loadUrl(url, extraHeaders)
                 }
             }
-
             return true
         }
 
