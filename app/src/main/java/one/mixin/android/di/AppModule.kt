@@ -101,7 +101,7 @@ internal class AppModule {
                 return Header("Authorization", "Bearer ${Session.signToken(Session.getAccount(), request)}")
             }
         })
-
+        builder.addInterceptor(HostSelectionInterceptor())
         builder.addInterceptor { chain ->
             val request = chain.request().newBuilder()
                 .addHeader("User-Agent", API_UA)
