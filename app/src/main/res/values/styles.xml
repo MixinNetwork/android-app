@@ -231,7 +231,7 @@
         <item name="colorAccent">@color/colorDarkBlue</item>
     </style>
 
-    <style name="AppTheme.MaterialButton" parent="Widget.MaterialComponents.Button">
+    <style name="AppTheme.MaterialButton">
         <item name="android:background">@drawable/bg_round_blue_btn</item>
     </style>
 </resources>
