@@ -28,7 +28,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SenderKeyStatus
-import one.mixin.android.vo.SessionSync
 import one.mixin.android.vo.isGroup
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
@@ -40,8 +39,6 @@ import one.mixin.android.websocket.TransferPlainData
 import one.mixin.android.websocket.createBlazeSignalKeyMessage
 import one.mixin.android.websocket.createConsumeSessionSignalKeys
 import one.mixin.android.websocket.createConsumeSignalKeysParam
-import one.mixin.android.websocket.createSessionSyncMessage
-import one.mixin.android.websocket.createSessionSyncMessageParam
 import one.mixin.android.websocket.createSignalKeyMessage
 import one.mixin.android.websocket.createSignalKeyMessageParam
 import timber.log.Timber
@@ -128,11 +125,6 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             }
             participantSessionDao.updateList(sentSenderKeys)
         }
-    }
-
-    protected fun checkSessionSync(conversationId: String) {
-        val sessionSync = sessionSyncDao.getByConversationId(conversationId) ?: return
-        sendSessionSyncMessage(sessionSync)
     }
 
     protected fun sendSenderKey(conversationId: String, recipientId: String, sessionId: String? = null, isForce: Boolean = false): Boolean {
@@ -256,21 +248,6 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         )
         val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, params)
         deliverNoThrow(bm)
-    }
-
-    protected fun sendSessionSyncMessage(conversations: List<SessionSync>) {
-        if (conversations.isEmpty()) {
-            return
-        }
-        val c = conversations.map {
-            it.conversationId
-        }
-        val param = createSessionSyncMessageParam(c)
-        val bm = createSessionSyncMessage(param)
-        val result = deliverNoThrow(bm)
-        if (result) {
-            sessionSyncDao.deleteList(conversations)
-        }
     }
 
     protected fun checkConversation(conversationId: String) {

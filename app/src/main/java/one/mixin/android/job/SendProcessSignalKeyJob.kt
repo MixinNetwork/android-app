@@ -30,9 +30,6 @@ class SendProcessSignalKeyJob(
             signalProtocol.clearSenderKey(data.conversationId, accountId!!)
         } else if (action == ProcessSignalKeyAction.ADD_PARTICIPANT) {
             sendSenderKey(data.conversationId, participantId!!)
-        } else if (action == ProcessSignalKeyAction.SESSION_SYNC) {
-            val sessionSyncList = sessionSyncDao.getConversations() ?: return
-            sendSessionSyncMessage(sessionSyncList)
         }
     }
 
@@ -40,4 +37,4 @@ class SendProcessSignalKeyJob(
     }
 }
 
-enum class ProcessSignalKeyAction { ADD_PARTICIPANT, REMOVE_PARTICIPANT, RESEND_KEY, SESSION_SYNC }
+enum class ProcessSignalKeyAction { ADD_PARTICIPANT, REMOVE_PARTICIPANT, RESEND_KEY }

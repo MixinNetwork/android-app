@@ -35,10 +35,6 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideSessionSyncDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.sessionSyncDao()
-
-    @Singleton
-    @Provides
     @DatabaseCategory(DatabaseCategoryEnum.BASE)
     fun provideConversationDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.conversationDao()
 

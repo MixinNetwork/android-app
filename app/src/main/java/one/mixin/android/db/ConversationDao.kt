@@ -11,7 +11,6 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStorageUsage
-import one.mixin.android.vo.SessionSync
 import one.mixin.android.vo.StorageUsage
 
 @Dao
@@ -146,11 +145,4 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT category, sum(media_size) as mediaSize ,conversation_id as conversationId, count(id) as count FROM messages " +
         "WHERE conversation_id = :conversationId AND IFNULL(media_size,'') != '' GROUP BY category")
     fun getStorageUsage(conversationId: String): Single<List<StorageUsage>?>
-
-    @Query("""select c.conversation_id, m.created_at from conversations c 
-        inner join users u on c.owner_id = u.user_id
-        left join participants p on p.conversation_id = c.conversation_id
-        left join messages m on m.id = c.last_message_id
-        where  p.user_id = :userId AND u.app_id IS NULL order by m.created_at desc""")
-    fun getConversationsByUserId(userId: String): List<SessionSync>?
 }

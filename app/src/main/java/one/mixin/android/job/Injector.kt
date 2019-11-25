@@ -18,7 +18,6 @@ import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.ResendMessageDao
-import one.mixin.android.db.SessionSyncDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.UserDao
@@ -57,8 +56,6 @@ open class Injector : Injectable {
     lateinit var participantDao: ParticipantDao
     @Inject
     lateinit var participantSessionDao: ParticipantSessionDao
-    @Inject
-    lateinit var sessionSyncDao: SessionSyncDao
     @Inject
     lateinit var snapshotDao: SnapshotDao
     @Inject
@@ -130,35 +127,6 @@ open class Injector : Injectable {
         }
         if (conversation.status == ConversationStatus.START.ordinal) {
             jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
-        }
-    }
-
-    protected fun syncConversationParticipantSession(conversationId: String) {
-        val local = participantSessionDao.getParticipantSessionsByConversationId(conversationId)
-        try {
-            val call = conversationService.getConversation(conversationId).execute()
-            val response = call.body()
-            if (response != null && response.isSuccess) {
-                response.data?.let { data ->
-                    val remote = data.participantSessions?.map {
-                        ParticipantSession(conversationId, it.userId, it.sessionId)
-                    }
-                    if (remote == null || remote.isEmpty()) {
-                        participantSessionDao.deleteByConversationId(conversationId)
-                        return
-                    }
-                    if (local == null || local.isEmpty()) {
-                        participantSessionDao.insertList(remote)
-                        return
-                    }
-                    val common = remote.intersect(local)
-                    val remove = local.minus(common)
-                    val add = remote.minus(common)
-                    participantSessionDao.deleteList(remove)
-                    participantSessionDao.insertList(add)
-                }
-            }
-        } catch (e: IOException) {
         }
     }
 
