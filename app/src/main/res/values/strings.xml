@@ -221,6 +221,7 @@
     <!-- chat -->
     <string name="chat_waiting">Waiting for %1$s to get online and establish an encrypted session. %2$s.</string>
     <string name="chat_waiting_url" translatable="false">https://mixin.one/pages/1000007</string>
+    <string name="chat_waiting_desktop">desktop</string>
     <string name="chat_learn">Learn more</string>
     <string name="week_monday">Monday</string>
     <string name="week_tuesday">Tuesday</string>
@@ -707,5 +708,6 @@
     <string name="multisig_receivers">Receivers</string>
     <string name="multisig_state_signed">This multisig link has already been signed by yourself, you can not make a duplicate operation.</string>
     <string name="multisig_state_unlocked">This multisig link has already been unlocked by someone, you can not make a duplicate operation.</string>
+    <string name="desktop">desktop</string>
 </resources>
 

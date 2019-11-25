@@ -209,6 +209,7 @@
     <string name="biography">简介</string>
     <!-- chat -->
     <string name="chat_waiting">等待%1$s上线后建立加密会话。%2$s。</string>
+    <string name="chat_waiting_desktop">桌面端</string>
     <string name="chat_learn">了解更多</string>
     <string name="week_monday">星期一</string>
     <string name="week_tuesday">星期二</string>
