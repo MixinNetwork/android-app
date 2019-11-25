@@ -440,8 +440,7 @@ class DecryptMessage : Injector() {
             if (systemMessage.participantId == accountId) {
                 jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
             } else {
-                // TODO refresh conversation?
-                jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
+                jobManager.addJobInBackground(RefreshSessionJob(data.conversationId, arrayListOf(systemMessage.participantId)))
                 jobManager.addJobInBackground(RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
             }
             if (systemMessage.participantId != accountId && signalProtocol.isExistSenderKey(data.conversationId, accountId!!)) {
