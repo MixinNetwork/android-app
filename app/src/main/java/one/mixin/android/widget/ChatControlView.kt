@@ -50,6 +50,7 @@ import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.InputAwareLayout
 import org.jetbrains.anko.dip
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 class ChatControlView : FrameLayout {
 
@@ -248,8 +249,16 @@ class ChatControlView : FrameLayout {
 
     private fun checkSend(anim: Boolean = true) {
         val d = when (sendStatus) {
-            REPLY, SEND -> sendDrawable
-            AUDIO -> audioDrawable
+            REPLY, SEND -> {
+                chat_send_ib.setOnTouchListener(null)
+                chat_send_ib.setOnClickListener(onSendClickListener)
+                sendDrawable
+            }
+            AUDIO -> {
+                chat_send_ib.setOnClickListener(null)
+                chat_send_ib.setOnTouchListener(sendOnTouchListener)
+                audioDrawable
+            }
             else -> throw IllegalArgumentException("error send status")
         }
         d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
@@ -484,6 +493,12 @@ class ChatControlView : FrameLayout {
         }
     }
 
+    private val onSendClickListener = OnClickListener {
+        chat_et.text?.let {
+            callback.onSendClick(it.trim().toString())
+        }
+    }
+
     private val onChatMenuClickListener = OnClickListener {
         if (currentChecked != MENU) {
             currentChecked = MENU
@@ -546,8 +561,8 @@ class ChatControlView : FrameLayout {
         val vX = velocityTracker?.xVelocity
         velocityTracker?.recycle()
         velocityTracker = null
-        return if (vY != null && Math.abs(vY) >= minVelocity) {
-            if (vX != null && Math.abs(vX) > Math.abs(vY)) {
+        return if (vY != null && abs(vY) >= minVelocity) {
+            if (vX != null && abs(vX) > abs(vY)) {
                 FLING_NONE
             } else {
                 if (startY > event.rawY) {
@@ -599,7 +614,7 @@ class ChatControlView : FrameLayout {
                 if (downY != 0f && getDraggableContainer() != null && !isRecording) {
                     val dif = moveY - downY
                     dragging = if (!dragging) {
-                        Math.abs(moveY - startY) > touchSlop
+                        abs(moveY - startY) > touchSlop
                     } else dragging
                     if (dif != 0f) {
                         triggeredCancel = true
@@ -647,7 +662,7 @@ class ChatControlView : FrameLayout {
                 if (downY != 0f) {
                     val dif = moveY - downY
                     dragging = if (!dragging) {
-                        Math.abs(dif) > touchSlop
+                        abs(dif) > touchSlop
                     } else dragging
                     if (dif != 0f) {
                         triggeredCancel = true
