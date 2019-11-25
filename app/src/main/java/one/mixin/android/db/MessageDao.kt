@@ -79,6 +79,14 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun indexMediaMessages(conversationId: String, messageId: String): Int
 
+    @Query(
+        """SELECT count(*) FROM messages WHERE conversation_id = :conversationId
+        AND ((category = 'SIGNAL_IMAGE' OR category = 'PLAIN_IMAGE' OR category = 'SIGNAL_VIDEO' OR category = 'PLAIN_VIDEO')
+        OR category = 'SIGNAL_LIVE' OR category = 'PLAIN_LIVE')
+        """
+    )
+    suspend fun countMediaMessage(conversationId: String): Int
+
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
@@ -103,6 +111,13 @@ interface MessageDao : BaseDao<Message> {
         """
     )
     suspend fun indexMediaMessagesExcludeLive(conversationId: String, messageId: String): Int
+
+    @Query(
+        """SELECT count(*) FROM messages WHERE conversation_id = :conversationId 
+        AND (category = 'SIGNAL_IMAGE' OR category = 'PLAIN_IMAGE' OR category = 'SIGNAL_VIDEO' OR category = 'PLAIN_VIDEO')
+        """
+    )
+    suspend fun countMediaMessagesExcludeLive(conversationId: String): Int
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(

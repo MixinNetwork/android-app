@@ -36,16 +36,19 @@ class VideoHolder(
             mediaPagerAdapterListener.finishAfterTransition()
         }
         itemView.pip_iv.setOnClickListener {
-            itemView.player_view.isVisible = false
+            itemView.player_view.hideController()
             mediaPagerAdapterListener.switchToPin(messageItem, itemView)
         }
         itemView.pip_iv.isEnabled = false
         itemView.pip_iv.alpha = 0.5f
         itemView.close_iv.post {
             val statusBarHeight = context.statusBarHeight()
-            itemView.bottom_rl.setPadding(0, statusBarHeight, 0, 0)
+            itemView.bottom_ll.setPadding(0, statusBarHeight, 0, 0)
         }
         itemView.player_view.apply {
+            if (needPostTransition) {
+                player = VideoPlayer.player().player
+            }
             setRefreshAction {
                 messageItem.mediaUrl?.let {
                     if (messageItem.isLive()) {
@@ -95,6 +98,7 @@ class VideoHolder(
                 itemView.player_view.setUseLayout(useTopLayout = true, useBottomLayout = true)
                 circleProgress.setBindId(messageItem.messageId)
             } else {
+                itemView.player_view.hideController()
                 itemView.player_view.setUseLayout(useTopLayout = true, useBottomLayout = false)
                 circleProgress.isVisible = true
                 circleProgress.setBindId(messageItem.messageId)

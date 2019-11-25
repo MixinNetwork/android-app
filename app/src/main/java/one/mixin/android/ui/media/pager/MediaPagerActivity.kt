@@ -114,6 +114,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
 
     private var initialIndex: Int = 0
     private var firstLoad = true
+    private var firstLoadVideo = true
 
     private val pipVideoView by lazy {
         PipVideoView.getInstance()
@@ -175,15 +176,15 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
 
         lifecycleScope.launch {
             initialIndex = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
+            val size = viewModel.countMediaMessages(conversationId, excludeLive)
+            initialIndex = if (excludeLive) initialIndex else size - 1 - initialIndex
+            adapter.initialPos = initialIndex
             viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
                 .observe(this@MediaPagerActivity, Observer {
                     adapter.submitList(it)
                     if (firstLoad) {
                         firstLoad = false
-                        val initialPos = if (excludeLive) initialIndex else it.size - 1 - initialIndex
-                        adapter.initialPos = initialPos
-                        view_pager.setCurrentItem(initialPos, false)
-                        VideoPlayer.player().start()
+                        view_pager.setCurrentItem(initialIndex, false)
                     }
                 })
         }
@@ -259,8 +260,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
                                 )
                                 item.mediaMimeType.equals(MimeType.PNG.toString()) ->
                                     this@MediaPagerActivity.getPublicPicturePath().createPngTemp(
-                                    false
-                                )
+                                        false
+                                    )
                                 else -> this@MediaPagerActivity.getPublicPicturePath().createImageTemp(
                                     noMedia = false
                                 )
@@ -525,12 +526,14 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         sharedView.doOnPreDraw { startPostponedEnterTransition() }
     }
 
-    private fun downloadMedia(position: Int) {
-        val currMessageItem = adapter.currentList?.get(position) ?: return
-        if (currMessageItem.mediaStatus == MediaStatus.CANCELED.name) return
+    private fun downloadMedia(position: Int): Boolean {
+        val currMessageItem = adapter.currentList?.get(position) ?: return false
+        if (currMessageItem.mediaStatus == MediaStatus.CANCELED.name) return false
         if (currMessageItem.isMedia() && currMessageItem.mediaUrl == null) {
             viewModel.downloadByMessageId(currMessageItem.messageId)
+            return true
         }
+        return false
     }
 
     private inline fun findViewPagerChildByTag(
@@ -545,31 +548,36 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         }
     }
 
+    private fun loadVideoMessage(messageItem: MessageItem) {
+        if (messageItem.isVideo() || messageItem.isLive()) {
+            messageItem.mediaUrl?.let {
+                if (messageItem.isLive()) {
+                    VideoPlayer.player().loadHlsVideo(it, messageItem.messageId)
+                } else {
+                    VideoPlayer.player().loadVideo(it, messageItem.messageId)
+                }
+                val view =
+                    view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${messageItem.messageId}")
+                if (view != null) {
+                    view.player_view.player = VideoPlayer.player().player
+                }
+            }
+        }
+    }
+
     private val onPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
-            VideoPlayer.player().stop()
-            VideoPlayer.player().pause()
+            if (downloadMedia(position)) return
+
+            if (!firstLoadVideo) {
+                VideoPlayer.player().stop()
+                VideoPlayer.player().pause()
+            }
             val messageItem = adapter.currentList?.get(position) ?: return
-            if (messageItem.isVideo() || messageItem.isLive()) {
-                messageItem.mediaUrl?.let {
-                    if (messageItem.isLive()) {
-                        VideoPlayer.player().loadHlsVideo(it, messageItem.messageId)
-                    } else {
-                        VideoPlayer.player().loadVideo(it, messageItem.messageId)
-                    }
-                    val view = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${messageItem.messageId}")
-                    if (view != null) {
-                        view.player_view.player = VideoPlayer.player().player
-                    } else {
-                        // TODO workaround first open
-                        view_pager.postDelayed({
-                            findViewPagerChildByTag {
-                                it.player_view.player = VideoPlayer.player().player
-                                VideoPlayer.player().start()
-                            }
-                        }, 100)
-                    }
-                }
+            loadVideoMessage(messageItem)
+            if (firstLoadVideo) {
+                firstLoadVideo = false
+                VideoPlayer.player().start()
             }
         }
     }
@@ -594,6 +602,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
                 SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
         if (view_pager.currentItem == initialIndex) {
+            findViewPagerChildByTag {
+                it.getChildAt(0)?.player_view?.hideController()
+            }
             super.finishAfterTransition()
         } else {
             finish()

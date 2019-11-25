@@ -22,7 +22,6 @@ import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
 import one.mixin.android.R
 import one.mixin.android.widget.PlayView
-import timber.log.Timber
 import java.util.Formatter
 import java.util.Locale
 import kotlin.math.min
@@ -78,7 +77,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
             value?.apply {
                 addListener(componentListener)
             }
-            updateAll()
+            updateAll(false)
         }
 
     var progressUpdateListener: ProgressUpdateListener? = null
@@ -87,7 +86,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
     init {
         LayoutInflater.from(context).inflate(R.layout.exo_playback_control_view, this)
         topLayout = findViewById(R.id.top_fl)
-        bottomLayout = findViewById(R.id.bottom_rl)
+        bottomLayout = findViewById(R.id.bottom_ll)
         playView = findViewById(R.id.play_view)
         playView.setOnClickListener(componentListener)
         durationView = findViewById(R.id.exo_duration)
@@ -111,7 +110,6 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
         } else if (isVisible) {
             hideAfterTimeout()
         }
-        updateAll()
     }
 
     public override fun onDetachedFromWindow() {
@@ -148,6 +146,10 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
             removeCallbacks(hideAction)
             hideAtMs = C.TIME_UNSET
         }
+    }
+
+    fun updateLiveView() {
+        liveView.isVisible = player?.isCurrentWindowDynamic ?: false
     }
 
     private fun hideAfterTimeout() {
@@ -196,8 +198,10 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
         }
     }
 
-    private fun updateAll() {
+    private fun updateAll(onlyPlayView: Boolean = false) {
         updatePlayView()
+        if (onlyPlayView) return
+
         updateNavigation()
         updateTimeline()
         if (useTopLayout) {
@@ -458,10 +462,6 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
                     }
                 }
             }
-        }
-
-        override fun onRenderedFirstFrame() {
-            liveView.isVisible = player?.isCurrentWindowDynamic ?: false
         }
     }
 

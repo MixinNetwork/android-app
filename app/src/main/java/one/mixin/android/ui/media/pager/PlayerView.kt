@@ -141,7 +141,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) : FrameLayout(con
         controller.show()
     }
 
-    private fun hideController() {
+    fun hideController() {
         controller.hide()
     }
 
@@ -201,6 +201,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) : FrameLayout(con
         }
 
         override fun onRenderedFirstFrame() {
+            controller.updateLiveView()
             callback?.onRenderFirstFrame()
         }
     }

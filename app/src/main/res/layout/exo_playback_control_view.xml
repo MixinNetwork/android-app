@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="24dp"
+        android:visibility="gone"
         android:background="@drawable/bg_gradient_bar">
 
         <ImageView
@@ -57,41 +58,40 @@
         android:layout_height="56dp"
         android:layout_gravity="center" />
 
-    <RelativeLayout
-        android:id="@+id/bottom_rl"
+    <LinearLayout
+        android:id="@+id/bottom_ll"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom"
+        android:layout_marginStart="@dimen/margin12"
+        android:layout_marginEnd="@dimen/margin12"
         android:layout_marginBottom="24dp">
 
         <TextView
             android:id="@+id/exo_duration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:fontFamily="monospace"
-            android:gravity="end"
-            android:text="@string/default_time"
-            android:textColor="@color/transparent_white" />
-
-        <TextView
-            android:id="@+id/exo_position"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
+            android:layout_gravity="center_vertical"
             android:fontFamily="monospace"
             android:text="@string/default_time"
             android:textColor="@color/transparent_white" />
 
         <com.google.android.exoplayer2.ui.DefaultTimeBar
             android:id="@id/exo_progress"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@id/exo_position"
-            android:layout_toEndOf="@id/exo_duration"
+            android:layout_gravity="center_vertical"
             app:bar_height="2dp"
             app:scrubber_drawable="@drawable/ic_seek_bar" />
-    </RelativeLayout>
+
+        <TextView
+            android:id="@+id/exo_position"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:fontFamily="monospace"
+            android:text="@string/default_time"
+            android:textColor="@color/transparent_white" />
+    </LinearLayout>
 </FrameLayout>
