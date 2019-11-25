@@ -1,6 +1,7 @@
 package one.mixin.android.ui.media.pager
 
 import android.content.Context
+import android.util.LruCache
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -27,6 +28,8 @@ class MediaPagerAdapter(
 ) : PagedListAdapter<MessageItem, MediaPagerHolder>(MessageItem.DIFF_CALLBACK) {
 
     var initialPos: Int = 0
+
+    private val videoStatusCache = LruCache<String, String>(100)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaPagerHolder {
         val layout = DismissFrameLayout(context).apply {
@@ -67,7 +70,9 @@ class MediaPagerAdapter(
                     holder.bind(messageItem, position == initialPos, onMediaPagerAdapterListener)
                 }
                 is VideoHolder -> {
-                    holder.bind(messageItem, position == initialPos)
+                    val videoHolder = holder.bind(messageItem, position == initialPos, videoStatusCache)
+                    videoStatusCache.put(messageItem.messageId, messageItem.mediaStatus)
+                    videoHolder
                 }
             }
         }

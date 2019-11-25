@@ -39,7 +39,6 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     }
 
     private val adapter = MediaAdapter(fun(imageView: View, messageId: String) {
-        Timber.d("@@@ messageId: $messageId")
         MediaPagerActivity.show(requireActivity(), imageView, conversationId, messageId, true)
     })
 

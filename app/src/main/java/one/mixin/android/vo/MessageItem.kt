@@ -25,6 +25,7 @@ import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toast
+import one.mixin.android.util.VideoPlayer
 
 @SuppressLint("ParcelCreator")
 @Entity
@@ -229,4 +230,15 @@ fun MessageItem.saveToLocal(context: Context) {
     outFile.copyFromInputStream(FileInputStream(file))
     context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
     MixinApplication.appContext.toast(R.string.save_success)
+}
+
+fun MessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {
+    mediaUrl?.let {
+        if (isLive()) {
+            VideoPlayer.player().loadHlsVideo(it, messageId)
+        } else {
+            VideoPlayer.player().loadVideo(it, messageId)
+        }
+        actionAfterLoad?.invoke()
+    }
 }

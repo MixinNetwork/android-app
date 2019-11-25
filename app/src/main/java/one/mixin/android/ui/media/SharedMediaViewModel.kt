@@ -153,11 +153,6 @@ class SharedMediaViewModel @Inject constructor(
         excludeLive: Boolean
     ): Int = conversationRepository.indexMediaMessages(conversationId, messageId, excludeLive)
 
-    suspend fun countMediaMessages(
-        conversationId: String,
-        excludeLive: Boolean
-    ) = conversationRepository.countMediaMessages(conversationId, excludeLive)
-
     fun getMediaMessages(
         conversationId: String,
         index: Int,

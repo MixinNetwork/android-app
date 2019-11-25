@@ -15,22 +15,22 @@
         android:background="@drawable/bg_gradient_bar">
 
         <ImageView
-            android:id="@+id/pip_iv"
+            android:id="@+id/close_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:padding="8dp"
-            android:src="@drawable/ic_outinline"
+            android:src="@drawable/ic_close_white_24dp"
             tools:ignore="ContentDescription" />
 
         <ImageView
-            android:id="@+id/close_iv"
+            android:id="@+id/pip_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_marginEnd="8dp"
             android:padding="8dp"
-            android:src="@drawable/ic_close_white_24dp"
+            android:src="@drawable/ic_outinline"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -68,7 +68,7 @@
         android:layout_marginBottom="24dp">
 
         <TextView
-            android:id="@+id/exo_duration"
+            android:id="@id/exo_position"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -86,7 +86,7 @@
             app:scrubber_drawable="@drawable/ic_seek_bar" />
 
         <TextView
-            android:id="@+id/exo_position"
+            android:id="@id/exo_duration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"

@@ -126,15 +126,6 @@ internal constructor(
         readMessageDao.indexMediaMessages(conversationId, messageId)
     }
 
-    suspend fun countMediaMessages(
-        conversationId: String,
-        excludeLive: Boolean
-    ): Int = if (excludeLive) {
-        readMessageDao.countMediaMessagesExcludeLive(conversationId)
-    } else {
-        readMessageDao.countMediaMessage(conversationId)
-    }
-
     fun getMediaMessages(
         conversationId: String,
         index: Int,

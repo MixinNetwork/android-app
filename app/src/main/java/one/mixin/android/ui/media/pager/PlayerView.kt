@@ -44,7 +44,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) : FrameLayout(con
     var callback: Callback? = null
 
     private var controllerShowTimeoutMs = PlayerControlView.DEFAULT_SHOW_TIMEOUT_MS
-    var controllerAutoShow = true
+    private var controllerAutoShow = true
     var textureViewRotation = 0
     var useController = true
 
@@ -71,6 +71,11 @@ class PlayerView(context: Context, attributeSet: AttributeSet) : FrameLayout(con
             return@setOnLongClickListener false
         }
         hideController()
+    }
+
+    override fun setLayoutDirection(layoutDirection: Int) {
+        super.setLayoutDirection(layoutDirection)
+        controller.layoutDirection = layoutDirection
     }
 
     fun setUseLayout(useTopLayout: Boolean, useBottomLayout: Boolean) {

@@ -34,6 +34,8 @@ import androidx.core.view.doOnPreDraw
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.exoplayer2.Player
 import com.google.firebase.ml.vision.FirebaseVision
@@ -83,6 +85,7 @@ import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isMedia
 import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.loadVideoOrLive
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
@@ -171,13 +174,13 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         colorDrawable = ColorDrawable(Color.BLACK)
         view_pager.backgroundDrawable = colorDrawable
         view_pager.adapter = adapter
+        val recyclerView = view_pager.getChildAt(0) as RecyclerView
+        (recyclerView.layoutManager as LinearLayoutManager).stackFromEnd = !excludeLive
         view_pager.registerOnPageChangeCallback(onPageChangeCallback)
         VideoPlayer.player().setCycle(false)
 
         lifecycleScope.launch {
             initialIndex = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
-            val size = viewModel.countMediaMessages(conversationId, excludeLive)
-            initialIndex = if (excludeLive) initialIndex else size - 1 - initialIndex
             adapter.initialPos = initialIndex
             viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
                 .observe(this@MediaPagerActivity, Observer {
@@ -550,12 +553,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
 
     private fun loadVideoMessage(messageItem: MessageItem) {
         if (messageItem.isVideo() || messageItem.isLive()) {
-            messageItem.mediaUrl?.let {
-                if (messageItem.isLive()) {
-                    VideoPlayer.player().loadHlsVideo(it, messageItem.messageId)
-                } else {
-                    VideoPlayer.player().loadVideo(it, messageItem.messageId)
-                }
+            messageItem.loadVideoOrLive {
                 val view =
                     view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${messageItem.messageId}")
                 if (view != null) {
@@ -605,10 +603,16 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
             findViewPagerChildByTag {
                 it.getChildAt(0)?.player_view?.hideController()
             }
+            VideoPlayer.player().stop()
             super.finishAfterTransition()
         } else {
             finish()
         }
+    }
+
+    override fun finish() {
+        VideoPlayer.player().stop()
+        super.finish()
     }
 
     private val mediaPagerAdapterListener = object : MediaPagerAdapterListener {
