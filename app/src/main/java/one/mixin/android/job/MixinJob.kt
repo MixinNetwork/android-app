@@ -315,7 +315,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     // TODO exception?
-    protected fun syncConversation(conversationId: String) {
+    private fun syncConversation(conversationId: String) {
         val response = conversationApi.getConversation(conversationId).execute().body()
         if (response != null && response.isSuccess) {
             response.data?.let { data ->

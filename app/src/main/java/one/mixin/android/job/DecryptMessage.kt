@@ -111,6 +111,7 @@ class DecryptMessage : Injector() {
             }
 
             syncConversation(data)
+            checkSession(data)
             if (data.category.startsWith("SYSTEM_")) {
                 processSystemMessage(data)
             } else if (data.category.startsWith("PLAIN_")) {
@@ -127,6 +128,15 @@ class DecryptMessage : Injector() {
         } catch (e: Exception) {
             Timber.e("Process error: $e")
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+        }
+    }
+
+    private fun checkSession(data: BlazeMessageData) {
+        data.sessionId?.let {
+            val p = participantSessionDao.getParticipantSession(data.conversationId, data.userId, data.sessionId)
+            if (p == null) {
+                participantSessionDao.insert(ParticipantSession(data.conversationId, data.userId, data.sessionId))
+            }
         }
     }
 
