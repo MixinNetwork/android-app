@@ -19,7 +19,7 @@ data class BlazeMessageParam(
     val quote_message_id: String? = null,
     val session_id: String? = null,
     var representative_id: String? = null,
-    val conversation_checksum: String? = null
+    var conversation_checksum: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 6L
@@ -51,5 +51,5 @@ fun createConsumeSignalKeysParam(recipients: ArrayList<BlazeMessageParamSession>
 fun createSyncSignalKeysParam(keys: SignalKeyRequest?) =
     BlazeMessageParam(keys = keys)
 
-fun createSignalKeyMessageParam(conversationId: String, messages: ArrayList<BlazeSignalKeyMessage>) =
-    BlazeMessageParam(conversationId, messages = messages)
+fun createSignalKeyMessageParam(conversationId: String, messages: ArrayList<BlazeSignalKeyMessage>, conversation_checksum: String) =
+    BlazeMessageParam(conversationId, messages = messages, conversation_checksum = conversation_checksum)

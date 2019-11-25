@@ -30,6 +30,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SenderKeyStatus
+import one.mixin.android.vo.generateConversationChecksum
 import one.mixin.android.vo.isGroup
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
@@ -119,7 +120,8 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         if (signalKeyMessages.isEmpty()) {
             return
         }
-        val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, signalKeyMessages))
+        val checksum = getCheckSum(conversationId)
+        val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, signalKeyMessages, checksum))
         val result = deliverNoThrow(bm)
         if (result.retry) {
             return checkSessionSenderKey(conversationId)
@@ -151,7 +153,8 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         val (cipherText, err) = signalProtocol.encryptSenderKey(conversationId, recipientId, sessionId.getDeviceId())
         if (err) return false
         val signalKeyMessages = createBlazeSignalKeyMessage(recipientId, cipherText!!, sessionId)
-        val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, arrayListOf(signalKeyMessages)))
+        val checksum = getCheckSum(conversationId)
+        val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, arrayListOf(signalKeyMessages), checksum))
         val result = deliverNoThrow(bm)
         if (result.retry) {
             return sendSenderKey(conversationId, recipientId, sessionId, isForce)
@@ -162,6 +165,15 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             }
         }
         return result.success
+    }
+
+    private fun getCheckSum(conversationId: String): String {
+        val sessions = participantSessionDao.getParticipantSessionsByConversationId(conversationId)
+        return if (sessions.isNullOrEmpty()) {
+            ""
+        } else {
+            generateConversationChecksum(sessions)
+        }
     }
 
     protected fun checkSignalSession(recipientId: String, sessionId: String? = null): Boolean {
@@ -209,6 +221,9 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun deliver(blazeMessage: BlazeMessage): Boolean {
+        blazeMessage.params?.conversation_id?.let {
+            blazeMessage.params.conversation_checksum = getCheckSum(it)
+        }
         val bm = chatWebSocket.sendMessage(blazeMessage)
         if (bm == null) {
             SystemClock.sleep(SLEEP_MILLIS)
