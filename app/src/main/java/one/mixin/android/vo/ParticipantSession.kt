@@ -2,6 +2,7 @@ package one.mixin.android.vo
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import one.mixin.android.extension.md5
 import one.mixin.android.extension.nowInUtc
 
 @Entity(tableName = "participant_session",
@@ -28,6 +29,14 @@ data class ParticipantSession(
     override fun hashCode(): Int {
         return "$conversationId$userId$sessionId".hashCode()
     }
+}
+
+fun generateConversationChecksum(devices: List<ParticipantSession>): String {
+    val sorted = devices.sortedWith(Comparator<ParticipantSession>{ a, b ->
+        a.sessionId.compareTo(b.sessionId)
+    })
+    val d = sorted.joinToString { it.sessionId }
+    return d.md5()
 }
 
 enum class SenderKeyStatus { UNKNOWN, SENT }

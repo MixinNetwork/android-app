@@ -92,7 +92,7 @@ class RefreshConversationJob(val conversationId: String) :
 
                 participantDao.replaceAll(data.conversationId, participants)
                 data.participantSessions?.let {
-                    syncParticipantSession(it)
+                    syncParticipantSession(conversationId, it)
                 }
 
                 if (userIdList.isNotEmpty()) {
@@ -105,25 +105,5 @@ class RefreshConversationJob(val conversationId: String) :
         }
 
         removeJob()
-    }
-
-    private fun syncParticipantSession(data: List<ParticipantSessionResponse>) {
-            val remote = data.map {
-                ParticipantSession(conversationId, it.userId, it.sessionId)
-            }
-            if (remote.isEmpty()) {
-                participantSessionDao.deleteByConversationId(conversationId)
-                return
-            }
-            val local = participantSessionDao.getParticipantSessionsByConversationId(conversationId)
-            if (local == null || local.isEmpty()) {
-                participantSessionDao.insertList(remote)
-                return
-            }
-            val common = remote.intersect(local)
-            val remove = local.minus(common)
-            val add = remote.minus(common)
-            participantSessionDao.deleteList(remove)
-            participantSessionDao.insertList(add)
     }
 }

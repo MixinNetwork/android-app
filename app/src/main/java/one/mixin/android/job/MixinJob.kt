@@ -14,10 +14,12 @@ import one.mixin.android.api.WebSocketException
 import one.mixin.android.api.createPreKeyBundle
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
+import one.mixin.android.api.response.ParticipantSessionResponse
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.util.ErrorHandler.Companion.CONVERSATION_CHECKSUM_INVALID_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
@@ -119,7 +121,10 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         }
         val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, signalKeyMessages))
         val result = deliverNoThrow(bm)
-        if (result) {
+        if (result.retry) {
+            return checkSessionSenderKey(conversationId)
+        }
+        if (result.success) {
             val sentSenderKeys = signalKeyMessages.map {
                 ParticipantSession(conversationId, it.recipient_id, it.sessionId!!, SenderKeyStatus.SENT.ordinal)
             }
@@ -139,7 +144,6 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 if (!sessionId.isNullOrBlank()) {
                     participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SenderKeyStatus.UNKNOWN.ordinal))
                 }
-                Log.e(TAG, "No any signal key from server" + SenderKeyStatus.UNKNOWN.ordinal)
                 return false
             }
         }
@@ -149,12 +153,15 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         val signalKeyMessages = createBlazeSignalKeyMessage(recipientId, cipherText!!, sessionId)
         val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, arrayListOf(signalKeyMessages)))
         val result = deliverNoThrow(bm)
-        if (result) {
+        if (result.retry) {
+            return sendSenderKey(conversationId, recipientId, sessionId, isForce)
+        }
+        if (result.success) {
             if (!sessionId.isNullOrBlank()) {
                 participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SenderKeyStatus.SENT.ordinal))
             }
         }
-        return result
+        return result.success
     }
 
     protected fun checkSignalSession(recipientId: String, sessionId: String? = null): Boolean {
@@ -175,7 +182,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         return true
     }
 
-    protected tailrec fun deliverNoThrow(blazeMessage: BlazeMessage): Boolean {
+    protected tailrec fun deliverNoThrow(blazeMessage: BlazeMessage): MessageResult {
         val bm = chatWebSocket.sendMessage(blazeMessage)
         if (bm == null) {
             if (!MixinApplication.appContext.networkConnected() || !LinkState.isOnline(linkState.state)) {
@@ -184,15 +191,20 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             SystemClock.sleep(SLEEP_MILLIS)
             return deliverNoThrow(blazeMessage)
         } else if (bm.error != null) {
-            return if (bm.error.code == FORBIDDEN) {
-                true
+            return if (bm.error.code == CONVERSATION_CHECKSUM_INVALID_ERROR) {
+                blazeMessage.params?.conversation_id?.let {
+                    syncConversation(it)
+                }
+                MessageResult(false, retry = true)
+            } else if (bm.error.code == FORBIDDEN) {
+                MessageResult(true, retry = false)
             } else {
                 SystemClock.sleep(SLEEP_MILLIS)
                 // warning: may caused job leak if server return error data and come to this branch
                 return deliverNoThrow(blazeMessage)
             }
         } else {
-            return true
+            return MessageResult(true, retry = false)
         }
     }
 
@@ -202,7 +214,12 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             SystemClock.sleep(SLEEP_MILLIS)
             throw WebSocketException()
         } else if (bm.error != null) {
-            if (bm.error.code == FORBIDDEN) {
+            if (bm.error.code == CONVERSATION_CHECKSUM_INVALID_ERROR) {
+                blazeMessage.params?.conversation_id?.let {
+                    syncConversation(it)
+                }
+                throw WebSocketException()
+            } else if (bm.error.code == FORBIDDEN) {
                 return true
             } else {
                 SystemClock.sleep(SLEEP_MILLIS)
@@ -253,7 +270,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     protected fun checkConversation(conversationId: String) {
         val conversation = conversationDao.getConversation(conversationId) ?: return
         if (conversation.isGroup()) {
-            syncConversation(conversation)
+            syncConversation(conversation.conversationId)
         } else {
             checkConversationExist(conversation)
         }
@@ -282,23 +299,41 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         }
     }
 
-    private fun syncConversation(conversation: Conversation) {
-        val response = conversationApi.getConversation(conversation.conversationId).execute().body()
+    // TODO exception?
+    protected fun syncConversation(conversationId: String) {
+        val response = conversationApi.getConversation(conversationId).execute().body()
         if (response != null && response.isSuccess) {
             response.data?.let { data ->
                 val remote = data.participants.map {
-                    Participant(conversation.conversationId, it.userId, it.role, it.createdAt!!)
+                    Participant(conversationId, it.userId, it.role, it.createdAt!!)
                 }
-                participantDao.replaceAll(conversation.conversationId, remote)
+                participantDao.replaceAll(conversationId, remote)
 
-                val sessionParticipants = data.participantSessions?.map {
-                    ParticipantSession(conversation.conversationId, it.userId, it.sessionId)
-                }
-                sessionParticipants?.let {
-                    participantSessionDao.replaceAll(conversation.conversationId, it)
+                data.participantSessions?.let {
+                    syncParticipantSession(conversationId, it)
                 }
             }
         }
+    }
+
+    protected fun syncParticipantSession(conversationId: String, data: List<ParticipantSessionResponse>) {
+        val remote = data.map {
+            ParticipantSession(conversationId, it.userId, it.sessionId)
+        }
+        if (remote.isEmpty()) {
+            participantSessionDao.deleteByConversationId(conversationId)
+            return
+        }
+        val local = participantSessionDao.getParticipantSessionsByConversationId(conversationId)
+        if (local == null || local.isEmpty()) {
+            participantSessionDao.insertList(remote)
+            return
+        }
+        val common = remote.intersect(local)
+        val remove = local.minus(common)
+        val add = remote.minus(common)
+        participantSessionDao.deleteList(remove)
+        participantSessionDao.insertList(add)
     }
 
     internal abstract fun cancel()

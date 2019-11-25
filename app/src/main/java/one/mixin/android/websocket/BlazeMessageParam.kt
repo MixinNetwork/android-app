@@ -18,7 +18,8 @@ data class BlazeMessageParam(
     val messages: List<Any>? = null,
     val quote_message_id: String? = null,
     val session_id: String? = null,
-    var representative_id: String? = null
+    var representative_id: String? = null,
+    val conversation_checksum: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 6L
