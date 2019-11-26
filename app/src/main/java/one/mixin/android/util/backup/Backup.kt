@@ -78,7 +78,6 @@ suspend fun backup(
     }
     try {
         db.execSQL("UPDATE participant_session SET sent_to_server = NULL")
-        db.execSQL("DELETE FROM session_sync")
         db.execSQL("DELETE FROM jobs")
         db.execSQL("DELETE FROM flood_messages")
         db.execSQL("DELETE FROM offsets")
