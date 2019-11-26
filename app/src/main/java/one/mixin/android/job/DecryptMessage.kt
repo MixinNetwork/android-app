@@ -660,6 +660,9 @@ class DecryptMessage : Injector() {
         if (MixinApplication.conversationId == message.conversationId) {
             return
         }
+        if (message.userId == Session.getAccountId()) {
+            return
+        }
         jobManager.addJobInBackground(NotificationJob(message))
     }
 }
