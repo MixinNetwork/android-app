@@ -462,8 +462,6 @@ class DecryptMessage : Injector() {
         } else if (systemMessage.action == SystemConversationAction.REMOVE.name || systemMessage.action == SystemConversationAction.EXIT.name) {
             if (systemMessage.participantId == accountId) {
                 conversationDao.updateConversationStatusById(data.conversationId, ConversationStatus.QUIT.ordinal)
-            } else {
-                jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
             }
             syncUser(systemMessage.participantId!!)
             jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.REMOVE_PARTICIPANT, systemMessage.participantId))

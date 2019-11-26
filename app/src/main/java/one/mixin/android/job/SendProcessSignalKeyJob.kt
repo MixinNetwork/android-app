@@ -25,9 +25,10 @@ class SendProcessSignalKeyJob(
                 sendNoKeyMessage(data.conversationId, data.userId)
             }
         } else if (action == ProcessSignalKeyAction.REMOVE_PARTICIPANT) {
-            val accountId = Session.getAccountId()
-            appDatabase.clearParticipant(data.conversationId, participantId!!)
-            signalProtocol.clearSenderKey(data.conversationId, accountId!!)
+            Session.getAccountId()?.let {
+                appDatabase.clearParticipant(data.conversationId, participantId!!)
+                signalProtocol.clearSenderKey(data.conversationId, it)
+            }
         } else if (action == ProcessSignalKeyAction.ADD_PARTICIPANT) {
             sendSenderKey(data.conversationId, participantId!!)
         }
