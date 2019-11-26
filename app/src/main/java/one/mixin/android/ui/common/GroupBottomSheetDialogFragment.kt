@@ -8,13 +8,13 @@ import android.text.TextUtils
 import android.text.TextWatcher
 import android.text.method.LinkMovementMethod
 import android.view.View
-import android.view.View.GONE
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
@@ -28,9 +28,11 @@ import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.info.MenuStyle
 import one.mixin.android.ui.common.info.createMenuLayout
@@ -49,6 +51,7 @@ import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.SearchMessageItem
@@ -73,7 +76,6 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
     }
 
-    private var menu: AlertDialog? = null
     var callback: Callback? = null
 
     private val conversationId: String by lazy {
@@ -96,11 +98,6 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         contentView.title.right_iv.setOnClickListener { dismiss() }
-        contentView.more_fl.setOnClickListener {
-            (dialog as BottomSheet).fakeDismiss()
-            menu?.show()
-        }
-
         contentView.join_tv.setOnClickListener {
             if (code == null) return@setOnClickListener
 
@@ -109,8 +106,8 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     dismiss()
                     val conversationResponse = it.data as ConversationResponse
                     val accountId = Session.getAccountId()
-                    conversationResponse.participants.forEach {
-                        if (it.userId == accountId) {
+                    conversationResponse.participants.forEach { request ->
+                        if (request.userId == accountId) {
                             bottomViewModel.refreshConversation(conversationId)
                             return@forEach
                         }
@@ -157,7 +154,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 contentView.detail_tv.isVisible = true
                 contentView.detail_tv.text = c.announcement
             }
-            initParticipant(changeMenu)
+            initParticipant(changeMenu, c)
         })
 
         contentView.post {
@@ -168,7 +165,10 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun initParticipant(changeMenu: Boolean) = lifecycleScope.launch {
+    private fun initParticipant(
+        changeMenu: Boolean,
+        conversation: Conversation
+    ) = lifecycleScope.launch {
         if (!isAdded) return@launch
 
         var participantCount = 0
@@ -185,8 +185,10 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         me = localMe
         if (me != null) {
-            contentView.join_tv.visibility = GONE
+            contentView.ops_ll.isVisible = true
+            contentView.join_tv.isVisible = false
         } else {
+            contentView.ops_ll.isVisible = conversation.status == ConversationStatus.QUIT.ordinal
             contentView.join_tv.isVisible = code != null
         }
     }
@@ -221,8 +223,11 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     menu {
                         title = announcementString
                         action = {
-                            activity?.addFragment(this@GroupBottomSheetDialogFragment, GroupEditFragment.newInstance(
-                                conversationId, conversation.announcement), GroupEditFragment.TAG)
+                            activity?.addFragment(
+                                this@GroupBottomSheetDialogFragment, GroupEditFragment.newInstance(
+                                    conversationId, conversation.announcement
+                                ), GroupEditFragment.TAG
+                            )
                             dismiss()
                         }
                     }
@@ -254,15 +259,22 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             menu {
                 title = getString(R.string.group_info_exit_group)
                 style = MenuStyle.Danger
-                action = { bottomViewModel.exitGroup(conversationId) }
+                action = {
+                    requireContext().showConfirmDialog(getString(R.string.group_info_exit_group)) {
+                        bottomViewModel.exitGroup(conversationId)
+                        dismiss()
+                    }
+                }
             }
         } else {
             menu {
                 title = getString(R.string.group_info_delete_group)
                 style = MenuStyle.Danger
                 action = {
-                    bottomViewModel.deleteGroup(conversationId)
-                    callback?.onDelete()
+                    requireContext().showConfirmDialog(getString(R.string.group_info_delete_group)) {
+                        bottomViewModel.deleteGroup(conversationId)
+                        callback?.onDelete()
+                    }
                 }
             }
         }
@@ -271,34 +283,53 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 title = getString(R.string.group_info_clear_chat)
                 style = MenuStyle.Danger
                 action = {
-                    bottomViewModel.deleteMessageByConversationId(conversationId)
-                    dismiss()
+                    requireContext().showConfirmDialog(getString(R.string.group_info_clear_chat)) {
+                        bottomViewModel.deleteMessageByConversationId(conversationId)
+                        dismiss()
+                    }
                 }
             }
             menu(deleteMenu)
         })
 
         menuListLayout?.removeAllViews()
-        list.createMenuLayout(requireContext(), contentView.more_iv.rotationX == 180f).let { layout ->
-            menuListLayout = layout
-            contentView.scroll_content.addView(layout)
-            contentView.more_fl.setOnClickListener {
-                layout.isVisible = !layout.isVisible
-                contentView.more_iv.animate().rotationX(if (layout.isVisible) {
-                    180f
-                } else {
-                    0f
-                }).start()
+        list.createMenuLayout(requireContext(), contentView.more_iv.rotationX == 180f)
+            .let { layout ->
+                menuListLayout = layout
+                contentView.scroll_content.addView(layout)
+                layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    bottomMargin = requireContext().dpToPx(30f)
+                }
+                contentView.more_fl.setOnClickListener {
+                    contentView.scroll_view.updateLayoutParams<ViewGroup.LayoutParams> {
+                    height = if (height == ViewGroup.LayoutParams.WRAP_CONTENT) {
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    } else {
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    }
+                }
+                    layout.isVisible = !layout.isVisible
+                    contentView.more_iv.animate().rotationX(
+                        if (layout.isVisible) {
+                            180f
+                        } else {
+                            0f
+                        }
+                    ).start()
+                }
             }
-        }
     }
 
     private fun startSearchConversation() = lifecycleScope.launch(Dispatchers.IO) {
         bottomViewModel.getConversation(conversationId)?.let {
-            val searchMessageItem = SearchMessageItem(it.conversationId, it.category, it.name,
-                    0, "", null, null, it.iconUrl)
-            activity?.addFragment(this@GroupBottomSheetDialogFragment,
-                SearchMessageFragment.newInstance(searchMessageItem, ""), SearchMessageFragment.TAG)
+            val searchMessageItem = SearchMessageItem(
+                it.conversationId, it.category, it.name,
+                0, "", null, null, it.iconUrl
+            )
+            activity?.addFragment(
+                this@GroupBottomSheetDialogFragment,
+                SearchMessageFragment.newInstance(searchMessageItem, ""), SearchMessageFragment.TAG
+            )
         }
     }
 
@@ -315,11 +346,13 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showMuteDialog() {
-        val choices = arrayOf(getString(R.string.contact_mute_8hours),
-            getString(R.string.contact_mute_1week), getString(R.string.contact_mute_1year))
+        val choices = arrayOf(
+            getString(R.string.contact_mute_8hours),
+            getString(R.string.contact_mute_1week), getString(R.string.contact_mute_1year)
+        )
         var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
         var whichItem = 0
-        val alert = AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
@@ -377,12 +410,15 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                nameDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = !(s.isNullOrBlank() || s.toString() == name.toString())
+                nameDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled =
+                    !(s.isNullOrBlank() || s.toString() == name.toString())
             }
         })
 
-        nameDialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-            WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
+        nameDialog.window?.clearFlags(
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+        )
         nameDialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
     }
 

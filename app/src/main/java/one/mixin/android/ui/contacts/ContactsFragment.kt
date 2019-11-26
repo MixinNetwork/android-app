@@ -32,9 +32,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.UploadContactsJob
 import one.mixin.android.ui.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_MY_QR
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
@@ -187,20 +184,6 @@ class ContactsFragment : BaseFragment() {
 
         override fun onContactItem(user: User) {
             ContactBottomSheetDialog.newInstance(user).showNow(parentFragmentManager, ContactBottomSheetDialog.TAG)
-        }
-
-        override fun onMyQr(self: User?) {
-            self?.let {
-                QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_MY_QR)
-                    .showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
-            }
-        }
-
-        override fun onReceiveQr(self: User?) {
-            self?.let {
-                QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_RECEIVE_QR)
-                    .showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
-            }
         }
     }
 }

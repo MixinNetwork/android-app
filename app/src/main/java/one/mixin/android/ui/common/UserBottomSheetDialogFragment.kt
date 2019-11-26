@@ -17,6 +17,7 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.jakewharton.rxbinding3.view.clicks
@@ -35,9 +36,11 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.MenuStyle
@@ -160,12 +163,14 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             title = getString(R.string.group_info_clear_chat)
             style = MenuStyle.Danger
             action = {
-                bottomViewModel.deleteMessageByConversationId(
-                    generateConversationId(
-                        Session.getAccountId()!!,
-                        u.userId
+                requireContext().showConfirmDialog(getString(R.string.group_info_clear_chat)) {
+                    bottomViewModel.deleteMessageByConversationId(
+                        generateConversationId(
+                            Session.getAccountId()!!,
+                            u.userId
+                        )
                     )
-                )
+                }
             }
         }
         val muteMenu = if (u.muteUntil.notNullWithElse({
@@ -260,24 +265,28 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             UserRelationship.FRIEND.name -> {
                 list.groups.add(menuGroup {
                     menu(muteMenu)
-                    menu(transactionMenu)
+                    menu(editNameMenu)
                 })
-                val editDeveloperList = if (u.isBot()) {
+                val developerTransactionList = if (u.isBot()) {
                     menuGroup {
-                        menu(editNameMenu)
                         menu(developerMenu)
+                        menu(transactionMenu)
                     }
                 } else {
                     menuGroup {
-                        menu(editNameMenu)
+                        menu(transactionMenu)
                     }
                 }
-                list.groups.add(editDeveloperList)
+                list.groups.add(developerTransactionList)
                 list.groups.add(menuGroup {
                     menu {
                         title = getString(R.string.contact_other_remove)
                         style = MenuStyle.Danger
-                        action = { updateRelationship(UserRelationship.STRANGER.name) }
+                        action = {
+                            requireContext().showConfirmDialog(getString(R.string.contact_other_remove)) {
+                                updateRelationship(UserRelationship.STRANGER.name)
+                            }
+                        }
                     }
                     menu(clearMenu)
                 })
@@ -291,7 +300,16 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     menu {
                         title = getString(R.string.contact_other_block)
                         style = MenuStyle.Danger
-                        action = { bottomViewModel.updateRelationship(RelationshipRequest(u.userId, RelationshipAction.BLOCK.name)) }
+                        action = {
+                            requireContext().showConfirmDialog(getString(R.string.contact_other_block)) {
+                                bottomViewModel.updateRelationship(
+                                    RelationshipRequest(
+                                        u.userId,
+                                        RelationshipAction.BLOCK.name
+                                    )
+                                )
+                            }
+                        }
                     }
                     menu(clearMenu)
                 })
@@ -301,7 +319,11 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             menu {
                 title = getString(R.string.contact_other_report)
                 style = MenuStyle.Danger
-                action = { reportUser(u.userId) }
+                action = {
+                    requireContext().showConfirmDialog(getString(R.string.contact_other_report)) {
+                        reportUser(u.userId)
+                    }
+                }
             }
         })
 
@@ -309,7 +331,17 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         list.createMenuLayout(requireContext(), contentView.more_iv.rotationX == 180f).let { layout ->
             menuListLayout = layout
             contentView.scroll_content.addView(layout)
+            layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = requireContext().dpToPx(30f)
+            }
             contentView.more_fl.setOnClickListener {
+                contentView.scroll_view.updateLayoutParams<ViewGroup.LayoutParams> {
+                    height = if (height == ViewGroup.LayoutParams.WRAP_CONTENT) {
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    } else {
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    }
+                }
                 layout.isVisible = !layout.isVisible
                 contentView.more_iv.animate().rotationX(if (layout.isVisible) {
                     180f

@@ -7,9 +7,11 @@ import android.content.ComponentName
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Context.CLIPBOARD_SERVICE
+import android.content.DialogInterface
 import android.content.Intent
 import android.database.Cursor
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Point
 import android.hardware.SensorManager
 import android.media.MediaMetadataRetriever
@@ -34,6 +36,7 @@ import android.view.ViewConfiguration
 import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.IdRes
+import androidx.appcompat.app.AlertDialog
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -605,3 +608,21 @@ fun Fragment.getTipsByAsset(asset: AssetItem) =
         Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.bottom_deposit_tip_trx)
         else -> getString(R.string.bottom_deposit_tip_common, asset.symbol)
     }
+
+fun Context.showConfirmDialog(
+    message: String,
+    action: () -> Unit
+) {
+    AlertDialog.Builder(this, R.style.MixinAlertDialogTheme)
+        .setMessage(message)
+        .setNegativeButton(R.string.cancel) { dialog, _ ->
+            dialog.dismiss()
+        }.setPositiveButton(R.string.ok) { dialog, _ ->
+            action.invoke()
+            dialog.dismiss()
+        }.create().apply {
+            setOnShowListener {
+                getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(Color.RED)
+            }
+        }.show()
+}

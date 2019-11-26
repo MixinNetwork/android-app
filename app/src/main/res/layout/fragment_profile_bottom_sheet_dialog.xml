@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<one.mixin.android.widget.BottomSheetLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<one.mixin.android.widget.BottomSheetRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -13,7 +13,8 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_below="@id/title"
         android:scrollbars="none">
 
         <LinearLayout
@@ -74,10 +75,10 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="4dp"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="@dimen/margin16"
                 android:maxLines="1"
                 android:textSize="12sp"
                 android:textColor="?attr/text_minor"/>
         </LinearLayout>
     </ScrollView>
-</one.mixin.android.widget.BottomSheetLinearLayout>
+</one.mixin.android.widget.BottomSheetRelativeLayout>
