@@ -221,6 +221,26 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             operateKeyboard(false)
 
             when {
+                isInnerTransfer() && shouldShowTransferTip() -> {
+                    currentAsset?.let {
+                        val transferTipBottomSheetDialogFragment =
+                            TransferTipBottomSheetDialogFragment.newInstance(
+                                user?.fullName,
+                                it,
+                                BigDecimal(getAmount()).toDouble() * currentAsset!!.priceUsd.toDouble()
+                            )
+                        transferTipBottomSheetDialogFragment.showNow(
+                            parentFragmentManager,
+                            TransferTipBottomSheetDialogFragment.TAG
+                        )
+                        transferTipBottomSheetDialogFragment.callback =
+                            object : TransferTipBottomSheetDialogFragment.Callback {
+                                override fun onSuccess() {
+                                    showTransferBottom()
+                                }
+                            }
+                    }
+                }
                 isInnerTransfer() -> showTransferBottom()
                 shouldShowWithdrawalTip() -> {
                     currentAsset?.let {
@@ -241,6 +261,16 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_CODE && resultCode == RESULT_CODE) {
             contentView.transfer_memo.setText(data?.getStringExtra(CaptureActivity.ARGS_MEMO_RESULT))
+        }
+    }
+
+    private fun shouldShowTransferTip(): Boolean {
+        if (currentAsset == null) return false
+        return try {
+            val amount = BigDecimal(getAmount()).toDouble() * currentAsset!!.priceUsd.toDouble()
+            amount >= 1_000
+        } catch (e: NumberFormatException) {
+            false
         }
     }
 

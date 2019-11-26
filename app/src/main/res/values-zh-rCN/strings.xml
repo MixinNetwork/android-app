@@ -288,6 +288,10 @@
     <string name="wallet_transactions_show">显示</string>
     <string name="wallet_transactions_hide">隐藏</string>
     <string name="wallet_transaction_title">交易详情</string>
+    <string name="wallet_transaction_continue">继续</string>
+    <string name="wallet_transaction_continue_count">继续 （%1$d）</string>
+    <string name="wallet_transaction_tip_title">大额转账确认</string>
+    <string name="wallet_transaction_tip">确定给 %1$s 转价值 %2$f 的 %3$s ？</string>
     <string name="wallet_password_change">修改密码</string>
     <string name="wallet_password_old_title">验证旧的密码</string>
     <string name="wallet_password_not_equal">密码不一致, 请重新输入</string>
