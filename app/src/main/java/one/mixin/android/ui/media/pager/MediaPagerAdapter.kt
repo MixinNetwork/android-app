@@ -69,10 +69,12 @@ class MediaPagerAdapter(
                 is LargeImageHolder -> {
                     holder.bind(messageItem, position == initialPos, onMediaPagerAdapterListener)
                 }
-                is VideoHolder -> {
-                    val videoHolder = holder.bind(messageItem, position == initialPos, videoStatusCache)
-                    videoStatusCache.put(messageItem.messageId, messageItem.mediaStatus)
-                    videoHolder
+                else -> {
+                    holder as VideoHolder
+                    holder.bind(messageItem, position == initialPos, videoStatusCache)
+                    messageItem.mediaStatus?.let {
+                        videoStatusCache.put(messageItem.messageId, it)
+                    }
                 }
             }
         }
