@@ -63,6 +63,7 @@
             android:minHeight="30dp"
             android:text="@string/copy"
             android:textSize="14sp"
+            android:textColor="@color/white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"/>
 

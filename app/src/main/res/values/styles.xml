@@ -233,5 +233,6 @@
 
     <style name="AppTheme.MaterialButton">
         <item name="android:background">@drawable/bg_round_blue_btn</item>
+        <item name="android:textColor">@color/white</item>
     </style>
 </resources>
