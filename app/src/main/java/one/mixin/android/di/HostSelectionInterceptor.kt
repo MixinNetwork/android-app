@@ -1,8 +1,8 @@
 package one.mixin.android.di
 
+import java.io.IOException
 import okhttp3.HttpUrl
 import okhttp3.Interceptor
-import java.io.IOException
 
 class HostSelectionInterceptor : Interceptor {
     @Volatile
