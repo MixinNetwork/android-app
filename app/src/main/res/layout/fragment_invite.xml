@@ -9,8 +9,8 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/invite_title"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:titleText="@string/invite_title" />
 
     <TextView
         android:id="@+id/invite_info"
@@ -36,8 +36,9 @@
         android:id="@+id/invite_link"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:textColor="?attr/text_primary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/invite_iv"
@@ -115,7 +116,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_share_black_24dp"
+            android:src="@drawable/ic_share"
             tools:ignore="ContentDescription" />
 
         <TextView
