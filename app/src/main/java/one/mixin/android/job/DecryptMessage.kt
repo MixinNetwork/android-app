@@ -132,6 +132,9 @@ class DecryptMessage : Injector() {
     }
 
     private fun checkSession(data: BlazeMessageData) {
+        if (data.conversationId == SYSTEM_USER || data.conversationId == Session.getAccountId()) {
+            return
+        }
         data.sessionId?.let {
             val p = participantSessionDao.getParticipantSession(data.conversationId, data.userId, data.sessionId)
             if (p == null) {
