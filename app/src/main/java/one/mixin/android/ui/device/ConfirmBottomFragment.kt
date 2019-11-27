@@ -46,6 +46,11 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
     @Inject
     lateinit var provisioningService: ProvisioningService
 
+    private val url: String by lazy {
+        arguments!!.getString(AvatarActivity.ARGS_URL)!!
+    }
+
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
@@ -53,8 +58,7 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         (dialog as BottomSheet).setCustomView(contentView)
     }
 
-    private fun login() = lifecycleScope.launch {
-        val url = arguments!!.getString(AvatarActivity.ARGS_URL)!!
+    private fun authDevice(ephemeralId: String, pubKey: String) = lifecycleScope.launch {
         val response = try {
             withContext(Dispatchers.IO) {
                 provisioningService.provisionCodeAsync().await()
@@ -68,7 +72,7 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         if (response.isSuccess) {
             val success = try {
                 withContext(Dispatchers.IO) {
-                    encryptKey(requireContext(), url, response.data!!.code)
+                    encryptKey(requireContext(), ephemeralId, pubKey, response.data!!.code)
                 }
             } catch (t: Throwable) {
                 context?.toast(R.string.setting_desktop_sigin_failed)
@@ -94,7 +98,16 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         contentView.confirm.setOnClickListener {
             refreshUI(true)
             isCancelable = false
-            login()
+            val uri = Uri.parse(url)
+            val ephemeralId = uri.getQueryParameter("id")
+            if (ephemeralId == null) {
+                context?.toast(R.string.setting_desktop_sigin_failed)
+                dismiss()
+                return@setOnClickListener
+            }
+            sanitizer.parseUrl(url)
+            val publicKeyEncoded = sanitizer.getValue("pub_key")
+            authDevice(ephemeralId, publicKeyEncoded)
         }
         contentView.close.setOnClickListener {
             dismiss()
@@ -112,20 +125,8 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         contentView.close.isInvisible = showPb
     }
 
-    private suspend fun encryptKey(
-        ctx: Context,
-        url: String,
-        verificationCode: String
-    ): Boolean {
+    private suspend fun encryptKey(ctx: Context, ephemeralId: String, publicKeyEncoded: String, verificationCode: String): Boolean {
         val account = Session.getAccount() ?: return false
-        val uri = Uri.parse(url)
-        if (uri.scheme != "mixin") {
-            return false
-        }
-        val ephemeralId = uri.getQueryParameter("uuid") ?: return false
-        sanitizer.parseUrl(url)
-        val publicKeyEncoded = sanitizer.getValue("pub_key")
-
         if (TextUtils.isEmpty(ephemeralId) || TextUtils.isEmpty(publicKeyEncoded)) {
             return false
         }
@@ -143,8 +144,7 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         val cipherText = cipher.encrypt(message)
         val encoded = Base64.encodeBytes(cipherText)
         val response =
-            provisioningService.updateProvisioningAsync(ephemeralId, ProvisioningRequest(encoded))
-                .await()
+            provisioningService.updateProvisioningAsync(ephemeralId, ProvisioningRequest(encoded)).await()
         return response.isSuccess
     }
 

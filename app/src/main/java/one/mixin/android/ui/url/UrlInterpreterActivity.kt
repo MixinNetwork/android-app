@@ -139,8 +139,7 @@ inline fun openUrl(url: String, supportFragmentManager: FragmentManager, extraAc
             )
         }
     } else if (url.startsWith(Scheme.DEVICE, true)) {
-        ConfirmBottomFragment.newInstance(url)
-            .showNow(supportFragmentManager, ConfirmBottomFragment.TAG)
+        ConfirmBottomFragment.newInstance(url).showNow(supportFragmentManager, ConfirmBottomFragment.TAG)
     } else {
         if (isMixinUrl(url)) {
             LinkBottomSheetDialogFragment

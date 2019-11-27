@@ -503,10 +503,8 @@ class DecryptMessage : Injector() {
 
             val address = SignalProtocolAddress(data.userId, deviceId)
             val status = ratchetSenderKeyDao.getRatchetSenderKey(data.conversationId, address.toString())?.status
-            if (status != null) {
-                if (status == RatchetStatus.REQUESTING.name) {
-                    requestResendMessage(data.conversationId, data.userId, data.sessionId)
-                }
+            if (status == RatchetStatus.REQUESTING.name) {
+                requestResendMessage(data.conversationId, data.userId, data.sessionId)
             }
         } catch (e: Exception) {
             Log.e(TAG, "decrypt failed " + data.messageId, e)
@@ -535,7 +533,7 @@ class DecryptMessage : Injector() {
                 refreshKeys(data.conversationId)
                 val address = SignalProtocolAddress(data.userId, deviceId)
                 val status = ratchetSenderKeyDao.getRatchetSenderKey(data.conversationId, address.toString())?.status
-                if (status == null || (status != RatchetStatus.REQUESTING.name && status != RatchetStatus.REQUESTING_MESSAGE.name)) {
+                if (status == null) {
                     requestResendKey(data.conversationId, data.userId, data.messageId, data.sessionId)
                 }
             }

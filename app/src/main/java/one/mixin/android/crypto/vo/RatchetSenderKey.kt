@@ -17,4 +17,4 @@ class RatchetSenderKey(
     val createdAt: String
 )
 
-enum class RatchetStatus { REQUESTING, REQUESTING_MESSAGE, DONE }
+enum class RatchetStatus { REQUESTING }
