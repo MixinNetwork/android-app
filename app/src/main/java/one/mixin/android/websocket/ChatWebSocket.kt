@@ -254,11 +254,6 @@ class ChatWebSocket(
             } else {
                 floodMessageDao.insert(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
             }
-        } else if (blazeMessage.action == CREATE_SESSION_MESSAGE) {
-            if (data.userId == accountId && data.sessionId == sessionId && data.category.isEmpty()) {
-            } else {
-                floodMessageDao.insert(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
-            }
         } else {
             jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(data.messageId, MessageStatus.READ.name)))
         }
