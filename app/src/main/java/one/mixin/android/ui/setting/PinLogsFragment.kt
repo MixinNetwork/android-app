@@ -122,6 +122,10 @@ class PinLogsFragment : BaseViewModelFragment<SettingViewModel>() {
                     return context.getString(R.string.pin_update_phone)
                 "UPDATE_PIN" ->
                     return context.getString(R.string.pin_update_pin)
+                "MULTISIG_SIGN" ->
+                    return context.getString(R.string.pin_log_multisig_sign)
+                "MULTISIG_UNLOCK" ->
+                    return context.getString(R.string.pin_log_multisig_unlock)
                 else ->
                     return code
             }

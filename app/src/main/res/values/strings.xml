@@ -95,8 +95,9 @@
     <string name="error_connection_timeout">Network connection timeout</string>
     <string name="error_network">Network error</string>
     <string name="error_server_5xx">Server is under maintenance</string>
-    <string name="error_unknown">Error: %1$s</string>
+    <string name="error_data">Data error</string>
     <string name="error_unknown_with_code">ERROR %1$d</string>
+    <string name="error_unknown_with_message">ERROR %1$s</string>
     <string name="error_forbidden">Access denied</string>
     <string name="error_not_found">ERROR %1$d: Not found</string>
     <string name="error_not_found_message">Not found</string>
@@ -358,6 +359,8 @@
     <string name="pin_read_emergency">View emergency contact</string>
     <string name="pin_update_phone">Change phone number</string>
     <string name="pin_update_pin">Change PIN</string>
+    <string name="pin_log_multisig_sign">Multisig Transaction</string>
+    <string name="pin_log_multisig_unlock">Revoke Multisig Transaction</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
     <string name="group_new_title">New Group</string>
