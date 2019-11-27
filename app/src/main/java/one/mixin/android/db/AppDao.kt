@@ -24,4 +24,7 @@ interface AppDao : BaseDao<App> {
 
     @Query(" SELECT a.* FROM apps a WHERE a.home_uri LIKE :query $ESCAPE_SUFFIX")
     suspend fun searchAppByHost(query: String): List<App>
+
+    @Query("SELECT a.* FROM apps a")
+    suspend fun getApps():List<App>
 }

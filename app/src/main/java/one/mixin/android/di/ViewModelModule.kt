@@ -7,6 +7,7 @@ import dagger.Module
 import dagger.multibindings.IntoMap
 import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.profile.MySharedAppsViewModel
 import one.mixin.android.ui.contacts.ContactViewModel
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.group.GroupViewModel
@@ -123,6 +124,11 @@ internal abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(UrlInterpreterViewModel::class)
     internal abstract fun bindUrlInterperterModel(urlInterpreterViewModel: UrlInterpreterViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(MySharedAppsViewModel::class)
+    internal abstract fun bindMySharedAppsViewModel(mySharedAppsViewModel: MySharedAppsViewModel): ViewModel
 
     @Binds
     internal abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory

@@ -19,7 +19,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.vibrate
-import one.mixin.android.ui.ProfileBottomSheetDialogFragment
+import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.landing.MobileFragment

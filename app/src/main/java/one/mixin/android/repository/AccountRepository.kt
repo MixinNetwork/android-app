@@ -3,8 +3,6 @@ package one.mixin.android.repository
 import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
-import javax.inject.Singleton
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -41,6 +39,8 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class AccountRepository
@@ -184,4 +184,12 @@ constructor(
 
     suspend fun transactions(rawTransactionsRequest: RawTransactionsRequest) =
         accountService.transactions(rawTransactionsRequest)
+
+    suspend fun addFavoriteApp(appId: String) = userService.addFavoriteApp(appId)
+
+    suspend fun getUserFavoriteApps(userId: String) = userService.getUserFavoriteApps(userId)
+
+    suspend fun removeFavoriteApp(appId: String) = userService.removeFavoriteApp(appId)
+
+    suspend fun getApps() = appDao.getApps()
 }

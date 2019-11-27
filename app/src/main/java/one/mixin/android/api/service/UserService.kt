@@ -36,4 +36,13 @@ interface UserService {
 
     @POST("sessions/fetch")
     suspend fun fetchSessions(@Body ids: List<String>): MixinResponse<List<UserSession>>
+
+    @POST("apps/{app_id}/favorite")
+    suspend fun addFavoriteApp(@Path("user_id") appId: String): MixinResponse<Void>
+
+    @GET("users/{user_id}/apps/favorite")
+    suspend fun getUserFavoriteApps(@Path("user_id") userId: String): MixinResponse<List<User>>
+
+    @POST("apps/{app_id}/unfavorite")
+    suspend fun removeFavoriteApp(@Path("app_id") appId: String): MixinResponse<Void>
 }

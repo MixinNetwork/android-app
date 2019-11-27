@@ -106,7 +106,7 @@ import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
-import one.mixin.android.ui.ProfileBottomSheetDialogFragment
+import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment

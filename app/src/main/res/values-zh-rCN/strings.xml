@@ -190,6 +190,7 @@
     <string name="contact_sq_scan_title">识别二维码</string>
     <string name="contact_save_image">保存图片</string>
     <string name="contact_my_qr_title">我的二维码</string>
+    <string name="contact_my_share_apps">我分享的应用</string>
     <string name="contact_my_qr_tip">用 Mixin 扫描二维码加我为联系人</string>
     <string name="contact_receive_money">我的收款码</string>
     <string name="contact_receive_tip">用 Mixin 扫描二维码给我转账</string>

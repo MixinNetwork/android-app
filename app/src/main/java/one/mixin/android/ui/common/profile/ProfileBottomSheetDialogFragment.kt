@@ -1,4 +1,4 @@
-package one.mixin.android.ui
+package one.mixin.android.ui.common.profile
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -24,6 +24,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_GALLERY
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dayTime
@@ -60,7 +61,8 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
 
         const val MAX_PHOTO_SIZE = 512
 
-        fun newInstance() = ProfileBottomSheetDialogFragment()
+        fun newInstance() =
+            ProfileBottomSheetDialogFragment()
     }
 
     private val imageUri: Uri by lazy {
@@ -115,9 +117,23 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         val list = menuList {
             menuGroup {
                 menu {
+                    title = getString(R.string.contact_my_share_apps)
+                    action = {
+                        activity?.addFragment(
+                            this@ProfileBottomSheetDialogFragment,
+                            MySharedAppsFragment.newInstance(),
+                            MySharedAppsFragment.TAG
+                        )
+                        dismiss()
+                    }
+                }
+            }
+            menuGroup {
+                menu {
                     title = getString(R.string.contact_my_qr_title)
                     action = {
-                        QrBottomSheetDialogFragment.newInstance(account.userId,
+                        QrBottomSheetDialogFragment.newInstance(
+                            account.userId,
                             QrBottomSheetDialogFragment.TYPE_MY_QR
                         ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
                     }
@@ -125,7 +141,8 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 menu {
                     title = getString(R.string.contact_receive_money)
                     action = {
-                        QrBottomSheetDialogFragment.newInstance(account.userId,
+                        QrBottomSheetDialogFragment.newInstance(
+                            account.userId,
                             QrBottomSheetDialogFragment.TYPE_RECEIVE_QR
                         ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
                     }
@@ -186,13 +203,17 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             UCrop.of(selectedImageUri, imageUri)
                 .withOptions(options)
                 .withAspectRatio(1f, 1f)
-                .withMaxResultSize(MAX_PHOTO_SIZE, MAX_PHOTO_SIZE)
+                .withMaxResultSize(
+                    MAX_PHOTO_SIZE,
+                    MAX_PHOTO_SIZE
+                )
                 .start(requireContext(), this)
         }
         if (resultCode == Activity.RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
             if (data != null && context != null) {
                 val resultUri = UCrop.getOutput(data)
-                val bitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, resultUri)
+                val bitmap =
+                    MediaStore.Images.Media.getBitmap(requireContext().contentResolver, resultUri)
                 update(
                     Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP),
                     TYPE_PHOTO
@@ -229,16 +250,27 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 dialog.dismiss()
                 if (Session.getAccount()?.hasPin == true) {
                     activity?.supportFragmentManager?.inTransaction {
-                        setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                            R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                            .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_PHONE))
+                        setCustomAnimations(
+                            R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                            R.anim.slide_in_bottom, R.anim.slide_out_bottom
+                        )
+                            .add(
+                                R.id.container,
+                                VerifyFragment.newInstance(VerifyFragment.FROM_PHONE)
+                            )
                             .addToBackStack(null)
                     }
                 } else {
                     activity?.supportFragmentManager?.inTransaction {
-                        setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                            R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                            .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
+                        setCustomAnimations(
+                            R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                            R.anim.slide_in_bottom, R.anim.slide_out_bottom
+                        )
+                            .add(
+                                R.id.container,
+                                WalletPasswordFragment.newInstance(),
+                                WalletPasswordFragment.TAG
+                            )
                             .addToBackStack(null)
                     }
                 }

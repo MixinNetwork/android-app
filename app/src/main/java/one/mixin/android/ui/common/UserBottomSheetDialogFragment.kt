@@ -41,7 +41,7 @@ import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.ProfileBottomSheetDialogFragment
+import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.MenuStyle
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
