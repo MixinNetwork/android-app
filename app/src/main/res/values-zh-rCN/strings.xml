@@ -347,6 +347,8 @@
     <string name="pin_read_emergency">查看紧急联系人</string>
     <string name="pin_update_phone">修改手机号码</string>
     <string name="pin_update_pin">修改支付密码</string>
+    <string name="pin_log_multisig_sign">签名多重签名交易</string>
+    <string name="pin_log_multisig_unlock">撤销多重签名交易</string>
     <!--group-->
     <string name="group_add">添加成员</string>
     <string name="group_new_title">新建群组</string>

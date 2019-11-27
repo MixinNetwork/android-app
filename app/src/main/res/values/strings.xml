@@ -359,6 +359,8 @@
     <string name="pin_read_emergency">View emergency contact</string>
     <string name="pin_update_phone">Change phone number</string>
     <string name="pin_update_pin">Change PIN</string>
+    <string name="pin_log_multisig_sign">Multisig Transaction</string>
+    <string name="pin_log_multisig_unlock">Revoke Multisig Transaction</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
     <string name="group_new_title">New Group</string>
