@@ -95,8 +95,9 @@
     <string name="error_connection_timeout">Network connection timeout</string>
     <string name="error_network">Network error</string>
     <string name="error_server_5xx">Server is under maintenance</string>
-    <string name="error_unknown">Error: %1$s</string>
+    <string name="error_data">Data error</string>
     <string name="error_unknown_with_code">ERROR %1$d</string>
+    <string name="error_unknown_with_message">ERROR %1$s</string>
     <string name="error_forbidden">Access denied</string>
     <string name="error_not_found">ERROR %1$d: Not found</string>
     <string name="error_not_found_message">Not found</string>

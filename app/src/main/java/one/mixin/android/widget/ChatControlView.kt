@@ -38,6 +38,7 @@ import com.jakewharton.rxbinding3.view.clicks
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
+import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.fadeIn
@@ -49,7 +50,6 @@ import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.InputAwareLayout
 import org.jetbrains.anko.dip
-import java.util.concurrent.TimeUnit
 
 class ChatControlView : FrameLayout {
 

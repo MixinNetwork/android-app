@@ -90,8 +90,9 @@
     <string name="error_connection_timeout">网络连接超时</string>
     <string name="error_network">网络错误</string>
     <string name="error_server_5xx">服务器正在维护中</string>
-    <string name="error_unknown">错误: %1$s</string>
+    <string name="error_data">数据错误</string>
     <string name="error_unknown_with_code">错误 %1$d</string>
+    <string name="error_unknown_with_message">错误 %1$s</string>
     <string name="error_forbidden">禁止访问</string>
     <string name="error_not_found">错误 %1$d：没有找到相应的信息</string>
     <string name="error_not_found_message">没有找到相应的消息</string>

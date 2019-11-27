@@ -9,6 +9,8 @@ import androidx.paging.PagedListAdapter
 import com.jakewharton.rxbinding3.view.clicks
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import io.reactivex.android.schedulers.AndroidSchedulers
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 import kotlinx.android.synthetic.main.item_shared_media_header.view.*
 import kotlinx.android.synthetic.main.item_shared_media_link.view.*
 import one.mixin.android.R
@@ -17,8 +19,6 @@ import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.HyperlinkItem
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 
 class LinkAdapter(private val onClickListener: (url: String) -> Unit) :
     PagedListAdapter<HyperlinkItem, LinkHolder>(HyperlinkItem.DIFF_CALLBACK),
