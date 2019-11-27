@@ -18,6 +18,7 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.Session
 
 class LoadingFragment : BaseFragment() {
 
@@ -56,6 +57,7 @@ class LoadingFragment : BaseFragment() {
 
     private suspend fun syncSession() {
         try {
+            Session.storeExtensionSessionId("")
             loadingViewModel.updateSignalSession()
             requireContext().defaultSharedPreferences.putBoolean(IS_SYNC_SESSION, true)
         } catch (e: Exception) {
