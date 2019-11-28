@@ -79,6 +79,7 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.QuoteMessageItem
@@ -105,6 +106,7 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
+import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.RecallMessagePayload
@@ -444,6 +446,7 @@ internal constructor(
                     list.map { createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
                         conversationRepository.insertList(it)
                     }
+                    createReadSessionMessage(list, conversationId)
                 }
             }
         }
@@ -589,8 +592,17 @@ internal constructor(
                                 jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(list)))
                             }
                         }
+                        createReadSessionMessage(list, conversationId)
                     }
                 }
+            }
+        }
+    }
+
+    private fun createReadSessionMessage(list: List<MessageMinimal>, conversationId: String) {
+        Session.getExtensionSessionId()?.let {
+            list.map { createAckJob(CREATE_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name), conversationId) }.let {
+                conversationRepository.insertList(it)
             }
         }
     }

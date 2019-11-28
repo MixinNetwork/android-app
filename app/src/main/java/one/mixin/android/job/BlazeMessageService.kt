@@ -26,6 +26,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.WebSocketException
+import one.mixin.android.crypto.Base64
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
@@ -43,7 +44,11 @@ import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
+import one.mixin.android.websocket.PlainDataAction
+import one.mixin.android.websocket.TransferPlainData
 import one.mixin.android.websocket.createAckListParamBlazeMessage
+import one.mixin.android.websocket.createParamBlazeMessage
+import one.mixin.android.websocket.createPlainJsonParam
 import org.jetbrains.anko.notificationManager
 
 class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
@@ -194,6 +199,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
             ackJob = lifecycleScope.launch(Dispatchers.IO) {
                 processAck()
+                Session.getExtensionSessionId()?.let {
+                    syncMessageStatusToExtension(it)
+                }
             }
         } catch (e: Exception) {
         }
@@ -213,6 +221,24 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             return processAck()
         } else {
             return false
+        }
+    }
+
+    private suspend fun syncMessageStatusToExtension(sessionId: String) {
+        jobDao.findCreateMessageJobs()?.let { list ->
+            if (list.isNotEmpty() && accountId != null) {
+                list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
+                    val plainText = gson.toJson(
+                        TransferPlainData(
+                            action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
+                            ackMessages = it)
+                    )
+                    val encoded = Base64.encodeBytes(plainText.toByteArray())
+                    val bm = createParamBlazeMessage(createPlainJsonParam(list.first().conversationId!!, accountId, encoded, sessionId))
+                    jobManager.addJobInBackground(SendPlaintextJob(bm))
+                    jobDao.deleteList(list)
+                }
+            }
         }
     }
 

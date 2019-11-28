@@ -246,6 +246,22 @@ class DecryptMessage : Injector() {
                 }
             } else if (plainData.action == PlainDataAction.NO_KEY.name) {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, data.sessionId.getDeviceId()).toString())
+            } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
+                plainData.ackMessages?.let {
+                    for (m in it) {
+                        if (m.status != MessageStatus.READ.name) {
+                            continue
+                        }
+                        val curStatus = messageDao.findMessageStatusById(m.message_id)
+                        if (curStatus != null && MessageStatus.valueOf(m.status) > MessageStatus.valueOf(curStatus)) {
+                            messageDao.updateMessageStatus(m.status, m.message_id)
+                            messageDao.findConversationById(m.message_id)?.let { conversationId ->
+                                messageDao.takeUnseen(Session.getAccountId()!!, conversationId)
+                                notificationManager.cancel(conversationId.hashCode())
+                            }
+                        }
+                    }
+                }
             }
 
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)

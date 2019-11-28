@@ -20,8 +20,10 @@ import one.mixin.android.job.NotificationJob.Companion.KEY_REPLY
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createMessage
 import one.mixin.android.websocket.BlazeAckMessage
+import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 
 class SendService : IntentService("SendService") {
@@ -65,6 +67,11 @@ class SendService : IntentService("SendService") {
                     val chunkList = messages.chunked(100)
                     for (item in chunkList) {
                         jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(item)))
+                    }
+                }
+                Session.getExtensionSessionId()?.let {
+                    list.map { createAckJob(CREATE_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name), conversationId) }.let {
+                        jobDao.insertList(it)
                     }
                 }
             }
