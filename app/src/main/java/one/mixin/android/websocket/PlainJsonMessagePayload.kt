@@ -3,7 +3,7 @@ package one.mixin.android.websocket
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
-data class TransferPlainData(
+data class PlainJsonMessagePayload(
     @SerializedName("action")
     val action: String,
     @SerializedName("messages")
@@ -12,8 +12,6 @@ data class TransferPlainData(
     val userId: String? = null,
     @SerializedName("message_id")
     val messageId: String? = null,
-    @SerializedName("status")
-    val status: String? = null,
     @SerializedName("session_id")
     val session_id: String? = null,
     @SerializedName("ack_messages")

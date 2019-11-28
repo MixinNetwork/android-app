@@ -45,7 +45,7 @@ import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.PlainDataAction
-import one.mixin.android.websocket.TransferPlainData
+import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
@@ -229,7 +229,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             if (list.isNotEmpty() && accountId != null) {
                 list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
                     val plainText = gson.toJson(
-                        TransferPlainData(
+                        PlainJsonMessagePayload(
                             action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
                             ackMessages = it)
                     )

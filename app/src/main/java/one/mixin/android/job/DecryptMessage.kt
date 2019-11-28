@@ -68,7 +68,7 @@ import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.websocket.SystemConversationMessagePayload
 import one.mixin.android.websocket.SystemSessionMessageAction
 import one.mixin.android.websocket.SystemSessionMessagePayload
-import one.mixin.android.websocket.TransferPlainData
+import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.createCountSignalKeys
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
@@ -221,7 +221,7 @@ class DecryptMessage : Injector() {
     private fun processPlainMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.PLAIN_JSON.name) {
             val json = Base64.decode(data.data)
-            val plainData = gson.fromJson(String(json), TransferPlainData::class.java)
+            val plainData = gson.fromJson(String(json), PlainJsonMessagePayload::class.java)
             if (plainData.action == PlainDataAction.RESEND_KEY.name) {
                 if (signalProtocol.containsSession(data.userId, data.sessionId.getDeviceId())) {
                     jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.RESEND_KEY))
@@ -615,7 +615,7 @@ class DecryptMessage : Injector() {
     }
 
     private fun requestResendKey(conversationId: String, recipientId: String, messageId: String, sessionId: String?) {
-        val plainText = gson.toJson(TransferPlainData(
+        val plainText = gson.toJson(PlainJsonMessagePayload(
             action = PlainDataAction.RESEND_KEY.name,
             messageId = messageId
         ))
@@ -630,7 +630,7 @@ class DecryptMessage : Injector() {
 
     private fun requestResendMessage(conversationId: String, userId: String, sessionId: String?) {
         val messages = messageDao.findFailedMessages(conversationId, userId) ?: return
-        val plainText = gson.toJson(TransferPlainData(PlainDataAction.RESEND_MESSAGES.name, messages.reversed()))
+        val plainText = gson.toJson(PlainJsonMessagePayload(PlainDataAction.RESEND_MESSAGES.name, messages.reversed()))
         val encoded = Base64.encodeBytes(plainText.toByteArray())
         val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, userId, encoded, sessionId))
         jobManager.addJobInBackground(SendPlaintextJob(bm))

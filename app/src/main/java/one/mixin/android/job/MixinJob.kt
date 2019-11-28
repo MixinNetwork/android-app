@@ -38,7 +38,7 @@ import one.mixin.android.websocket.BlazeMessageParamSession
 import one.mixin.android.websocket.BlazeSignalKeyMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.PlainDataAction
-import one.mixin.android.websocket.TransferPlainData
+import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.createBlazeSignalKeyMessage
 import one.mixin.android.websocket.createConsumeSessionSignalKeys
 import one.mixin.android.websocket.createConsumeSignalKeysParam
@@ -272,7 +272,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun sendNoKeyMessage(conversationId: String, recipientId: String) {
-        val plainText = Gson().toJson(TransferPlainData(PlainDataAction.NO_KEY.name))
+        val plainText = Gson().toJson(PlainJsonMessagePayload(PlainDataAction.NO_KEY.name))
         val encoded = Base64.encodeBytes(plainText.toByteArray())
         val params = BlazeMessageParam(
             conversationId, recipientId, UUID.randomUUID().toString(),
