@@ -50,7 +50,6 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         arguments!!.getString(AvatarActivity.ARGS_URL)!!
     }
 
-
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)

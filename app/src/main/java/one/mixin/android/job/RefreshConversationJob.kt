@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.RxBus
-import one.mixin.android.api.response.ParticipantSessionResponse
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.sharedPreferences
@@ -12,7 +11,6 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
-import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SYSTEM_USER
 
 class RefreshConversationJob(val conversationId: String) :

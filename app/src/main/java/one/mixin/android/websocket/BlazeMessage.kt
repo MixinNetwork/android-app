@@ -61,4 +61,3 @@ fun createSignalKeyMessage(param: BlazeMessageParam) =
 
 fun createCallMessage(param: BlazeMessageParam) =
     BlazeMessage(UUID.randomUUID().toString(), CREATE_CALL, param)
-

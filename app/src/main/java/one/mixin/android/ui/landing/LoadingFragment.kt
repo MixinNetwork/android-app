@@ -57,7 +57,7 @@ class LoadingFragment : BaseFragment() {
 
     private suspend fun syncSession() {
         try {
-            Session.storeExtensionSessionId("")
+            Session.deleteExtensionSessionId()
             loadingViewModel.updateSignalSession()
             requireContext().defaultSharedPreferences.putBoolean(IS_SYNC_SESSION, true)
         } catch (e: Exception) {

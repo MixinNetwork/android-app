@@ -32,7 +32,7 @@ data class ParticipantSession(
 }
 
 fun generateConversationChecksum(devices: List<ParticipantSession>): String {
-    val sorted = devices.sortedWith(Comparator<ParticipantSession>{ a, b ->
+    val sorted = devices.sortedWith(Comparator<ParticipantSession> { a, b ->
         a.sessionId.compareTo(b.sessionId)
     })
     val d = sorted.joinToString("") { it.sessionId }

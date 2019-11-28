@@ -69,8 +69,7 @@ class WaitingHolder constructor(
                     MixinApplication.get().getString(R.string.chat_waiting_desktop)
                 } else {
                     messageItem.userFullName
-                }
-                , learn
+                }, learn
             )
         val learnUrl = MixinApplication.get().getString(R.string.chat_waiting_url)
         itemView.chat_tv.highlightLinkText(
