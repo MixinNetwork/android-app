@@ -13,7 +13,6 @@ import android.view.View
 import androidx.core.view.isVisible
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.io.File
 import kotlinx.android.synthetic.main.fragment_capture_camerax.*
 import kotlinx.android.synthetic.main.view_camera_tip.view.*
 import one.mixin.android.Constants
@@ -38,6 +37,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.widget.CameraOpView
 import one.mixin.android.widget.gallery.ui.GalleryActivity
+import java.io.File
 
 abstract class BaseCaptureFragment : CaptureVisionFragment() {
 
@@ -137,11 +137,9 @@ abstract class BaseCaptureFragment : CaptureVisionFragment() {
             return
         }
         if (analysisResult.startsWith(Constants.Scheme.DEVICE)) {
-            val confirmBottomFragment = ConfirmBottomFragment.newInstance(analysisResult)
-            confirmBottomFragment.setCallBack {
+            ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) {
                 activity?.finish()
             }
-            confirmBottomFragment.show(parentFragmentManager, ConfirmBottomFragment.TAG)
         } else {
             pseudoNotificationView.addContent(analysisResult)
             afterSetPseudoView()

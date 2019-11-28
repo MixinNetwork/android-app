@@ -180,10 +180,8 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun confirm(url: String) {
-        val confirmBottomFragment = ConfirmBottomFragment.newInstance(url)
-        confirmBottomFragment.setCallBack {
+        ConfirmBottomFragment.show(requireContext(), parentFragmentManager, url) {
             updateUI(true)
         }
-        confirmBottomFragment.show(parentFragmentManager, ConfirmBottomFragment.TAG)
     }
 }

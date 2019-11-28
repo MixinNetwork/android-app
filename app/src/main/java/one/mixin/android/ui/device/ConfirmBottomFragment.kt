@@ -10,8 +10,8 @@ import android.text.TextUtils
 import android.view.View
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_confirm.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,14 +32,37 @@ import one.mixin.android.util.Session
 import one.mixin.android.util.UnescapeIgnorePlusUrlQuerySanitizer
 import one.mixin.android.widget.BottomSheet
 import org.whispersystems.libsignal.ecc.Curve
+import javax.inject.Inject
 
 class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "ConfirmBottomFragment"
 
-        fun newInstance(url: String) = ConfirmBottomFragment().withArgs {
+        private fun newInstance(
+            url: String,
+            action: (() -> Unit)? = null
+        ) = ConfirmBottomFragment().withArgs {
             putString(AvatarActivity.ARGS_URL, url)
+        }.apply {
+            action?.let {
+                setCallBack(it)
+            }
+        }
+
+        fun show(
+            context: Context,
+            fragmentManager: FragmentManager,
+            url: String,
+            action: (() -> Unit)? = null
+        ) {
+            val uri = Uri.parse(url)
+            val ephemeralId = uri.getQueryParameter("id")
+            if (ephemeralId == null) {
+                context.toast(R.string.desktop_upgrade)
+            } else {
+                newInstance(url, action).showNow(fragmentManager, TAG)
+            }
         }
     }
 
@@ -124,7 +147,12 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         contentView.close.isInvisible = showPb
     }
 
-    private suspend fun encryptKey(ctx: Context, ephemeralId: String, publicKeyEncoded: String, verificationCode: String): Boolean {
+    private suspend fun encryptKey(
+        ctx: Context,
+        ephemeralId: String,
+        publicKeyEncoded: String,
+        verificationCode: String
+    ): Boolean {
         val account = Session.getAccount() ?: return false
         if (TextUtils.isEmpty(ephemeralId) || TextUtils.isEmpty(publicKeyEncoded)) {
             return false
@@ -143,7 +171,8 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         val cipherText = cipher.encrypt(message)
         val encoded = Base64.encodeBytes(cipherText)
         val response =
-            provisioningService.updateProvisioningAsync(ephemeralId, ProvisioningRequest(encoded)).await()
+            provisioningService.updateProvisioningAsync(ephemeralId, ProvisioningRequest(encoded))
+                .await()
         return response.isSuccess
     }
 
