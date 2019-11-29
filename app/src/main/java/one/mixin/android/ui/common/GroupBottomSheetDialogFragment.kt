@@ -35,6 +35,7 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.info.MenuStyle
+import one.mixin.android.ui.common.info.ScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuGroup
@@ -61,7 +62,7 @@ import org.jetbrains.anko.dimen
 import org.jetbrains.anko.margin
 import org.threeten.bp.Instant
 
-class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class GroupBottomSheetDialogFragment : ScrollableBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "ProfileBottomSheetDialogFragment"
@@ -91,7 +92,25 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_group_bottom_sheet, null)
-        (dialog as BottomSheet).setCustomView(contentView)
+        (dialog as BottomSheet).apply {
+            setCustomView(contentView)
+            bottomSheetListener = object : BottomSheet.BottomSheetListenerAdapter() {
+                override fun onOpenAnimationEnd() {
+                    contentView.post {
+                        max = dialog.getContentMaxHeight()
+                        menuListLayout?.isVisible = true
+                        menuListLayout?.measure(View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
+                            View.MeasureSpec.makeMeasureSpec(max - contentView.title.height, View.MeasureSpec.AT_MOST))
+                        val transitionY = if (menuListLayout != null) {
+                            menuListLayout!!.measuredHeight + requireContext().dpToPx(30f)
+                        } else 0
+                        dialog.updateTransitionY(transitionY.toFloat(), false)
+                        min = max - transitionY
+                    }
+                }
+            }
+        }
+        setDraggableHelper(dialog, contentView.scroll_view)
     }
 
     @SuppressLint("SetTextI18n")
@@ -187,8 +206,11 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (me != null) {
             contentView.ops_ll.isVisible = true
             contentView.join_tv.isVisible = false
+            contentView.scroll_view.isEnabled = true
         } else {
-            contentView.ops_ll.isVisible = conversation.status == ConversationStatus.QUIT.ordinal
+            val withoutCode = conversation.status == ConversationStatus.QUIT.ordinal && code == null
+            contentView.scroll_view.isEnabled = withoutCode
+            contentView.ops_ll.isVisible = withoutCode
             contentView.join_tv.isVisible = code != null
         }
     }
@@ -293,31 +315,38 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         })
 
         menuListLayout?.removeAllViews()
-        list.createMenuLayout(requireContext(), contentView.more_iv.rotationX == 180f)
+        contentView.scroll_content.removeView(menuListLayout)
+        val lastVisible = menuListLayout?.isVisible ?: false
+        list.createMenuLayout(requireContext(), lastVisible)
             .let { layout ->
                 menuListLayout = layout
                 contentView.scroll_content.addView(layout)
-                layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                menuListLayout?.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     bottomMargin = requireContext().dpToPx(30f)
                 }
                 contentView.more_fl.setOnClickListener {
-                    contentView.scroll_view.updateLayoutParams<ViewGroup.LayoutParams> {
-                    height = if (height == ViewGroup.LayoutParams.WRAP_CONTENT) {
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    } else {
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    }
-                }
-                    layout.isVisible = !layout.isVisible
-                    contentView.more_iv.animate().rotationX(
-                        if (layout.isVisible) {
-                            180f
-                        } else {
-                            0f
-                        }
-                    ).start()
+                    expand = !expand
+                    val transitionY = if (expand) 0 else max - min
+                    (dialog as BottomSheet).updateTransitionY(transitionY.toFloat(), true)
                 }
             }
+    }
+
+    override fun whenSetExpand() {
+        contentView.more_iv.animate().rotationX(
+            if (expand) {
+                180f
+            } else {
+                0f
+            }
+        ).start()
+        contentView.scroll_view.updateLayoutParams<ViewGroup.LayoutParams> {
+            height = if (expand) {
+                ViewGroup.LayoutParams.MATCH_PARENT
+            } else {
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            }
+        }
     }
 
     private fun startSearchConversation() = lifecycleScope.launch(Dispatchers.IO) {

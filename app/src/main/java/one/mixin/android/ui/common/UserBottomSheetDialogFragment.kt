@@ -44,6 +44,7 @@ import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.MenuStyle
+import one.mixin.android.ui.common.info.ScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuGroup
@@ -72,7 +73,7 @@ import org.jetbrains.anko.dimen
 import org.jetbrains.anko.margin
 import org.threeten.bp.Instant
 
-class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class UserBottomSheetDialogFragment : ScrollableBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "UserBottomSheetDialogFragment"
@@ -81,12 +82,13 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val MUTE_1_WEEK = 7 * 24 * 60 * 60
         const val MUTE_1_YEAR = 365 * 24 * 60 * 60
 
-        fun newInstance(user: User, conversationId: String? = null) = UserBottomSheetDialogFragment().apply {
-            arguments = Bundle().apply {
-                putParcelable(ARGS_USER, user)
-                putString(ARGS_CONVERSATION_ID, conversationId)
+        fun newInstance(user: User, conversationId: String? = null) =
+            UserBottomSheetDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putParcelable(ARGS_USER, user)
+                    putString(ARGS_CONVERSATION_ID, conversationId)
+                }
             }
-        }
     }
 
     private lateinit var user: User
@@ -102,7 +104,20 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_user_bottom_sheet, null)
-        (dialog as BottomSheet).setCustomView(contentView)
+        (dialog as BottomSheet).apply {
+            setCustomView(contentView)
+            bottomSheetListener = object : BottomSheet.BottomSheetListenerAdapter() {
+                override fun onOpenAnimationEnd() {
+                    contentView.post {
+                        min = contentView.height
+                        max = dialog.getContentMaxHeight()
+                        menuListLayout?.isVisible = true
+                        dialog.updateTransitionY((max - min).toFloat(), false)
+                    }
+                }
+            }
+        }
+        setDraggableHelper(dialog, contentView.scroll_view)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -130,7 +145,8 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             updateUserInfo(u)
             if (menuListLayout == null ||
                 u.relationship != user.relationship ||
-                u.muteUntil != user.muteUntil) {
+                u.muteUntil != user.muteUntil
+            ) {
                 initMenu(u)
             }
             user = u
@@ -193,8 +209,10 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (showUserTransactionAction != null) {
                     showUserTransactionAction?.invoke()
                 } else {
-                    activity?.addFragment(this@UserBottomSheetDialogFragment,
-                        UserTransactionsFragment.newInstance(u.userId), UserTransactionsFragment.TAG)
+                    activity?.addFragment(
+                        this@UserBottomSheetDialogFragment,
+                        UserTransactionsFragment.newInstance(u.userId), UserTransactionsFragment.TAG
+                    )
                 }
                 dismiss()
             }
@@ -208,9 +226,11 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             action = {
                 creator?.let {
                     if (it.userId == Session.getAccountId()) {
-                        ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, TAG)
+                        ProfileBottomSheetDialogFragment.newInstance()
+                            .showNow(parentFragmentManager, TAG)
                     } else {
-                        UserBottomSheetDialogFragment.newInstance(it).showNow(parentFragmentManager, TAG)
+                        UserBottomSheetDialogFragment.newInstance(it)
+                            .showNow(parentFragmentManager, TAG)
                     }
                 }
                 dismiss()
@@ -257,7 +277,14 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 list.groups.add(menuGroup {
                     menu {
                         title = getString(R.string.contact_other_unblock)
-                        action = { bottomViewModel.updateRelationship(RelationshipRequest(u.userId, RelationshipAction.UNBLOCK.name)) }
+                        action = {
+                            bottomViewModel.updateRelationship(
+                                RelationshipRequest(
+                                    u.userId,
+                                    RelationshipAction.UNBLOCK.name
+                                )
+                            )
+                        }
                     }
                     menu(clearMenu)
                 })
@@ -328,41 +355,49 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         })
 
         menuListLayout?.removeAllViews()
-        list.createMenuLayout(requireContext(), contentView.more_iv.rotationX == 180f).let { layout ->
+        contentView.scroll_content.removeView(menuListLayout)
+        val lastVisible = menuListLayout?.isVisible ?: false
+        list.createMenuLayout(requireContext(), lastVisible).let { layout ->
             menuListLayout = layout
             contentView.scroll_content.addView(layout)
             layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 bottomMargin = requireContext().dpToPx(30f)
             }
             contentView.more_fl.setOnClickListener {
-                contentView.scroll_view.updateLayoutParams<ViewGroup.LayoutParams> {
-                    height = if (height == ViewGroup.LayoutParams.WRAP_CONTENT) {
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    } else {
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    }
-                }
-                layout.isVisible = !layout.isVisible
-                contentView.more_iv.animate().rotationX(if (layout.isVisible) {
-                    180f
-                } else {
-                    0f
-                }).start()
+                expand = !expand
+                val transitionY = if (expand) 0 else max - min
+                (dialog as BottomSheet).updateTransitionY(transitionY.toFloat(), true)
             }
         }
+    }
+
+    override fun whenSetExpand() {
+        contentView.more_iv.animate().rotationX(
+            if (expand) {
+                180f
+            } else {
+                0f
+            }
+        ).start()
     }
 
     private fun startSearchConversation() = lifecycleScope.launch(Dispatchers.IO) {
         bottomViewModel.getConversation(conversationId!!)?.let {
             val searchMessageItem = if (it.category == ConversationCategory.CONTACT.name) {
-                SearchMessageItem(it.conversationId, it.category, null,
-                    0, user.userId, user.fullName, user.avatarUrl, null)
+                SearchMessageItem(
+                    it.conversationId, it.category, null,
+                    0, user.userId, user.fullName, user.avatarUrl, null
+                )
             } else {
-                SearchMessageItem(it.conversationId, it.category, it.name,
-                    0, "", null, null, it.iconUrl)
+                SearchMessageItem(
+                    it.conversationId, it.category, it.name,
+                    0, "", null, null, it.iconUrl
+                )
             }
-            activity?.addFragment(this@UserBottomSheetDialogFragment,
-                SearchMessageFragment.newInstance(searchMessageItem, ""), SearchMessageFragment.TAG)
+            activity?.addFragment(
+                this@UserBottomSheetDialogFragment,
+                SearchMessageFragment.newInstance(searchMessageItem, ""), SearchMessageFragment.TAG
+            )
         }
     }
 
@@ -374,7 +409,12 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             .setNegativeButton(getString(R.string.contact_other_report)) { dialog, _ ->
                 val conversationId = generateConversationId(userId, Session.getAccountId()!!)
-                bottomViewModel.updateRelationship(RelationshipRequest(userId, RelationshipAction.BLOCK.name), conversationId)
+                bottomViewModel.updateRelationship(
+                    RelationshipRequest(
+                        userId,
+                        RelationshipAction.BLOCK.name
+                    ), conversationId
+                )
                 RxBus.publish(ExitEvent(conversationId))
                 dialog.dismiss()
             }
@@ -389,7 +429,8 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.name.text = user.fullName
         contentView.id_tv.text = getString(R.string.contact_mixin_id, user.identityNumber)
         contentView.id_tv.setOnLongClickListener {
-            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, user.identityNumber))
+            context?.getClipboardManager()
+                ?.setPrimaryClip(ClipData.newPlainText(null, user.identityNumber))
             context?.toast(R.string.copy_success)
             true
         }
@@ -450,7 +491,12 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 contentView.add_tv.text = getString(R.string.contact_other_unblock)
                 contentView.add_tv.setCompoundDrawables(blockDrawable, null, null, null)
                 contentView.add_tv.setOnClickListener {
-                    bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.UNBLOCK.name))
+                    bottomViewModel.updateRelationship(
+                        RelationshipRequest(
+                            user.userId,
+                            RelationshipAction.UNBLOCK.name
+                        )
+                    )
                 }
             }
             UserRelationship.FRIEND.name -> {
@@ -488,8 +534,12 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             .setView(frameLayout)
             .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
             .setPositiveButton(R.string.confirm) { dialog, _ ->
-                bottomViewModel.updateRelationship(RelationshipRequest(user.userId,
-                    RelationshipAction.UPDATE.name, editText.text.toString()))
+                bottomViewModel.updateRelationship(
+                    RelationshipRequest(
+                        user.userId,
+                        RelationshipAction.UPDATE.name, editText.text.toString()
+                    )
+                )
                 dialog.dismiss()
             }
             .show()
@@ -502,19 +552,24 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                nameDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = !(s.isNullOrBlank() || s.toString() == name.toString())
+                nameDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled =
+                    !(s.isNullOrBlank() || s.toString() == name.toString())
             }
         })
 
-        nameDialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-            WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
+        nameDialog.window?.clearFlags(
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+        )
         nameDialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
     }
 
     private fun showMuteDialog() {
-        val choices = arrayOf(getString(R.string.contact_mute_8hours),
+        val choices = arrayOf(
+            getString(R.string.contact_mute_8hours),
             getString(R.string.contact_mute_1week),
-            getString(R.string.contact_mute_1year))
+            getString(R.string.contact_mute_1year)
+        )
         var duration = MUTE_8_HOURS
         var whichItem = 0
         AlertDialog.Builder(context!!)
@@ -557,9 +612,11 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (!isAdded) return@launch
 
         updateUserStatus(relationship)
-        val request = RelationshipRequest(user.userId,
+        val request = RelationshipRequest(
+            user.userId,
             if (relationship == UserRelationship.FRIEND.name)
-                RelationshipAction.ADD.name else RelationshipAction.REMOVE.name, user.fullName)
+                RelationshipAction.ADD.name else RelationshipAction.REMOVE.name, user.fullName
+        )
         bottomViewModel.updateRelationship(request)
     }
 }

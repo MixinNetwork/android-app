@@ -80,7 +80,6 @@ class EditBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             dismiss()
         }
         (dialog as BottomSheet).apply {
-            fullScreen = true
             setCustomView(contentView)
 
             setOnShowListener {

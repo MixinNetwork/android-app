@@ -5,4 +5,5 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:over_direction="1"
+    app:drag_direction="0"
     android:background="?attr/bg_white"/>

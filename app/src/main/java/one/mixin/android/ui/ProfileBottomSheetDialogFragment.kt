@@ -35,9 +35,9 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.EditBottomSheetDialogFragment
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.ui.common.info.ScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
@@ -51,7 +51,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.noButton
 
-class ProfileBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class ProfileBottomSheetDialogFragment : ScrollableBottomSheetDialogFragment() {
     companion object {
         const val TAG = "ProfileBottomSheetDialogFragment"
 
@@ -74,7 +74,18 @@ class ProfileBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_profile_bottom_sheet_dialog, null)
-        (dialog as BottomSheet).setCustomView(contentView)
+        (dialog as BottomSheet).apply {
+            setCustomView(contentView)
+            bottomSheetListener = object : BottomSheet.BottomSheetListenerAdapter() {
+                override fun onOpenAnimationEnd() {
+                    contentView.post {
+                        min = contentView.height
+                        max = dialog.getContentMaxHeight()
+                    }
+                }
+            }
+        }
+        setDraggableHelper(dialog, contentView.scroll_view)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

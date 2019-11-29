@@ -111,7 +111,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             height = requireContext().statusBarHeight()
         }
         (dialog as BottomSheet).apply {
-            fullScreen = true
             setCustomView(contentView)
         }
     }

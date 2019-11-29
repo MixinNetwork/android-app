@@ -1,46 +1,30 @@
-package one.mixin.android.widget
+package one.mixin.android.util
 
-import android.content.Context
-import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.VelocityTracker
-import android.view.ViewConfiguration
-import androidx.recyclerview.widget.RecyclerView
+import android.view.View
 import kotlin.math.abs
-import one.mixin.android.R
 
-class DraggableRecyclerView @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyle: Int = 0
-) : RecyclerView(context, attrs, defStyle) {
-
+class DraggableViewHelper(private val target: View) {
     var callback: Callback? = null
 
     private var velocityTracker: VelocityTracker? = null
-    private val minVelocity = ViewConfiguration.get(context).scaledMinimumFlingVelocity
+    private val minVelocity = FLING_MIN_VELOCITY
 
     var direction = DIRECTION_NONE
 
-    private var lastVelocityY = 0f
+    var over = OVER_NONE
 
-    private var over = OVER_NONE
+    var isParentBottom2TopEnable = true
+
+    private var lastVelocityY = 0f
 
     private var downY = 0f
     private var startY = 0f
     private var dragging = false
 
     init {
-        val ta = context.obtainStyledAttributes(attrs, R.styleable.DraggableRecyclerView)
-        if (ta.hasValue(R.styleable.DraggableRecyclerView_drag_direction)) {
-            direction = ta.getInteger(R.styleable.DraggableRecyclerView_drag_direction, DIRECTION_NONE)
-        }
-        if (ta.hasValue(R.styleable.DraggableRecyclerView_over_direction)) {
-            over = ta.getInteger(R.styleable.DraggableRecyclerView_over_direction, OVER_NONE)
-        }
-        ta.recycle()
-
-        setOnTouchListener { _, event ->
+        target.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     downY = event.rawY
@@ -70,12 +54,12 @@ class DraggableRecyclerView @JvmOverloads constructor(
                         // scroll bottom to top over view area
                         ((over == OVER_TOP || over == OVER_BOTH) && event.y < 0 && disY < 0 && direction < 1) ||
                         // scroll top to bottom over view area
-                        ((over == OVER_BOTTOM || over == OVER_BOTH) && event.y > height && disY > 0 && direction < 1)) {
+                        ((over == OVER_BOTTOM || over == OVER_BOTH) && event.y > target.height && disY > 0 && direction < 1)) {
                         velocityTracker?.addMovement(event)
                         callback?.onScroll(disY)
                         downY = moveY
                         dragging = true
-                        suppressLayout(true)
+                        // target.suppressLayout(true)
                         return@setOnTouchListener true
                     }
                     downY = moveY
@@ -106,7 +90,7 @@ class DraggableRecyclerView @JvmOverloads constructor(
                         downY = 0f
                         startY = 0f
                         dragging = false
-                        suppressLayout(false)
+                        // suppressLayout(false)
                         callback?.onRelease(fling)
                         return@setOnTouchListener true
                     }
@@ -123,12 +107,15 @@ class DraggableRecyclerView @JvmOverloads constructor(
 
     private fun canDrag(disY: Float): Boolean {
         return when (direction) {
-            DIRECTION_TOP_2_BOTTOM -> !canScrollVertically(DIRECTION_TOP_2_BOTTOM) && disY > 0
-            DIRECTION_BOTTOM_2_TOP -> !canScrollVertically(DIRECTION_BOTTOM_2_TOP) && disY < 0
-            DIRECTION_BOTH -> (!canScrollVertically(DIRECTION_TOP_2_BOTTOM) && disY > 0) || (!canScrollVertically(DIRECTION_BOTTOM_2_TOP) && disY < 0)
+            DIRECTION_TOP_2_BOTTOM -> !target.canScrollVertically(DIRECTION_TOP_2_BOTTOM) && disY > 0
+            DIRECTION_BOTTOM_2_TOP -> bottom2TopDirection(disY)
+            DIRECTION_BOTH -> (!target.canScrollVertically(DIRECTION_TOP_2_BOTTOM) && disY > 0) || bottom2TopDirection(disY)
             else -> false
         }
     }
+
+    private fun bottom2TopDirection(disY: Float) =
+        isParentBottom2TopEnable || (!target.canScrollVertically(DIRECTION_BOTTOM_2_TOP) && disY < 0)
 
     companion object {
         const val DIRECTION_NONE = -2
@@ -144,6 +131,8 @@ class DraggableRecyclerView @JvmOverloads constructor(
         const val FLING_UP = -1
         const val FLING_NONE = 0
         const val FLING_DOWN = 1
+
+        const val FLING_MIN_VELOCITY = 3500
     }
 
     interface Callback {

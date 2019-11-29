@@ -58,7 +58,7 @@ class BottomSheet(
     var lastInsets: WindowInsets? = null
 
     private val container: ContainerView by lazy { ContainerView(context) }
-    private val sheetContainer: FrameLayout by lazy { FrameLayout(context) }
+    val sheetContainer: FrameLayout by lazy { FrameLayout(context) }
     private var customView: View? = null
     private var customViewHeight: Int = 0
 
@@ -66,9 +66,7 @@ class BottomSheet(
 
     private val backDrawable = ColorDrawable(-0x1000000)
 
-    private var bottomSheetListener: BottomSheetListener? = null
-
-    var fullScreen = false
+    var bottomSheetListener: BottomSheetListener? = null
 
     var dismissClickOutside = true
         set(value) {
@@ -92,7 +90,8 @@ class BottomSheet(
             if (ev != null && (ev.action == MotionEvent.ACTION_DOWN || ev.action == MotionEvent.ACTION_MOVE)) {
                 val startX = ev.x.toInt()
                 val startY = ev.y.toInt()
-                if (startY < sheetContainer.top || startX < sheetContainer.left || startX > sheetContainer.right) {
+                if (startY < sheetContainer.top || startX < sheetContainer.left || startX > sheetContainer.right ||
+                    startY < sheetContainer.translationY) {
                     if (dismissClickOutside) {
                         dismiss()
                     }
@@ -260,13 +259,7 @@ class BottomSheet(
             return
         }
         isDismissed = true
-        fakeDismiss(false)
-    }
 
-    fun fakeDismiss(
-        fake: Boolean = true,
-        doOnEnd: (() -> Unit)? = null
-    ) {
         cancelSheetAnimation()
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
@@ -280,13 +273,10 @@ class BottomSheet(
                 if (curSheetAnimation != null && curSheetAnimation == animation) {
                     curSheetAnimation = null
                     sheetContainer.post {
-                        if (!fake) {
-                            try {
-                                dismissInternal()
-                            } catch (e: Exception) {
-                            }
+                        try {
+                            dismissInternal()
+                        } catch (e: Exception) {
                         }
-                        doOnEnd?.invoke()
                     }
                 }
             }
@@ -301,13 +291,27 @@ class BottomSheet(
         curSheetAnimation = animatorSet
     }
 
-    fun setListener(listener: BottomSheetListener) {
-        bottomSheetListener = listener
+    fun updateTransitionY(dis: Float, animated: Boolean) {
+        if (animated) {
+            ObjectAnimator.ofFloat(sheetContainer, "translationY", dis).apply {
+                duration = 180
+                start()
+            }
+        } else {
+            sheetContainer.translationY += dis
+            if (sheetContainer.translationY < 0f) {
+                sheetContainer.translationY = 0f
+            }
+        }
     }
+
+    fun getTransitionY(): Float = sheetContainer.translationY
 
     fun setCustomView(view: View) {
         customView = view
     }
+
+    fun getContentMaxHeight() = container.height - (lastInsets?.systemWindowInsetTop ?: 0)
 
     fun getCustomView() = customView
 
