@@ -27,7 +27,9 @@ class ConversationActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
-        if (!booleanFromAttribute(R.attr.flag_night)) {
+        if (booleanFromAttribute(R.attr.flag_night)) {
+            container.backgroundImage = resources.getDrawable(R.drawable.bg_chat_night, theme)
+        } else {
             container.backgroundImage = resources.getDrawable(R.drawable.bg_chat, theme)
         }
         showConversation(intent)
