@@ -77,7 +77,7 @@ class DraggableViewHelper(private val target: View) {
                             if (vX != null && abs(vX) > abs(vY)) {
                                 FLING_NONE
                             } else {
-                                if (startY > event.rawY) {
+                                if (vY < 0) {
                                     FLING_UP
                                 } else {
                                     FLING_DOWN

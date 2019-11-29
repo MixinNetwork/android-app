@@ -32,13 +32,10 @@ abstract class ScrollableBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                 }
 
                 override fun onRelease(fling: Int) {
-                    val max = if (expand) max else min
-                    val curH =
-                        if (expand) max - dialog.getTransitionY() else min - dialog.getTransitionY()
+                    // val max = if (expand) max else min
+                    val curH = max - dialog.getTransitionY()
                     val minMid = min / 2f
-                    val maxMid = if (expand) {
-                        min + (max - min) / 2f
-                    } else minMid
+                    val maxMid = min + (max - min) / 2f
                     val targetY = if (curH > min) {
                         if (fling == FLING_UP) {
                             max
