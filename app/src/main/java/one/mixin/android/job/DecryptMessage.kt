@@ -629,7 +629,10 @@ class DecryptMessage : Injector() {
     }
 
     private fun requestResendMessage(conversationId: String, userId: String, sessionId: String?) {
-        val messages = messageDao.findFailedMessages(conversationId, userId) ?: return
+        val messages = messageDao.findFailedMessages(conversationId, userId)
+        if (messages.isEmpty()) {
+            return
+        }
         val plainText = gson.toJson(PlainJsonMessagePayload(PlainDataAction.RESEND_MESSAGES.name, messages.reversed()))
         val encoded = Base64.encodeBytes(plainText.toByteArray())
         val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, userId, encoded, sessionId))

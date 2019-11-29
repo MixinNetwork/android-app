@@ -439,7 +439,7 @@ internal constructor(
 
     fun markMessageRead(conversationId: String, accountId: String) {
         viewModelScope.launch(SINGLE_DB_THREAD) {
-            conversationRepository.getUnreadMessage(conversationId, accountId)?.also { list ->
+            conversationRepository.getUnreadMessage(conversationId, accountId).also { list ->
                 if (list.isNotEmpty()) {
                     notificationManager.cancel(conversationId.hashCode())
                     conversationRepository.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)

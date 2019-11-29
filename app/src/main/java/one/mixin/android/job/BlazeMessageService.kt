@@ -209,36 +209,35 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private tailrec suspend fun processAck(): Boolean {
         val ackMessages = jobDao.findAckJobs()
-        if (!ackMessages.isNullOrEmpty()) {
-            ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-                try {
-                    deliver(createAckListParamBlazeMessage(it)).let {
-                        jobDao.deleteList(ackMessages)
-                    }
-                } catch (e: Exception) {
-                }
-            }
-            return processAck()
-        } else {
+        if (ackMessages.isNotEmpty()) {
             return false
         }
+        ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
+            try {
+                deliver(createAckListParamBlazeMessage(it)).let {
+                    jobDao.deleteList(ackMessages)
+                }
+            } catch (e: Exception) {
+            }
+        }
+        return processAck()
     }
 
     private suspend fun syncMessageStatusToExtension(sessionId: String) {
-        jobDao.findCreateMessageJobs()?.let { list ->
-            if (list.isNotEmpty() && accountId != null) {
-                list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-                    val plainText = gson.toJson(
-                        PlainJsonMessagePayload(
-                            action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
-                            ackMessages = it)
-                    )
-                    val encoded = Base64.encodeBytes(plainText.toByteArray())
-                    val bm = createParamBlazeMessage(createPlainJsonParam(list.first().conversationId!!, accountId, encoded, sessionId))
-                    jobManager.addJobInBackground(SendPlaintextJob(bm))
-                    jobDao.deleteList(list)
-                }
-            }
+        val jobs = jobDao.findCreateMessageJobs()
+        if (jobs.isEmpty() || accountId == null) {
+            return
+        }
+        jobs.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
+            val plainText = gson.toJson(
+                PlainJsonMessagePayload(
+                    action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
+                    ackMessages = it)
+            )
+            val encoded = Base64.encodeBytes(plainText.toByteArray())
+            val bm = createParamBlazeMessage(createPlainJsonParam(jobs.first().conversationId!!, accountId, encoded, sessionId))
+            jobManager.addJobInBackground(SendPlaintextJob(bm))
+            jobDao.deleteList(jobs)
         }
     }
 

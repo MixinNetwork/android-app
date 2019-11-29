@@ -64,5 +64,5 @@ interface ParticipantDao : BaseDao<Participant> {
     fun getParticipantsCount(conversationId: String): Int
 
     @Query("SELECT * FROM participants")
-    suspend fun getAllParticipants(): List<Participant>?
+    suspend fun getAllParticipants(): List<Participant>
 }

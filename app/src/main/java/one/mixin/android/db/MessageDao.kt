@@ -242,7 +242,7 @@ interface MessageDao : BaseDao<Message> {
         "SELECT id,created_at FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
             "AND status = 'DELIVERED' ORDER BY created_at ASC"
     )
-    fun getUnreadMessage(conversationId: String, userId: String): List<MessageMinimal>?
+    fun getUnreadMessage(conversationId: String, userId: String): List<MessageMinimal>
 
     @Query(
         "UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, " +
@@ -320,7 +320,7 @@ interface MessageDao : BaseDao<Message> {
         "SELECT id FROM messages WHERE conversation_id = :conversationId AND user_id = :userId AND " +
             "status = 'FAILED' ORDER BY created_at DESC LIMIT 1000"
     )
-    fun findFailedMessages(conversationId: String, userId: String): List<String>?
+    fun findFailedMessages(conversationId: String, userId: String): List<String>
 
     @Query(
         "SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE conversation_id = :conversationId " +

@@ -26,5 +26,5 @@ interface SessionDao : BaseDao<Session> {
 
     // TODO deprecated
     @Query("SELECT * FROM sessions WHERE device = 1")
-    suspend fun syncGetSessionAddress(): List<Session>?
+    suspend fun syncGetSessionAddress(): List<Session>
 }
