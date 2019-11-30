@@ -199,7 +199,7 @@ class ConversationListFragment : LinkFragment() {
                 }
             }
         }
-        messagesViewModel.conversations.observe(this, Observer { r ->
+        messagesViewModel.conversations.observe(viewLifecycleOwner, Observer { r ->
             if (r == null || r.isEmpty()) {
                 empty_view.visibility = VISIBLE
             } else {
