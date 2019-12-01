@@ -8,7 +8,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -22,11 +21,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.NetworkException
-import one.mixin.android.api.WebSocketException
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.FloodMessageDao
@@ -38,17 +34,14 @@ import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.vo.CallState
 import one.mixin.android.websocket.BlazeAckMessage
-import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.PlainJsonMessagePayload
-import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
 import org.jetbrains.anko.notificationManager
@@ -213,16 +206,14 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private tailrec suspend fun processAck(): Boolean {
         val ackMessages = jobDao.findAckJobs()
-        if (ackMessages.isNotEmpty()) {
+        if (ackMessages.isEmpty()) {
             return false
         }
-        ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-            try {
-                messageService.acknowledgements(it)
-                jobDao.deleteList(ackMessages)
-            } catch (e: Exception) {
-                Log.e(BlazeMessageService.TAG, "Send ack exception", e)
-            }
+        try {
+            messageService.acknowledgements(ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java)})
+            jobDao.deleteListSuspend(ackMessages)
+        } catch (e: Exception) {
+            Log.e(BlazeMessageService.TAG, "Send ack exception", e)
         }
         return processAck()
     }
