@@ -142,7 +142,7 @@ constructor(
 
     fun recentUsedStickers() = stickerDao.recentUsedStickers()
 
-    fun updateUsedAt(stickerId: String, at: String) = stickerDao.updateUsedAt(stickerId, at)
+    suspend fun updateUsedAt(stickerId: String, at: String) = stickerDao.updateUsedAt(stickerId, at)
 
     fun addStickerAsync(request: StickerAddRequest) = accountService.addStickerAsync(request)
 

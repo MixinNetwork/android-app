@@ -12,7 +12,7 @@ interface StickerDao : BaseDao<Sticker> {
     fun recentUsedStickers(): LiveData<List<Sticker>>
 
     @Query("UPDATE stickers SET last_use_at = :at WHERE sticker_id = :stickerId")
-    fun updateUsedAt(stickerId: String, at: String)
+    suspend fun updateUsedAt(stickerId: String, at: String)
 
     @Query("SELECT * FROM stickers WHERE sticker_id = :stickerId")
     fun getStickerByUnique(stickerId: String): Sticker?

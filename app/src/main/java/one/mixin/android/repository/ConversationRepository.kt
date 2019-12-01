@@ -141,8 +141,7 @@ internal constructor(
             .build()
     }
 
-    fun getConversationIdIfExistsSync(recipientId: String) =
-        readConversationDao.getConversationIdIfExistsSync(recipientId)
+    suspend fun getConversationIdIfExistsSync(recipientId: String) = readConversationDao.getConversationIdIfExistsSync(recipientId)
 
     fun getUnreadMessage(conversationId: String, accountId: String): List<MessageMinimal>? {
         return readMessageDao.getUnreadMessage(conversationId, accountId)
