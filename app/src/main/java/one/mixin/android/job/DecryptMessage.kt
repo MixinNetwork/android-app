@@ -61,6 +61,7 @@ import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LIST_PENDING_MESSAGES
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.PlainDataAction
+import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.RecallMessagePayload
 import one.mixin.android.websocket.ResendData
 import one.mixin.android.websocket.StickerMessagePayload
@@ -68,7 +69,6 @@ import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.websocket.SystemConversationMessagePayload
 import one.mixin.android.websocket.SystemSessionMessageAction
 import one.mixin.android.websocket.SystemSessionMessagePayload
-import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.createCountSignalKeys
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam

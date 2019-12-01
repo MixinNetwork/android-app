@@ -48,4 +48,3 @@ data class Job(
 fun createAckJob(action: String, ackMessage: BlazeAckMessage, conversationId: String? = null) =
     Job(UUID.randomUUID().toString(), action, nowInUtc(), null, PRIORITY_ACK_MESSAGE, null,
         GsonHelper.customGson.toJson(ackMessage), conversationId, null, 0)
-

@@ -1,11 +1,11 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.websocket.BlazeAckMessage
-import java.util.UUID
 
-class SendAckMessageJob(private val ack:  List<BlazeAckMessage>, priority: Int = PRIORITY_ACK_MESSAGE) :
+class SendAckMessageJob(private val ack: List<BlazeAckMessage>, priority: Int = PRIORITY_ACK_MESSAGE) :
     MixinJob(Params(priority).groupBy("send_ack_message").requireWebSocketConnected().persist(), UUID.randomUUID().toString()) {
 
     companion object {
