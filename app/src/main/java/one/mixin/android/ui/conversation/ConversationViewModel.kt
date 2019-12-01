@@ -105,13 +105,11 @@ import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
-import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.RecallMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
-import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -158,10 +156,6 @@ internal constructor(
         userRepository.findUserByConversationId(conversationId)
 
     fun findUserById(conversationId: String): LiveData<User> = userRepository.findUserById(conversationId)
-
-    fun sendAckMessage(blazeMessage: BlazeMessage) {
-        jobManager.addJobInBackground(SendAckMessageJob(blazeMessage))
-    }
 
     fun sendTextMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
         val category = if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
@@ -589,7 +583,7 @@ internal constructor(
                         conversationRepository.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)
                         list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->
                             messages.chunked(100).forEach { list ->
-                                jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(list)))
+                                jobManager.addJobInBackground(SendAckMessageJob(list))
                             }
                         }
                         createReadSessionMessage(list, conversationId)

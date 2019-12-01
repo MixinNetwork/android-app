@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.os.SystemClock
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
@@ -26,6 +27,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.WebSocketException
+import one.mixin.android.api.service.MessageService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
@@ -89,6 +91,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     lateinit var jobManager: MixinJobManager
     @Inject
     lateinit var callState: CallState
+    @Inject
+    lateinit var messageService: MessageService
 
     private val accountId = Session.getAccountId()
     private val gson = GsonHelper.customGson
@@ -214,10 +218,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
         ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
             try {
-                deliver(createAckListParamBlazeMessage(it)).let {
-                    jobDao.deleteList(ackMessages)
-                }
+                messageService.acknowledgements(it)
+                jobDao.deleteList(ackMessages)
             } catch (e: Exception) {
+                Log.e(BlazeMessageService.TAG, "Send ack exception", e)
             }
         }
         return processAck()
@@ -289,21 +293,5 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         } else {
             return false
         }
-    }
-
-    private fun deliver(blazeMessage: BlazeMessage): Boolean {
-        val bm = webSocket.sendMessage(blazeMessage)
-        if (bm == null) {
-            SystemClock.sleep(Constants.SLEEP_MILLIS)
-            throw WebSocketException()
-        } else if (bm.error != null) {
-            if (bm.error.code == ErrorHandler.FORBIDDEN) {
-                return true
-            } else {
-                SystemClock.sleep(Constants.SLEEP_MILLIS)
-                throw NetworkException()
-            }
-        }
-        return true
     }
 }
