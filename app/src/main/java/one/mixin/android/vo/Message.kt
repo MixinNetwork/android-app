@@ -232,11 +232,11 @@ fun createMessage(
     category: String,
     content: String,
     createdAt: String,
-    status: MessageStatus,
+    status: String,
     action: String? = null,
     participantId: String? = null,
     snapshotId: String? = null
-) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setAction(action)
     .setParticipantId(participantId)
@@ -250,11 +250,11 @@ fun createCallMessage(
     category: String,
     content: String?,
     createdAt: String,
-    status: MessageStatus,
+    status: String,
     quoteMessageId: String? = null,
     mediaDuration: String? = null
 ): Message {
-    val builder = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+    val builder = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
         .setContent(content)
         .setQuoteMessageId(quoteMessageId)
     if (mediaDuration != null) {
@@ -270,13 +270,13 @@ fun createReplyMessage(
     category: String,
     content: String,
     createdAt: String,
-    status: MessageStatus,
+    status: String,
     quoteMessageId: String?,
     quoteContent: String? = null,
     action: String? = null,
     participantId: String? = null,
     snapshotId: String? = null
-) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setAction(action)
     .setParticipantId(participantId)
@@ -299,8 +299,8 @@ fun createAttachmentMessage(
     key: ByteArray?,
     digest: ByteArray?,
     mediaStatus: MediaStatus,
-    status: MessageStatus
-) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+    status: String
+) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setName(name)
     .setMediaUrl(mediaUrl)
@@ -329,8 +329,8 @@ fun createVideoMessage(
     key: ByteArray?,
     digest: ByteArray?,
     mediaStatus: MediaStatus,
-    status: MessageStatus
-) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+    status: String
+) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setName(name)
     .setMediaUrl(mediaUrl)
@@ -361,8 +361,8 @@ fun createMediaMessage(
     digest: ByteArray?,
     createdAt: String,
     mediaStatus: MediaStatus,
-    status: MessageStatus
-) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+    status: String
+) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setMediaUrl(mediaUrl)
     .setMediaMimeType(mediaMimeType)
@@ -384,9 +384,9 @@ fun createStickerMessage(
     albumId: String?,
     stickerId: String,
     stickerName: String?,
-    status: MessageStatus,
+    status: String,
     createdAt: String
-) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setStickerId(stickerId)
     .setAlbumId(albumId)
@@ -403,9 +403,9 @@ fun createLiveMessage(
     height: Int,
     url: String,
     thumbUrl: String,
-    status: MessageStatus,
+    status: String,
     createdAt: String
-) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setMediaWidth(width)
     .setMediaHeight(height)
@@ -420,9 +420,9 @@ fun createContactMessage(
     category: String,
     content: String,
     sharedUserId: String,
-    status: MessageStatus,
+    status: String,
     createdAt: String
-) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setSharedUserId(sharedUserId)
     .build()
@@ -433,9 +433,9 @@ fun createRecallMessage(
     userId: String,
     category: String,
     content: String,
-    status: MessageStatus,
+    status: String,
     createdAt: String
-) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .build()
 
@@ -453,8 +453,8 @@ fun createAudioMessage(
     key: ByteArray?,
     digest: ByteArray?,
     mediaStatus: MediaStatus,
-    status: MessageStatus
-) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+    status: String
+) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setMediaUrl(mediaUrl)
     .setContent(content)
     .setMediaWaveform(mediaWaveform)

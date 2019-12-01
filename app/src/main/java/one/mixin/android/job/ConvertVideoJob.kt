@@ -50,7 +50,7 @@ class ConvertVideoJob(
         val message = createVideoMessage(messageId, conversationId, senderId, category, null,
             video.fileName, uri.toString(), video.duration, video.resultWidth,
             video.resultHeight, video.thumbnail, "video/mp4",
-            0L, createdAt, null, null, MediaStatus.PENDING, MessageStatus.SENDING)
+            0L, createdAt, null, null, MediaStatus.PENDING, MessageStatus.SENDING.name)
         // insert message with mediaSize 0L
         // for show video place holder in chat list before convert video
         messageDao.insert(message)
@@ -76,7 +76,7 @@ class ConvertVideoJob(
             video.resultHeight, video.thumbnail, "video/mp4",
             videoFile.length(), createdAt, null, null,
             if (result) MediaStatus.PENDING else MediaStatus.CANCELED,
-            if (result) MessageStatus.SENDING else MessageStatus.FAILED)
+            if (result) MessageStatus.SENDING.name else MessageStatus.FAILED.name)
 
         removeJob()
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))

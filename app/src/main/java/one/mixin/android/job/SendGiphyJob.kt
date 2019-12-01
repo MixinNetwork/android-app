@@ -37,7 +37,7 @@ class SendGiphyJob(
     override fun onAdded() {
         val message = createMediaMessage(messageId, conversationId, senderId, category, null, url,
             MimeType.GIF.toString(), 0, width, height, previewUrl, null, null,
-            time, MediaStatus.PENDING, MessageStatus.SENDING)
+            time, MediaStatus.PENDING, MessageStatus.SENDING.name)
         messageDao.insert(message)
     }
 
@@ -50,7 +50,7 @@ class SendGiphyJob(
         val thumbnail = file.blurThumbnail(size)?.bitmap2String()
         val message = createMediaMessage(messageId, conversationId, senderId, category, null, Uri.fromFile(file).toString(),
             MimeType.GIF.toString(), file.length(), width, height, thumbnail, null, null,
-            time, MediaStatus.PENDING, MessageStatus.SENDING)
+            time, MediaStatus.PENDING, MessageStatus.SENDING.name)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 }

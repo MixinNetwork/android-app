@@ -209,7 +209,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
 
-    @Query("UPDATE messages SET status = 'DELIVERED' WHERE id = :id AND status = 'FAILED'")
+    @Query("UPDATE messages SET status = 'SENT' WHERE id = :id AND status = 'FAILED'")
     fun recallFailedMessage(id: String)
 
     @Query(
@@ -239,8 +239,8 @@ interface MessageDao : BaseDao<Message> {
     fun updateHyperlink(hyperlink: String, id: String)
 
     @Query(
-        "SELECT id,created_at FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
-            "AND status = 'DELIVERED' ORDER BY created_at ASC"
+        "SELECT id, created_at FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
+            "AND status = 'SENT' ORDER BY created_at ASC"
     )
     fun getUnreadMessage(conversationId: String, userId: String): List<MessageMinimal>
 
@@ -309,7 +309,7 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         "SELECT id, created_at FROM messages WHERE conversation_id = :conversationId " +
-            "AND user_id != :userId AND status = 'DELIVERED' ORDER BY created_at ASC"
+            "AND user_id != :userId AND status = 'SENT' ORDER BY created_at ASC"
     )
     fun findUnreadMessagesSync(
         conversationId: String,
@@ -333,13 +333,13 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         "UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId " +
-            "AND status = 'DELIVERED' AND created_at <= :createdAt"
+            " AND created_at <= :createdAt"
     )
     fun batchMarkRead(conversationId: String, userId: String, createdAt: String)
 
     @Query(
         "UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.user_id != :userId " +
-            "AND m.status = 'DELIVERED' AND m.conversation_id = :conversationId) WHERE conversation_id = :conversationId "
+            "AND m.status = 'SENT' AND m.conversation_id = :conversationId) WHERE conversation_id = :conversationId "
     )
     fun takeUnseen(userId: String, conversationId: String)
 
@@ -366,7 +366,7 @@ interface MessageDao : BaseDao<Message> {
     ): Message?
 
     @Query(
-        "SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND status = 'DELIVERED' " +
+        "SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND status = 'SENT' " +
             "ORDER BY created_at, rowid ASC LIMIT 1"
     )
     suspend fun findFirstUnreadMessageId(conversationId: String, userId: String): String?
