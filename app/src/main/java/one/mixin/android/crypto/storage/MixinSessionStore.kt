@@ -7,7 +7,6 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.vo.Session
-import one.mixin.android.db.MixinDatabase
 import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.protocol.CiphertextMessage
 import org.whispersystems.libsignal.state.SessionRecord
@@ -16,7 +15,6 @@ import org.whispersystems.libsignal.state.SessionStore
 class MixinSessionStore(context: Context) : SessionStore {
 
     private val sessionDao: SessionDao = SignalDatabase.getDatabase(context).sessionDao()
-    private val participantSessionDao = MixinDatabase.getDatabase(context).participantSessionDao()
 
     override fun loadSession(address: SignalProtocolAddress): SessionRecord {
         synchronized(FILE_LOCK) {
@@ -46,8 +44,6 @@ class MixinSessionStore(context: Context) : SessionStore {
                 return
             }
             if (!session.record.contentEquals(record.serialize())) {
-                // TODO should update with session
-                participantSessionDao.updateStatusByUserId(address.name)
                 sessionDao.insert(Session(address.name, address.deviceId, record.serialize(), System.currentTimeMillis()))
             }
         }

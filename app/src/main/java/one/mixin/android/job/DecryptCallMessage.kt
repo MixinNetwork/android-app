@@ -211,9 +211,7 @@ class DecryptCallMessage(
                     }
 
                     val duration = System.currentTimeMillis() - callState.connectedTime!!
-                    val uId = getUserId()
-                    // TODO status
-                    saveCallMessage(data, duration = duration.toString(), userId = uId, status = MessageStatus.READ)
+                    saveCallMessage(data, duration = duration.toString(), userId = getUserId(), status = MessageStatus.READ.name)
                     CallService.remoteEnd(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
@@ -253,15 +251,18 @@ class DecryptCallMessage(
         category: String? = null,
         duration: String? = null,
         userId: String = data.userId,
-        status: MessageStatus = MessageStatus.DELIVERED
+        status: String? = null
     ) {
-        if (data.userId == Session.getAccountId()!! ||
-            data.quoteMessageId == null) {
+        if (data.userId == Session.getAccountId()!! || data.quoteMessageId == null) {
             return
+        }
+        var messageStatus = data.status
+        status?.let {
+            messageStatus = status
         }
         val realCategory = category ?: data.category
         val message = createCallMessage(data.quoteMessageId, data.conversationId, userId, realCategory,
-            null, data.createdAt, data.status, mediaDuration = duration)
+            null, data.createdAt, messageStatus, mediaDuration = duration)
         messageDao.insert(message)
     }
 }
