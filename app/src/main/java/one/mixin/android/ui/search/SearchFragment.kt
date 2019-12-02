@@ -20,6 +20,7 @@ import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.item_search_app.view.*
+import kotlinx.android.synthetic.main.item_search_header.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -112,7 +113,9 @@ class SearchFragment : BaseFragment() {
         search_rv.addItemDecoration(decoration)
         search_rv.adapter = searchAdapter
         search_rv.addOnItemTouchListener(StickyRecyclerHeadersTouchListener(search_rv, decoration).apply {
-            setOnHeaderClickListener { _, position, _ ->
+            setOnHeaderClickListener { headerView, position, _, e ->
+                if (headerView.search_header_more.x > e.rawX) return@setOnHeaderClickListener
+
                 searchAdapter.getTypeData(position)?.let {
                     val f = SearchSingleFragment.newInstance(arrayListOf<Parcelable>().apply {
                         addAll(it)
