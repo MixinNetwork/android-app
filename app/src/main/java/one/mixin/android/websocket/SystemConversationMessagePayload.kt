@@ -14,5 +14,3 @@ data class SystemConversationMessagePayload(
 )
 
 enum class SystemConversationAction { JOIN, EXIT, ADD, REMOVE, CREATE, UPDATE, ROLE }
-
-enum class SystemExtensionSessionAction { ADD_SESSION, REMOVE_SESSION }
