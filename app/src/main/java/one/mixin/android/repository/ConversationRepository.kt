@@ -289,5 +289,5 @@ internal constructor(
 
     suspend fun getAllParticipants() = participantDao.getAllParticipants()
 
-    suspend fun insertParticipantList(ps: List<ParticipantSession>) = participantSessionDao.insertListSuspend(ps)
+    suspend fun insertParticipantSession(ps: List<ParticipantSession>) = participantSessionDao.insertListSuspend(ps)
 }

@@ -92,7 +92,7 @@ constructor(
                     newParticipantSession.add(ps)
                 }
             }
-            conversationRepo.insertParticipantList(newParticipantSession)
+            conversationRepo.insertParticipantSession(newParticipantSession)
         }
     }
 
