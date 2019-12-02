@@ -240,7 +240,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         "SELECT id, created_at FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
-            "AND status = 'SENT' ORDER BY created_at ASC"
+            "AND status IN ('SENT', 'DELIVERED') ORDER BY created_at ASC"
     )
     fun getUnreadMessage(conversationId: String, userId: String): List<MessageMinimal>
 
@@ -309,7 +309,7 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         "SELECT id, created_at FROM messages WHERE conversation_id = :conversationId " +
-            "AND user_id != :userId AND status = 'SENT' ORDER BY created_at ASC"
+            "AND user_id != :userId AND status IN ('SENT', 'DELIVERED') ORDER BY created_at ASC"
     )
     fun findUnreadMessagesSync(
         conversationId: String,
@@ -339,7 +339,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         "UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.user_id != :userId " +
-            "AND m.status = 'SENT' AND m.conversation_id = :conversationId) WHERE conversation_id = :conversationId "
+            "AND m.status IN ('SENT', 'DELIVERED') AND m.conversation_id = :conversationId) WHERE conversation_id = :conversationId "
     )
     fun takeUnseen(userId: String, conversationId: String)
 
@@ -366,7 +366,7 @@ interface MessageDao : BaseDao<Message> {
     ): Message?
 
     @Query(
-        "SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND status = 'SENT' " +
+        "SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND status IN ('SENT', 'DELIVERED') " +
             "ORDER BY created_at, rowid ASC LIMIT 1"
     )
     suspend fun findFirstUnreadMessageId(conversationId: String, userId: String): String?
