@@ -18,7 +18,7 @@ class RefreshSessionJob(
         val response = userService.fetchSessions(userIds)
         if (response.isSuccess) {
             val ps = response.data?.map { item ->
-                ParticipantSession(conversationId, item.user_id, item.session_id)
+                ParticipantSession(conversationId, item.userId, item.sessionId)
             }
             if (!ps.isNullOrEmpty()) {
                 participantSessionDao.insertList(ps)

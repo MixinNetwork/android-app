@@ -23,7 +23,7 @@ open class ConversationResponse(
     @SerializedName("participants")
     val participants: List<ParticipantRequest>,
     @SerializedName("participant_sessions")
-    val participantSessions: List<ParticipantSessionResponse>?,
+    val participantSessions: List<UserSession>?,
     @SerializedName("mute_until")
     val muteUntil: String
 )

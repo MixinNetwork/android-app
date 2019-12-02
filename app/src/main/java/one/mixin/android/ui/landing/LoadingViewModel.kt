@@ -58,9 +58,9 @@ constructor(
             val userSessionMap = ArrayMap<String, String>()
             if (response.isSuccess) {
                 response.data?.asSequence()?.forEach { item ->
-                    val deviceId = item.session_id.getDeviceId()
-                    sessionMap[item.user_id] = deviceId
-                    userSessionMap[item.user_id] = item.session_id
+                    val deviceId = item.sessionId.getDeviceId()
+                    sessionMap[item.userId] = deviceId
+                    userSessionMap[item.userId] = item.sessionId
                 }
             }
             if (sessionMap.isEmpty) {

@@ -14,7 +14,7 @@ import one.mixin.android.api.WebSocketException
 import one.mixin.android.api.createPreKeyBundle
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
-import one.mixin.android.api.response.ParticipantSessionResponse
+import one.mixin.android.api.response.UserSession
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.getDeviceId
@@ -330,7 +330,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         }
     }
 
-    protected fun syncParticipantSession(conversationId: String, data: List<ParticipantSessionResponse>) {
+    protected fun syncParticipantSession(conversationId: String, data: List<UserSession>) {
         val remote = data.map {
             ParticipantSession(conversationId, it.userId, it.sessionId)
         }
