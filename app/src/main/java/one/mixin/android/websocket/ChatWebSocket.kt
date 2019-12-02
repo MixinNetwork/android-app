@@ -165,7 +165,7 @@ class ChatWebSocket(
                         transactions[blazeMessage.id]!!.success.success(blazeMessage)
                         transactions.remove(blazeMessage.id)
                     }
-                    if (blazeMessage.data != null) {
+                    if (blazeMessage.data != null && blazeMessage.isReceiveMessageAction()) {
                         handleReceiveMessage(blazeMessage)
                     }
                 } else {
