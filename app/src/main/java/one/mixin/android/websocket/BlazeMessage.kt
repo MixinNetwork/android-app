@@ -17,10 +17,6 @@ data class BlazeMessage(
     companion object {
         private const val serialVersionUID: Long = -1138873694585349395
     }
-
-    fun isReceiveMessageAction(): Boolean {
-        return action == CREATE_MESSAGE || action == ACKNOWLEDGE_MESSAGE_RECEIPT || action == CREATE_CALL
-    }
 }
 
 const val CREATE_MESSAGE = "CREATE_MESSAGE"
