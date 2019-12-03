@@ -7,6 +7,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.collection.ArrayMap
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_group_info.view.*
 import kotlinx.android.synthetic.main.view_group_info_header.view.*
@@ -102,10 +103,20 @@ class GroupInfoAdapter : HeaderFilterAdapter<User>() {
             itemView.verify_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
             participantsMap?.let {
                 val p = it[user.userId]
-                p?.let {
-                    val role = it.role
-                    itemView.desc.visibility = if (role == ParticipantRole.OWNER.name ||
-                        role == ParticipantRole.ADMIN.name) View.VISIBLE else View.GONE
+                p?.let {partition ->
+                    when (partition.role) {
+                        ParticipantRole.OWNER.name -> {
+                            itemView.desc.setText(R.string.owner)
+                            itemView.desc.isVisible = true
+                        }
+                        ParticipantRole.ADMIN.name -> {
+                            itemView.desc.setText(R.string.admin)
+                            itemView.desc.isVisible = true
+                        }
+                        else -> {
+                            itemView.desc.isVisible = false
+                        }
+                    }
                 }
             }
             itemView.setOnClickListener {
