@@ -74,13 +74,13 @@ class TransactionFragment : BaseFragment() {
                     val asset = walletViewModel.simpleAssetItem(assetId!!)
                     val snapshot = walletViewModel.snapshotLocal(assetId!!, snapshotId!!)
                     if (asset == null || snapshot == null) {
-                        context?.toast(R.string.error_unknown)
+                        context?.toast(R.string.error_data)
                     } else {
                         updateUI(asset, snapshot)
                     }
                 }
             } else {
-                context?.toast(R.string.error_unknown)
+                context?.toast(R.string.error_data)
             }
         } else {
             updateUI(asset!!, snapshot!!)

@@ -153,7 +153,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             adapter.submitList(pagedList)
         }
         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, orderByAmount = currentOrder == R.id.sort_amount))
-        walletViewModel.assetItem(asset.assetId).observe(this, Observer { assetItem ->
+        walletViewModel.assetItem(asset.assetId).observe(viewLifecycleOwner, Observer { assetItem ->
             assetItem?.let {
                 asset = it
                 updateHeader(headerView, it)

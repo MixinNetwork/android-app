@@ -65,7 +65,7 @@ interface ConversationDao : BaseDao<Conversation> {
     suspend fun fuzzySearchChat(query: String): List<ChatMinimal>
 
     @Query("SELECT DISTINCT c.conversation_id FROM conversations c WHERE c.owner_id = :recipientId and c.category = 'CONTACT'")
-    fun getConversationIdIfExistsSync(recipientId: String): String?
+    suspend fun getConversationIdIfExistsSync(recipientId: String): String?
 
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun getConversationById(conversationId: String): LiveData<Conversation>

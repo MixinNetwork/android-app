@@ -6,6 +6,7 @@ import com.crashlytics.android.Crashlytics
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import kotlinx.coroutines.CancellationException
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.ClientErrorException
@@ -34,9 +35,12 @@ open class ErrorHandler {
                             handleErrorCode(throwable.code, ctx)
                         }
                         is NetworkException -> toast(R.string.error_no_connection)
-                        else -> toast(getString(R.string.error_unknown, throwable.message))
+                        else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
                     }
-                    else -> toast(getString(R.string.error_unknown, throwable.message))
+                    is CancellationException -> {
+                        // ignore kotlin coroutine job cancellation exception
+                    }
+                    else -> toast(getString(R.string.error_unknown_with_message, throwable.message))
                 }
             }
         }

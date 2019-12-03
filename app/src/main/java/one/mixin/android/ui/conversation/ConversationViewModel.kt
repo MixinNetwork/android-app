@@ -144,8 +144,6 @@ internal constructor(
         conversationRepository.searchConversationById(id)
             .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
 
-    private fun getConversationIdIfExistsSync(recipientId: String) = conversationRepository.getConversationIdIfExistsSync(recipientId)
-
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
     fun saveDraft(conversationId: String, text: String) = viewModelScope.launch {
@@ -443,13 +441,9 @@ internal constructor(
         }
     }
 
-    fun findFriends() = userRepository.findFriends()
-
     suspend fun getFriends(): List<User> = userRepository.getFriends()
 
     fun findFriendsNotBot() = userRepository.findFriendsNotBot()
-
-    fun getConversations() = conversationRepository.conversation()
 
     fun successConversationList() = conversationRepository.successConversationList()
 
@@ -469,8 +463,6 @@ internal constructor(
         }
     }
 
-    fun getXIN(): AssetItem? = assetRepository.getXIN()
-
     fun getSystemAlbums() = accountRepository.getSystemAlbums()
 
     suspend fun getPersonalAlbums() = accountRepository.getPersonalAlbums()
@@ -482,9 +474,8 @@ internal constructor(
     fun recentStickers() = accountRepository.recentUsedStickers()
 
     fun updateStickerUsedAt(stickerId: String) {
-        doAsync {
-            val cur = System.currentTimeMillis()
-            accountRepository.updateUsedAt(stickerId, cur.toString())
+        viewModelScope.launch {
+            accountRepository.updateUsedAt(stickerId, System.currentTimeMillis().toString())
         }
     }
 
@@ -557,11 +548,11 @@ internal constructor(
     }
 
     fun sendForwardMessages(selectItem: List<Any>, messages: List<ForwardMessage>?) {
-        viewModelScope.launch(SINGLE_DB_THREAD) {
+        viewModelScope.launch(Dispatchers.IO) {
             var conversationId: String? = null
             for (item in selectItem) {
                 if (item is User) {
-                    conversationId = getConversationIdIfExistsSync(item.userId)
+                    conversationId = conversationRepository.getConversationIdIfExistsSync(item.userId)
                     if (conversationId == null) {
                         conversationId = generateConversationId(Session.getAccountId()!!, item.userId)
                         initConversation(conversationId, item, Session.getAccount()!!.toUser())

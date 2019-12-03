@@ -95,8 +95,9 @@
     <string name="error_connection_timeout">Network connection timeout</string>
     <string name="error_network">Network error</string>
     <string name="error_server_5xx">Server is under maintenance</string>
-    <string name="error_unknown">Error: %1$s</string>
+    <string name="error_data">Data error</string>
     <string name="error_unknown_with_code">ERROR %1$d</string>
+    <string name="error_unknown_with_message">ERROR %1$s</string>
     <string name="error_forbidden">Access denied</string>
     <string name="error_not_found">ERROR %1$d: Not found</string>
     <string name="error_not_found_message">Not found</string>
@@ -301,6 +302,10 @@
     <string name="wallet_transactions_show">Show</string>
     <string name="wallet_transactions_hide">Hide</string>
     <string name="wallet_transaction_title">Transaction</string>
+    <string name="wallet_transaction_continue">Continue</string>
+    <string name="wallet_transaction_continue_count">Continue (%1$d)</string>
+    <string name="wallet_transaction_tip_title">Large Amount Confirmation</string>
+    <string name="wallet_transaction_tip">Are you sure you want to transfer %3$s worth %2$f to %1$s ？</string>
     <string name="wallet_password_change">Change PIN</string>
     <string name="wallet_password_old_title">Old PIN</string>
     <string name="wallet_password_not_equal">The PIN did not match the re-typed PIN, please try again.</string>
@@ -355,6 +360,8 @@
     <string name="pin_read_emergency">View emergency contact</string>
     <string name="pin_update_phone">Change phone number</string>
     <string name="pin_update_pin">Change PIN</string>
+    <string name="pin_log_multisig_sign">Multisig Transaction</string>
+    <string name="pin_log_multisig_unlock">Revoke Multisig Transaction</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
     <string name="group_new_title">New Group</string>

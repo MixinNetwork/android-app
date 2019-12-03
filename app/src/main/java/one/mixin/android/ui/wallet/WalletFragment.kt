@@ -114,7 +114,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         assetsAdapter.onItemListener = this
         coins_rv.adapter = assetsAdapter
 
-        walletViewModel.assetItems().observe(this, Observer { r: List<AssetItem>? ->
+        walletViewModel.assetItems().observe(viewLifecycleOwner, Observer { r: List<AssetItem>? ->
             if (r == null || r.isEmpty()) {
                 setEmpty()
             } else {

@@ -1096,7 +1096,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             closeTool()
         }
 
-        callState.observe(this, Observer { info ->
+        callState.observe(viewLifecycleOwner, Observer { info ->
             chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
         })
         bindData()
@@ -1191,7 +1191,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
         chatViewModel.getMessages(conversationId, unreadCount)
-            .observe(this@ConversationFragment, Observer { data ->
+            .observe(viewLifecycleOwner, Observer { data ->
                 data?.let { list ->
                     if (!isFirstLoad && !isBottom && list.size > chatAdapter.getRealItemCount()) {
                         unreadTipCount += (list.size - chatAdapter.getRealItemCount())
@@ -1259,7 +1259,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun liveDataAppList() {
-        chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer { list ->
+        chatViewModel.getApp(conversationId, recipient?.userId).observe(viewLifecycleOwner, Observer { list ->
             val type = if (isGroup) {
                 AppCap.GROUP.name
             } else {
@@ -1500,7 +1500,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             hideAlert()
             showGroupBottomSheet(true)
         }
-        chatViewModel.getConversationById(conversationId).observe(this, Observer {
+        chatViewModel.getConversationById(conversationId).observe(viewLifecycleOwner, Observer {
             it?.let {
                 groupName = it.name
                 action_bar.setSubTitle(
@@ -1510,7 +1510,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 action_bar.avatar_iv.setGroup(it.iconUrl)
             }
         })
-        chatViewModel.getGroupParticipantsLiveData(conversationId).observe(this, Observer { users ->
+        chatViewModel.getGroupParticipantsLiveData(conversationId).observe(viewLifecycleOwner, Observer { users ->
             users?.let {
                 groupNumber = it.size
                 action_bar.setSubTitle(
@@ -1529,7 +1529,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
         })
-        chatViewModel.getGroupBotsLiveData(conversationId).observe(this, Observer { users ->
+        chatViewModel.getGroupBotsLiveData(conversationId).observe(viewLifecycleOwner, Observer { users ->
             if (mention_rv.adapter == null) {
                 mention_rv.adapter = mentionAdapter
                 mention_rv.layoutManager = LinearLayoutManager(context)
@@ -1576,7 +1576,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun renderUser(user: User) {
         chatAdapter.recipient = user
         renderUserInfo(user)
-        chatViewModel.findUserById(user.userId).observe(this, Observer {
+        chatViewModel.findUserById(user.userId).observe(viewLifecycleOwner, Observer {
             it?.let { u ->
                 recipient = u
                 if (u.isBot()) {
