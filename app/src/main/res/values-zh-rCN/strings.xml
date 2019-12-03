@@ -22,6 +22,7 @@
     <string name="amount">金额</string>
     <string name="transfer">转账</string>
     <string name="admin">管理员</string>
+    <string name="owner">群主</string>
     <string name="share">分享</string>
     <string name="done">完成</string>
     <string name="forward">转发</string>
