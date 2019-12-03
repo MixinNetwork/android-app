@@ -130,7 +130,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         dataObserver = Observer { pagedList ->
             if (currentType == R.id.filters_radio_all) {
                 if (pagedList != null && pagedList.isNotEmpty()) {
-                    lastCreatedAt = pagedList[pagedList.loadedCount - 1]?.createdAt
+                    localDataSize = pagedList.size
                     updateHeaderBottomLayout(false)
                     val opponentIds = pagedList.filter {
                         it?.opponentId != null
@@ -143,7 +143,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 }
             } else {
                 if (pagedList != null && pagedList.isNotEmpty()) {
-                    lastCreatedAt = pagedList[pagedList.loadedCount - 1]?.createdAt
+                    localDataSize = pagedList.size
                     adapter.submitList(pagedList)
                     updateHeaderBottomLayout(false)
                 } else {
@@ -292,6 +292,11 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     override fun refreshSnapshots() {
+        val lastCreatedAt = try {
+            adapter.currentList?.last()?.createdAt
+        } catch (e: NoSuchElementException) {
+            null
+        }
         jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId, lastCreatedAt?.getEpochNano()
             ?: nowInUtc().getEpochNano(), LIMIT))
     }
