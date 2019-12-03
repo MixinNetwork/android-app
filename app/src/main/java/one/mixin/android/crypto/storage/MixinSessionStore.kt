@@ -30,7 +30,7 @@ class MixinSessionStore(context: Context) : SessionStore {
         }
     }
 
-    override fun getSubDeviceSessions(name: String): List<Int>? {
+    override fun getSubDeviceSessions(name: String): List<Int> {
         synchronized(FILE_LOCK) {
             return sessionDao.getSubDevice(name)
         }
@@ -73,7 +73,7 @@ class MixinSessionStore(context: Context) : SessionStore {
 
             deleteSession(SignalProtocolAddress(name, SignalProtocol.DEFAULT_DEVICE_ID))
 
-            for (device in devices!!) {
+            for (device in devices) {
                 deleteSession(SignalProtocolAddress(name, device))
             }
         }
@@ -83,7 +83,7 @@ class MixinSessionStore(context: Context) : SessionStore {
         synchronized(FILE_LOCK) {
             val sessions = sessionDao.getSessions(address.name)
             try {
-                for (row in sessions!!) {
+                for (row in sessions) {
                     if (row.device != address.deviceId) {
                         val record = SessionRecord(row.record)
                         record.archiveCurrentState()

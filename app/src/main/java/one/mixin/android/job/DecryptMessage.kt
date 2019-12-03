@@ -223,7 +223,7 @@ class DecryptMessage : Injector() {
             val json = Base64.decode(data.data)
             val plainData = gson.fromJson(String(json), PlainJsonMessagePayload::class.java)
             if (plainData.action == PlainDataAction.RESEND_KEY.name) {
-                if (signalProtocol.containsSession(data.userId, data.sessionId.getDeviceId())) {
+                if (signalProtocol.containsUserSession(data.userId)) {
                     jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.RESEND_KEY))
                 }
             } else if (plainData.action == PlainDataAction.RESEND_MESSAGES.name) {
@@ -633,8 +633,7 @@ class DecryptMessage : Injector() {
             return
         }
         val plainText = gson.toJson(PlainJsonMessagePayload(PlainDataAction.RESEND_MESSAGES.name, messages.reversed()))
-        val encoded = Base64.encodeBytes(plainText.toByteArray())
-        val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, userId, encoded, sessionId))
+        val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, userId, Base64.encodeBytes(plainText.toByteArray()), sessionId))
         jobManager.addJobInBackground(SendPlaintextJob(bm))
         ratchetSenderKeyDao.delete(conversationId, SignalProtocolAddress(userId, sessionId.getDeviceId()).toString())
     }

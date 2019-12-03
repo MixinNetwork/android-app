@@ -147,6 +147,11 @@ class SignalProtocol(ctx: Context) {
         return !senderKeyRecord.isEmpty
     }
 
+    fun containsUserSession(recipientId: String): Boolean {
+        val sessions = sessionDao.getSessions(recipientId)
+        return sessions.isNotEmpty()
+    }
+
     fun containsSession(recipientId: String, deviceId: Int = DEFAULT_DEVICE_ID): Boolean {
         val signalProtocolAddress = SignalProtocolAddress(recipientId, deviceId)
         return signalProtocolStore.containsSession(signalProtocolAddress)
