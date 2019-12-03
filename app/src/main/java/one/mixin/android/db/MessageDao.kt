@@ -333,7 +333,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         "UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId " +
-            " AND created_at <= :createdAt"
+            "AND status IN ('SENT', 'DELIVERED') AND created_at <= :createdAt"
     )
     fun batchMarkRead(conversationId: String, userId: String, createdAt: String)
 
