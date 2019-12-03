@@ -16,5 +16,34 @@
     <one.mixin.android.ui.media.pager.PlayerControlView
         android:id="@+id/player_control_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
+
+    <FrameLayout
+        android:id="@+id/refresh_view"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:background="@drawable/bg_play_control">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_refresh"
+            android:contentDescription="@null" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/pb_view"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:background="@drawable/bg_play_control">
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            style="@style/AppTheme.WhiteAccent"/>
+    </FrameLayout>
 </merge>

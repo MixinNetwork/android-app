@@ -52,7 +52,7 @@
             tools:ignore="HardcodedText" />
     </FrameLayout>
 
-    <one.mixin.android.widget.PlayView
+    <one.mixin.android.widget.PlayView2
         android:id="@+id/play_view"
         android:layout_width="56dp"
         android:layout_height="56dp"

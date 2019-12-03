@@ -11,7 +11,6 @@ import android.widget.TextView
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.DefaultControlDispatcher
-import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.PlaybackPreparer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Timeline
@@ -20,17 +19,20 @@ import com.google.android.exoplayer2.ui.TimeBar
 import com.google.android.exoplayer2.util.Assertions
 import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
-import one.mixin.android.R
-import one.mixin.android.widget.PlayView
 import java.util.Formatter
 import java.util.Locale
 import kotlin.math.min
+import one.mixin.android.R
+import one.mixin.android.widget.PlayView2
+import one.mixin.android.widget.PlayView2.Companion.STATUS_IDLE
+import one.mixin.android.widget.PlayView2.Companion.STATUS_PLAYING
 
-class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLayout(context, attributeSet) {
+class PlayerControlView(context: Context, attributeSet: AttributeSet) :
+    FrameLayout(context, attributeSet) {
 
     private val topLayout: View
     private val bottomLayout: View
-    private val playView: PlayView
+    private val playView: PlayView2
     private val durationView: TextView
     private val positionView: TextView
     private val timeBar: TimeBar
@@ -55,13 +57,20 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
     private var attachedToWindow = false
     private var hideAtMs = C.TIME_UNSET
 
-    private val updateProgressAction = this::updateProgress
-    private val hideAction = this::hide
+    private val updateProgressAction = Runnable {
+        updateProgress()
+    }
+    private val hideAction = Runnable {
+        hide()
+    }
 
     var useTopLayout = true
     var useBottomLayout = true
-
-    var refreshAction: (() -> Unit)? = null
+    var inRefreshState = false
+        set(value) {
+            field = value
+            updateAll()
+        }
 
     var showTimeoutMs = DEFAULT_SHOW_TIMEOUT_MS
     var scrubbing = false
@@ -77,8 +86,10 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
             value?.apply {
                 addListener(componentListener)
             }
-            updateAll(false)
+            updateAll()
         }
+
+    var messageId: String? = null
 
     var progressUpdateListener: ProgressUpdateListener? = null
     var visibilityListener: VisibilityListener? = null
@@ -198,10 +209,8 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
         }
     }
 
-    private fun updateAll(onlyPlayView: Boolean = false) {
+    private fun updateAll() {
         updatePlayView()
-        if (onlyPlayView) return
-
         updateNavigation()
         updateTimeline()
         if (useTopLayout) {
@@ -225,26 +234,21 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
             return
         }
         val player = this.player ?: return
+        playView.isVisible = !inRefreshState
 
         when (player.playbackState) {
             Player.STATE_IDLE -> {
-                if (playView.status == PlayView.STATUS_REFRESH) {
-                    return
-                }
-                playView.status = PlayView.STATUS_IDLE
-            }
-            Player.STATE_BUFFERING -> {
-                playView.status = PlayView.STATUS_LOADING
+                playView.status = STATUS_IDLE
             }
             Player.STATE_READY -> {
                 if (player.playWhenReady) {
-                    playView.status = PlayView.STATUS_PLAYING
+                    playView.status = STATUS_PLAYING
                 } else {
-                    playView.status = PlayView.STATUS_PAUSE
+                    playView.status = STATUS_IDLE
                 }
             }
             Player.STATE_ENDED -> {
-                playView.status = PlayView.STATUS_IDLE
+                playView.status = STATUS_IDLE
             }
         }
     }
@@ -392,17 +396,18 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
         }
     }
 
-    inner class ComponentListener : Player.EventListener, TimeBar.OnScrubListener, OnClickListener, VideoListener {
-        override fun onScrubMove(timeBar: TimeBar?, position: Long) {
+    inner class ComponentListener : Player.EventListener, TimeBar.OnScrubListener, OnClickListener,
+        VideoListener {
+        override fun onScrubMove(timeBar: TimeBar, position: Long) {
             positionView.text = Util.getStringForTime(formatBuilder, formatter, position)
         }
 
-        override fun onScrubStart(timeBar: TimeBar?, position: Long) {
+        override fun onScrubStart(timeBar: TimeBar, position: Long) {
             scrubbing = true
             positionView.text = Util.getStringForTime(formatBuilder, formatter, position)
         }
 
-        override fun onScrubStop(timeBar: TimeBar?, position: Long, canceled: Boolean) {
+        override fun onScrubStop(timeBar: TimeBar, position: Long, canceled: Boolean) {
             scrubbing = false
             if (!canceled) {
                 player?.let { seekToTimeBarPosition(it, position) }
@@ -414,10 +419,6 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
             updateProgress()
         }
 
-        override fun onPlayerError(error: ExoPlaybackException?) {
-            playView.status = PlayView.STATUS_REFRESH
-        }
-
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             updateProgress()
         }
@@ -427,9 +428,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
             updateTimeline()
         }
 
-        override fun onTimelineChanged(
-            timeline: Timeline?, manifest: Any?, @Player.TimelineChangeReason reason: Int
-        ) {
+        override fun onTimelineChanged(timeline: Timeline, reason: Int) {
             updateNavigation()
             updateTimeline()
         }
@@ -439,7 +438,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
 
             if (v == playView) {
                 when (playView.status) {
-                    PlayView.STATUS_IDLE -> {
+                    STATUS_IDLE -> {
                         if (player.playbackState == Player.STATE_IDLE) {
                             playbackPreparer?.preparePlayback()
                         } else if (player.playbackState == Player.STATE_ENDED) {
@@ -447,18 +446,8 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) : FrameLay
                         }
                         controlDispatcher.dispatchSetPlayWhenReady(player, true)
                     }
-                    PlayView.STATUS_LOADING -> {
+                    STATUS_PLAYING -> {
                         controlDispatcher.dispatchSetPlayWhenReady(player, false)
-                    }
-                    PlayView.STATUS_PLAYING -> {
-                        controlDispatcher.dispatchSetPlayWhenReady(player, false)
-                    }
-                    PlayView.STATUS_REFRESH -> {
-                        refreshAction?.invoke()
-                        controlDispatcher.dispatchSetPlayWhenReady(player, true)
-                    }
-                    PlayView.STATUS_PAUSE -> {
-                        controlDispatcher.dispatchSetPlayWhenReady(player, true)
                     }
                 }
             }

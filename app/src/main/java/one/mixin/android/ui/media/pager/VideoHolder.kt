@@ -48,11 +48,13 @@ class VideoHolder(
             val statusBarHeight = context.statusBarHeight()
             itemView.bottom_ll.setPadding(0, statusBarHeight, 0, 0)
         }
+
         itemView.player_view.apply {
+            currentMessageId = messageItem.messageId
             if (needPostTransition) {
                 player = VideoPlayer.player().player
             }
-            setRefreshAction {
+            refreshAction = {
                 messageItem.mediaUrl?.let {
                     if (messageItem.isLive()) {
                         VideoPlayer.player().loadHlsVideo(it, messageItem.messageId)
@@ -130,8 +132,8 @@ class VideoHolder(
 
     private fun maybeLoadVideo(videoStatusCache: LruCache<String, String>, messageItem: MessageItem) {
         val preStatus = videoStatusCache[messageItem.messageId] ?: return
-        if (preStatus != MediaStatus.DONE.name && preStatus != MediaStatus.READ.name
-            && (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name)) {
+        if (preStatus != MediaStatus.DONE.name && preStatus != MediaStatus.READ.name &&
+            (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name)) {
             messageItem.loadVideoOrLive {
                 itemView.player_view.player = VideoPlayer.player().player
                 VideoPlayer.player().start()
@@ -142,7 +144,7 @@ class VideoHolder(
     private fun setSize(context: Context, ratio: Float, view: View) {
         val w = context.realSize().x
         val h = context.realSize().y
-        val ratioParams = view.player_view.contentFrame.layoutParams
+        val ratioParams = view.player_view.video_aspect_ratio.layoutParams
         val previewParams = view.preview_iv.layoutParams
         if (ratio >= 1f) {
             val scaleH = (w / ratio).toInt()
@@ -165,7 +167,7 @@ class VideoHolder(
         }
         previewParams.width = ratioParams.width
         previewParams.height = ratioParams.height
-        view.player_view.contentFrame.layoutParams = ratioParams
+        view.player_view.video_aspect_ratio.layoutParams = ratioParams
         view.preview_iv.layoutParams = previewParams
     }
 }

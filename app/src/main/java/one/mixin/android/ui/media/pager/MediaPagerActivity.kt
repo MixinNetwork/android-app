@@ -42,6 +42,10 @@ import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import java.io.File
+import java.io.FileInputStream
+import javax.inject.Inject
+import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_media_pager.*
 import kotlinx.android.synthetic.main.exo_playback_control_view.view.*
 import kotlinx.android.synthetic.main.item_pager_video_layout.view.*
@@ -94,10 +98,6 @@ import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
-import java.io.File
-import java.io.FileInputStream
-import javax.inject.Inject
-import kotlin.math.min
 
 class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private lateinit var colorDrawable: ColorDrawable
@@ -409,7 +409,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         pipAnimationInProgress = true
         findViewPagerChildByTag { windowView ->
             val videoAspectRatioLayout =
-                windowView.player_view.contentFrame
+                windowView.player_view.video_aspect_ratio
             val rect = PipVideoView.getPipRect(videoAspectRatioLayout.aspectRatio)
             val with = windowView.width
             val scale = rect.width / with
@@ -580,15 +580,48 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         }
     }
 
+    private var inDismissState = false
+    private var controllerVisibleBeforeDismiss = false
+
     override fun onDismissProgress(progress: Float) {
+        if (progress > 0 && !inDismissState) {
+            inDismissState = true
+            val messageItem = adapter.currentList?.get(view_pager.currentItem) ?: return
+            if (messageItem.isLive() || messageItem.isVideo()) {
+                findViewPagerChildByTag {
+                    val playerView = it.getChildAt(0)?.player_view
+                    if (playerView != null) {
+                        controllerVisibleBeforeDismiss = playerView.useController && playerView.player_control_view.isVisible
+                        playerView.hideController()
+                    }
+                }
+            }
+        }
         colorDrawable.alpha = min(ALPHA_MAX, ((1 - progress) * ALPHA_MAX).toInt())
     }
 
     override fun onDismiss() {
+        inDismissState = false
         finishAfterTransition()
     }
 
     override fun onCancel() {
+        if (inDismissState) {
+            inDismissState = false
+            val messageItem = adapter.currentList?.get(view_pager.currentItem) ?: return
+            if (messageItem.isLive() || messageItem.isVideo()) {
+                findViewPagerChildByTag {
+                    val playerView = it.getChildAt(0)?.player_view
+                    if (playerView != null) {
+                        if (controllerVisibleBeforeDismiss) {
+                            playerView.showController(false)
+                        } else {
+                            playerView.hideController()
+                        }
+                    }
+                }
+            }
+        }
         colorDrawable.alpha = ALPHA_MAX
     }
 
@@ -629,8 +662,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         }
 
         override fun onCircleProgressClick(messageItem: MessageItem) {
-            when {
-                messageItem.mediaStatus == MediaStatus.CANCELED.name -> {
+            when (messageItem.mediaStatus) {
+                MediaStatus.CANCELED.name -> {
                     if (Session.getAccountId() == messageItem.userId) {
                         viewModel.retryUpload(messageItem.messageId) {
                             toast(R.string.error_retry_upload)
@@ -639,7 +672,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
                         viewModel.retryDownload(messageItem.messageId)
                     }
                 }
-                messageItem.mediaStatus == MediaStatus.PENDING.name -> {
+                MediaStatus.PENDING.name -> {
                     viewModel.cancel(messageItem.messageId)
                 }
             }

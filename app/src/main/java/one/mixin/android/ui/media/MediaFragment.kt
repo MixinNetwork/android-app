@@ -17,7 +17,6 @@ import one.mixin.android.ui.common.recyclerview.StickyRecyclerHeadersDecorationF
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import org.jetbrains.anko.dip
-import timber.log.Timber
 
 class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     companion object {
