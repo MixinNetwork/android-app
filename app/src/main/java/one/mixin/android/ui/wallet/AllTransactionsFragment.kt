@@ -54,7 +54,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         dataObserver = Observer { pagedList ->
             if (pagedList != null && pagedList.isNotEmpty()) {
                 showEmpty(false)
-                lastCreatedAt = pagedList[pagedList.loadedCount - 1]?.createdAt
+                localDataSize = pagedList.size
                 adapter.submitList(pagedList)
                 val opponentIds = pagedList.filter {
                     it?.opponentId != null
@@ -105,6 +105,11 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     override fun refreshSnapshots() {
+        val lastCreatedAt = try {
+            adapter.currentList?.last()?.createdAt
+        } catch (e: NoSuchElementException) {
+            null
+        }
         jobManager.addJobInBackground(RefreshSnapshotsJob(limit = LIMIT,
             offset = lastCreatedAt?.getEpochNano() ?: nowInUtc().getEpochNano()))
     }
