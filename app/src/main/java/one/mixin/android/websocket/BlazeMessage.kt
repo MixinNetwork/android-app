@@ -19,15 +19,13 @@ data class BlazeMessage(
     }
 
     fun isReceiveMessageAction(): Boolean {
-        return action == CREATE_MESSAGE || action == ACKNOWLEDGE_MESSAGE_RECEIPT || action == CREATE_CALL || action == CREATE_SESSION_MESSAGE
+        return action == CREATE_MESSAGE || action == ACKNOWLEDGE_MESSAGE_RECEIPT || action == CREATE_CALL
     }
 }
 
 const val CREATE_MESSAGE = "CREATE_MESSAGE"
-const val CREATE_SESSION_MESSAGE = "CREATE_SESSION_MESSAGE"
 const val ACKNOWLEDGE_MESSAGE_RECEIPT = "ACKNOWLEDGE_MESSAGE_RECEIPT"
 const val ACKNOWLEDGE_MESSAGE_RECEIPTS = "ACKNOWLEDGE_MESSAGE_RECEIPTS"
-const val ACKNOWLEDGE_SESSION_MESSAGE_RECEIPTS = "ACKNOWLEDGE_SESSION_MESSAGE_RECEIPTS"
 const val LIST_PENDING_MESSAGES = "LIST_PENDING_MESSAGES"
 const val ERROR_ACTION = "ERROR"
 const val COUNT_SIGNAL_KEYS = "COUNT_SIGNAL_KEYS"
@@ -43,14 +41,8 @@ fun createAckParamBlazeMessage(messageId: String, status: MessageStatus) =
 fun createAckListParamBlazeMessage(messages: List<BlazeAckMessage>) =
     BlazeMessage(UUID.randomUUID().toString(), ACKNOWLEDGE_MESSAGE_RECEIPTS, createAckListParam(messages))
 
-fun createAckSessionListParamBlazeMessage(messages: List<BlazeAckMessage>) =
-    BlazeMessage(UUID.randomUUID().toString(), ACKNOWLEDGE_SESSION_MESSAGE_RECEIPTS, createAckListParam(messages))
-
 fun createParamBlazeMessage(param: BlazeMessageParam) =
     BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, param)
-
-fun createParamSessionMessage(param: BlazeMessageParam) =
-        BlazeMessage(UUID.randomUUID().toString(), CREATE_SESSION_MESSAGE, param)
 
 fun createListPendingMessage() =
     BlazeMessage(UUID.randomUUID().toString(), LIST_PENDING_MESSAGES, null)

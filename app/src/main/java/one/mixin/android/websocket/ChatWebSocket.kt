@@ -254,11 +254,6 @@ class ChatWebSocket(
             } else {
                 floodMessageDao.insert(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
             }
-        } else if (blazeMessage.action == CREATE_SESSION_MESSAGE) {
-            if (data.userId == accountId && data.sessionId == sessionId && data.category.isEmpty()) {
-            } else {
-                floodMessageDao.insert(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
-            }
         } else {
             jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(data.messageId, MessageStatus.READ.name)))
         }
@@ -268,20 +263,10 @@ class ChatWebSocket(
         val currentStatus = messageDao.findMessageStatusById(messageId)
         if (currentStatus == MessageStatus.SENDING.name) {
             messageDao.updateMessageStatus(status, messageId)
-            sendSessionAck(status, messageId)
         } else if (currentStatus == MessageStatus.SENT.name && (status == MessageStatus.DELIVERED.name || status == MessageStatus.READ.name)) {
             messageDao.updateMessageStatus(status, messageId)
-            sendSessionAck(status, messageId)
         } else if (currentStatus == MessageStatus.DELIVERED.name && status == MessageStatus.READ.name) {
             messageDao.updateMessageStatus(status, messageId)
-            sendSessionAck(status, messageId)
-        }
-    }
-
-    private fun sendSessionAck(status: String, messageId: String) {
-        val extensionSessionId = Session.getExtensionSessionId()
-        extensionSessionId?.let {
-            jobDao.insert(createAckJob(CREATE_SESSION_MESSAGE, BlazeAckMessage(messageId, status)))
         }
     }
 

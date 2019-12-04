@@ -3,6 +3,7 @@ package one.mixin.android.api.service
 import io.reactivex.Observable
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.api.response.UserSession
 import one.mixin.android.vo.User
 import retrofit2.Call
 import retrofit2.http.Body
@@ -32,4 +33,7 @@ interface UserService {
 
     @POST("users/fetch")
     suspend fun fetchUsers(@Body ids: List<String>): MixinResponse<List<User>>
+
+    @POST("sessions/fetch")
+    suspend fun fetchSessions(@Body ids: List<String>): MixinResponse<List<UserSession>>
 }

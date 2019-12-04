@@ -77,7 +77,7 @@ suspend fun backup(
         return@coroutineScope
     }
     try {
-        db.execSQL("DELETE FROM sent_sender_keys")
+        db.execSQL("UPDATE participant_session SET sent_to_server = NULL")
         db.execSQL("DELETE FROM jobs")
         db.execSQL("DELETE FROM flood_messages")
         db.execSQL("DELETE FROM offsets")

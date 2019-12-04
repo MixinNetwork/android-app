@@ -11,7 +11,7 @@ class Session(
     @ColumnInfo(name = "address")
     val address: String,
     @ColumnInfo(name = "device")
-    val device: Int,
+    var device: Int,
     @ColumnInfo(name = "record", typeAffinity = BLOB)
     val record: ByteArray,
     @ColumnInfo(name = "timestamp")

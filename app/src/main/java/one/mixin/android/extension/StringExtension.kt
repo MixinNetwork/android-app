@@ -359,3 +359,11 @@ fun String.getBotNumber(): String? {
     }
     return null
 }
+
+inline fun String?.getDeviceId(): Int {
+    return if (this == null || this.isEmpty()) {
+        1
+    } else {
+        UUID.fromString(this).hashCode()
+    }
+}

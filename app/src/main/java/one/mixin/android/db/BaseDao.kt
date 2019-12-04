@@ -10,6 +10,9 @@ interface BaseDao<T> {
     suspend fun insertSuspend(vararg obj: T)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertListSuspend(obj: List<T>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(vararg obj: T)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -18,11 +21,17 @@ interface BaseDao<T> {
     @Update(onConflict = OnConflictStrategy.REPLACE)
     fun update(vararg obj: T)
 
+    @Update(onConflict = OnConflictStrategy.REPLACE)
+    fun updateList(obj: List<T>)
+
     @Delete
     fun delete(vararg obj: T)
 
     @Delete
     fun deleteList(obj: List<T>)
+
+    @Delete
+    suspend fun deleteListSuspend(obj: List<T>)
 
     companion object {
         const val ESCAPE_SUFFIX = " ESCAPE '\\'"

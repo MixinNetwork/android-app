@@ -11,12 +11,9 @@ import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
-import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.Participant
 import one.mixin.android.vo.isCall
-import one.mixin.android.vo.isGroup
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isText
@@ -59,23 +56,7 @@ open class SendMessageJob(
         val conversation = conversationDao.findConversationById(message.conversationId)
         if (conversation != null) {
             if (message.isRecall()) {
-                messageDao.recallMessage(recallMessageId!!)
-                messageDao.findMessageById(recallMessageId)?.let { msg ->
-                    RxBus.publish(RecallEvent(msg.id))
-                    messageDao.recallFailedMessage(msg.id)
-                    messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
-                    if (msg.mediaUrl != null) {
-                        File(msg.mediaUrl.getFilePath()).let { file ->
-                            if (file.exists() && file.isFile) {
-                                file.delete()
-                            }
-                        }
-                    }
-                    messageDao.findMessageItemById(message.conversationId, msg.id)?.let { quoteMsg ->
-                        messageDao.updateQuoteContentByQuoteId(message.conversationId, msg.id, GsonHelper.customGson.toJson(quoteMsg))
-                    }
-                    jobManager.cancelJobById(msg.id)
-                }
+                recallMessage()
             } else {
                 messageDao.insert(message)
                 parseHyperlink()
@@ -83,9 +64,29 @@ open class SendMessageJob(
         } else {
             Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
         }
+    }
 
-        if (Session.getExtensionSessionId() != null) {
-            jobManager.addJobInBackground(SendSessionMessageJob(message))
+    private fun recallMessage() {
+        messageDao.recallMessage(recallMessageId!!)
+        messageDao.findMessageById(recallMessageId)?.let { msg ->
+            RxBus.publish(RecallEvent(msg.id))
+            messageDao.recallFailedMessage(msg.id)
+            messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
+            msg.mediaUrl?.getFilePath()?.let {
+                File(it).let { file ->
+                    if (file.exists() && file.isFile) {
+                        file.delete()
+                    }
+                }
+            }
+            messageDao.findMessageItemById(message.conversationId, msg.id)?.let { quoteMsg ->
+                messageDao.updateQuoteContentByQuoteId(
+                    message.conversationId,
+                    msg.id,
+                    GsonHelper.customGson.toJson(quoteMsg)
+                )
+            }
+            jobManager.cancelJobById(msg.id)
         }
     }
 
@@ -123,7 +124,7 @@ open class SendMessageJob(
 
     private fun sendPlainMessage() {
         val conversation = conversationDao.getConversation(message.conversationId) ?: return
-        requestCreateConversation(conversation)
+        checkConversationExist(conversation)
         var content = message.content
         if (message.category == MessageCategory.PLAIN_TEXT.name || message.isCall()) {
             if (message.content != null) {
@@ -147,41 +148,21 @@ open class SendMessageJob(
 
     private fun sendSignalMessage() {
         if (resendData != null) {
-            if (checkSignalSession(resendData.userId)) {
+            if (checkSignalSession(resendData.userId, resendData.sessionId)) {
                 deliver(encryptNormalMessage())
             }
             return
         }
-        if (signalProtocol.isExistSenderKey(message.conversationId, message.userId)) {
-            checkSentSenderKey(message.conversationId)
-        } else {
-            val conversation = conversationDao.getConversation(message.conversationId) ?: return
-            if (conversation.isGroup()) {
-                syncConversation(conversation)
-                sendGroupSenderKey(conversation.conversationId)
-            } else {
-                requestCreateConversation(conversation)
-                sendSenderKey(conversation.conversationId, conversation.ownerId!!)
-            }
+        if (!signalProtocol.isExistSenderKey(message.conversationId, message.userId)) {
+            checkConversation(message.conversationId)
         }
+        checkSessionSenderKey(message.conversationId)
         deliver(encryptNormalMessage())
-    }
-
-    private fun syncConversation(conversation: Conversation) {
-        val response = conversationApi.getConversation(conversation.conversationId).execute().body()
-        if (response != null && response.isSuccess) {
-            response.data?.let { data ->
-                val remote = data.participants.map {
-                    Participant(conversation.conversationId, it.userId, it.role, it.createdAt!!)
-                }
-                participantDao.replaceAll(conversation.conversationId, remote)
-            }
-        }
     }
 
     private fun encryptNormalMessage(): BlazeMessage {
         return if (resendData != null) {
-            signalProtocol.encryptSessionMessage(message, resendData.userId, resendData.messageId)
+            signalProtocol.encryptSessionMessage(message, resendData.userId, resendData.messageId, resendData.sessionId)
         } else {
             signalProtocol.encryptGroupMessage(message)
         }

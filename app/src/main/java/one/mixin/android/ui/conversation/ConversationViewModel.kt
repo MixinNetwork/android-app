@@ -79,6 +79,7 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.QuoteMessageItem
@@ -104,12 +105,11 @@ import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
-import one.mixin.android.websocket.CREATE_SESSION_MESSAGE
+import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.RecallMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
-import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -155,14 +155,14 @@ internal constructor(
     fun sendTextMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
         val category = if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
         val message = createMessage(UUID.randomUUID().toString(), conversationId,
-            sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING)
+            sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING.name)
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
     fun sendReplyMessage(conversationId: String, sender: User, content: String, replyMessage: MessageItem, isPlain: Boolean) {
         val category = if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
         val message = createReplyMessage(UUID.randomUUID().toString(), conversationId,
-            sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING, replyMessage.messageId, Gson().toJson(QuoteMessageItem(replyMessage)))
+            sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING.name, replyMessage.messageId, Gson().toJson(QuoteMessageItem(replyMessage)))
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
@@ -171,7 +171,7 @@ internal constructor(
         val message = createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
             null, attachment.filename, attachment.uri.toString(),
             attachment.mimeType, attachment.fileSize, nowInUtc(), null,
-            null, MediaStatus.PENDING, MessageStatus.SENDING)
+            null, MediaStatus.PENDING, MessageStatus.SENDING.name)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 
@@ -179,7 +179,7 @@ internal constructor(
         val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
         val message = createAudioMessage(UUID.randomUUID().toString(), conversationId, sender.userId, null, category,
             file.length(), Uri.fromFile(file).toString(), duration.toString(), nowInUtc(), waveForm, null, null,
-            MediaStatus.PENDING, MessageStatus.SENDING)
+            MediaStatus.PENDING, MessageStatus.SENDING.name)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 
@@ -193,7 +193,7 @@ internal constructor(
         val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferStickerData).toByteArray())
         transferStickerData.stickerId?.let {
             val message = createStickerMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
-                encoded, transferStickerData.albumId, it, transferStickerData.name, MessageStatus.SENDING, nowInUtc())
+                encoded, transferStickerData.albumId, it, transferStickerData.name, MessageStatus.SENDING.name, nowInUtc())
             jobManager.addJobInBackground(SendMessageJob(message))
         }
     }
@@ -203,7 +203,7 @@ internal constructor(
         val transferContactData = ContactMessagePayload(shareUserId)
         val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferContactData).toByteArray())
         val message = createContactMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
-            category, encoded, shareUserId, MessageStatus.SENDING, nowInUtc())
+            category, encoded, shareUserId, MessageStatus.SENDING.name, nowInUtc())
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
@@ -217,7 +217,7 @@ internal constructor(
             val transferRecallData = RecallMessagePayload(messageItem.messageId)
             val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferRecallData).toByteArray())
             val message = createRecallMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
-                MessageCategory.MESSAGE_RECALL.name, encoded, MessageStatus.SENDING, nowInUtc())
+                MessageCategory.MESSAGE_RECALL.name, encoded, MessageStatus.SENDING.name, nowInUtc())
             jobManager.addJobInBackground(SendMessageJob(message, recallMessageId = messageItem.messageId))
         }
     }
@@ -232,7 +232,7 @@ internal constructor(
         val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferLiveData).toByteArray())
         val message = createLiveMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
             encoded, transferLiveData.width, transferLiveData.height, transferLiveData.url, transferLiveData.thumbUrl,
-            MessageStatus.SENDING, nowInUtc())
+            MessageStatus.SENDING.name, nowInUtc())
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
@@ -263,7 +263,7 @@ internal constructor(
                 val message = createMediaMessage(UUID.randomUUID().toString(),
                     conversationId, sender.userId, category, null, Uri.fromFile(gifFile).toString(),
                     mimeType, gifFile.length(), size.width, size.height, thumbnail, null, null,
-                    nowInUtc(), MediaStatus.PENDING, MessageStatus.SENDING)
+                    nowInUtc(), MediaStatus.PENDING, MessageStatus.SENDING.name)
                 jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 return@map -0
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
@@ -286,7 +286,7 @@ internal constructor(
                 val message = createMediaMessage(UUID.randomUUID().toString(),
                     conversationId, sender.userId, category, null, imageUrl,
                     MimeType.JPEG.toString(), length, size.width, size.height, thumbnail, null, null,
-                    nowInUtc(), MediaStatus.PENDING, MessageStatus.SENDING)
+                    nowInUtc(), MediaStatus.PENDING, MessageStatus.SENDING.name)
                 jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 return@map -0
             }
@@ -306,7 +306,7 @@ internal constructor(
                         jobManager.addJobInBackground(SendAttachmentMessageJob(createMediaMessage(UUID.randomUUID().toString(),
                             conversationId, sender.userId, category, null, message.mediaUrl, message.mediaMimeType!!, message.mediaSize!!,
                             message.mediaWidth, message.mediaHeight, message.thumbImage, null, null, nowInUtc(),
-                            MediaStatus.PENDING, MessageStatus.SENDING
+                            MediaStatus.PENDING, MessageStatus.SENDING.name
                         )))
                     }
                     message.category.endsWith("_LIVE") -> {
@@ -330,7 +330,7 @@ internal constructor(
                             conversationId, sender.userId, category, null, message.name, message.mediaUrl,
                             message.mediaDuration?.toLong(), message.mediaWidth, message.mediaHeight, message.thumbImage,
                             message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null, null,
-                            MediaStatus.PENDING, MessageStatus.SENDING
+                            MediaStatus.PENDING, MessageStatus.SENDING.name
                         )))
                     }
                     message.category.endsWith("_DATA") -> {
@@ -343,7 +343,7 @@ internal constructor(
                             }
                         jobManager.addJobInBackground(SendAttachmentMessageJob(createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
                             category, null, message.name, uri, message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null,
-                            null, MediaStatus.PENDING, MessageStatus.SENDING)))
+                            null, MediaStatus.PENDING, MessageStatus.SENDING.name)))
                     }
                     message.category.endsWith("_STICKER") -> {
                         sendStickerMessage(conversationId, sender, StickerMessagePayload(name = message.name, stickerId = message.stickerId!!), isPlain)
@@ -355,7 +355,7 @@ internal constructor(
                         }
                         jobManager.addJobInBackground(SendAttachmentMessageJob(createAudioMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
                             null, category, message.mediaSize!!, message.mediaUrl, message.mediaDuration!!, nowInUtc(), message.mediaWaveform!!, null,
-                            null, MediaStatus.PENDING, MessageStatus.SENDING)))
+                            null, MediaStatus.PENDING, MessageStatus.SENDING.name)))
                     }
                 }
                 return@let 1
@@ -428,18 +428,14 @@ internal constructor(
 
     fun markMessageRead(conversationId: String, accountId: String) {
         viewModelScope.launch(SINGLE_DB_THREAD) {
-            conversationRepository.getUnreadMessage(conversationId, accountId)?.also { list ->
+            conversationRepository.getUnreadMessage(conversationId, accountId).also { list ->
                 if (list.isNotEmpty()) {
                     notificationManager.cancel(conversationId.hashCode())
                     conversationRepository.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)
                     list.map { createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
                         conversationRepository.insertList(it)
                     }
-                    Session.getExtensionSessionId()?.let {
-                        list.map { createAckJob(CREATE_SESSION_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
-                            conversationRepository.insertList(it)
-                        }
-                    }
+                    createReadSessionMessage(list, conversationId)
                 }
             }
         }
@@ -575,16 +571,20 @@ internal constructor(
                         conversationRepository.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)
                         list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->
                             messages.chunked(100).forEach { list ->
-                                jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(list)))
+                                jobManager.addJobInBackground(SendAckMessageJob(list))
                             }
                         }
-                        Session.getExtensionSessionId()?.let {
-                            list.map { createAckJob(CREATE_SESSION_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
-                                conversationRepository.insertList(it)
-                            }
-                        }
+                        createReadSessionMessage(list, conversationId)
                     }
                 }
+            }
+        }
+    }
+
+    private fun createReadSessionMessage(list: List<MessageMinimal>, conversationId: String) {
+        Session.getExtensionSessionId()?.let {
+            list.map { createAckJob(CREATE_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name), conversationId) }.let {
+                conversationRepository.insertList(it)
             }
         }
     }

@@ -137,11 +137,9 @@ abstract class BaseCaptureFragment : CaptureVisionFragment() {
             return
         }
         if (analysisResult.startsWith(Constants.Scheme.DEVICE)) {
-            val confirmBottomFragment = ConfirmBottomFragment.newInstance(analysisResult)
-            confirmBottomFragment.setCallBack {
+            ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) {
                 activity?.finish()
             }
-            confirmBottomFragment.show(parentFragmentManager, ConfirmBottomFragment.TAG)
         } else {
             pseudoNotificationView.addContent(analysisResult)
             afterSetPseudoView()

@@ -10,6 +10,7 @@ import android.text.TextUtils
 import android.view.View
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_confirm.view.*
@@ -38,13 +39,39 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "ConfirmBottomFragment"
 
-        fun newInstance(url: String) = ConfirmBottomFragment().withArgs {
+        private fun newInstance(
+            url: String,
+            action: (() -> Unit)? = null
+        ) = ConfirmBottomFragment().withArgs {
             putString(AvatarActivity.ARGS_URL, url)
+        }.apply {
+            action?.let {
+                setCallBack(it)
+            }
+        }
+
+        fun show(
+            context: Context,
+            fragmentManager: FragmentManager,
+            url: String,
+            action: (() -> Unit)? = null
+        ) {
+            val uri = Uri.parse(url)
+            val ephemeralId = uri.getQueryParameter("id")
+            if (ephemeralId == null) {
+                context.toast(R.string.desktop_upgrade)
+            } else {
+                newInstance(url, action).showNow(fragmentManager, TAG)
+            }
         }
     }
 
     @Inject
     lateinit var provisioningService: ProvisioningService
+
+    private val url: String by lazy {
+        arguments!!.getString(AvatarActivity.ARGS_URL)!!
+    }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -53,8 +80,7 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         (dialog as BottomSheet).setCustomView(contentView)
     }
 
-    private fun login() = lifecycleScope.launch {
-        val url = arguments!!.getString(AvatarActivity.ARGS_URL)!!
+    private fun authDevice(ephemeralId: String, pubKey: String) = lifecycleScope.launch {
         val response = try {
             withContext(Dispatchers.IO) {
                 provisioningService.provisionCodeAsync().await()
@@ -68,7 +94,7 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         if (response.isSuccess) {
             val success = try {
                 withContext(Dispatchers.IO) {
-                    encryptKey(requireContext(), url, response.data!!.code)
+                    encryptKey(requireContext(), ephemeralId, pubKey, response.data!!.code)
                 }
             } catch (t: Throwable) {
                 context?.toast(R.string.setting_desktop_sigin_failed)
@@ -94,7 +120,16 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         contentView.confirm.setOnClickListener {
             refreshUI(true)
             isCancelable = false
-            login()
+            val uri = Uri.parse(url)
+            val ephemeralId = uri.getQueryParameter("id")
+            if (ephemeralId == null) {
+                context?.toast(R.string.setting_desktop_sigin_failed)
+                dismiss()
+                return@setOnClickListener
+            }
+            sanitizer.parseUrl(url)
+            val publicKeyEncoded = sanitizer.getValue("pub_key")
+            authDevice(ephemeralId, publicKeyEncoded)
         }
         contentView.close.setOnClickListener {
             dismiss()
@@ -114,18 +149,11 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
 
     private suspend fun encryptKey(
         ctx: Context,
-        url: String,
+        ephemeralId: String,
+        publicKeyEncoded: String,
         verificationCode: String
     ): Boolean {
         val account = Session.getAccount() ?: return false
-        val uri = Uri.parse(url)
-        if (uri.scheme != "mixin") {
-            return false
-        }
-        val ephemeralId = uri.getQueryParameter("uuid") ?: return false
-        sanitizer.parseUrl(url)
-        val publicKeyEncoded = sanitizer.getValue("pub_key")
-
         if (TextUtils.isEmpty(ephemeralId) || TextUtils.isEmpty(publicKeyEncoded)) {
             return false
         }

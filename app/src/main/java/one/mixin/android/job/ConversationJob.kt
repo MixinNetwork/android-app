@@ -17,7 +17,6 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.event.ConversationEvent
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
@@ -124,30 +123,15 @@ class ConversationJob(
         if (r != null && r.isSuccess && r.data != null) {
             val cr = r.data!!
             if (type == TYPE_CREATE) {
-                val conversation = ConversationBuilder(
-                    cr.conversationId,
-                    cr.createdAt, ConversationStatus.SUCCESS.ordinal
-                )
-                    .setOwnerId(cr.creatorId)
-                    .setName(cr.name)
-                    .setCategory(cr.category)
-                    .setAnnouncement(cr.announcement)
-                    .setUnseenMessageCount(0)
-                    .setIconUrl(cr.iconUrl)
-                    .setCodeUrl(cr.codeUrl)
-                    .build()
-                conversationDao.insert(conversation)
-
+                insertOrUpdateConversation(cr)
                 val participants = mutableListOf<Participant>()
                 cr.participants.mapTo(participants) {
-                    Participant(
-                        cr.conversationId,
-                        it.userId,
-                        it.role,
-                        cr.createdAt
-                    )
+                    Participant(cr.conversationId, it.userId, it.role, cr.createdAt)
                 }
                 participantDao.insertList(participants)
+                cr.participantSessions?.let {
+                    syncParticipantSession(cr.conversationId, it)
+                }
                 jobManager.addJobInBackground(GenerateAvatarJob(cr.conversationId))
             } else if (type == TYPE_MUTE) {
                 if (cr.category == ConversationCategory.CONTACT.name) {

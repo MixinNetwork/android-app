@@ -31,6 +31,10 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
+    fun provideSessionParticipantDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.participantSessionDao()
+
+    @Singleton
+    @Provides
     @DatabaseCategory(DatabaseCategoryEnum.BASE)
     fun provideConversationDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.conversationDao()
 
@@ -62,10 +66,6 @@ internal class BaseDbModule {
     @Singleton
     @Provides
     fun provideMessageHistoryDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.messageHistoryDao()
-
-    @Singleton
-    @Provides
-    fun provideSentSenderKeyDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.sentSenderKeyDao()
 
     @Singleton
     @Provides

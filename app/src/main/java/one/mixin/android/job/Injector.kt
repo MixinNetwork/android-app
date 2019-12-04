@@ -16,6 +16,7 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.ResendMessageDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
@@ -28,6 +29,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createConversation
@@ -52,6 +54,8 @@ open class Injector : Injectable {
     lateinit var conversationDao: ConversationDao
     @Inject
     lateinit var participantDao: ParticipantDao
+    @Inject
+    lateinit var participantSessionDao: ParticipantSessionDao
     @Inject
     lateinit var snapshotDao: SnapshotDao
     @Inject
@@ -156,6 +160,13 @@ open class Injector : Injectable {
                     participantDao.replaceAll(conversationId, remote)
                     conversationDao.updateConversation(conversationData.conversationId, ownerId, conversationData.category, conversationData.name,
                         conversationData.announcement, conversationData.muteUntil, conversationData.createdAt, status)
+
+                    val sessionParticipants = conversationData.participantSessions?.map {
+                        ParticipantSession(conversationId, it.userId, it.sessionId)
+                    }
+                    sessionParticipants?.let {
+                        participantSessionDao.replaceAll(conversationId, it)
+                    }
                 }
             }
         } catch (e: IOException) {

@@ -11,7 +11,6 @@ import one.mixin.android.worker.RefreshAccountWorker
 import one.mixin.android.worker.RefreshAddressWorker
 import one.mixin.android.worker.RefreshAssetsWorker
 import one.mixin.android.worker.RefreshContactWorker
-import one.mixin.android.worker.RefreshConversationWorker
 import one.mixin.android.worker.RefreshFcmWorker
 import one.mixin.android.worker.RefreshSnapshotsWorker
 import one.mixin.android.worker.RefreshStickerAlbumWorker
@@ -57,11 +56,6 @@ abstract class WorkersModuleBinds {
     @IntoMap
     @WorkerKey(RefreshAddressWorker::class)
     abstract fun bindRefreshAddressWorker(factory: RefreshAddressWorker.Factory): ChildWorkerFactory
-
-    @Binds
-    @IntoMap
-    @WorkerKey(RefreshConversationWorker::class)
-    abstract fun bindRefreshConversationWorker(factory: RefreshConversationWorker.Factory): ChildWorkerFactory
 
     @Binds
     @IntoMap

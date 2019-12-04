@@ -66,7 +66,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 24
+        const val CURRENT_VERSION = 25
     }
 
     object BackUp {
@@ -92,6 +92,11 @@ object Constants {
         const val THEME_CURRENT_ID = "theme_current_id"
         const val THEME_DEFAULT_ID = 0
         const val THEME_NIGHT_ID = 1
+    }
+
+    object Load {
+        const val IS_LOADED = "is_loaded"
+        const val IS_SYNC_SESSION = "is_sync_session"
     }
 
     object ChainId {

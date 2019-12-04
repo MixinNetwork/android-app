@@ -17,6 +17,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_20_21
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_21_22
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_22_23
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_23_24
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_24_25
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -29,6 +30,7 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.ResendMessage
 import one.mixin.android.vo.SentSenderKey
 import one.mixin.android.vo.Snapshot
@@ -43,6 +45,7 @@ import one.mixin.android.vo.User
     (Conversation::class),
     (Message::class),
     (Participant::class),
+    (ParticipantSession::class),
     (Offset::class),
     (Asset::class),
     (AssetsExtra::class),
@@ -63,13 +66,13 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao
     abstract fun userDao(): UserDao
+    abstract fun participantSessionDao(): ParticipantSessionDao
     abstract fun participantDao(): ParticipantDao
     abstract fun offsetDao(): OffsetDao
     abstract fun assetDao(): AssetDao
     abstract fun assetsExtraDao(): AssetsExtraDao
     abstract fun snapshotDao(): SnapshotDao
     abstract fun messageHistoryDao(): MessageHistoryDao
-    abstract fun sentSenderKeyDao(): SentSenderKeyDao
     abstract fun stickerDao(): StickerDao
     abstract fun stickerAlbumDao(): StickerAlbumDao
     abstract fun appDao(): AppDao
@@ -92,7 +95,7 @@ abstract class MixinDatabase : RoomDatabase() {
             synchronized(lock) {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
-                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24)
+                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25)
                         .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)
                         .build()
@@ -109,7 +112,7 @@ abstract class MixinDatabase : RoomDatabase() {
             synchronized(lock) {
                 if (READINSTANCE == null) {
                     READINSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
-                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24)
+                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25)
                         .enableMultiInstanceInvalidation()
                         .build()
                 }
@@ -122,7 +125,7 @@ abstract class MixinDatabase : RoomDatabase() {
                 super.onCreate(db)
                 db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_last_message_update AFTER INSERT ON messages BEGIN UPDATE conversations SET last_message_id = new.id WHERE conversation_id = new.conversation_id; END")
                 db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_last_message_delete AFTER DELETE ON messages BEGIN UPDATE conversations SET last_message_id = (select id from messages where conversation_id = old.conversation_id order by created_at DESC limit 1) WHERE conversation_id = old.conversation_id; END")
-                db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_unseen_message_count_insert AFTER INSERT ON messages BEGIN UPDATE conversations SET unseen_message_count = (SELECT count(m.id) FROM messages m, users u WHERE m.user_id = u.user_id AND u.relationship != 'ME' AND m.status = 'DELIVERED' AND conversation_id = new.conversation_id) where conversation_id = new.conversation_id; END")
+                db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_unseen_count_insert AFTER INSERT ON messages BEGIN UPDATE conversations SET unseen_message_count = (SELECT count(m.id) FROM messages m, users u WHERE m.user_id = u.user_id AND u.relationship != 'ME' AND m.status = 'SENT' AND conversation_id = new.conversation_id) where conversation_id = new.conversation_id; END")
             }
 
             override fun onOpen(db: SupportSQLiteDatabase) {
@@ -130,7 +133,7 @@ abstract class MixinDatabase : RoomDatabase() {
                 supportSQLiteDatabase = db
                 db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_last_message_update AFTER INSERT ON messages BEGIN UPDATE conversations SET last_message_id = new.id WHERE conversation_id = new.conversation_id; END")
                 db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_last_message_delete AFTER DELETE ON messages BEGIN UPDATE conversations SET last_message_id = (select id from messages where conversation_id = old.conversation_id order by created_at DESC limit 1) WHERE conversation_id = old.conversation_id; END")
-                db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_unseen_message_count_insert AFTER INSERT ON messages BEGIN UPDATE conversations SET unseen_message_count = (SELECT count(m.id) FROM messages m, users u WHERE m.user_id = u.user_id AND u.relationship != 'ME' AND m.status = 'DELIVERED' AND conversation_id = new.conversation_id) where conversation_id = new.conversation_id; END")
+                db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_unseen_count_insert AFTER INSERT ON messages BEGIN UPDATE conversations SET unseen_message_count = (SELECT count(m.id) FROM messages m, users u WHERE m.user_id = u.user_id AND u.relationship != 'ME' AND m.status = 'SENT' AND conversation_id = new.conversation_id) where conversation_id = new.conversation_id; END")
             }
         }
     }

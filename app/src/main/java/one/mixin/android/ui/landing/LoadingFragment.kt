@@ -6,8 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
-import com.uber.autodispose.autoDispose
+import androidx.lifecycle.lifecycleScope
 import javax.inject.Inject
+import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Load.IS_LOADED
+import one.mixin.android.Constants.Load.IS_SYNC_SESSION
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -15,16 +18,21 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.Session
 
 class LoadingFragment : BaseFragment() {
 
     companion object {
         const val TAG: String = "LoadingFragment"
-        const val IS_LOADED = "is_loaded"
+
         fun newInstance() = LoadingFragment()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
         inflater.inflate(R.layout.fragment_loading, container, false)
 
     @Inject
@@ -33,33 +41,49 @@ class LoadingFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        requireContext().defaultSharedPreferences.putBoolean(IS_LOADED, false)
         MixinApplication.get().onlining.set(true)
-        load()
+        lifecycleScope.launch {
+            if (!defaultSharedPreferences.getBoolean(IS_LOADED, false)) {
+                load()
+            }
+
+            if (!defaultSharedPreferences.getBoolean(IS_SYNC_SESSION, false)) {
+                syncSession()
+            }
+            MainActivity.show(context!!)
+            activity?.finish()
+        }
     }
 
-    private fun load() {
+    private suspend fun syncSession() {
+        try {
+            Session.deleteExtensionSessionId()
+            loadingViewModel.updateSignalSession()
+            requireContext().defaultSharedPreferences.putBoolean(IS_SYNC_SESSION, true)
+        } catch (e: Exception) {
+            ErrorHandler.handleError(e)
+        }
+    }
+
+    private suspend fun load() {
         if (count > 0) {
             count--
-            loadingViewModel.pushAsyncSignalKeys().autoDispose(stopScope).subscribe({
+            try {
+                val response = loadingViewModel.pushAsyncSignalKeys()
                 when {
-                    it?.isSuccess == true -> {
-                        context!!.defaultSharedPreferences.putBoolean(IS_LOADED, true)
-                        MainActivity.show(context!!)
-                        activity?.finish()
+                    response.isSuccess -> {
+                        requireContext().defaultSharedPreferences.putBoolean(IS_LOADED, true)
                     }
-                    it?.errorCode == ErrorHandler.AUTHENTICATION -> {
+                    response.errorCode == ErrorHandler.AUTHENTICATION -> {
                         MixinApplication.get().closeAndClear()
                         activity?.finish()
                     }
                     else -> load()
                 }
-            }, {
+            } catch (e: Exception) {
+                ErrorHandler.handleError(e)
                 load()
-                ErrorHandler.handleError(it)
-            })
-        } else {
-            activity?.finish()
+            }
         }
     }
 

@@ -72,8 +72,7 @@ class UrlInterpreterActivity : BaseActivity() {
                 }
             }
             DEVICE -> {
-                ConfirmBottomFragment.newInstance(uri.toString())
-                    .showNow(supportFragmentManager, ConfirmBottomFragment.TAG)
+                ConfirmBottomFragment.show(this, supportFragmentManager, uri.toString())
             }
             SEND -> {
                 uri.getQueryParameter("text")?.let {
@@ -104,11 +103,13 @@ fun isMixinUrl(url: String): Boolean {
         val segments = Uri.parse(url).pathSegments
         if (url.startsWith(Scheme.HTTPS_CODES, true) ||
             url.startsWith(Scheme.HTTPS_USERS, true) ||
-            url.startsWith(Scheme.HTTPS_APPS, true)) {
+            url.startsWith(Scheme.HTTPS_APPS, true)
+        ) {
             segments.size >= 2 && segments[1].isUUID()
         } else if (url.startsWith(Scheme.CODES, true) ||
             url.startsWith(Scheme.USERS, true) ||
-            url.startsWith(Scheme.APPS, true)) {
+            url.startsWith(Scheme.APPS, true)
+        ) {
             segments.size >= 1 && segments[0].isUUID()
         } else if (url.startsWith(Scheme.TRANSFER, true)) {
             segments.size >= 1 && segments[0].isUUID()
@@ -129,7 +130,8 @@ inline fun openUrl(url: String, supportFragmentManager: FragmentManager, extraAc
             else -> ""
         }
         if (data.isUUID()) {
-            TransferFragment.newInstance(data, supportSwitchAsset = true).showNow(supportFragmentManager, TransferFragment.TAG)
+            TransferFragment.newInstance(data, supportSwitchAsset = true)
+                .showNow(supportFragmentManager, TransferFragment.TAG)
         }
     } else if (url.startsWith(Scheme.SEND, true)) {
         Uri.parse(url).getQueryParameter("text")?.let {
@@ -139,8 +141,7 @@ inline fun openUrl(url: String, supportFragmentManager: FragmentManager, extraAc
             )
         }
     } else if (url.startsWith(Scheme.DEVICE, true)) {
-        ConfirmBottomFragment.newInstance(url)
-            .showNow(supportFragmentManager, ConfirmBottomFragment.TAG)
+        ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, url)
     } else {
         if (isMixinUrl(url)) {
             LinkBottomSheetDialogFragment
@@ -162,7 +163,14 @@ fun openWebBottomSheet(
     supportFragmentManager: FragmentManager,
     onDismiss: (() -> Unit)? = null
 ) {
-    val dialog = WebBottomSheetDialogFragment.newInstance(url, conversationId, appId, appName, appAvatar, appCapabilities)
+    val dialog = WebBottomSheetDialogFragment.newInstance(
+        url,
+        conversationId,
+        appId,
+        appName,
+        appAvatar,
+        appCapabilities
+    )
     onDismiss?.let { dismiss ->
         dialog.dialog?.setOnDismissListener {
             dismiss.invoke()

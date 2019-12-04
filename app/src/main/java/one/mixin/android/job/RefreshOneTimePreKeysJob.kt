@@ -3,6 +3,7 @@ package one.mixin.android.job
 import android.util.Log
 import com.birbit.android.jobqueue.Params
 import java.util.UUID
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.SignalKeyRequest
 import one.mixin.android.crypto.IdentityKeyUtil
@@ -30,11 +31,11 @@ class RefreshOneTimePreKeysJob : MixinJob(Params(PRIORITY_UI_HIGH).requireNetwor
         }
     }
 
-    private fun refresh() {
+    private fun refresh() = runBlocking {
         val signalKeysRequest = generateKeys()
         Log.w(TAG, "Registering new pre keys...")
-        val response = signalKeyService.pushSignalKeys(signalKeysRequest).execute().body()
-        if (response != null && response.isSuccess) {
+        val response = signalKeyService.pushSignalKeys(signalKeysRequest).await()
+        if (response.isSuccess) {
         }
     }
 

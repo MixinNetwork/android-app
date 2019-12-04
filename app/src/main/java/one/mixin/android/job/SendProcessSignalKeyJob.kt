@@ -20,14 +20,15 @@ class SendProcessSignalKeyJob(
 
     override fun onRun() {
         if (action == ProcessSignalKeyAction.RESEND_KEY) {
-            val result = redirectSendSenderKey(data.conversationId, data.userId)
+            val result = sendSenderKey(data.conversationId, data.userId, data.sessionId, true)
             if (!result) {
                 sendNoKeyMessage(data.conversationId, data.userId)
             }
         } else if (action == ProcessSignalKeyAction.REMOVE_PARTICIPANT) {
-            val accountId = Session.getAccountId()
-            appDatabase.clearParticipant(data.conversationId, participantId!!)
-            signalProtocol.clearSenderKey(data.conversationId, accountId!!)
+            Session.getAccountId()?.let {
+                appDatabase.clearParticipant(data.conversationId, participantId!!)
+                signalProtocol.clearSenderKey(data.conversationId, it)
+            }
         } else if (action == ProcessSignalKeyAction.ADD_PARTICIPANT) {
             sendSenderKey(data.conversationId, participantId!!)
         }

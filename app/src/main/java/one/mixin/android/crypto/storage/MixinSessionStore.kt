@@ -7,7 +7,6 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.vo.Session
-import one.mixin.android.db.MixinDatabase
 import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.protocol.CiphertextMessage
 import org.whispersystems.libsignal.state.SessionRecord
@@ -16,7 +15,6 @@ import org.whispersystems.libsignal.state.SessionStore
 class MixinSessionStore(context: Context) : SessionStore {
 
     private val sessionDao: SessionDao = SignalDatabase.getDatabase(context).sessionDao()
-    private val sentSenderKeyDao = MixinDatabase.getDatabase(context).sentSenderKeyDao()
 
     override fun loadSession(address: SignalProtocolAddress): SessionRecord {
         synchronized(FILE_LOCK) {
@@ -32,7 +30,7 @@ class MixinSessionStore(context: Context) : SessionStore {
         }
     }
 
-    override fun getSubDeviceSessions(name: String): List<Int>? {
+    override fun getSubDeviceSessions(name: String): List<Int> {
         synchronized(FILE_LOCK) {
             return sessionDao.getSubDevice(name)
         }
@@ -46,7 +44,6 @@ class MixinSessionStore(context: Context) : SessionStore {
                 return
             }
             if (!session.record.contentEquals(record.serialize())) {
-                sentSenderKeyDao.deleteByUserId(address.name)
                 sessionDao.insert(Session(address.name, address.deviceId, record.serialize(), System.currentTimeMillis()))
             }
         }
@@ -76,7 +73,7 @@ class MixinSessionStore(context: Context) : SessionStore {
 
             deleteSession(SignalProtocolAddress(name, SignalProtocol.DEFAULT_DEVICE_ID))
 
-            for (device in devices!!) {
+            for (device in devices) {
                 deleteSession(SignalProtocolAddress(name, device))
             }
         }
@@ -86,7 +83,7 @@ class MixinSessionStore(context: Context) : SessionStore {
         synchronized(FILE_LOCK) {
             val sessions = sessionDao.getSessions(address.name)
             try {
-                for (row in sessions!!) {
+                for (row in sessions) {
                     if (row.device != address.deviceId) {
                         val record = SessionRecord(row.record)
                         record.archiveCurrentState()

@@ -19,6 +19,7 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
@@ -33,6 +34,7 @@ import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SearchMessageItem
 
 @Singleton
@@ -52,6 +54,7 @@ internal constructor(
     @DatabaseCategory(DatabaseCategoryEnum.READ)
     private val readConversationDao: ConversationDao,
     private val participantDao: ParticipantDao,
+    private val participantSessionDao: ParticipantSessionDao,
     private val jobDao: JobDao,
     private val conversationService: ConversationService
 ) {
@@ -143,7 +146,7 @@ internal constructor(
 
     suspend fun getConversationIdIfExistsSync(recipientId: String) = readConversationDao.getConversationIdIfExistsSync(recipientId)
 
-    fun getUnreadMessage(conversationId: String, accountId: String): List<MessageMinimal>? {
+    fun getUnreadMessage(conversationId: String, accountId: String): List<MessageMinimal> {
         return readMessageDao.getUnreadMessage(conversationId, accountId)
     }
 
@@ -282,4 +285,8 @@ internal constructor(
     fun getFileMessages(conversationId: String) = messageDao.getFileMessages(conversationId)
 
     suspend fun getSortMessagesByIds(ids: List<String>) = messageDao.getSortMessagesByIds(ids)
+
+    suspend fun getAllParticipants() = participantDao.getAllParticipants()
+
+    suspend fun insertParticipantSession(ps: List<ParticipantSession>) = participantSessionDao.insertListSuspend(ps)
 }

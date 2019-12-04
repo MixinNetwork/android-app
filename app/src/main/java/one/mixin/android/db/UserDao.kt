@@ -62,7 +62,7 @@ interface UserDao : BaseDao<User> {
     fun updatePhone(id: String, phone: String)
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT * FROM users u INNER JOIN conversations c ON c.owner_id = u.user_id WHERE c.category = 'CONTACT' AND u.app_id IS NULL")
+    @Query("SELECT u.* FROM users u INNER JOIN conversations c ON c.owner_id = u.user_id WHERE c.category = 'CONTACT' AND u.app_id IS NULL")
     fun findContactUsers(): LiveData<List<User>>
 
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND' AND app_id IS NULL")

@@ -33,7 +33,7 @@ import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.db.ParticipantDao
-import one.mixin.android.db.SentSenderKeyDao
+import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
@@ -97,6 +97,9 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
     lateinit var participantDao: ParticipantDao
     @Inject
     @Transient
+    lateinit var participantSessionDao: ParticipantSessionDao
+    @Inject
+    @Transient
     lateinit var offsetDao: OffsetDao
     @Inject
     @Transient
@@ -104,9 +107,6 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
     @Inject
     @Transient
     lateinit var snapshotDao: SnapshotDao
-    @Inject
-    @Transient
-    lateinit var sentSenderKeyDao: SentSenderKeyDao
     @Inject
     @Transient
     lateinit var chatWebSocket: ChatWebSocket

@@ -2,7 +2,7 @@ package one.mixin.android.websocket
 
 import com.google.gson.annotations.SerializedName
 
-data class SystemConversationData(
+data class SystemConversationMessagePayload(
     @SerializedName("action")
     val action: String,
     @SerializedName("participant_id")
@@ -14,5 +14,3 @@ data class SystemConversationData(
 )
 
 enum class SystemConversationAction { JOIN, EXIT, ADD, REMOVE, CREATE, UPDATE, ROLE }
-
-enum class SystemExtensionSessionAction { ADD_SESSION, REMOVE_SESSION }

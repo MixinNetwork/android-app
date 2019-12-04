@@ -2,19 +2,18 @@ package one.mixin.android.crypto
 
 import android.content.Context
 import android.util.Log
-import java.util.UUID
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.storage.MixinSenderKeyStore
 import one.mixin.android.crypto.storage.SignalProtocolStoreImpl
+import one.mixin.android.extension.getDeviceId
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.createParamBlazeMessage
-import one.mixin.android.websocket.createParamSessionMessage
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.InvalidMessageException
 import org.whispersystems.libsignal.NoSessionException
@@ -95,37 +94,30 @@ class SignalProtocol(ctx: Context) {
         return builder.create(senderKeyName)
     }
 
-    fun encryptSenderKey(conversationId: String, recipientId: String): EncryptResult {
+    fun encryptSenderKey(conversationId: String, recipientId: String, deviceId: Int = DEFAULT_DEVICE_ID): EncryptResult {
         val senderKeyDistributionMessage = getSenderKeyDistribution(conversationId, Session.getAccountId()!!)
         return try {
-            val cipherMessage = encryptSession(senderKeyDistributionMessage.serialize(), recipientId)
+            val cipherMessage = encryptSession(senderKeyDistributionMessage.serialize(), recipientId, deviceId)
             val compose = ComposeMessageData(cipherMessage.type, cipherMessage.serialize())
             val cipher = encodeMessageData(compose)
-            EncryptResult(cipher, senderKeyDistributionMessage.id, false)
+            EncryptResult(cipher, false)
         } catch (e: UntrustedIdentityException) {
-            val remoteAddress = SignalProtocolAddress(recipientId, DEFAULT_DEVICE_ID)
+            val remoteAddress = SignalProtocolAddress(recipientId, deviceId)
             signalProtocolStore.removeIdentity(remoteAddress)
             signalProtocolStore.deleteSession(remoteAddress)
-            EncryptResult(null, null, true)
+            EncryptResult(null, true)
         }
     }
 
-    private fun encryptSession(content: ByteArray, destination: String, deviceId: Int = DEFAULT_DEVICE_ID): CiphertextMessage {
+    private fun encryptSession(content: ByteArray, destination: String, deviceId: Int): CiphertextMessage {
         val remoteAddress = SignalProtocolAddress(destination, deviceId)
         val sessionCipher = SessionCipher(signalProtocolStore, remoteAddress)
         return sessionCipher.encrypt(content)
     }
 
-    fun decrypt(
-        groupId: String,
-        senderId: String,
-        dataType: Int,
-        cipherText: ByteArray,
-        category: String,
-        callback: DecryptionCallback,
-        deviceId: Int = DEFAULT_DEVICE_ID
-    ) {
-        val address = SignalProtocolAddress(senderId, deviceId)
+    fun decrypt(groupId: String, senderId: String, dataType: Int, cipherText: ByteArray, category: String, sessionId: String?, callback: DecryptionCallback) {
+
+        val address = SignalProtocolAddress(senderId, sessionId.getDeviceId())
         val sessionCipher = SessionCipher(signalProtocolStore, address)
         if (category == MessageCategory.SIGNAL_KEY.name) {
             if (dataType == PREKEY_TYPE) {
@@ -155,6 +147,11 @@ class SignalProtocol(ctx: Context) {
         return !senderKeyRecord.isEmpty
     }
 
+    fun containsUserSession(recipientId: String): Boolean {
+        val sessions = sessionDao.getSessions(recipientId)
+        return sessions.isNotEmpty()
+    }
+
     fun containsSession(recipientId: String, deviceId: Int = DEFAULT_DEVICE_ID): Boolean {
         val signalProtocolAddress = SignalProtocolAddress(recipientId, deviceId)
         return signalProtocolStore.containsSession(signalProtocolAddress)
@@ -169,8 +166,12 @@ class SignalProtocol(ctx: Context) {
         sessionDao.deleteSession(userId)
     }
 
-    fun processSession(userId: String, preKeyBundle: PreKeyBundle, deviceId: Int = DEFAULT_DEVICE_ID) {
-        val signalProtocolAddress = SignalProtocolAddress(userId, deviceId)
+    fun processSession(userId: String, preKeyBundle: PreKeyBundle, deviceId: Int = 0) {
+        var dId = preKeyBundle.deviceId
+        if (deviceId != 0) {
+           dId = deviceId
+        }
+        val signalProtocolAddress = SignalProtocolAddress(userId, dId)
         val sessionBuilder = SessionBuilder(signalProtocolStore, signalProtocolAddress)
         try {
             sessionBuilder.process(preKeyBundle)
@@ -180,25 +181,8 @@ class SignalProtocol(ctx: Context) {
         }
     }
 
-    fun encryptTransferSessionMessage(message: Message, sessionId: String, recipientId: String): BlazeMessage {
-        val deviceId = UUID.fromString(sessionId).hashCode()
-        val cipher = encryptSession(message.content!!.toByteArray(), recipientId, deviceId)
-        val data = encodeMessageData(ComposeMessageData(cipher.type, cipher.serialize()))
-        val blazeParam = BlazeMessageParam(
-            message.conversationId,
-            recipientId,
-            UUID.randomUUID().toString(),
-            message.category,
-            data,
-            quote_message_id = message.quoteMessageId,
-            primitive_id = message.userId,
-            primitive_message_id = message.id,
-            session_id = sessionId)
-        return createParamSessionMessage(blazeParam)
-    }
-
-    fun encryptSessionMessage(message: Message, recipientId: String, resendMessageId: String? = null): BlazeMessage {
-        val cipher = encryptSession(message.content!!.toByteArray(), recipientId)
+    fun encryptSessionMessage(message: Message, recipientId: String, resendMessageId: String? = null, sessionId: String? = null): BlazeMessage {
+        val cipher = encryptSession(message.content!!.toByteArray(), recipientId, sessionId.getDeviceId())
         val data = encodeMessageData(ComposeMessageData(cipher.type, cipher.serialize(), resendMessageId))
         val blazeParam = BlazeMessageParam(
             message.conversationId,
@@ -206,11 +190,12 @@ class SignalProtocol(ctx: Context) {
             message.id,
             message.category,
             data,
-            quote_message_id = message.quoteMessageId)
+            quote_message_id = message.quoteMessageId,
+            session_id = sessionId)
         return createParamBlazeMessage(blazeParam)
     }
 
-    fun encryptGroupMessage(message: Message, recipientId: String? = null, resendMessageId: String? = null): BlazeMessage {
+    fun encryptGroupMessage(message: Message): BlazeMessage {
         val address = SignalProtocolAddress(message.userId, DEFAULT_DEVICE_ID)
         val senderKeyName = SenderKeyName(message.conversationId, address)
         val groupCipher = GroupCipher(senderKeyStore, senderKeyName)
@@ -221,10 +206,10 @@ class SignalProtocol(ctx: Context) {
             Log.e(TAG, "NoSessionException", e)
         }
 
-        val data = encodeMessageData(ComposeMessageData(SENDERKEY_TYPE, cipher, resendMessageId))
+        val data = encodeMessageData(ComposeMessageData(SENDERKEY_TYPE, cipher))
         val blazeParam = BlazeMessageParam(
             message.conversationId,
-            recipientId,
+            null,
             message.id,
             message.category,
             data,
@@ -232,22 +217,13 @@ class SignalProtocol(ctx: Context) {
         return createParamBlazeMessage(blazeParam)
     }
 
-    private fun processGroupSession(
-        groupId: String,
-        address: SignalProtocolAddress,
-        senderKeyDM: SenderKeyDistributionMessage
-    ) {
+    private fun processGroupSession(groupId: String, address: SignalProtocolAddress, senderKeyDM: SenderKeyDistributionMessage) {
         val builder = GroupSessionBuilder(senderKeyStore)
         val senderKeyName = SenderKeyName(groupId, address)
         builder.process(senderKeyName, senderKeyDM)
     }
 
-    private fun decryptGroupMessage(
-        groupId: String,
-        address: SignalProtocolAddress,
-        cipherText: ByteArray,
-        callback: DecryptionCallback
-    ): ByteArray {
+    private fun decryptGroupMessage(groupId: String, address: SignalProtocolAddress, cipherText: ByteArray, callback: DecryptionCallback): ByteArray {
         val senderKeyName = SenderKeyName(groupId, address)
         val groupCipher = GroupCipher(senderKeyStore, senderKeyName)
         return groupCipher.decrypt(cipherText, callback)
