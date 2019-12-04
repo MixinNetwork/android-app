@@ -3,7 +3,6 @@ package one.mixin.android.ui
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
@@ -14,6 +13,7 @@ import android.util.Base64
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
@@ -35,9 +35,9 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.EditBottomSheetDialogFragment
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
@@ -47,11 +47,10 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
-import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.noButton
 
-class ProfileBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
     companion object {
         const val TAG = "ProfileBottomSheetDialogFragment"
 
@@ -70,11 +69,15 @@ class ProfileBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private var menuListLayout: ViewGroup? = null
 
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_profile_bottom_sheet_dialog, null)
-        (dialog as BottomSheet).setCustomView(contentView)
+    override fun getLayoutId() = R.layout.fragment_profile_bottom_sheet_dialog
+
+    override fun getPeekHeight(contentView: View, behavior: BottomSheetBehavior<*>): Int {
+        contentView.measure(
+            View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        behavior.skipCollapsed = true
+        return contentView.measuredHeight
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -158,7 +161,7 @@ class ProfileBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         menuListLayout?.removeAllViews()
-        list.createMenuLayout(requireContext(), true).let { layout ->
+        list.createMenuLayout(requireContext()).let { layout ->
             menuListLayout = layout
             contentView.scroll_content.addView(layout, contentView.scroll_content.childCount - 1)
         }

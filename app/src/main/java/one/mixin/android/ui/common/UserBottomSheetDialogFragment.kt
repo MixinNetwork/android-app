@@ -1,7 +1,6 @@
 package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.ClipData
 import android.graphics.drawable.Drawable
 import android.os.Bundle
@@ -16,10 +15,10 @@ import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -44,6 +43,7 @@ import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.MenuStyle
+import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuGroup
@@ -66,13 +66,12 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.showVerifiedOrBot
-import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.margin
 import org.threeten.bp.Instant
 
-class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "UserBottomSheetDialogFragment"
@@ -98,12 +97,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     var showUserTransactionAction: (() -> Unit)? = null
 
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_user_bottom_sheet, null)
-        (dialog as BottomSheet).setCustomView(contentView)
-    }
+    override fun getLayoutId() = R.layout.fragment_user_bottom_sheet
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -134,6 +128,10 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 initMenu(u)
             }
             user = u
+
+            contentView.post {
+                behavior?.peekHeight = contentView.scroll_content.height - (menuListLayout?.height ?: 0)
+            }
         })
         contentView.transfer_fl.setOnClickListener {
             TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
@@ -328,26 +326,20 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         })
 
         menuListLayout?.removeAllViews()
-        list.createMenuLayout(requireContext(), contentView.more_iv.rotationX == 180f).let { layout ->
+        contentView.scroll_content.removeView(menuListLayout)
+        list.createMenuLayout(requireContext()).let { layout ->
             menuListLayout = layout
             contentView.scroll_content.addView(layout)
             layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 bottomMargin = requireContext().dpToPx(30f)
             }
             contentView.more_fl.setOnClickListener {
-                contentView.scroll_view.updateLayoutParams<ViewGroup.LayoutParams> {
-                    height = if (height == ViewGroup.LayoutParams.WRAP_CONTENT) {
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    } else {
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    }
-                }
-                layout.isVisible = !layout.isVisible
-                contentView.more_iv.animate().rotationX(if (layout.isVisible) {
-                    180f
+                if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
+                    behavior?.state = BottomSheetBehavior.STATE_EXPANDED
                 } else {
-                    0f
-                }).start()
+                    behavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+                    contentView.scroll_view.smoothScrollTo(0, 0)
+                }
             }
         }
     }
@@ -561,5 +553,13 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (relationship == UserRelationship.FRIEND.name)
                 RelationshipAction.ADD.name else RelationshipAction.REMOVE.name, user.fullName)
         bottomViewModel.updateRelationship(request)
+    }
+
+    override fun onStateChanged(bottomSheet: View, newState: Int) {
+        when (newState) {
+            BottomSheetBehavior.STATE_HIDDEN -> dismiss()
+            BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.animate().rotationX(0f).start()
+            BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.animate().rotationX(180f).start()
+        }
     }
 }

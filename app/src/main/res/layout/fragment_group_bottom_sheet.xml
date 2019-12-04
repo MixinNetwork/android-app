@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<one.mixin.android.widget.BottomSheetRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -11,10 +11,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_below="@id/title"
         android:scrollbars="none">
 
@@ -22,7 +22,6 @@
             android:id="@+id/scroll_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:animateLayoutChanges="true"
             android:orientation="vertical">
 
             <one.mixin.android.widget.AvatarView
@@ -62,7 +61,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="28dp"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="@dimen/margin16"
+                android:layout_marginBottom="40dp"
                 android:background="@drawable/bg_round_gray_14dp"
                 android:drawablePadding="4dp"
                 android:gravity="center"
@@ -88,7 +87,7 @@
                 android:id="@+id/ops_ll"
                 android:layout_width="match_parent"
                 android:layout_height="70dp"
-                android:layout_marginBottom="@dimen/margin20"
+                android:layout_marginBottom="40dp"
                 android:baselineAligned="false"
                 android:orientation="horizontal">
 
@@ -139,5 +138,5 @@
                 </FrameLayout>
             </LinearLayout>
         </LinearLayout>
-    </ScrollView>
-</one.mixin.android.widget.BottomSheetRelativeLayout>
+    </androidx.core.widget.NestedScrollView>
+</RelativeLayout>
