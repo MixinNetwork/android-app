@@ -101,19 +101,21 @@ class GroupInfoAdapter : HeaderFilterAdapter<User>() {
             itemView.normal.text = user.fullName
             itemView.bot_iv.visibility = if (user.appId != null) VISIBLE else GONE
             itemView.verify_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
-            participantsMap?.let { participantMap ->
-                val p = participantMap[user.userId]
-                p?.let { participant ->
-                    when {
-                        participant.role == ParticipantRole.OWNER.name -> {
+            participantsMap?.let {
+                val p = it[user.userId]
+                p?.let {partition ->
+                    when (partition.role) {
+                        ParticipantRole.OWNER.name -> {
+                            itemView.desc.setText(R.string.owner)
                             itemView.desc.isVisible = true
-                            itemView.desc.text = itemView.context.getString(R.string.owner)
                         }
-                        participant.role == ParticipantRole.ADMIN.name -> {
+                        ParticipantRole.ADMIN.name -> {
+                            itemView.desc.setText(R.string.admin)
                             itemView.desc.isVisible = true
-                            itemView.desc.text = itemView.context.getString(R.string.admin)
                         }
-                        else -> itemView.desc.isVisible = false
+                        else -> {
+                            itemView.desc.isVisible = false
+                        }
                     }
                 }
             }

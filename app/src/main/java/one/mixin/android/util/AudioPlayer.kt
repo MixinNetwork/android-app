@@ -71,7 +71,7 @@ class AudioPlayer private constructor() {
         }
 
         fun isEnd(): Boolean {
-            return instance == null || instance?.status == STATUS_ERROR || instance?.status == STATUS_PAUSE
+            return instance == null || instance?.status != STATUS_PLAY
         }
 
         fun switchAudioStreamType(useFrontSpeaker: Boolean) {
