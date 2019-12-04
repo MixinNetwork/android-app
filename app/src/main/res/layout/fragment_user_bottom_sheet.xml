@@ -93,6 +93,7 @@
                 android:gravity="center"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
+                android:visibility="gone"
                 android:text="@string/add_contact"
                 android:textColor="@color/wallet_blue" />
 
@@ -112,10 +113,12 @@
                 android:textIsSelectable="true" />
 
             <LinearLayout
+                android:id="@+id/op_ll"
                 android:layout_width="match_parent"
                 android:layout_height="70dp"
                 android:layout_marginBottom="40dp"
                 android:baselineAligned="false"
+                android:visibility="gone"
                 android:orientation="horizontal">
 
                 <FrameLayout

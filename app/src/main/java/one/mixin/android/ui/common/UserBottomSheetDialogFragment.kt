@@ -15,6 +15,7 @@ import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -386,6 +387,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             true
         }
         user.showVerifiedOrBot(contentView.verified_iv, contentView.bot_iv)
+        contentView.op_ll.isVisible = true
         if (user.isBot()) {
             contentView.open_fl.visibility = VISIBLE
             contentView.transfer_fl.visibility = GONE
