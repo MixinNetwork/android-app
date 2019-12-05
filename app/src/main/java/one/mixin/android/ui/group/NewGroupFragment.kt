@@ -113,6 +113,14 @@ class NewGroupFragment : BaseFragment() {
     }
 
     private fun createGroup() = lifecycleScope.launch {
+        if (dialog == null) {
+            dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message,
+                title = R.string.group_creating).apply {
+                setCancelable(false)
+            }
+        }
+        dialog?.show()
+
         val groupIcon = if (resultUri == null) {
             null
         } else {
@@ -129,15 +137,6 @@ class NewGroupFragment : BaseFragment() {
         liveData.observe(this@NewGroupFragment, Observer { c ->
             if (c != null) {
                 when {
-                    c.status == ConversationStatus.START.ordinal -> {
-                        if (dialog == null) {
-                            dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message,
-                                title = R.string.group_creating).apply {
-                                setCancelable(false)
-                            }
-                        }
-                        dialog?.show()
-                    }
                     c.status == ConversationStatus.SUCCESS.ordinal -> {
                         liveData.removeObservers(this@NewGroupFragment)
                         name_desc_et.hideKeyboard()
