@@ -1,6 +1,8 @@
 package one.mixin.android.ui.common
 
 import android.os.Bundle
+import android.view.KeyEvent.ACTION_DOWN
+import android.view.KeyEvent.KEYCODE_BACK
 import android.view.View
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
@@ -9,13 +11,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.uber.autodispose.android.lifecycle.scope
-import javax.inject.Inject
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.BottomSheet
+import javax.inject.Inject
 
 abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
 
@@ -31,6 +33,15 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
         return BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = true)
             .create()
+            .apply {
+                setOnKeyListener { _, keyCode, event ->
+                    if (keyCode == KEYCODE_BACK && event.action == ACTION_DOWN) {
+                        this@MixinBottomSheetDialogFragment.dismiss()
+                        return@setOnKeyListener true
+                    }
+                    return@setOnKeyListener false
+                }
+            }
     }
 
     override fun onStart() {
