@@ -33,7 +33,6 @@ import okio.Buffer
 import okio.ByteString
 import okio.GzipSink
 import okio.GzipSource
-import okio.Okio
 import okio.Source
 import okio.buffer
 import one.mixin.android.util.GzipException

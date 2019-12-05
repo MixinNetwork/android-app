@@ -9,7 +9,6 @@ import okhttp3.Call
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okio.Okio
 import okio.buffer
 import okio.sink
 import one.mixin.android.MixinApplication

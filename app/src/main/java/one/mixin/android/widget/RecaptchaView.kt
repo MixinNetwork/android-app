@@ -7,7 +7,6 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import java.nio.charset.Charset
-import okio.Okio
 import okio.buffer
 import okio.source
 import one.mixin.android.BuildConfig
