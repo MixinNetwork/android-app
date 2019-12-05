@@ -10,6 +10,9 @@ import com.google.firebase.iid.FirebaseInstanceId
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import dagger.Module
 import dagger.Provides
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -81,6 +84,7 @@ internal class AppModule {
     @Provides
     fun provideOkHttp(resolver: ContentResolver): OkHttpClient {
         val builder = OkHttpClient.Builder()
+        builder.addInterceptor(HostSelectionInterceptor.get())
         if (BuildConfig.DEBUG) {
             val logging = HttpLoggingInterceptor()
             logging.level = HttpLoggingInterceptor.Level.BODY
@@ -101,7 +105,6 @@ internal class AppModule {
                 return Header("Authorization", "Bearer ${Session.signToken(Session.getAccount(), request)}")
             }
         })
-        builder.addInterceptor(HostSelectionInterceptor())
         builder.addInterceptor { chain ->
             val request = chain.request().newBuilder()
                 .addHeader("User-Agent", API_UA)
@@ -114,7 +117,11 @@ internal class AppModule {
                 } catch (e: Exception) {
                     if (e.message?.contains("502") == true) {
                         throw ServerErrorException(502)
-                    } else throw e
+                    } else throw e.apply {
+                        if (this is SocketTimeoutException || this is UnknownHostException || this is ConnectException) {
+                            HostSelectionInterceptor.get().switch()
+                        }
+                    }
                 }
 
                 if (MixinApplication.get().onlining.get()) {
