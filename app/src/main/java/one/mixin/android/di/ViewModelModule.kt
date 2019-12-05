@@ -21,6 +21,7 @@ import one.mixin.android.ui.setting.SettingBlockedViewModel
 import one.mixin.android.ui.setting.SettingConversationViewModel
 import one.mixin.android.ui.setting.SettingStorageViewModel
 import one.mixin.android.ui.setting.SettingViewModel
+import one.mixin.android.ui.url.UrlInterpreterViewModel
 import one.mixin.android.ui.wallet.PinCheckViewModel
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.viewmodel.ViewModelFactory
@@ -117,6 +118,11 @@ internal abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(SharedMediaViewModel::class)
     internal abstract fun bindSharedViewModel(sharedMediaViewModel: SharedMediaViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(UrlInterpreterViewModel::class)
+    internal abstract fun bindUrlInterperterModel(urlInterpreterViewModel: UrlInterpreterViewModel): ViewModel
 
     @Binds
     internal abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory

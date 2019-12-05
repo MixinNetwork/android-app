@@ -137,9 +137,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
             } else {
                 segments[0]
             }
-
-            var isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
-
             if (!userId.isUUID()) {
                 context?.toast(getUserOrAppNotFoundTip(isAppScheme))
                 dismiss()
@@ -155,19 +152,22 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                     user
                 }.observeOn(AndroidSchedulers.mainThread()).autoDispose(scopeProvider).subscribe({
                     it.notNullWithElse({ u ->
-                        if (isOpenApp) {
+                        val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
+                        if (isOpenApp && u.appId != null) {
                             lifecycleScope.launch {
-                                u.appId?.let { appId ->
-                                    linkViewModel.findAppById(appId)?.let { app ->
-                                        WebBottomSheetDialogFragment.newInstance(
-                                            app.homeUri,
-                                            null,
-                                            app.appId,
-                                            app.name,
-                                            app.icon_url,
-                                            app.capabilities
-                                        ).showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
-                                    }
+                                val app = linkViewModel.findAppById(u.appId!!)
+                                if (app != null) {
+                                    WebBottomSheetDialogFragment.newInstance(
+                                        app.homeUri,
+                                        null,
+                                        app.appId,
+                                        app.name,
+                                        app.icon_url,
+                                        app.capabilities
+                                    ).showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                                } else {
+                                    UserBottomSheetDialogFragment.newInstance(u)
+                                        .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                                 }
                             }
                         } else {
