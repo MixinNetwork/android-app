@@ -15,7 +15,9 @@ import com.uber.autodispose.android.lifecycle.scope
 import javax.inject.Inject
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
+import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.util.SystemUIManager
 
 abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
@@ -56,6 +58,16 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
             behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             dialog.window?.setGravity(Gravity.BOTTOM)
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            SystemUIManager.lightUI(
+                window,
+                !requireContext().booleanFromAttribute(R.attr.flag_night)
+            )
         }
     }
 

@@ -18,12 +18,14 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.autoDispose
+import java.io.File
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.addFragment
@@ -60,7 +62,6 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.margin
 import org.threeten.bp.Instant
-import java.io.File
 
 class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
 
@@ -121,7 +122,9 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             dismiss()
         }
         contentView.send_fl.setOnClickListener {
-            ConversationActivity.show(requireContext(), conversationId)
+            if (conversationId != MixinApplication.conversationId) {
+                ConversationActivity.show(requireContext(), conversationId)
+            }
             dismiss()
         }
         contentView.detail_tv.movementMethod = LinkMovementMethod()
@@ -307,9 +310,11 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 contentView.more_fl.setOnClickListener {
                     if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
                         behavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                        contentView.more_iv.rotationX = 180f
                     } else {
                         behavior?.state = BottomSheetBehavior.STATE_COLLAPSED
                         contentView.scroll_view.smoothScrollTo(0, 0)
+                        contentView.more_iv.rotationX = 0f
                     }
                 }
             }
@@ -347,7 +352,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         )
         var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
         var whichItem = 0
-        AlertDialog.Builder(requireContext(),R.style.MixinAlertDialogTheme)
+        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
@@ -422,8 +427,8 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     override fun onStateChanged(bottomSheet: View, newState: Int) {
         when (newState) {
             BottomSheetBehavior.STATE_HIDDEN -> dismiss()
-            BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.animate().rotationX(0f).start()
-            BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.animate().rotationX(180f).start()
+            BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.rotationX = 0f
+            BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.rotationX = 180f
         }
     }
 

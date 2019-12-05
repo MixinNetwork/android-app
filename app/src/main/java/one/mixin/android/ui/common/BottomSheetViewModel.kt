@@ -264,4 +264,7 @@ class BottomSheetViewModel @Inject internal constructor(
     fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
         userRepository.upsert(user)
     }
+
+    fun findContactByConversationId(conversationId: String): User? =
+        userRepository.findContactByConversationId(conversationId)
 }

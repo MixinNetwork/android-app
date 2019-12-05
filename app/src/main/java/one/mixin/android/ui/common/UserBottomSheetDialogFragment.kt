@@ -23,12 +23,14 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
+import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.Constants.ARGS_USER
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
@@ -71,7 +73,6 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.margin
 import org.threeten.bp.Instant
-import java.util.concurrent.TimeUnit
 
 class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
 
@@ -138,13 +139,18 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         contentView.transfer_fl.setOnClickListener {
             TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
                 .showNow(parentFragmentManager, TransferFragment.TAG)
+            dismiss()
         }
         contentView.send_fl.setOnClickListener {
             if (user.userId == Session.getAccountId()) {
                 toast(R.string.cant_talk_self)
                 return@setOnClickListener
             }
-            context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
+            context?.let { ctx ->
+                if (conversationId != MixinApplication.conversationId) {
+                    ConversationActivity.show(ctx, null, user.userId)
+                }
+            }
             dismiss()
         }
         contentView.detail_tv.movementMethod = LinkMovementMethod()
@@ -338,9 +344,11 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             contentView.more_fl.setOnClickListener {
                 if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
                     behavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                    contentView.more_iv.rotationX = 180f
                 } else {
                     behavior?.state = BottomSheetBehavior.STATE_COLLAPSED
                     contentView.scroll_view.smoothScrollTo(0, 0)
+                    contentView.more_iv.rotationX = 0f
                 }
             }
         }
@@ -563,8 +571,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     override fun onStateChanged(bottomSheet: View, newState: Int) {
         when (newState) {
             BottomSheetBehavior.STATE_HIDDEN -> dismiss()
-            BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.animate().rotationX(0f).start()
-            BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.animate().rotationX(180f).start()
+            BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.rotationX = 0f
+            BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.rotationX = 180f
         }
     }
 }
