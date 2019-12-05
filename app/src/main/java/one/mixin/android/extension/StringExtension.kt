@@ -35,6 +35,7 @@ import okio.GzipSink
 import okio.GzipSource
 import okio.Okio
 import okio.Source
+import okio.buffer
 import one.mixin.android.util.GzipException
 import org.threeten.bp.Instant
 
@@ -79,7 +80,7 @@ fun String.getEpochNano(): Long {
 @Throws(IOException::class)
 fun String.gzip(): ByteString {
     val result = Buffer()
-    val sink = Okio.buffer(GzipSink(result))
+    val sink = GzipSink(result).buffer()
     sink.use {
         sink.write(toByteArray())
     }
@@ -90,7 +91,7 @@ fun String.gzip(): ByteString {
 fun ByteString.ungzip(): String {
     val buffer = Buffer().write(this)
     val gzip = GzipSource(buffer as Source)
-    return Okio.buffer(gzip).readUtf8()
+    return gzip.buffer().readUtf8()
 }
 
 inline fun String.md5(): String {

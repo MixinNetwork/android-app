@@ -10,6 +10,8 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.Okio
+import okio.buffer
+import okio.sink
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
@@ -138,7 +140,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
             messageDao.updateMediaStatus(MediaStatus.EXPIRED.name, message.id)
             return true
         } else if (response.isSuccessful && !isCancel && response.body() != null) {
-            val sink = Okio.buffer(Okio.sink(destination))
+            val sink = destination.sink().buffer()
             sink.writeAll(response.body()!!.source())
             sink.close()
             if (message.category.endsWith("_IMAGE")) {
