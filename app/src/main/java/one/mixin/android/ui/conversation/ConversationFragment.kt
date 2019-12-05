@@ -464,7 +464,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onUrlClick(url: String) {
-                openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
+                openUrlWithExtraWeb(url, conversationId, parentFragmentManager, lifecycleScope, {
+                    chatViewModel.suspendFindUserById(it)
+                }, {
+                    chatViewModel.findAppById(it)
+                })
             }
 
             override fun onMentionClick(name: String) {
@@ -501,11 +505,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 } else {
                     lifecycleScope.launch {
                         val app = chatViewModel.findAppById(userId)
-                        openUrlWithExtraWeb(action, conversationId, parentFragmentManager,
-                            app?.appId,
-                            app?.name,
-                            app?.icon_url,
-                            app?.capabilities)
+                        openUrlWithExtraWeb(action, conversationId, parentFragmentManager, lifecycleScope, {
+                            chatViewModel.suspendFindUserById(it)
+                        }, {
+                            chatViewModel.findAppById(it)
+                        },
+                        app?.appId,
+                        app?.name,
+                        app?.icon_url,
+                        app?.capabilities)
                     }
                 }
             }

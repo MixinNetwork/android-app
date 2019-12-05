@@ -36,6 +36,7 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
@@ -49,6 +50,7 @@ import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
+import kotlinx.coroutines.CoroutineScope
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
@@ -77,6 +79,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.WebControlView
 import org.jetbrains.anko.doAsync
@@ -221,7 +224,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 .addOnSuccessListener { barcodes ->
                                     val result = barcodes.firstOrNull()?.rawValue
                                     if (result != null) {
-                                        openUrl(result, parentFragmentManager) {
+                                        openUrl(result, parentFragmentManager, lifecycleScope, {
+                                            bottomViewModel.suspendFindUserById(it)
+                                        }, {
+                                            bottomViewModel.findAppById(it)
+                                        }) {
                                             QrScanBottomSheetDialogFragment.newInstance(result)
                                                 .showNow(
                                                     parentFragmentManager,
@@ -298,7 +305,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         setStatusBarColor(it)
                     }
                 }
-            }, conversationId, this.parentFragmentManager)
+            }, conversationId, this.parentFragmentManager, lifecycleScope, {
+                bottomViewModel.suspendFindUserById(it)
+            }, {
+                bottomViewModel.findAppById(it)
+            })
 
         contentView.chat_web_view.webChromeClient = object : WebChromeClient() {
             override fun onReceivedTitle(view: WebView?, title: String?) {
@@ -611,7 +622,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     class WebViewClientImpl(
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
-        private val fragmentManager: FragmentManager
+        private val fragmentManager: FragmentManager,
+        private val lifecycleScope: CoroutineScope,
+        private val findUserAction: suspend(String) -> User?,
+        private val findAppAction: suspend(String) -> App?
     ) : WebViewClient() {
 
         override fun onPageFinished(view: WebView?, url: String?) {
@@ -629,7 +643,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 return super.shouldOverrideUrlLoading(view, url)
             }
             if (isMixinUrl(url)) {
-                openUrl(url, fragmentManager, {})
+                openUrl(url, fragmentManager, lifecycleScope, {
+                    findUserAction(it)
+                }, {
+                    findAppAction(it)
+                }, {})
                 return true
             }
             val extraHeaders = HashMap<String, String>()

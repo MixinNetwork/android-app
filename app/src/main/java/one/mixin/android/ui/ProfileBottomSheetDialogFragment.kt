@@ -13,6 +13,7 @@ import android.util.Base64
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
@@ -93,7 +94,11 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
             detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
             detail_tv.setAutoLinkOnClickListener { _, url ->
-                openUrlWithExtraWeb(url, null, parentFragmentManager)
+                openUrlWithExtraWeb(url, null, parentFragmentManager, lifecycleScope, {
+                    bottomViewModel.suspendFindUserById(it)
+                }, {
+                    bottomViewModel.findAppById(it)
+                })
                 dismiss()
             }
             created_tv.text = getString(R.string.profile_join_in, account.created_at.dayTime())

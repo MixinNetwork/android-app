@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import androidx.lifecycle.lifecycleScope
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -51,7 +52,11 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.qr_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.qr_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.qr_tv.setAutoLinkOnClickListener { _, url ->
-            openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
+            openUrlWithExtraWeb(url, conversationId, parentFragmentManager, lifecycleScope, {
+                bottomViewModel.suspendFindUserById(it)
+            }, {
+                bottomViewModel.findAppById(it)
+            })
             dismiss()
         }
         contentView.qr_tv.text = text

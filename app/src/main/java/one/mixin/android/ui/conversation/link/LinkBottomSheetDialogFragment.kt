@@ -60,6 +60,7 @@ import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragme
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.url.getUserOrAppNotFoundTip
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.util.ErrorHandler
@@ -124,8 +125,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
             )
         }
     }
-
-    private fun getUserOrAppNotFoundTip(isApp: Boolean) = if (isApp) R.string.error_app_not_found else R.string.error_user_not_found
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)

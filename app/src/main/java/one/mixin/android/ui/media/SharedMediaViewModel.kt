@@ -17,6 +17,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
@@ -27,6 +28,7 @@ import org.threeten.bp.ZonedDateTime
 
 class SharedMediaViewModel @Inject constructor(
     val conversationRepository: ConversationRepository,
+    val userRepository: UserRepository,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
 
@@ -146,4 +148,8 @@ class SharedMediaViewModel @Inject constructor(
             conversationRepository.updateMediaStatus(MediaStatus.CANCELED.name, id)
         })
     }
+
+    suspend fun findAppById(id: String) = userRepository.findAppById(id)
+
+    suspend fun suspendFindUserById(id: String) = userRepository.suspendFindUserById(id)
 }

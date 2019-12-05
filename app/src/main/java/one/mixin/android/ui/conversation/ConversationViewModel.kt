@@ -489,6 +489,8 @@ internal constructor(
 
     suspend fun findAppById(id: String) = userRepository.findAppById(id)
 
+    suspend fun suspendFindUserById(id: String) = userRepository.suspendFindUserById(id)
+
     fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
 
     fun addStickerAsync(stickerAddRequest: StickerAddRequest) = accountRepository.addStickerAsync(stickerAddRequest)

@@ -427,7 +427,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     .addOnSuccessListener { barcodes ->
                         url = barcodes.firstOrNull()?.rawValue
                         if (url != null) {
-                            openUrl(url!!, supportFragmentManager) {
+                            openUrl(url!!, supportFragmentManager, lifecycleScope, {
+                                viewModel.suspendFindUserById(it)
+                            }, {
+                                viewModel.findAppById(it)
+                            }) {
                                 QrScanBottomSheetDialogFragment.newInstance(url!!)
                                     .showNow(
                                         supportFragmentManager,
@@ -470,7 +474,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             imageView.isDrawingCacheEnabled = false
         }
         if (url != null) {
-            openUrl(url, supportFragmentManager) {
+            openUrl(url, supportFragmentManager, lifecycleScope, {
+                viewModel.suspendFindUserById(it)
+            }, {
+                viewModel.findAppById(it)
+            }) {
                 QrScanBottomSheetDialogFragment.newInstance(url)
                     .showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
             }

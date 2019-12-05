@@ -156,7 +156,11 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.detail_tv.setAutoLinkOnClickListener { _, url ->
-            openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
+            openUrlWithExtraWeb(url, conversationId, parentFragmentManager, lifecycleScope, {
+                bottomViewModel.suspendFindUserById(it)
+            }, {
+                bottomViewModel.findAppById(it)
+            })
             dismiss()
         }
 
