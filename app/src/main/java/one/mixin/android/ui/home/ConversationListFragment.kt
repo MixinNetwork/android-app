@@ -78,7 +78,7 @@ class ConversationListFragment : LinkFragment() {
         ViewModelProvider(this, viewModelFactory).get(ConversationListViewModel::class.java)
     }
 
-    private val messageAdapter by lazy { MessageAdapter(message_rv) }
+    private val messageAdapter by lazy { MessageAdapter() }
 
     private var distance = 0
     private var shadowVisible = true
@@ -289,7 +289,7 @@ class ConversationListFragment : LinkFragment() {
         bottomSheet.show()
     }
 
-    class MessageAdapter(private val rv: RecyclerView) : RecyclerView.Adapter<MessageHolder>() {
+    class MessageAdapter() : RecyclerView.Adapter<MessageHolder>() {
 
         var conversations: List<ConversationItem>? = null
 
@@ -322,9 +322,7 @@ class ConversationListFragment : LinkFragment() {
                     }
                 })
                 conversations = newConversations
-                val recyclerViewState = rv.layoutManager?.onSaveInstanceState()
                 diffResult.dispatchUpdatesTo(this)
-                rv.layoutManager?.onRestoreInstanceState(recyclerViewState)
             }
         }
 

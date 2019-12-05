@@ -23,7 +23,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import org.jetbrains.anko.textColorResource
 
-class WalletAssetAdapter(private val rv: RecyclerView, private val slideShow: Boolean) : HeaderFooterAdapter<AssetItem>() {
+class WalletAssetAdapter(private val slideShow: Boolean) : HeaderFooterAdapter<AssetItem>() {
 
     fun setAssetList(newAssets: List<AssetItem>) {
         if (data == null) {
@@ -48,13 +48,11 @@ class WalletAssetAdapter(private val rv: RecyclerView, private val slideShow: Bo
                 }
             })
             data = newAssets
-            val recyclerViewState = rv.layoutManager?.onSaveInstanceState()
             if (headerView != null) {
                 diffResult.dispatchUpdatesTo(HeaderListUpdateCallback(this))
             } else {
                 diffResult.dispatchUpdatesTo(this)
             }
-            rv.layoutManager?.onRestoreInstanceState(recyclerViewState)
         }
     }
 

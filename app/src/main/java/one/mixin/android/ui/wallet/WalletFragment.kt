@@ -63,7 +63,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     private val walletViewModel: WalletViewModel by viewModels { viewModelFactory }
 
     private var assets: List<AssetItem> = listOf()
-    private val assetsAdapter by lazy { WalletAssetAdapter(coins_rv, false) }
+    private val assetsAdapter by lazy { WalletAssetAdapter(false) }
     private lateinit var header: View
     private lateinit var footer: View
 

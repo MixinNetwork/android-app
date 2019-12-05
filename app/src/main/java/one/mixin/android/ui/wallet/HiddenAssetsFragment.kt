@@ -41,7 +41,7 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     private val walletViewModel: WalletViewModel by viewModels { viewModelFactory }
 
     private var assets: List<AssetItem> = listOf()
-    private val assetsAdapter by lazy { WalletAssetAdapter(assets_rv, true) }
+    private val assetsAdapter by lazy { WalletAssetAdapter(true) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_hidden_assets, container, false)
