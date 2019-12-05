@@ -417,7 +417,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.chat_web_view.stopLoading()
             contentView.chat_web_view.webViewClient = null
             contentView.chat_web_view.webChromeClient = null
-            dismiss()
         }
 
         val extraHeaders = HashMap<String, String>()
