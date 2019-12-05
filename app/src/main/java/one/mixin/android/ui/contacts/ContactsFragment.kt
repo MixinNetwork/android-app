@@ -50,7 +50,7 @@ class ContactsFragment : BaseFragment() {
     private val contactsViewModel: ContactViewModel by viewModels { viewModelFactory }
 
     private val contactAdapter: ContactsAdapter by lazy {
-        ContactsAdapter(context!!, Collections.emptyList(), 0)
+        ContactsAdapter(requireContext(), Collections.emptyList(), 0)
     }
 
     companion object {
@@ -81,7 +81,7 @@ class ContactsFragment : BaseFragment() {
         }
         contactAdapter.setContactListener(mContactListener)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title_view.right_animator.setOnClickListener { SettingActivity.show(context!!) }
+        title_view.right_animator.setOnClickListener { SettingActivity.show(requireContext()) }
 
         if (hasContactPermission() &&
             !defaultSharedPreferences.getBoolean(PREF_DELETE_MOBILE_CONTACTS, false)) {
@@ -120,10 +120,10 @@ class ContactsFragment : BaseFragment() {
     }
 
     private fun hasContactPermission() =
-        context!!.checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+        requireContext().checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
 
     private fun fetchContacts() {
-        RxContacts.fetch(context!!)
+        RxContacts.fetch(requireContext())
             .toSortedList(Contact::compareTo)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(Schedulers.io())
@@ -153,7 +153,7 @@ class ContactsFragment : BaseFragment() {
         }
 
         override fun onNewGroup() {
-            GroupActivity.show(context!!)
+            GroupActivity.show(requireContext())
         }
 
         override fun onAddContact() {

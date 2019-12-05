@@ -116,7 +116,7 @@ class NewGroupFragment : BaseFragment() {
         val groupIcon = if (resultUri == null) {
             null
         } else {
-            val bitmap = MediaStore.Images.Media.getBitmap(context!!.contentResolver, resultUri)
+            val bitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, resultUri)
             Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP)
         }
         val conversation = withContext(Dispatchers.IO) {
@@ -143,7 +143,7 @@ class NewGroupFragment : BaseFragment() {
                         name_desc_et.hideKeyboard()
                         dialog?.dismiss()
                         startActivity(Intent(context, MainActivity::class.java))
-                        ConversationActivity.show(context!!, conversation.conversationId, null)
+                        ConversationActivity.show(requireContext(), conversation.conversationId, null)
                     }
                     c.status == ConversationStatus.FAILURE.ordinal -> {
                         name_desc_et.hideKeyboard()

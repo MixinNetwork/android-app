@@ -179,8 +179,8 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 }
             }
             val options = UCrop.Options()
-            options.setToolbarColor(ContextCompat.getColor(context!!, R.color.black))
-            options.setStatusBarColor(ContextCompat.getColor(context!!, R.color.black))
+            options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
+            options.setStatusBarColor(ContextCompat.getColor(requireContext(), R.color.black))
             options.setToolbarWidgetColor(Color.WHITE)
             options.setHideBottomControls(true)
             UCrop.of(selectedImageUri, imageUri)
@@ -192,7 +192,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         if (resultCode == Activity.RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
             if (data != null && context != null) {
                 val resultUri = UCrop.getOutput(data)
-                val bitmap = MediaStore.Images.Media.getBitmap(context!!.contentResolver, resultUri)
+                val bitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, resultUri)
                 update(
                     Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP),
                     TYPE_PHOTO

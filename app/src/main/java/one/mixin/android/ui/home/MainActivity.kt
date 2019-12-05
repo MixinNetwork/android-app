@@ -223,7 +223,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun delayShowModifyMobile() = lifecycleScope.launch {
         delay(2000)
-        androidx.appcompat.app.AlertDialog.Builder(this@MainActivity)
+        androidx.appcompat.app.AlertDialog.Builder(this@MainActivity, R.style.MixinAlertDialogTheme)
             .setTitle(getString(R.string.setting_emergency_change_mobile))
             .setPositiveButton(R.string.change) { dialog, _ ->
                 supportFragmentManager.inTransaction {

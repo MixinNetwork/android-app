@@ -198,7 +198,7 @@
     <string name="profile_my_title">我的</string>
     <string name="profile_photo">个人头像</string>
     <string name="profile_phone">修改手机号</string>
-    <string name="profile_modify_name">修改姓名</string>
+    <string name="profile_modify_name">修改昵称</string>
     <string name="profile_modify_name_hint">请输入你的名字</string>
     <string name="info">此对话中的消息使用端对端加密。点击了解更多。</string>
     <string name="error_user_not_found">找不到这个用户</string>

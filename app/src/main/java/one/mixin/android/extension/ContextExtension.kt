@@ -306,12 +306,12 @@ fun Fragment.openCamera(output: Uri) {
         intent.putExtra(MediaStore.EXTRA_OUTPUT, output)
     } else {
         val file = File(output.path)
-        val photoUri = FileProvider.getUriForFile(context!!.applicationContext,
+        val photoUri = FileProvider.getUriForFile(requireContext().applicationContext,
             BuildConfig.APPLICATION_ID + ".provider", file)
         intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
     }
     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    if (intent.resolveActivity(context!!.packageManager) != null) {
+    if (intent.resolveActivity(requireContext().packageManager) != null) {
         startActivityForResult(intent, REQUEST_CAMERA)
     } else {
         context?.toast(R.string.error_no_camera)

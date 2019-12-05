@@ -112,7 +112,7 @@ class SettingFragment : Fragment() {
             }
         }
         var newSelectItem = selectItem
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setTitle(R.string.language)
             .setSingleChoiceItems(choice, selectItem) { _, which ->
                 newSelectItem = which

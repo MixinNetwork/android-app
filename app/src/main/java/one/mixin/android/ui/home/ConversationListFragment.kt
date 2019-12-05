@@ -26,9 +26,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.io.File
-import javax.inject.Inject
-import kotlin.math.min
 import kotlinx.android.synthetic.main.fragment_conversation_list.*
 import kotlinx.android.synthetic.main.item_list_conversation.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
@@ -64,6 +61,9 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
+import java.io.File
+import javax.inject.Inject
+import kotlin.math.min
 
 class ConversationListFragment : LinkFragment() {
 
@@ -189,13 +189,13 @@ class ConversationListFragment : LinkFragment() {
             override fun click(position: Int, conversation: ConversationItem) {
                 if (conversation.isGroup() && (conversation.status == ConversationStatus.START.ordinal ||
                         conversation.status == ConversationStatus.FAILURE.ordinal)) {
-                    if (!context!!.networkConnected()) {
+                    if (!requireContext().networkConnected()) {
                         context?.toast(R.string.error_network)
                         return
                     }
                     doAsync { messagesViewModel.createGroupConversation(conversation.conversationId) }
                 } else {
-                    ConversationActivity.show(context!!, conversationId = conversation.conversationId)
+                    ConversationActivity.show(requireContext(), conversationId = conversation.conversationId)
                 }
             }
         }
@@ -253,7 +253,7 @@ class ConversationListFragment : LinkFragment() {
             bottomSheet.dismiss()
         }
         view.delete_tv.setOnClickListener {
-            AlertDialog.Builder(requireContext())
+            AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
                 .setMessage(getString(R.string.conversation_delete_tip))
                 .setNegativeButton(R.string.cancel) { dialog, _ ->
                     dialog.dismiss()
@@ -600,7 +600,7 @@ class ConversationListFragment : LinkFragment() {
             getString(R.string.contact_mute_1year))
         var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
         var whichItem = 0
-        AlertDialog.Builder(context!!)
+        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()

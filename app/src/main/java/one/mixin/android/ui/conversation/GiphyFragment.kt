@@ -39,7 +39,7 @@ class GiphyFragment : BaseFragment() {
     }
 
     private val padding: Int by lazy {
-        context!!.dip(StickerFragment.PADDING)
+        requireContext().dip(StickerFragment.PADDING)
     }
     private val giphyAdapter: GiphyAdapter by lazy { GiphyAdapter() }
     @Inject
@@ -69,7 +69,7 @@ class GiphyFragment : BaseFragment() {
         val foot = layoutInflater.inflate(R.layout.view_giphy_foot, sticker_rv, false)
         giphyAdapter.footerView = foot
         sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-        giphyAdapter.size = (context!!.realSize().x - (COLUMN + 1) * padding) / COLUMN
+        giphyAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
         sticker_rv.adapter = giphyAdapter
         giphyAdapter.setOnGiphyListener(object : GiphyListener {
             override fun onItemClick(pos: Int, image: Image, previewUrl: String) {

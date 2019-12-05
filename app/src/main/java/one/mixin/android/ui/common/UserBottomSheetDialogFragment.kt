@@ -23,7 +23,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +35,7 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.localTime
@@ -71,6 +71,7 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.margin
 import org.threeten.bp.Instant
+import java.util.concurrent.TimeUnit
 
 class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
 
@@ -221,7 +222,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     title = getString(R.string.contact_other_share)
                     action = {
                         ForwardActivity.show(
-                            context!!,
+                            requireContext(),
                             arrayListOf(
                                 ForwardMessage(
                                     ForwardCategory.CONTACT.name,
@@ -467,6 +468,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             return
         }
         val editText = EditText(requireContext())
+        editText.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+        editText.setHintTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
         editText.hint = getString(R.string.profile_modify_name_hint)
         editText.setText(name)
         if (name != null) {
@@ -475,9 +478,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         val frameLayout = FrameLayout(requireContext())
         frameLayout.addView(editText)
         val params = editText.layoutParams as FrameLayout.LayoutParams
-        params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)
+        params.margin = requireContext().dimen(R.dimen.activity_horizontal_margin)
         editText.layoutParams = params
-        val nameDialog = AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
+        val nameDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setTitle(R.string.profile_modify_name)
             .setView(frameLayout)
             .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
@@ -511,7 +514,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             getString(R.string.contact_mute_1year))
         var duration = MUTE_8_HOURS
         var whichItem = 0
-        AlertDialog.Builder(context!!)
+        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()

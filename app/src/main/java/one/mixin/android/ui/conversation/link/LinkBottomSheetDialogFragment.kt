@@ -25,7 +25,6 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -65,6 +64,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
+import javax.inject.Inject
 
 class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
@@ -97,9 +97,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
         val behavior = params.behavior
 
         if (behavior != null && behavior is BottomSheetBehavior<*>) {
-            behavior.peekHeight = context!!.dpToPx(300f)
+            behavior.peekHeight = requireContext().dpToPx(300f)
             behavior.addBottomSheetCallback(mBottomSheetBehaviorCallback)
-            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, context!!.dpToPx(300f))
+            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, requireContext().dpToPx(300f))
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
     }

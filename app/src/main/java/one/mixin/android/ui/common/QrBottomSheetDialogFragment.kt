@@ -86,8 +86,8 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
 
                 val name = getName(user)
-                if (context!!.isQRCodeFileExists(name)) {
-                    contentView.qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath(name).absolutePath))
+                if (requireContext().isQRCodeFileExists(name)) {
+                    contentView.qr.setImageBitmap(BitmapFactory.decodeFile(requireContext().getQRCodePath(name).absolutePath))
                 } else {
                     contentView.qr.post {
                         Observable.create<Bitmap> { e ->
@@ -99,7 +99,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             }
                             val b = code.generateQRCode(contentView.qr.width)
                             if (b != null) {
-                                b.saveQRCode(context!!, name)
+                                b.saveQRCode(requireContext(), name)
                                 e.onNext(b)
                             }
                         }.subscribeOn(Schedulers.io())

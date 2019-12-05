@@ -38,13 +38,13 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        viewModel.initPreferences(context!!)
+        viewModel.initPreferences(requireContext())
             .observe(this@SettingConversationFragment, Observer {
                 it?.let {
                     render(it)
                 }
             })
-        viewModel.initGroupPreferences(context!!)
+        viewModel.initGroupPreferences(requireContext())
             .observe(this@SettingConversationFragment, Observer {
                 it?.let {
                     renderGroup(it)

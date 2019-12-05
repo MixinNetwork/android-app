@@ -18,7 +18,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.autoDispose
-import java.io.File
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +27,7 @@ import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
@@ -60,6 +60,7 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.margin
 import org.threeten.bp.Instant
+import java.io.File
 
 class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
 
@@ -346,7 +347,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         )
         var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
         var whichItem = 0
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext(),R.style.MixinAlertDialogTheme)
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
@@ -376,6 +377,8 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             return
         }
         val editText = EditText(requireContext())
+        editText.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+        editText.setHintTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
         editText.hint = getString(R.string.profile_modify_name_hint)
         editText.setText(name)
         if (name != null) {

@@ -57,7 +57,7 @@ class StickerManagementFragment : BaseFragment() {
         ViewModelProvider(this, viewModelFactory).get(ConversationViewModel::class.java)
     }
 
-    private val padding: Int by lazy { context!!.dip(PADDING) }
+    private val padding: Int by lazy { requireContext().dip(PADDING) }
 
     private val albumId: String? by lazy { arguments!!.getString(ARGS_ALBUM_ID) }
 

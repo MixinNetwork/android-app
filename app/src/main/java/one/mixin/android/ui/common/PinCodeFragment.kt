@@ -89,7 +89,7 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
         MixinApplication.get().onlining.set(true)
         if (account.full_name.isNullOrBlank()) {
             insertUser(account.toUser())
-            InitializeActivity.showSetupName(context!!)
+            InitializeActivity.showSetupName(requireContext())
         } else {
             RestoreActivity.show(requireContext())
         }

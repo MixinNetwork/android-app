@@ -111,9 +111,9 @@ class EditFragment : CaptureVisionFragment() {
         send_fl.post {
             val params = send_fl.layoutParams as RelativeLayout.LayoutParams
             val b = send_fl.bottom + params.bottomMargin
-            val hasNavigationBar = context!!.hasNavigationBar(b)
+            val hasNavigationBar = requireContext().hasNavigationBar(b)
             if (hasNavigationBar) {
-                val navigationBarHeight = context!!.navigationBarHeight()
+                val navigationBarHeight = requireContext().navigationBarHeight()
                 send_fl.translationY = -navigationBarHeight.toFloat()
                 download_iv.translationY = -navigationBarHeight.toFloat()
             }
@@ -134,10 +134,10 @@ class EditFragment : CaptureVisionFragment() {
         }
         send_fl.setOnClickListener {
             if (isVideo) {
-                ForwardActivity.show(context!!, arrayListOf(ForwardMessage(
+                ForwardActivity.show(requireContext(), arrayListOf(ForwardMessage(
                     ForwardCategory.VIDEO.name, mediaUrl = path)), true)
             } else {
-                ForwardActivity.show(context!!, arrayListOf(ForwardMessage(
+                ForwardActivity.show(requireContext(), arrayListOf(ForwardMessage(
                     ForwardCategory.IMAGE.name, mediaUrl = path)), true)
             }
         }
