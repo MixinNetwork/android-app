@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common
 
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.DialogFragment
@@ -55,6 +56,13 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
             if (realFragmentCount <= 0) {
                 activity?.finish()
             }
+        }
+    }
+
+    override fun onCancel(dialog: DialogInterface) {
+        try {
+            super.dismissAllowingStateLoss()
+        } catch (e: IllegalStateException) {
         }
     }
 

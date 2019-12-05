@@ -2,13 +2,19 @@ package one.mixin.android.ui.url
 
 import android.net.Uri
 import android.os.Bundle
+import androidx.activity.viewModels
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import javax.inject.Inject
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
@@ -30,6 +36,10 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val ADDRESS = "address"
         private const val APPS = "apps"
     }
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+    private val urlViewModel: UrlInterpreterViewModel by viewModels { viewModelFactory }
 
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_Transparent
@@ -61,7 +71,8 @@ class UrlInterpreterActivity : BaseActivity() {
 
     private fun interpretIntent(uri: Uri) {
         when (uri.host) {
-            CODE, PAY, USER, WITHDRAWAL, ADDRESS, APPS -> {
+            USER, APPS -> checkUserOrApp(uri)
+            CODE, PAY, WITHDRAWAL, ADDRESS -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
@@ -85,7 +96,53 @@ class UrlInterpreterActivity : BaseActivity() {
             }
         }
     }
+
+    private fun checkUserOrApp(uri: Uri) = lifecycleScope.launch {
+        val url = uri.toString()
+        val isUserScheme =
+            url.startsWith(Scheme.USERS, true) || url.startsWith(Scheme.HTTPS_USERS, true)
+        val isAppScheme =
+            url.startsWith(Scheme.APPS, true) || url.startsWith(Scheme.HTTPS_APPS, true)
+        if (isUserScheme || isAppScheme) {
+            val segments = uri.pathSegments
+            val userId = if (segments.size >= 2) {
+                segments[1]
+            } else {
+                segments[0]
+            }
+            if (!userId.isUUID()) {
+                toast(getUserOrAppNotFoundTip(isAppScheme))
+                return@launch
+            }
+            val user = urlViewModel.suspendFindUserById(userId)
+            if (user == null) {
+                val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
+                bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+            } else {
+                val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
+                if (isOpenApp && user.appId != null) {
+                    val app = urlViewModel.findAppById(user.appId!!)
+                    if (app != null) {
+                        WebBottomSheetDialogFragment.newInstance(
+                            app.homeUri,
+                            null,
+                            app.appId,
+                            app.name,
+                            app.icon_url,
+                            app.capabilities
+                        ).showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+                        return@launch
+                    }
+                }
+                UserBottomSheetDialogFragment.newInstance(user)
+                    .showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+            }
+        }
+    }
 }
+
+private fun getUserOrAppNotFoundTip(isApp: Boolean) =
+    if (isApp) R.string.error_app_not_found else R.string.error_user_not_found
 
 fun isMixinUrl(url: String): Boolean {
     return if (url.startsWith(Scheme.HTTPS_PAY, true) ||
