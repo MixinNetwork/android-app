@@ -153,7 +153,8 @@ fun isMixinUrl(url: String): Boolean {
         url.startsWith(Scheme.SEND, true) ||
         url.startsWith(Scheme.ADDRESS, true) ||
         url.startsWith(Scheme.WITHDRAWAL, true) ||
-        url.startsWith(Scheme.APPS, true)
+        url.startsWith(Scheme.APPS, true) ||
+        url.startsWith(Scheme.SNAPSHOTS, true)
     ) {
         true
     } else {

@@ -57,6 +57,9 @@ interface AssetService {
         @Query("limit") limit: Int = 100
     ): Call<MixinResponse<List<Snapshot>>>
 
+    @GET("snapshots/{id}")
+    suspend fun getSnapshotById(@Path("id") id: String): MixinResponse<Snapshot>
+
     @GET("mutual_snapshots/{id}")
     fun mutualSnapshots(@Path("id") id: String): Call<MixinResponse<List<Snapshot>>>
 

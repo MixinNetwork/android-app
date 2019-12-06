@@ -10,7 +10,6 @@ import one.mixin.android.ui.wallet.DepositTipBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.HiddenAssetsFragment
 import one.mixin.android.ui.wallet.PinCheckDialogFragment
 import one.mixin.android.ui.wallet.SingleFriendSelectFragment
-import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletFragment
 
@@ -21,9 +20,6 @@ abstract class WalletActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeWalletTransactionsFragment(): TransactionsFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeWalletTransactionFragment(): TransactionFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributePinCheckDialogFragment(): PinCheckDialogFragment

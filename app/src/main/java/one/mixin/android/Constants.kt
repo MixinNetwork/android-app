@@ -53,6 +53,7 @@ object Constants {
         const val ADDRESS = "mixin://address"
         const val WITHDRAWAL = "mixin://withdrawal"
         const val APPS = "mixin://apps"
+        const val SNAPSHOTS = "mixin://snapshots"
 
         const val HTTPS_CODES = "https://mixin.one/codes"
         const val HTTPS_PAY = "https://mixin.one/pay"

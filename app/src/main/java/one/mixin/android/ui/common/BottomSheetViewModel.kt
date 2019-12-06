@@ -45,6 +45,8 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
+import one.mixin.android.vo.Snapshot
+import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
@@ -79,8 +81,9 @@ class BottomSheetViewModel @Inject internal constructor(
         assetRepository.pay(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     suspend fun withdrawal(addressId: String, amount: String, code: String, traceId: String, memo: String?) =
-            assetRepository.withdrawal(
-                WithdrawalRequest(addressId, amount, encryptPin(Session.getPinToken()!!, code)!!, traceId, memo))
+        assetRepository.withdrawal(
+            WithdrawalRequest(addressId, amount, encryptPin(Session.getPinToken()!!, code)!!, traceId, memo)
+        )
 
     suspend fun syncAddr(assetId: String, destination: String?, label: String?, tag: String?, code: String): MixinResponse<Address> =
         assetRepository.syncAddr(AddressRequest(assetId, destination, tag, label, encryptPin(Session.getPinToken()!!, code)!!))
@@ -117,16 +120,26 @@ class BottomSheetViewModel @Inject internal constructor(
                 conversationId = generateConversationId(senderId, recipientId)
             }
             val participantRequest = ParticipantRequest(recipientId, "")
-            jobManager.addJobInBackground(ConversationJob(ConversationRequest(conversationId,
-                ConversationCategory.CONTACT.name, duration = duration, participants = listOf(participantRequest)),
-                recipientId = recipientId, type = ConversationJob.TYPE_MUTE))
+            jobManager.addJobInBackground(
+                ConversationJob(
+                    ConversationRequest(
+                        conversationId,
+                        ConversationCategory.CONTACT.name, duration = duration, participants = listOf(participantRequest)
+                    ),
+                    recipientId = recipientId, type = ConversationJob.TYPE_MUTE
+                )
+            )
         }
     }
 
     fun mute(conversationId: String, duration: Long) {
-        jobManager.addJobInBackground(ConversationJob(conversationId = conversationId,
-            request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration),
-            type = ConversationJob.TYPE_MUTE))
+        jobManager.addJobInBackground(
+            ConversationJob(
+                conversationId = conversationId,
+                request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration),
+                type = ConversationJob.TYPE_MUTE
+            )
+        )
     }
 
     suspend fun findAppById(id: String) = userRepository.findAppById(id)
@@ -157,10 +170,16 @@ class BottomSheetViewModel @Inject internal constructor(
         iconBase64: String? = null,
         announcement: String? = null
     ) {
-        val request = ConversationRequest(conversationId, name = name,
-            iconBase64 = iconBase64, announcement = announcement)
-        jobManager.addJobInBackground(ConversationJob(conversationId = conversationId,
-            request = request, type = ConversationJob.TYPE_UPDATE))
+        val request = ConversationRequest(
+            conversationId, name = name,
+            iconBase64 = iconBase64, announcement = announcement
+        )
+        jobManager.addJobInBackground(
+            ConversationJob(
+                conversationId = conversationId,
+                request = request, type = ConversationJob.TYPE_UPDATE
+            )
+        )
     }
 
     fun refreshUser(userId: String, forceRefresh: Boolean) {
@@ -204,6 +223,60 @@ class BottomSheetViewModel @Inject internal constructor(
                 }
             )
             result
+        }
+    }
+
+    suspend fun refreshSnapshot(snapshotId: String): SnapshotItem? {
+        return withContext(Dispatchers.IO) {
+            var result: SnapshotItem? = null
+            handleMixinResponse(
+                invokeNetwork = {
+                    assetRepository.getSnapshotById(snapshotId)
+                },
+                successBlock = { response ->
+                    response.data?.let {
+                        assetRepository.insertSnapshot(it)
+                        result = assetRepository.findSnapshotById(snapshotId)
+                    }
+                }
+            )
+            result
+        }
+    }
+
+    suspend fun getSnapshotAndAsset(snapshotId: String): Pair<SnapshotItem, AssetItem>? {
+        return withContext(Dispatchers.IO) {
+            var snapshotItem = findSnapshotById(snapshotId)
+            if (snapshotItem != null) {
+                var assetItem = findAssetItemById(snapshotItem.assetId)
+                if (assetItem != null) {
+                    return@withContext Pair(snapshotItem, assetItem)
+                } else {
+                    assetItem = refreshAsset(snapshotItem.assetId)
+                    if (assetItem != null) {
+                        return@withContext Pair(snapshotItem, assetItem)
+                    } else {
+                        return@withContext null
+                    }
+                }
+            } else {
+                snapshotItem = refreshSnapshot(snapshotId)
+                if (snapshotItem == null) {
+                    return@withContext null
+                } else {
+                    var assetItem = findAssetItemById(snapshotItem.assetId)
+                    if (assetItem != null) {
+                        return@withContext Pair(snapshotItem, assetItem)
+                    } else {
+                        assetItem = refreshAsset(snapshotItem.assetId)
+                        if (assetItem != null) {
+                            return@withContext Pair(snapshotItem, assetItem)
+                        } else {
+                            return@withContext null
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -257,4 +330,10 @@ class BottomSheetViewModel @Inject internal constructor(
         rawTransactionsRequest.pin = encryptPin(Session.getPinToken()!!, pin)!!
         return accountRepository.transactions(rawTransactionsRequest)
     }
+
+    suspend fun findSnapshotById(snapshotId: String) = assetRepository.findSnapshotById(snapshotId)
+
+    suspend fun getSnapshotById(snapshotId: String) = assetRepository.getSnapshotById(snapshotId)
+
+    fun insertSnapshot(snapshot: Snapshot) = assetRepository.insertSnapshot(snapshot)
 }
