@@ -1,30 +1,37 @@
 package one.mixin.android.ui.qr
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.util.DisplayMetrics
+import android.util.Log
 import android.util.Rational
-import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.camera.core.Camera
+import androidx.camera.core.CameraSelector
 import androidx.camera.core.CameraX
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageAnalysisConfig
 import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureConfig
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
-import androidx.camera.core.PreviewConfig
-import androidx.camera.core.impl.utils.executor.CameraXExecutors
+import androidx.camera.core.TorchState
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import com.crashlytics.android.Crashlytics
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
 import java.io.File
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.android.synthetic.main.fragment_capture_camerax.*
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +50,7 @@ import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_MEMO
 class CameraXCaptureFragment : BaseCaptureFragment() {
     companion object {
         const val TAG = "CameraXCaptureFragment"
+        const val CRASHLYTICS_CAMERAX = "camerax"
 
         fun newInstance(
             forAddress: Boolean = false,
@@ -55,10 +63,17 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
         }
     }
 
-    private var lensFacing = CameraX.LensFacing.BACK
+    private var lensFacing = CameraSelector.LENS_FACING_BACK
 
     private var preview: Preview? = null
     private var imageCapture: ImageCapture? = null
+    private var imageAnalysis: ImageAnalysis? = null
+    private lateinit var mainExecutor: Executor
+    private lateinit var backgroundExecutor: Executor
+    private var camera: Camera? = null
+
+    private var displayId: Int = -1
+    private lateinit var displayManager: DisplayManager
 
     private var alreadyDetected = false
 
@@ -68,9 +83,21 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
             arguments?.getBoolean(ARGS_FOR_MEMO) == true
     }
 
+    private val displayListener = object : DisplayManager.DisplayListener {
+        override fun onDisplayAdded(displayId: Int) = Unit
+        override fun onDisplayRemoved(displayId: Int) = Unit
+        override fun onDisplayChanged(displayId: Int) = view?.let { view ->
+            if (displayId == this@CameraXCaptureFragment.displayId) {
+                imageCapture?.setTargetRotation(view.display.rotation)
+                imageAnalysis?.setTargetRotation(view.display.rotation)
+            }
+        } ?: Unit
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        retainInstance = true
+        mainExecutor = ContextCompat.getMainExecutor(requireContext())
+        backgroundExecutor = Executors.newSingleThreadExecutor()
     }
 
     override fun onCreateView(
@@ -83,98 +110,110 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
     @SuppressLint("RestrictedApi")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        displayManager = view_finder.context
+            .getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+        displayManager.registerDisplayListener(displayListener, null)
+
         view_finder.post {
+            displayId = view_finder.display.displayId
             bindCameraUseCase()
         }
         bottom_ll.isVisible = !forScan
     }
 
     override fun onFlashClick() {
-        if (preview?.isTorchOn == true) {
+        val torchState = camera?.cameraInfo?.torchState?.value ?: TorchState.OFF
+        if (torchState == TorchState.ON) {
             flash.setImageResource(R.drawable.ic_flash_off)
-            preview?.enableTorch(false)
+            camera?.cameraControl?.enableTorch(false)
         } else {
             flash.setImageResource(R.drawable.ic_flash_on)
-            preview?.enableTorch(true)
+            camera?.cameraControl?.enableTorch(true)
         }
     }
 
     @SuppressLint("RestrictedApi")
     override fun onSwitchClick() {
-        lensFacing = if (CameraX.LensFacing.FRONT == lensFacing) {
-            CameraX.LensFacing.BACK
+        lensFacing = if (CameraSelector.LENS_FACING_FRONT == lensFacing) {
+            CameraSelector.LENS_FACING_BACK
         } else {
-            CameraX.LensFacing.FRONT
+            CameraSelector.LENS_FACING_FRONT
         }
         try {
             CameraX.getCameraWithLensFacing(lensFacing)
             bindCameraUseCase()
-        } catch (ignored: Exception) {
+        } catch (e: Exception) {
+            Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Switch lens and rebind use cases failure, $e")
         }
     }
 
-    override fun isLensBack() = CameraX.LensFacing.BACK == lensFacing
+    override fun isLensBack() = CameraSelector.LENS_FACING_BACK == lensFacing
 
     @SuppressLint("RestrictedApi")
     override fun onTakePicture() {
         val outFile = requireContext().getImageCachePath().createImageTemp()
         val metadata = ImageCapture.Metadata().apply {
-            isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
+            isReversedHorizontal = lensFacing == CameraSelector.LENS_FACING_FRONT
         }
-        imageCapture?.takePicture(outFile, metadata, CameraXExecutors.mainThreadExecutor(), imageSavedListener)
+        imageCapture?.takePicture(outFile, metadata, mainExecutor, imageSavedListener)
     }
 
     @SuppressLint("RestrictedApi")
     private fun bindCameraUseCase() {
-        CameraX.unbindAll()
         val metrics = DisplayMetrics().also { view_finder.display.getRealMetrics(it) }
-        val screenSize = Size(metrics.widthPixels, metrics.heightPixels)
         val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
+        val rotation = view_finder.display.rotation
 
-        val previewConfig = PreviewConfig.Builder().apply {
-            setLensFacing(lensFacing)
-            setTargetResolution(screenSize)
-            setTargetRotation(view_finder.display.rotation)
-        }.build()
-        preview = AutoFitPreviewBuilder.build(previewConfig, view_finder)
+        val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
+        cameraProviderFuture.addListener(Runnable {
+            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-        val imageCaptureConfig = ImageCaptureConfig.Builder().apply {
-            setLensFacing(lensFacing)
-            setCaptureMode(ImageCapture.CaptureMode.MIN_LATENCY)
-            setTargetAspectRatioCustom(screenAspectRatio)
-            setTargetRotation(view_finder.display.rotation)
-        }.build()
-        imageCapture = ImageCapture(imageCaptureConfig)
+            preview = Preview.Builder()
+                .setTargetAspectRatioCustom(screenAspectRatio)
+                .setTargetRotation(rotation)
+                .build()
+            preview?.previewSurfaceProvider = view_finder.previewSurfaceProvider
 
-        val imageAnalysisConfig = ImageAnalysisConfig.Builder().apply {
-            setLensFacing(lensFacing)
-            setImageReaderMode(ImageAnalysis.ImageReaderMode.ACQUIRE_LATEST_IMAGE)
-        }.build()
-        val imageAnalysis = ImageAnalysis(imageAnalysisConfig).apply {
-            setAnalyzer(CameraXExecutors.ioExecutor(), imageAnalyzer)
-        }
+            imageCapture = ImageCapture.Builder()
+                .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                .setTargetAspectRatioCustom(screenAspectRatio)
+                .setTargetRotation(rotation)
+                .build()
 
-        CameraX.bindToLifecycle(this, preview, imageCapture, imageAnalysis)
+            imageAnalysis = ImageAnalysis.Builder()
+                .setTargetAspectRatioCustom(screenAspectRatio)
+                .setTargetRotation(rotation)
+                .build()
+                .also {
+                    it.setAnalyzer(backgroundExecutor, imageAnalyzer)
+                }
+
+            cameraProvider.unbindAll()
+
+            try {
+                camera = cameraProvider.bindToLifecycle(
+                    this as LifecycleOwner, cameraSelector, preview, imageCapture, imageAnalysis
+                )
+            } catch (e: Exception) {
+                Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Use case binding failed, $e")
+            }
+        }, mainExecutor)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        preview?.enableTorch(false)
-        CameraX.unbindAll()
+        displayManager.unregisterDisplayListener(displayListener)
     }
 
-    private val imageSavedListener = object : ImageCapture.OnImageSavedListener {
-        override fun onError(
-            imageCaptureError: ImageCapture.ImageCaptureError,
-            message: String,
-            cause: Throwable?
-        ) {
-            context?.toast("Photo capture failed: $message")
-            cause?.printStackTrace()
-        }
-
+    private val imageSavedListener = object : ImageCapture.OnImageSavedCallback {
         override fun onImageSaved(file: File) {
             openEdit(file.absolutePath, false)
+        }
+
+        override fun onError(imageCaptureError: Int, message: String, cause: Throwable?) {
+            context?.toast("Photo capture failed: $message")
+            Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Photo capture failed: $message")
         }
     }
 
@@ -185,7 +224,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
     private val imageAnalyzer = object : ImageAnalysis.Analyzer {
         private val detecting = AtomicBoolean(false)
 
-        override fun analyze(image: ImageProxy, rotationDegrees: Int) {
+        override fun analyze(image: ImageProxy) {
             if (!alreadyDetected && !image.planes.isNullOrEmpty() &&
                 detecting.compareAndSet(false, true)
             ) {
@@ -194,18 +233,21 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
                 } else {
                     decodeWithZxing(image)
                 }
+            } else {
+                image.close()
             }
         }
 
         private fun decodeWithFirebaseVision(image: ImageProxy) {
-            val buffer = image.planes[0].buffer
-            val imageMetadata = FirebaseVisionImageMetadata.Builder().apply {
-                setWidth(image.width)
-                setHeight(image.height)
-                setRotation(FirebaseVisionImageMetadata.ROTATION_90)
-                setFormat(FirebaseVisionImageMetadata.IMAGE_FORMAT_NV21)
-            }.build()
-            val visionImage = FirebaseVisionImage.fromByteBuffer(buffer, imageMetadata)
+            val processImage = image.image
+            if (processImage == null) {
+                image.close()
+                return
+            }
+            val visionImage = FirebaseVisionImage.fromMediaImage(
+                processImage,
+                FirebaseVisionImageMetadata.ROTATION_90
+            )
             val latch = CountDownLatch(1)
             detector.use { d ->
                 d.detectInImage(visionImage)
@@ -226,6 +268,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
                         } else {
                             detecting.set(false)
                         }
+                        image.close()
                         latch.countDown()
                     }
             }
@@ -246,6 +289,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
                     handleAnalysis(result)
                 }
             }
+            imageProxy.close()
             detecting.set(false)
         }
 
@@ -266,6 +310,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
                 val byteArray = ImageUtil.imageToJpegByteArray(image)
                 BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
             } catch (e: Exception) {
+                Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "getBitmapFromImage failure, $e")
                 null
             }
         }
