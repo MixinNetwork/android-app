@@ -125,7 +125,7 @@ class MobileFragment : BaseFragment() {
     }
 
     private fun showDialog() {
-        AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
+        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setMessage(getString(R.string.landing_invitation_dialog_content,
                 mCountry.dialCode + " " + mobile_et.text.toString()))
             .setNegativeButton(R.string.change) { dialog, _ -> dialog.dismiss() }

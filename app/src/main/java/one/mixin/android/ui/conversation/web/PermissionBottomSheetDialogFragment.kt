@@ -58,7 +58,7 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val miniHeight by lazy {
-        context!!.realSize().y / 2
+        requireContext().realSize().y / 2
     }
 
     @SuppressLint("RestrictedApi")

@@ -58,14 +58,14 @@ class DepositPublicKeyFragment : DepositFragment() {
         qr_fl.setOnClickListener {
             DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(parentFragmentManager, DepositQrBottomFragment.TAG)
         }
-        if (context!!.isQRCodeFileExists(asset.destination)) {
-            qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath(asset.destination).absolutePath))
+        if (requireContext().isQRCodeFileExists(asset.destination)) {
+            qr.setImageBitmap(BitmapFactory.decodeFile(requireContext().getQRCodePath(asset.destination).absolutePath))
         } else {
             qr.post {
                 Observable.create<Bitmap> { e ->
                     val b = asset.destination.generateQRCode(qr.width)
                     if (b != null) {
-                        b.saveQRCode(context!!, asset.destination)
+                        b.saveQRCode(requireContext(), asset.destination)
                         e.onNext(b)
                     }
                 }.subscribeOn(Schedulers.io())

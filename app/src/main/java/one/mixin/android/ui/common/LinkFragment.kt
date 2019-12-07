@@ -94,14 +94,14 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
 
     private fun showBar() {
         if (!barShown) {
-            state_layout.animateHeight(0, context!!.dpToPx(26f))
+            state_layout.animateHeight(0, requireContext().dpToPx(26f))
             barShown = true
         }
     }
 
     private fun hiddenBar() {
         if (barShown) {
-            state_layout.animateHeight(context!!.dpToPx(26f), 0)
+            state_layout.animateHeight(requireContext().dpToPx(26f), 0)
             barShown = false
         }
     }

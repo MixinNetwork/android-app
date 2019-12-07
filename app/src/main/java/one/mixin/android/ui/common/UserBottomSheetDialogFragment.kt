@@ -1,22 +1,20 @@
 package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.content.ClipData
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.WindowManager
-import android.widget.EditText
-import android.widget.FrameLayout
+import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -27,16 +25,26 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.Constants.ARGS_USER
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.contacts.ProfileFragment
+import one.mixin.android.ui.ProfileBottomSheetDialogFragment
+import one.mixin.android.ui.common.info.MenuStyle
+import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
+import one.mixin.android.ui.common.info.createMenuLayout
+import one.mixin.android.ui.common.info.menu
+import one.mixin.android.ui.common.info.menuGroup
+import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.UserTransactionsFragment
@@ -55,16 +63,13 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.showVerifiedOrBot
-import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
-import org.jetbrains.anko.dimen
-import org.jetbrains.anko.margin
 import org.threeten.bp.Instant
 
-class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
 
     companion object {
-        const val TAG = "UserBottomSheetDialog"
+        const val TAG = "UserBottomSheetDialogFragment"
 
         const val MUTE_8_HOURS = 8 * 60 * 60
         const val MUTE_1_WEEK = 7 * 24 * 60 * 60
@@ -81,19 +86,13 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private lateinit var user: User
     // bot need conversation id
     private var conversationId: String? = null
-    private lateinit var menu: AlertDialog
     private var creator: User? = null
 
-    private var keepDialog = false
+    private var menuListLayout: ViewGroup? = null
 
     var showUserTransactionAction: (() -> Unit)? = null
 
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_user_bottom_sheet, null)
-        (dialog as BottomSheet).setCustomView(contentView)
-    }
+    override fun getLayoutId() = R.layout.fragment_user_bottom_sheet
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -113,24 +112,38 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (u == null) return@Observer
             // prevent add self
             if (u.userId == Session.getAccountId()) {
-                activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
+                ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, TAG)
                 dismiss()
                 return@Observer
             }
-            user = u
             updateUserInfo(u)
-            initMenu(u)
+            if (menuListLayout == null ||
+                u.relationship != user.relationship ||
+                u.muteUntil != user.muteUntil ||
+                u.fullName != user.fullName) {
+                initMenu(u)
+            }
+            user = u
+
+            contentView.post {
+                behavior?.peekHeight = contentView.scroll_content.height - (menuListLayout?.height ?: 0)
+            }
         })
         contentView.transfer_fl.setOnClickListener {
             TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
                 .showNow(parentFragmentManager, TransferFragment.TAG)
+            dismiss()
         }
         contentView.send_fl.setOnClickListener {
             if (user.userId == Session.getAccountId()) {
                 toast(R.string.cant_talk_self)
                 return@setOnClickListener
             }
-            context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
+            context?.let { ctx ->
+                if (MixinApplication.conversationId == null || conversationId != MixinApplication.conversationId) {
+                    ConversationActivity.show(ctx, null, user.userId)
+                }
+            }
             dismiss()
         }
         contentView.detail_tv.movementMethod = LinkMovementMethod()
@@ -145,109 +158,192 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun initMenu(u: User) {
-        val choices = mutableListOf<String>()
-        if (u.isBot()) {
-            choices.add(getString(R.string.developer))
-        }
-        choices.add(getString(R.string.contact_other_share))
-        if (conversationId != null) {
-            choices.add(getString(R.string.contact_other_search_conversation))
-            choices.add(getString(R.string.contact_other_shared_media))
-        }
-        choices.add(getString(R.string.contact_other_transactions))
-        when (user.relationship) {
-            UserRelationship.BLOCKING.name -> {
-                choices.add(getString(R.string.contact_other_unblock))
-            }
-            UserRelationship.FRIEND.name -> {
-                choices.add(getString(R.string.edit_name))
-                setMute(choices)
-                choices.add(getString(R.string.contact_other_remove))
-            }
-            UserRelationship.STRANGER.name -> {
-                setMute(choices)
-                choices.add(getString(R.string.contact_other_block))
-            }
-        }
-        choices.add(getString(R.string.group_info_clear_chat))
-        choices.add(getString(R.string.contact_other_report))
-        menu = AlertDialog.Builder(context!!)
-            .setItems(choices.toTypedArray()) { _, which ->
-                if (!isAdded) return@setItems
-
-                when (choices[which]) {
-                    getString(R.string.developer) -> {
-                        creator?.let {
-                            if (it.userId == Session.getAccountId()) {
-                                activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
-                            } else {
-                                UserBottomSheetDialogFragment.newInstance(it).showNow(parentFragmentManager, TAG)
-                            }
-                        }
-                        dismiss()
-                    }
-                    getString(R.string.contact_other_share) -> {
-                        ForwardActivity.show(context!!, arrayListOf(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)), true)
-                        dismiss()
-                    }
-                    getString(R.string.contact_other_search_conversation) -> {
-                        startSearchConversation()
-                        dismiss()
-                    }
-                    getString(R.string.contact_other_shared_media) -> {
-                        SharedMediaActivity.show(requireContext(), conversationId!!)
-                        dismiss()
-                    }
-                    getString(R.string.contact_other_transactions) -> {
-                        if (showUserTransactionAction != null) {
-                            showUserTransactionAction?.invoke()
-                        } else {
-                            activity?.addFragment(this, UserTransactionsFragment.newInstance(user.userId), UserTransactionsFragment.TAG)
-                        }
-                        dismiss()
-                    }
-                    getString(R.string.edit_name) -> {
-                        keepDialog = true
-                        showDialog(user.fullName)
-                    }
-                    getString(R.string.un_mute) -> {
-                        unMute()
-                    }
-                    getString(R.string.mute) -> {
-                        keepDialog = true
-                        mute()
-                    }
-                    getString(R.string.group_info_clear_chat) -> {
-                        bottomViewModel.deleteMessageByConversationId(
-                            generateConversationId(
-                                Session.getAccountId()!!,
-                                user.userId
-                            )
+        val clearMenu = menu {
+            title = getString(R.string.group_info_clear_chat)
+            style = MenuStyle.Danger
+            action = {
+                requireContext().showConfirmDialog(getString(R.string.group_info_clear_chat)) {
+                    bottomViewModel.deleteMessageByConversationId(
+                        generateConversationId(
+                            Session.getAccountId()!!,
+                            u.userId
                         )
-                    }
-                    getString(R.string.contact_other_block) -> {
-                        bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.BLOCK.name))
-                    }
-                    getString(R.string.contact_other_unblock) -> {
-                        bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.UNBLOCK.name))
-                    }
-                    getString(R.string.contact_other_remove) -> {
-                        updateRelationship(UserRelationship.STRANGER.name)
-                    }
-                    getString(R.string.contact_other_report) -> {
-                        reportUser(user.userId)
-                    }
+                    )
                 }
-            }.create()
-        menu.setOnDismissListener {
-            if (!keepDialog) {
+            }
+        }
+        val muteMenu = if (u.muteUntil.notNullWithElse({
+                Instant.now().isBefore(Instant.parse(it))
+            }, false)) {
+            menu {
+                title = getString(R.string.un_mute)
+                subtitle = getString(R.string.mute_until, u.muteUntil?.localTime())
+                action = { unMute() }
+            }
+        } else {
+            menu {
+                title = getString(R.string.mute)
+                action = { mute() }
+            }
+        }
+        val transactionMenu = menu {
+            title = getString(R.string.contact_other_transactions)
+            action = {
+                if (showUserTransactionAction != null) {
+                    showUserTransactionAction?.invoke()
+                } else {
+                    activity?.addFragment(this@UserBottomSheetDialogFragment,
+                        UserTransactionsFragment.newInstance(u.userId), UserTransactionsFragment.TAG)
+                }
                 dismiss()
             }
         }
+        val editNameMenu = menu {
+            title = getString(R.string.edit_name)
+            action = { showDialog(u.fullName) }
+        }
+        val developerMenu = menu {
+            title = getString(R.string.developer)
+            action = {
+                creator?.let {
+                    if (it.userId == Session.getAccountId()) {
+                        ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, TAG)
+                    } else {
+                        UserBottomSheetDialogFragment.newInstance(it).showNow(parentFragmentManager, TAG)
+                    }
+                }
+                dismiss()
+            }
+        }
+        val list = menuList {
+            menuGroup {
+                menu {
+                    title = getString(R.string.contact_other_share)
+                    action = {
+                        ForwardActivity.show(
+                            requireContext(),
+                            arrayListOf(
+                                ForwardMessage(
+                                    ForwardCategory.CONTACT.name,
+                                    sharedUserId = u.userId
+                                )
+                            ),
+                            true
+                        )
+                        dismiss()
+                    }
+                }
+            }
+            menuGroup {
+                menu {
+                    title = getString(R.string.contact_other_shared_media)
+                    action = {
+                        SharedMediaActivity.show(requireContext(), conversationId!!)
+                        dismiss()
+                    }
+                }
+                menu {
+                    title = getString(R.string.contact_other_search_conversation)
+                    action = {
+                        startSearchConversation()
+                        dismiss()
+                    }
+                }
+            }
+        }
+        when (u.relationship) {
+            UserRelationship.BLOCKING.name -> {
+                list.groups.add(menuGroup {
+                    menu {
+                        title = getString(R.string.contact_other_unblock)
+                        action = { bottomViewModel.updateRelationship(RelationshipRequest(u.userId, RelationshipAction.UNBLOCK.name)) }
+                    }
+                    menu(clearMenu)
+                })
+            }
+            UserRelationship.FRIEND.name -> {
+                list.groups.add(menuGroup {
+                    menu(muteMenu)
+                    menu(editNameMenu)
+                })
+                val developerTransactionList = if (u.isBot()) {
+                    menuGroup {
+                        menu(developerMenu)
+                        menu(transactionMenu)
+                    }
+                } else {
+                    menuGroup {
+                        menu(transactionMenu)
+                    }
+                }
+                list.groups.add(developerTransactionList)
+                list.groups.add(menuGroup {
+                    menu {
+                        title = getString(R.string.contact_other_remove)
+                        style = MenuStyle.Danger
+                        action = {
+                            requireContext().showConfirmDialog(getString(R.string.contact_other_remove)) {
+                                updateRelationship(UserRelationship.STRANGER.name)
+                            }
+                        }
+                    }
+                    menu(clearMenu)
+                })
+            }
+            UserRelationship.STRANGER.name -> {
+                list.groups.add(menuGroup {
+                    menu(muteMenu)
+                    menu(transactionMenu)
+                })
+                list.groups.add(menuGroup {
+                    menu {
+                        title = getString(R.string.contact_other_block)
+                        style = MenuStyle.Danger
+                        action = {
+                            requireContext().showConfirmDialog(getString(R.string.contact_other_block)) {
+                                bottomViewModel.updateRelationship(
+                                    RelationshipRequest(
+                                        u.userId,
+                                        RelationshipAction.BLOCK.name
+                                    )
+                                )
+                            }
+                        }
+                    }
+                    menu(clearMenu)
+                })
+            }
+        }
+        list.groups.add(menuGroup {
+            menu {
+                title = getString(R.string.contact_other_report)
+                style = MenuStyle.Danger
+                action = {
+                    requireContext().showConfirmDialog(getString(R.string.contact_other_report)) {
+                        reportUser(u.userId)
+                    }
+                }
+            }
+        })
 
-        contentView.more_fl.setOnClickListener {
-            (dialog as BottomSheet).fakeDismiss()
-            menu.show()
+        menuListLayout?.removeAllViews()
+        contentView.scroll_content.removeView(menuListLayout)
+        list.createMenuLayout(requireContext()).let { layout ->
+            menuListLayout = layout
+            contentView.scroll_content.addView(layout)
+            layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = requireContext().dpToPx(30f)
+            }
+            contentView.more_fl.setOnClickListener {
+                if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
+                    behavior?.state = BottomSheetBehavior.STATE_EXPANDED
+                    contentView.more_iv.rotationX = 180f
+                } else {
+                    behavior?.state = BottomSheetBehavior.STATE_COLLAPSED
+                    contentView.scroll_view.smoothScrollTo(0, 0)
+                    contentView.more_iv.rotationX = 0f
+                }
+            }
         }
     }
 
@@ -281,16 +377,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             .show()
     }
 
-    private fun setMute(choices: MutableList<String>) {
-        if (user.muteUntil.notNullWithElse({
-                Instant.now().isBefore(Instant.parse(it))
-            }, false)) {
-            choices.add(getString(R.string.un_mute))
-        } else {
-            choices.add(getString(R.string.mute))
-        }
-    }
-
     private fun updateUserInfo(user: User) = lifecycleScope.launch {
         if (!isAdded) return@launch
 
@@ -303,6 +389,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             true
         }
         user.showVerifiedOrBot(contentView.verified_iv, contentView.bot_iv)
+        contentView.op_ll.isVisible = true
         if (user.isBot()) {
             contentView.open_fl.visibility = VISIBLE
             contentView.transfer_fl.visibility = GONE
@@ -381,44 +468,16 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (context == null || !isAdded) {
             return
         }
-        val editText = EditText(requireContext())
-        editText.hint = getString(R.string.profile_modify_name_hint)
-        editText.setText(name)
-        if (name != null) {
-            editText.setSelection(name.length)
+        val biographyFragment = EditBottomSheetDialogFragment.newInstance(
+            name,
+            40,
+            true
+        )
+        biographyFragment.changeAction = {
+            bottomViewModel.updateRelationship(RelationshipRequest(user.userId,
+                RelationshipAction.UPDATE.name, it))
         }
-        val frameLayout = FrameLayout(requireContext())
-        frameLayout.addView(editText)
-        val params = editText.layoutParams as FrameLayout.LayoutParams
-        params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)
-        editText.layoutParams = params
-        val nameDialog = AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
-            .setTitle(R.string.profile_modify_name)
-            .setView(frameLayout)
-            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.confirm) { dialog, _ ->
-                bottomViewModel.updateRelationship(RelationshipRequest(user.userId,
-                    RelationshipAction.UPDATE.name, editText.text.toString()))
-                dialog.dismiss()
-            }
-            .show()
-        nameDialog.setOnDismissListener { dismiss() }
-        nameDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = false
-        editText.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                nameDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = !(s.isNullOrBlank() || s.toString() == name.toString())
-            }
-        })
-
-        nameDialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-            WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
-        nameDialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+        biographyFragment.show(parentFragmentManager, EditBottomSheetDialogFragment.TAG)
     }
 
     private fun showMuteDialog() {
@@ -427,7 +486,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             getString(R.string.contact_mute_1year))
         var duration = MUTE_8_HOURS
         var whichItem = 0
-        val alert = AlertDialog.Builder(context!!)
+        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
@@ -449,7 +508,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
             .show()
-        alert.setOnDismissListener { dismiss() }
     }
 
     private fun mute() {
@@ -472,5 +530,13 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (relationship == UserRelationship.FRIEND.name)
                 RelationshipAction.ADD.name else RelationshipAction.REMOVE.name, user.fullName)
         bottomViewModel.updateRelationship(request)
+    }
+
+    override fun onStateChanged(bottomSheet: View, newState: Int) {
+        when (newState) {
+            BottomSheetBehavior.STATE_HIDDEN -> dismiss()
+            BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.rotationX = 0f
+            BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.rotationX = 180f
+        }
     }
 }

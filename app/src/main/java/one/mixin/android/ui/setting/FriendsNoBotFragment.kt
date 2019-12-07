@@ -46,7 +46,7 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, Emergen
     override suspend fun getFriends() = viewModel.getFriendsNotBot()
 
     override fun onItemClick(user: User) {
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setTitle(getString(R.string.setting_emergency_set))
             .setMessage(getString(R.string.setting_emergency_set_message, user.identityNumber))
             .setNegativeButton(R.string.change) { dialog, _ ->

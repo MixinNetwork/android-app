@@ -114,7 +114,7 @@ class BackUpFragment : BaseFragment() {
     }
 
     private fun showBackupDialog() {
-        val builder = AlertDialog.Builder(requireContext())
+        val builder = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
         builder.setTitle(R.string.backup_dialog_title)
 
         val checkedItem = defaultSharedPreferences.getInt(BACKUP_PERIOD, 0)

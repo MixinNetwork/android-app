@@ -113,10 +113,18 @@ class NewGroupFragment : BaseFragment() {
     }
 
     private fun createGroup() = lifecycleScope.launch {
+        if (dialog == null) {
+            dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message,
+                title = R.string.group_creating).apply {
+                setCancelable(false)
+            }
+        }
+        dialog?.show()
+
         val groupIcon = if (resultUri == null) {
             null
         } else {
-            val bitmap = MediaStore.Images.Media.getBitmap(context!!.contentResolver, resultUri)
+            val bitmap = MediaStore.Images.Media.getBitmap(requireContext().contentResolver, resultUri)
             Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP)
         }
         val conversation = withContext(Dispatchers.IO) {
@@ -129,21 +137,12 @@ class NewGroupFragment : BaseFragment() {
         liveData.observe(this@NewGroupFragment, Observer { c ->
             if (c != null) {
                 when {
-                    c.status == ConversationStatus.START.ordinal -> {
-                        if (dialog == null) {
-                            dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message,
-                                title = R.string.group_creating).apply {
-                                setCancelable(false)
-                            }
-                        }
-                        dialog?.show()
-                    }
                     c.status == ConversationStatus.SUCCESS.ordinal -> {
                         liveData.removeObservers(this@NewGroupFragment)
                         name_desc_et.hideKeyboard()
                         dialog?.dismiss()
                         startActivity(Intent(context, MainActivity::class.java))
-                        ConversationActivity.show(context!!, conversation.conversationId, null)
+                        ConversationActivity.show(requireContext(), conversation.conversationId, null)
                     }
                     c.status == ConversationStatus.FAILURE.ordinal -> {
                         name_desc_et.hideKeyboard()

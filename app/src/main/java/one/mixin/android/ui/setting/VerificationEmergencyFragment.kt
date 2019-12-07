@@ -105,7 +105,7 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
                     (it as? EmergencyContactFragment)?.setEmergencySet()
                 }
 
-                AlertDialog.Builder(requireContext())
+                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
                     .setMessage(getString(
                         if (Session.hasEmergencyContact())
                             R.string.setting_emergency_change_success

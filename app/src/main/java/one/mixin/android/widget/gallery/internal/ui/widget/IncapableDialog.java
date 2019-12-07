@@ -2,10 +2,11 @@ package one.mixin.android.widget.gallery.internal.ui.widget;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.DialogFragment;
-import androidx.appcompat.app.AlertDialog;
 import android.text.TextUtils;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
+import one.mixin.android.R;
 
 public class IncapableDialog extends DialogFragment {
 
@@ -27,7 +28,7 @@ public class IncapableDialog extends DialogFragment {
         String title = getArguments().getString(EXTRA_TITLE);
         String message = getArguments().getString(EXTRA_MESSAGE);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), R.style.MixinAlertDialogTheme);
         if (!TextUtils.isEmpty(title)) {
             builder.setTitle(title);
         }

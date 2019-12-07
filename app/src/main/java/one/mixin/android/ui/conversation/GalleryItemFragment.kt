@@ -69,7 +69,7 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
         super.onActivityCreated(savedInstanceState)
         rv.layoutManager = GridLayoutManager(context, COLUMN)
         rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-        adapter.size = (context!!.realSize().x - (COLUMN + 1) * padding) / COLUMN
+        adapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
         rv.adapter = adapter
         adapter.listener = object : GalleryCallback {
             override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean) {

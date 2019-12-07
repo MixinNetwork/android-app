@@ -62,7 +62,7 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
             }
         }
         delete_rl.setOnClickListener {
-            AlertDialog.Builder(requireContext())
+            AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
                 .setMessage(getString(R.string.setting_emergency_remove_tip))
                 .setNegativeButton(R.string.cancel) { dialog, _ ->
                     dialog.dismiss()
