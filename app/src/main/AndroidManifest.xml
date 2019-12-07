@@ -87,6 +87,9 @@
                 <data
                     android:host="address"
                     android:scheme="mixin" />
+                <data
+                    android:host="snapshots"
+                    android:scheme="mixin" />
             </intent-filter>
         </activity>
         <activity

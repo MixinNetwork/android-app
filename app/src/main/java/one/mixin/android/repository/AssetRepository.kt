@@ -154,4 +154,8 @@ constructor(
     suspend fun findAddressById(addressId: String, assetId: String) = addressDao.findAddressById(addressId, assetId)
 
     suspend fun findAssetItemById(assetId: String) = assetDao.findAssetItemById(assetId)
+
+    suspend fun findSnapshotById(snapshotId: String) = snapshotDao.findSnapshotById(snapshotId)
+
+    suspend fun getSnapshotById(snapshotId: String) = assetService.getSnapshotById(snapshotId)
 }

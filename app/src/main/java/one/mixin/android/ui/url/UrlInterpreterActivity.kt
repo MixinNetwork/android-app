@@ -35,6 +35,7 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val WITHDRAWAL = "withdrawal"
         private const val ADDRESS = "address"
         private const val APPS = "apps"
+        private const val SNAPSHOTS = "snapshots"
     }
 
     @Inject
@@ -72,7 +73,7 @@ class UrlInterpreterActivity : BaseActivity() {
     private fun interpretIntent(uri: Uri) {
         when (uri.host) {
             USER, APPS -> checkUserOrApp(uri)
-            CODE, PAY, WITHDRAWAL, ADDRESS -> {
+            CODE, PAY, WITHDRAWAL, ADDRESS, SNAPSHOTS -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
@@ -153,7 +154,8 @@ fun isMixinUrl(url: String): Boolean {
         url.startsWith(Scheme.SEND, true) ||
         url.startsWith(Scheme.ADDRESS, true) ||
         url.startsWith(Scheme.WITHDRAWAL, true) ||
-        url.startsWith(Scheme.APPS, true)
+        url.startsWith(Scheme.APPS, true) ||
+        url.startsWith(Scheme.SNAPSHOTS, true)
     ) {
         true
     } else {

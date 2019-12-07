@@ -11,7 +11,6 @@ import one.mixin.android.ui.group.GroupEditFragment
 import one.mixin.android.ui.group.GroupInfoFragment
 import one.mixin.android.ui.sticker.StickerAddFragment
 import one.mixin.android.ui.sticker.StickerManagementFragment
-import one.mixin.android.ui.wallet.TransactionFragment
 
 @Module
 abstract class ConversationActivityModule {
@@ -26,9 +25,6 @@ abstract class ConversationActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeStickerFragment(): StickerFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeWalletTransactionFragment(): TransactionFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeGroupEditFragment(): GroupEditFragment

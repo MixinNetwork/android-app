@@ -24,6 +24,7 @@ import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.TransactionFragment
 
 @Module
 abstract class CommonModule {
@@ -90,6 +91,9 @@ abstract class CommonModule {
     @ContributesAndroidInjector
     internal abstract fun contributeUserListBottomSheetDialogFragment(): UserListBottomSheetDialogFragment
 
+    @ContributesAndroidInjector
+    internal abstract fun contributeWalletTransactionFragment(): TransactionFragment
+  
     @ContributesAndroidInjector
     internal abstract fun contributeProfileBottomSheetDialogFragment(): ProfileBottomSheetDialogFragment
 }
