@@ -7,8 +7,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import java.nio.charset.Charset
-import okio.buffer
-import okio.source
+import okio.Okio
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -58,7 +57,7 @@ class RecaptchaView(private val context: Context, private val callback: Callback
             }
         }
         val input = context.assets.open("recaptcha.html")
-        var html = input.source().buffer().readByteString().string(Charset.forName("utf-8"))
+        var html = Okio.buffer(Okio.source(input)).readByteString().string(Charset.forName("utf-8"))
         html = html.replace("#apiKey", BuildConfig.RECAPTCHA_KEY)
         webView.clearCache(true)
         webView.loadDataWithBaseURL(Constants.API.DOMAIN, html, "text/html", "UTF-8", null)
