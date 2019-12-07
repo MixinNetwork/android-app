@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.util.Log
 import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
+import com.crashlytics.android.Crashlytics
 import java.io.File
 import java.util.UUID
 import one.mixin.android.MixinApplication
@@ -523,6 +524,7 @@ class DecryptMessage : Injector() {
             }
         } catch (e: Exception) {
             Log.e(TAG, "decrypt failed " + data.messageId, e)
+            Crashlytics.logException(e)
             if (e !is NoSessionException) {
                 Bugsnag.beforeNotify {
                     it.addToTab("Decrypt", "conversation", data.conversationId)
