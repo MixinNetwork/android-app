@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout android:id="@+id/language_rl"
     android:layout_width="match_parent"
-    android:layout_height="64dp"
+    android:layout_height="56dp"
     android:background="?attr/bg_gray_light"
     android:foreground="?attr/selectableItemBackground"
     xmlns:android="http://schemas.android.com/apk/res/android"

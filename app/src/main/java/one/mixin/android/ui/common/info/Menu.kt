@@ -85,7 +85,7 @@ fun MenuList.createMenuLayout(
     val dp5 = context.dpToPx(5f)
     val dp13 = context.dpToPx(13f)
     val dp16 = context.dpToPx(16f)
-    val dp64 = context.dpToPx(64f)
+    val dp56 = context.dpToPx(56f)
     groups.forEach { group ->
         val groupLayout = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
@@ -103,7 +103,7 @@ fun MenuList.createMenuLayout(
             val bottom = index == group.menus.size - 1
             menuLayout.roundTopOrBottom(dp13.toFloat(), top, bottom)
             menuLayout.setOnClickListener { menu.action?.invoke() }
-            groupLayout.addView(menuLayout, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp64))
+            groupLayout.addView(menuLayout, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp56))
         }
         listLayout.addView(groupLayout, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,
