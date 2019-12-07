@@ -10,7 +10,6 @@ import kotlinx.android.synthetic.main.fragment_bottom_edit.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.withArgs
-import one.mixin.android.util.Session
 import one.mixin.android.widget.BottomSheet
 
 @SuppressLint("InflateParams")
@@ -18,21 +17,26 @@ class EditBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "EditBottomSheetDialogFragment"
 
-        const val IS_NAME = "is_name"
+        const val ARGS_CURR_TEXT = "args_curr_text"
+        const val ARGS_MAX_LENGTH = "args_max_length"
+        const val ARGS_IS_NAME = "args_is_name"
 
-        fun newInstance(isName: Boolean) = EditBottomSheetDialogFragment().withArgs {
-            putBoolean(IS_NAME, isName)
+        fun newInstance(
+            currText: String?,
+            maxLength: Int,
+            isName: Boolean
+        ) = EditBottomSheetDialogFragment().withArgs {
+            putString(ARGS_CURR_TEXT, currText)
+            putInt(ARGS_MAX_LENGTH, maxLength)
+            putBoolean(ARGS_IS_NAME, isName)
         }
     }
 
-    private val isName by lazy { arguments!!.getBoolean(IS_NAME) }
-    private val maxLength by lazy {
-        if (isName) {
-            50
-        } else {
-            140
-        }
+    private val currText: String? by lazy {
+        arguments!!.getString(ARGS_CURR_TEXT)
     }
+    private val maxLength by lazy { arguments!!.getInt(ARGS_MAX_LENGTH) }
+    private val isName by lazy { arguments!!.getBoolean(ARGS_IS_NAME) }
 
     var changeAction: ((String) -> Unit)? = null
 
@@ -40,12 +44,7 @@ class EditBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_bottom_edit, null)
-        val str = if (isName) {
-            Session.getAccount()?.full_name
-        } else {
-            Session.getAccount()?.biography
-        }
-        contentView.edit_et.setText(str)
+        contentView.edit_et.setText(currText)
         contentView.edit_title.setText(
             if (isName) {
                 R.string.edit_name
@@ -54,9 +53,9 @@ class EditBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         )
         contentView.edit_et.filters = arrayOf(InputFilter.LengthFilter(maxLength))
-        if (str != null) {
-            contentView.edit_et.setSelection(str.length)
-            contentView.edit_counter.text = "${maxLength - str.length}"
+        if (currText != null) {
+            contentView.edit_et.setSelection(currText!!.length)
+            contentView.edit_counter.text = "${maxLength - currText!!.length}"
         } else {
             contentView.edit_counter.text = "$maxLength"
         }

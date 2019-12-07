@@ -253,7 +253,11 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         if (context == null) {
             return
         }
-        val biographyFragment = EditBottomSheetDialogFragment.newInstance(true)
+        val biographyFragment = EditBottomSheetDialogFragment.newInstance(
+            Session.getAccount()?.full_name,
+            40,
+            true
+        )
         biographyFragment.changeAction = {
             update(it, TYPE_NAME)
         }
@@ -265,7 +269,11 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         if (context == null) {
             return
         }
-        val biographyFragment = EditBottomSheetDialogFragment.newInstance(false)
+        val biographyFragment = EditBottomSheetDialogFragment.newInstance(
+            Session.getAccount()?.biography,
+            140,
+            false
+        )
         biographyFragment.changeAction = {
             update(it, TYPE_BIOGRAPHY)
         }

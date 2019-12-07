@@ -4,16 +4,11 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.view.WindowManager
-import android.widget.EditText
-import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -37,7 +32,6 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.localTime
@@ -70,8 +64,6 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.widget.linktext.AutoLinkMode
-import org.jetbrains.anko.dimen
-import org.jetbrains.anko.margin
 import org.threeten.bp.Instant
 
 class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
@@ -127,7 +119,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             updateUserInfo(u)
             if (menuListLayout == null ||
                 u.relationship != user.relationship ||
-                u.muteUntil != user.muteUntil) {
+                u.muteUntil != user.muteUntil ||
+                u.fullName != user.fullName) {
                 initMenu(u)
             }
             user = u
@@ -147,7 +140,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 return@setOnClickListener
             }
             context?.let { ctx ->
-                if (conversationId != MixinApplication.conversationId) {
+                if (MixinApplication.conversationId == null || conversationId != MixinApplication.conversationId) {
                     ConversationActivity.show(ctx, null, user.userId)
                 }
             }
@@ -475,45 +468,16 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         if (context == null || !isAdded) {
             return
         }
-        val editText = EditText(requireContext())
-        editText.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
-        editText.setHintTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
-        editText.hint = getString(R.string.profile_modify_name_hint)
-        editText.setText(name)
-        if (name != null) {
-            editText.setSelection(name.length)
+        val biographyFragment = EditBottomSheetDialogFragment.newInstance(
+            name,
+            40,
+            true
+        )
+        biographyFragment.changeAction = {
+            bottomViewModel.updateRelationship(RelationshipRequest(user.userId,
+                RelationshipAction.UPDATE.name, it))
         }
-        val frameLayout = FrameLayout(requireContext())
-        frameLayout.addView(editText)
-        val params = editText.layoutParams as FrameLayout.LayoutParams
-        params.margin = requireContext().dimen(R.dimen.activity_horizontal_margin)
-        editText.layoutParams = params
-        val nameDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
-            .setTitle(R.string.profile_modify_name)
-            .setView(frameLayout)
-            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.confirm) { dialog, _ ->
-                bottomViewModel.updateRelationship(RelationshipRequest(user.userId,
-                    RelationshipAction.UPDATE.name, editText.text.toString()))
-                dialog.dismiss()
-            }
-            .show()
-        nameDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = false
-        editText.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                nameDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = !(s.isNullOrBlank() || s.toString() == name.toString())
-            }
-        })
-
-        nameDialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-            WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
-        nameDialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+        biographyFragment.show(parentFragmentManager, EditBottomSheetDialogFragment.TAG)
     }
 
     private fun showMuteDialog() {
