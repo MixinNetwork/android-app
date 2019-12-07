@@ -189,13 +189,13 @@ class ConversationListFragment : LinkFragment() {
             override fun click(position: Int, conversation: ConversationItem) {
                 if (conversation.isGroup() && (conversation.status == ConversationStatus.START.ordinal ||
                         conversation.status == ConversationStatus.FAILURE.ordinal)) {
-                    if (!context!!.networkConnected()) {
+                    if (!requireContext().networkConnected()) {
                         context?.toast(R.string.error_network)
                         return
                     }
                     doAsync { messagesViewModel.createGroupConversation(conversation.conversationId) }
                 } else {
-                    ConversationActivity.show(context!!, conversationId = conversation.conversationId)
+                    ConversationActivity.show(requireContext(), conversationId = conversation.conversationId)
                 }
             }
         }
@@ -253,7 +253,7 @@ class ConversationListFragment : LinkFragment() {
             bottomSheet.dismiss()
         }
         view.delete_tv.setOnClickListener {
-            AlertDialog.Builder(requireContext())
+            AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
                 .setMessage(getString(R.string.conversation_delete_tip))
                 .setNegativeButton(R.string.cancel) { dialog, _ ->
                     dialog.dismiss()
@@ -600,7 +600,7 @@ class ConversationListFragment : LinkFragment() {
             getString(R.string.contact_mute_1year))
         var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
         var whichItem = 0
-        AlertDialog.Builder(context!!)
+        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()

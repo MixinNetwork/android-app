@@ -17,6 +17,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshTopAssetsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
@@ -121,6 +122,10 @@ internal constructor(
 
     fun refreshHotAssets() {
         jobManager.addJobInBackground(RefreshTopAssetsJob())
+    }
+
+    fun refreshSnapshots(assetId: String? = null) {
+        jobManager.addJobInBackground(RefreshSnapshotsJob(assetId))
     }
 
     suspend fun queryAsset(query: String): Pair<List<TopAssetItem>?, ArraySet<String>?> =

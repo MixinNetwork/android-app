@@ -99,9 +99,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
         val behavior = params.behavior
 
         if (behavior != null && behavior is BottomSheetBehavior<*>) {
-            behavior.peekHeight = context!!.dpToPx(300f)
+            behavior.peekHeight = requireContext().dpToPx(300f)
             behavior.addBottomSheetCallback(mBottomSheetBehaviorCallback)
-            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, context!!.dpToPx(300f))
+            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, requireContext().dpToPx(300f))
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
     }

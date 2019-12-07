@@ -2,6 +2,7 @@ package one.mixin.android.di.module
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
+import one.mixin.android.ui.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.EditBottomSheetDialogFragment
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
@@ -10,7 +11,6 @@ import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
-import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.GiphyBottomSheetFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.TransferTipBottomSheetDialogFragment
@@ -68,9 +68,6 @@ abstract class CommonModule {
     internal abstract fun contributeTransferTipBottomSheetDialogFragment(): TransferTipBottomSheetDialogFragment
 
     @ContributesAndroidInjector
-    internal abstract fun contributeProfileFragment(): ProfileFragment
-
-    @ContributesAndroidInjector
     internal abstract fun contributeWalletPasswordFragment(): WalletPasswordFragment
 
     @ContributesAndroidInjector
@@ -96,4 +93,7 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeWalletTransactionFragment(): TransactionFragment
+  
+    @ContributesAndroidInjector
+    internal abstract fun contributeProfileBottomSheetDialogFragment(): ProfileBottomSheetDialogFragment
 }

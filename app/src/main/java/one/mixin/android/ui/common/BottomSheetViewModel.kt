@@ -331,9 +331,17 @@ class BottomSheetViewModel @Inject internal constructor(
         return accountRepository.transactions(rawTransactionsRequest)
     }
 
+
     suspend fun findSnapshotById(snapshotId: String) = assetRepository.findSnapshotById(snapshotId)
 
     suspend fun getSnapshotById(snapshotId: String) = assetRepository.getSnapshotById(snapshotId)
 
     fun insertSnapshot(snapshot: Snapshot) = assetRepository.insertSnapshot(snapshot)
+
+    fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
+        accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+
+    fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
+        userRepository.upsert(user)
+    }
 }

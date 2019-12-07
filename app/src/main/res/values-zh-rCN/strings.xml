@@ -198,7 +198,7 @@
     <string name="profile_my_title">我的</string>
     <string name="profile_photo">个人头像</string>
     <string name="profile_phone">修改手机号</string>
-    <string name="profile_modify_name">修改姓名</string>
+    <string name="profile_modify_name">修改昵称</string>
     <string name="profile_modify_name_hint">请输入你的名字</string>
     <string name="info">此对话中的消息使用端对端加密。点击了解更多。</string>
     <string name="error_user_not_found">找不到这个用户</string>
@@ -209,6 +209,10 @@
     <string name="edit_name">修改昵称</string>
     <string name="edit_biography">修改简介</string>
     <string name="biography">简介</string>
+    <string name="change_profile_photo_with_camera">更换头像（相机）</string>
+    <string name="change_profile_photo_with_Library">更换头像（相册）</string>
+    <string name="mute_until">直到 %1$s</string>
+    <string name="profile_join_in">%1$s 加入</string>
     <!-- chat -->
     <string name="chat_waiting">等待%1$s上线后建立加密会话。%2$s。</string>
     <string name="chat_waiting_desktop">桌面端</string>

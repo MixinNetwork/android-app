@@ -7,9 +7,9 @@
         android:id="@+id/avatar_tv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/bg_avatar_1"
+        android:background="@drawable/ic_avatar_place_holder"
         android:gravity="center"
-        android:textColor="?attr/bg_white"
+        android:textColor="@color/white"
         android:textSize="@dimen/avatar_text_size" />
 
     <one.mixin.android.widget.CircleImageView

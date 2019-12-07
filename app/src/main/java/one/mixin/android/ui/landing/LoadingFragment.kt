@@ -50,7 +50,7 @@ class LoadingFragment : BaseFragment() {
             if (!defaultSharedPreferences.getBoolean(IS_SYNC_SESSION, false)) {
                 syncSession()
             }
-            MainActivity.show(context!!)
+            MainActivity.show(requireContext())
             activity?.finish()
         }
     }

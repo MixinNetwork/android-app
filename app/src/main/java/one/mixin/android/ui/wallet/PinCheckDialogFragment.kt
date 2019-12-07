@@ -105,7 +105,7 @@ class PinCheckDialogFragment : DialogFragment(), Injectable {
 
     override fun onStart() {
         super.onStart()
-        val displaySize = context!!.realSize()
+        val displaySize = requireContext().realSize()
         dialog?.window?.setLayout(displaySize.x, MATCH_PARENT)
         dialog?.window?.setBackgroundDrawableResource(R.drawable.bg_transparent_dialog)
         dialog?.window?.setGravity(Gravity.BOTTOM)

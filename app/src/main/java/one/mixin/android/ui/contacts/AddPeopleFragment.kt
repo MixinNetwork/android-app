@@ -17,9 +17,9 @@ import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_add_people.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.vibrate
+import one.mixin.android.ui.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.landing.MobileFragment
@@ -78,8 +78,9 @@ class AddPeopleFragment : BaseFragment() {
                 when {
                     r.isSuccess -> r.data?.let { data ->
                         if (data.userId == Session.getAccountId()) {
-                            activity?.addFragment(this@AddPeopleFragment,
-                                ProfileFragment.newInstance(), ProfileFragment.TAG)
+                            ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager,
+                                UserBottomSheetDialogFragment.TAG
+                            )
                         } else {
                             contactsViewModel.insertUser(user = data)
                             UserBottomSheetDialogFragment.newInstance(data).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)

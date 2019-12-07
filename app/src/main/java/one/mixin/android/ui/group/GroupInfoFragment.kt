@@ -123,7 +123,7 @@ class GroupInfoFragment : BaseFragment() {
                         choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
                     }
                 }
-                AlertDialog.Builder(context!!)
+                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
                     .setItems(choices.toTypedArray()) { _, which ->
                         when (which) {
                             0 -> {
@@ -295,7 +295,7 @@ class GroupInfoFragment : BaseFragment() {
     }
 
     private fun showConfirmDialog(message: String, type: Int, user: User? = null) {
-        AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
+        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setMessage(message)
             .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
             .setPositiveButton(R.string.confirm) { dialog, _ ->

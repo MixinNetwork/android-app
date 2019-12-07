@@ -73,7 +73,7 @@ class StickerFragment : BaseFragment() {
     }
 
     private val padding: Int by lazy {
-        context!!.dip(PADDING)
+        requireContext().dip(PADDING)
     }
 
     var rvCallback: DraggableRecyclerView.Callback? = null
@@ -121,7 +121,7 @@ class StickerFragment : BaseFragment() {
 
         sticker_rv.layoutManager = GridLayoutManager(context, COLUMN)
         sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-        stickerAdapter.size = (context!!.realSize().x - (COLUMN + 1) * padding) / COLUMN
+        stickerAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
         sticker_rv.adapter = stickerAdapter
         stickerAdapter.setOnStickerListener(object : StickerListener {
             override fun onItemClick(pos: Int, stickerId: String) {

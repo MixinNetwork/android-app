@@ -115,7 +115,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                 }
                 mixinPlayer.loadVideo(uri.toString())
                 mixinPlayer.setVideoTextureView(mediaDialogView!!.dialog_video_texture)
-                mediaDialogView!!.time.setVideoPath(uri!!.getFilePath(context!!))
+                mediaDialogView!!.time.setVideoPath(uri!!.getFilePath(requireContext()))
                 Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                     .observeOn(AndroidSchedulers.mainThread())
                     .autoDispose(this).subscribe {
@@ -150,8 +150,8 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {
             val ratio = width / height.toFloat()
             val lp = mediaDialogView!!.dialog_video_texture.layoutParams
-            val screenWidth = context!!.screenWidth()
-            val screenHeight = context!!.screenHeight()
+            val screenWidth = requireContext().screenWidth()
+            val screenHeight = requireContext().screenHeight()
             if (screenWidth / ratio > screenHeight) {
                 lp.height = screenHeight
                 lp.width = (screenHeight * ratio).toInt()

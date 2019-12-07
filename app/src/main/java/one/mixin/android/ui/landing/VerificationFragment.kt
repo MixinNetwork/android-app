@@ -177,8 +177,8 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     private fun handleLogin() = lifecycleScope.launch {
         showLoading()
 
-        SignalProtocol.initSignal(context!!.applicationContext)
-        val registrationId = CryptoPreference.getLocalRegistrationId(context!!)
+        SignalProtocol.initSignal(requireContext().applicationContext)
+        val registrationId = CryptoPreference.getLocalRegistrationId(requireContext())
         val sessionKey = generateRSAKeyPair()
         val sessionSecret = Base64.encodeBytes(sessionKey.getPublicKey())
         val accountRequest = AccountRequest(pin_verification_view.code(),

@@ -1400,7 +1400,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             return true
         } else {
             this.let { activity ->
-                AlertDialog.Builder(activity)
+                AlertDialog.Builder(activity, R.style.MixinAlertDialogTheme)
                     .setTitle(R.string.app_name)
                     .setMessage(R.string.live_permission)
                     .setPositiveButton(R.string.live_setting) { _, _ ->

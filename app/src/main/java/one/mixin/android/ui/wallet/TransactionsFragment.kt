@@ -35,7 +35,6 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
-import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.ui.address.AddressActivity
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -58,14 +57,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     companion object {
         const val TAG = "TransactionsFragment"
         const val ARGS_ASSET = "args_asset"
-
-        fun newInstance(asset: AssetItem): TransactionsFragment {
-            val f = TransactionsFragment()
-            val b = Bundle()
-            b.putParcelable(ARGS_ASSET, asset)
-            f.arguments = b
-            return f
-        }
     }
 
     private val adapter = TransactionsAdapter()
@@ -152,7 +143,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             }
             adapter.submitList(pagedList)
         }
-        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, orderByAmount = currentOrder == R.id.sort_amount))
+        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = currentOrder == R.id.sort_amount))
         walletViewModel.assetItem(asset.assetId).observe(viewLifecycleOwner, Observer { assetItem ->
             assetItem?.let {
                 asset = it
@@ -161,7 +152,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         })
 
         refreshPendingDeposits(asset)
-        jobManager.addJobInBackground(RefreshAssetsJob(asset.assetId))
     }
 
     private fun updateData(list: List<Snapshot>?) {

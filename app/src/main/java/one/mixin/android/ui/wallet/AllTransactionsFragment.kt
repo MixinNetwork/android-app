@@ -10,9 +10,9 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.paging.PagedList
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import kotlinx.android.synthetic.main.fragment_all_transactions.*
+import kotlinx.android.synthetic.main.layout_empty_transaction.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,13 +34,11 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     companion object {
         const val TAG = "AllTransactionsFragment"
-
-        fun newInstance() = AllTransactionsFragment()
     }
 
     private val adapter = SnapshotPagedAdapter()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_all_transactions, container, false)
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -67,12 +65,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             }
         }
         bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey, orderByAmount = currentOrder == R.id.sort_amount))
-        jobManager.addJobInBackground(RefreshSnapshotsJob())
-    }
-
-    override fun onStop() {
-        super.onStop()
-        initialLoadKey = (transactions_rv.layoutManager as? LinearLayoutManager)?.findFirstVisibleItemPosition()
     }
 
     override fun <T> onNormalItemClick(item: T) {

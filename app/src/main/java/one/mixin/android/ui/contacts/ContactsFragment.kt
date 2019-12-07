@@ -30,10 +30,12 @@ import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.UploadContactsJob
+import one.mixin.android.ui.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_MY_QR
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
+import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.setting.SettingActivity
@@ -51,7 +53,7 @@ class ContactsFragment : BaseFragment() {
     private val contactsViewModel: ContactViewModel by viewModels { viewModelFactory }
 
     private val contactAdapter: ContactsAdapter by lazy {
-        ContactsAdapter(context!!, Collections.emptyList(), 0)
+        ContactsAdapter(requireContext(), Collections.emptyList(), 0)
     }
 
     companion object {
@@ -82,7 +84,7 @@ class ContactsFragment : BaseFragment() {
         }
         contactAdapter.setContactListener(mContactListener)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title_view.right_animator.setOnClickListener { SettingActivity.show(context!!) }
+        title_view.right_animator.setOnClickListener { SettingActivity.show(requireContext()) }
 
         if (hasContactPermission() &&
             !defaultSharedPreferences.getBoolean(PREF_DELETE_MOBILE_CONTACTS, false)) {
@@ -121,10 +123,10 @@ class ContactsFragment : BaseFragment() {
     }
 
     private fun hasContactPermission() =
-        context!!.checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+        requireContext().checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
 
     private fun fetchContacts() {
-        RxContacts.fetch(context!!)
+        RxContacts.fetch(requireContext())
             .toSortedList(Contact::compareTo)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(Schedulers.io())
@@ -148,11 +150,13 @@ class ContactsFragment : BaseFragment() {
     private val mContactListener: ContactsAdapter.ContactListener = object : ContactsAdapter.ContactListener {
 
         override fun onHeaderRl() {
-            activity?.addFragment(this@ContactsFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
+            ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager,
+                UserBottomSheetDialogFragment.TAG
+            )
         }
 
         override fun onNewGroup() {
-            GroupActivity.show(context!!)
+            GroupActivity.show(requireContext())
         }
 
         override fun onAddContact() {

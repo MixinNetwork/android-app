@@ -13,6 +13,7 @@ import androidx.work.workDataOf
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transactions_user.*
+import kotlinx.android.synthetic.main.layout_empty_transaction.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER_ID
@@ -48,7 +49,11 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
         ViewModelProvider(this, viewModelFactory).get(WalletViewModel::class.java)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
         layoutInflater.inflate(R.layout.fragment_transactions_user, container, false).apply {
             isClickable = true
         }
@@ -66,12 +71,19 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
         transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         title_view.right_animator.visibility = View.GONE
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        WorkManager.getInstance(requireContext()).enqueueOneTimeNetworkWorkRequest<RefreshUserSnapshotsWorker>(
-            workDataOf(RefreshUserSnapshotsWorker.USER_ID to userId))
+        WorkManager.getInstance(requireContext())
+            .enqueueOneTimeNetworkWorkRequest<RefreshUserSnapshotsWorker>(
+                workDataOf(RefreshUserSnapshotsWorker.USER_ID to userId)
+            )
         adapter.listener = this
         transactions_rv.adapter = adapter
         walletViewModel.snapshotsByUserId(userId).observe(this, Observer {
-            adapter.submitList(it)
+            if (it != null && it.isNotEmpty()) {
+                showEmpty(false)
+                adapter.submitList(it)
+            } else {
+                showEmpty(true)
+            }
         })
     }
 
@@ -81,14 +93,19 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
             val assetItem = walletViewModel.simpleAssetItem(snapshot.assetId)
             assetItem.let {
                 try {
-                    view?.findNavController()?.navigate(R.id.action_user_transactions_to_transaction,
-                        Bundle().apply {
-                            putParcelable(TransactionFragment.ARGS_SNAPSHOT, snapshot)
-                            putParcelable(TransactionsFragment.ARGS_ASSET, it)
-                        })
+                    view?.findNavController()
+                        ?.navigate(R.id.action_user_transactions_to_transaction,
+                            Bundle().apply {
+                                putParcelable(TransactionFragment.ARGS_SNAPSHOT, snapshot)
+                                putParcelable(TransactionsFragment.ARGS_ASSET, it)
+                            })
                 } catch (e: IllegalStateException) {
                     val fragment = TransactionFragment.newInstance(snapshot, it)
-                    activity?.addFragment(this@UserTransactionsFragment, fragment, TransactionFragment.TAG)
+                    activity?.addFragment(
+                        this@UserTransactionsFragment,
+                        fragment,
+                        TransactionFragment.TAG
+                    )
                 }
             }
         }
@@ -96,5 +113,23 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
 
     override fun onUserClick(userId: String) {
         // Do nothing, avoid recursively calling this page.
+    }
+
+    private fun showEmpty(show: Boolean) {
+        if (show) {
+            if (empty_rl.visibility == View.GONE) {
+                empty_rl.visibility = View.VISIBLE
+            }
+            if (transactions_rv.visibility == View.VISIBLE) {
+                transactions_rv.visibility = View.GONE
+            }
+        } else {
+            if (empty_rl.visibility == View.VISIBLE) {
+                empty_rl.visibility = View.GONE
+            }
+            if (transactions_rv.visibility == View.GONE) {
+                transactions_rv.visibility = View.VISIBLE
+            }
+        }
     }
 }

@@ -88,7 +88,7 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
                     remove(this@VerifyFragment)
                 }
                 if (from == FROM_PHONE) {
-                    LandingActivity.show(context!!, pinCode)
+                    LandingActivity.show(requireContext(), pinCode)
                 } else if (from == FROM_EMERGENCY) {
                     val f = FriendsNoBotFragment.newInstance(pinCode)
                     activity?.addFragment(this@VerifyFragment, f, FriendsNoBotFragment.TAG)

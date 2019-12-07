@@ -60,6 +60,8 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
             return
         }
         val editText = EditText(requireContext())
+        editText.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
+        editText.setHintTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
         editText.hint = getString(R.string.wallet_transfer_amount)
         editText.inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL + InputType.TYPE_CLASS_NUMBER
         editText.setText(amount)
@@ -69,10 +71,10 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
         val frameLayout = FrameLayout(requireContext())
         frameLayout.addView(editText)
         val params = editText.layoutParams as FrameLayout.LayoutParams
-        params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)
+        params.margin = requireContext().dimen(R.dimen.activity_horizontal_margin)
         editText.layoutParams = params
         editText.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
-        val amountDialog = AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
+        val amountDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setTitle(getString(R.string.setting_notification_transfer_amount, accountSymbol))
             .setView(frameLayout)
             .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }

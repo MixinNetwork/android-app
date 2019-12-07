@@ -106,11 +106,11 @@ import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
+import one.mixin.android.ui.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.adapter.GalleryCallback
 import one.mixin.android.ui.conversation.adapter.MentionAdapter
@@ -520,10 +520,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onContactCardClick(userId: String) {
                 if (userId == Session.getAccountId()) {
-                    activity?.addFragment(
-                        this@ConversationFragment,
-                        ProfileFragment.newInstance(),
-                        ProfileFragment.TAG
+                    ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager,
+                        UserBottomSheetDialogFragment.TAG
                     )
                     return
                 }
