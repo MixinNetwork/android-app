@@ -19,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.autoDispose
 import java.io.File
+import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.*
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -60,7 +61,9 @@ import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
+import org.jetbrains.anko.dip
 import org.jetbrains.anko.margin
+import org.jetbrains.anko.support.v4.dip
 import org.threeten.bp.Instant
 
 class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
@@ -94,6 +97,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     @SuppressLint("SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        contentView.container.setRoundRadius(dip(8))
         contentView.title.right_iv.setOnClickListener { dismiss() }
         contentView.join_tv.setOnClickListener {
             if (code == null) return@setOnClickListener
@@ -430,6 +434,11 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.rotationX = 0f
             BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.rotationX = 180f
         }
+    }
+
+    override fun onSlide(bottomSheet: View, slideOffset: Float) {
+        super.onSlide(bottomSheet, slideOffset)
+        contentView.container.setRoundRadius((1f - slideOffset) * dip(8))
     }
 
     interface Callback {

@@ -20,6 +20,15 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
+import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.avatar
+import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.detail_tv
+import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.more_fl
+import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.more_iv
+import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.name
+import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.scroll_content
+import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.scroll_view
+import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.send_fl
+import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.title
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -63,6 +72,7 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.widget.linktext.AutoLinkMode
+import org.jetbrains.anko.support.v4.dip
 import org.threeten.bp.Instant
 
 class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
@@ -97,6 +107,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         super.onActivityCreated(savedInstanceState)
         user = arguments!!.getParcelable(ARGS_USER)!!
         conversationId = arguments!!.getString(ARGS_CONVERSATION_ID)
+        contentView.container.setRoundRadius(dip(8))
         contentView.title.right_iv.setOnClickListener { dismiss() }
         contentView.avatar.setOnClickListener {
             if (!isAdded) return@setOnClickListener
@@ -119,7 +130,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             if (menuListLayout == null ||
                 u.relationship != user.relationship ||
                 u.muteUntil != user.muteUntil ||
-                u.fullName != user.fullName) {
+                u.fullName != user.fullName
+            ) {
                 initMenu(u)
             }
             user = u
@@ -189,8 +201,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 if (showUserTransactionAction != null) {
                     showUserTransactionAction?.invoke()
                 } else {
-                    activity?.addFragment(this@UserBottomSheetDialogFragment,
-                        UserTransactionsFragment.newInstance(u.userId), UserTransactionsFragment.TAG)
+                    activity?.addFragment(
+                        this@UserBottomSheetDialogFragment,
+                        UserTransactionsFragment.newInstance(u.userId), UserTransactionsFragment.TAG
+                    )
                 }
                 dismiss()
             }
@@ -347,14 +361,20 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     private fun startSearchConversation() = lifecycleScope.launch(Dispatchers.IO) {
         bottomViewModel.getConversation(conversationId!!)?.let {
             val searchMessageItem = if (it.category == ConversationCategory.CONTACT.name) {
-                SearchMessageItem(it.conversationId, it.category, null,
-                    0, user.userId, user.fullName, user.avatarUrl, null)
+                SearchMessageItem(
+                    it.conversationId, it.category, null,
+                    0, user.userId, user.fullName, user.avatarUrl, null
+                )
             } else {
-                SearchMessageItem(it.conversationId, it.category, it.name,
-                    0, "", null, null, it.iconUrl)
+                SearchMessageItem(
+                    it.conversationId, it.category, it.name,
+                    0, "", null, null, it.iconUrl
+                )
             }
-            activity?.addFragment(this@UserBottomSheetDialogFragment,
-                SearchMessageFragment.newInstance(searchMessageItem, ""), SearchMessageFragment.TAG)
+            activity?.addFragment(
+                this@UserBottomSheetDialogFragment,
+                SearchMessageFragment.newInstance(searchMessageItem, ""), SearchMessageFragment.TAG
+            )
         }
     }
 
@@ -471,16 +491,22 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             true
         )
         biographyFragment.changeAction = {
-            bottomViewModel.updateRelationship(RelationshipRequest(user.userId,
-                RelationshipAction.UPDATE.name, it))
+            bottomViewModel.updateRelationship(
+                RelationshipRequest(
+                    user.userId,
+                    RelationshipAction.UPDATE.name, it
+                )
+            )
         }
         biographyFragment.show(parentFragmentManager, EditBottomSheetDialogFragment.TAG)
     }
 
     private fun showMuteDialog() {
-        val choices = arrayOf(getString(R.string.contact_mute_8hours),
+        val choices = arrayOf(
+            getString(R.string.contact_mute_8hours),
             getString(R.string.contact_mute_1week),
-            getString(R.string.contact_mute_1year))
+            getString(R.string.contact_mute_1year)
+        )
         var duration = MUTE_8_HOURS
         var whichItem = 0
         AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
@@ -523,9 +549,11 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         if (!isAdded) return@launch
 
         updateUserStatus(relationship)
-        val request = RelationshipRequest(user.userId,
+        val request = RelationshipRequest(
+            user.userId,
             if (relationship == UserRelationship.FRIEND.name)
-                RelationshipAction.ADD.name else RelationshipAction.REMOVE.name, user.fullName)
+                RelationshipAction.ADD.name else RelationshipAction.REMOVE.name, user.fullName
+        )
         bottomViewModel.updateRelationship(request)
     }
 
@@ -535,5 +563,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.rotationX = 0f
             BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.rotationX = 180f
         }
+    }
+
+    override fun onSlide(bottomSheet: View, slideOffset: Float) {
+        super.onSlide(bottomSheet, slideOffset)
+        contentView.container.setRoundRadius((1f - slideOffset) * dip(8))
     }
 }

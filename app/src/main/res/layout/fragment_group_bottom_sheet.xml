@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<one.mixin.android.widget.UpperRoundRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/bg_upper_round"
     android:orientation="vertical">
 
     <one.mixin.android.widget.RoundTitleView
@@ -67,9 +67,9 @@
                 android:gravity="center"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
-                android:visibility="gone"
                 android:text="@string/group_join"
-                android:textColor="@color/wallet_blue" />
+                android:textColor="@color/wallet_blue"
+                android:visibility="gone" />
 
             <one.mixin.android.widget.linktext.AutoLinkTextView
                 android:id="@+id/detail_tv"
@@ -139,4 +139,4 @@
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-</RelativeLayout>
+</one.mixin.android.widget.UpperRoundRelativeLayout>
