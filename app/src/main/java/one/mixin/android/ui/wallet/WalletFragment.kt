@@ -264,6 +264,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             bottomSheet.dismiss()
         }
         view.transactions_tv.setOnClickListener {
+            walletViewModel.refreshSnapshots()
             rootView?.navigate(R.id.action_wallet_fragment_to_all_transactions_fragment)
             bottomSheet.dismiss()
         }
@@ -272,7 +273,9 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     }
 
     override fun <T> onNormalItemClick(item: T) {
+        item as AssetItem
+        walletViewModel.refreshSnapshots(item.assetId)
         view?.navigate(R.id.action_wallet_fragment_to_transactions_fragment,
-            Bundle().apply { putParcelable(ARGS_ASSET, item as AssetItem) })
+            Bundle().apply { putParcelable(ARGS_ASSET, item) })
     }
 }
