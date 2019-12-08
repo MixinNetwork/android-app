@@ -60,13 +60,14 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
     }
 
     override fun onCancel(dialog: DialogInterface) {
-        try {
-            super.dismissAllowingStateLoss()
-        } catch (e: IllegalStateException) {
-        }
+        safeDismiss()
     }
 
     override fun dismiss() {
+        safeDismiss()
+    }
+
+    private fun safeDismiss() {
         if (isAdded) {
             dialog?.dismiss()
             // Prevent dialog slide animation end
