@@ -25,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.Constants.ARGS_USER
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
@@ -139,7 +140,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 return@setOnClickListener
             }
             context?.let { ctx ->
-                ConversationActivity.show(ctx, null, user.userId)
+                if (MixinApplication.conversationId == null || generateConversationId(
+                        user.userId,
+                        Session.getAccountId()!!
+                    ) != MixinApplication.conversationId
+                ) {
+                    ConversationActivity.show(ctx, null, user.userId)
+                }
             }
             dismiss()
         }
