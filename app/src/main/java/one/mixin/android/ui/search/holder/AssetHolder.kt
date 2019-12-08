@@ -13,6 +13,7 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment
+import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import org.jetbrains.anko.textColorResource
@@ -26,13 +27,13 @@ class AssetHolder constructor(containerView: View) : NormalHolder(containerView)
 
         itemView.balance.text = asset.balance.numberFormat8() + " " + asset.symbol
         itemView.balance.highLight(target)
-        itemView.balance_as.text = "≈ ${asset.fiat().numberFormat2()} ${Fiats.currency}"
+        itemView.balance_as.text = "≈ ${asset.fiat().numberFormat2()} ${Session.getFiatCurrency()}"
         if (asset.priceUsd == "0") {
             itemView.price_tv.setText(R.string.asset_none)
             itemView.change_tv.visibility = View.GONE
         } else {
             itemView.change_tv.visibility = View.VISIBLE
-            itemView.price_tv.text = "${Fiats.currencySymbol}${asset.priceFiat().priceFormat()}"
+            itemView.price_tv.text = "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
             if (asset.changeUsd.isNotEmpty()) {
                 val changeUsd = BigDecimal(asset.changeUsd)
                 val isPositive = changeUsd > BigDecimal.ZERO

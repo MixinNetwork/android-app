@@ -176,12 +176,12 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         header.symbol_tv.text = asset.symbol
         header.balance_as.text = try {
             if (asset.fiat().toFloat() == 0f) {
-                "≈ ${Fiats.currencySymbol}0.00"
+                "≈ ${Fiats.getSymbol()}0.00"
             } else {
-                "≈ ${Fiats.currencySymbol}${asset.fiat().numberFormat2()}"
+                "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
             }
         } catch (ignored: NumberFormatException) {
-            "≈ ${Fiats.currencySymbol}${asset.fiat().numberFormat2()}"
+            "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
         }
     }
 

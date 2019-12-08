@@ -2,15 +2,14 @@ package one.mixin.android.vo
 
 import android.os.Build
 import com.google.gson.Gson
-import java.util.Collections
-import java.util.concurrent.ConcurrentHashMap
-import one.mixin.android.Constants.Account.PREF_CURRENCY
-import one.mixin.android.Constants.Account.PREF_CURRENCY_SYMBOL
 import one.mixin.android.Constants.Account.PREF_FIAT_SET
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putString
 import one.mixin.android.extension.putStringSet
+import one.mixin.android.util.Session
+import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
 
 data class Fiat(val code: String, val rate: Double)
 
@@ -23,21 +22,19 @@ object Fiats {
         Collections.newSetFromMap(ConcurrentHashMap<Fiat, Boolean>())
     }
 
-    var currency: String = MixinApplication.appContext.defaultSharedPreferences.getString(PREF_CURRENCY, "USD") ?: "USD"
-        set(value) {
-            field = value
-            MixinApplication.appContext.defaultSharedPreferences.putString(PREF_CURRENCY, value)
-        }
-
-    var currencySymbol = MixinApplication.appContext.defaultSharedPreferences.getString(PREF_CURRENCY_SYMBOL, "$") ?: "$"
-        set(value) {
-            field = value
-            MixinApplication.appContext.defaultSharedPreferences.putString(PREF_CURRENCY_SYMBOL, value)
-        }
+    private val codeSymbolMap = ConcurrentHashMap<String, String>()
 
     init {
-        MixinApplication.appContext.defaultSharedPreferences.getStringSet(PREF_FIAT_SET, null)
-            ?.mapTo(fiatSet) { gson.fromJson(it, Fiat::class.java) }
+        MixinApplication.appContext.apply {
+            val names = resources.getStringArray(R.array.currency_names)
+            val symbols = resources.getStringArray(R.array.currency_symbols)
+            names.forEachIndexed { i, s ->
+                codeSymbolMap[s] = symbols[i]
+            }
+
+            defaultSharedPreferences.getStringSet(PREF_FIAT_SET, null)
+                ?.mapTo(fiatSet) { gson.fromJson(it, Fiat::class.java) }
+        }
     }
 
     fun updateFiats(newFiatSet: Set<Fiat>) {
@@ -49,5 +46,7 @@ object Fiats {
         MixinApplication.appContext.defaultSharedPreferences.putStringSet(PREF_FIAT_SET, fiatStringSet)
     }
 
-    fun getRate() = fiatSet.find { it.code == currency }?.rate ?: 1.0
+    fun getRate() = fiatSet.find { it.code == Session.getFiatCurrency() }?.rate ?: 1.0
+
+    fun getSymbol(code: String = Session.getFiatCurrency()): String = codeSymbolMap[code] ?: "$"
 }

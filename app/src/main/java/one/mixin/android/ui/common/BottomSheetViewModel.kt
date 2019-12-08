@@ -331,7 +331,6 @@ class BottomSheetViewModel @Inject internal constructor(
         return accountRepository.transactions(rawTransactionsRequest)
     }
 
-
     suspend fun findSnapshotById(snapshotId: String) = assetRepository.findSnapshotById(snapshotId)
 
     suspend fun getSnapshotById(snapshotId: String) = assetRepository.getSnapshotById(snapshotId)

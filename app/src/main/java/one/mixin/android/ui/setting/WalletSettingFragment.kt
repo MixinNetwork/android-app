@@ -21,6 +21,7 @@ import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.BiometricTimeFragment.Companion.X_HOUR
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.Session
 import one.mixin.android.vo.Fiats
 
 class WalletSettingFragment : BaseFragment() {
@@ -39,7 +40,7 @@ class WalletSettingFragment : BaseFragment() {
         change_tv.setOnClickListener {
             navTo(OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
         }
-        current_tv.text = getString(R.string.wallet_setting_currency_desc, Fiats.currency, Fiats.currencySymbol)
+        current_tv.text = getString(R.string.wallet_setting_currency_desc, Session.getFiatCurrency(), Fiats.getSymbol())
         currency_rl.setOnClickListener {
             val currencyBottom = CurrencyBottomSheetDialogFragment.newInstance()
             currencyBottom.callback = object : CurrencyBottomSheetDialogFragment.Callback {

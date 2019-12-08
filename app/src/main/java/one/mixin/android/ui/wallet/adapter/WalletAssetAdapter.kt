@@ -87,13 +87,13 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderFooterAdapter<A
                 asset.balance.numberFormat8()
             }
             holder.itemView.symbol_tv.text = asset.symbol
-            holder.itemView.balance_as.text = "≈ ${Fiats.currencySymbol}${asset.fiat().numberFormat2()}"
+            holder.itemView.balance_as.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
             if (asset.priceUsd == "0") {
                 holder.itemView.price_tv.setText(R.string.asset_none)
                 holder.itemView.change_tv.visibility = GONE
             } else {
                 holder.itemView.change_tv.visibility = VISIBLE
-                holder.itemView.price_tv.text = "${Fiats.currencySymbol}${asset.priceFiat().priceFormat()}"
+                holder.itemView.price_tv.text = "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
                 if (asset.changeUsd.isNotEmpty()) {
                     val changeUsd = BigDecimal(asset.changeUsd)
                     val isPositive = changeUsd > BigDecimal.ZERO

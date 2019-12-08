@@ -13,8 +13,8 @@ import one.mixin.android.R
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.Fiats
 
 class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearLayout(context, attributeSet) {
     init {
@@ -29,6 +29,6 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
         asset_icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         balance.text = amount.numberFormat() + " " + asset.symbol
         balance_as.text = "≈ ${(BigDecimal(amount) *
-            asset.priceFiat()).numberFormat2()} ${Fiats.currency}"
+            asset.priceFiat()).numberFormat2()} ${Session.getFiatCurrency()}"
     }
 }
