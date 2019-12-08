@@ -146,7 +146,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 } catch (ignored: NumberFormatException) {
                     totalFiat.numberFormat2()
                 }
-                header.symbol.text = Fiats.currencySymbol
+                header.symbol.text = Fiats.getSymbol()
 
                 if (totalFiat.compareTo(BigDecimal.ZERO) == 0) {
                     header.pie_item_container.visibility = GONE

@@ -4,7 +4,7 @@ import android.os.Bundle
 import java.math.BigDecimal
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.vo.Fiats
+import one.mixin.android.util.Session
 
 abstract class ValuableBiometricBottomSheetDialogFragment<T : BiometricItem> : BiometricBottomSheetDialogFragment() {
     companion object {
@@ -21,7 +21,7 @@ abstract class ValuableBiometricBottomSheetDialogFragment<T : BiometricItem> : B
     protected fun getDescription(): String {
         val t = getBiometricItem()
         val pre = "${t.amount} ${t.asset.symbol}"
-        val post = "≈ ${(BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()} ${Fiats.currency}"
+        val post = "≈ ${(BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()} ${Session.getFiatCurrency()}"
         return "$pre ($post)"
     }
 

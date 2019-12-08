@@ -38,7 +38,7 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
         }
     }
 
-    private val accountSymbol = Fiats.currencySymbol
+    private val accountSymbol = Fiats.getSymbol()
 
     override fun getModelClass() = SettingViewModel::class.java
 
@@ -138,6 +138,6 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
     private fun refreshUI(threshold: String) {
         transfer_tv.text = "$threshold$accountSymbol"
         transfer_desc_tv.text = getString(R.string.setting_notification_transfer_desc,
-            "${Fiats.currencySymbol}$threshold")
+            "$accountSymbol$threshold")
     }
 }

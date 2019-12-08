@@ -27,7 +27,6 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.Session
-import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetRelativeLayout
 import one.mixin.android.widget.SearchView
@@ -66,7 +65,6 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             override fun onSearch() {
             }
         }
-        currencyAdapter.checkedName = Fiats.currency
         currencyAdapter.currencyListener = object : OnCurrencyListener {
             override fun onClick(currency: Currency) {
                 savePreference(currency)
@@ -93,9 +91,6 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             successBlock = {
                 it.data?.let { account ->
                     Session.storeAccount(account)
-
-                    Fiats.currency = currency.name
-                    Fiats.currencySymbol = currency.symbol
                     callback?.onCurrencyClick(currency)
                     toast(R.string.save_success)
                     dismiss()
@@ -146,19 +141,18 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
 class CurrencyAdapter : ListAdapter<Currency, CurrencyHolder>(Currency.DIFF_CALLBACK) {
     var currencyListener: OnCurrencyListener? = null
-    var checkedName: String = "USD"
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         CurrencyHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_currency, parent, false))
 
     override fun onBindViewHolder(holder: CurrencyHolder, position: Int) {
-        getItem(position)?.let { holder.bind(it, checkedName, currencyListener) }
+        getItem(position)?.let { holder.bind(it, currencyListener) }
     }
 }
 
 class CurrencyHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    fun bind(currency: Currency, checkedName: String, listener: OnCurrencyListener?) {
-        if (currency.name == checkedName) {
+    fun bind(currency: Currency, listener: OnCurrencyListener?) {
+        if (currency.name == Session.getFiatCurrency()) {
             itemView.check_iv.isVisible = true
         } else {
             itemView.check_iv.isInvisible = true

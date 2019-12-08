@@ -93,7 +93,7 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeWalletTransactionFragment(): TransactionFragment
-  
+
     @ContributesAndroidInjector
     internal abstract fun contributeProfileBottomSheetDialogFragment(): ProfileBottomSheetDialogFragment
 }

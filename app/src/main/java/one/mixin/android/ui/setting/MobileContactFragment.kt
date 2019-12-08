@@ -33,8 +33,16 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
         fun newInstance() = MobileContactFragment()
     }
 
-    init {
-        lifecycleScope.launchWhenCreated {
+    override fun getModelClass() = SettingViewModel::class.java
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        layoutInflater.inflate(R.layout.fragment_setting_mobile_contact, container, false)
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+
+        lifecycleScope.launch {
             op_pb?.isVisible = true
             handleMixinResponse(
                 invokeNetwork = { viewModel.getContacts() },
@@ -59,16 +67,6 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
                 }
             )
         }
-    }
-
-    override fun getModelClass() = SettingViewModel::class.java
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_setting_mobile_contact, container, false)
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
     }
 
     private fun setDelete() {
