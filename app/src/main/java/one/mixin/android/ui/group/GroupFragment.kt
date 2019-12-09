@@ -138,7 +138,7 @@ class GroupFragment : BaseFragment() {
         group_rv.addItemDecoration(StickyRecyclerHeadersDecoration(groupFriendAdapter))
 
         if (from == TYPE_ADD || from == TYPE_CREATE) {
-            groupViewModel.getFriends().observe(this, Observer {
+            groupViewModel.getFriends().observe(viewLifecycleOwner, Observer {
                 users = it
                 filterAndSet(search_et.text.toString(), it)
             })

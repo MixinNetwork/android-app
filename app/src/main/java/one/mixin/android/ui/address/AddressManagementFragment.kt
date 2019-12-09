@@ -72,7 +72,7 @@ class AddressManagementFragment : BaseFragment() {
             activity?.addFragment(this@AddressManagementFragment,
                 AddressAddFragment.newInstance(asset), AddressAddFragment.TAG)
         }
-        addressViewModel.addresses(asset.assetId).observe(this, Observer {
+        addressViewModel.addresses(asset.assetId).observe(viewLifecycleOwner, Observer {
             val list = it?.toMutableList()
             if (list.isNullOrEmpty()) {
                 empty_tv.isVisible = true

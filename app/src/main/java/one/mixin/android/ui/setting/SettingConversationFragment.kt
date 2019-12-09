@@ -39,13 +39,13 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
         super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         viewModel.initPreferences(requireContext())
-            .observe(this@SettingConversationFragment, Observer {
+            .observe(viewLifecycleOwner, Observer {
                 it?.let {
                     render(it)
                 }
             })
         viewModel.initGroupPreferences(requireContext())
-            .observe(this@SettingConversationFragment, Observer {
+            .observe(viewLifecycleOwner, Observer {
                 it?.let {
                     renderGroup(it)
                 }

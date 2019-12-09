@@ -112,11 +112,11 @@ class StickerManagementFragment : BaseFragment() {
         })
 
         if (albumId == null) { // not add any personal sticker yet
-            stickerViewModel.observePersonalStickers().observe(this, Observer {
+            stickerViewModel.observePersonalStickers().observe(viewLifecycleOwner, Observer {
                 it?.let { updateStickers(it) }
             })
         } else {
-            stickerViewModel.observeStickers(albumId!!).observe(this, Observer {
+            stickerViewModel.observeStickers(albumId!!).observe(viewLifecycleOwner, Observer {
                 it?.let { updateStickers(it) }
             })
         }

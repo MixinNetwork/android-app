@@ -74,7 +74,7 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         assetsAdapter.onItemListener = this
         assets_rv.adapter = assetsAdapter
 
-        walletViewModel.hiddenAssets().observe(this, Observer {
+        walletViewModel.hiddenAssets().observe(viewLifecycleOwner, Observer {
             if (it != null && it.isNotEmpty()) {
                 assets_va.displayedChild = POS_ASSET
                 assets = it

@@ -77,7 +77,7 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
             )
         adapter.listener = this
         transactions_rv.adapter = adapter
-        walletViewModel.snapshotsByUserId(userId).observe(this, Observer {
+        walletViewModel.snapshotsByUserId(userId).observe(viewLifecycleOwner, Observer {
             if (it != null && it.isNotEmpty()) {
                 showEmpty(false)
                 adapter.submitList(it)

@@ -41,7 +41,7 @@ class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() 
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel.blockingUsers(stopScope).observe(this, Observer {
+        viewModel.blockingUsers(stopScope).observe(viewLifecycleOwner, Observer {
             if (it != null && it.isNotEmpty()) {
                 block_va.displayedChild = POS_LIST
                 adapter.setUsers(it)

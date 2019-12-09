@@ -48,7 +48,7 @@ class StickerAlbumFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        stickerViewModel.getSystemAlbums().observe(this, Observer { r ->
+        stickerViewModel.getSystemAlbums().observe(viewLifecycleOwner, Observer { r ->
             r?.let {
                 albums.clear()
                 albums.addAll(r)
