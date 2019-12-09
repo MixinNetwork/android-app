@@ -94,7 +94,7 @@ class ContactsFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contactsViewModel.getFriends().observe(this, Observer { users ->
+        contactsViewModel.getFriends().observe(viewLifecycleOwner, Observer { users ->
             if (users != null && users.isNotEmpty()) {
                 if (!hasContactPermission()) {
                     contactAdapter.friendSize = users.size
@@ -114,7 +114,7 @@ class ContactsFragment : BaseFragment() {
             }
             contactAdapter.notifyDataSetChanged()
         })
-        contactsViewModel.findSelf().observe(this, Observer { self ->
+        contactsViewModel.findSelf().observe(viewLifecycleOwner, Observer { self ->
             if (self != null) {
                 contactAdapter.me = self
                 contactAdapter.notifyDataSetChanged()

@@ -28,7 +28,7 @@ class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
         title_view.left_ib.setOnClickListener {
             activity?.onBackPressed()
         }
-        viewModel.countBlockingUsers().observe(this, Observer {
+        viewModel.countBlockingUsers().observe(viewLifecycleOwner, Observer {
             it?.let { users ->
                 blocking_tv.text = "${users.size}"
             }

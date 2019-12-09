@@ -151,7 +151,7 @@ class SearchMessageFragment : BaseFragment() {
                 adapter.submitList(it)
             }
             observer?.let {
-                curLiveData?.observe(this@SearchMessageFragment, it)
+                curLiveData?.observe(viewLifecycleOwner, it)
             }
         }
     }

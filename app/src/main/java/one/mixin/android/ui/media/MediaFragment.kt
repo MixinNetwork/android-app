@@ -71,7 +71,7 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         recycler_view.adapter = adapter
         empty_iv.setImageResource(R.drawable.ic_empty_media)
         empty_tv.setText(R.string.no_media)
-        viewModel.getMediaMessagesExcludeLive(conversationId).observe(this, Observer {
+        viewModel.getMediaMessagesExcludeLive(conversationId).observe(viewLifecycleOwner, Observer {
             if (it.size <= 0) {
                 (view as ViewAnimator).displayedChild = 1
             } else {

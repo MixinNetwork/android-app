@@ -89,7 +89,7 @@ class BackUpFragment : BaseFragment() {
             }
         }
 
-        BackupJob.backupLiveData.observe(this, Observer {
+        BackupJob.backupLiveData.observe(viewLifecycleOwner, Observer {
             if (it) {
                 backup_bn.visibility = INVISIBLE
                 progressGroup.visibility = VISIBLE

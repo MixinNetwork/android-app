@@ -62,7 +62,7 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel.getConversationStorageUsage().observe(this, Observer {
+        viewModel.getConversationStorageUsage().observe(viewLifecycleOwner, Observer {
             if (progress.visibility != View.GONE) {
                 progress.visibility = View.GONE
             }

@@ -70,7 +70,7 @@ class AudioFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         recycler_view.adapter = adapter
         empty_iv.setImageResource(R.drawable.ic_empty_audio)
         empty_tv.setText(R.string.no_audio)
-        viewModel.getAudioMessages(conversationId).observe(this, Observer {
+        viewModel.getAudioMessages(conversationId).observe(viewLifecycleOwner, Observer {
             if (it.size <= 0) {
                 (view as ViewAnimator).displayedChild = 1
             } else {

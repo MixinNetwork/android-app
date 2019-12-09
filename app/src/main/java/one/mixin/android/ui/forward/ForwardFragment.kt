@@ -145,7 +145,7 @@ class ForwardFragment : BaseFragment() {
             }
         })
 
-        chatViewModel.successConversationList().observe(this, Observer {
+        chatViewModel.successConversationList().observe(viewLifecycleOwner, Observer {
             it?.let { conversations ->
                 val set = ArraySet<String>()
                 this.conversations = conversations

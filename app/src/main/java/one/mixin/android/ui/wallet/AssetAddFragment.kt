@@ -102,7 +102,7 @@ class AssetAddFragment : BaseFragment() {
             }
         }
 
-        walletViewModel.observeTopAssets().observe(this, Observer {
+        walletViewModel.observeTopAssets().observe(viewLifecycleOwner, Observer {
             topAssets = it
             if (search_et.text.isNullOrBlank()) {
                 showHot()

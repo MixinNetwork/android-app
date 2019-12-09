@@ -38,10 +38,10 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         floodMessageCount = floodMessageDao.getFloodMessageCount()
-        linkState.observe(this, Observer { state ->
+        linkState.observe(viewLifecycleOwner, Observer { state ->
             check(state)
         })
-        callState.observe(this, Observer {
+        callState.observe(viewLifecycleOwner, Observer {
             check(linkState.state)
         })
     }
@@ -68,7 +68,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
         }
 
         if (LinkState.isOnline(state)) {
-            floodMessageCount.observe(this, this)
+            floodMessageCount.observe(viewLifecycleOwner, this)
             hiddenBar()
         } else {
             floodMessageCount.removeObserver(this)

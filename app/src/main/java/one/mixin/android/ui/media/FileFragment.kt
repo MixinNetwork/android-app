@@ -65,7 +65,7 @@ class FileFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         recycler_view.layoutManager = LinearLayoutManager(requireContext())
         recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         recycler_view.adapter = adapter
-        viewModel.getFileMessages(conversationId).observe(this, Observer {
+        viewModel.getFileMessages(conversationId).observe(viewLifecycleOwner, Observer {
             if (it.size <= 0) {
                 (view as ViewAnimator).displayedChild = 1
             } else {

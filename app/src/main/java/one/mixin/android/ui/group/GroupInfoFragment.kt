@@ -203,7 +203,7 @@ class GroupInfoFragment : BaseFragment() {
             }
         })
 
-        groupViewModel.getGroupParticipantsLiveData(conversationId).observe(this, Observer { u ->
+        groupViewModel.getGroupParticipantsLiveData(conversationId).observe(viewLifecycleOwner, Observer { u ->
             u?.let {
                 var role: String? = null
                 self?.let {
@@ -236,13 +236,13 @@ class GroupInfoFragment : BaseFragment() {
             }
         })
 
-        groupViewModel.getConversationById(conversationId).observe(this, Observer {
+        groupViewModel.getConversationById(conversationId).observe(viewLifecycleOwner, Observer {
             it?.let {
                 adapter.conversation = it
             }
         })
 
-        groupViewModel.findSelf().observe(this, Observer {
+        groupViewModel.findSelf().observe(viewLifecycleOwner, Observer {
             self = it
             adapter.self = it
         })

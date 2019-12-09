@@ -134,7 +134,7 @@ class NewGroupFragment : BaseFragment() {
             )
         }
         val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)
-        liveData.observe(this@NewGroupFragment, Observer { c ->
+        liveData.observe(viewLifecycleOwner, Observer { c ->
             if (c != null) {
                 when {
                     c.status == ConversationStatus.SUCCESS.ordinal -> {

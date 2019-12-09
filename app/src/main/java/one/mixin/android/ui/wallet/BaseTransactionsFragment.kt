@@ -74,7 +74,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     protected fun bindLiveData(liveData: LiveData<C>) {
         currentLiveData?.removeObserver(dataObserver)
         currentLiveData = liveData
-        currentLiveData?.observe(this, dataObserver)
+        currentLiveData?.observe(viewLifecycleOwner, dataObserver)
     }
 
     protected var currentType = R.id.filters_radio_all
