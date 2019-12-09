@@ -10,6 +10,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
@@ -125,8 +126,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
             user = u
 
-            contentView.post {
-                behavior?.peekHeight = contentView.scroll_content.height - (menuListLayout?.height ?: 0)
+            contentView.doOnPreDraw {
+                behavior?.peekHeight = contentView.title.height + contentView.scroll_content.height -
+                    (menuListLayout?.height ?: 0) - if (menuListLayout != null) requireContext().dpToPx(70f) else requireContext().dpToPx(40f)
             }
         })
         contentView.transfer_fl.setOnClickListener {
@@ -392,6 +394,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             context?.toast(R.string.copy_success)
             true
         }
+        if (user.biography.isNotEmpty()) {
+            contentView.detail_tv.text = user.biography
+            contentView.detail_tv.visibility = VISIBLE
+        } else {
+            contentView.detail_tv.visibility = GONE
+        }
+        updateUserStatus(user.relationship)
         user.showVerifiedOrBot(contentView.verified_iv, contentView.bot_iv)
         contentView.op_ll.isVisible = true
         if (user.isBot()) {
@@ -426,13 +435,6 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             contentView.open_fl.visibility = GONE
             contentView.transfer_fl.visibility = VISIBLE
         }
-        if (user.biography.isNotEmpty()) {
-            contentView.detail_tv.text = user.biography
-            contentView.detail_tv.visibility = VISIBLE
-        } else {
-            contentView.detail_tv.visibility = GONE
-        }
-        updateUserStatus(user.relationship)
     }
 
     private val blockDrawable: Drawable by lazy {

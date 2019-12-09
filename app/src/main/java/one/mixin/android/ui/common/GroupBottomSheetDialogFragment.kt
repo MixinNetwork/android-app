@@ -12,6 +12,7 @@ import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
@@ -194,8 +195,9 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             contentView.join_tv.isVisible = code != null
         }
 
-        contentView.post {
-            behavior?.peekHeight = contentView.scroll_content.height - (menuListLayout?.height ?: 0)
+        contentView.doOnPreDraw {
+            behavior?.peekHeight = contentView.title.height + contentView.scroll_content.height -
+                (menuListLayout?.height ?: 0) - if (menuListLayout != null) requireContext().dpToPx(70f) else requireContext().dpToPx(40f)
         }
     }
 
