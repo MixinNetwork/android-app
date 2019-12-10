@@ -89,6 +89,7 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
         try {
             super.showNow(manager, tag)
         } catch (e: IllegalStateException) {
+        } catch (e: IllegalArgumentException) {
         }
     }
 }
