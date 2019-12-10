@@ -85,8 +85,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     }
 
     private lateinit var user: User
-    private lateinit var conversationId: String
-
+    // bot need conversation id
+    private var conversationId: String? = null
     private var creator: User? = null
 
     private var menuListLayout: ViewGroup? = null
@@ -95,18 +95,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     override fun getLayoutId() = R.layout.fragment_user_bottom_sheet
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        user = arguments!!.getParcelable<User>(ARGS_USER)!!
-        var cid = arguments!!.getString(ARGS_CONVERSATION_ID)
-        if (cid.isNullOrBlank()) {
-            cid = generateConversationId(user.userId, Session.getAccountId()!!)
-        }
-        conversationId = cid
-    }
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        user = arguments!!.getParcelable(ARGS_USER)!!
+        conversationId = arguments!!.getString(ARGS_CONVERSATION_ID)
         contentView.title.right_iv.setOnClickListener { dismiss() }
         contentView.avatar.setOnClickListener {
             if (!isAdded) return@setOnClickListener
@@ -150,7 +142,11 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 return@setOnClickListener
             }
             context?.let { ctx ->
-                if (MixinApplication.conversationId == null || conversationId != MixinApplication.conversationId) {
+                if (MixinApplication.conversationId == null || generateConversationId(
+                        user.userId,
+                        Session.getAccountId()!!
+                    ) != MixinApplication.conversationId
+                ) {
                     ConversationActivity.show(ctx, null, user.userId)
                 }
             }
@@ -248,14 +244,17 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 menu {
                     title = getString(R.string.contact_other_shared_media)
                     action = {
-                        SharedMediaActivity.show(requireContext(), conversationId)
+                        SharedMediaActivity.show(requireContext(), generateConversationId(
+                            user.userId,
+                            Session.getAccountId()!!
+                        ))
                         dismiss()
                     }
                 }
                 menu {
                     title = getString(R.string.contact_other_search_conversation)
                     action = {
-                        startSearchConversation(u)
+                        startSearchConversation()
                         dismiss()
                     }
                 }
@@ -357,8 +356,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         }
     }
 
-    private fun startSearchConversation(user: User) = lifecycleScope.launch(Dispatchers.IO) {
-        bottomViewModel.getConversation(conversationId)?.let {
+    private fun startSearchConversation() = lifecycleScope.launch(Dispatchers.IO) {
+        bottomViewModel.getConversation(generateConversationId(user.userId, Session.getAccountId()!!))?.let {
             val searchMessageItem = if (it.category == ConversationCategory.CONTACT.name) {
                 SearchMessageItem(it.conversationId, it.category, null,
                     0, user.userId, user.fullName, user.avatarUrl, null)
@@ -378,6 +377,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 dialog.dismiss()
             }
             .setNegativeButton(getString(R.string.contact_other_report)) { dialog, _ ->
+                val conversationId = generateConversationId(userId, Session.getAccountId()!!)
                 bottomViewModel.updateRelationship(RelationshipRequest(userId, RelationshipAction.BLOCK.name), conversationId)
                 RxBus.publish(ExitEvent(conversationId))
                 dialog.dismiss()
