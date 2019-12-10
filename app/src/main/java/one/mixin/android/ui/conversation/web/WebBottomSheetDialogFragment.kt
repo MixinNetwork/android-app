@@ -221,6 +221,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 .addOnSuccessListener { barcodes ->
                                     val result = barcodes.firstOrNull()?.rawValue
                                     if (result != null) {
+                                        if (!isAdded) return@addOnSuccessListener
+
                                         openUrl(result, parentFragmentManager) {
                                             QrScanBottomSheetDialogFragment.newInstance(result)
                                                 .showNow(
@@ -565,9 +567,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                     Uri.fromFile(outFile)
                                 )
                             )
-                            uiThread { toast(R.string.save_success) }
+                            uiThread { if (isAdded) toast(R.string.save_success) }
                         } catch (e: Exception) {
-                            uiThread { toast(R.string.save_failure) }
+                            uiThread { if (isAdded) toast(R.string.save_failure) }
                         }
                     }
                 } else {
