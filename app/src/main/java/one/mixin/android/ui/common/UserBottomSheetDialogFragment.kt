@@ -244,7 +244,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 menu {
                     title = getString(R.string.contact_other_shared_media)
                     action = {
-                        SharedMediaActivity.show(requireContext(), conversationId!!)
+                        SharedMediaActivity.show(requireContext(), generateConversationId(
+                            user.userId,
+                            Session.getAccountId()!!
+                        ))
                         dismiss()
                     }
                 }
@@ -354,7 +357,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     }
 
     private fun startSearchConversation() = lifecycleScope.launch(Dispatchers.IO) {
-        bottomViewModel.getConversation(conversationId!!)?.let {
+        bottomViewModel.getConversation(generateConversationId(user.userId, Session.getAccountId()!!))?.let {
             val searchMessageItem = if (it.category == ConversationCategory.CONTACT.name) {
                 SearchMessageItem(it.conversationId, it.category, null,
                     0, user.userId, user.fullName, user.avatarUrl, null)
