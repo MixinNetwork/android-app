@@ -15,11 +15,13 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.BackUp.BACKUP_LAST_TIME
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getCacheMediaPath
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.moveChileFileToDir
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.toast
 import one.mixin.android.util.backup.BackupLiveData
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
@@ -89,6 +91,7 @@ class BackupJob(private val force: Boolean = false) : BaseJob(Params(if (force) 
                 BackupNotification.cancel()
                 if (result == Result.SUCCESS) {
                     context.defaultSharedPreferences.putLong(BACKUP_LAST_TIME, System.currentTimeMillis())
+                    context.toast(R.string.backup_success_tip)
                 }
             }
         } catch (e: Exception) {
