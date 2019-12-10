@@ -12,6 +12,7 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.text.Editable
 import android.text.TextWatcher
+import android.text.style.MetricAffectingSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -568,6 +569,17 @@ class ChatControlView : FrameLayout {
     private val editTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
             setSend()
+            s?.let { string ->
+                val toBeRemovedSpans = string.getSpans(0, string.length, MetricAffectingSpan::class.java)
+                if (toBeRemovedSpans.isNotEmpty()) {
+                    for (span in toBeRemovedSpans) {
+                        string.removeSpan(span)
+                    }
+                    val curString = string.trim()
+                    chat_et.setText(curString)
+                    chat_et.setSelection(curString.length)
+                }
+            }
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
