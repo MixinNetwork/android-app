@@ -242,6 +242,7 @@ inline fun openUrl(
     }
 }
 
+
 fun openWebBottomSheet(
     url: String,
     conversationId: String?,
@@ -249,8 +250,7 @@ fun openWebBottomSheet(
     appName: String? = null,
     appAvatar: String? = null,
     appCapabilities: ArrayList<String>? = null,
-    supportFragmentManager: FragmentManager,
-    onDismiss: (() -> Unit)? = null
+    supportFragmentManager: FragmentManager
 ) {
     val dialog = WebBottomSheetDialogFragment.newInstance(
         url,
@@ -260,11 +260,6 @@ fun openWebBottomSheet(
         appAvatar,
         appCapabilities
     )
-    onDismiss?.let { dismiss ->
-        dialog.dialog?.setOnDismissListener {
-            dismiss.invoke()
-        }
-    }
     dialog.showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
 }
 
@@ -278,14 +273,12 @@ fun openUrlWithExtraWeb(
     appId: String? = null,
     appName: String? = null,
     appAvatar: String? = null,
-    appCapabilities: ArrayList<String>? = null,
-    onDismiss: (() -> Unit)? = null
+    appCapabilities: ArrayList<String>? = null
 ) = openUrl(url, supportFragmentManager, lifecycleScope, findUserAction, findAppAction) {
     openWebBottomSheet(
         url,
         conversationId,
         appId, appName, appAvatar, appCapabilities,
-        supportFragmentManager = supportFragmentManager,
-        onDismiss = onDismiss
+        supportFragmentManager = supportFragmentManager
     )
 }
