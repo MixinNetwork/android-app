@@ -199,6 +199,7 @@ dependencies {
     implementation "com.google.firebase:firebase-ml-vision:${firebaseMLVersion}"
     implementation("com.google.firebase:firebase-perf:${perfVersion}") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+        exclude group: 'com.google.protobuf', module: 'protobuf-lite'
     }
     implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
     implementation "com.google.android.play:core:${playVersion}"
