@@ -88,7 +88,7 @@ class WalletSettingFragment : BaseViewModelFragment<SettingViewModel>() {
         large_amount_rl.setOnClickListener {
             editDialog {
                 titleText = this@WalletSettingFragment.getString(R.string.wallet_transaction_tip_title_with_symbol, Fiats.getSymbol())
-                editText = Session.getAccount()!!.transferConfirmationThreshold
+                editText = Session.getAccount()!!.transferConfirmationThreshold.toString()
                 editHint = this@WalletSettingFragment.getString(R.string.wallet_transaction_tip_title)
                 editInputType = InputType.TYPE_NUMBER_FLAG_DECIMAL + InputType.TYPE_CLASS_NUMBER
                 allowEmpty = false
@@ -165,8 +165,8 @@ class WalletSettingFragment : BaseViewModelFragment<SettingViewModel>() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun refreshLargeAmount(largeAmount: String) {
+    private fun refreshLargeAmount(largeAmount: Double) {
         if (!isAdded) return
-        large_amount_tv.text = getString(R.string.wallet_setting_currency_desc, largeAmount, Fiats.getSymbol())
+        large_amount_tv.text = getString(R.string.wallet_setting_currency_desc, largeAmount.toString(), Fiats.getSymbol())
     }
 }

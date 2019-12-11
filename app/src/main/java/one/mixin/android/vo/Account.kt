@@ -30,9 +30,9 @@ open class Account(
     @SerializedName("fiat_currency")
     var fiatCurrency: String,
     @SerializedName("transfer_notification_threshold")
-    val transferNotificationThreshold: String,
+    val transferNotificationThreshold: Double = 0.0,
     @SerializedName("transfer_confirmation_threshold")
-    val transferConfirmationThreshold: String
+    val transferConfirmationThreshold: Double = 100.0
 )
 
 fun Account.toUser(): User {

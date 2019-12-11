@@ -267,7 +267,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         if (currentAsset == null) return false
         return try {
             val amount = BigDecimal(getAmount()).toDouble() * currentAsset!!.priceUsd.toDouble()
-            amount >= (Session.getAccount()!!.transferConfirmationThreshold.toDouble())
+            amount >= (Session.getAccount()!!.transferConfirmationThreshold)
         } catch (e: NumberFormatException) {
             false
         }

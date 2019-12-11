@@ -42,7 +42,7 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
         transfer_rl.setOnClickListener {
             showDialog(transfer_tv.text.toString().removeEnd(accountSymbol))
         }
-        refreshUI(Session.getAccount()?.transferNotificationThreshold ?: "0")
+        refreshUI(Session.getAccount()!!.transferNotificationThreshold)
     }
 
     @SuppressLint("RestrictedApi")
@@ -92,7 +92,7 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun refreshUI(threshold: String) {
+    private fun refreshUI(threshold: Double) {
         transfer_tv.text = "$threshold$accountSymbol"
         transfer_desc_tv.text = getString(R.string.setting_notification_transfer_desc,
             "$accountSymbol$threshold")
