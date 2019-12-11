@@ -17,6 +17,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
 
 class TransferTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -74,7 +75,7 @@ class TransferTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         contentView.warning_tv.text =
-            getString(R.string.wallet_transaction_tip, name, amount, asset.symbol)
+            getString(R.string.wallet_transaction_tip, name, "$amount${Fiats.getSymbol()}", asset.symbol)
         contentView.continue_tv.setOnClickListener {
             callback?.onSuccess()
             dismiss()
