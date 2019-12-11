@@ -8,6 +8,9 @@ import com.crashlytics.android.Crashlytics
 import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -19,6 +22,7 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
+import one.mixin.android.Constants.API.Mixin_WS_URL
 import one.mixin.android.Constants.API.WS_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
@@ -74,11 +78,18 @@ class ChatWebSocket(
         connected = false
     }
 
+    private var hostFlag = false
+
     @Synchronized
     fun connect() {
         if (client == null) {
             connected = false
-            client = okHttpClient.newWebSocket(Request.Builder().url(WS_URL).build(), this)
+            val homeUrl = if (hostFlag) {
+                Mixin_WS_URL
+            } else {
+                WS_URL
+            }
+            client = okHttpClient.newWebSocket(Request.Builder().url(homeUrl).build(), this)
         }
     }
 
@@ -215,6 +226,9 @@ class ChatWebSocket(
     @Synchronized
     override fun onFailure(webSocket: WebSocket?, t: Throwable?, response: Response?) {
         t?.let {
+            if (it is SocketTimeoutException || it is UnknownHostException || it is ConnectException) {
+                hostFlag = !hostFlag
+            }
             Log.e(TAG, "WebSocket onFailure ", it)
         }
         if (client != null) {
