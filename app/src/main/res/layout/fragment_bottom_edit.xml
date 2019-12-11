@@ -11,8 +11,7 @@
         android:id="@+id/edit_title"
         android:textSize="16sp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/edit_biography" />
+        android:layout_height="wrap_content" />
 
     <FrameLayout
         android:layout_width="match_parent"

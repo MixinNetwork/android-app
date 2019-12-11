@@ -34,9 +34,9 @@ import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.common.EditBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menuList
@@ -253,15 +253,15 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         if (context == null) {
             return
         }
-        val biographyFragment = EditBottomSheetDialogFragment.newInstance(
-            Session.getAccount()?.full_name,
-            40,
-            true
-        )
-        biographyFragment.changeAction = {
-            update(it, TYPE_NAME)
+        editDialog {
+            titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.edit_name)
+            editText = Session.getAccount()?.full_name
+            maxTextCount = 40
+            allowEmpty = false
+            rightAction = {
+                update(it, TYPE_NAME)
+            }
         }
-        biographyFragment.show(parentFragmentManager, EditBottomSheetDialogFragment.TAG)
     }
 
     @SuppressLint("RestrictedApi")
@@ -269,15 +269,15 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         if (context == null) {
             return
         }
-        val biographyFragment = EditBottomSheetDialogFragment.newInstance(
-            Session.getAccount()?.biography,
-            140,
-            false
-        )
-        biographyFragment.changeAction = {
-            update(it, TYPE_BIOGRAPHY)
+        editDialog {
+            titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.edit_biography)
+            editText = Session.getAccount()?.biography
+            maxTextCount = 140
+            allowEmpty = true
+            rightAction = {
+                update(it, TYPE_BIOGRAPHY)
+            }
         }
-        biographyFragment.show(parentFragmentManager, EditBottomSheetDialogFragment.TAG)
     }
 
     private fun update(content: String, type: Int) {

@@ -111,7 +111,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             height = requireContext().statusBarHeight()
         }
         (dialog as BottomSheet).apply {
-            fullScreen = true
             setCustomView(contentView)
         }
     }
@@ -268,7 +267,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         if (currentAsset == null) return false
         return try {
             val amount = BigDecimal(getAmount()).toDouble() * currentAsset!!.priceUsd.toDouble()
-            amount >= 1_000
+            amount >= (Session.getAccount()!!.transferConfirmationThreshold)
         } catch (e: NumberFormatException) {
             false
         }
