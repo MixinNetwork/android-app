@@ -171,7 +171,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         registerForContextMenu(contentView.chat_web_view)
         (dialog as BottomSheet).apply {
-            fullScreen = true
             setCustomView(contentView)
         }
     }

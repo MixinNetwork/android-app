@@ -109,6 +109,7 @@ class TransferTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             null
                         )
                     )
+                    contentView.cancel_tv.isEnabled = true
                     contentView.continue_tv.isEnabled = true
                 }
             }

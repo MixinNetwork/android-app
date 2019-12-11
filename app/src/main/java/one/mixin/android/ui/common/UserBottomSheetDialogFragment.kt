@@ -477,16 +477,17 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         if (context == null || !isAdded) {
             return
         }
-        val biographyFragment = EditBottomSheetDialogFragment.newInstance(
-            name,
-            40,
-            true
-        )
-        biographyFragment.changeAction = {
-            bottomViewModel.updateRelationship(RelationshipRequest(user.userId,
-                RelationshipAction.UPDATE.name, it))
+
+        editDialog {
+            titleText = this@UserBottomSheetDialogFragment.getString(R.string.edit_name)
+            editText = name
+            maxTextCount = 40
+            allowEmpty = false
+            rightAction = {
+                bottomViewModel.updateRelationship(RelationshipRequest(user.userId,
+                    RelationshipAction.UPDATE.name, it))
+            }
         }
-        biographyFragment.show(parentFragmentManager, EditBottomSheetDialogFragment.TAG)
     }
 
     private fun showMuteDialog() {

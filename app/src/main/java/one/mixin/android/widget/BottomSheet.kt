@@ -68,8 +68,6 @@ class BottomSheet(
 
     private var bottomSheetListener: BottomSheetListener? = null
 
-    var fullScreen = false
-
     var dismissClickOutside = true
         set(value) {
             field = value

@@ -72,7 +72,6 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
             height = requireContext().statusBarHeight()
         }
         (dialog as BottomSheet).apply {
-            fullScreen = true
             setCustomView(contentView)
         }
     }

@@ -2,16 +2,10 @@ package one.mixin.android.ui.setting
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.text.Editable
 import android.text.InputType
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
-import android.widget.EditText
-import android.widget.FrameLayout
-import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_notifications.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -20,15 +14,12 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.removeEnd
-import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.editDialog
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Fiats
-import org.jetbrains.anko.dimen
-import org.jetbrains.anko.margin
 
 class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
     companion object {
@@ -59,50 +50,16 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
         if (context == null || !isAdded) {
             return
         }
-        val editText = EditText(requireContext())
-        editText.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
-        editText.setHintTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
-        editText.hint = getString(R.string.wallet_transfer_amount)
-        editText.inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL + InputType.TYPE_CLASS_NUMBER
-        editText.setText(amount)
-        if (amount != null) {
-            editText.setSelection(amount.length)
+        editDialog {
+            titleText = this@NotificationsFragment.getString(R.string.setting_notification_transfer_amount, accountSymbol)
+            editText = amount
+            editHint = this@NotificationsFragment.getString(R.string.wallet_transfer_amount)
+            editInputType = InputType.TYPE_NUMBER_FLAG_DECIMAL + InputType.TYPE_CLASS_NUMBER
+            allowEmpty = false
+            rightAction = {
+                savePreference(it.toDouble())
+            }
         }
-        val frameLayout = FrameLayout(requireContext())
-        frameLayout.addView(editText)
-        val params = editText.layoutParams as FrameLayout.LayoutParams
-        params.margin = requireContext().dimen(R.dimen.activity_horizontal_margin)
-        editText.layoutParams = params
-        editText.setTextColor(requireContext().colorFromAttribute(R.attr.text_primary))
-        val amountDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
-            .setTitle(getString(R.string.setting_notification_transfer_amount, accountSymbol))
-            .setView(frameLayout)
-            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.confirm) { dialog, _ ->
-                savePreference(editText.text.toString().toDouble())
-                dialog.dismiss()
-            }
-            .show()
-        amountDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = false
-        editText.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                amountDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = !(s.isNullOrBlank() || s.toString() == amount.toString())
-            }
-        })
-        editText.post {
-            editText.showKeyboard()
-        }
-
-        amountDialog.window?.clearFlags(
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
-        amountDialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
     }
 
     private fun savePreference(threshold: Double) = lifecycleScope.launch {

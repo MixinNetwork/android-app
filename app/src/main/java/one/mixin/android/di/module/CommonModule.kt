@@ -4,7 +4,7 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
-import one.mixin.android.ui.common.EditBottomSheetDialogFragment
+import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
@@ -77,7 +77,7 @@ abstract class CommonModule {
     internal abstract fun contributeConfirmBottomFragment(): ConfirmBottomFragment
 
     @ContributesAndroidInjector
-    internal abstract fun contributeBiographyFragment(): EditBottomSheetDialogFragment
+    internal abstract fun contributeEditDialog(): EditDialog
 
     @ContributesAndroidInjector
     internal abstract fun contributeSearchMessageItemFragment(): SearchMessageFragment
