@@ -430,6 +430,9 @@ class BottomSheetViewModel @Inject internal constructor(
                 if (isSuccess) {
                     data?.let { data ->
                         accountRepository.insertFavoriteApps(data)
+                        data.map { app -> app.appId }.let { ids ->
+                            refreshAppNotExist(ids)
+                        }
                         withContext(Dispatchers.Main) {
                             loadAction(accountRepository.getFavoriteAppsByUserId(userId))
                         }
@@ -437,5 +440,9 @@ class BottomSheetViewModel @Inject internal constructor(
                 }
             }
         }
+    }
+
+    private suspend fun refreshAppNotExist(appIds: List<String>) = withContext(Dispatchers.IO) {
+        accountRepository.refreshAppNotExist(appIds)
     }
 }

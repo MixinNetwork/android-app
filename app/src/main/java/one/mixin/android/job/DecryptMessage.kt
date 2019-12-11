@@ -240,10 +240,10 @@ class DecryptMessage : Injector() {
                             jobManager.addJobInBackground(SendMessageJob(needResendMessage,
                                 ResendData(data.userId, id, data.sessionId), true, messagePriority = PRIORITY_SEND_ATTACHMENT_MESSAGE))
                             // Todo please check
-                            resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId!!,1, nowInUtc()))
+                            resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId!!, 1, nowInUtc()))
                         } else {
                             // Todo please check
-                            resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId!!,0, nowInUtc()))
+                            resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId!!, 0, nowInUtc()))
                         }
                     }
                 }

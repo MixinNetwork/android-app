@@ -30,7 +30,7 @@ interface AppDao : BaseDao<App> {
     @Query("SELECT a.* FROM apps a")
     suspend fun getApps(): List<App>
 
-    @Query("SELECT a.* FROM favorite_apps fa LEFT JOIN apps a ON fa.app_id = a.app_id WHERE fa.user_id =:userId ORDER BY fa.created_at ASC")
+    @Query("SELECT a.* FROM favorite_apps fa INNER JOIN apps a ON fa.app_id = a.app_id WHERE fa.user_id =:userId ORDER BY fa.created_at ASC")
     suspend fun getFavoriteAppsByUserId(userId: String): List<App>
 
     @Query("SELECT a.* FROM apps a WHERE a.app_id NOT IN (SELECT fa.app_id FROM favorite_apps fa)")
