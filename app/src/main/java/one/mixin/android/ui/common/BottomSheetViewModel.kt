@@ -101,6 +101,8 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun findUserById(id: String): LiveData<User> = userRepository.findUserById(id)
 
+    suspend fun suspendFindUserById(id: String) = userRepository.suspendFindUserById(id)
+
     fun updateRelationship(request: RelationshipRequest, deleteConversationId: String? = null) {
         jobManager.addJobInBackground(UpdateRelationshipJob(request, deleteConversationId))
     }

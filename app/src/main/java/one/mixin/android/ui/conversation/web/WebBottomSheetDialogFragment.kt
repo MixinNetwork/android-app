@@ -36,6 +36,7 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
@@ -49,6 +50,7 @@ import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
+import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
@@ -70,13 +72,12 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
+import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.ui.url.openUrl
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
-import one.mixin.android.vo.ForwardCategory
-import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.WebControlView
 import org.jetbrains.anko.doAsync
@@ -482,8 +483,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val bottomSheet = builder.create()
         view.forward.setOnClickListener {
             if (isBot()) {
-                val fw = ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = appId)
-                ForwardActivity.show(requireContext(), arrayListOf(fw))
+                openBot()
             } else {
                 ForwardActivity.show(requireContext(), contentView.chat_web_view.url)
             }
@@ -514,9 +514,24 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (isBot()) {
             view.open.isVisible = false
             view.share.isVisible = false
+            view.forward.text = getString(R.string.about)
+        } else {
+            view.forward.text = getString(R.string.forward)
         }
 
         bottomSheet.show()
+    }
+
+    private fun openBot() = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
+        if (appId != null) {
+            val u = bottomViewModel.suspendFindUserById(appId!!)
+            if (u != null) {
+                UserBottomSheetDialogFragment.newInstance(u, conversationId)
+                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+            }
+        }
     }
 
     override fun onPause() {
