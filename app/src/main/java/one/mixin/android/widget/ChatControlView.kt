@@ -569,13 +569,13 @@ class ChatControlView : FrameLayout {
     private val editTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
             setSend()
-            s?.let { string ->
-                val toBeRemovedSpans = string.getSpans(0, string.length, MetricAffectingSpan::class.java)
+            s?.let { ed ->
+                val toBeRemovedSpans = ed.getSpans(0, ed.length, MetricAffectingSpan::class.java)
                 if (toBeRemovedSpans.isNotEmpty()) {
                     for (span in toBeRemovedSpans) {
-                        string.removeSpan(span)
+                        ed.removeSpan(span)
                     }
-                    val curString = string.trim()
+                    val curString = ed.trim()
                     chat_et.setText(curString)
                     chat_et.setSelection(curString.length)
                 }
