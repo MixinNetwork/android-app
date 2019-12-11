@@ -3,6 +3,8 @@ package one.mixin.android.repository
 import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
+import javax.inject.Singleton
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -42,8 +44,6 @@ import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class AccountRepository

@@ -184,7 +184,7 @@ internal constructor(
     fun getGroupConversationApp(conversationId: String) =
         readAppDatabase.appDao().getGroupConversationApp(conversationId)
 
-    fun getConversationApp(userId: String?) = readAppDatabase.appDao().getConversationApp(userId)
+    fun getConversationApp(userId: String) = readAppDatabase.appDao().getConversationApp(userId)
 
     suspend fun updateAnnouncement(conversationId: String, announcement: String) =
         conversationDao.updateConversationAnnouncement(conversationId, announcement)

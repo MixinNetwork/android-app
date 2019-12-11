@@ -1258,13 +1258,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun liveDataAppList() {
         chatViewModel.getApp(conversationId, recipient?.userId).observe(viewLifecycleOwner, Observer { list ->
-            val type = if (isGroup) {
-                AppCap.GROUP.name
-            } else {
-                AppCap.CONTACT.name
-            }
             appList = list.filter {
-                it.capabilities?.contains(type) == true
+                if (isGroup) {
+                    it.capabilities?.contains(AppCap.GROUP.name) == true
+                } else {
+                    true
+                }
             }
             appList?.let {
                 (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(
