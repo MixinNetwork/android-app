@@ -99,7 +99,9 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         canvas.drawCircle(w / 2f, h / 2f, w / 2f, bgPaint)
         when (status) {
             STATUS_IDLE -> {
-                pb.visibility = VISIBLE
+                playDrawable.isPlay = true
+                pb.visibility = GONE
+                playDrawable.draw(canvas)
             }
             STATUS_LOADING -> {
                 pb.visibility = VISIBLE
