@@ -97,7 +97,7 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
-    fun providesResendMessageDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.resendMessageDao()
+    fun providesResendSessionMessageDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.resendSessionMessageDao()
 
     @Singleton
     @Provides

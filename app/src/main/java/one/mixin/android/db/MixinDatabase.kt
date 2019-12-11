@@ -34,6 +34,7 @@ import one.mixin.android.vo.Offset
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.ResendMessage
+import one.mixin.android.vo.ResendSessionMessage
 import one.mixin.android.vo.SentSenderKey
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
@@ -61,6 +62,7 @@ import one.mixin.android.vo.User
     (FloodMessage::class),
     (Address::class),
     (ResendMessage::class),
+    (ResendSessionMessage::class),
     (StickerRelationship::class),
     (TopAsset::class),
     (FavoriteApp::class),
@@ -83,7 +85,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun floodMessageDao(): FloodMessageDao
     abstract fun jobDao(): JobDao
     abstract fun addressDao(): AddressDao
-    abstract fun resendMessageDao(): ResendMessageDao
+    abstract fun resendSessionMessageDao(): ResendSessionMessageDao
     abstract fun stickerRelationshipDao(): StickerRelationshipDao
     abstract fun topAssetDao(): TopAssetDao
     abstract fun favoriteAppDao(): FavoriteAppDao

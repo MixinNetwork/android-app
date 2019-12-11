@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_my_shared_apps.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
@@ -14,7 +15,6 @@ import one.mixin.android.R
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
-import javax.inject.Inject
 
 class MySharedAppsFragment : BaseFragment() {
     companion object {

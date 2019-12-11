@@ -37,7 +37,7 @@ import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
-import one.mixin.android.vo.ResendMessage
+import one.mixin.android.vo.ResendSessionMessage
 import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotType
@@ -239,9 +239,11 @@ class DecryptMessage : Injector() {
                             needResendMessage.id = UUID.randomUUID().toString()
                             jobManager.addJobInBackground(SendMessageJob(needResendMessage,
                                 ResendData(data.userId, id, data.sessionId), true, messagePriority = PRIORITY_SEND_ATTACHMENT_MESSAGE))
-                            resendMessageDao.insert(ResendMessage(id, data.userId, 1, nowInUtc()))
+                            // Todo please check
+                            resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId!!,1, nowInUtc()))
                         } else {
-                            resendMessageDao.insert(ResendMessage(id, data.userId, 0, nowInUtc()))
+                            // Todo please check
+                            resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId!!,0, nowInUtc()))
                         }
                     }
                 }
