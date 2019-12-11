@@ -13,12 +13,14 @@ import android.util.Base64
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import kotlinx.android.synthetic.main.fragment_profile_bottom_sheet_dialog.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -47,6 +49,7 @@ import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.App
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.noButton
@@ -101,7 +104,12 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             created_tv.text = getString(R.string.profile_join_in, account.created_at.dayTime())
             refreshInfo(account)
         }
-        initMenu(account)
+
+        lifecycleScope.launch {
+            bottomViewModel.loadFavoriteApps((account.userId)) {
+                initMenu(account, it)
+            }
+        }
     }
 
     private fun refreshInfo(account: Account) {
@@ -113,7 +121,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         }
     }
 
-    private fun initMenu(account: Account) {
+    private fun initMenu(account: Account, favoriteApps: List<App>?) {
         val list = menuList {
             menuGroup {
                 menu {
@@ -126,6 +134,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                         )
                         dismiss()
                     }
+                    apps = favoriteApps
                 }
             }
             menuGroup {

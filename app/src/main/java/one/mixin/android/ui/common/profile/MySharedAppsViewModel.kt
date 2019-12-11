@@ -5,6 +5,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.repository.AccountRepository
+import one.mixin.android.util.ErrorHandler
 
 class MySharedAppsViewModel
 @Inject internal constructor(
@@ -17,6 +18,7 @@ class MySharedAppsViewModel
                 accountRepository.insertFavoriteApp(response.data!!)
                 true
             } else {
+                ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
                 false
             }
         }
@@ -44,6 +46,7 @@ class MySharedAppsViewModel
             accountRepository.deleteByAppIdAndUserId(appId, userId)
             true
         } else {
+            ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
             false
         }
     }
