@@ -9,8 +9,10 @@ import one.mixin.android.vo.App
 @Dao
 interface AppDao : BaseDao<App> {
 
-    @Query("SELECT a.* FROM apps a, participants p, users u WHERE p.conversation_id = :conversationId" +
-        " AND p.user_id = u.user_id AND a.app_id = u.app_id")
+    @Query(
+        "SELECT a.* FROM apps a, participants p, users u WHERE p.conversation_id = :conversationId" +
+            " AND p.user_id = u.user_id AND a.app_id = u.app_id"
+    )
     fun getGroupConversationApp(conversationId: String): LiveData<List<App>>
 
     @Query("SELECT a.* FROM apps a, users u WHERE u.user_id = :userId AND a.app_id = u.app_id")
@@ -26,5 +28,11 @@ interface AppDao : BaseDao<App> {
     suspend fun searchAppByHost(query: String): List<App>
 
     @Query("SELECT a.* FROM apps a")
-    suspend fun getApps():List<App>
+    suspend fun getApps(): List<App>
+
+    @Query("SELECT a.* FROM favorite_apps fa LEFT JOIN apps a ON fa.app_id = a.app_id WHERE fa.user_id =:userId ORDER BY fa.created_at ASC")
+    suspend fun getFavoriteAppsByUserId(userId: String): List<App>
+
+    @Query("SELECT a.* FROM apps a WHERE a.app_id NOT IN (SELECT fa.app_id FROM favorite_apps fa)")
+    suspend fun getUnfavoriteApps(): List<App>
 }

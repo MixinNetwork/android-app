@@ -15,7 +15,7 @@
         android:layout_centerInParent="true"
         android:layout_marginStart="16dp"
         android:contentDescription="@null"
-        android:src="@drawable/ic_remove_circle" />
+        android:src="@drawable/ic_add_circle" />
 
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar"
@@ -35,5 +35,6 @@
         android:layout_toEndOf="@id/avatar"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="?attr/text_primary" />
+
 
 </RelativeLayout>

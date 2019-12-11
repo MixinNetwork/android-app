@@ -1,29 +1,26 @@
 package one.mixin.android.ui.common.profile
 
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_shared_app.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.ui.common.profile.holder.ItemViewHolder
+import one.mixin.android.ui.common.profile.holder.LocalAppHolder
+import one.mixin.android.ui.common.profile.holder.SharedAppHolder
 import one.mixin.android.vo.App
-import one.mixin.android.widget.recyclerview.ItemTouchHelperAdapter
-import one.mixin.android.widget.recyclerview.ItemTouchHelperViewHolder
-import one.mixin.android.widget.recyclerview.OnStartDragListener
-import java.util.Collections
 
 class MySharedAppsAdapter(
-    private val dragStartListener: OnStartDragListener
-) : RecyclerView.Adapter<MySharedAppsAdapter.ItemViewHolder>(),
-    ItemTouchHelperAdapter {
-    private val mItems = mutableListOf<App>()
+    val onAddSharedApp: (app: App) -> Unit,
+    val onRemoveSharedApp: (app: App) -> Unit
+) : RecyclerView.Adapter<ItemViewHolder>() {
+    private var favoriteApps: List<App>? = null
+    private var unFavoriteApps: List<App>? = null
 
-    fun setData(apps: List<App>) {
-        mItems.clear()
-        mItems.addAll(apps)
+    fun setData(favoriteApps: List<App>, unFavoriteApps: List<App>) {
+        this.favoriteApps = favoriteApps
+        this.unFavoriteApps = unFavoriteApps
         notifyDataSetChanged()
     }
 
@@ -31,9 +28,16 @@ class MySharedAppsAdapter(
         parent: ViewGroup,
         viewType: Int
     ): ItemViewHolder {
-        val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.item_shared_app, parent, false)
-        return ItemViewHolder(view)
+        return if (viewType == 0) {
+            val view =
+                LayoutInflater.from(parent.context).inflate(R.layout.item_shared_app, parent, false)
+            SharedAppHolder(view)
+        } else {
+            val view =
+                LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_shared_local_app, parent, false)
+            LocalAppHolder(view)
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -41,43 +45,34 @@ class MySharedAppsAdapter(
         holder: ItemViewHolder,
         position: Int
     ) {
-        holder.bind(mItems[position], dragStartListener)
-    }
-
-    override fun onItemDismiss(position: Int) {
-        mItems.removeAt(position)
-        notifyItemRemoved(position)
-    }
-
-    override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
-        Collections.swap(mItems, fromPosition, toPosition)
-        notifyItemMoved(fromPosition, toPosition)
-        return true
+        if (getItemViewType(position) == 0) {
+            holder.bind(getItem(position), onRemoveSharedApp)
+        } else {
+            holder.bind(getItem(position), onAddSharedApp)
+        }
     }
 
     override fun getItemCount(): Int {
-        return mItems.size
+        return favoriteApps.notNullWithElse({ it.size }, 0) +
+            unFavoriteApps.notNullWithElse({ it.size }, 0)
     }
 
-    class ItemViewHolder(itemView: View) :
-        RecyclerView.ViewHolder(itemView), ItemTouchHelperViewHolder {
-        override fun onItemSelected() {
-            itemView.setBackgroundColor(Color.LTGRAY)
+    fun getItem(position: Int): App {
+        val type = getItemViewType(position)
+        return if (type == 0) {
+            favoriteApps!![position]
+        } else {
+            val favoriteSize = favoriteApps.notNullWithElse({ it.size }, 0)
+            unFavoriteApps!![position - favoriteSize]
         }
+    }
 
-        override fun onItemClear() {
-            itemView.setBackgroundColor(0)
-        }
-
-        fun bind(app: App, dragStartListener: OnStartDragListener) {
-            itemView.avatar.setInfo(app.name, app.icon_url, app.appId)
-            itemView.name.text = app.name
-            itemView.handle.setOnTouchListener { _, event ->
-                if (event.action == MotionEvent.ACTION_DOWN) {
-                    dragStartListener.onStartDrag(this)
-                }
-                false
-            }
+    override fun getItemViewType(position: Int): Int {
+        val favoriteSize = favoriteApps.notNullWithElse({ it.size }, 0)
+        return if (position < favoriteSize) {
+            0
+        } else {
+            1
         }
     }
 }

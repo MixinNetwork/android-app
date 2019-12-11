@@ -106,4 +106,8 @@ internal class BaseDbModule {
     @Singleton
     @Provides
     fun providesHotAssetDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.topAssetDao()
+
+    @Singleton
+    @Provides
+    fun providesFavoriteAppDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.favoriteAppDao()
 }

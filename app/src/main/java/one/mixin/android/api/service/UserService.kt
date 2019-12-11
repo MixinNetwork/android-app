@@ -4,6 +4,7 @@ import io.reactivex.Observable
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.response.UserSession
+import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.User
 import retrofit2.Call
 import retrofit2.http.Body
@@ -38,10 +39,10 @@ interface UserService {
     suspend fun fetchSessions(@Body ids: List<String>): MixinResponse<List<UserSession>>
 
     @POST("apps/{app_id}/favorite")
-    suspend fun addFavoriteApp(@Path("user_id") appId: String): MixinResponse<Void>
+    suspend fun addFavoriteApp(@Path("app_id") appId: String): MixinResponse<FavoriteApp>
 
     @GET("users/{user_id}/apps/favorite")
-    suspend fun getUserFavoriteApps(@Path("user_id") userId: String): MixinResponse<List<User>>
+    suspend fun getUserFavoriteApps(@Path("user_id") userId: String): MixinResponse<List<FavoriteApp>>
 
     @POST("apps/{app_id}/unfavorite")
     suspend fun removeFavoriteApp(@Path("app_id") appId: String): MixinResponse<Void>

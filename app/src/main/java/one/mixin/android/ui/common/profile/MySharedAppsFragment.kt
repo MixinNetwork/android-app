@@ -7,17 +7,15 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.RecyclerView
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_my_shared_apps.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.widget.recyclerview.OnStartDragListener
-import one.mixin.android.widget.recyclerview.SimpleItemTouchHelperCallback
-import javax.inject.Inject
+import one.mixin.android.util.Session
+import one.mixin.android.vo.App
 
-class MySharedAppsFragment : BaseFragment(), OnStartDragListener {
+class MySharedAppsFragment : BaseFragment() {
     companion object {
         const val TAG = "MySharedAppsFragment"
         fun newInstance(): MySharedAppsFragment {
@@ -35,25 +33,46 @@ class MySharedAppsFragment : BaseFragment(), OnStartDragListener {
         savedInstanceState: Bundle?
     ): View? = inflater.inflate(R.layout.fragment_my_shared_apps, container, false)
 
-    private val mItemTouchHelper: ItemTouchHelper by lazy {
-        ItemTouchHelper(helperCallback)
-    }
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        mItemTouchHelper.attachToRecyclerView(list)
         list.adapter = adapter
+
+        loadData()
+        refresh()
+    }
+
+    private fun refresh() {
         lifecycleScope.launch {
-            val apps = mySharedAppsViewModel.getApps()
-            adapter.setData(apps)
+            mySharedAppsViewModel.refreshFavoriteApps(Session.getAccountId()!!)
+            loadData()
         }
     }
 
-    private val helperCallback by lazy { SimpleItemTouchHelperCallback(adapter) }
-
-    private val adapter by lazy { MySharedAppsAdapter(this) }
-
-    override fun onStartDrag(viewHolder: RecyclerView.ViewHolder) {
-        mItemTouchHelper.startDrag(viewHolder)
+    private fun loadData() {
+        lifecycleScope.launch {
+            val favoriteApps =
+                mySharedAppsViewModel.getFavoriteAppsByUserId(Session.getAccountId()!!)
+            val unFavoriteApps = mySharedAppsViewModel.getUnfavoriteApps()
+            adapter.setData(favoriteApps, unFavoriteApps)
+        }
     }
+
+    private val onAddSharedApp: (app: App) -> Unit = { app ->
+        lifecycleScope.launch {
+            if (mySharedAppsViewModel.addFavoriteApp(app.appId)) {
+                loadData()
+            } else {
+            }
+        }
+    }
+    private val onRemoveSharedApp: (app: App) -> Unit = { app ->
+        lifecycleScope.launch {
+            if (mySharedAppsViewModel.removeFavoriteApp(app.appId, Session.getAccountId()!!)) {
+                loadData()
+            } else {
+            }
+        }
+    }
+
+    private val adapter by lazy { MySharedAppsAdapter(onAddSharedApp, onRemoveSharedApp) }
 }

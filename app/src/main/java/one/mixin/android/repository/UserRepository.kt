@@ -1,6 +1,8 @@
 package one.mixin.android.repository
 
 import androidx.lifecycle.LiveData
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -14,8 +16,6 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class UserRepository
@@ -79,5 +79,4 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
     suspend fun findMultiUsersByIds(ids: Set<String>) = userDao.findMultiUsersByIds(ids)
 
     suspend fun fetchUser(ids: List<String>) = userService.fetchUsers(ids)
-
 }
