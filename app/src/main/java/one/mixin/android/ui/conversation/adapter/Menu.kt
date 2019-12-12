@@ -1,12 +1,12 @@
 package one.mixin.android.ui.conversation.adapter
 
-import one.mixin.android.vo.App
+import one.mixin.android.vo.AppItem
 
 class Menu(
     val type: MenuType,
     val nameRes: Int?,
     val icon: Int?,
-    val app: App?
+    val app: AppItem?
 )
 
 sealed class MenuType {

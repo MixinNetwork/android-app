@@ -7,9 +7,11 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_chat_menu.view.*
+import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.loadCircleImage
-import one.mixin.android.vo.App
+import one.mixin.android.extension.loadImage
+import one.mixin.android.vo.AppItem
+import one.mixin.android.widget.BadgeCircleImageView
 
 class MenuAdapter(
     private val isGroup: Boolean,
@@ -18,7 +20,8 @@ class MenuAdapter(
 ) : RecyclerView.Adapter<MenuAdapter.MenuHolder>() {
 
     private val buildInMenus = arrayListOf<Menu>().apply {
-        val transferMenu = Menu(MenuType.Transfer, R.string.transfer, R.drawable.ic_menu_transfer, null)
+        val transferMenu =
+            Menu(MenuType.Transfer, R.string.transfer, R.drawable.ic_menu_transfer, null)
         val voiceMenu = Menu(MenuType.Voice, R.string.voice, R.drawable.ic_menu_call, null)
         if (isBot) {
             if (isSelfCreatedBot) {
@@ -35,7 +38,7 @@ class MenuAdapter(
 
     var onMenuListener: OnMenuListener? = null
 
-    var appList = listOf<App>()
+    var appList = listOf<AppItem>()
         set(value) {
             if (field == value) return
             field = value
@@ -55,7 +58,15 @@ class MenuAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        MenuHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_chat_menu, parent, false))
+        MenuHolder(
+            LayoutInflater.from(parent.context).inflate(
+                R.layout.item_chat_menu,
+                parent,
+                false
+            )
+        ).apply {
+            itemView.app_icon.pos = BadgeCircleImageView.END_BOTTOM
+        }
 
     override fun getItemCount() = menus.size
 
@@ -72,7 +83,10 @@ class MenuAdapter(
             }
         } else {
             view.app_icon.visibility = VISIBLE
-            view.app_icon.loadCircleImage(menu.app?.icon_url)
+            view.app_icon.bg.loadImage(menu.app?.iconUrl, R.drawable.ic_avatar_place_holder)
+            menu.app?.avatarUrl?.let {
+                view.app_icon.badge.loadImage(it, R.drawable.ic_avatar_place_holder)
+            }
             view.menu_icon.visibility = GONE
             view.menu_title.text = menu.app?.name
         }

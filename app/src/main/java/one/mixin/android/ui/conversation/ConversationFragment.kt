@@ -45,9 +45,6 @@ import com.google.android.exoplayer2.util.MimeTypes
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.io.File
-import javax.inject.Inject
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
@@ -133,6 +130,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
+import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
@@ -169,6 +167,9 @@ import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardSho
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.File
+import javax.inject.Inject
+import kotlin.math.abs
 
 @SuppressLint("InvalidWakeLockTag")
 class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
@@ -501,11 +502,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 } else {
                     lifecycleScope.launch {
                         val app = chatViewModel.findAppById(userId)
-                        openUrlWithExtraWeb(action, conversationId, parentFragmentManager,
+                        openUrlWithExtraWeb(
+                            action, conversationId, parentFragmentManager,
                             app?.appId,
                             app?.name,
                             app?.icon_url,
-                            app?.capabilities)
+                            app?.capabilities
+                        )
                     }
                 }
             }
@@ -520,7 +523,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onContactCardClick(userId: String) {
                 if (userId == Session.getAccountId()) {
-                    ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager,
+                    ProfileBottomSheetDialogFragment.newInstance().showNow(
+                        parentFragmentManager,
                         UserBottomSheetDialogFragment.TAG
                     )
                     return
@@ -1036,7 +1040,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         tool_view.copy_iv.setOnClickListener {
             try {
                 context?.getClipboardManager()?.setPrimaryClip(
-                    ClipData.newPlainText(null, chatAdapter.selectSet.valueAt(0)?.content))
+                    ClipData.newPlainText(null, chatAdapter.selectSet.valueAt(0)?.content)
+                )
                 context?.toast(R.string.copy_success)
             } catch (e: ArrayIndexOutOfBoundsException) {
             }
@@ -1257,23 +1262,24 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun liveDataAppList() {
-        chatViewModel.getApp(conversationId, recipient?.userId).observe(viewLifecycleOwner, Observer { list ->
-            appList = list.filter {
-                if (isGroup) {
-                    it.capabilities?.contains(AppCap.GROUP.name) == true
-                } else {
-                    true
+        chatViewModel.getApp(conversationId, recipient?.userId)
+            .observe(viewLifecycleOwner, Observer { list ->
+                appList = list.filter {
+                    if (isGroup) {
+                        it.capabilities?.contains(AppCap.GROUP.name) == true
+                    } else {
+                        true
+                    }
                 }
-            }
-            appList?.let {
-                (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(
-                    it
-                )
-            }
-        })
+                appList?.let {
+                    (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(
+                        it
+                    )
+                }
+            })
     }
 
-    private var appList: List<App>? = null
+    private var appList: List<AppItem>? = null
 
     private fun sendForwardMessages(messages: List<ForwardMessage>) {
         createConversation {
@@ -1507,37 +1513,39 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 action_bar.avatar_iv.setGroup(it.iconUrl)
             }
         })
-        chatViewModel.getGroupParticipantsLiveData(conversationId).observe(viewLifecycleOwner, Observer { users ->
-            users?.let {
-                groupNumber = it.size
-                action_bar.setSubTitle(
-                    groupName ?: "",
-                    getString(R.string.title_participants, groupNumber)
-                )
-                val userIds = arrayListOf<String>()
-                users.mapTo(userIds) { it.userId }
-                if (userIds.contains(Session.getAccountId())) {
-                    chat_control.visibility = VISIBLE
-                    bottom_cant_send.visibility = GONE
-                } else {
-                    chat_control.visibility = INVISIBLE
-                    bottom_cant_send.visibility = VISIBLE
-                    chat_control.chat_et.hideKeyboard()
+        chatViewModel.getGroupParticipantsLiveData(conversationId)
+            .observe(viewLifecycleOwner, Observer { users ->
+                users?.let {
+                    groupNumber = it.size
+                    action_bar.setSubTitle(
+                        groupName ?: "",
+                        getString(R.string.title_participants, groupNumber)
+                    )
+                    val userIds = arrayListOf<String>()
+                    users.mapTo(userIds) { it.userId }
+                    if (userIds.contains(Session.getAccountId())) {
+                        chat_control.visibility = VISIBLE
+                        bottom_cant_send.visibility = GONE
+                    } else {
+                        chat_control.visibility = INVISIBLE
+                        bottom_cant_send.visibility = VISIBLE
+                        chat_control.chat_et.hideKeyboard()
+                    }
                 }
-            }
-        })
-        chatViewModel.getGroupBotsLiveData(conversationId).observe(viewLifecycleOwner, Observer { users ->
-            if (mention_rv.adapter == null) {
-                mention_rv.adapter = mentionAdapter
-                mention_rv.layoutManager = LinearLayoutManager(context)
-            }
-            mentionAdapter.list = users
-            val text = chat_control.chat_et.text
-            if (mention_layout.isGone && inMentionState(text.toString())) {
-                submitMentionList(text.toString())
-                mention_layout.show()
-            }
-        })
+            })
+        chatViewModel.getGroupBotsLiveData(conversationId)
+            .observe(viewLifecycleOwner, Observer { users ->
+                if (mention_rv.adapter == null) {
+                    mention_rv.adapter = mentionAdapter
+                    mention_rv.layoutManager = LinearLayoutManager(context)
+                }
+                mentionAdapter.list = users
+                val text = chat_control.chat_et.text
+                if (mention_layout.isGone && inMentionState(text.toString())) {
+                    submitMentionList(text.toString())
+                    mention_layout.show()
+                }
+            })
     }
 
     private fun submitMentionList(s: String?): List<User>? {
@@ -1779,17 +1787,28 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }
                     }
                     MenuType.App -> {
-                        menu.app?.let {
+                        menu.app?.let {app->
                             chat_control.chat_et.hideKeyboard()
-                            openWebBottomSheet(
-                                it.homeUri,
-                                conversationId,
-                                it.appId,
-                                it.name,
-                                it.icon_url,
-                                it.capabilities,
-                                parentFragmentManager
-                            )
+                            if (app.userId != null) {
+                                lifecycleScope.launch {
+                                    chatViewModel.suspendFindUserById(app.appId)?.let { user ->
+                                        UserBottomSheetDialogFragment.newInstance(user).showNow(
+                                            parentFragmentManager,
+                                            UserBottomSheetDialogFragment.TAG
+                                        )
+                                    }
+                                }
+                            } else {
+                                openWebBottomSheet(
+                                    app.homeUri,
+                                    conversationId,
+                                    app.appId,
+                                    app.name,
+                                    app.iconUrl,
+                                    app.capabilities,
+                                    parentFragmentManager
+                                )
+                            }
                         }
                     }
                 }

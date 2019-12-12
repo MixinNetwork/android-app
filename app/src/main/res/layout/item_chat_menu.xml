@@ -17,7 +17,7 @@
         tools:ignore="ContentDescription"
         android:layout_marginTop="@dimen/margin20"/>
 
-    <ImageView
+    <one.mixin.android.widget.BadgeCircleImageView
         android:id="@+id/app_icon"
         android:layout_width="60dp"
         android:layout_height="60dp"

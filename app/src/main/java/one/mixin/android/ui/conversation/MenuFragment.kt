@@ -11,7 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuAdapter
-import one.mixin.android.vo.App
+import one.mixin.android.vo.AppItem
 
 class MenuFragment : Fragment() {
     companion object {
@@ -52,7 +52,7 @@ class MenuFragment : Fragment() {
         rv.adapter = menuAdapter
     }
 
-    fun setAppList(appList: List<App>) {
+    fun setAppList(appList: List<AppItem>) {
         menuAdapter.appList = appList
     }
 
