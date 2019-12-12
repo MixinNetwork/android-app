@@ -3,11 +3,10 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.Editable
-import android.text.InputFilter
 import android.text.TextWatcher
 import android.view.View
+import androidx.annotation.IntRange
 import androidx.annotation.StringRes
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import kotlinx.android.synthetic.main.fragment_bottom_edit.view.*
@@ -38,6 +37,8 @@ class EditDialog : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "EditDialog"
 
+        const val MAX_LINE = 6L
+
         fun newInstance() = EditDialog()
     }
 
@@ -46,6 +47,8 @@ class EditDialog : MixinBottomSheetDialogFragment() {
     var editText: String? = null
 
     var editInputType: Int? = null
+    @IntRange(from = 1, to = MAX_LINE)
+    var editMaxLines: Int = 1
     var maxTextCount: Int = -1
     var allowEmpty: Boolean = false
 
@@ -59,33 +62,27 @@ class EditDialog : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_bottom_edit, null)
         contentView.edit_et.setText(editText)
+        if (!editText.isNullOrEmpty()) {
+            contentView.edit_et.setSelection(editText!!.length)
+        }
         contentView.edit_et.hint = editHint
         contentView.edit_title.text = titleText
         editInputType?.let {
             contentView.edit_et.inputType = it
         }
+        val maxLines = if (editMaxLines > MAX_LINE) {
+            MAX_LINE.toInt()
+        } else editMaxLines
+        contentView.edit_et.maxLines = maxLines
         if (maxTextCount != -1) {
-            contentView.edit_et.filters = arrayOf(InputFilter.LengthFilter(maxTextCount))
-        }
-        contentView.edit_counter.isVisible = maxTextCount != -1
-        if (editText != null) {
-            contentView.edit_et.setSelection(editText!!.length)
-            contentView.edit_counter.text = "${maxTextCount - editText!!.length}"
-        } else {
-            contentView.edit_counter.text = "$maxTextCount"
+            contentView.input_layout.counterMaxLength = maxTextCount
         }
         contentView.edit_et.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                contentView.edit_save.isEnabled = !(!allowEmpty && s.isNullOrEmpty())
-                if (maxTextCount != -1) {
-                    if (s != null) {
-                        contentView.edit_counter.text = "${maxTextCount - s.length}"
-                    } else {
-                        contentView.edit_counter.text = "$maxTextCount"
-                    }
-                }
+                contentView.edit_save.isEnabled = !(!allowEmpty && s.isNullOrEmpty()) &&
+                    (!s.isNullOrEmpty() && s.length <= maxTextCount)
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}

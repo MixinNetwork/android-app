@@ -40,10 +40,6 @@ interface ConversationService {
     fun update(@Path("id") id: String, @Body request: ConversationRequest):
         Call<MixinResponse<ConversationResponse>>
 
-    @POST("conversations/{id}")
-    fun updateAsync(@Path("id") id: String, @Body request: ConversationRequest):
-        Observable<MixinResponse<ConversationResponse>>
-
     @POST("conversations/{id}/exit")
     fun exit(@Path("id") id: String): Call<MixinResponse<ConversationResponse>>
 

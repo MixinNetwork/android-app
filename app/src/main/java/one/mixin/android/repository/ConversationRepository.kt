@@ -11,7 +11,6 @@ import javax.inject.Singleton
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.PAGE_SIZE
-import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
@@ -186,9 +185,6 @@ internal constructor(
         readAppDatabase.appDao().getGroupConversationApp(conversationId)
 
     fun getConversationApp(userId: String?) = readAppDatabase.appDao().getConversationApp(userId)
-
-    fun updateAsync(conversationId: String, request: ConversationRequest) =
-        conversationService.updateAsync(conversationId, request)
 
     suspend fun updateAnnouncement(conversationId: String, announcement: String) =
         conversationDao.updateConversationAnnouncement(conversationId, announcement)
