@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -12,9 +13,11 @@ import kotlinx.android.synthetic.main.fragment_my_shared_apps.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
+import one.mixin.android.widget.SegmentationItemDecoration
 
 class MySharedAppsFragment : BaseFragment() {
     companion object {
@@ -36,7 +39,8 @@ class MySharedAppsFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        list.adapter = adapter
+        recyclerView.adapter = adapter
+        recyclerView.addItemDecoration(SegmentationItemDecoration())
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         loadData()
         refresh()
@@ -54,22 +58,32 @@ class MySharedAppsFragment : BaseFragment() {
             val favoriteApps =
                 mySharedAppsViewModel.getFavoriteAppsByUserId(Session.getAccountId()!!)
             val unFavoriteApps = mySharedAppsViewModel.getUnfavoriteApps()
+            recyclerView.isVisible = favoriteApps.isNotEmpty() || unFavoriteApps.isNotEmpty()
+            empty.isVisible = favoriteApps.isEmpty() && unFavoriteApps.isEmpty()
             adapter.setData(favoriteApps, unFavoriteApps)
         }
     }
 
     private val onAddSharedApp: (app: App) -> Unit = { app ->
         lifecycleScope.launch {
+            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+                setCancelable(false)
+            }
             if (mySharedAppsViewModel.addFavoriteApp(app.appId)) {
                 loadData()
             }
+            dialog.dismiss()
         }
     }
     private val onRemoveSharedApp: (app: App) -> Unit = { app ->
         lifecycleScope.launch {
+            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+                setCancelable(false)
+            }
             if (mySharedAppsViewModel.removeFavoriteApp(app.appId, Session.getAccountId()!!)) {
                 loadData()
             }
+            dialog.dismiss()
         }
     }
 

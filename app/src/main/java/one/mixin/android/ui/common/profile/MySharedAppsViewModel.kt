@@ -27,7 +27,7 @@ class MySharedAppsViewModel
         val response = accountRepository.getUserFavoriteApps(userId)
         if (response.isSuccess) {
             response.data?.let { list ->
-                accountRepository.insertFavoriteApps(list)
+                accountRepository.insertFavoriteApps(userId, list)
             }
         }
     }

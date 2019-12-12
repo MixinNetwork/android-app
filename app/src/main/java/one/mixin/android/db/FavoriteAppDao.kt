@@ -8,4 +8,7 @@ import one.mixin.android.vo.FavoriteApp
 interface FavoriteAppDao : BaseDao<FavoriteApp> {
     @Query("DELETE FROM favorite_apps WHERE app_id =:appId AND user_id=:userId")
     suspend fun deleteByAppIdAndUserId(appId: String, userId: String)
+
+    @Query("DELETE FROM favorite_apps WHERE user_id=:userId")
+    suspend fun deleteByUserId(userId: String)
 }

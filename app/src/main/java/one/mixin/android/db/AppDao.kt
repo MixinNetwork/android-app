@@ -25,10 +25,13 @@ interface AppDao : BaseDao<App> {
         SELECT a.app_id as appId,a.app_number as appNumber, a.home_uri as homeUri, a.redirect_uri as redirectUri,
         a.name as name, a.icon_url as iconUrl, a.description as description, a.app_secret as appSecret,
         a.capabilites as capabilities, a.creator_id as creatorId, u.user_id as userId, u.avatar_url as avatarUrl
-        FROM favorite_apps fa INNER JOIN apps a ON a.app_id = fa.app_id INNER JOIN users u ON u.user_id = fa.user_id WHERE fa.user_id in (:userId)
+        FROM favorite_apps fa INNER JOIN apps a ON a.app_id = fa.app_id INNER JOIN users u ON u.user_id = fa.user_id
+        WHERE fa.user_id in (:guestId, :masterId) AND u.user_id IS NOT NULL GROUP BY fa.app_id 
+        ORDER BY CASE  WHEN fa.user_id= :guestId THEN 2 WHEN fa.user_id= :masterId THEN 1 END;
         """
     )
-    fun getConversationApp(userId: String): LiveData<List<AppItem>>
+    fun getConversationApp(guestId: String, masterId: String): LiveData<List<AppItem>>
+
     @Query("SELECT * FROM apps WHERE app_id = :id")
     suspend fun findAppById(id: String): App?
 

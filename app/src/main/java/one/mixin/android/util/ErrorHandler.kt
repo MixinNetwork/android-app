@@ -117,6 +117,7 @@ open class ErrorHandler {
         const val INVALID_CODE_TOO_FREQUENT = 20129
         const val INVALID_EMERGENCY_CONTACT = 20130
         const val WITHDRAWAL_MEMO_FORMAT_INCORRECT = 20131
+        const val FAVORITE_LIMIT = 20132
         const val CONVERSATION_CHECKSUM_INVALID_ERROR = 20140
         const val BLOCKCHAIN_ERROR = 30100
         const val INVALID_ADDRESS = 30102
@@ -218,7 +219,11 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
                 ErrorHandler.WITHDRAWAL_MEMO_FORMAT_INCORRECT
             )
         }
-
+        ErrorHandler.FAVORITE_LIMIT -> {
+            getString(R.string.error_favorite_limit,
+                ErrorHandler.FAVORITE_LIMIT
+            )
+        }
         ErrorHandler.FORBIDDEN -> {
             getString(R.string.error_forbidden)
         }

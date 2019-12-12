@@ -197,8 +197,10 @@ constructor(
 
     suspend fun insertFavoriteApp(favoriteApp: FavoriteApp) = favoriteAppDao.insert(favoriteApp)
 
-    suspend fun insertFavoriteApps(favoriteApps: List<FavoriteApp>) =
+    suspend fun insertFavoriteApps(userId: String, favoriteApps: List<FavoriteApp>) {
+        favoriteAppDao.deleteByUserId(userId)
         favoriteAppDao.insertList(favoriteApps)
+    }
 
     suspend fun getUserFavoriteApps(userId: String) = userService.getUserFavoriteApps(userId)
 
@@ -215,11 +217,13 @@ constructor(
 
     suspend fun refreshAppNotExist(appIds: List<String>) {
         appIds.filter { id ->
-            appDao.findAppById(id) == null
+            appDao.findAppById(id) == null || userDao.suspendFindUserById(id) == null
         }.let { ids ->
             val response = userService.fetchUsers(ids)
             if (response.isSuccess) {
-                response.data?.map { user -> user.app }?.filter { app ->
+                response.data?.apply {
+                    userDao.insertList(this)
+                }?.map { user -> user.app }?.filter { app ->
                     app != null
                 }?.let { list ->
                     appDao.insertList(list as List<App>)

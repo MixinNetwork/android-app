@@ -143,6 +143,7 @@
     <string name="error_invalid_code_too_frequent">ERROR %1$d: Send verification code too frequent, please try again later.</string>
     <string name="error_invalid_emergency_contact">ERROR %1$d: Invalid emergency contact</string>
     <string name="error_withdrawal_memo_format_incorrect">ERROR %1$d: Withdrawal memo format incorrect.</string>
+    <string name="error_favorite_limit">ERROR %1$d: The number has reached the limit.</string>
     <string name="error_retry_upload">Retry upload failed.</string>
     <string name="error_not_supported_audio_format">Not supported audio format, please open by other app.</string>
     <!--home-->
@@ -209,6 +210,9 @@
     <string name="contact_receive_tip">Scan the QR Code to pay me</string>
     <string name="add_contact">+ Add Contact</string>
     <string name="contact_search_hint">Name, Mixin ID</string>
+    <string name="contact_share_apps_title">%1$s\'s Shared Apps</string>
+    <string name="contact_share_apps_no_app">NO APP</string>
+    <string name="contact_share_apps_tip">If you want to share apps, please add it as contact first.</string>
     <!--profile-->
     <string name="profile_my_title">My Profile</string>
     <string name="profile_photo">Profile Photo</string>

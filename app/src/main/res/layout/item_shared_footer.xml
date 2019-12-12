@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:background="?attr/bg_window"
+    android:gravity="top|center_horizontal"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:textColor="?attr/text_minor"
+    android:text="@string/contact_share_apps_tip" />

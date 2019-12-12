@@ -77,14 +77,24 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         const val MUTE_8_HOURS = 8 * 60 * 60
         const val MUTE_1_WEEK = 7 * 24 * 60 * 60
         const val MUTE_1_YEAR = 365 * 24 * 60 * 60
-
-        fun newInstance(user: User, conversationId: String? = null) =
-            UserBottomSheetDialogFragment().apply {
+        private var instant: UserBottomSheetDialogFragment? = null
+        fun newInstance(user: User, conversationId: String? = null): UserBottomSheetDialogFragment {
+            instant?.dismiss()
+            instant = null
+            return UserBottomSheetDialogFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARGS_USER, user)
                     putString(ARGS_CONVERSATION_ID, conversationId)
                 }
+            }.apply {
+                instant = this
             }
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        instant = null
     }
 
     private lateinit var user: User
@@ -172,6 +182,15 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         lifecycleScope.launch {
             bottomViewModel.loadFavoriteApps(user.userId) { apps ->
                 contentView.avatar_ll.isVisible = !apps.isNullOrEmpty()
+                contentView.avatar_ll.setOnClickListener {
+                    if (!apps.isNullOrEmpty()) {
+                        AppListBottomSheetDialogFragment.newInstance(
+                            apps,
+                            getString(R.string.contact_share_apps_title, user.fullName)
+                        )
+                            .showNow(parentFragmentManager, AppListBottomSheetDialogFragment.TAG)
+                    }
+                }
                 apps?.let {
                     contentView.avatar_group.setApps(it)
                 }
@@ -535,8 +554,12 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             maxTextCount = 40
             allowEmpty = false
             rightAction = {
-                bottomViewModel.updateRelationship(RelationshipRequest(user.userId,
-                    RelationshipAction.UPDATE.name, it))
+                bottomViewModel.updateRelationship(
+                    RelationshipRequest(
+                        user.userId,
+                        RelationshipAction.UPDATE.name, it
+                    )
+                )
             }
         }
     }

@@ -429,7 +429,7 @@ class BottomSheetViewModel @Inject internal constructor(
             accountRepository.getUserFavoriteApps(userId).run {
                 if (isSuccess) {
                     data?.let { data ->
-                        accountRepository.insertFavoriteApps(data)
+                        accountRepository.insertFavoriteApps(userId, data)
                         data.map { app -> app.appId }.let { ids ->
                             refreshAppNotExist(ids)
                         }

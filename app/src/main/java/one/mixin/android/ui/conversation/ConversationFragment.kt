@@ -102,6 +102,8 @@ import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.translationY
+import one.mixin.android.job.FavoriteAppJob
+import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
@@ -208,6 +210,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         fun newInstance(bundle: Bundle) = ConversationFragment().apply { arguments = bundle }
     }
 
+    @Inject
+    lateinit var jobManager: MixinJobManager
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val chatViewModel: ConversationViewModel by viewModels { viewModelFactory }
@@ -1707,6 +1711,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         menuFragment.callback = object : MenuFragment.Callback {
             override fun onMenuClick(menu: Menu) {
                 chat_control.reset()
+                if (!isGroup) {
+                    jobManager.addJobInBackground(FavoriteAppJob(sender.userId, recipient?.userId))
+                }
                 when (menu.type) {
                     MenuType.Camera -> {
                         openCamera()

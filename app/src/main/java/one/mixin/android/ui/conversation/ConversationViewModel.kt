@@ -483,7 +483,7 @@ internal constructor(
         return if (userId == null) {
             conversationRepository.getGroupConversationApp(conversationId)
         } else {
-            conversationRepository.getConversationApp(userId)
+            conversationRepository.getConversationApp(userId, Session.getAccountId()!!)
         }
     }
 
