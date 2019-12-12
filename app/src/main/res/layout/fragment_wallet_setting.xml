@@ -150,4 +150,16 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:textColor="?attr/text_minor"/>
     </RelativeLayout>
+
+    <TextView
+        android:id="@+id/large_amount_desc_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:text="@string/setting_transfer_large_summary"
+        android:textColor="?attr/text_minor"
+        android:textSize="12sp"/>
 </LinearLayout>

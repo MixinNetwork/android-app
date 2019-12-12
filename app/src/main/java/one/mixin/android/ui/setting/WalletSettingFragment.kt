@@ -167,6 +167,8 @@ class WalletSettingFragment : BaseViewModelFragment<SettingViewModel>() {
     @SuppressLint("SetTextI18n")
     private fun refreshLargeAmount(largeAmount: Double) {
         if (!isAdded) return
-        large_amount_tv.text = getString(R.string.wallet_setting_currency_desc, largeAmount.toString(), Fiats.getSymbol())
+        val symbol = Fiats.getSymbol()
+        large_amount_tv.text = getString(R.string.wallet_setting_currency_desc, largeAmount.toString(), symbol)
+        large_amount_desc_tv.text = getString(R.string.setting_transfer_large_summary, "$largeAmount$symbol")
     }
 }

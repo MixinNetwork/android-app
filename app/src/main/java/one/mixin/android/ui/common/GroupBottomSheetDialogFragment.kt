@@ -42,7 +42,6 @@ import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.CODE
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.GroupActivity.Companion.ARGS_EXPAND
-import one.mixin.android.ui.group.GroupEditFragment
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.url.openUrlWithExtraWeb
@@ -223,18 +222,30 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                     menu {
                         title = announcementString
                         action = {
-                            activity?.addFragment(
-                                this@GroupBottomSheetDialogFragment, GroupEditFragment.newInstance(
-                                    conversationId, conversation.announcement
-                                ), GroupEditFragment.TAG
-                            )
-                            dismiss()
+                            editDialog {
+                                titleText = this@GroupBottomSheetDialogFragment.getString(R.string.group_info_edit)
+                                editText = conversation.announcement
+                                maxTextCount = 512
+                                editMaxLines = EditDialog.MAX_LINE.toInt()
+                                allowEmpty = false
+                                rightAction = {
+                                    bottomViewModel.updateGroup(conversationId, announcement = it)
+                                }
+                            }
                         }
                     }
                     menu {
                         title = getString(R.string.group_edit_name)
                         action = {
-                            showDialog(conversation.name)
+                            editDialog {
+                                titleText = this@GroupBottomSheetDialogFragment.getString(R.string.group_edit_name)
+                                editText = conversation.name
+                                maxTextCount = 40
+                                allowEmpty = false
+                                rightAction = {
+                                    bottomViewModel.updateGroup(conversationId, it, null)
+                                }
+                            }
                         }
                     }
                 })
@@ -370,23 +381,6 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 }
             }
             .show()
-    }
-
-    @SuppressLint("RestrictedApi")
-    private fun showDialog(name: String?) {
-        if (context == null || !isAdded) {
-            return
-        }
-
-        editDialog {
-            titleText = this@GroupBottomSheetDialogFragment.getString(R.string.edit_name)
-            editText = name
-            maxTextCount = 40
-            allowEmpty = false
-            rightAction = {
-                bottomViewModel.updateGroup(conversationId, it, null)
-            }
-        }
     }
 
     override fun onStateChanged(bottomSheet: View, newState: Int) {

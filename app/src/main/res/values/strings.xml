@@ -482,6 +482,7 @@
     <string name="setting_notification_transfer_desc">Show notifications when receiving a transfer greater than or equal to %1$s.</string>
     <string name="setting_notification_transfer_amount">Transfer Amount(%1$s)</string>
     <string name="setting_night">Night mode</string>
+    <string name="setting_transfer_large_summary">Show confirmation dialog when transfer greater than or equal to %1$s</string>
     <!--about-->
     <string name="about_follow_twitter">Follow us on Twitter</string>
     <string name="about_follow_facebook">Follow us on Facebook</string>

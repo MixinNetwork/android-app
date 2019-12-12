@@ -2,16 +2,11 @@ package one.mixin.android.ui.group
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.launch
-import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
-import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
@@ -85,13 +80,6 @@ internal constructor(
 
     fun findSelf() = userRepository.findSelf()
 
-    fun updateGroup(conversationId: String, announcement: String): Observable<MixinResponse<ConversationResponse>> {
-        val request = ConversationRequest(conversationId, name = null,
-            iconBase64 = null, announcement = announcement)
-        return conversationRepository.updateAsync(conversationId, request)
-            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-    }
-
     fun makeAdmin(conversationId: String, user: User) {
         startGroupJob(conversationId, listOf(user), TYPE_MAKE_ADMIN, "ADMIN")
     }
@@ -119,11 +107,5 @@ internal constructor(
         jobManager.addJobInBackground(ConversationJob(conversationId = conversationId,
             request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration),
             type = ConversationJob.TYPE_MUTE))
-    }
-
-    fun updateAnnouncement(conversationId: String, announcement: String?) = viewModelScope.launch {
-        announcement?.let {
-            conversationRepository.updateAnnouncement(conversationId, announcement)
-        }
     }
 }
