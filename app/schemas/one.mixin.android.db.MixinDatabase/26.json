@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 26,
-    "identityHash": "ca2b9a623743a1ea6ad39ccdbbe54cd3",
+    "identityHash": "6d1f37185b30a3c2b9d662d656006881",
     "entities": [
       {
         "tableName": "users",
@@ -1277,7 +1277,7 @@
       },
       {
         "tableName": "resend_session_messages",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`message_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `status` INTEGER NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`message_id`, `user_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`message_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `status` INTEGER NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`message_id`, `user_id`, `session_id`))",
         "fields": [
           {
             "fieldPath": "messageId",
@@ -1313,7 +1313,8 @@
         "primaryKey": {
           "columnNames": [
             "message_id",
-            "user_id"
+            "user_id",
+            "session_id"
           ],
           "autoGenerate": false
         },
@@ -1550,7 +1551,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ca2b9a623743a1ea6ad39ccdbbe54cd3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6d1f37185b30a3c2b9d662d656006881')"
     ]
   }
 }

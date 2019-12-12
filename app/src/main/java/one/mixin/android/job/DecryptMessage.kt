@@ -230,7 +230,7 @@ class DecryptMessage : Injector() {
             } else if (plainData.action == PlainDataAction.RESEND_MESSAGES.name) {
                 plainData.messages?.let {
                     for (id in it) {
-                        val resendMessage = resendMessageDao.findResendMessage(data.userId, id)
+                        val resendMessage = resendMessageDao.findResendMessage(data.userId, data.sessionId, id)
                         if (resendMessage != null) {
                             continue
                         }
@@ -239,11 +239,9 @@ class DecryptMessage : Injector() {
                             needResendMessage.id = UUID.randomUUID().toString()
                             jobManager.addJobInBackground(SendMessageJob(needResendMessage,
                                 ResendData(data.userId, id, data.sessionId), true, messagePriority = PRIORITY_SEND_ATTACHMENT_MESSAGE))
-                            // Todo please check
-                            resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId!!, 1, nowInUtc()))
+                            resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId, 1, nowInUtc()))
                         } else {
-                            // Todo please check
-                            resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId!!, 0, nowInUtc()))
+                            resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId, 0, nowInUtc()))
                         }
                     }
                 }

@@ -3,7 +3,7 @@ package one.mixin.android.vo
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 
-@Entity(tableName = "resend_session_messages", primaryKeys = ["message_id", "user_id"])
+@Entity(tableName = "resend_session_messages", primaryKeys = ["message_id", "user_id", "session_id"])
 class ResendSessionMessage(
     @ColumnInfo(name = "message_id")
     val messageId: String,
