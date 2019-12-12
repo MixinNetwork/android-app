@@ -3,6 +3,7 @@ package one.mixin.android.di.module
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
+import one.mixin.android.ui.common.AppListBottomSheetDialogFragment
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
@@ -100,4 +101,7 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeMySharedAppsFragment(): MySharedAppsFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeAppListBottomSheetDialogFragment(): AppListBottomSheetDialogFragment
 }

@@ -15,6 +15,6 @@ class AppItem(
     val appSecret: String,
     val capabilities: ArrayList<String>?,
     val creatorId: String,
-    val userId:String?=null,
-    val avatarUrl:String?=null
+    val userId: String? = null,
+    val avatarUrl: String? = null
 )

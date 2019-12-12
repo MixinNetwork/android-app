@@ -653,7 +653,7 @@ internal constructor(
         jobManager.addJobInBackground(AttachmentDownloadJob(message))
     }
 
-    suspend fun suspendFindUserById(userId: String)= withContext(Dispatchers.IO){
+    suspend fun suspendFindUserById(userId: String) = withContext(Dispatchers.IO) {
         userRepository.suspendFindUserById(userId)
     }
 
