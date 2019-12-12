@@ -524,6 +524,7 @@ class DecryptMessage : Injector() {
             }
         } catch (e: Exception) {
             Log.e(TAG, "decrypt failed " + data.messageId, e)
+            Crashlytics.log(Log.ERROR, "Decrypt failed", data.toString() + resendMessageId)
             Crashlytics.logException(e)
             if (e !is NoSessionException) {
                 Bugsnag.beforeNotify {
