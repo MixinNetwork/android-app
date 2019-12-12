@@ -62,9 +62,6 @@ class EditDialog : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_bottom_edit, null)
         contentView.edit_et.setText(editText)
-        if (!editText.isNullOrEmpty()) {
-            contentView.edit_et.setSelection(editText!!.length)
-        }
         contentView.edit_et.hint = editHint
         contentView.edit_title.text = titleText
         editInputType?.let {
@@ -73,9 +70,15 @@ class EditDialog : MixinBottomSheetDialogFragment() {
         val maxLines = if (editMaxLines > MAX_LINE) {
             MAX_LINE.toInt()
         } else editMaxLines
+        if (maxLines == 1) {
+            contentView.edit_et.isSingleLine = true
+        }
         contentView.edit_et.maxLines = maxLines
         if (maxTextCount != -1) {
             contentView.input_layout.counterMaxLength = maxTextCount
+        }
+        if (!editText.isNullOrEmpty()) {
+            contentView.edit_et.setSelection(editText!!.length)
         }
         contentView.edit_et.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}

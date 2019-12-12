@@ -26,7 +26,6 @@
             android:id="@+id/edit_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
             android:layout_marginTop="16dp"
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_assist"
