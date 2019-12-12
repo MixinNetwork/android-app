@@ -5,7 +5,6 @@ import android.net.Uri
 import android.view.TextureView
 import com.google.android.exoplayer2.C
 import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
@@ -25,7 +24,8 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
-import java.lang.Exception
+import kotlin.math.max
+import kotlin.math.min
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import one.mixin.android.BuildConfig
@@ -33,24 +33,22 @@ import one.mixin.android.MixinApplication
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 
+@Suppress("unused")
 class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoListener {
 
     val player: SimpleExoPlayer by lazy {
-        if (isAudio) {
-            val trackSelector = DefaultTrackSelector()
-            ExoPlayerFactory.newSimpleInstance(MixinApplication.appContext, trackSelector).apply {
-                volume = 1.0f
-                addListener(this@MixinPlayer)
-                addVideoListener(this@MixinPlayer)
-            }
+        val trackSelector = if (isAudio) {
+            DefaultTrackSelector(MixinApplication.appContext)
         } else {
-            val trackSelector = DefaultTrackSelector(AdaptiveTrackSelection.Factory())
-            ExoPlayerFactory.newSimpleInstance(MixinApplication.appContext, trackSelector).apply {
+            DefaultTrackSelector(MixinApplication.appContext, AdaptiveTrackSelection.Factory())
+        }
+        SimpleExoPlayer.Builder(MixinApplication.appContext)
+            .setTrackSelector(trackSelector)
+            .build().apply {
                 volume = 1.0f
                 addListener(this@MixinPlayer)
                 addVideoListener(this@MixinPlayer)
             }
-        }
     }
     private var onVideoPlayerListener: OnVideoPlayerListener? = null
     private var onMediaPlayerListener: OnMediaPlayerListener? = null
@@ -73,7 +71,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
 
     fun currentPosition() = player.currentPosition
 
-    val period = Timeline.Period()
+    private val period = Timeline.Period()
 
     fun getCurrentPos(): Long {
         var position = player.currentPosition
@@ -108,7 +106,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     fun seekTo(timeMillis: Int) {
         val seekPos = (if (player.duration == C.TIME_UNSET)
             0
-        else Math.min(Math.max(0, timeMillis), duration())).toLong()
+        else min(max(0, timeMillis), duration())).toLong()
         seekTo(seekPos)
     }
 
@@ -128,8 +126,9 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         }
         this.url = url
         mediaSource = ProgressiveMediaSource.Factory(buildDataSourceFactory())
-            .createMediaSource(Uri.parse(url))
-        player.prepare(mediaSource)
+            .createMediaSource(Uri.parse(url)).apply {
+                player.prepare(this)
+            }
     }
 
     fun loadVideo(url: String, id: String, force: Boolean = false) {
@@ -139,14 +138,16 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         this.mId = id
         this.url = url
         mediaSource = ProgressiveMediaSource.Factory(buildDataSourceFactory())
-            .createMediaSource(Uri.parse(url))
-        player.prepare(mediaSource)
+            .createMediaSource(Uri.parse(url)).apply {
+                player.prepare(this)
+            }
     }
 
     fun loadAudio(url: String) {
         mediaSource = ProgressiveMediaSource.Factory(DefaultDataSourceFactory(MixinApplication.appContext, BuildConfig.APPLICATION_ID))
-            .createMediaSource(Uri.parse(url))
-        player.prepare(mediaSource)
+            .createMediaSource(Uri.parse(url)).apply {
+                player.prepare(this)
+            }
     }
 
     var mId: String? = null
@@ -175,8 +176,9 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
                     HlsMediaSource.Factory(buildDataSourceFactory()).createMediaSource(Uri.parse(url))
                 } else {
                     ProgressiveMediaSource.Factory(buildDataSourceFactory()).createMediaSource(Uri.parse(url))
+                }.apply {
+                    player.prepare(this)
                 }
-                player.prepare(mediaSource)
             }
         }
     }
@@ -185,7 +187,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         return DefaultDataSourceFactory(MixinApplication.appContext, null, DefaultHttpDataSourceFactory(Util.getUserAgent(MixinApplication.appContext, "Mixin"), null))
     }
 
-    override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
+    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
     }
 
     override fun onTracksChanged(trackGroups: TrackGroupArray, trackSelections: TrackSelectionArray) {
@@ -219,8 +221,8 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     }
 
     override fun onPlayerError(error: ExoPlaybackException) {
-        if (isBehindLiveWindow(error) && mediaSource != null) {
-            player.prepare(mediaSource)
+        if (isBehindLiveWindow(error)) {
+            mediaSource?.let { player.prepare(it) }
         }
         // HttpDataSourceException
         onVideoPlayerListener?.onPlayerError(error)
@@ -275,7 +277,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
 
     fun setSpeed(speed: Float) {
         val pp = PlaybackParameters(speed, player.playbackParameters.pitch)
-        player.playbackParameters = pp
+        player.setPlaybackParameters(pp)
     }
 
     interface OnVideoPlayerListener {
