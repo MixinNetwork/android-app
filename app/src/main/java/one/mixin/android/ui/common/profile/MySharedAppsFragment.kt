@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.widget.SegmentationItemDecoration
@@ -69,8 +70,12 @@ class MySharedAppsFragment : BaseFragment() {
             val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
                 setCancelable(false)
             }
-            if (mySharedAppsViewModel.addFavoriteApp(app.appId)) {
-                loadData()
+            try {
+                if (mySharedAppsViewModel.addFavoriteApp(app.appId)) {
+                    loadData()
+                }
+            } catch (e: Exception) {
+                ErrorHandler.handleError(e)
             }
             dialog.dismiss()
         }
@@ -80,8 +85,12 @@ class MySharedAppsFragment : BaseFragment() {
             val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
                 setCancelable(false)
             }
-            if (mySharedAppsViewModel.removeFavoriteApp(app.appId, Session.getAccountId()!!)) {
-                loadData()
+            try {
+                if (mySharedAppsViewModel.removeFavoriteApp(app.appId, Session.getAccountId()!!)) {
+                    loadData()
+                }
+            } catch (e: Exception) {
+                ErrorHandler.handleError(e)
             }
             dialog.dismiss()
         }

@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="?attr/bg_white"
+    android:background="@drawable/bg_upper_round"
     android:paddingBottom="16dp">
 
     <one.mixin.android.widget.RoundTitleView
