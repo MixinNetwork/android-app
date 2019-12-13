@@ -27,4 +27,5 @@
     <color name="bgMenuNight">#23272B</color>
     <color name="bgMenuBorderNight">#3E5264</color>
     <color name="bgGrayLightNight">@color/bgGrayNight</color>
+    <color name="bgConfirmationNight">@color/badgerNight</color>
 </resources>
