@@ -20,7 +20,9 @@ import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
+import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.*
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
+import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.transfer_fl
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -132,9 +134,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
         })
         contentView.transfer_fl.setOnClickListener {
-            TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
-                .showNow(parentFragmentManager, TransferFragment.TAG)
-            dismiss()
+            if (Session.getAccount()?.hasPin == true) {
+                TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
+                    .showNow(parentFragmentManager, TransferFragment.TAG)
+                dismiss()
+            } else {
+                toast(R.string.transfer_without_pin)
+            }
         }
         contentView.send_fl.setOnClickListener {
             if (user.userId == Session.getAccountId()) {

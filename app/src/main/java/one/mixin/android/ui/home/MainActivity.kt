@@ -54,6 +54,7 @@ import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.toast
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOneTimePreKeysJob
@@ -367,8 +368,12 @@ class MainActivity : BlazeBaseActivity() {
             navigationController.pushWallet()
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER)
-            TransferFragment.newInstance(userId, supportSwitchAsset = true)
-                .showNow(supportFragmentManager, TransferFragment.TAG)
+            if (Session.getAccount()?.hasPin == true) {
+                TransferFragment.newInstance(userId, supportSwitchAsset = true)
+                    .showNow(supportFragmentManager, TransferFragment.TAG)
+            } else {
+                toast(R.string.transfer_without_pin)
+            }
         } else if (intent.extras != null && intent.extras!!.getString(
                 "conversation_id",
                 null

@@ -14,10 +14,12 @@ import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_single_friend_select.*
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.SingleFriendSelectAdapter
+import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 import one.mixin.android.widget.SearchView
 
@@ -50,8 +52,13 @@ class SingleFriendSelectFragment : BaseFragment() {
         transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         adapter.listener = object : SingleFriendSelectAdapter.FriendSelectListener {
             override fun onItemClick(user: User) {
-                TransferFragment.newInstance(user.userId).showNow(parentFragmentManager, TransferFragment.TAG)
-                view?.findNavController()?.navigateUp()
+                if (Session.getAccount()?.hasPin == true) {
+                    TransferFragment.newInstance(user.userId)
+                        .showNow(parentFragmentManager, TransferFragment.TAG)
+                    view?.findNavController()?.navigateUp()
+                } else {
+                    toast(R.string.transfer_without_pin)
+                }
             }
         }
         chatViewModel.findContactUsers().observe(viewLifecycleOwner, Observer { data ->

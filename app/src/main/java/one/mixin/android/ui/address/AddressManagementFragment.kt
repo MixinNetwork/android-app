@@ -18,6 +18,7 @@ import kotlinx.android.synthetic.main.item_address.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.address.adapter.AddressAdapter
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.common.BaseFragment
@@ -27,6 +28,7 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.DELETE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.util.Session
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.SearchView
@@ -98,8 +100,12 @@ class AddressManagementFragment : BaseFragment() {
             }
 
             override fun onAddrClick(addr: Address) {
-                TransferFragment.newInstance(asset = asset, address = addr)
-                    .showNow(parentFragmentManager, TransferFragment.TAG)
+                if (Session.getAccount()?.hasPin == true) {
+                    TransferFragment.newInstance(asset = asset, address = addr)
+                        .showNow(parentFragmentManager, TransferFragment.TAG)
+                } else {
+                    toast(R.string.transfer_without_pin)
+                }
             }
         }
         ItemTouchHelper(ItemCallback(object : ItemCallback.ItemCallbackListener {
