@@ -68,7 +68,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.util.image.Compressor
-import one.mixin.android.vo.App
+import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItem
@@ -479,11 +479,11 @@ internal constructor(
         }
     }
 
-    fun getApp(conversationId: String, userId: String?): LiveData<List<App>> {
+    fun getApp(conversationId: String, userId: String?): LiveData<List<AppItem>> {
         return if (userId == null) {
             conversationRepository.getGroupConversationApp(conversationId)
         } else {
-            conversationRepository.getConversationApp(userId)
+            conversationRepository.getConversationApp(userId, Session.getAccountId()!!)
         }
     }
 
@@ -651,6 +651,10 @@ internal constructor(
 
     fun downloadAttachment(message: Message) {
         jobManager.addJobInBackground(AttachmentDownloadJob(message))
+    }
+
+    suspend fun suspendFindUserById(userId: String) = withContext(Dispatchers.IO) {
+        userRepository.suspendFindUserById(userId)
     }
 
     suspend fun getSortMessagesByIds(messages: Set<MessageItem>): ArrayList<ForwardMessage> {

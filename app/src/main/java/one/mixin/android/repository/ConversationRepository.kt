@@ -2,6 +2,7 @@ package one.mixin.android.repository
 
 import android.annotation.SuppressLint
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import io.reactivex.Observable
@@ -143,7 +144,8 @@ internal constructor(
             .build()
     }
 
-    suspend fun getConversationIdIfExistsSync(recipientId: String) = readConversationDao.getConversationIdIfExistsSync(recipientId)
+    suspend fun getConversationIdIfExistsSync(recipientId: String) =
+        readConversationDao.getConversationIdIfExistsSync(recipientId)
 
     fun getUnreadMessage(conversationId: String, accountId: String): List<MessageMinimal> {
         return readMessageDao.getUnreadMessage(conversationId, accountId)
@@ -184,7 +186,12 @@ internal constructor(
     fun getGroupConversationApp(conversationId: String) =
         readAppDatabase.appDao().getGroupConversationApp(conversationId)
 
-    fun getConversationApp(userId: String?) = readAppDatabase.appDao().getConversationApp(userId)
+    fun getConversationApp(guestId: String, masterId: String) =
+        readAppDatabase.appDao().getConversationApp(guestId, masterId).map { list ->
+            list.distinctBy { app ->
+                app.appId
+            }
+        }
 
     suspend fun updateAnnouncement(conversationId: String, announcement: String) =
         conversationDao.updateConversationAnnouncement(conversationId, announcement)
@@ -272,7 +279,8 @@ internal constructor(
     suspend fun findNextAudioMessage(conversationId: String, createdAt: String, messageId: String) =
         messageDao.findNextAudioMessage(conversationId, createdAt, messageId)
 
-    fun getMediaMessagesExcludeLive(conversationId: String) = messageDao.getMediaMessagesExcludeLive(conversationId)
+    fun getMediaMessagesExcludeLive(conversationId: String) =
+        messageDao.getMediaMessagesExcludeLive(conversationId)
 
     fun getAudioMessages(conversationId: String) = messageDao.getAudioMessages(conversationId)
 
@@ -284,5 +292,6 @@ internal constructor(
 
     suspend fun getAllParticipants() = participantDao.getAllParticipants()
 
-    suspend fun insertParticipantSession(ps: List<ParticipantSession>) = participantSessionDao.insertListSuspend(ps)
+    suspend fun insertParticipantSession(ps: List<ParticipantSession>) =
+        participantSessionDao.insertListSuspend(ps)
 }

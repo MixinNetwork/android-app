@@ -5,16 +5,31 @@ import androidx.room.Dao
 import androidx.room.Query
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.App
+import one.mixin.android.vo.AppItem
 
 @Dao
 interface AppDao : BaseDao<App> {
 
-    @Query("SELECT a.* FROM apps a, participants p, users u WHERE p.conversation_id = :conversationId" +
-        " AND p.user_id = u.user_id AND a.app_id = u.app_id")
-    fun getGroupConversationApp(conversationId: String): LiveData<List<App>>
+    @Query(
+        """ SELECT a.app_id as appId,a.app_number as appNumber, a.home_uri as homeUri, a.redirect_uri as redirectUri,
+            a.name as name, a.icon_url as iconUrl, a.description as description, a.app_secret as appSecret,
+            a.capabilites as capabilities, a.creator_id as creatorId
+            FROM apps a, participants p, users u WHERE p.conversation_id = :conversationId
+            AND p.user_id = u.user_id AND a.app_id = u.app_id
+            """
+    )
+    fun getGroupConversationApp(conversationId: String): LiveData<List<AppItem>>
 
-    @Query("SELECT a.* FROM apps a, users u WHERE u.user_id = :userId AND a.app_id = u.app_id")
-    fun getConversationApp(userId: String?): LiveData<List<App>>
+    @Query(
+        """
+        SELECT a.app_id as appId,a.app_number as appNumber, a.home_uri as homeUri, a.redirect_uri as redirectUri,
+        a.name as name, a.icon_url as iconUrl, a.description as description, a.app_secret as appSecret,
+        a.capabilites as capabilities, a.creator_id as creatorId, u.user_id as userId, u.avatar_url as avatarUrl
+        FROM favorite_apps fa INNER JOIN apps a ON a.app_id = fa.app_id INNER JOIN users u ON u.user_id = fa.user_id
+        WHERE fa.user_id in (:guestId, :masterId) AND u.user_id IS NOT NULL ORDER BY CASE  WHEN fa.user_id= :guestId THEN 2 WHEN fa.user_id= :masterId THEN 1 END;
+        """
+    )
+    fun getConversationApp(guestId: String, masterId: String): LiveData<List<AppItem>>
 
     @Query("SELECT * FROM apps WHERE app_id = :id")
     suspend fun findAppById(id: String): App?
@@ -24,4 +39,15 @@ interface AppDao : BaseDao<App> {
 
     @Query(" SELECT a.* FROM apps a WHERE a.home_uri LIKE :query $ESCAPE_SUFFIX")
     suspend fun searchAppByHost(query: String): List<App>
+
+    @Query("SELECT a.* FROM apps a")
+    suspend fun getApps(): List<App>
+
+    @Query("SELECT a.* FROM favorite_apps fa INNER JOIN apps a ON fa.app_id = a.app_id WHERE fa.user_id =:userId ORDER BY fa.created_at ASC")
+    suspend fun getFavoriteAppsByUserId(userId: String): List<App>
+
+    @Query("""
+        SELECT a.* FROM apps a INNER JOIN users u ON u.user_id = a.app_id WHERE u.relationship = 'FRIEND' AND a.app_id NOT IN (SELECT fa.app_id FROM favorite_apps fa WHERE fa.user_id == :userId)
+    """)
+    suspend fun getUnfavoriteApps(userId: String): List<App>
 }

@@ -97,7 +97,7 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
-    fun providesResendMessageDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.resendMessageDao()
+    fun providesResendSessionMessageDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.resendSessionMessageDao()
 
     @Singleton
     @Provides
@@ -106,4 +106,8 @@ internal class BaseDbModule {
     @Singleton
     @Provides
     fun providesHotAssetDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.topAssetDao()
+
+    @Singleton
+    @Provides
+    fun providesFavoriteAppDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.favoriteAppDao()
 }

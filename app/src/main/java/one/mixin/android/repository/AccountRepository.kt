@@ -29,6 +29,7 @@ import one.mixin.android.api.service.EmergencyService
 import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
+import one.mixin.android.db.FavoriteAppDao
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
@@ -38,6 +39,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
@@ -51,6 +53,7 @@ constructor(
     private val conversationService: ConversationService,
     private val userDao: UserDao,
     private val appDao: AppDao,
+    private val favoriteAppDao: FavoriteAppDao,
     private val authService: AuthorizationService,
     private val stickerDao: StickerDao,
     private val stickerAlbumDao: StickerAlbumDao,
@@ -95,7 +98,8 @@ constructor(
                         Pair(type, user)
                     }
                     QrCodeType.conversation.name -> {
-                        val conversationResponse = Gson().fromJson(response.data, ConversationResponse::class.java)
+                        val conversationResponse =
+                            Gson().fromJson(response.data, ConversationResponse::class.java)
                         Pair(type, conversationResponse)
                     }
                     QrCodeType.authorization.name -> {
@@ -153,13 +157,16 @@ constructor(
 
     fun trendingGifs(limit: Int, offset: Int) = giphyService.trendingGifs(limit, offset)
 
-    fun searchGifs(query: String, limit: Int, offset: Int) = giphyService.searchGifs(query, limit, offset)
+    fun searchGifs(query: String, limit: Int, offset: Int) =
+        giphyService.searchGifs(query, limit, offset)
 
     suspend fun createEmergency(request: EmergencyRequest) = emergencyService.create(request)
 
-    suspend fun createVerifyEmergency(id: String, request: EmergencyRequest) = emergencyService.createVerify(id, request)
+    suspend fun createVerifyEmergency(id: String, request: EmergencyRequest) =
+        emergencyService.createVerify(id, request)
 
-    suspend fun loginVerifyEmergency(id: String, request: EmergencyRequest) = emergencyService.loginVerify(id, request)
+    suspend fun loginVerifyEmergency(id: String, request: EmergencyRequest) =
+        emergencyService.loginVerify(id, request)
 
     suspend fun showEmergency(pin: String) =
         emergencyService.show(PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
@@ -184,4 +191,41 @@ constructor(
 
     suspend fun transactions(rawTransactionsRequest: RawTransactionsRequest) =
         accountService.transactions(rawTransactionsRequest)
+
+    suspend fun addFavoriteApp(appId: String) = userService.addFavoriteApp(appId)
+
+    suspend fun insertFavoriteApp(favoriteApp: FavoriteApp) = favoriteAppDao.insert(favoriteApp)
+
+    suspend fun insertFavoriteApps(userId: String, favoriteApps: List<FavoriteApp>) {
+        favoriteAppDao.deleteByUserId(userId)
+        favoriteAppDao.insertList(favoriteApps)
+    }
+
+    suspend fun getUserFavoriteApps(userId: String) = userService.getUserFavoriteApps(userId)
+
+    suspend fun getFavoriteAppsByUserId(userId: String) = appDao.getFavoriteAppsByUserId(userId)
+
+    suspend fun getUnfavoriteApps() = appDao.getUnfavoriteApps(Session.getAccountId()!!)
+
+    suspend fun removeFavoriteApp(appId: String) = userService.removeFavoriteApp(appId)
+
+    suspend fun deleteByAppIdAndUserId(appId: String, userId: String) =
+        favoriteAppDao.deleteByAppIdAndUserId(appId, userId)
+
+    suspend fun getApps() = appDao.getApps()
+
+    suspend fun refreshAppNotExist(appIds: List<String>) {
+        appIds.filter { id ->
+            appDao.findAppById(id) == null || userDao.suspendFindUserById(id) == null
+        }.let { ids ->
+            val response = userService.fetchUsers(ids)
+            if (response.isSuccess) {
+                response.data?.apply {
+                    userDao.insertList(this)
+                }?.mapNotNull { user -> user.app }?.let { list ->
+                    appDao.insertList(list)
+                }
+            }
+        }
+    }
 }

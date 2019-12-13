@@ -5,11 +5,14 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.layout_menu.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.roundTopOrBottom
+import one.mixin.android.vo.App
 
 @DslMarker
 annotation class MenuDsl
@@ -52,8 +55,9 @@ class MenuBuilder {
     var subtitle: String? = null
     var style: MenuStyle = MenuStyle.Normal
     var action: (() -> Unit)? = null
+    var apps: List<App>? = null
 
-    fun build() = Menu(title, subtitle, style, action)
+    fun build() = Menu(title, subtitle, style, action, apps)
 }
 
 data class MenuList(
@@ -68,7 +72,8 @@ data class Menu(
     val title: String,
     val subtitle: String? = null,
     val style: MenuStyle = MenuStyle.Normal,
-    val action: (() -> Unit)? = null
+    val action: (() -> Unit)? = null,
+    val apps: List<App>? = null
 )
 
 enum class MenuStyle {
@@ -94,16 +99,27 @@ fun MenuList.createMenuLayout(
             val menuLayout = LayoutInflater.from(context).inflate(R.layout.layout_menu, null, false)
             menuLayout.title_tv.text = menu.title
             menuLayout.subtitle_tv.text = menu.subtitle
-            menuLayout.title_tv.setTextColor(if (menu.style == MenuStyle.Normal) {
-                context.colorFromAttribute(R.attr.text_primary)
-            } else {
-                context.resources.getColor(R.color.colorRed, context.theme)
+            menuLayout.title_tv.setTextColor(
+                if (menu.style == MenuStyle.Normal) {
+                    context.colorFromAttribute(R.attr.text_primary)
+                } else {
+                    context.resources.getColor(R.color.colorRed, context.theme)
+                }
+            )
+            menu.apps.notNullWithElse({
+                menuLayout.avatar_group.isVisible = true
+                menuLayout.avatar_group.setApps(it)
+            }, {
+                menuLayout.avatar_group.isVisible = false
             })
             val top = index == 0
             val bottom = index == group.menus.size - 1
             menuLayout.roundTopOrBottom(dp13.toFloat(), top, bottom)
             menuLayout.setOnClickListener { menu.action?.invoke() }
-            groupLayout.addView(menuLayout, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp56))
+            groupLayout.addView(
+                menuLayout,
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp56)
+            )
         }
         listLayout.addView(groupLayout, LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT,

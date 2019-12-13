@@ -5,6 +5,7 @@ import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.conversation.ConversationFragment
 import one.mixin.android.ui.conversation.FriendsFragment
 import one.mixin.android.ui.conversation.GiphyFragment
+import one.mixin.android.ui.conversation.MenuFragment
 import one.mixin.android.ui.conversation.StickerAlbumFragment
 import one.mixin.android.ui.conversation.StickerFragment
 import one.mixin.android.ui.group.GroupInfoFragment
@@ -36,4 +37,7 @@ abstract class ConversationActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeGiphyFragment(): GiphyFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeMenuFragment(): MenuFragment
 }

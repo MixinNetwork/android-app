@@ -71,22 +71,66 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun simpleAssetsWithBalance() = assetRepository.simpleAssetsWithBalance()
 
-    suspend fun transfer(assetId: String, userId: String, amount: String, code: String, trace: String?, memo: String?) =
-        assetRepository.transfer(TransferRequest(assetId, userId, amount, encryptPin(Session.getPinToken()!!, code), trace, memo))
+    suspend fun transfer(
+        assetId: String,
+        userId: String,
+        amount: String,
+        code: String,
+        trace: String?,
+        memo: String?
+    ) =
+        assetRepository.transfer(
+            TransferRequest(
+                assetId,
+                userId,
+                amount,
+                encryptPin(Session.getPinToken()!!, code),
+                trace,
+                memo
+            )
+        )
 
     fun authorize(request: AuthorizeRequest): Observable<MixinResponse<AuthorizationResponse>> =
-        accountRepository.authorize(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        accountRepository.authorize(request).subscribeOn(Schedulers.io()).observeOn(
+            AndroidSchedulers.mainThread()
+        )
 
     fun pay(request: TransferRequest): Observable<MixinResponse<PaymentResponse>> =
         assetRepository.pay(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    suspend fun withdrawal(addressId: String, amount: String, code: String, traceId: String, memo: String?) =
+    suspend fun withdrawal(
+        addressId: String,
+        amount: String,
+        code: String,
+        traceId: String,
+        memo: String?
+    ) =
         assetRepository.withdrawal(
-            WithdrawalRequest(addressId, amount, encryptPin(Session.getPinToken()!!, code)!!, traceId, memo)
+            WithdrawalRequest(
+                addressId,
+                amount,
+                encryptPin(Session.getPinToken()!!, code)!!,
+                traceId,
+                memo
+            )
         )
 
-    suspend fun syncAddr(assetId: String, destination: String?, label: String?, tag: String?, code: String): MixinResponse<Address> =
-        assetRepository.syncAddr(AddressRequest(assetId, destination, tag, label, encryptPin(Session.getPinToken()!!, code)!!))
+    suspend fun syncAddr(
+        assetId: String,
+        destination: String?,
+        label: String?,
+        tag: String?,
+        code: String
+    ): MixinResponse<Address> =
+        assetRepository.syncAddr(
+            AddressRequest(
+                assetId,
+                destination,
+                tag,
+                label,
+                encryptPin(Session.getPinToken()!!, code)!!
+            )
+        )
 
     suspend fun saveAddr(addr: Address) = withContext(Dispatchers.IO) {
         assetRepository.saveAddr(addr)
@@ -107,13 +151,15 @@ class BottomSheetViewModel @Inject internal constructor(
         jobManager.addJobInBackground(UpdateRelationshipJob(request, deleteConversationId))
     }
 
-    fun getParticipantsCount(conversationId: String) = conversationRepo.getParticipantsCount(conversationId)
+    fun getParticipantsCount(conversationId: String) =
+        conversationRepo.getParticipantsCount(conversationId)
 
     fun getConversationById(id: String) = conversationRepo.getConversationById(id)
 
     fun getConversation(id: String) = conversationRepo.getConversation(id)
 
-    fun findParticipantByIds(conversationId: String, userId: String) = conversationRepo.findParticipantByIds(conversationId, userId)
+    fun findParticipantByIds(conversationId: String, userId: String) =
+        conversationRepo.findParticipantByIds(conversationId, userId)
 
     fun mute(senderId: String, recipientId: String, duration: Long) {
         viewModelScope.launch(SINGLE_DB_THREAD) {
@@ -126,7 +172,9 @@ class BottomSheetViewModel @Inject internal constructor(
                 ConversationJob(
                     ConversationRequest(
                         conversationId,
-                        ConversationCategory.CONTACT.name, duration = duration, participants = listOf(participantRequest)
+                        ConversationCategory.CONTACT.name,
+                        duration = duration,
+                        participants = listOf(participantRequest)
                     ),
                     recipientId = recipientId, type = ConversationJob.TYPE_MUTE
                 )
@@ -138,7 +186,11 @@ class BottomSheetViewModel @Inject internal constructor(
         jobManager.addJobInBackground(
             ConversationJob(
                 conversationId = conversationId,
-                request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration),
+                request = ConversationRequest(
+                    conversationId,
+                    ConversationCategory.GROUP.name,
+                    duration = duration
+                ),
                 type = ConversationJob.TYPE_MUTE
             )
         )
@@ -159,7 +211,12 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     fun exitGroup(conversationId: String) {
-        jobManager.addJobInBackground(ConversationJob(conversationId = conversationId, type = ConversationJob.TYPE_EXIT))
+        jobManager.addJobInBackground(
+            ConversationJob(
+                conversationId = conversationId,
+                type = ConversationJob.TYPE_EXIT
+            )
+        )
     }
 
     fun deleteGroup(conversationId: String) = viewModelScope.launch {
@@ -203,7 +260,12 @@ class BottomSheetViewModel @Inject internal constructor(
     fun logoutAsync(sessionId: String) = accountRepository.logoutAsync(sessionId)
 
     suspend fun findAddressById(addressId: String, assetId: String) =
-        viewModelScope.async(Dispatchers.IO) { assetRepository.findAddressById(addressId, assetId) }.await()
+        viewModelScope.async(Dispatchers.IO) {
+            assetRepository.findAddressById(
+                addressId,
+                assetId
+            )
+        }.await()
 
     suspend fun findAssetItemById(assetId: String): AssetItem? =
         viewModelScope.async(Dispatchers.IO) {
@@ -320,15 +382,24 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     suspend fun signMultisigs(requestId: String, pin: String) =
-        accountRepository.signMultisigs(requestId, PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
+        accountRepository.signMultisigs(
+            requestId,
+            PinRequest(encryptPin(Session.getPinToken()!!, pin)!!)
+        )
 
     suspend fun unlockMultisigs(requestId: String, pin: String) =
-        accountRepository.unlockMultisigs(requestId, PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
+        accountRepository.unlockMultisigs(
+            requestId,
+            PinRequest(encryptPin(Session.getPinToken()!!, pin)!!)
+        )
 
     suspend fun cancelMultisigs(requestId: String) =
         accountRepository.cancelMultisigs(requestId)
 
-    suspend fun transactions(rawTransactionsRequest: RawTransactionsRequest, pin: String): MixinResponse<Void> {
+    suspend fun transactions(
+        rawTransactionsRequest: RawTransactionsRequest,
+        pin: String
+    ): MixinResponse<Void> {
         rawTransactionsRequest.pin = encryptPin(Session.getPinToken()!!, pin)!!
         return accountRepository.transactions(rawTransactionsRequest)
     }
@@ -344,5 +415,32 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
         userRepository.upsert(user)
+    }
+
+    suspend fun loadFavoriteApps(userId: String, loadAction: (List<App>?) -> Unit) {
+        withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Main) {
+                loadAction(
+                    accountRepository.getFavoriteAppsByUserId(
+                        userId
+                    )
+                )
+            }
+            accountRepository.getUserFavoriteApps(userId).run {
+                if (isSuccess) {
+                    data?.let { data ->
+                        accountRepository.insertFavoriteApps(userId, data)
+                        refreshAppNotExist(data.map { app -> app.appId })
+                        withContext(Dispatchers.Main) {
+                            loadAction(accountRepository.getFavoriteAppsByUserId(userId))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun refreshAppNotExist(appIds: List<String>) = withContext(Dispatchers.IO) {
+        accountRepository.refreshAppNotExist(appIds)
     }
 }

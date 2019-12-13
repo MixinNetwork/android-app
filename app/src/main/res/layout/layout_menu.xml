@@ -17,6 +17,14 @@
         android:textSize="14sp"
         tools:ignore="RelativeOverlap" />
 
+    <one.mixin.android.widget.AvatarGroup
+        android:id="@+id/avatar_group"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
     <TextView
         android:id="@+id/subtitle_tv"
         android:layout_width="wrap_content"

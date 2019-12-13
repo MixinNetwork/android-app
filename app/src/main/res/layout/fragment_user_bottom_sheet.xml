@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -93,9 +94,9 @@
                 android:gravity="center"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
-                android:visibility="gone"
                 android:text="@string/add_contact"
-                android:textColor="@color/wallet_blue" />
+                android:textColor="@color/wallet_blue"
+                android:visibility="gone" />
 
             <one.mixin.android.widget.linktext.AutoLinkTextView
                 android:id="@+id/detail_tv"
@@ -113,13 +114,37 @@
                 android:textIsSelectable="true" />
 
             <LinearLayout
+                android:id="@+id/avatar_ll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="24dp"
+                android:visibility="gone">
+
+                <one.mixin.android.widget.AvatarGroup
+                    android:id="@+id/avatar_group"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:avatar_group_border_color="?attr/bg_white"
+                    app:avatar_group_size="30dp" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_arrow_right" />
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/op_ll"
                 android:layout_width="match_parent"
                 android:layout_height="70dp"
                 android:layout_marginBottom="24dp"
                 android:baselineAligned="false"
-                android:visibility="gone"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:visibility="gone">
 
                 <FrameLayout
                     android:id="@+id/transfer_fl"
