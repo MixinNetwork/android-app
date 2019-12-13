@@ -79,8 +79,12 @@ class UrlInterpreterActivity : BaseActivity() {
             }
             TRANSFER -> {
                 uri.lastPathSegment?.let { lastPathSegment ->
-                    TransferFragment.newInstance(lastPathSegment, supportSwitchAsset = true)
-                        .showNow(supportFragmentManager, TransferFragment.TAG)
+                    if (Session.getAccount()?.hasPin == true) {
+                        TransferFragment.newInstance(lastPathSegment, supportSwitchAsset = true)
+                            .showNow(supportFragmentManager, TransferFragment.TAG)
+                    } else {
+                        toast(R.string.transfer_without_pin)
+                    }
                 }
             }
             DEVICE -> {
@@ -189,8 +193,12 @@ inline fun openUrl(url: String, supportFragmentManager: FragmentManager, extraAc
             else -> ""
         }
         if (data.isUUID()) {
-            TransferFragment.newInstance(data, supportSwitchAsset = true)
-                .showNow(supportFragmentManager, TransferFragment.TAG)
+            if (Session.getAccount()?.hasPin == true) {
+                TransferFragment.newInstance(data, supportSwitchAsset = true)
+                    .showNow(supportFragmentManager, TransferFragment.TAG)
+            } else {
+                MixinApplication.appContext.toast(R.string.transfer_without_pin)
+            }
         }
     } else if (url.startsWith(Scheme.SEND, true)) {
         Uri.parse(url).getQueryParameter("text")?.let {

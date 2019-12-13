@@ -91,6 +91,7 @@
     <string name="ok">OK</string>
     <string name="verify_by_PIN">Verify by PIN</string>
     <string name="verify_by_biometric">Verify by Biometric</string>
+    <string name="transfer_without_pin">You must setup PIN for transfer</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

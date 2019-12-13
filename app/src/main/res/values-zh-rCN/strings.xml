@@ -86,6 +86,7 @@
     <string name="ok">好的</string>
     <string name="verify_by_PIN">用密码来验证</string>
     <string name="verify_by_biometric">用生物识别来验证</string>
+    <string name="transfer_without_pin">转账前请先设置密码</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>

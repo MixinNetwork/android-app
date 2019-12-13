@@ -85,8 +85,11 @@ class EditDialog : MixinBottomSheetDialogFragment() {
             override fun afterTextChanged(s: Editable?) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                contentView.edit_save.isEnabled = !(!allowEmpty && s.isNullOrEmpty()) &&
-                    (!s.isNullOrEmpty() && s.length <= maxTextCount)
+                contentView.edit_save.isEnabled = when {
+                    s.isNullOrEmpty() -> allowEmpty
+                    maxTextCount == -1 -> true
+                    else -> s.length <= maxTextCount
+                }
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
