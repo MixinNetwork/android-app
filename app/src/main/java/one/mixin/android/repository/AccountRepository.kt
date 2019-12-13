@@ -39,7 +39,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
-import one.mixin.android.vo.App
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship
@@ -223,10 +222,8 @@ constructor(
             if (response.isSuccess) {
                 response.data?.apply {
                     userDao.insertList(this)
-                }?.map { user -> user.app }?.filter { app ->
-                    app != null
-                }?.let { list ->
-                    appDao.insertList(list as List<App>)
+                }?.mapNotNull { user -> user.app }?.let { list ->
+                    appDao.insertList(list)
                 }
             }
         }

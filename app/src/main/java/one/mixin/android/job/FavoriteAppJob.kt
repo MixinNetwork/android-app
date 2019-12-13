@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.vo.App
 
 class FavoriteAppJob(vararg val userIds: String?) : BaseJob(
     Params(PRIORITY_UI_HIGH)
@@ -22,19 +21,15 @@ class FavoriteAppJob(vararg val userIds: String?) : BaseJob(
                     data?.let { data ->
                         favoriteAppDao.deleteByUserId(userId)
                         favoriteAppDao.insertList(data)
-                        data.map { app -> app.appId }.let { appIds ->
-                            appIds.filter { id ->
-                                appDao.findAppById(id) == null || userDao.suspendFindUserById(id) == null
-                            }.let { ids ->
-                                val response = userService.fetchUsers(ids)
-                                if (response.isSuccess) {
-                                    response.data?.apply {
-                                      userDao.insertList(this)
-                                    }?.map { user -> user.app }?.filter { app ->
-                                        app != null
-                                    }?.let { list ->
-                                        appDao.insertList(list as List<App>)
-                                    }
+                        data.map { app -> app.appId }.filter { id ->
+                            appDao.findAppById(id) == null || userDao.suspendFindUserById(id) == null
+                        }.let { ids ->
+                            val response = userService.fetchUsers(ids)
+                            if (response.isSuccess) {
+                                response.data?.apply {
+                                    userDao.insertList(this)
+                                }?.mapNotNull { user -> user.app }?.let { list ->
+                                    appDao.insertList(list)
                                 }
                             }
                         }
