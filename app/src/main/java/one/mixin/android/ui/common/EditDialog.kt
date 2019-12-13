@@ -75,6 +75,7 @@ class EditDialog : MixinBottomSheetDialogFragment() {
         }
         contentView.edit_et.maxLines = maxLines
         if (maxTextCount != -1) {
+            contentView.input_layout.isCounterEnabled = true
             contentView.input_layout.counterMaxLength = maxTextCount
         }
         if (!editText.isNullOrEmpty()) {
