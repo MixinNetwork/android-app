@@ -87,7 +87,7 @@
                 android:id="@+id/ops_ll"
                 android:layout_width="match_parent"
                 android:layout_height="70dp"
-                android:layout_marginBottom="40dp"
+                android:layout_marginBottom="8dp"
                 android:baselineAligned="false"
                 android:orientation="horizontal">
 

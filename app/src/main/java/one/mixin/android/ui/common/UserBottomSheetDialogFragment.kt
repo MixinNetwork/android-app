@@ -128,7 +128,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
             contentView.doOnPreDraw {
                 behavior?.peekHeight = contentView.title.height + contentView.scroll_content.height -
-                    (menuListLayout?.height ?: 0) - if (menuListLayout != null) requireContext().dpToPx(70f) else requireContext().dpToPx(40f)
+                    (menuListLayout?.height ?: 0) - if (menuListLayout != null) requireContext().dpToPx(38f) else requireContext().dpToPx(8f)
             }
         })
         contentView.transfer_fl.setOnClickListener {
