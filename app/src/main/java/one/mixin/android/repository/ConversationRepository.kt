@@ -2,6 +2,7 @@ package one.mixin.android.repository
 
 import android.annotation.SuppressLint
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import io.reactivex.Observable
@@ -186,7 +187,11 @@ internal constructor(
         readAppDatabase.appDao().getGroupConversationApp(conversationId)
 
     fun getConversationApp(guestId: String, masterId: String) =
-        readAppDatabase.appDao().getConversationApp(guestId, masterId)
+        readAppDatabase.appDao().getConversationApp(guestId, masterId).map { list ->
+            list.distinctBy { app ->
+                app.appId
+            }
+        }
 
     suspend fun updateAnnouncement(conversationId: String, announcement: String) =
         conversationDao.updateConversationAnnouncement(conversationId, announcement)

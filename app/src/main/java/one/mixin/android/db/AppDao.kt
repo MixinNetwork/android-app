@@ -26,8 +26,7 @@ interface AppDao : BaseDao<App> {
         a.name as name, a.icon_url as iconUrl, a.description as description, a.app_secret as appSecret,
         a.capabilites as capabilities, a.creator_id as creatorId, u.user_id as userId, u.avatar_url as avatarUrl
         FROM favorite_apps fa INNER JOIN apps a ON a.app_id = fa.app_id INNER JOIN users u ON u.user_id = fa.user_id
-        WHERE fa.user_id in (:guestId, :masterId) AND u.user_id IS NOT NULL GROUP BY fa.app_id 
-        ORDER BY CASE  WHEN fa.user_id= :guestId THEN 2 WHEN fa.user_id= :masterId THEN 1 END;
+        WHERE fa.user_id in (:guestId, :masterId) AND u.user_id IS NOT NULL ORDER BY CASE  WHEN fa.user_id= :guestId THEN 2 WHEN fa.user_id= :masterId THEN 1 END;
         """
     )
     fun getConversationApp(guestId: String, masterId: String): LiveData<List<AppItem>>
@@ -47,6 +46,6 @@ interface AppDao : BaseDao<App> {
     @Query("SELECT a.* FROM favorite_apps fa INNER JOIN apps a ON fa.app_id = a.app_id WHERE fa.user_id =:userId ORDER BY fa.created_at ASC")
     suspend fun getFavoriteAppsByUserId(userId: String): List<App>
 
-    @Query("SELECT a.* FROM apps a WHERE a.app_id NOT IN (SELECT fa.app_id FROM favorite_apps fa)")
-    suspend fun getUnfavoriteApps(): List<App>
+    @Query("SELECT a.* FROM apps a WHERE a.app_id NOT IN (SELECT fa.app_id FROM favorite_apps fa WHERE fa.user_id == :userId)")
+    suspend fun getUnfavoriteApps(userId: String): List<App>
 }

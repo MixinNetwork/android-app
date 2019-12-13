@@ -206,7 +206,7 @@ constructor(
 
     suspend fun getFavoriteAppsByUserId(userId: String) = appDao.getFavoriteAppsByUserId(userId)
 
-    suspend fun getUnfavoriteApps() = appDao.getUnfavoriteApps()
+    suspend fun getUnfavoriteApps() = appDao.getUnfavoriteApps(Session.getAccountId()!!)
 
     suspend fun removeFavoriteApp(appId: String) = userService.removeFavoriteApp(appId)
 
