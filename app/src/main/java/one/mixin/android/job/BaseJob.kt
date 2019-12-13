@@ -155,6 +155,9 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
         if (throwable is IOException) {
             return true
         }
+        if (throwable is InterruptedException) {
+            return true
+        }
         return (throwable as? ServerErrorException)?.shouldRetry()
             ?: ((throwable as? ClientErrorException)?.shouldRetry()
                 ?: ((throwable as? NetworkException)?.shouldRetry()
