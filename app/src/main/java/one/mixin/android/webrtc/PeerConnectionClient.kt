@@ -38,7 +38,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     private var audioTrack: AudioTrack? = null
     private var audioSource: AudioSource? = null
     private val sdpConstraint = MediaConstraints()
-    private val googleStunServer = PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302").createIceServer()
 
     fun createPeerConnectionFactory(options: PeerConnectionFactory.Options) {
         if (factory != null) {
@@ -50,7 +49,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
     fun createOffer(iceServerList: List<PeerConnection.IceServer>) {
         iceServers.addAll(iceServerList)
-        iceServers.add(googleStunServer)
         executor.execute {
             val peerConnection = createPeerConnectionInternal()
             isInitiator = true
@@ -78,7 +76,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
     fun createAnswer(iceServerList: List<PeerConnection.IceServer>, remoteSdp: SessionDescription) {
         iceServers.addAll(iceServerList)
-        iceServers.add(googleStunServer)
         executor.execute {
             val peerConnection = createPeerConnectionInternal()
             peerConnection?.setRemoteDescription(remoteSdpObserver, remoteSdp)
