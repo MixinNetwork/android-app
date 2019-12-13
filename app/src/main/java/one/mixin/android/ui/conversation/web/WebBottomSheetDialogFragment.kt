@@ -8,6 +8,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
@@ -44,20 +45,18 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.io.ByteArrayInputStream
-import java.io.FileInputStream
-import java.net.URISyntaxException
-import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getPublicPicturePath
@@ -80,10 +79,15 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.WebControlView
+import org.jetbrains.anko.configuration
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.runOnUiThread
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.ByteArrayInputStream
+import java.io.FileInputStream
+import java.net.URISyntaxException
+import java.util.concurrent.TimeUnit
 
 class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
@@ -121,13 +125,13 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             appAvatar: String? = null,
             appCapabilities: ArrayList<String>? = null
         ) = WebBottomSheetDialogFragment().withArgs {
-                putString(URL, url)
-                putString(CONVERSATION_ID, conversationId)
-                putString(APP_ID, appId)
-                putString(APP_NAME, appName)
-                putString(APP_AVATAR, appAvatar)
-                putStringArrayList(APP_CAPABILITIES, appCapabilities)
-            }
+            putString(URL, url)
+            putString(CONVERSATION_ID, conversationId)
+            putString(APP_ID, appId)
+            putString(APP_NAME, appName)
+            putString(APP_AVATAR, appAvatar)
+            putStringArrayList(APP_CAPABILITIES, appCapabilities)
+        }
     }
 
     private val url: String by lazy {
@@ -273,8 +277,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.settings.javaScriptEnabled = true
         contentView.chat_web_view.settings.domStorageEnabled = true
         contentView.chat_web_view.settings.useWideViewPort = true
-       contentView.chat_web_view.settings.loadWithOverviewMode = true
-        contentView.chat_web_view.settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+        contentView.chat_web_view.settings.loadWithOverviewMode = true
+        contentView.chat_web_view.settings.mixedContentMode =
+            WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         contentView.chat_web_view.settings.mediaPlaybackRequiresUserGesture = false
         contentView.chat_web_view.settings.userAgentString =
             contentView.chat_web_view.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME
@@ -458,7 +463,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return imageUri!!
     }
 
-    private fun isBot() = appId != null || appName != null || appAvatar != null || appCapabilities != null
+    private fun isBot() =
+        appId != null || appName != null || appAvatar != null || appCapabilities != null
 
     override fun onDestroyView() {
         contentView.chat_web_view.stopLoading()
@@ -611,7 +617,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             dialog?.window?.decorView?.let {
                 if (dark) {
                     contentView.title_tv.setTextColor(Color.WHITE)
-                    it.systemUiVisibility = it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                    it.systemUiVisibility =
+                        it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
                 } else {
                     contentView.title_tv.setTextColor(Color.BLACK)
                     it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
@@ -697,7 +704,27 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         @JavascriptInterface
         fun getContext(): String? {
-            return Gson().toJson(MixinContext(conversationId, immersive))
+
+            return Gson().toJson(
+                MixinContext(
+                    conversationId, immersive, appearance = if (isNightMode()) {
+                        "dark"
+                    } else {
+                        "light"
+                    }
+                )
+            )
+        }
+
+        private fun isNightMode(): Boolean {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                context.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+            } else {
+                context.defaultSharedPreferences.getInt(
+                    Constants.Theme.THEME_CURRENT_ID,
+                    Constants.Theme.THEME_DEFAULT_ID
+                ) == Constants.Theme.THEME_NIGHT_ID
+            }
         }
     }
 
@@ -707,6 +734,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         @SerializedName("immersive")
         val immersive: Boolean,
         @SerializedName("app_version")
-        val appVersion: String = BuildConfig.VERSION_NAME
+        val appVersion: String = BuildConfig.VERSION_NAME,
+        @SerializedName("appearance")
+        val appearance: String
     )
 }
