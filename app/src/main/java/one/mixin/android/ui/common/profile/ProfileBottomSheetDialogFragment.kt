@@ -106,8 +106,12 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         }
 
         lifecycleScope.launch {
-            bottomViewModel.loadFavoriteApps((account.userId)) {
-                initMenu(account, it)
+            try {
+                bottomViewModel.loadFavoriteApps((account.userId)) {
+                    initMenu(account, it)
+                }
+            } catch (e: Exception) {
+                ErrorHandler.handleError(e)
             }
         }
     }

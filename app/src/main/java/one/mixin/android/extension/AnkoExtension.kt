@@ -40,7 +40,6 @@ fun Context.indeterminateProgressDialog(
     init: (ProgressDialog.() -> Unit)? = null
 ) = progressDialog(true, message, title, init)
 
-
 @Deprecated(message = "Android progress dialogs are deprecated")
 private fun Context.progressDialog(
     indeterminate: Boolean,

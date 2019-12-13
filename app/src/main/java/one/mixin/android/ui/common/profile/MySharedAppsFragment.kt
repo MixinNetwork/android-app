@@ -49,8 +49,12 @@ class MySharedAppsFragment : BaseFragment() {
 
     private fun refresh() {
         lifecycleScope.launch {
-            mySharedAppsViewModel.refreshFavoriteApps(Session.getAccountId()!!)
-            loadData()
+            try {
+                mySharedAppsViewModel.refreshFavoriteApps(Session.getAccountId()!!)
+                loadData()
+            } catch (e: Exception) {
+                ErrorHandler.handleError(e)
+            }
         }
     }
 
@@ -59,6 +63,7 @@ class MySharedAppsFragment : BaseFragment() {
             val favoriteApps =
                 mySharedAppsViewModel.getFavoriteAppsByUserId(Session.getAccountId()!!)
             val unFavoriteApps = mySharedAppsViewModel.getUnfavoriteApps()
+            recyclerView ?: return@launch
             recyclerView.isVisible = favoriteApps.isNotEmpty() || unFavoriteApps.isNotEmpty()
             empty.isVisible = favoriteApps.isEmpty() && unFavoriteApps.isEmpty()
             adapter.setData(favoriteApps, unFavoriteApps)
