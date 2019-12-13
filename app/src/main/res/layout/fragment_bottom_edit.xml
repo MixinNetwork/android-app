@@ -18,9 +18,7 @@
         android:id="@+id/input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/margin12"
-        app:counterEnabled="true"
-        app:counterMaxLength="1024">
+        android:layout_marginBottom="@dimen/margin12">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_et"
