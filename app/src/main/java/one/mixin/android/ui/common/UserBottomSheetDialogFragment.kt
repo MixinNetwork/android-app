@@ -141,8 +141,12 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             user = u
 
             contentView.doOnPreDraw {
-                behavior?.peekHeight = contentView.title.height + contentView.scroll_content.height -
-                    (menuListLayout?.height ?: 0) - if (menuListLayout != null) requireContext().dpToPx(38f) else requireContext().dpToPx(8f)
+                behavior?.peekHeight =
+                    contentView.title.height + contentView.scroll_content.height -
+                        (menuListLayout?.height
+                            ?: 0) - if (menuListLayout != null) requireContext().dpToPx(38f) else requireContext().dpToPx(
+                        8f
+                    )
             }
         })
         contentView.transfer_fl.setOnClickListener {
@@ -193,6 +197,14 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 }
                 apps?.let {
                     contentView.avatar_group.setApps(it)
+                    contentView.doOnPreDraw {
+                        behavior?.peekHeight =
+                            contentView.title.height + contentView.scroll_content.height -
+                                (menuListLayout?.height
+                                    ?: 0) - if (menuListLayout != null) requireContext().dpToPx(38f) else requireContext().dpToPx(
+                                8f
+                            )
+                    }
                 }
             }
         }
@@ -235,7 +247,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 } else {
                     activity?.addFragment(
                         this@UserBottomSheetDialogFragment,
-                        UserTransactionsFragment.newInstance(u.userId), UserTransactionsFragment.TAG
+                        UserTransactionsFragment.newInstance(u.userId),
+                        UserTransactionsFragment.TAG
                     )
                 }
                 dismiss()
@@ -424,7 +437,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
             activity?.addFragment(
                 this@UserBottomSheetDialogFragment,
-                SearchMessageFragment.newInstance(searchMessageItem, ""), SearchMessageFragment.TAG
+                SearchMessageFragment.newInstance(searchMessageItem, ""),
+                SearchMessageFragment.TAG
             )
         }
     }
