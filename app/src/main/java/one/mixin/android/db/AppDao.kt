@@ -11,7 +11,7 @@ import one.mixin.android.vo.AppItem
 interface AppDao : BaseDao<App> {
 
     @Query(
-        """ SELECT a.app_id as appId,a.app_number as appNumber, a.home_uri as homeUri, a.redirect_uri as redirectUri,
+        """ SELECT a.app_id as appId, a.app_number as appNumber, a.home_uri as homeUri, a.redirect_uri as redirectUri,
             a.name as name, a.icon_url as iconUrl, a.description as description, a.app_secret as appSecret,
             a.capabilites as capabilities, a.creator_id as creatorId
             FROM apps a, participants p, users u WHERE p.conversation_id = :conversationId

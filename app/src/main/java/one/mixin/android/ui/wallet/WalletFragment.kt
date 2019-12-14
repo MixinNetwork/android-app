@@ -120,53 +120,58 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             } else {
                 assets = r
                 assetsAdapter.setAssetList(r)
-
-                var totalBTC = BigDecimal(0)
-                var totalFiat = BigDecimal(0)
-                r.map {
-                    totalBTC += it.btc()
-                    totalFiat += it.fiat()
+                lifecycleScope.launch(Dispatchers.IO) {
+                    renderPie(assets)
                 }
-
-                header.total_as_tv.text = try {
-                    if (totalBTC.numberFormat8().toFloat() == 0f) {
-                        "0.00"
-                    } else {
-                        totalBTC.numberFormat8()
-                    }
-                } catch (ignored: NumberFormatException) {
-                    totalBTC.numberFormat8()
-                }
-                header.total_tv.text = try {
-                    if (totalFiat.numberFormat2().toFloat() == 0f) {
-                        "0.00"
-                    } else {
-                        totalFiat.numberFormat2()
-                    }
-                } catch (ignored: NumberFormatException) {
-                    totalFiat.numberFormat2()
-                }
-                header.symbol.text = Fiats.getSymbol()
-
-                if (totalFiat.compareTo(BigDecimal.ZERO) == 0) {
-                    header.pie_item_container.visibility = GONE
-                    header.percent_view.visibility = GONE
-                    header.btc_rl.updateLayoutParams<LinearLayout.LayoutParams> {
-                        bottomMargin = requireContext().dpToPx(32f)
-                    }
-                    return@Observer
-                }
-
-                header.btc_rl.updateLayoutParams<LinearLayout.LayoutParams> {
-                    bottomMargin = requireContext().dpToPx(16f)
-                }
-                header.pie_item_container.visibility = VISIBLE
-                header.percent_view.visibility = VISIBLE
-                setPieView(r, totalFiat)
             }
         })
-
         checkPin()
+    }
+
+    private suspend fun renderPie(assets: List<AssetItem>) {
+        var totalBTC = BigDecimal.ZERO
+        var totalFiat = BigDecimal.ZERO
+        assets.map {
+            totalBTC = totalBTC.add(it.btc())
+            totalFiat = totalFiat.add(it.fiat())
+        }
+        withContext(Dispatchers.Main) {
+            header.total_as_tv.text = try {
+                if (totalBTC.numberFormat8().toFloat() == 0f) {
+                    "0.00"
+                } else {
+                    totalBTC.numberFormat8()
+                }
+            } catch (ignored: NumberFormatException) {
+                totalBTC.numberFormat8()
+            }
+            header.total_tv.text = try {
+                if (totalFiat.numberFormat2().toFloat() == 0f) {
+                    "0.00"
+                } else {
+                    totalFiat.numberFormat2()
+                }
+            } catch (ignored: NumberFormatException) {
+                totalFiat.numberFormat2()
+            }
+            header.symbol.text = Fiats.getSymbol()
+
+            if (totalFiat.compareTo(BigDecimal.ZERO) == 0) {
+                header.pie_item_container.visibility = GONE
+                header.percent_view.visibility = GONE
+                header.btc_rl.updateLayoutParams<LinearLayout.LayoutParams> {
+                    bottomMargin = requireContext().dpToPx(32f)
+                }
+                return@withContext
+            }
+
+            header.btc_rl.updateLayoutParams<LinearLayout.LayoutParams> {
+                bottomMargin = requireContext().dpToPx(16f)
+            }
+            header.pie_item_container.visibility = VISIBLE
+            header.percent_view.visibility = VISIBLE
+            setPieView(assets, totalFiat)
+        }
     }
 
     @SuppressLint("SetTextI18n")

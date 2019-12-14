@@ -20,7 +20,7 @@ interface AssetDao : BaseDao<Asset> {
             "LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id "
         const val POSTFIX = " ORDER BY balance * price_usd DESC, price_usd DESC, cast(balance AS REAL) DESC, name DESC"
         const val POSTFIX_ASSET_ITEM = " ORDER BY a1.balance * a1.price_usd DESC, a1.price_usd DESC, cast(a1.balance AS REAL) DESC, a1.name DESC"
-        const val POSTFIX_ASSET_ITEM_NOT_HIDDEN = " WHERE ae.hidden ISNULL OR NOT ae.hidden$POSTFIX_ASSET_ITEM"
+        const val POSTFIX_ASSET_ITEM_NOT_HIDDEN = " WHERE ae.hidden IS NULL OR NOT ae.hidden$POSTFIX_ASSET_ITEM"
     }
 
     @Query("SELECT * FROM assets $POSTFIX")

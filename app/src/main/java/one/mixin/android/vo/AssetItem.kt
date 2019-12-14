@@ -29,13 +29,13 @@ data class AssetItem(
     val assetKey: String?
 ) : Parcelable {
     fun fiat(): BigDecimal {
-        return BigDecimal(balance) * priceFiat()
+        return BigDecimal(balance).multiply(priceFiat())
     }
 
-    fun priceFiat() = BigDecimal(priceUsd) * BigDecimal(Fiats.getRate())
+    fun priceFiat(): BigDecimal = BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
 
     fun btc(): BigDecimal {
-        return BigDecimal(balance) * BigDecimal(priceBtc)
+        return BigDecimal(balance).multiply(BigDecimal(priceBtc))
     }
 
     companion object {
