@@ -36,7 +36,7 @@ object Constants {
         const val PREF_HAS_WITHDRAWAL_ADDRESS_SET = "pref_has_withdrawal_address_set"
         const val PREF_RECENT_USED_BOTS = "pref_recent_used_bots"
         const val PREF_DELETE_MOBILE_CONTACTS = "pref_delete_mobile_contacts"
-        const val PREF_FIAT_SET = "pref_fiat_set"
+        const val PREF_FIAT_MAP = "pref_fiat_map"
         const val PREF_SET_LANGUAGE = "pref_set_language"
         const val PREF_LANGUAGE = "pref_language"
     }

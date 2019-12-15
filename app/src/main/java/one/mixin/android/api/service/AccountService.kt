@@ -87,7 +87,7 @@ interface AccountService {
     fun ping(): Call<MixinResponse<Void>>
 
     @GET("fiats")
-    suspend fun getFiats(): MixinResponse<Set<Fiat>>
+    suspend fun getFiats(): MixinResponse<List<Fiat>>
 
     @GET("pin_logs")
     suspend fun getPinLogs(@Query("offset") offset: Int? = null): MixinResponse<List<PINLogResponse>>
