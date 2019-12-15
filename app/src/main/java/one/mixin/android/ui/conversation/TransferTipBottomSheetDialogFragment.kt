@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
 import androidx.lifecycle.lifecycleScope
+import java.math.BigDecimal
 import kotlinx.android.synthetic.main.fragment_transfer_tip_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.coroutines.Dispatchers
@@ -13,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -74,8 +76,9 @@ class TransferTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        val fiatAmount = BigDecimal(amount).multiply(BigDecimal(Fiats.getRate())).numberFormat2()
         contentView.warning_tv.text =
-            getString(R.string.wallet_transaction_tip, name, "$amount${Fiats.getSymbol()}", asset.symbol)
+            getString(R.string.wallet_transaction_tip, name, "$fiatAmount${Fiats.getSymbol()}", asset.symbol)
         contentView.continue_tv.setOnClickListener {
             callback?.onSuccess()
             dismiss()

@@ -471,7 +471,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             } else if (swaped) {
                 BigDecimal(amount).divide(currentAsset!!.priceFiat(), 8, RoundingMode.HALF_UP)
             } else {
-                (BigDecimal(amount) * currentAsset!!.priceFiat())
+                BigDecimal(amount) * currentAsset!!.priceFiat()
             }
         } catch (e: ArithmeticException) {
             BigDecimal(0)
