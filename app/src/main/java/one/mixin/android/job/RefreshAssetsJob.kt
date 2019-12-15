@@ -41,8 +41,8 @@ class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PR
         try {
             val resp = accountService.getFiats()
             if (resp.isSuccess) {
-                resp.data?.let { fiatSet ->
-                    Fiats.updateFiats(fiatSet)
+                resp.data?.let { fiatList ->
+                    Fiats.updateFiats(fiatList)
                 }
             }
         } catch (t: Throwable) {
