@@ -307,7 +307,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             conversationDao.updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
 
             val sessionParticipants = response.data!!.participantSessions.let { resp ->
-                resp.map {
+                resp?.map {
                     ParticipantSession(conversation.conversationId, it.userId, it.sessionId)
                 }
             }

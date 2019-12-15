@@ -46,7 +46,7 @@ object Fiats {
         MixinApplication.appContext.defaultSharedPreferences.putStringSet(PREF_FIAT_SET, fiatStringSet)
     }
 
-    fun getRate() = fiatSet.find { it.code == Session.getFiatCurrency() }?.rate.toString() ?: "1.0"
+    fun getRate() = fiatSet.find { it.code == Session.getFiatCurrency() }?.rate.toString()
 
     fun getSymbol(code: String = Session.getFiatCurrency()): String = codeSymbolMap[code] ?: "$"
 }
