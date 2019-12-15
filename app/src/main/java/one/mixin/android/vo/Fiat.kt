@@ -37,7 +37,6 @@ object Fiats {
     }
 
     fun updateFiats(newFiatList: List<Fiat>) {
-        codeRateMap.clear()
         newFiatList.forEach { f ->
             codeRateMap[f.code] = f.rate
         }
