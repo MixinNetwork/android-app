@@ -294,30 +294,34 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         if (conversation.isGroup()) {
             syncConversation(conversation.conversationId)
         } else {
-            checkConversationExist(conversation)
+            createConversation(conversation)
+        }
+    }
+
+    private fun createConversation(conversation: Conversation) {
+        val request = ConversationRequest(conversationId = conversation.conversationId,
+            category = conversation.category, participants = arrayListOf(ParticipantRequest(conversation.ownerId!!, ""))
+        )
+        val response = conversationApi.create(request).execute().body()
+        if (response != null && response.isSuccess && response.data != null && !isCancel) {
+            conversationDao.updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
+
+            val sessionParticipants = response.data!!.participantSessions.let { resp ->
+                resp.map {
+                    ParticipantSession(conversation.conversationId, it.userId, it.sessionId)
+                }
+            }
+            sessionParticipants?.let {
+                participantSessionDao.replaceAll(conversation.conversationId, it)
+            }
+        } else {
+            throw Exception("Create Conversation Exception")
         }
     }
 
     protected fun checkConversationExist(conversation: Conversation) {
         if (conversation.status != ConversationStatus.SUCCESS.ordinal) {
-            val request = ConversationRequest(conversationId = conversation.conversationId,
-                category = conversation.category, participants = arrayListOf(ParticipantRequest(conversation.ownerId!!, ""))
-            )
-            val response = conversationApi.create(request).execute().body()
-            if (response != null && response.isSuccess && response.data != null && !isCancel) {
-                conversationDao.updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
-
-                val sessionParticipants = response.data!!.participantSessions?.let { resp ->
-                    resp.map {
-                        ParticipantSession(conversation.conversationId, it.userId, it.sessionId)
-                    }
-                }
-                sessionParticipants?.let {
-                    participantSessionDao.replaceAll(conversation.conversationId, it)
-                }
-            } else {
-                throw Exception("Create Conversation Exception")
-            }
+            createConversation(conversation)
         }
     }
 
