@@ -27,8 +27,8 @@ class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PR
                 }
             }
         } else {
-            val response = assetService.assets().execute().body()
-            if (response != null && response.isSuccess && response.data != null) {
+            val response = assetService.assetsSuspend()
+            if (response.isSuccess && response.data != null) {
                 val list = response.data as List<Asset>
                 assetRepo.insertList(list)
             }
@@ -38,14 +38,11 @@ class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PR
     }
 
     private fun refreshFiats() = runBlocking {
-        try {
-            val resp = accountService.getFiats()
-            if (resp.isSuccess) {
-                resp.data?.let { fiatList ->
-                    Fiats.updateFiats(fiatList)
-                }
+        val resp = accountService.getFiats()
+        if (resp.isSuccess) {
+            resp.data?.let { fiatList ->
+                Fiats.updateFiats(fiatList)
             }
-        } catch (t: Throwable) {
         }
     }
 
