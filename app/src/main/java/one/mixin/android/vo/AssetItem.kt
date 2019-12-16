@@ -32,11 +32,13 @@ data class AssetItem(
         return BigDecimal(balance).multiply(priceFiat())
     }
 
-    fun priceFiat(): BigDecimal = BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
+    fun priceFiat(): BigDecimal = if (priceUsd == "0") {
+        BigDecimal.ZERO
+    } else BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
 
-    fun btc(): BigDecimal {
-        return BigDecimal(balance).multiply(BigDecimal(priceBtc))
-    }
+    fun btc(): BigDecimal = if (priceBtc == "0") {
+        BigDecimal.ZERO
+    } else BigDecimal(balance).multiply(BigDecimal(priceBtc))
 
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AssetItem>() {
@@ -49,7 +51,11 @@ data class AssetItem(
     }
 }
 
-fun AssetItem.differentProcess(keyAction: () -> Unit, memoAction: () -> Unit, errorAction: () -> Unit) {
+fun AssetItem.differentProcess(
+    keyAction: () -> Unit,
+    memoAction: () -> Unit,
+    errorAction: () -> Unit
+) {
     when {
         destination.isNotEmpty() && !tag.isNullOrEmpty() -> memoAction()
         destination.isNotEmpty() -> keyAction()
