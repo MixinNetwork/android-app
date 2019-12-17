@@ -91,7 +91,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
         transactionsRv?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val lastPos = transactionLayoutManager.findLastVisibleItemPosition()
-                if (localDataSizeChanged && lastPos >= localDataSize - 1) {
+                if (localDataSizeChanged && lastPos >= localDataSize - 1 && lastPos >= LIMIT - 1) {
                     localDataSizeChanged = false
                     refreshSnapshots()
                 }
@@ -105,7 +105,6 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     }
 
     companion object {
-        const val PAGE_SIZE = 33
-        const val LIMIT = 99
+        const val LIMIT = 50
     }
 }
