@@ -604,7 +604,14 @@ class MainActivity : BlazeBaseActivity() {
         fun getSingleIntent(context: Context): Intent {
             return Intent(context, MainActivity::class.java).apply {
                 addCategory(Intent.CATEGORY_LAUNCHER)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+            }
+        }
+
+        fun getDefaultIntent(context: Context): Intent {
+            return Intent(context, MainActivity::class.java).apply {
+                addCategory(Intent.CATEGORY_LAUNCHER)
+                action = Intent.ACTION_MAIN
             }
         }
 
