@@ -162,7 +162,7 @@ internal constructor(
 
     private suspend fun fetchAsset(assetId: String) = withContext(Dispatchers.IO) {
         val r = try {
-            assetRepository.getAsset(assetId)
+            assetRepository.asset(assetId)
         } catch (t: Throwable) {
             ErrorHandler.handleError(t)
             return@withContext null

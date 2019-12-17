@@ -24,13 +24,10 @@ interface AssetService {
     fun assets(): Call<MixinResponse<List<Asset>>>
 
     @GET("assets")
-    suspend fun assetsSuspend(): MixinResponse<List<Asset>>
+    suspend fun fetchAllAssetSuspend(): MixinResponse<List<Asset>>
 
     @GET("assets/{id}")
-    suspend fun asset(@Path("id") id: String): MixinResponse<Asset>
-
-    @GET("assets/{id}")
-    suspend fun getAsset(@Path("id") id: String): MixinResponse<Asset>
+    suspend fun getAssetByIdSuspend(@Path("id") id: String): MixinResponse<Asset>
 
     @GET("assets/{id}/snapshots")
     fun snapshots(

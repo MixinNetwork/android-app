@@ -22,7 +22,7 @@ class RefreshAssetsWorker @AssistedInject constructor(
     override suspend fun onRun(): Result {
         val assetId = inputData.getString(ASSET_ID)
         if (assetId != null) {
-            val response = assetService.asset(assetId)
+            val response = assetService.getAssetByIdSuspend(assetId)
             return if (response.isSuccess && response.data != null) {
                 response.data.let {
                     assetRepo.insert(it!!)
