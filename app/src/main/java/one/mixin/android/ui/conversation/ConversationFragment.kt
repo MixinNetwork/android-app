@@ -1710,7 +1710,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         menuFragment.callback = object : MenuFragment.Callback {
             override fun onMenuClick(menu: Menu) {
-                chat_control.reset()
                 if (!isGroup) {
                     jobManager.addJobInBackground(FavoriteAppJob(sender.userId, recipient?.userId))
                 }
@@ -1731,6 +1730,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             })
                     }
                     MenuType.Transfer -> {
+                        chat_control.reset()
                         if (Session.getAccount()?.hasPin == true) {
                             recipient?.let {
                                 TransferFragment.newInstance(it.userId, supportSwitchAsset = true)
@@ -1769,6 +1769,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }
                     }
                     MenuType.Voice -> {
+                        chat_control.reset()
                         if (!callState.isIdle()) {
                             if (recipient != null && callState.user?.userId == recipient?.userId) {
                                 CallActivity.show(requireContext(), recipient)
@@ -1796,26 +1797,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     MenuType.App -> {
                         menu.app?.let { app ->
                             chat_control.chat_et.hideKeyboard()
-                            if (app.userId != null) {
-                                lifecycleScope.launch {
-                                    chatViewModel.suspendFindUserById(app.appId)?.let { user ->
-                                        UserBottomSheetDialogFragment.newInstance(user).showNow(
-                                            parentFragmentManager,
-                                            UserBottomSheetDialogFragment.TAG
-                                        )
-                                    }
-                                }
-                            } else {
-                                openWebBottomSheet(
-                                    app.homeUri,
-                                    conversationId,
-                                    app.appId,
-                                    app.name,
-                                    app.iconUrl,
-                                    app.capabilities,
-                                    parentFragmentManager
-                                )
-                            }
+                            openWebBottomSheet(
+                                app.homeUri,
+                                conversationId,
+                                app.appId,
+                                app.name,
+                                app.iconUrl,
+                                app.capabilities,
+                                parentFragmentManager
+                            )
                         }
                     }
                 }

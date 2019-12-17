@@ -6,6 +6,7 @@ import one.mixin.android.api.request.AssetFee
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.PaymentResponse
+import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.PendingDeposit
@@ -24,19 +25,16 @@ interface AssetService {
     fun assets(): Call<MixinResponse<List<Asset>>>
 
     @GET("assets")
-    suspend fun assetsSuspend(): MixinResponse<List<Asset>>
+    suspend fun fetchAllAssetSuspend(): MixinResponse<List<Asset>>
 
     @GET("assets/{id}")
-    suspend fun asset(@Path("id") id: String): MixinResponse<Asset>
-
-    @GET("assets/{id}")
-    suspend fun getAsset(@Path("id") id: String): MixinResponse<Asset>
+    suspend fun getAssetByIdSuspend(@Path("id") id: String): MixinResponse<Asset>
 
     @GET("assets/{id}/snapshots")
     fun snapshots(
         @Path("id") id: String,
         @Query("offset") offset: Long = 0L,
-        @Query("limit") limit: Int = 100
+        @Query("limit") limit: Int = LIMIT
     ): Call<MixinResponse<List<Snapshot>>>
 
     @POST("transfers")
@@ -57,7 +55,7 @@ interface AssetService {
     @GET("snapshots")
     fun allSnapshots(
         @Query("offset") offset: Long = 0L,
-        @Query("limit") limit: Int = 100
+        @Query("limit") limit: Int = LIMIT
     ): Call<MixinResponse<List<Snapshot>>>
 
     @GET("snapshots/{id}")

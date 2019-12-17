@@ -1,12 +1,13 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.vo.Snapshot
 
 class RefreshSnapshotsJob(
     private val assetId: String? = null,
     private val offset: Long = 0L,
-    private val limit: Int = 100
+    private val limit: Int = LIMIT
 ) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).requireNetwork()) {
 
     companion object {

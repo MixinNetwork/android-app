@@ -13,6 +13,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.job.MixinJobManager
@@ -23,7 +24,6 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.PAGE_SIZE
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
@@ -162,7 +162,7 @@ internal constructor(
 
     private suspend fun fetchAsset(assetId: String) = withContext(Dispatchers.IO) {
         val r = try {
-            assetRepository.getAsset(assetId)
+            assetRepository.asset(assetId)
         } catch (t: Throwable) {
             ErrorHandler.handleError(t)
             return@withContext null

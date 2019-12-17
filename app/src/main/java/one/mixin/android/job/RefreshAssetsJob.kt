@@ -20,14 +20,14 @@ class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PR
 
     override fun onRun() = runBlocking {
         if (assetId != null) {
-            val response = assetService.asset(assetId)
+            val response = assetService.getAssetByIdSuspend(assetId)
             if (response.isSuccess && response.data != null) {
                 response.data?.let {
                     assetRepo.insert(it)
                 }
             }
         } else {
-            val response = assetService.assetsSuspend()
+            val response = assetService.fetchAllAssetSuspend()
             if (response.isSuccess && response.data != null) {
                 val list = response.data as List<Asset>
                 assetRepo.insertList(list)

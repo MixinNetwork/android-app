@@ -45,9 +45,7 @@ constructor(
         assetDao.insertList(asset)
     }
 
-    suspend fun asset(id: String) = assetService.asset(id)
-
-    suspend fun getAsset(id: String) = assetService.getAsset(id)
+    suspend fun asset(id: String) = assetService.getAssetByIdSuspend(id)
 
     fun assetLocal(id: String) = assetDao.simpleAsset(id)
 
