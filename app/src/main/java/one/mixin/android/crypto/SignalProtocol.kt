@@ -166,12 +166,8 @@ class SignalProtocol(ctx: Context) {
         sessionDao.deleteSession(userId)
     }
 
-    fun processSession(userId: String, preKeyBundle: PreKeyBundle, deviceId: Int = 0) {
-        var dId = preKeyBundle.deviceId
-        if (deviceId != 0) {
-           dId = deviceId
-        }
-        val signalProtocolAddress = SignalProtocolAddress(userId, dId)
+    fun processSession(userId: String, preKeyBundle: PreKeyBundle) {
+        val signalProtocolAddress = SignalProtocolAddress(userId, preKeyBundle.deviceId)
         val sessionBuilder = SessionBuilder(signalProtocolStore, signalProtocolAddress)
         try {
             sessionBuilder.process(preKeyBundle)

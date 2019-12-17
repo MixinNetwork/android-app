@@ -147,7 +147,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
         if (keys.isNotEmpty() && keys.count() > 0) {
             val preKeyBundle = createPreKeyBundle(keys[0])
-            signalProtocol.processSession(recipientId, preKeyBundle, sessionId.getDeviceId())
+            signalProtocol.processSession(recipientId, preKeyBundle)
         } else {
             participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SenderKeyStatus.UNKNOWN.ordinal))
             return false
@@ -336,6 +336,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun syncParticipantSession(conversationId: String, data: List<UserSession>) {
+        participantSessionDao.deleteByStatus(conversationId)
         val remote = data.map {
             ParticipantSession(conversationId, it.userId, it.sessionId)
         }
@@ -343,7 +344,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             participantSessionDao.deleteByConversationId(conversationId)
             return
         }
-        val local = participantSessionDao.findParticipantSessions(conversationId)
+        val local = participantSessionDao.getParticipantSessionsByConversationId(conversationId)
         if (local.isEmpty()) {
             participantSessionDao.insertList(remote)
             return
