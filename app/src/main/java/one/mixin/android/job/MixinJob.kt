@@ -80,7 +80,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun checkSessionSenderKey(conversationId: String) {
-        val participants = participantSessionDao.getNotSendSessionParticipants(conversationId, Session.getSessionId()!!) ?: return
+        val participants = participantSessionDao.getNotSendSessionParticipants(conversationId, Session.getSessionId()!!)
         if (participants.isEmpty()) return
         val requestSignalKeyUsers = arrayListOf<BlazeMessageParamSession>()
         val signalKeyMessages = arrayListOf<BlazeSignalKeyMessage>()
@@ -176,7 +176,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
 
     private fun getCheckSum(conversationId: String): String {
         val sessions = participantSessionDao.getParticipantSessionsByConversationId(conversationId)
-        return if (sessions.isNullOrEmpty()) {
+        return if (sessions.isEmpty()) {
             ""
         } else {
             generateConversationChecksum(sessions)
@@ -349,8 +349,8 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             participantSessionDao.deleteByConversationId(conversationId)
             return
         }
-        val local = participantSessionDao.getParticipantSessionsByConversationId(conversationId)
-        if (local == null || local.isEmpty()) {
+        val local = participantSessionDao.findParticipantSessions(conversationId)
+        if (local.isEmpty()) {
             participantSessionDao.insertList(remote)
             return
         }

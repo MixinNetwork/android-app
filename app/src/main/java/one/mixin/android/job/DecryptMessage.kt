@@ -77,6 +77,7 @@ import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
 import one.mixin.android.websocket.invalidData
 import org.whispersystems.libsignal.DecryptionCallback
+import org.whispersystems.libsignal.DuplicateMessageException
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
@@ -538,6 +539,9 @@ class DecryptMessage : Injector() {
                     true
                 }
                 Bugsnag.notify(e)
+            }
+            if (e is DuplicateMessageException) {
+                return
             }
 
             if (resendMessageId != null) {
