@@ -15,7 +15,7 @@ class RefreshSessionJob(
     }
 
     override fun onRun() = runBlocking {
-        val response = userService.fetchSessions(userIds)
+        val response = userService.fetchSessionsSuspend(userIds)
         if (response.isSuccess) {
             val ps = response.data?.map { item ->
                 ParticipantSession(conversationId, item.userId, item.sessionId)

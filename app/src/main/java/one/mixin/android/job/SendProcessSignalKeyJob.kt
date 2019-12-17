@@ -4,6 +4,7 @@ import com.birbit.android.jobqueue.Params
 import java.util.UUID
 import one.mixin.android.db.clearParticipant
 import one.mixin.android.util.Session
+import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.websocket.BlazeMessageData
 
 class SendProcessSignalKeyJob(
@@ -20,7 +21,7 @@ class SendProcessSignalKeyJob(
 
     override fun onRun() {
         if (action == ProcessSignalKeyAction.RESEND_KEY) {
-            val result = sendSenderKey(data.conversationId, data.userId, data.sessionId, true)
+            val result = sendSenderKey(data.conversationId, data.userId, data.sessionId)
             if (!result) {
                 sendNoKeyMessage(data.conversationId, data.userId)
             }
@@ -30,7 +31,15 @@ class SendProcessSignalKeyJob(
                 signalProtocol.clearSenderKey(data.conversationId, it)
             }
         } else if (action == ProcessSignalKeyAction.ADD_PARTICIPANT) {
-            sendSenderKey(data.conversationId, participantId!!)
+            val response = userService.fetchSessions(arrayListOf(participantId!!)).execute().body()
+            if (response != null && response.isSuccess) {
+                val ps = response.data?.map { item ->
+                    ParticipantSession(data.conversationId, item.userId, item.sessionId)
+                }
+                if (!ps.isNullOrEmpty()) {
+                    participantSessionDao.insertList(ps)
+                }
+            }
         }
     }
 

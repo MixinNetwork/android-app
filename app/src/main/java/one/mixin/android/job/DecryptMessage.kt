@@ -458,7 +458,7 @@ class DecryptMessage : Injector() {
         if (systemMessage.userId != null) {
             userId = systemMessage.userId
         }
-        if (userId == SYSTEM_USER) {
+        if (userId == SYSTEM_USER && userDao.findUser(userId) == null) {
             userDao.insert(createSystemUser())
         }
         val message = createMessage(data.messageId, data.conversationId, userId, data.category, "",
@@ -469,12 +469,12 @@ class DecryptMessage : Injector() {
             participantDao.insert(Participant(data.conversationId, systemMessage.participantId!!, "", data.updatedAt))
             if (systemMessage.participantId == accountId) {
                 jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
+            } else if (systemMessage.participantId != accountId && signalProtocol.isExistSenderKey(data.conversationId, accountId!!)) {
+                jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.ADD_PARTICIPANT, systemMessage.participantId))
+                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
             } else {
                 jobManager.addJobInBackground(RefreshSessionJob(data.conversationId, arrayListOf(systemMessage.participantId)))
                 jobManager.addJobInBackground(RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
-            }
-            if (systemMessage.participantId != accountId && signalProtocol.isExistSenderKey(data.conversationId, accountId!!)) {
-                jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.ADD_PARTICIPANT, systemMessage.participantId))
             }
         } else if (systemMessage.action == SystemConversationAction.REMOVE.name || systemMessage.action == SystemConversationAction.EXIT.name) {
             if (systemMessage.participantId == accountId) {

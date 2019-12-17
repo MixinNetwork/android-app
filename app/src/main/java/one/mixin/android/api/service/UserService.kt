@@ -32,11 +32,14 @@ interface UserService {
     @GET("blocking_users")
     fun blockingUsers(): Observable<MixinResponse<List<User>>>
 
+    @POST("sessions/fetch")
+    fun fetchSessions(@Body ids: List<String>): Call<MixinResponse<List<UserSession>>>
+
     @POST("users/fetch")
     suspend fun fetchUsers(@Body ids: List<String>): MixinResponse<List<User>>
 
     @POST("sessions/fetch")
-    suspend fun fetchSessions(@Body ids: List<String>): MixinResponse<List<UserSession>>
+    suspend fun fetchSessionsSuspend(@Body ids: List<String>): MixinResponse<List<UserSession>>
 
     @POST("apps/{app_id}/favorite")
     suspend fun addFavoriteApp(@Path("app_id") appId: String): MixinResponse<FavoriteApp>

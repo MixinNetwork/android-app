@@ -141,20 +141,16 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         }
     }
 
-    protected fun sendSenderKey(conversationId: String, recipientId: String, sessionId: String? = null, isForce: Boolean = false): Boolean {
-        if (!signalProtocol.containsSession(recipientId, sessionId.getDeviceId()) || isForce) {
-            val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))))
-            val data = signalKeysChannel(blazeMessage) ?: return false
-            val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
-            if (keys.isNotEmpty() && keys.count() > 0) {
-                val preKeyBundle = createPreKeyBundle(keys[0])
-                signalProtocol.processSession(recipientId, preKeyBundle, sessionId.getDeviceId())
-            } else {
-                if (!sessionId.isNullOrBlank()) {
-                    participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SenderKeyStatus.UNKNOWN.ordinal))
-                }
-                return false
-            }
+    protected fun sendSenderKey(conversationId: String, recipientId: String, sessionId: String): Boolean {
+        val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))))
+        val data = signalKeysChannel(blazeMessage) ?: return false
+        val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
+        if (keys.isNotEmpty() && keys.count() > 0) {
+            val preKeyBundle = createPreKeyBundle(keys[0])
+            signalProtocol.processSession(recipientId, preKeyBundle, sessionId.getDeviceId())
+        } else {
+            participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SenderKeyStatus.UNKNOWN.ordinal))
+            return false
         }
 
         val (cipherText, err) = signalProtocol.encryptSenderKey(conversationId, recipientId, sessionId.getDeviceId())
@@ -164,12 +160,10 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, arrayListOf(signalKeyMessages), checksum))
         val result = deliverNoThrow(bm)
         if (result.retry) {
-            return sendSenderKey(conversationId, recipientId, sessionId, isForce)
+            return sendSenderKey(conversationId, recipientId, sessionId)
         }
         if (result.success) {
-            if (!sessionId.isNullOrBlank()) {
-                participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SenderKeyStatus.SENT.ordinal))
-            }
+            participantSessionDao.insert(ParticipantSession(conversationId, recipientId, sessionId, SenderKeyStatus.SENT.ordinal))
         }
         return result.success
     }

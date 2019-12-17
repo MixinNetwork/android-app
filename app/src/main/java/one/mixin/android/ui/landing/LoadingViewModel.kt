@@ -53,7 +53,7 @@ constructor(
         withContext(Dispatchers.IO) {
             val sessions = sessionDao.syncGetSessionAddress()
             val userIds = sessions.map { it.address }
-            val response = userService.fetchSessions(userIds)
+            val response = userService.fetchSessionsSuspend(userIds)
             val sessionMap = ArrayMap<String, Int>()
             val userSessionMap = ArrayMap<String, String>()
             if (response.isSuccess) {
