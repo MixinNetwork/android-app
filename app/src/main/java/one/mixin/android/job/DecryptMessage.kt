@@ -48,7 +48,7 @@ import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createLiveMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
-import one.mixin.android.vo.createReplyMessage
+import one.mixin.android.vo.createReplyTextMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
 import one.mixin.android.vo.createVideoMessage
@@ -296,10 +296,10 @@ class DecryptMessage : Injector() {
                 } else {
                     val quoteMsg = messageDao.findMessageItemById(data.conversationId, data.quoteMessageId)
                     if (quoteMsg != null) {
-                        createReplyMessage(data.messageId, data.conversationId, data.userId, data.category,
+                        createReplyTextMessage(data.messageId, data.conversationId, data.userId, data.category,
                             plain, data.createdAt, data.status, data.quoteMessageId, gson.toJson(quoteMsg))
                     } else {
-                        createReplyMessage(data.messageId, data.conversationId, data.userId, data.category,
+                        createReplyTextMessage(data.messageId, data.conversationId, data.userId, data.category,
                             plain, data.createdAt, data.status, data.quoteMessageId)
                     }
                 }
@@ -319,11 +319,28 @@ class DecryptMessage : Injector() {
                 if (mediaData.invalidData()) {
                     return
                 }
-                val mimeType = if (mediaData.mimeType.isNullOrEmpty()) mediaData.mineType else mediaData.mimeType
-                val message = createMediaMessage(data.messageId, data.conversationId, data.userId, data.category,
-                    mediaData.attachmentId, null,
-                    mimeType, mediaData.size, mediaData.width, mediaData.height, mediaData.thumbnail,
-                    mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED, data.status)
+
+                val mimeType = if (mediaData.mimeType.isEmpty()) mediaData.mineType else mediaData.mimeType
+                val message = if (data.quoteMessageId.isNullOrEmpty()) {
+                    createMediaMessage(data.messageId, data.conversationId, data.userId, data.category,
+                        mediaData.attachmentId, null,
+                        mimeType, mediaData.size, mediaData.width, mediaData.height, mediaData.thumbnail,
+                        mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED, data.status)
+                } else {
+                    val quoteMsg = messageDao.findMessageItemById(data.conversationId, data.quoteMessageId)
+                    if (quoteMsg != null) {
+                        createMediaMessage(data.messageId, data.conversationId, data.userId, data.category,
+                            mediaData.attachmentId, null,
+                            mimeType, mediaData.size, mediaData.width, mediaData.height, mediaData.thumbnail,
+                            mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED, data.status,
+                            data.quoteMessageId, gson.toJson(quoteMsg))
+                    } else {
+                        createMediaMessage(data.messageId, data.conversationId, data.userId, data.category,
+                            mediaData.attachmentId, null,
+                            mimeType, mediaData.size, mediaData.width, mediaData.height, mediaData.thumbnail,
+                            mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED, data.status)
+                    }
+                }
 
                 messageDao.insert(message)
                 MixinApplication.appContext.autoDownload(autoDownloadPhoto) {

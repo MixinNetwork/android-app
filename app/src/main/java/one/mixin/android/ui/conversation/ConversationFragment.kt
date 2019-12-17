@@ -1358,10 +1358,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun sendImageMessage(uri: Uri, mimeType: String? = null) {
         createConversation {
-            chatViewModel.sendImageMessage(conversationId, sender, uri, isPlainMessage(), mimeType)
+            chatViewModel.sendImageMessage(conversationId, sender, uri, isPlainMessage(), mimeType, reply_view.messageItem)
                 ?.autoDispose(stopScope)?.subscribe({
                     when (it) {
                         0 -> {
+                            if (reply_view.messageItem != null) {
+                                reply_view.fadeOut()
+                                chat_control.showOtherInput()
+                                reply_view.messageItem = null
+                            }
                             scrollToDown()
                             markRead()
                         }
@@ -1488,7 +1493,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun sendReplyMessage(message: String) {
+    private fun sendReplyTextMessage(message: String) {
         if (message.isNotBlank() && reply_view.messageItem != null) {
             chat_control.chat_et.setText("")
             createConversation {
@@ -2225,7 +2230,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         override fun onSendClick(text: String) {
             if (reply_view.isVisible && reply_view.messageItem != null) {
-                sendReplyMessage(text)
+                sendReplyTextMessage(text)
             } else {
                 sendMessage(text)
             }

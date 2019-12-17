@@ -94,7 +94,7 @@ import one.mixin.android.vo.createLiveMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.createRecallMessage
-import one.mixin.android.vo.createReplyMessage
+import one.mixin.android.vo.createReplyTextMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
@@ -102,6 +102,7 @@ import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.toQuoteMessageItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
@@ -115,6 +116,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import timber.log.Timber
 
+@Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class ConversationViewModel
 @Inject
 internal constructor(
@@ -185,7 +187,7 @@ internal constructor(
     ) {
         val category =
             if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
-        val message = createReplyMessage(
+        val message = createReplyTextMessage(
             UUID.randomUUID().toString(),
             conversationId,
             sender.userId,
@@ -377,7 +379,8 @@ internal constructor(
         sender: User,
         uri: Uri,
         isPlain: Boolean,
-        mime: String? = null
+        mime: String? = null,
+        replyMessage: MessageItem? = null
     ): Flowable<Int>? {
         val category =
             if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
@@ -399,9 +402,23 @@ internal constructor(
 
                 val message = createMediaMessage(
                     UUID.randomUUID().toString(),
-                    conversationId, sender.userId, category, null, Uri.fromFile(gifFile).toString(),
-                    mimeType, gifFile.length(), size.width, size.height, thumbnail, null, null,
-                    nowInUtc(), MediaStatus.PENDING, MessageStatus.SENDING.name
+                    conversationId,
+                    sender.userId,
+                    category,
+                    null,
+                    Uri.fromFile(gifFile).toString(),
+                    mimeType,
+                    gifFile.length(),
+                    size.width,
+                    size.height,
+                    thumbnail,
+                    null,
+                    null,
+                    nowInUtc(),
+                    MediaStatus.PENDING,
+                    MessageStatus.SENDING.name,
+                    replyMessage?.messageId,
+                    replyMessage?.toQuoteMessageItem()
                 )
                 jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 return@map -0
@@ -424,7 +441,6 @@ internal constructor(
                 }
                 val size = getImageSize(imageFile)
                 val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mimeType)
-
                 val message = createMediaMessage(
                     UUID.randomUUID().toString(),
                     conversationId,
@@ -441,7 +457,9 @@ internal constructor(
                     null,
                     nowInUtc(),
                     MediaStatus.PENDING,
-                    MessageStatus.SENDING.name
+                    MessageStatus.SENDING.name,
+                    replyMessage?.messageId,
+                    replyMessage?.toQuoteMessageItem()
                 )
                 jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 return@map -0
@@ -755,7 +773,8 @@ internal constructor(
 
     suspend fun findAppById(id: String) = userRepository.findAppById(id)
 
-    fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
+    fun assetItemsWithBalance(): LiveData<List<AssetItem>> =
+        assetRepository.assetItemsWithBalance()
 
     fun addStickerAsync(stickerAddRequest: StickerAddRequest) =
         accountRepository.addStickerAsync(stickerAddRequest)

@@ -172,7 +172,6 @@ class ChatControlView : FrameLayout {
         }
         chat_sticker_ib.isGone = true
         chat_menu_iv.isGone = true
-        chat_img_iv.isGone = true
         sendStatus = REPLY
     }
 

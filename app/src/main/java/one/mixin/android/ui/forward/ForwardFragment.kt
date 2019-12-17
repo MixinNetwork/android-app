@@ -209,6 +209,7 @@ class ForwardFragment : BaseFragment() {
                     if (granted) {
                         sharePreOperation()
                         ConversationActivity.show(requireContext(), conversationId, userId, messages = messages)
+                        activity?.finish()
                     } else {
                         requireContext().openPermissionSetting()
                     }

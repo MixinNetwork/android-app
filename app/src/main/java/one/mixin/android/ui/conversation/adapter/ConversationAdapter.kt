@@ -37,7 +37,8 @@ import one.mixin.android.ui.conversation.holder.ImageHolder
 import one.mixin.android.ui.conversation.holder.MessageHolder
 import one.mixin.android.ui.conversation.holder.PostHolder
 import one.mixin.android.ui.conversation.holder.RecallHolder
-import one.mixin.android.ui.conversation.holder.ReplyHolder
+import one.mixin.android.ui.conversation.holder.ReplyImageHolder
+import one.mixin.android.ui.conversation.holder.ReplyTextHolder
 import one.mixin.android.ui.conversation.holder.SecretHolder
 import one.mixin.android.ui.conversation.holder.StickerHolder
 import one.mixin.android.ui.conversation.holder.StrangerHolder
@@ -141,8 +142,19 @@ class ConversationAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         getItem(position)?.let {
             when (getItemViewType(position)) {
-                MESSAGE_TYPE -> {
+                TEXT_TYPE -> {
                     (holder as MessageHolder).bind(
+                        it,
+                        keyword,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
+                }
+                REPLY_TEXT_TYPE -> {
+                    (holder as ReplyTextHolder).bind(
                         it, keyword, isLast(position),
                         isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
                     )
@@ -156,14 +168,32 @@ class ConversationAdapter(
                 }
                 IMAGE_TYPE -> {
                     (holder as ImageHolder).bind(
-                        it, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
+                }
+                REPLY_IMAGE_TYPE -> {
+                    (holder as ReplyImageHolder).bind(
+                        it,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 VIDEO_TYPE -> {
                     (holder as VideoHolder).bind(
-                        it, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 AUDIO_TYPE -> {
@@ -203,12 +233,6 @@ class ConversationAdapter(
                         onItemListener
                     )
                 }
-                REPLY_TYPE -> {
-                    (holder as ReplyHolder).bind(
-                        it, keyword, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
-                    )
-                }
                 STRANGER_TYPE -> {
                     (holder as StrangerHolder).bind(onItemListener)
                 }
@@ -226,8 +250,13 @@ class ConversationAdapter(
                 }
                 LINK_TYPE -> {
                     (holder as HyperlinkHolder).bind(
-                        it, keyword, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        keyword,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 ACTION_TYPE -> {
@@ -437,9 +466,12 @@ class ConversationAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): RecyclerView.ViewHolder =
         when (viewType) {
-            MESSAGE_TYPE -> {
+            TEXT_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_message, parent, false)
                 MessageHolder(item)
@@ -449,10 +481,20 @@ class ConversationAdapter(
                     .inflate(R.layout.item_chat_post, parent, false)
                 PostHolder(item)
             }
+            REPLY_TEXT_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_reply_text, parent, false)
+                ReplyTextHolder(item)
+            }
             IMAGE_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_image, parent, false)
                 ImageHolder(item)
+            }
+            REPLY_IMAGE_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_reply_image, parent, false)
+                ReplyImageHolder(item)
             }
             SYSTEM_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
@@ -468,11 +510,6 @@ class ConversationAdapter(
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_bill, parent, false)
                 BillHolder(item)
-            }
-            REPLY_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_reply, parent, false)
-                ReplyHolder(item)
             }
             WAITING_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
@@ -569,15 +606,21 @@ class ConversationAdapter(
                 item.status == MessageStatus.FAILED.name -> WAITING_TYPE
                 item.type == MessageCategory.SIGNAL_TEXT.name || item.type == MessageCategory.PLAIN_TEXT.name -> {
                     if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
-                        REPLY_TYPE
+                        REPLY_TEXT_TYPE
                     } else if (!item.siteName.isNullOrBlank() || !item.siteDescription.isNullOrBlank()) {
                         LINK_TYPE
                     } else {
-                        MESSAGE_TYPE
+                        TEXT_TYPE
                     }
                 }
                 item.type == MessageCategory.SIGNAL_IMAGE.name ||
-                    item.type == MessageCategory.PLAIN_IMAGE.name -> IMAGE_TYPE
+                    item.type == MessageCategory.PLAIN_IMAGE.name -> {
+                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        REPLY_IMAGE_TYPE
+                    } else {
+                        IMAGE_TYPE
+                    }
+                }
                 item.type == MessageCategory.SYSTEM_CONVERSATION.name -> SYSTEM_TYPE
                 item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> BILL_TYPE
                 item.type == MessageCategory.SIGNAL_DATA.name ||
@@ -605,35 +648,39 @@ class ConversationAdapter(
     override fun getItemViewType(position: Int): Int = getItemType(getItem(position))
 
     companion object {
-        const val NULL_TYPE = -2
-        const val UNKNOWN_TYPE = -1
-        const val MESSAGE_TYPE = 0
-        const val IMAGE_TYPE = 1
-        const val SYSTEM_TYPE = 2
-        const val CARD_TYPE = 3
-        const val BILL_TYPE = 4
+        const val NULL_TYPE = 99
+        const val UNKNOWN_TYPE = 0
+        const val TEXT_TYPE = 1
+        const val REPLY_TEXT_TYPE = -1
+        const val IMAGE_TYPE = 2
+        const val REPLY_IMAGE_TYPE = -2
+        const val LINK_TYPE = 3
+        const val VIDEO_TYPE = 4
+        const val AUDIO_TYPE = 5
         const val FILE_TYPE = 6
         const val STICKER_TYPE = 7
-        const val ACTION_TYPE = 8
-        const val ACTION_CARD_TYPE = 9
-        const val REPLY_TYPE = 10
-        const val WAITING_TYPE = 11
-        const val LINK_TYPE = 12
-        const val STRANGER_TYPE = 13
-        const val SECRET_TYPE = 14
-        const val CONTACT_CARD_TYPE = 15
-        const val VIDEO_TYPE = 16
-        const val AUDIO_TYPE = 17
+        const val CONTACT_CARD_TYPE = 8
+        const val CARD_TYPE = 9
+        const val BILL_TYPE = 10
+        const val POST_TYPE = 11
+        const val ACTION_TYPE = 12
+        const val ACTION_CARD_TYPE = 13
+        const val SYSTEM_TYPE = 14
+        const val WAITING_TYPE = 15
+        const val STRANGER_TYPE = 16
+        const val SECRET_TYPE = 17
         const val CALL_TYPE = 18
-        const val POST_TYPE = 19
-        const val RECALL_TYPE = 20
+        const val RECALL_TYPE = 19
 
         private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
             override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
                 return oldItem.messageId == newItem.messageId
             }
 
-            override fun areContentsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
+            override fun areContentsTheSame(
+                oldItem: MessageItem,
+                newItem: MessageItem
+            ): Boolean {
                 return oldItem.mediaStatus == newItem.mediaStatus &&
                     oldItem.type == newItem.type &&
                     oldItem.status == newItem.status &&

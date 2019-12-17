@@ -5,6 +5,7 @@ import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.android.parcel.Parcelize
+import one.mixin.android.util.GsonHelper
 
 @SuppressLint("ParcelCreator")
 @Entity
@@ -42,12 +43,40 @@ data class QuoteMessageItem(
     val sharedUserIdentityNumber: String? = null,
     val sharedUserAvatarUrl: String? = null
 ) : Parcelable {
-    constructor(messageItem: MessageItem) : this(messageItem.messageId, messageItem.conversationId,
-        messageItem.userId, messageItem.userFullName, messageItem.userIdentityNumber, messageItem.type,
-        messageItem.content, messageItem.createdAt, messageItem.status, messageItem.mediaStatus,
-        messageItem.userAvatarUrl, messageItem.mediaName, messageItem.mediaMimeType, messageItem.mediaSize,
-        messageItem.mediaWidth, messageItem.mediaHeight, messageItem.thumbImage, messageItem.thumbUrl, messageItem.mediaUrl,
-        messageItem.mediaDuration, messageItem.assetUrl, messageItem.assetHeight, messageItem.assetWidth, messageItem.stickerId,
-        messageItem.assetName, messageItem.appId, messageItem.sharedUserId, messageItem.sharedUserFullName,
-        messageItem.sharedUserIdentityNumber, messageItem.sharedUserAvatarUrl)
+    constructor(messageItem: MessageItem) : this(
+        messageItem.messageId,
+        messageItem.conversationId,
+        messageItem.userId,
+        messageItem.userFullName,
+        messageItem.userIdentityNumber,
+        messageItem.type,
+        messageItem.content,
+        messageItem.createdAt,
+        messageItem.status,
+        messageItem.mediaStatus,
+        messageItem.userAvatarUrl,
+        messageItem.mediaName,
+        messageItem.mediaMimeType,
+        messageItem.mediaSize,
+        messageItem.mediaWidth,
+        messageItem.mediaHeight,
+        messageItem.thumbImage,
+        messageItem.thumbUrl,
+        messageItem.mediaUrl,
+        messageItem.mediaDuration,
+        messageItem.assetUrl,
+        messageItem.assetHeight,
+        messageItem.assetWidth,
+        messageItem.stickerId,
+        messageItem.assetName,
+        messageItem.appId,
+        messageItem.sharedUserId,
+        messageItem.sharedUserFullName,
+        messageItem.sharedUserIdentityNumber,
+        messageItem.sharedUserAvatarUrl
+    )
+}
+
+fun MessageItem.toQuoteMessageItem(): String? {
+    return GsonHelper.customGson.toJson(QuoteMessageItem(this))
 }

@@ -9,14 +9,18 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
-@Entity(tableName = "messages",
+@Entity(
+    tableName = "messages",
     indices = [Index(value = arrayOf("conversation_id", "created_at")),
         Index(value = arrayOf("conversation_id", "user_id", "status", "created_at")),
         Index(value = arrayOf("user_id"))],
-    foreignKeys = [(ForeignKey(entity = Conversation::class,
+    foreignKeys = [(ForeignKey(
+        entity = Conversation::class,
         onDelete = CASCADE,
         parentColumns = arrayOf("conversation_id"),
-        childColumns = arrayOf("conversation_id")))])
+        childColumns = arrayOf("conversation_id")
+    ))]
+)
 class Message(
     @PrimaryKey
     @SerializedName("id")
@@ -170,13 +174,17 @@ fun Message.isCall() = category.startsWith("WEBRTC_")
 
 fun Message.isRecall() = category == MessageCategory.MESSAGE_RECALL.name
 
-fun Message.isText() = category == MessageCategory.PLAIN_TEXT.name || category == MessageCategory.SIGNAL_TEXT.name
+fun Message.isText() =
+    category == MessageCategory.PLAIN_TEXT.name || category == MessageCategory.SIGNAL_TEXT.name
 
-fun Message.isVideo() = category == MessageCategory.PLAIN_VIDEO.name || category == MessageCategory.SIGNAL_VIDEO.name
+fun Message.isVideo() =
+    category == MessageCategory.PLAIN_VIDEO.name || category == MessageCategory.SIGNAL_VIDEO.name
 
-fun Message.isAudio() = category == MessageCategory.PLAIN_AUDIO.name || category == MessageCategory.SIGNAL_AUDIO.name
+fun Message.isAudio() =
+    category == MessageCategory.PLAIN_AUDIO.name || category == MessageCategory.SIGNAL_AUDIO.name
 
-fun Message.isImage() = category == MessageCategory.PLAIN_IMAGE.name || category == MessageCategory.SIGNAL_IMAGE.name
+fun Message.isImage() =
+    category == MessageCategory.PLAIN_IMAGE.name || category == MessageCategory.SIGNAL_IMAGE.name
 
 enum class MessageCategory {
     SIGNAL_KEY,
@@ -265,7 +273,7 @@ fun createCallMessage(
     return builder.build()
 }
 
-fun createReplyMessage(
+fun createReplyTextMessage(
     messageId: String,
     conversationId: String,
     userId: String,
@@ -363,7 +371,9 @@ fun createMediaMessage(
     digest: ByteArray?,
     createdAt: String,
     mediaStatus: MediaStatus,
-    status: String
+    status: String,
+    quoteMessageId: String? = null,
+    quoteContent: String? = null
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setMediaUrl(mediaUrl)
@@ -375,6 +385,8 @@ fun createMediaMessage(
     .setMediaKey(key)
     .setMediaDigest(digest)
     .setMediaStatus(mediaStatus.name)
+    .setQuoteMessageId(quoteMessageId)
+    .setQuoteContent(quoteContent)
     .build()
 
 fun createStickerMessage(

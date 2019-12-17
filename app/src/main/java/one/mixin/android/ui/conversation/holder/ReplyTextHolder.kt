@@ -13,7 +13,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.date_wrapper.view.*
-import kotlinx.android.synthetic.main.item_chat_reply.view.*
+import kotlinx.android.synthetic.main.item_chat_reply_text.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
@@ -29,7 +29,7 @@ import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
-class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class ReplyTextHolder constructor(containerView: View) : BaseViewHolder(containerView) {
     private val dp16 = itemView.context.dpToPx(16f)
     private val dp8 = itemView.context.dpToPx(8f)
     private val dp6 = itemView.context.dpToPx(6f)
