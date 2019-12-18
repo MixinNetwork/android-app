@@ -188,6 +188,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     private fun refreshPendingDeposits(asset: AssetItem) {
         lifecycleScope.launch {
             if (asset.destination.isNotEmpty()) {
+                walletViewModel.refreshAsset(asset.assetId)
                 handleMixinResponse(
                     invokeNetwork = {
                         walletViewModel.pendingDeposits(asset.assetId, asset.destination, asset.tag)
