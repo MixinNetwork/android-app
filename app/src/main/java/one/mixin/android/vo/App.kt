@@ -41,7 +41,7 @@ data class App(
     @ColumnInfo(name = "app_secret")
     val appSecret: String,
     @SerializedName("capabilities")
-    @ColumnInfo(name = "capabilites")
+    @ColumnInfo(name = "capabilities")
     val capabilities: ArrayList<String>?,
     @SerializedName("creator_id")
     @ColumnInfo(name = "creator_id")

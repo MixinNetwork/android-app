@@ -137,7 +137,16 @@ class MixinDatabaseMigrations private constructor() {
                     SELECT `snapshot_id`, `type`, `asset_id`, `amount`, `created_at`, `opponent_id`  , `transaction_hash`, `sender`, `receiver`, `memo`, `confirmations` FROM snapshots 
                 """)
                 database.execSQL(" DROP TABLE IF EXISTS snapshots")
-                database.execSQL("ALTER TABLE new_snapshots RENAME TO snapshots".trimIndent())
+                database.execSQL("ALTER TABLE new_snapshots RENAME TO snapshots")
+                database.execSQL("""
+                    CREATE TABLE IF NOT EXISTS `new_apps` (`app_id` TEXT NOT NULL, `app_number` TEXT NOT NULL, `home_uri` TEXT NOT NULL, `redirect_uri` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `description` TEXT NOT NULL, `app_secret` TEXT NOT NULL, `capabilities` TEXT, `creator_id` TEXT NOT NULL, PRIMARY KEY(`app_id`))
+                """)
+                database.execSQL("""
+                    INSERT INTO new_apps (`app_id`, `app_number`, `home_uri`, `redirect_uri`, `name`, `icon_url`, `description`, `app_secret`, `capabilities`, `creator_id`) 
+                    SELECT `app_id`, `app_number`, `home_uri`, `redirect_uri`, `name`, `icon_url`, `description`, `app_secret`, `capabilites`, `creator_id` FROM apps 
+                """)
+                database.execSQL("DROP TABLE IF EXISTS apps")
+                database.execSQL("ALTER TABLE new_apps RENAME TO apps")
             }
         }
     }

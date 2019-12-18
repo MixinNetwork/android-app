@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 27,
-    "identityHash": "65546b5a8b6354ff13f90da561ce2e3d",
+    "identityHash": "8fdafa330211f293948e44b9e4a26776",
     "entities": [
       {
         "tableName": "users",
@@ -1014,7 +1014,7 @@
       },
       {
         "tableName": "apps",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`app_id` TEXT NOT NULL, `app_number` TEXT NOT NULL, `home_uri` TEXT NOT NULL, `redirect_uri` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `description` TEXT NOT NULL, `app_secret` TEXT NOT NULL, `capabilites` TEXT, `creator_id` TEXT NOT NULL, PRIMARY KEY(`app_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`app_id` TEXT NOT NULL, `app_number` TEXT NOT NULL, `home_uri` TEXT NOT NULL, `redirect_uri` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `description` TEXT NOT NULL, `app_secret` TEXT NOT NULL, `capabilities` TEXT, `creator_id` TEXT NOT NULL, PRIMARY KEY(`app_id`))",
         "fields": [
           {
             "fieldPath": "appId",
@@ -1066,7 +1066,7 @@
           },
           {
             "fieldPath": "capabilities",
-            "columnName": "capabilites",
+            "columnName": "capabilities",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -1551,7 +1551,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '65546b5a8b6354ff13f90da561ce2e3d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8fdafa330211f293948e44b9e4a26776')"
     ]
   }
 }

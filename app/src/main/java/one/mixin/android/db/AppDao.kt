@@ -13,7 +13,7 @@ interface AppDao : BaseDao<App> {
     @Query(
         """ SELECT a.app_id as appId, a.app_number as appNumber, a.home_uri as homeUri, a.redirect_uri as redirectUri,
             a.name as name, a.icon_url as iconUrl, a.description as description, a.app_secret as appSecret,
-            a.capabilites as capabilities, a.creator_id as creatorId
+            a.capabilities as capabilities, a.creator_id as creatorId
             FROM apps a, participants p, users u WHERE p.conversation_id = :conversationId
             AND p.user_id = u.user_id AND a.app_id = u.app_id
             """
@@ -24,7 +24,7 @@ interface AppDao : BaseDao<App> {
         """
         SELECT a.app_id as appId,a.app_number as appNumber, a.home_uri as homeUri, a.redirect_uri as redirectUri,
         a.name as name, a.icon_url as iconUrl, a.description as description, a.app_secret as appSecret,
-        a.capabilites as capabilities, a.creator_id as creatorId, u.user_id as userId, u.avatar_url as avatarUrl
+        a.capabilities as capabilities, a.creator_id as creatorId, u.user_id as userId, u.avatar_url as avatarUrl
         FROM favorite_apps fa INNER JOIN apps a ON a.app_id = fa.app_id INNER JOIN users u ON u.user_id = fa.user_id
         WHERE fa.user_id in (:guestId, :masterId) AND u.user_id IS NOT NULL ORDER BY CASE  WHEN fa.user_id= :guestId THEN 2 WHEN fa.user_id= :masterId THEN 1 END;
         """
