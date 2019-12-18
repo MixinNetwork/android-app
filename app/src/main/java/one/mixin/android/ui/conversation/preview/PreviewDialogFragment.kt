@@ -137,11 +137,16 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
     private var uri: Uri? = null
     private var action: ((Uri) -> Unit)? = null
     fun show(fragmentManager: FragmentManager, uri: Uri, action: (Uri) -> Unit) {
-        super.showNow(fragmentManager, if (isVideo) {
-            "PreviewVideoDialogFragment"
-        } else {
-            "PreviewDialogFragment"
-        })
+        try {
+            super.showNow(fragmentManager,
+                if (isVideo) {
+                    "PreviewVideoDialogFragment"
+                } else {
+                    "PreviewDialogFragment"
+                }
+            )
+        } catch (ignored: IllegalStateException) {
+        }
         this.uri = uri
         this.action = action
     }
