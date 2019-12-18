@@ -30,6 +30,13 @@ class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PR
             val response = assetService.fetchAllAssetSuspend()
             if (response.isSuccess && response.data != null) {
                 val list = response.data as List<Asset>
+                response.data?.map {
+                    it.assetId
+                }?.let { ids ->
+                    assetDao.findAllAssetIdSuspend().subtract(ids).chunked(100).forEach {
+                        assetDao.zeroClearSuspend(it)
+                    }
+                }
                 assetRepo.insertList(list)
             }
             refreshFiats()

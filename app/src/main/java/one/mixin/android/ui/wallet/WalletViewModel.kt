@@ -128,6 +128,10 @@ internal constructor(
         jobManager.addJobInBackground(RefreshSnapshotsJob(assetId))
     }
 
+    fun refreshAsset(assetId: String? = null) {
+        jobManager.addJobInBackground(RefreshAssetsJob(assetId))
+    }
+
     suspend fun queryAsset(query: String): Pair<List<TopAssetItem>?, ArraySet<String>?> =
         withContext(Dispatchers.IO) {
             val response = try {

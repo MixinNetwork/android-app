@@ -74,4 +74,10 @@ interface AssetDao : BaseDao<Asset> {
 
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :assetId")
     suspend fun findAssetItemById(assetId: String): AssetItem?
+
+    @Query("SELECT asset_id FROM assets WHERE balance > 0")
+    suspend fun findAllAssetIdSuspend(): List<String>
+
+    @Query("UPDATE assets SET balance = 0 WHERE asset_id IN (:assetIds)")
+    suspend fun zeroClearSuspend(assetIds: List<String>)
 }
