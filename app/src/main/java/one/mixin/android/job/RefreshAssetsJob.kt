@@ -33,7 +33,9 @@ class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PR
                 response.data?.map {
                     it.assetId
                 }?.let { ids ->
-                    assetDao.zeroClear(ids)
+                    ids.chunked(100).forEach {
+                        assetDao.zeroClear(it)
+                    }
                 }
                 assetRepo.insertList(list)
             }
