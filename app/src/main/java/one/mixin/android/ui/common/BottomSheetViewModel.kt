@@ -310,21 +310,36 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun getSnapshotByTraceId(traceId: String): Pair<SnapshotItem, AssetItem>? {
         return withContext(Dispatchers.IO) {
-            handleMixinResponse(
-                invokeNetwork = {
-                    assetRepository.getSnapshotByTraceId(traceId)
-                },
-                successBlock = { response ->
-                    response.data?.let { snapshot ->
-                        assetRepository.insertSnapshot(snapshot)
-                        val assetItem =
-                            refreshAsset(snapshot.assetId) ?: return@handleMixinResponse null
-                        val snapshotItem = assetRepository.findSnapshotById(snapshot.snapshotId)
-                            ?: return@handleMixinResponse null
-                        return@handleMixinResponse Pair(snapshotItem, assetItem)
+            val localItem = assetRepository.findSnapshotByTraceId(traceId)
+            if (localItem != null) {
+                var assetItem = findAssetItemById(localItem.assetId)
+                if (assetItem != null) {
+                    return@withContext Pair(localItem, assetItem)
+                } else {
+                    assetItem = refreshAsset(localItem.assetId)
+                    if (assetItem != null) {
+                        return@withContext Pair(localItem, assetItem)
+                    } else {
+                        return@withContext null
                     }
                 }
-            )
+            } else {
+                handleMixinResponse(
+                    invokeNetwork = {
+                        assetRepository.getSnapshotByTraceId(traceId)
+                    },
+                    successBlock = { response ->
+                        response.data?.let { snapshot ->
+                            assetRepository.insertSnapshot(snapshot)
+                            val assetItem =
+                                refreshAsset(snapshot.assetId) ?: return@handleMixinResponse null
+                            val snapshotItem = assetRepository.findSnapshotById(snapshot.snapshotId)
+                                ?: return@handleMixinResponse null
+                            return@handleMixinResponse Pair(snapshotItem, assetItem)
+                        }
+                    }
+                )
+            }
         }
     }
 
