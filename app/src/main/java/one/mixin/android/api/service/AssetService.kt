@@ -61,6 +61,9 @@ interface AssetService {
     @GET("snapshots/{id}")
     suspend fun getSnapshotById(@Path("id") id: String): MixinResponse<Snapshot>
 
+    @GET("transfers/trace/{id}")
+    suspend fun getSnapshotByTraceId(@Path("id") traceId:String):MixinResponse<Snapshot>
+
     @GET("mutual_snapshots/{id}")
     fun mutualSnapshots(@Path("id") id: String): Call<MixinResponse<List<Snapshot>>>
 

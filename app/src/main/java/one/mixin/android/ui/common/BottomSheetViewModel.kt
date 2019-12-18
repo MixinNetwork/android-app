@@ -308,6 +308,26 @@ class BottomSheetViewModel @Inject internal constructor(
         }
     }
 
+    suspend fun getSnapshotByTraceId(traceId: String): Pair<SnapshotItem, AssetItem>? {
+        return withContext(Dispatchers.IO) {
+            handleMixinResponse(
+                invokeNetwork = {
+                    assetRepository.getSnapshotByTraceId(traceId)
+                },
+                successBlock = { response ->
+                    response.data?.let { snapshot ->
+                        assetRepository.insertSnapshot(snapshot)
+                        val assetItem =
+                            refreshAsset(snapshot.assetId) ?: return@handleMixinResponse null
+                        val snapshotItem = assetRepository.findSnapshotById(snapshot.snapshotId)
+                            ?: return@handleMixinResponse null
+                        return@handleMixinResponse Pair(snapshotItem, assetItem)
+                    }
+                }
+            )
+        }
+    }
+
     suspend fun getSnapshotAndAsset(snapshotId: String): Pair<SnapshotItem, AssetItem>? {
         return withContext(Dispatchers.IO) {
             var snapshotItem = findSnapshotById(snapshotId)
