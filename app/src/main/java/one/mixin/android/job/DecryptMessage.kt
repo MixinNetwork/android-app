@@ -273,7 +273,8 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.PLAIN_AUDIO.name ||
             data.category == MessageCategory.PLAIN_STICKER.name ||
             data.category == MessageCategory.PLAIN_CONTACT.name ||
-            data.category == MessageCategory.PLAIN_LIVE.name) {
+            data.category == MessageCategory.PLAIN_LIVE.name ||
+            data.category == MessageCategory.PLAIN_POST.name) {
             if (!data.representativeId.isNullOrBlank()) {
                 data.userId = data.representativeId
             }
@@ -305,6 +306,15 @@ class DecryptMessage : Injector() {
 
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
+            }
+            data.category.endsWith("_POST") -> {
+                val plain = if (data.category == MessageCategory.PLAIN_TEXT.name) String(Base64.decode(plainText)) else plainText
+                val message = createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status)
+                    .apply {
+                        this.content?.findLastUrl()?.let { jobManager.addJobInBackground(ParseHyperlinkJob(it, data.messageId)) }
+                    }
+                messageDao.insert(message)
+                // Todo sendNotificationJob
             }
             data.category.endsWith("_IMAGE") -> {
                 val decoded = Base64.decode(plainText)
@@ -567,14 +577,15 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.SIGNAL_DATA.name ||
             data.category == MessageCategory.SIGNAL_AUDIO.name ||
             data.category == MessageCategory.SIGNAL_STICKER.name ||
-            data.category == MessageCategory.SIGNAL_CONTACT.name) {
+            data.category == MessageCategory.SIGNAL_CONTACT.name ||
+            data.category == MessageCategory.SIGNAL_POST.name) {
             messageDao.insert(createMessage(data.messageId, data.conversationId,
                 data.userId, data.category, data.data, data.createdAt, MessageStatus.FAILED.name))
         }
     }
 
     private fun processRedecryptMessage(data: BlazeMessageData, messageId: String, plainText: String) {
-        if (data.category == MessageCategory.SIGNAL_TEXT.name) {
+        if (data.category == MessageCategory.SIGNAL_TEXT.name || data.category == MessageCategory.SIGNAL_POST.name) {
             messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_IMAGE.name ||
             data.category == MessageCategory.SIGNAL_VIDEO.name ||

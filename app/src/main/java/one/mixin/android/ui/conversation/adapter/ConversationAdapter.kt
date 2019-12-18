@@ -12,8 +12,6 @@ import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.PublishSubject
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.item_chat_unread.view.*
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.R
@@ -34,6 +32,7 @@ import one.mixin.android.ui.conversation.holder.FileHolder
 import one.mixin.android.ui.conversation.holder.HyperlinkHolder
 import one.mixin.android.ui.conversation.holder.ImageHolder
 import one.mixin.android.ui.conversation.holder.MessageHolder
+import one.mixin.android.ui.conversation.holder.PostHolder
 import one.mixin.android.ui.conversation.holder.RecallHolder
 import one.mixin.android.ui.conversation.holder.ReplyHolder
 import one.mixin.android.ui.conversation.holder.SecretHolder
@@ -54,6 +53,8 @@ import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isRecall
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 class ConversationAdapter(
     private val keyword: String?,
@@ -134,6 +135,10 @@ class ConversationAdapter(
             when (getItemViewType(position)) {
                 MESSAGE_TYPE -> {
                     (holder as MessageHolder).bind(it, keyword, isLast(position),
+                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                }
+                POST_TYPE -> {
+                    (holder as PostHolder).bind(it, isLast(position),
                         isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 IMAGE_TYPE -> {
@@ -357,6 +362,10 @@ class ConversationAdapter(
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_message, parent, false)
                 MessageHolder(item)
             }
+            POST_TYPE -> {
+                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_post, parent, false)
+                PostHolder(item)
+            }
             IMAGE_TYPE -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_image, parent, false)
                 ImageHolder(item)
@@ -482,6 +491,8 @@ class ConversationAdapter(
                     item.type == MessageCategory.PLAIN_LIVE.name -> VIDEO_TYPE
                 item.type == MessageCategory.SIGNAL_AUDIO.name ||
                     item.type == MessageCategory.PLAIN_AUDIO.name -> AUDIO_TYPE
+                item.type == MessageCategory.PLAIN_POST.name ||
+                    item.type == MessageCategory.SIGNAL_POST.name -> POST_TYPE
                 item.isCallMessage() -> CALL_TYPE
                 item.isRecall() -> RECALL_TYPE
                 else -> UNKNOWN_TYPE
@@ -511,7 +522,8 @@ class ConversationAdapter(
         const val VIDEO_TYPE = 16
         const val AUDIO_TYPE = 17
         const val CALL_TYPE = 18
-        const val RECALL_TYPE = 19
+        const val POST_TYPE = 19
+        const val RECALL_TYPE = 20
 
         private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
             override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
@@ -575,6 +587,8 @@ class ConversationAdapter(
         open fun onMessageClick(messageId: String?) {}
 
         open fun onCallClick(messageItem: MessageItem) {}
+
+        open fun onPostClick(messageItem: MessageItem) {}
     }
 
     fun addSelect(messageItem: MessageItem): Boolean {

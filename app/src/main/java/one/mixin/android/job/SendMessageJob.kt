@@ -126,7 +126,7 @@ open class SendMessageJob(
         val conversation = conversationDao.getConversation(message.conversationId) ?: return
         checkConversationExist(conversation)
         var content = message.content
-        if (message.category == MessageCategory.PLAIN_TEXT.name || message.isCall()) {
+        if (message.category == MessageCategory.PLAIN_TEXT.name || message.category == MessageCategory.PLAIN_POST.name || message.isCall()) {
             if (message.content != null) {
                 content = Base64.encodeBytes(message.content!!.toByteArray())
             }

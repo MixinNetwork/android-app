@@ -254,6 +254,9 @@ dependencies {
     implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
     implementation "com.github.SeniorZhai:LargeImage:${largeImageViewVersion}"
     implementation "com.github.tougee:BiometricPromptCompat:${biometricpromptVersion}"
+    implementation "io.noties.markwon:core:${markwonVersion}"
+    implementation "io.noties.markwon:image:${markwonVersion}"
+    implementation "io.noties.markwon:image-glide:${markwonVersion}"
     implementation "org.webrtc:google-webrtc:${webrtcVersion}"
 }
 
