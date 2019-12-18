@@ -26,14 +26,9 @@ data class Snapshot(
     @SerializedName("opponent_id")
     @ColumnInfo(name = "opponent_id")
     val opponentId: String?,
-    @Deprecated(
-        "Replace with opponent_id",
-        ReplaceWith("@{link opponentId}", "one.mixin.android.vo.SnapshotItem.opponentId"),
-        DeprecationLevel.ERROR
-    )
-    @SerializedName("counter_user_id")
-    @ColumnInfo(name = "counter_user_id")
-    val counterUserId: String?,
+    @SerializedName("trace_id")
+    @ColumnInfo(name = "trace_id")
+    val traceId: String?,
     @SerializedName("transaction_hash")
     @ColumnInfo(name = "transaction_hash")
     val transactionHash: String?,
