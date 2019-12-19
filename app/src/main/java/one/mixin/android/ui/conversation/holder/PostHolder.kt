@@ -10,7 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.ui.style.MarkDown
+import one.mixin.android.ui.style.MarkwonUtil
 import one.mixin.android.vo.MessageItem
 import org.jetbrains.anko.dip
 
@@ -94,7 +94,7 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
             }
         }
 
-        MarkDown.getSingle().setMarkdown(itemView.chat_tv, messageItem.content!!)
+        MarkwonUtil.getSingle().setMarkdown(itemView.chat_tv, messageItem.content!!)
 
         itemView.setOnLongClickListener {
             if (!hasSelect) {

@@ -4,17 +4,19 @@ import android.graphics.drawable.Drawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestBuilder
 import io.noties.markwon.Markwon
+import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.image.AsyncDrawable
 import io.noties.markwon.image.glide.GlideImagesPlugin
 import one.mixin.android.MixinApplication
 
-class MarkDown {
+class MarkwonUtil {
     companion object {
         private var markDown: Markwon? = null
         fun getSingle(): Markwon {
             val context = MixinApplication.appContext
             if (markDown == null) {
                 markDown = Markwon.builder(context)
+                    .usePlugin(StrikethroughPlugin.create())
                     .usePlugin(GlideImagesPlugin.create(context))
                     .usePlugin(GlideImagesPlugin.create(Glide.with(context)))
                     .usePlugin(GlideImagesPlugin.create(object : GlideImagesPlugin.GlideStore {

@@ -6,7 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_markdown.*
 import one.mixin.android.R
-import one.mixin.android.ui.style.MarkDown
+import one.mixin.android.ui.style.MarkwonUtil
 
 class MarkdownActivity : AppCompatActivity() {
 
@@ -14,7 +14,7 @@ class MarkdownActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_markdown)
         val markdown = intent.getStringExtra(CONTENT) ?: return
-        MarkDown.getSingle().setMarkdown(tv, markdown)
+        MarkwonUtil.getSingle().setMarkdown(tv, markdown)
     }
 
     companion object {
