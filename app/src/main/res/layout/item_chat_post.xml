@@ -7,41 +7,50 @@
     android:clickable="true"
     android:focusable="true">
 
-    <one.mixin.android.widget.MessageLayout
+    <TextView
+        android:id="@+id/chat_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:lines="1"
+        android:minWidth="30dp"
+        android:textColor="#19BEF1"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <one.mixin.android.widget.ShadowLayout
         android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="4dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="1.5dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0"
-        app:layout_goneMarginBottom="0dp">
+        app:layout_constraintTop_toBottomOf="@id/chat_name"
+        app:layout_goneMarginTop="0dp">
 
         <TextView
             android:id="@+id/chat_tv"
-            android:layout_width="wrap_content"
+            android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
             android:textColor="?attr/text_primary"
             android:textSize="14sp"
             tools:text="message" />
 
-        <include layout="@layout/date_wrapper" />
-
         <TextView
-            android:id="@+id/chat_name"
-            android:minWidth="30dp"
-            android:layout_width="wrap_content"
+            android:padding="3dp"
+            android:id="@+id/chat_time"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:lines="1"
-            android:textColor="#19BEF1"
-            android:textSize="14sp" />
-
-    </one.mixin.android.widget.MessageLayout>
+            android:layout_gravity="bottom"
+            android:drawablePadding="3dp"
+            android:fontFamily="@font/sf_pro_light"
+            android:gravity="end|bottom"
+            android:textColor="@color/white"
+            android:textSize="@dimen/chat_date_size"
+            tools:text="7:48AM" />
+    </one.mixin.android.widget.ShadowLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

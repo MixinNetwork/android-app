@@ -571,8 +571,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
 
-            override fun onPostClick(messageItem: MessageItem) {
-                MarkdownActivity.show(requireContext(), messageItem.content!!)
+            override fun onPostClick(view: View, messageItem: MessageItem) {
+                MarkdownActivity.show(requireActivity(), messageItem.content!!)
             }
 
             override fun onCallClick(messageItem: MessageItem) {

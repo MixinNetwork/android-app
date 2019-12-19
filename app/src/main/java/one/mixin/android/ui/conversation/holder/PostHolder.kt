@@ -3,11 +3,12 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
-import kotlinx.android.synthetic.main.date_wrapper.view.*
+import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
 import kotlinx.android.synthetic.main.item_chat_post.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.maxItemWidth
+import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.style.MarkwonUtil
@@ -16,19 +17,36 @@ import org.jetbrains.anko.dip
 
 class PostHolder constructor(containerView: View) : BaseViewHolder(containerView) {
     init {
-        itemView.chat_layout.setMaxWidth(itemView.context.maxItemWidth())
+        (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxHeight =
+            (itemView.context.maxItemWidth())
+        itemView.chat_tv.round(dp3)
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
+        if (isMe) {
+            if (isLast) {
+                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow_last)
+            } else {
+                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
+            }
+            (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+        } else {
+            if (isLast) {
+                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
+            } else {
+                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
+            }
+            (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+        }
         val lp = (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
             lp.horizontalBias = 1f
             if (isLast) {
                 setItemBackgroundResource(
                     itemView.chat_layout,
-                    R.drawable.chat_bubble_me_last,
-                    R.drawable.chat_bubble_me_last_night
+                    R.drawable.chat_bubble_post_me_last,
+                    R.drawable.chat_bubble_post_me_last_night
                 )
             } else {
                 setItemBackgroundResource(
@@ -85,12 +103,12 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
             } else {
-                onItemListener.onPostClick(messageItem)
+                onItemListener.onPostClick(itemView, messageItem)
             }
         }
         itemView.chat_layout.setOnClickListener {
             if (!hasSelect) {
-                onItemListener.onPostClick(messageItem)
+                onItemListener.onPostClick(itemView, messageItem)
             }
         }
 
@@ -135,12 +153,11 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         setStatusIcon(isMe, messageItem.status, {
-            itemView.chat_flag.setImageDrawable(it)
-            itemView.chat_flag.visibility = View.VISIBLE
+            it?.setBounds(0, 0, dp12, dp12)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
         }, {
-            itemView.chat_flag.visibility = View.GONE
-        })
-
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
+        }, true)
         chatLayout(isMe, isLast)
     }
 }

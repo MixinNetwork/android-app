@@ -61,7 +61,8 @@ class ConversationAdapter(
     private val onItemListener: OnItemListener,
     private val isGroup: Boolean,
     private val isSecret: Boolean = true
-) : PagedListAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
+) : PagedListAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback),
+    MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     var selectSet: ArraySet<MessageItem> = ArraySet()
     var unreadMsgId: String? = null
     var recipient: User? = null
@@ -121,8 +122,10 @@ class ConversationAdapter(
     }, 0)
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder =
-        TimeHolder(LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_chat_time, parent, false))
+        TimeHolder(
+            LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_chat_time, parent, false)
+        )
 
     override fun onBindHeaderViewHolder(holder: TimeHolder, position: Int) {
         getItem(position)?.let {
@@ -134,45 +137,71 @@ class ConversationAdapter(
         getItem(position)?.let {
             when (getItemViewType(position)) {
                 MESSAGE_TYPE -> {
-                    (holder as MessageHolder).bind(it, keyword, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as MessageHolder).bind(
+                        it, keyword, isLast(position),
+                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                    )
                 }
                 POST_TYPE -> {
-                    (holder as PostHolder).bind(it, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as PostHolder).bind(
+                        it, isLast(position),
+                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                    )
                 }
                 IMAGE_TYPE -> {
-                    (holder as ImageHolder).bind(it, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as ImageHolder).bind(
+                        it, isLast(position),
+                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                    )
                 }
                 VIDEO_TYPE -> {
-                    (holder as VideoHolder).bind(it, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as VideoHolder).bind(
+                        it, isLast(position),
+                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                    )
                 }
                 AUDIO_TYPE -> {
-                    (holder as AudioHolder).bind(it, isFirst(position),
-                        isLast(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as AudioHolder).bind(
+                        it, isFirst(position),
+                        isLast(position), selectSet.size > 0, isSelect(position), onItemListener
+                    )
                 }
                 SYSTEM_TYPE -> {
-                    (holder as SystemHolder).bind(it, selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as SystemHolder).bind(
+                        it,
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
                 }
                 CARD_TYPE -> {
                     (holder as CardHolder).bind(it)
                 }
                 BILL_TYPE -> {
-                    (holder as BillHolder).bind(it, isLast(position),
-                        selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as BillHolder).bind(
+                        it, isLast(position),
+                        selectSet.size > 0, isSelect(position), onItemListener
+                    )
                 }
                 FILE_TYPE -> {
-                    (holder as FileHolder).bind(it, keyword, isFirst(position),
-                        isLast(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as FileHolder).bind(
+                        it, keyword, isFirst(position),
+                        isLast(position), selectSet.size > 0, isSelect(position), onItemListener
+                    )
                 }
                 WAITING_TYPE -> {
-                    (holder as WaitingHolder).bind(it, isLast(position), isFirst(position), onItemListener)
+                    (holder as WaitingHolder).bind(
+                        it,
+                        isLast(position),
+                        isFirst(position),
+                        onItemListener
+                    )
                 }
                 REPLY_TYPE -> {
-                    (holder as ReplyHolder).bind(it, keyword, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as ReplyHolder).bind(
+                        it, keyword, isLast(position),
+                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                    )
                 }
                 STRANGER_TYPE -> {
                     (holder as StrangerHolder).bind(onItemListener)
@@ -181,30 +210,65 @@ class ConversationAdapter(
                     (holder as UnknownHolder).bind()
                 }
                 STICKER_TYPE -> {
-                    (holder as StickerHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as StickerHolder).bind(
+                        it,
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
                 }
                 LINK_TYPE -> {
-                    (holder as HyperlinkHolder).bind(it, keyword, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as HyperlinkHolder).bind(
+                        it, keyword, isLast(position),
+                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                    )
                 }
                 ACTION_TYPE -> {
-                    (holder as ActionHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as ActionHolder).bind(
+                        it,
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
                 }
                 ACTION_CARD_TYPE -> {
-                    (holder as ActionCardHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as ActionCardHolder).bind(
+                        it,
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
                 }
                 CONTACT_CARD_TYPE -> {
-                    (holder as ContactCardHolder).bind(it, isFirst(position), isLast(position),
-                        selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as ContactCardHolder).bind(
+                        it, isFirst(position), isLast(position),
+                        selectSet.size > 0, isSelect(position), onItemListener
+                    )
                 }
                 SECRET_TYPE -> {
                     (holder as SecretHolder).bind(onItemListener)
                 }
                 CALL_TYPE -> {
-                    (holder as CallHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as CallHolder).bind(
+                        it,
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
                 }
                 RECALL_TYPE -> {
-                    (holder as RecallHolder).bind(it, isFirst(position), isLast(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as RecallHolder).bind(
+                        it,
+                        isFirst(position),
+                        isLast(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
                 }
                 else -> {
                 }
@@ -285,7 +349,10 @@ class ConversationAdapter(
         }
     }
 
-    override fun onCurrentListChanged(previousList: PagedList<MessageItem>?, currentList: PagedList<MessageItem>?) {
+    override fun onCurrentListChanged(
+        previousList: PagedList<MessageItem>?,
+        currentList: PagedList<MessageItem>?
+    ) {
         super.onCurrentListChanged(previousList, currentList)
         if (currentList != null && previousList != null && previousList.size != 0) {
             val changeCount = currentList.size - previousList.size
@@ -319,35 +386,43 @@ class ConversationAdapter(
             null
         } else if (isSecret && hasBottomView) {
             when (position) {
-                0 -> create(MessageCategory.STRANGER.name, if (super.getItemCount() > 0) {
-                    super.getItem(0)?.createdAt
-                } else {
-                    null
-                })
-                itemCount - 1 -> create(MessageCategory.SECRET.name, if (super.getItemCount() > 0) {
-                    super.getItem(super.getItemCount() - 1)?.createdAt
-                } else {
-                    null
-                })
+                0 -> create(
+                    MessageCategory.STRANGER.name, if (super.getItemCount() > 0) {
+                        super.getItem(0)?.createdAt
+                    } else {
+                        null
+                    }
+                )
+                itemCount - 1 -> create(
+                    MessageCategory.SECRET.name, if (super.getItemCount() > 0) {
+                        super.getItem(super.getItemCount() - 1)?.createdAt
+                    } else {
+                        null
+                    }
+                )
                 else -> super.getItem(position - 1)
             }
         } else if (isSecret) {
             if (position == itemCount - 1) {
-                create(MessageCategory.SECRET.name, if (super.getItemCount() > 0) {
-                    super.getItem(super.getItemCount() - 1)?.createdAt
-                } else {
-                    null
-                })
+                create(
+                    MessageCategory.SECRET.name, if (super.getItemCount() > 0) {
+                        super.getItem(super.getItemCount() - 1)?.createdAt
+                    } else {
+                        null
+                    }
+                )
             } else {
                 super.getItem(position)
             }
         } else if (hasBottomView) {
             if (position == 0) {
-                create(MessageCategory.STRANGER.name, if (super.getItemCount() > 0) {
-                    super.getItem(0)?.createdAt
-                } else {
-                    null
-                })
+                create(
+                    MessageCategory.STRANGER.name, if (super.getItemCount() > 0) {
+                        super.getItem(0)?.createdAt
+                    } else {
+                        null
+                    }
+                )
             } else {
                 super.getItem(position - 1)
             }
@@ -359,91 +434,113 @@ class ConversationAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
         when (viewType) {
             MESSAGE_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_message, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_message, parent, false)
                 MessageHolder(item)
             }
             POST_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_post, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_post, parent, false)
                 PostHolder(item)
             }
             IMAGE_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_image, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_image, parent, false)
                 ImageHolder(item)
             }
             SYSTEM_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_system, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_system, parent, false)
                 SystemHolder(item)
             }
             CARD_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_card, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_card, parent, false)
                 CardHolder(item)
             }
             BILL_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_bill, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_bill, parent, false)
                 BillHolder(item)
             }
             REPLY_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_reply, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_reply, parent, false)
                 ReplyHolder(item)
             }
             WAITING_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_waiting, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_waiting, parent, false)
                 WaitingHolder(item, onItemListener)
             }
             STRANGER_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_stranger, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_stranger, parent, false)
                 StrangerHolder(item)
             }
             UNKNOWN_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unknown, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_unknown, parent, false)
                 UnknownHolder(item)
             }
             FILE_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_file, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_file, parent, false)
                 FileHolder(item)
             }
             AUDIO_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_audio, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_audio, parent, false)
                 AudioHolder(item)
             }
             STICKER_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_sticker, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_sticker, parent, false)
                 StickerHolder(item)
             }
             ACTION_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_action, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_action, parent, false)
                 ActionHolder(item)
             }
             ACTION_CARD_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_action_card, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_action_card, parent, false)
                 ActionCardHolder(item)
             }
             LINK_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_hyperlink, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_hyperlink, parent, false)
                 HyperlinkHolder(item)
             }
             CONTACT_CARD_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_contact_card, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_contact_card, parent, false)
                 ContactCardHolder(item)
             }
             VIDEO_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_video, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_video, parent, false)
                 VideoHolder(item)
             }
             SECRET_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_secret, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_secret, parent, false)
                 SecretHolder(item)
             }
             CALL_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_call, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_call, parent, false)
                 CallHolder(item)
             }
             RECALL_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_recall, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_recall, parent, false)
                 RecallHolder(item)
             }
             else -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_transparent, parent, false)
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_transparent, parent, false)
                 TransparentHolder(item)
             }
         }
@@ -588,7 +685,7 @@ class ConversationAdapter(
 
         open fun onCallClick(messageItem: MessageItem) {}
 
-        open fun onPostClick(messageItem: MessageItem) {}
+        open fun onPostClick(view: View, messageItem: MessageItem) {}
     }
 
     fun addSelect(messageItem: MessageItem): Boolean {
