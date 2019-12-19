@@ -37,7 +37,6 @@
             android:name=".ui.home.MainActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:label="@string/app_name"
-            android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateUnchanged|stateAlwaysHidden">
@@ -118,7 +117,6 @@
         <activity
             android:name=".ui.conversation.ConversationActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateUnchanged" />

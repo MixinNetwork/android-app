@@ -139,7 +139,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         runAckJob()
     }
 
-    @SuppressLint("NewApi")
+    @SuppressLint("NewApi", "WrongConstant")
     private fun setForegroundIfNecessary() {
         val exitIntent = Intent(this, ExitBroadcastReceiver::class.java).apply {
             action = ACTION_TO_BACKGROUND
@@ -159,7 +159,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             .setSmallIcon(R.drawable.ic_msg_default)
             .addAction(R.drawable.ic_close_black, getString(R.string.exit), exitPendingIntent)
 
-        val pendingIntent = PendingIntent.getActivity(this, 0, MainActivity.getSingleIntent(this), 0)
+        val pendingIntent = PendingIntent.getActivity(this, 0, MainActivity.getDefaultIntent(this), 0)
         builder.setContentIntent(pendingIntent)
 
         supportsOreo {

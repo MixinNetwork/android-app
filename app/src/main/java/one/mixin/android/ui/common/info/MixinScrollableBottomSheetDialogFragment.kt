@@ -9,6 +9,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.scope
@@ -17,6 +18,7 @@ import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
 
 abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
@@ -68,6 +70,21 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
                 window,
                 !requireContext().booleanFromAttribute(R.attr.flag_night)
             )
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        if (activity is UrlInterpreterActivity) {
+            var realFragmentCount = 0
+            parentFragmentManager.fragments.forEach { f ->
+                if (f !is SupportRequestManagerFragment) {
+                    realFragmentCount++
+                }
+            }
+            if (realFragmentCount <= 0) {
+                activity?.finish()
+            }
         }
     }
 
