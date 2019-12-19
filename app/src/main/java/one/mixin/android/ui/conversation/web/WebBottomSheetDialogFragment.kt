@@ -457,8 +457,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun reloadTheme() {
         if (!isAdded) return
 
-        contentView.chat_web_view.evaluateJavascript(themeColorScript) {
-            setStatusBarColor(it)
+        lifecycleScope.launch {
+            contentView.chat_web_view.evaluateJavascript(themeColorScript) {
+                setStatusBarColor(it)
+            }
         }
     }
 
@@ -620,21 +622,19 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         dark: Boolean,
         color: Int
     ) {
-        context?.runOnUiThread {
-            dialog?.window?.decorView?.let {
-                if (dark) {
-                    contentView.title_tv.setTextColor(Color.WHITE)
-                    it.systemUiVisibility =
-                        it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                } else {
-                    contentView.title_tv.setTextColor(Color.BLACK)
-                    it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                }
+        dialog?.window?.decorView?.let {
+            if (dark) {
+                contentView.title_tv.setTextColor(Color.WHITE)
+                it.systemUiVisibility =
+                    it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+            } else {
+                contentView.title_tv.setTextColor(Color.BLACK)
+                it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
-            contentView.title_ll.setBackgroundColor(color)
-            contentView.ph.setBackgroundColor(color)
-            contentView.web_control.mode = dark
         }
+        contentView.title_ll.setBackgroundColor(color)
+        contentView.ph.setBackgroundColor(color)
+        contentView.web_control.mode = dark
     }
 
     @Suppress("DEPRECATION")
