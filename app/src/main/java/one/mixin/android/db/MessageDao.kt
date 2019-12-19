@@ -176,7 +176,7 @@ interface MessageDao : BaseDao<Message> {
             u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
             FROM messages m INNER JOIN users u ON c.owner_id = u.user_id
             INNER JOIN conversations c ON c.conversation_id = m.conversation_id
-            WHERE m.rowid in (SELECT rowid FROM messages_fts m_fts  WHERE m_fts.content MATCH :query) 
+            WHERE m.rowid in (SELECT rowid FROM messages_fts m_fts  WHERE m_fts.content MATCH :query OR m_fts.name MATCH :query) 
             AND (m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' 
             GROUP BY m.conversation_id
             ORDER BY m.created_at DESC
@@ -190,7 +190,7 @@ interface MessageDao : BaseDao<Message> {
             SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
             m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
             FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
-            WHERE m.rowid in (SELECT rowid FROM messages_fts m_fts  WHERE m_fts.content MATCH :query) 
+            WHERE m.rowid in (SELECT rowid FROM messages_fts m_fts  WHERE m_fts.content MATCH :query OR m_fts.name MATCH :query) 
             AND (m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED'
             AND  m.conversation_id = :conversationId
             ORDER BY m.created_at DESC

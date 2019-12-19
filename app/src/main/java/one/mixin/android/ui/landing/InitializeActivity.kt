@@ -21,7 +21,7 @@ class InitializeActivity : BaseActivity() {
         when {
             setName -> replaceFragment(SetupNameFragment.newInstance(), R.id.container)
             wrongTime -> replaceFragment(TimeFragment.newInstance(), R.id.container)
-            ftsUpgrade -> replaceFragment(LoadingFragment.newInstance(), R.id.container)
+            ftsUpgrade -> replaceFragment(UpgradeFragment.newInstance(), R.id.container)
             else -> replaceFragment(
                 LoadingFragment.newInstance(),
                 R.id.container,
