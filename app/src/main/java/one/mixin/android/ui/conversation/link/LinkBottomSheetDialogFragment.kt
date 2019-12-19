@@ -10,6 +10,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.annotation.StringRes
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
@@ -116,7 +117,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
     private val url: String by lazy { arguments!!.getString(CODE)!! }
 
     override fun onStart() {
-        super.onStart()
+        try {
+            super.onStart()
+        } catch (ignored: WindowManager.BadTokenException) {
+        }
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
