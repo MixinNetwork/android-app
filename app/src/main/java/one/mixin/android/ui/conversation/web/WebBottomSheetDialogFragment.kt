@@ -295,15 +295,14 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             WebAppInterface(
                 requireContext(),
                 conversationId,
-                immersive
+                immersive,
+                reloadThemeAction = { reloadTheme() }
             ), "MixinContext"
         )
         contentView.chat_web_view.webViewClient =
             WebViewClientImpl(object : WebViewClientImpl.OnPageFinishedListener {
                 override fun onPageFinished() {
-                    contentView.chat_web_view.evaluateJavascript(themeColorScript) {
-                        setStatusBarColor(it)
-                    }
+                    reloadTheme()
                 }
             }, conversationId, this.parentFragmentManager)
 
@@ -455,6 +454,14 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    private fun reloadTheme() {
+        if (!isAdded) return
+
+        contentView.chat_web_view.evaluateJavascript(themeColorScript) {
+            setStatusBarColor(it)
+        }
+    }
+
     private var imageUri: Uri? = null
     private fun getImageUri(): Uri {
         if (imageUri == null) {
@@ -598,7 +605,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
     }
 
-    fun setStatusBarColor(content: String) {
+    private fun setStatusBarColor(content: String) {
         try {
             val color = content.replace("\"", "")
             val c = Color.parseColor(color)
@@ -695,7 +702,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     class WebAppInterface(
         val context: Context,
         val conversationId: String?,
-        val immersive: Boolean
+        val immersive: Boolean,
+        val reloadThemeAction: () -> Unit
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -703,17 +711,19 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         @JavascriptInterface
-        fun getContext(): String? {
-
-            return Gson().toJson(
-                MixinContext(
-                    conversationId, immersive, appearance = if (isNightMode()) {
-                        "dark"
-                    } else {
-                        "light"
-                    }
-                )
+        fun getContext(): String? = Gson().toJson(
+            MixinContext(
+                conversationId, immersive, appearance = if (isNightMode()) {
+                    "dark"
+                } else {
+                    "light"
+                }
             )
+        )
+
+        @JavascriptInterface
+        fun reloadTheme() {
+            reloadThemeAction.invoke()
         }
 
         private fun isNightMode(): Boolean {
