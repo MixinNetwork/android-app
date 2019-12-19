@@ -11,20 +11,23 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="@string/loading_init"
-        android:textColor="?attr/color_accent"
+        android:text="@string/database_upgrade"
+        android:textColor="?attr/text_primary"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/imageView" />
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
-        android:text="@string/loading_wait"
+        android:layout_marginEnd="32dp"
+        android:gravity="center_horizontal"
+        android:text="@string/database_upgrade_tips"
+        android:textColor="?attr/text_minor"
         app:layout_constraintEnd_toEndOf="parent"
-        android:textColor="?attr/text_primary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/loading_title" />
 
@@ -32,10 +35,10 @@
         android:id="@+id/imageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:src="@drawable/ic_logo"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="128dp"
+        android:layout_marginEnd="8dp"
+        android:src="@drawable/ic_database"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -48,10 +51,20 @@
         android:layout_height="48dp"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:layout_marginBottom="64dp"
-        android:theme="@style/AppTheme.BlueProgress"
+        android:layout_marginBottom="96dp"
+        android:theme="@style/AppTheme.GrayProgress"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/database_upgrade"
+        android:textColor="?attr/text_minor"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/everybody_pb" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
