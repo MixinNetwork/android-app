@@ -391,6 +391,6 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT * FROM messages WHERE id IN (:messageIds) ORDER BY created_at, rowid")
     suspend fun getSortMessagesByIds(messageIds: List<String>): List<Message>
 
-    @Query("INSERT INTO `messages_fts` (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages")
+    @Query("INSERT INTO `messages_fts` (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages WHERE category IN ('PLAIN_TEXT', 'SIGNAL_TEXT', 'PLAIN_DATA', 'SIGNAL_DATA')")
     suspend fun upgradeFtsMessage()
 }
