@@ -85,7 +85,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.WebControlView
 import org.jetbrains.anko.configuration
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.runOnUiThread
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 

@@ -169,6 +169,19 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     private fun reportError(error: String) {
         executor.execute {
             Crashlytics.log(Log.ERROR, "WebRTC connection error", error)
+            peerConnection?.let { pc ->
+                val localSdp = "{ localDescription: { description: ${pc.localDescription.description}, type: ${pc.localDescription.type} }"
+                val remoteSdp = "{ remoteDescription: { description: ${pc.remoteDescription.description}, type: ${pc.remoteDescription.type} }"
+                pc.getStats { report ->
+                    Crashlytics.log(Log.ERROR, "WebRTC peer connection error",
+                        """
+                            { stats: $report },
+                            $localSdp,
+                            $remoteSdp
+                        """
+                    )
+                }
+            }
             if (!isError) {
                 events.onPeerConnectionError(error)
                 isError = true
