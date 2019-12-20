@@ -104,10 +104,6 @@ allprojects {
     }
 }
 
-//configurations.all {
-//    exclude group: 'org.jetbrains', module: 'annotations-java5'
-//}
-
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

@@ -19,6 +19,7 @@ import one.mixin.android.util.language.LanguageGrammerLocator
 
 class MarkwonUtil {
     companion object {
+        private var markDownNight: Boolean = false
         private var markDown: Markwon? = null
         fun getSingle(
             isNightMode: Boolean
@@ -28,7 +29,7 @@ class MarkwonUtil {
             val prism4jTheme = if (isNightMode) {
                 Prism4jThemeDarkula.create()
             } else Prism4jThemeDefault.create()
-            if (markDown == null) {
+            if (markDown == null || markDownNight != isNightMode) {
                 markDown = Markwon.builder(context)
                     .usePlugin(object : AbstractMarkwonPlugin() {
                         override fun configureTheme(builder: MarkwonTheme.Builder) {
@@ -54,15 +55,25 @@ class MarkwonUtil {
             return markDown!!
         }
 
+        private var miniMarkDownNight: Boolean = false
         private var miniMarkDown: Markwon? = null
-        fun getMiniSingle(): Markwon {
+        fun getMiniSingle(isNightMode: Boolean): Markwon {
             val context = MixinApplication.appContext
-            if (miniMarkDown == null) {
+            if (miniMarkDown == null || miniMarkDownNight != isNightMode) {
                 miniMarkDown = Markwon.builder(context)
                     .usePlugin(object : AbstractMarkwonPlugin() {
                         override fun configureTheme(builder: MarkwonTheme.Builder) {
                             builder.headingBreakHeight(0)
-                            builder.headingTextSizeMultipliers(floatArrayOf(1.3F, 1.2F, 1.1F, .9F, .8F, .7F))
+                            builder.headingTextSizeMultipliers(
+                                floatArrayOf(
+                                    1.3F,
+                                    1.2F,
+                                    1.1F,
+                                    .9F,
+                                    .8F,
+                                    .7F
+                                )
+                            )
                         }
                     })
                     .usePlugin(TablePlugin.create(context))
