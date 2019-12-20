@@ -31,15 +31,17 @@
 
         <TextView
             android:id="@+id/chat_tv"
-            android:layout_width="200dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
             android:textColor="?attr/text_primary"
             android:textSize="14sp"
             tools:text="message" />
 
         <TextView
-            android:padding="3dp"
             android:id="@+id/chat_time"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -50,6 +52,22 @@
             android:textColor="@color/white"
             android:textSize="@dimen/chat_date_size"
             tools:text="7:48AM" />
+
+        <TextView
+            android:id="@+id/chat_post"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:layout_marginTop="3dp"
+            android:background="@drawable/chat_post_shadow"
+            android:paddingStart="3dp"
+            android:paddingTop="1dp"
+            android:paddingEnd="3dp"
+            android:paddingBottom="1dp"
+            android:text="LIVE"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            tools:ignore="HardcodedText" />
     </one.mixin.android.widget.ShadowLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

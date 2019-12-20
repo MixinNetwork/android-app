@@ -3,7 +3,9 @@ package one.mixin.android.ui.style
 import android.graphics.drawable.Drawable
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestBuilder
+import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.Markwon
+import io.noties.markwon.core.MarkwonTheme
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.image.AsyncDrawable
 import io.noties.markwon.image.glide.GlideImagesPlugin
@@ -16,6 +18,11 @@ class MarkwonUtil {
             val context = MixinApplication.appContext
             if (markDown == null) {
                 markDown = Markwon.builder(context)
+                    .usePlugin(object : AbstractMarkwonPlugin() {
+                        override fun configureTheme(builder: MarkwonTheme.Builder) {
+                            builder.headingBreakHeight(0)
+                        }
+                    })
                     .usePlugin(StrikethroughPlugin.create())
                     .usePlugin(GlideImagesPlugin.create(context))
                     .usePlugin(GlideImagesPlugin.create(Glide.with(context)))

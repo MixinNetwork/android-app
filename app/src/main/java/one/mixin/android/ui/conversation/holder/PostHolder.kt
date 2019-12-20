@@ -17,8 +17,7 @@ import org.jetbrains.anko.dip
 
 class PostHolder constructor(containerView: View) : BaseViewHolder(containerView) {
     init {
-        (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxHeight =
-            (itemView.context.maxItemWidth())
+        itemView.chat_tv.maxWidth = itemView.context.maxItemWidth()
         itemView.chat_tv.round(dp3)
     }
 
@@ -51,8 +50,8 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
             } else {
                 setItemBackgroundResource(
                     itemView.chat_layout,
-                    R.drawable.chat_bubble_me,
-                    R.drawable.chat_bubble_me_night
+                    R.drawable.chat_bubble_post_me,
+                    R.drawable.chat_bubble_post_me_night
                 )
             }
         } else {
@@ -112,7 +111,10 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
             }
         }
 
-        MarkwonUtil.getSingle().setMarkdown(itemView.chat_tv, messageItem.content!!)
+        messageItem.content?.let {
+            MarkwonUtil.getSingle()
+                .setMarkdown(itemView.chat_tv, it.split("\n").take(20).joinToString("\n"))
+        }
 
         itemView.setOnLongClickListener {
             if (!hasSelect) {
