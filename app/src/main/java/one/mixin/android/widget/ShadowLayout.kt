@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.ViewGroup
 import androidx.core.view.marginEnd
-import androidx.core.view.marginStart
 import androidx.core.view.marginTop
 
 class ShadowLayout : ViewGroup {
@@ -36,7 +35,7 @@ class ShadowLayout : ViewGroup {
             childCount == 3 -> {
                 val thirdView = getChildAt(2)
                 firstView.layout(
-                    firstLp.marginStart, thirdView.measuredHeight + firstLp.topMargin,
+                    firstLp.marginStart, firstLp.topMargin,
                     width - firstLp.marginEnd, firstView.measuredHeight
                 )
                 secondView.layout(
@@ -46,9 +45,9 @@ class ShadowLayout : ViewGroup {
                     height - 6
                 )
                 thirdView.layout(
-                    thirdView.marginStart,
+                    width - thirdView.measuredWidth - thirdView.marginEnd,
                     thirdView.marginTop,
-                    thirdView.marginStart + thirdView.measuredWidth,
+                    width - thirdView.marginEnd,
                     thirdView.marginTop + thirdView.measuredHeight
                 )
             }

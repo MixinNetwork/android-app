@@ -21,12 +21,15 @@ import org.jetbrains.anko.dip
 
 class PostHolder constructor(containerView: View) : BaseViewHolder(containerView) {
     init {
-        itemView.chat_tv.maxWidth = itemView.context.maxItemWidth()
+        itemView.chat_tv.layoutParams.width = itemView.context.maxItemWidth()
+        itemView.chat_tv.maxHeight = itemView.context.maxItemWidth() * 10 / 16
         itemView.chat_tv.round(dp3)
     }
+
     private val dp6 by lazy {
         MixinApplication.appContext.dpToPx(6f)
     }
+
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {

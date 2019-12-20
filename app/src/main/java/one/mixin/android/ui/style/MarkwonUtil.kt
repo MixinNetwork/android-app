@@ -1,65 +1,106 @@
 package one.mixin.android.ui.style
 
+import android.content.Context
 import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.text.TextUtils
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestBuilder
 import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.Markwon
+import io.noties.markwon.MarkwonConfiguration
+import io.noties.markwon.MarkwonVisitor
+import io.noties.markwon.core.CorePlugin
 import io.noties.markwon.core.MarkwonTheme
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
+import io.noties.markwon.ext.tables.TableTheme
 import io.noties.markwon.image.AsyncDrawable
 import io.noties.markwon.image.glide.GlideImagesPlugin
+import io.noties.markwon.recycler.table.TableEntryPlugin
 import io.noties.markwon.syntax.Prism4jThemeDarkula
 import io.noties.markwon.syntax.Prism4jThemeDefault
 import io.noties.markwon.syntax.SyntaxHighlightPlugin
+import io.noties.markwon.urlprocessor.UrlProcessor
+import io.noties.markwon.urlprocessor.UrlProcessorRelativeToAbsolute
 import io.noties.prism4j.Prism4j
 import one.mixin.android.MixinApplication
 import one.mixin.android.util.language.LanguageGrammerLocator
+import org.commonmark.node.FencedCodeBlock
 
 class MarkwonUtil {
     companion object {
         private var markDownNight: Boolean = false
         private var markDown: Markwon? = null
         fun getSingle(
-            isNightMode: Boolean
+            context: Context, isNightMode: Boolean
         ): Markwon {
-            val context = MixinApplication.appContext
-            val prism4j = Prism4j(LanguageGrammerLocator())
-            val prism4jTheme = if (isNightMode) {
-                Prism4jThemeDarkula.create()
-            } else Prism4jThemeDefault.create()
             if (markDown == null || markDownNight != isNightMode) {
-                markDown = Markwon.builder(context)
+                val prism4j = Prism4j(LanguageGrammerLocator())
+                val prism4jTheme = Prism4jThemeDefault.create()
+                return Markwon.builder(context)
                     .usePlugin(object : AbstractMarkwonPlugin() {
                         override fun configureTheme(builder: MarkwonTheme.Builder) {
                             builder.headingBreakHeight(0)
                         }
                     })
-                    .usePlugin(TablePlugin.create(context))
                     .usePlugin(StrikethroughPlugin.create())
+                    .usePlugin(CorePlugin.create())
                     .usePlugin(GlideImagesPlugin.create(context))
-                    .usePlugin(GlideImagesPlugin.create(Glide.with(context)))
-                    .usePlugin(GlideImagesPlugin.create(object : GlideImagesPlugin.GlideStore {
-                        override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
-                            Glide.with(context).clear(target)
+                    .usePlugin(TableEntryPlugin.create(context))
+                    .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
+                    .usePlugin(object : AbstractMarkwonPlugin() {
+                        override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
+                            builder.urlProcessor(UrlProcessorInitialReadme())
                         }
 
-                        override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
-                            return Glide.with(context).load(drawable.destination)
+                        override fun configureVisitor(builder: MarkwonVisitor.Builder) {
+                            builder.on(
+                                FencedCodeBlock::class.java
+                            ) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
+                                val code = visitor.configuration()
+                                    .syntaxHighlight()
+                                    .highlight(
+                                        fencedCodeBlock.info,
+                                        fencedCodeBlock.literal.trim { it <= ' ' }
+                                    )
+                                visitor.builder().append(code)
+                            }
                         }
-                    }))
-                    .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
-                    .build()
+                    }).build()
             }
             return markDown!!
+        }
+
+        private class UrlProcessorInitialReadme : UrlProcessor {
+            private val processor =
+                UrlProcessorRelativeToAbsolute(GITHUB_BASE)
+
+            override fun process(destination: String): String {
+                val out: String
+                val uri = Uri.parse(destination)
+                out = if (TextUtils.isEmpty(uri.scheme)) {
+                    processor.process(destination)
+                } else {
+                    destination
+                }
+                return out
+            }
+
+            companion object {
+                private const val GITHUB_BASE = "https://github.com/noties/Markwon/raw/master/"
+            }
         }
 
         private var miniMarkDownNight: Boolean = false
         private var miniMarkDown: Markwon? = null
         fun getMiniSingle(isNightMode: Boolean): Markwon {
-            val context = MixinApplication.appContext
             if (miniMarkDown == null || miniMarkDownNight != isNightMode) {
+                val context = MixinApplication.appContext
+                val prism4j = Prism4j(LanguageGrammerLocator())
+                val prism4jTheme = if (isNightMode) {
+                    Prism4jThemeDarkula.create()
+                } else Prism4jThemeDefault.create()
                 miniMarkDown = Markwon.builder(context)
                     .usePlugin(object : AbstractMarkwonPlugin() {
                         override fun configureTheme(builder: MarkwonTheme.Builder) {
@@ -76,7 +117,7 @@ class MarkwonUtil {
                             )
                         }
                     })
-                    .usePlugin(TablePlugin.create(context))
+                    .usePlugin(TablePlugin.create(getTheme()))
                     .usePlugin(StrikethroughPlugin.create())
                     .usePlugin(GlideImagesPlugin.create(context))
                     .usePlugin(GlideImagesPlugin.create(Glide.with(context)))
@@ -89,9 +130,17 @@ class MarkwonUtil {
                             return Glide.with(context).load(drawable.destination)
                         }
                     }))
+                    .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                     .build()
             }
             return miniMarkDown!!
+        }
+
+        private fun getTheme(): TableTheme {
+            return TableTheme.Builder()
+                .tableBorderWidth(1)
+                .tableCellPadding(1)
+                .build()
         }
     }
 }

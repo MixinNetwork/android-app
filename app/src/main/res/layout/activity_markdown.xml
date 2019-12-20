@@ -1,24 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/bg_white">
 
-    <ScrollView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:ignore="UselessParent">
-
-        <TextView
-            android:id="@+id/tv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?attr/bg_white"
-            android:padding="16dp"
-            android:textColor="?attr/text_primary"
-            android:transitionName="transition" />
-    </ScrollView>
+        android:layout_height="match_parent" />
 
     <one.mixin.android.widget.WebControlView
         android:id="@+id/web_control"
@@ -27,4 +16,5 @@
         android:layout_gravity="end|top"
         android:layout_marginTop="6dp"
         android:layout_marginEnd="6dp" />
+
 </FrameLayout>

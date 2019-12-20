@@ -2,35 +2,24 @@ package one.mixin.android.ui.conversation.markdown
 
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
-import android.os.Build
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import io.noties.markwon.recycler.MarkwonAdapter
+import io.noties.markwon.recycler.SimpleEntry
+import io.noties.markwon.recycler.table.TableEntry
 import kotlinx.android.synthetic.main.activity_markdown.*
-import one.mixin.android.Constants
+
 import one.mixin.android.R
-import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.style.MarkwonUtil
-import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.WebControlView
-import org.jetbrains.anko.configuration
+import org.commonmark.ext.gfm.tables.TableBlock
+import org.commonmark.node.FencedCodeBlock
 
-class MarkdownActivity : AppCompatActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
+class MarkdownActivity : BaseActivity() {
+    public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val isNightMode = isNightMode()
-        if (isNightMode) {
-            setTheme(getNightThemeId())
-            SystemUIManager.lightUI(window, false)
-        } else {
-            setTheme(getDefaultThemeId())
-            SystemUIManager.lightUI(window, true)
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
-        }
         setContentView(R.layout.activity_markdown)
         web_control.mode = isNightMode()
         web_control.callback = object : WebControlView.Callback {
@@ -42,28 +31,34 @@ class MarkdownActivity : AppCompatActivity() {
                 finish()
             }
         }
+        val adapter = MarkwonAdapter.builder(
+            R.layout.adapter_default_entry,
+            R.id.text
+        ).include(
+            FencedCodeBlock::class.java,
+            SimpleEntry.create(
+                R.layout.item_markdown_code_block,
+                R.id.text
+            )
+        ).include(
+            TableBlock::class.java,
+            TableEntry.create { builder: TableEntry.Builder ->
+                builder
+                    .tableLayout(R.layout.item_markdown_table_block, R.id.table_layout)
+                    .textLayoutIsRoot(R.layout.item_markdown_cell)
+            }
+        ).build()
+        val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.setHasFixedSize(true)
+        recyclerView.adapter = adapter
+        val markwon = MarkwonUtil.getSingle(this, isNightMode())
         val markdown = intent.getStringExtra(CONTENT) ?: return
-        MarkwonUtil.getSingle(isNightMode).setMarkdown(tv, markdown)
+        adapter.setMarkdown(markwon, markdown)
+        adapter.notifyDataSetChanged()
     }
 
-    private fun isNightMode(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-        } else {
-            defaultSharedPreferences.getInt(
-                Constants.Theme.THEME_CURRENT_ID,
-                Constants.Theme.THEME_DEFAULT_ID
-            ) == Constants.Theme.THEME_NIGHT_ID
-        }
-    }
 
-    private fun getNightThemeId(): Int {
-        return R.style.AppTheme_Night_NoActionBar
-    }
-
-    private fun getDefaultThemeId(): Int {
-        return R.style.AppTheme_NoActionBar
-    }
 
     companion object {
         private const val CONTENT = "content"
