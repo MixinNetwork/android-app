@@ -3,6 +3,7 @@ package one.mixin.android.widget
 import android.content.Context
 import android.util.AttributeSet
 import android.view.ViewGroup
+import androidx.core.view.marginBottom
 import androidx.core.view.marginEnd
 import androidx.core.view.marginTop
 
@@ -36,13 +37,13 @@ class ShadowLayout : ViewGroup {
                 val thirdView = getChildAt(2)
                 firstView.layout(
                     firstLp.marginStart, firstLp.topMargin,
-                    width - firstLp.marginEnd, firstView.measuredHeight
+                    width - firstLp.marginEnd, height - firstLp.bottomMargin
                 )
                 secondView.layout(
-                    width - secondView.measuredWidth - secondView.marginEnd - 3,
-                    height - secondView.measuredHeight - 6,
-                    width - secondView.marginEnd - 3,
-                    height - 6
+                    width - secondView.measuredWidth - secondView.marginEnd,
+                    height - secondView.measuredHeight - secondView.marginBottom,
+                    width - secondView.marginEnd,
+                    height - marginBottom
                 )
                 thirdView.layout(
                     width - thirdView.measuredWidth - thirdView.marginEnd,

@@ -38,7 +38,7 @@ class MarkwonUtil {
             if (markDown == null || markDownNight != isNightMode) {
                 val prism4j = Prism4j(LanguageGrammerLocator())
                 val prism4jTheme = Prism4jThemeDefault.create()
-                return Markwon.builder(context)
+                markDown = Markwon.builder(context)
                     .usePlugin(object : AbstractMarkwonPlugin() {
                         override fun configureTheme(builder: MarkwonTheme.Builder) {
                             builder.headingBreakHeight(0)
