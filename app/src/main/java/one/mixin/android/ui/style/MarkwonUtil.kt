@@ -48,16 +48,7 @@ class MarkwonUtil {
                     .usePlugin(object : AbstractMarkwonPlugin() {
                         override fun configureTheme(builder: MarkwonTheme.Builder) {
                             builder.headingBreakHeight(0)
-                            builder.headingTextSizeMultipliers(
-                                floatArrayOf(
-                                    1.3F,
-                                    1.2F,
-                                    1.1F,
-                                    .9F,
-                                    .8F,
-                                    .7F
-                                )
-                            )
+                            builder.headingTextSizeMultipliers(floatArrayOf(1.3F, 1.2F, 1.1F, .9F, .8F, .7F))
                         }
                     })
                     .usePlugin(StrikethroughPlugin.create())

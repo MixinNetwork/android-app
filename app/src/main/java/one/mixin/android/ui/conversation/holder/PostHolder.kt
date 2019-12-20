@@ -2,11 +2,14 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.view.View
+import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
 import kotlinx.android.synthetic.main.item_chat_post.view.*
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
@@ -20,7 +23,9 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
         itemView.chat_tv.maxWidth = itemView.context.maxItemWidth()
         itemView.chat_tv.round(dp3)
     }
-
+    private val dp6 by lazy {
+        MixinApplication.appContext.dpToPx(6f)
+    }
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
@@ -38,6 +43,12 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
             }
             (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
         }
+        (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd =
+            if (isMe && isLast) {
+                0
+            } else {
+                dp6
+            }
         val lp = (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
             lp.horizontalBias = 1f
@@ -59,14 +70,14 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
             if (isLast) {
                 setItemBackgroundResource(
                     itemView.chat_layout,
-                    R.drawable.chat_bubble_other_last,
-                    R.drawable.chat_bubble_other_last_night
+                    R.drawable.chat_bubble_post_other_last,
+                    R.drawable.chat_bubble_post_other_last_night
                 )
             } else {
                 setItemBackgroundResource(
                     itemView.chat_layout,
-                    R.drawable.chat_bubble_other,
-                    R.drawable.chat_bubble_other_night
+                    R.drawable.chat_bubble_post_other,
+                    R.drawable.chat_bubble_post_other_night
                 )
             }
         }
