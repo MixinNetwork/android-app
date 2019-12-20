@@ -13,6 +13,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.style.MarkwonUtil
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.WebControlView
 import org.jetbrains.anko.configuration
 
 class MarkdownActivity : AppCompatActivity() {
@@ -31,7 +32,16 @@ class MarkdownActivity : AppCompatActivity() {
             window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
         }
         setContentView(R.layout.activity_markdown)
+        web_control.mode = isNightMode()
+        web_control.callback = object : WebControlView.Callback {
+            override fun onMoreClick() {
+                // Todo
+            }
 
+            override fun onCloseClick() {
+                finish()
+            }
+        }
         val markdown = intent.getStringExtra(CONTENT) ?: return
         MarkwonUtil.getSingle(isNightMode).setMarkdown(tv, markdown)
     }
