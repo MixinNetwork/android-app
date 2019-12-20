@@ -7,6 +7,7 @@ import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.Markwon
 import io.noties.markwon.core.MarkwonTheme
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
+import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.image.AsyncDrawable
 import io.noties.markwon.image.glide.GlideImagesPlugin
 import io.noties.markwon.syntax.Prism4jThemeDarkula
@@ -34,6 +35,7 @@ class MarkwonUtil {
                             builder.headingBreakHeight(0)
                         }
                     })
+                    .usePlugin(TablePlugin.create(context))
                     .usePlugin(StrikethroughPlugin.create())
                     .usePlugin(GlideImagesPlugin.create(context))
                     .usePlugin(GlideImagesPlugin.create(Glide.with(context)))
@@ -63,6 +65,7 @@ class MarkwonUtil {
                             builder.headingTextSizeMultipliers(floatArrayOf(1.3F, 1.2F, 1.1F, .9F, .8F, .7F))
                         }
                     })
+                    .usePlugin(TablePlugin.create(context))
                     .usePlugin(StrikethroughPlugin.create())
                     .usePlugin(GlideImagesPlugin.create(context))
                     .usePlugin(GlideImagesPlugin.create(Glide.with(context)))
