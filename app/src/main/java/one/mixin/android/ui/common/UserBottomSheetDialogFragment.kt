@@ -20,9 +20,7 @@ import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
-import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.*
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.transfer_fl
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -68,6 +66,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.threeten.bp.Instant
+import timber.log.Timber
 
 class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
 
@@ -184,28 +183,37 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
         bottomViewModel.refreshUser(user.userId, true)
         lifecycleScope.launch {
-            bottomViewModel.loadFavoriteApps(user.userId) { apps ->
-                contentView.avatar_ll.isVisible = !apps.isNullOrEmpty()
-                contentView.avatar_ll.setOnClickListener {
-                    if (!apps.isNullOrEmpty()) {
-                        AppListBottomSheetDialogFragment.newInstance(
-                            apps,
-                            getString(R.string.contact_share_apps_title, user.fullName)
-                        )
-                            .showNow(parentFragmentManager, AppListBottomSheetDialogFragment.TAG)
-                    }
-                }
-                apps?.let {
-                    contentView.avatar_group.setApps(it)
-                    contentView.doOnPreDraw {
-                        behavior?.peekHeight =
-                            contentView.title.height + contentView.scroll_content.height -
-                                (menuListLayout?.height
-                                    ?: 0) - if (menuListLayout != null) requireContext().dpToPx(38f) else requireContext().dpToPx(
-                                8f
+            try {
+                bottomViewModel.loadFavoriteApps(user.userId) { apps ->
+                    contentView.avatar_ll.isVisible = !apps.isNullOrEmpty()
+                    contentView.avatar_ll.setOnClickListener {
+                        if (!apps.isNullOrEmpty()) {
+                            AppListBottomSheetDialogFragment.newInstance(
+                                apps,
+                                getString(R.string.contact_share_apps_title, user.fullName)
                             )
+                                .showNow(
+                                    parentFragmentManager,
+                                    AppListBottomSheetDialogFragment.TAG
+                                )
+                        }
+                    }
+                    apps?.let {
+                        contentView.avatar_group.setApps(it)
+                        contentView.doOnPreDraw {
+                            behavior?.peekHeight =
+                                contentView.title.height + contentView.scroll_content.height -
+                                    (menuListLayout?.height
+                                        ?: 0) - if (menuListLayout != null) requireContext().dpToPx(
+                                    38f
+                                ) else requireContext().dpToPx(
+                                    8f
+                                )
+                        }
                     }
                 }
+            } catch (e: Exception) {
+                Timber.e(e)
             }
         }
     }
