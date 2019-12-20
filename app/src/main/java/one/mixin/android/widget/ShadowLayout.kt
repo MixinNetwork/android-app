@@ -36,12 +36,12 @@ class ShadowLayout : ViewGroup {
             childCount == 3 -> {
                 val thirdView = getChildAt(2)
                 firstView.layout(
-                    firstLp.marginStart, thirdView.marginTop + firstLp.topMargin,
+                    firstLp.marginStart, thirdView.measuredHeight + firstLp.topMargin,
                     width - firstLp.marginEnd, firstView.measuredHeight
                 )
                 secondView.layout(
-                    width - secondView.measuredWidth,
-                    height - secondView.measuredHeight, width - firstView.marginEnd, height
+                    width - secondView.measuredWidth - secondView.marginEnd,
+                    height - secondView.measuredHeight, width - secondView.marginEnd, height
                 )
                 thirdView.layout(
                     thirdView.marginStart,

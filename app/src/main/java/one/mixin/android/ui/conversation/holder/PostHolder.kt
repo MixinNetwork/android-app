@@ -112,7 +112,7 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
         }
 
         messageItem.content?.let {
-            MarkwonUtil.getSingle()
+            MarkwonUtil.getMiniSingle()
                 .setMarkdown(itemView.chat_tv, it.split("\n").take(20).joinToString("\n"))
         }
 

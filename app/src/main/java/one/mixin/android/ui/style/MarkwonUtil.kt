@@ -39,5 +39,42 @@ class MarkwonUtil {
             }
             return markDown!!
         }
+
+        private var miniMarkDown: Markwon? = null
+        fun getMiniSingle(): Markwon {
+            val context = MixinApplication.appContext
+            if (miniMarkDown == null) {
+                miniMarkDown = Markwon.builder(context)
+                    .usePlugin(object : AbstractMarkwonPlugin() {
+                        override fun configureTheme(builder: MarkwonTheme.Builder) {
+                            builder.headingBreakHeight(0)
+                            builder.headingTextSizeMultipliers(
+                                floatArrayOf(
+                                    1.3F,
+                                    1.2F,
+                                    1.1F,
+                                    .9F,
+                                    .8F,
+                                    .7F
+                                )
+                            )
+                        }
+                    })
+                    .usePlugin(StrikethroughPlugin.create())
+                    .usePlugin(GlideImagesPlugin.create(context))
+                    .usePlugin(GlideImagesPlugin.create(Glide.with(context)))
+                    .usePlugin(GlideImagesPlugin.create(object : GlideImagesPlugin.GlideStore {
+                        override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
+                            Glide.with(context).clear(target)
+                        }
+
+                        override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
+                            return Glide.with(context).load(drawable.destination)
+                        }
+                    }))
+                    .build()
+            }
+            return miniMarkDown!!
+        }
     }
 }

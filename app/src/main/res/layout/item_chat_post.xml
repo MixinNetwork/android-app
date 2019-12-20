@@ -64,7 +64,7 @@
             android:paddingTop="1dp"
             android:paddingEnd="3dp"
             android:paddingBottom="1dp"
-            android:text="LIVE"
+            android:text="@string/post"
             android:textColor="@color/white"
             android:textSize="10sp"
             tools:ignore="HardcodedText" />
