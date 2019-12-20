@@ -426,9 +426,10 @@ class BottomSheetViewModel @Inject internal constructor(
                     )
                 )
             }
-            accountRepository.getUserFavoriteApps(userId).run {
-                if (isSuccess) {
-                    data?.let { data ->
+            handleMixinResponse(
+                invokeNetwork = { accountRepository.getUserFavoriteApps(userId) },
+                successBlock = {
+                    it.data?.let { data ->
                         accountRepository.insertFavoriteApps(userId, data)
                         refreshAppNotExist(data.map { app -> app.appId })
                         withContext(Dispatchers.Main) {
@@ -436,7 +437,7 @@ class BottomSheetViewModel @Inject internal constructor(
                         }
                     }
                 }
-            }
+            )
         }
     }
 
