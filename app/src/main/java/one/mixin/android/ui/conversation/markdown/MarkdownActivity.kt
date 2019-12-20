@@ -19,7 +19,8 @@ class MarkdownActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (isNightMode()) {
+        val isNightMode = isNightMode()
+        if (isNightMode) {
             setTheme(getNightThemeId())
             SystemUIManager.lightUI(window, false)
         } else {
@@ -32,7 +33,7 @@ class MarkdownActivity : AppCompatActivity() {
         setContentView(R.layout.activity_markdown)
 
         val markdown = intent.getStringExtra(CONTENT) ?: return
-        MarkwonUtil.getSingle().setMarkdown(tv, markdown)
+        MarkwonUtil.getSingle(isNightMode).setMarkdown(tv, markdown)
     }
 
     private fun isNightMode(): Boolean {

@@ -9,13 +9,24 @@ import io.noties.markwon.core.MarkwonTheme
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.image.AsyncDrawable
 import io.noties.markwon.image.glide.GlideImagesPlugin
+import io.noties.markwon.syntax.Prism4jThemeDarkula
+import io.noties.markwon.syntax.Prism4jThemeDefault
+import io.noties.markwon.syntax.SyntaxHighlightPlugin
+import io.noties.prism4j.Prism4j
 import one.mixin.android.MixinApplication
+import one.mixin.android.util.language.LanguageGrammerLocator
 
 class MarkwonUtil {
     companion object {
         private var markDown: Markwon? = null
-        fun getSingle(): Markwon {
+        fun getSingle(
+            isNightMode: Boolean
+        ): Markwon {
             val context = MixinApplication.appContext
+            val prism4j = Prism4j(LanguageGrammerLocator())
+            val prism4jTheme = if (isNightMode) {
+                Prism4jThemeDarkula.create()
+            } else Prism4jThemeDefault.create()
             if (markDown == null) {
                 markDown = Markwon.builder(context)
                     .usePlugin(object : AbstractMarkwonPlugin() {
@@ -35,6 +46,7 @@ class MarkwonUtil {
                             return Glide.with(context).load(drawable.destination)
                         }
                     }))
+                    .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                     .build()
             }
             return markDown!!
