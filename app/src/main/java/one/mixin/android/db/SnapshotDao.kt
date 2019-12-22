@@ -35,6 +35,9 @@ interface SnapshotDao : BaseDao<Snapshot> {
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE snapshot_id = :snapshotId")
     suspend fun findSnapshotById(snapshotId: String): SnapshotItem?
 
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE trace_id = :traceId")
+    suspend fun findSnapshotByTraceId(traceId: String): SnapshotItem?
+
     @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY s.created_at DESC")
     fun allSnapshots(): DataSource.Factory<Int, SnapshotItem>
 

@@ -103,10 +103,10 @@ internal constructor(
         readConversationDao.getConversation(conversationId)
 
     suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem> =
-        readMessageDao.fuzzySearchMessage(query, limit)
+        readMessageDao.fuzzySearchMessage("$query*", limit)
 
     fun fuzzySearchMessageDetail(query: String, conversationId: String) =
-        readMessageDao.fuzzySearchMessageByConversationId(query, conversationId)
+        readMessageDao.fuzzySearchMessageByConversationId("$query*", conversationId)
 
     suspend fun fuzzySearchChat(query: String): List<ChatMinimal> =
         readConversationDao.fuzzySearchChat(query)
@@ -294,4 +294,6 @@ internal constructor(
 
     suspend fun insertParticipantSession(ps: List<ParticipantSession>) =
         participantSessionDao.insertListSuspend(ps)
+
+    suspend fun upgradeFtsMessage() = messageDao.upgradeFtsMessage()
 }

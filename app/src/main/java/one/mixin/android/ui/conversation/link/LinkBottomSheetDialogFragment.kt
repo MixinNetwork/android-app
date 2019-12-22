@@ -423,6 +423,23 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                 return
             }
             val uri = Uri.parse(url)
+            val traceId = uri.getQueryParameter("trace")
+            if (!traceId.isNullOrEmpty() && traceId.isUUID()) {
+                lifecycleScope.launch {
+                    val result = linkViewModel.getSnapshotByTraceId(traceId)
+                    if (result != null) {
+                        dismiss()
+                        activity?.addFragment(
+                            this@LinkBottomSheetDialogFragment,
+                            TransactionFragment.newInstance(result.first, result.second),
+                            TransactionFragment.TAG
+                        )
+                    } else {
+                        error()
+                    }
+                }
+                return
+            }
             val snapshotId = uri.lastPathSegment
             if (snapshotId.isNullOrEmpty() || !snapshotId.isUUID()) {
                 error()

@@ -52,7 +52,7 @@ internal constructor(
                 User::class -> userRepository.fuzzySearchUser("%$escapedQuery%")
                 ChatMinimal::class -> conversationRepository.fuzzySearchChat("%$escapedQuery%")
                 else -> messageControlledRunner.cancelPreviousThenRun {
-                    conversationRepository.fuzzySearchMessage("%$escapedQuery%", limit)
+                    conversationRepository.fuzzySearchMessage(escapedQuery, limit)
                 }
             }
         }
@@ -66,7 +66,7 @@ internal constructor(
         viewModelScope.async(Dispatchers.IO) {
             val escapedQuery = query.trim().escapeSql()
             LivePagedListBuilder(
-                conversationRepository.fuzzySearchMessageDetail("%$escapedQuery%", conversationId),
+                conversationRepository.fuzzySearchMessageDetail(escapedQuery, conversationId),
                 PagedList.Config.Builder()
                     .setPageSize(30)
                     .setEnablePlaceholders(true)

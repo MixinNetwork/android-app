@@ -155,5 +155,9 @@ constructor(
 
     suspend fun findSnapshotById(snapshotId: String) = snapshotDao.findSnapshotById(snapshotId)
 
+    suspend fun findSnapshotByTraceId(traceId: String) = snapshotDao.findSnapshotByTraceId(traceId)
+
     suspend fun getSnapshotById(snapshotId: String) = assetService.getSnapshotById(snapshotId)
+
+    suspend fun getSnapshotByTraceId(traceId: String) = assetService.getSnapshotByTraceId(traceId)
 }
