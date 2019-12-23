@@ -1,4 +1,4 @@
-package one.mixin.android.util.language;
+package one.mixin.android.util.markdown;
 
 import org.jetbrains.annotations.NotNull;
 

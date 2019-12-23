@@ -159,13 +159,6 @@ internal constructor(
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
-    fun sendPostMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
-        val category = if (isPlain) MessageCategory.PLAIN_POST.name else MessageCategory.SIGNAL_POST.name
-        val message = createMessage(UUID.randomUUID().toString(), conversationId,
-            sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING.name)
-        jobManager.addJobInBackground(SendMessageJob(message))
-    }
-
     fun sendReplyMessage(conversationId: String, sender: User, content: String, replyMessage: MessageItem, isPlain: Boolean) {
         val category = if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
         val message = createReplyMessage(UUID.randomUUID().toString(), conversationId,

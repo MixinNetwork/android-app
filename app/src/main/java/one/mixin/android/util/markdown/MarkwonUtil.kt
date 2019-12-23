@@ -1,4 +1,4 @@
-package one.mixin.android.ui.style
+package one.mixin.android.util.markdown
 
 import android.content.Context
 import android.graphics.drawable.Drawable
@@ -25,7 +25,8 @@ import io.noties.markwon.urlprocessor.UrlProcessor
 import io.noties.markwon.urlprocessor.UrlProcessorRelativeToAbsolute
 import io.noties.prism4j.Prism4j
 import one.mixin.android.MixinApplication
-import one.mixin.android.util.language.LanguageGrammerLocator
+import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import org.commonmark.node.FencedCodeBlock
 
 class MarkwonUtil {
@@ -33,7 +34,8 @@ class MarkwonUtil {
         private var markDownNight: Boolean = false
         private var markDown: Markwon? = null
         fun getSingle(
-            context: Context, isNightMode: Boolean
+            context: Context,
+            isNightMode: Boolean
         ): Markwon {
             if (markDown == null || markDownNight != isNightMode) {
                 val prism4j = Prism4j(LanguageGrammerLocator())
@@ -115,6 +117,7 @@ class MarkwonUtil {
                                     .7F
                                 )
                             )
+                            builder.blockQuoteColor(context.colorFromAttribute(R.attr.bg_block))
                         }
                     })
                     .usePlugin(TablePlugin.create(getTheme()))

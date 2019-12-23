@@ -15,7 +15,7 @@ import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.ui.style.MarkwonUtil
+import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.MessageItem
 import org.jetbrains.anko.dip
 

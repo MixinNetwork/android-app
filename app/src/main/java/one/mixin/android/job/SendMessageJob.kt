@@ -106,7 +106,6 @@ open class SendMessageJob(
     }
 
     override fun onRun() {
-        if (message.category.endsWith("_POST")) return // Todo
         jobManager.saveJob(this)
         if (message.isText()) {
             val botNumber = message.content?.getBotNumber()
@@ -129,7 +128,7 @@ open class SendMessageJob(
         val conversation = conversationDao.getConversation(message.conversationId) ?: return
         checkConversationExist(conversation)
         var content = message.content
-        if (message.category == MessageCategory.PLAIN_TEXT.name || message.category == MessageCategory.PLAIN_POST.name || message.isCall()) {
+        if (message.category == MessageCategory.PLAIN_TEXT.name || message.isCall()) {
             if (message.content != null) {
                 content = Base64.encodeBytes(message.content!!.toByteArray())
             }

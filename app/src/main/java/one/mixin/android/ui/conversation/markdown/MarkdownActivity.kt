@@ -9,10 +9,9 @@ import io.noties.markwon.recycler.MarkwonAdapter
 import io.noties.markwon.recycler.SimpleEntry
 import io.noties.markwon.recycler.table.TableEntry
 import kotlinx.android.synthetic.main.activity_markdown.*
-
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.style.MarkwonUtil
+import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.widget.WebControlView
 import org.commonmark.ext.gfm.tables.TableBlock
 import org.commonmark.node.FencedCodeBlock
@@ -57,8 +56,6 @@ class MarkdownActivity : BaseActivity() {
         adapter.setMarkdown(markwon, markdown)
         adapter.notifyDataSetChanged()
     }
-
-
 
     companion object {
         private const val CONTENT = "content"

@@ -1,4 +1,4 @@
-package one.mixin.android.util.language
+package one.mixin.android.util.markdown
 
 import io.noties.prism4j.GrammarLocator
 import io.noties.prism4j.Prism4j

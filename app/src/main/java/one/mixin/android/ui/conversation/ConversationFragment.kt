@@ -1468,11 +1468,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (message.isNotBlank()) {
             chat_control.chat_et.setText("")
             createConversation {
-                if (message.startsWith("#")) {
-                    chatViewModel.sendPostMessage(conversationId, sender, message, isPlainMessage())
-                } else {
-                    chatViewModel.sendTextMessage(conversationId, sender, message, isPlainMessage())
-                }
+                chatViewModel.sendTextMessage(conversationId, sender, message, isPlainMessage())
                 scrollToDown()
                 markRead()
             }
