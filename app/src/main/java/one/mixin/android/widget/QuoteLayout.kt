@@ -49,7 +49,7 @@ class QuoteLayout : ViewGroup {
             )
         } else {
             measureChild(
-                secondView, MeasureSpec.makeMeasureSpec(minWidth, MeasureSpec.AT_MOST),
+                secondView, widthMeasureSpec,
                 heightMeasureSpec
             )
         }

@@ -471,7 +471,9 @@ fun createAudioMessage(
     key: ByteArray?,
     digest: ByteArray?,
     mediaStatus: MediaStatus,
-    status: String
+    status: String,
+    quoteMessageId: String? = null,
+    quoteContent: String? = null
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setMediaUrl(mediaUrl)
     .setContent(content)
@@ -482,4 +484,6 @@ fun createAudioMessage(
     .setMediaMimeType("audio/ogg")
     .setMediaDigest(digest)
     .setMediaStatus(mediaStatus.name)
+    .setQuoteMessageId(quoteMessageId)
+    .setQuoteContent(quoteContent)
     .build()

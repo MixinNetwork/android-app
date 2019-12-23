@@ -1353,7 +1353,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun sendImageMessage(uri: Uri, mimeType: String? = null) {
         createConversation {
-            chatViewModel.sendImageMessage(conversationId, sender, uri, isPlainMessage(), mimeType, reply_view.messageItem)
+            chatViewModel.sendImageMessage(
+                conversationId,
+                sender,
+                uri,
+                isPlainMessage(),
+                mimeType,
+                reply_view.messageItem
+            )
                 ?.autoDispose(stopScope)?.subscribe({
                     when (it) {
                         0 -> {
@@ -1396,6 +1403,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (duration < 500) {
             file.deleteOnExit()
         } else {
+
             createConversation {
                 chatViewModel.sendAudioMessage(
                     conversationId,
@@ -1403,8 +1411,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     file,
                     duration,
                     waveForm,
-                    isPlainMessage()
+                    isPlainMessage(),
+                    reply_view.messageItem
                 )
+                if (reply_view.messageItem != null) {
+                    reply_view.fadeOut()
+                    reply_view.messageItem = null
+                }
                 scrollToDown()
             }
         }
@@ -1412,7 +1425,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun sendVideoMessage(uri: Uri) {
         createConversation {
-            chatViewModel.sendVideoMessage(conversationId, sender.userId, uri, isPlainMessage(), replyMessage = reply_view.messageItem)
+            chatViewModel.sendVideoMessage(
+                conversationId,
+                sender.userId,
+                uri,
+                isPlainMessage(),
+                replyMessage = reply_view.messageItem
+            )
             if (reply_view.messageItem != null) {
                 reply_view.fadeOut()
                 reply_view.messageItem = null

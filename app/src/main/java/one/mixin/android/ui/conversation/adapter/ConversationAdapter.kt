@@ -13,6 +13,8 @@ import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.PublishSubject
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 import kotlinx.android.synthetic.main.item_chat_unread.view.*
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.R
@@ -24,6 +26,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
+import one.mixin.android.ui.conversation.holder.AudioQuoteHolder
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.BillHolder
 import one.mixin.android.ui.conversation.holder.CallHolder
@@ -57,8 +60,6 @@ import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isRecall
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 
 class ConversationAdapter(
     private val context: Context,
@@ -209,6 +210,12 @@ class ConversationAdapter(
                 }
                 AUDIO_TYPE -> {
                     (holder as AudioHolder).bind(
+                        it, isFirst(position),
+                        isLast(position), selectSet.size > 0, isSelect(position), onItemListener
+                    )
+                }
+                AUDIO_QUOTE_TYPE -> {
+                    (holder as AudioQuoteHolder).bind(
                         it, isFirst(position),
                         isLast(position), selectSet.size > 0, isSelect(position), onItemListener
                     )
@@ -547,6 +554,11 @@ class ConversationAdapter(
                     .inflate(R.layout.item_chat_audio, parent, false)
                 AudioHolder(item)
             }
+            AUDIO_QUOTE_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_audio_quote, parent, false)
+                AudioQuoteHolder(item)
+            }
             STICKER_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_sticker, parent, false)
@@ -658,7 +670,13 @@ class ConversationAdapter(
                     }
                 }
                 item.type == MessageCategory.SIGNAL_AUDIO.name ||
-                    item.type == MessageCategory.PLAIN_AUDIO.name -> AUDIO_TYPE
+                    item.type == MessageCategory.PLAIN_AUDIO.name -> {
+                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        AUDIO_QUOTE_TYPE
+                    } else {
+                        AUDIO_TYPE
+                    }
+                }
                 item.type == MessageCategory.PLAIN_POST.name ||
                     item.type == MessageCategory.SIGNAL_POST.name -> POST_TYPE
                 item.isCallMessage() -> CALL_TYPE
@@ -680,6 +698,7 @@ class ConversationAdapter(
         const val VIDEO_TYPE = 4
         const val VIDEO_QUOTE_TYPE = -4
         const val AUDIO_TYPE = 5
+        const val AUDIO_QUOTE_TYPE = -5
         const val FILE_TYPE = 6
         const val STICKER_TYPE = 7
         const val CONTACT_CARD_TYPE = 8
