@@ -51,7 +51,7 @@ class MarkdownActivity : BaseActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.setHasFixedSize(true)
         recyclerView.adapter = adapter
-        val markwon = MarkwonUtil.getSingle(this, isNightMode())
+        val markwon = MarkwonUtil.getSingle(this)
         val markdown = intent.getStringExtra(CONTENT) ?: return
         adapter.setMarkdown(markwon, markdown)
         adapter.notifyDataSetChanged()

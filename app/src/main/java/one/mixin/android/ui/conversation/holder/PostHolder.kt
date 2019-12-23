@@ -10,7 +10,6 @@ import kotlinx.android.synthetic.main.item_chat_post.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
@@ -127,7 +126,7 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
         }
 
         messageItem.content?.let {
-            MarkwonUtil.getMiniSingle(itemView.context.isNightMode())
+            MarkwonUtil.getMiniSingle(itemView.context)
                 .setMarkdown(itemView.chat_tv, it.split("\n").take(20).joinToString("\n"))
         }
 

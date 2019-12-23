@@ -24,9 +24,9 @@ import io.noties.markwon.syntax.SyntaxHighlightPlugin
 import io.noties.markwon.urlprocessor.UrlProcessor
 import io.noties.markwon.urlprocessor.UrlProcessorRelativeToAbsolute
 import io.noties.prism4j.Prism4j
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.isNightMode
 import org.commonmark.node.FencedCodeBlock
 
 class MarkwonUtil {
@@ -34,9 +34,9 @@ class MarkwonUtil {
         private var markDownNight: Boolean = false
         private var markDown: Markwon? = null
         fun getSingle(
-            context: Context,
-            isNightMode: Boolean
+            context: Context
         ): Markwon {
+            val isNightMode = context.isNightMode()
             if (markDown == null || markDownNight != isNightMode) {
                 val prism4j = Prism4j(LanguageGrammerLocator())
                 val prism4jTheme = Prism4jThemeDefault.create()
@@ -96,9 +96,9 @@ class MarkwonUtil {
 
         private var miniMarkDownNight: Boolean = false
         private var miniMarkDown: Markwon? = null
-        fun getMiniSingle(isNightMode: Boolean): Markwon {
+        fun getMiniSingle(context: Context): Markwon {
+            val isNightMode = context.isNightMode()
             if (miniMarkDown == null || miniMarkDownNight != isNightMode) {
-                val context = MixinApplication.appContext
                 val prism4j = Prism4j(LanguageGrammerLocator())
                 val prism4jTheme = if (isNightMode) {
                     Prism4jThemeDarkula.create()
@@ -107,17 +107,18 @@ class MarkwonUtil {
                     .usePlugin(object : AbstractMarkwonPlugin() {
                         override fun configureTheme(builder: MarkwonTheme.Builder) {
                             builder.headingBreakHeight(0)
-                            builder.headingTextSizeMultipliers(
-                                floatArrayOf(
-                                    1.3F,
-                                    1.2F,
-                                    1.1F,
-                                    .9F,
-                                    .8F,
-                                    .7F
+                                .codeBlockBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
+                                .codeBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
+                                .headingTextSizeMultipliers(
+                                    floatArrayOf(
+                                        1.3F,
+                                        1.2F,
+                                        1.1F,
+                                        .9F,
+                                        .8F,
+                                        .7F
+                                    )
                                 )
-                            )
-                            builder.blockQuoteColor(context.colorFromAttribute(R.attr.bg_block))
                         }
                     })
                     .usePlugin(TablePlugin.create(getTheme()))
