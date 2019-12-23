@@ -8,13 +8,15 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
 import com.google.gson.Gson
-import kotlinx.android.synthetic.main.item_chat_reply_image.view.*
+import kotlinx.android.synthetic.main.item_chat_video_quote.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.loadImageCenterCrop
+import one.mixin.android.extension.loadVideo
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.realSize
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -24,9 +26,12 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
 import org.jetbrains.anko.dip
 
-class ReplyImageHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class VideoQuoteHolder constructor(containerView: View) : BaseViewHolder(containerView) {
     private val dp16 = itemView.context.dpToPx(16f)
     private val dp8 = itemView.context.dpToPx(8f)
+    private val minWidth by lazy {
+        (itemView.context.realSize().x * 0.5).toInt()
+    }
 
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
@@ -89,27 +94,12 @@ class ReplyImageHolder constructor(containerView: View) : BaseViewHolder(contain
         }
 
         itemView.chat_layout.chat_quote_layout.setRatio(messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat())
-        itemView.chat_image_layout.setOnLongClickListener {
-            if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
-            } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
-                true
-            }
-        }
-
         itemView.chat_layout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, adapterPosition)
             } else {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
                 true
-            }
-        }
-
-        itemView.chat_image_layout.setOnClickListener {
-            if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
             }
         }
 
@@ -129,11 +119,31 @@ class ReplyImageHolder constructor(containerView: View) : BaseViewHolder(contain
         }
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
+        if (messageItem.mediaStatus == MediaStatus.DONE.name) {
+            messageItem.mediaDuration.notNullWithElse({
+                itemView.duration_tv.visibility = View.VISIBLE
+                itemView.duration_tv.text = it.toLong().formatMillis()
+            }, {
+                itemView.duration_tv.visibility = View.GONE
+            })
+        } else {
+            messageItem.mediaSize.notNullWithElse({
+                if (it == 0L) {
+                    itemView.duration_tv.visibility = View.GONE
+                } else {
+                    itemView.duration_tv.visibility = View.VISIBLE
+                    itemView.duration_tv.text = it.fileSize()
+                }
+            }, {
+                itemView.duration_tv.visibility = View.GONE
+            })
+        }
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
                     itemView.chat_warning.visibility = View.VISIBLE
                     itemView.progress.visibility = View.GONE
+                    itemView.play.visibility = View.GONE
                     itemView.chat_image.setOnLongClickListener {
                         if (!hasSelect) {
                             onItemListener.onLongClick(messageItem, adapterPosition)
@@ -150,6 +160,7 @@ class ReplyImageHolder constructor(containerView: View) : BaseViewHolder(contain
                 MediaStatus.PENDING.name -> {
                     itemView.chat_warning.visibility = View.GONE
                     itemView.progress.visibility = View.VISIBLE
+                    itemView.play.visibility = View.GONE
                     itemView.progress.enableLoading()
                     itemView.progress.setBindId(messageItem.messageId)
                     itemView.progress.setOnLongClickListener {
@@ -172,6 +183,7 @@ class ReplyImageHolder constructor(containerView: View) : BaseViewHolder(contain
                 MediaStatus.DONE.name -> {
                     itemView.chat_warning.visibility = View.GONE
                     itemView.progress.visibility = View.GONE
+                    itemView.play.visibility = View.VISIBLE
                     itemView.progress.setBindId(messageItem.messageId)
                     itemView.progress.setOnClickListener {}
                     itemView.progress.setOnLongClickListener { false }
@@ -191,6 +203,7 @@ class ReplyImageHolder constructor(containerView: View) : BaseViewHolder(contain
                     }
                 }
                 MediaStatus.CANCELED.name -> {
+                    itemView.play.visibility = View.GONE
                     itemView.chat_warning.visibility = View.GONE
                     itemView.progress.visibility = View.VISIBLE
                     if (isMe && messageItem.mediaUrl != null) {
@@ -223,7 +236,13 @@ class ReplyImageHolder constructor(containerView: View) : BaseViewHolder(contain
                 }
             }
         }
-        itemView.chat_image.loadImage(messageItem.mediaUrl)
+
+        itemView.chat_image.loadVideo(
+            messageItem.mediaUrl,
+            messageItem.thumbImage,
+            minWidth,
+            minWidth * messageItem.mediaHeight / messageItem.mediaWidth
+        )
 
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {

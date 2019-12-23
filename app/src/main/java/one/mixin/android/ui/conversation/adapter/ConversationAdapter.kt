@@ -13,8 +13,6 @@ import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.PublishSubject
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.item_chat_unread.view.*
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.R
@@ -34,20 +32,20 @@ import one.mixin.android.ui.conversation.holder.ContactCardHolder
 import one.mixin.android.ui.conversation.holder.FileHolder
 import one.mixin.android.ui.conversation.holder.HyperlinkHolder
 import one.mixin.android.ui.conversation.holder.ImageHolder
-import one.mixin.android.ui.conversation.holder.MessageHolder
+import one.mixin.android.ui.conversation.holder.ImageQuoteHolder
 import one.mixin.android.ui.conversation.holder.PostHolder
 import one.mixin.android.ui.conversation.holder.RecallHolder
-import one.mixin.android.ui.conversation.holder.ReplyImageHolder
-import one.mixin.android.ui.conversation.holder.ReplyTextHolder
-import one.mixin.android.ui.conversation.holder.ReplyVideoHolder
 import one.mixin.android.ui.conversation.holder.SecretHolder
 import one.mixin.android.ui.conversation.holder.StickerHolder
 import one.mixin.android.ui.conversation.holder.StrangerHolder
 import one.mixin.android.ui.conversation.holder.SystemHolder
+import one.mixin.android.ui.conversation.holder.TextHolder
+import one.mixin.android.ui.conversation.holder.TextQuoteHolder
 import one.mixin.android.ui.conversation.holder.TimeHolder
 import one.mixin.android.ui.conversation.holder.TransparentHolder
 import one.mixin.android.ui.conversation.holder.UnknownHolder
 import one.mixin.android.ui.conversation.holder.VideoHolder
+import one.mixin.android.ui.conversation.holder.VideoQuoteHolder
 import one.mixin.android.ui.conversation.holder.WaitingHolder
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.MessageCategory
@@ -59,6 +57,8 @@ import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isRecall
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 class ConversationAdapter(
     private val context: Context,
@@ -144,7 +144,7 @@ class ConversationAdapter(
         getItem(position)?.let {
             when (getItemViewType(position)) {
                 TEXT_TYPE -> {
-                    (holder as MessageHolder).bind(
+                    (holder as TextHolder).bind(
                         it,
                         keyword,
                         isLast(position),
@@ -154,8 +154,8 @@ class ConversationAdapter(
                         onItemListener
                     )
                 }
-                REPLY_TEXT_TYPE -> {
-                    (holder as ReplyTextHolder).bind(
+                TEXT_QUOTE_TYPE -> {
+                    (holder as TextQuoteHolder).bind(
                         it, keyword, isLast(position),
                         isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
                     )
@@ -177,8 +177,8 @@ class ConversationAdapter(
                         onItemListener
                     )
                 }
-                REPLY_IMAGE_TYPE -> {
-                    (holder as ReplyImageHolder).bind(
+                IMAGE_QUOTE_TYPE -> {
+                    (holder as ImageQuoteHolder).bind(
                         it,
                         isLast(position),
                         isFirst(position),
@@ -197,8 +197,8 @@ class ConversationAdapter(
                         onItemListener
                     )
                 }
-                REPLY_VIDEO_TYPE -> {
-                    (holder as ReplyVideoHolder).bind(
+                VIDEO_QUOTE_TYPE -> {
+                    (holder as VideoQuoteHolder).bind(
                         it,
                         isLast(position),
                         isFirst(position),
@@ -484,28 +484,28 @@ class ConversationAdapter(
         when (viewType) {
             TEXT_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_message, parent, false)
-                MessageHolder(item)
+                    .inflate(R.layout.item_chat_text, parent, false)
+                TextHolder(item)
+            }
+            TEXT_QUOTE_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_text_quote, parent, false)
+                TextQuoteHolder(item)
             }
             POST_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_post, parent, false)
                 PostHolder(item)
             }
-            REPLY_TEXT_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_reply_text, parent, false)
-                ReplyTextHolder(item)
-            }
             IMAGE_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_image, parent, false)
                 ImageHolder(item)
             }
-            REPLY_IMAGE_TYPE -> {
+            IMAGE_QUOTE_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_reply_image, parent, false)
-                ReplyImageHolder(item)
+                    .inflate(R.layout.item_chat_image_quote, parent, false)
+                ImageQuoteHolder(item)
             }
             SYSTEM_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
@@ -577,10 +577,10 @@ class ConversationAdapter(
                     .inflate(R.layout.item_chat_video, parent, false)
                 VideoHolder(item)
             }
-            REPLY_VIDEO_TYPE -> {
+            VIDEO_QUOTE_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_reply_video, parent, false)
-                ReplyVideoHolder(item)
+                    .inflate(R.layout.item_chat_video_quote, parent, false)
+                VideoQuoteHolder(item)
             }
             SECRET_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
@@ -622,7 +622,7 @@ class ConversationAdapter(
                 item.status == MessageStatus.FAILED.name -> WAITING_TYPE
                 item.type == MessageCategory.SIGNAL_TEXT.name || item.type == MessageCategory.PLAIN_TEXT.name -> {
                     if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
-                        REPLY_TEXT_TYPE
+                        TEXT_QUOTE_TYPE
                     } else if (!item.siteName.isNullOrBlank() || !item.siteDescription.isNullOrBlank()) {
                         LINK_TYPE
                     } else {
@@ -632,7 +632,7 @@ class ConversationAdapter(
                 item.type == MessageCategory.SIGNAL_IMAGE.name ||
                     item.type == MessageCategory.PLAIN_IMAGE.name -> {
                     if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
-                        REPLY_IMAGE_TYPE
+                        IMAGE_QUOTE_TYPE
                     } else {
                         IMAGE_TYPE
                     }
@@ -652,7 +652,7 @@ class ConversationAdapter(
                     item.type == MessageCategory.SIGNAL_LIVE.name ||
                     item.type == MessageCategory.PLAIN_LIVE.name -> {
                     if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
-                        REPLY_VIDEO_TYPE
+                        VIDEO_QUOTE_TYPE
                     } else {
                         VIDEO_TYPE
                     }
@@ -673,12 +673,12 @@ class ConversationAdapter(
         const val NULL_TYPE = 99
         const val UNKNOWN_TYPE = 0
         const val TEXT_TYPE = 1
-        const val REPLY_TEXT_TYPE = -1
+        const val TEXT_QUOTE_TYPE = -1
         const val IMAGE_TYPE = 2
-        const val REPLY_IMAGE_TYPE = -2
+        const val IMAGE_QUOTE_TYPE = -2
         const val LINK_TYPE = 3
         const val VIDEO_TYPE = 4
-        const val REPLY_VIDEO_TYPE = -4
+        const val VIDEO_QUOTE_TYPE = -4
         const val AUDIO_TYPE = 5
         const val FILE_TYPE = 6
         const val STICKER_TYPE = 7
