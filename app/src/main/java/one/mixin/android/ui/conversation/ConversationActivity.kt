@@ -113,7 +113,7 @@ class ConversationActivity : BlazeBaseActivity() {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }
             Intent(context, ConversationActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 putExtras(
                     ConversationFragment.putBundle(
                         conversationId,
@@ -139,7 +139,7 @@ class ConversationActivity : BlazeBaseActivity() {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }
             return Intent(context, ConversationActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 putExtras(
                     ConversationFragment.putBundle(
                         conversationId,
