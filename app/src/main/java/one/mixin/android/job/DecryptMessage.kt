@@ -137,11 +137,9 @@ class DecryptMessage : Injector() {
         if (data.conversationId == SYSTEM_USER || data.conversationId == Session.getAccountId()) {
             return
         }
-        data.sessionId?.let {
-            val p = participantSessionDao.getParticipantSession(data.conversationId, data.userId, data.sessionId)
-            if (p == null) {
-                participantSessionDao.insert(ParticipantSession(data.conversationId, data.userId, data.sessionId))
-            }
+        val p = participantSessionDao.getParticipantSession(data.conversationId, data.userId, data.sessionId)
+        if (p == null) {
+            participantSessionDao.insert(ParticipantSession(data.conversationId, data.userId, data.sessionId))
         }
     }
 
