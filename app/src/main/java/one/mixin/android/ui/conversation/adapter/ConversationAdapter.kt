@@ -39,6 +39,7 @@ import one.mixin.android.ui.conversation.holder.PostHolder
 import one.mixin.android.ui.conversation.holder.RecallHolder
 import one.mixin.android.ui.conversation.holder.ReplyImageHolder
 import one.mixin.android.ui.conversation.holder.ReplyTextHolder
+import one.mixin.android.ui.conversation.holder.ReplyVideoHolder
 import one.mixin.android.ui.conversation.holder.SecretHolder
 import one.mixin.android.ui.conversation.holder.StickerHolder
 import one.mixin.android.ui.conversation.holder.StrangerHolder
@@ -188,6 +189,16 @@ class ConversationAdapter(
                 }
                 VIDEO_TYPE -> {
                     (holder as VideoHolder).bind(
+                        it,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
+                }
+                REPLY_VIDEO_TYPE -> {
+                    (holder as ReplyVideoHolder).bind(
                         it,
                         isLast(position),
                         isFirst(position),
@@ -566,6 +577,11 @@ class ConversationAdapter(
                     .inflate(R.layout.item_chat_video, parent, false)
                 VideoHolder(item)
             }
+            REPLY_VIDEO_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_reply_video, parent, false)
+                ReplyVideoHolder(item)
+            }
             SECRET_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_secret, parent, false)
@@ -634,7 +650,13 @@ class ConversationAdapter(
                 item.type == MessageCategory.SIGNAL_VIDEO.name ||
                     item.type == MessageCategory.PLAIN_VIDEO.name ||
                     item.type == MessageCategory.SIGNAL_LIVE.name ||
-                    item.type == MessageCategory.PLAIN_LIVE.name -> VIDEO_TYPE
+                    item.type == MessageCategory.PLAIN_LIVE.name -> {
+                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        REPLY_VIDEO_TYPE
+                    } else {
+                        VIDEO_TYPE
+                    }
+                }
                 item.type == MessageCategory.SIGNAL_AUDIO.name ||
                     item.type == MessageCategory.PLAIN_AUDIO.name -> AUDIO_TYPE
                 item.type == MessageCategory.PLAIN_POST.name ||
@@ -656,6 +678,7 @@ class ConversationAdapter(
         const val REPLY_IMAGE_TYPE = -2
         const val LINK_TYPE = 3
         const val VIDEO_TYPE = 4
+        const val REPLY_VIDEO_TYPE = -4
         const val AUDIO_TYPE = 5
         const val FILE_TYPE = 6
         const val STICKER_TYPE = 7

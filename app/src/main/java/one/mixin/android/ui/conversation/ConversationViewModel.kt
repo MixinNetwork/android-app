@@ -16,10 +16,6 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import java.io.File
-import java.io.FileInputStream
-import java.util.UUID
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -115,6 +111,10 @@ import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import timber.log.Timber
+import java.io.File
+import java.io.FileInputStream
+import java.util.UUID
+import javax.inject.Inject
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class ConversationViewModel

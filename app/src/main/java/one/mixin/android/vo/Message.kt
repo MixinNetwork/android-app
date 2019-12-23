@@ -339,7 +339,9 @@ fun createVideoMessage(
     key: ByteArray?,
     digest: ByteArray?,
     mediaStatus: MediaStatus,
-    status: String
+    status: String,
+    quoteMessageId: String? = null,
+    quoteContent: String? = null
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setName(name)
@@ -353,6 +355,8 @@ fun createVideoMessage(
     .setMediaKey(key)
     .setMediaDigest(digest)
     .setMediaStatus(mediaStatus.name)
+    .setQuoteMessageId(quoteMessageId)
+    .setQuoteContent(quoteContent)
     .build()
 
 fun createMediaMessage(

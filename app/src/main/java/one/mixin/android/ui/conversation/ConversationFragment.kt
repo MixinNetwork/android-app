@@ -1418,7 +1418,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun sendVideoMessage(uri: Uri) {
         createConversation {
-            chatViewModel.sendVideoMessage(conversationId, sender.userId, uri, isPlainMessage())
+            chatViewModel.sendVideoMessage(conversationId, sender.userId, uri, isPlainMessage(), replyMessage = reply_view.messageItem)
+            if (reply_view.messageItem != null) {
+                reply_view.fadeOut()
+                chat_control.showOtherInput()
+                reply_view.messageItem = null
+            }
             chat_rv.postDelayed({
                 scrollToDown()
             }, 1000)

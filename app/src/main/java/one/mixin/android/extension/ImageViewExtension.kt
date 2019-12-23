@@ -1,5 +1,6 @@
 package one.mixin.android.extension
 
+import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.ImageView
@@ -314,12 +315,20 @@ fun ImageView.loadVideoMark(
         }).submit(layoutParams.width, layoutParams.height)
 }
 
+@SuppressLint("CheckResult")
 fun ImageView.loadVideo(uri: String?) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply(
         RequestOptions().frame(0)
             .centerCrop().dontAnimate()
     ).into(this)
+}
+
+fun ImageView.loadVideo(uri: String?, holder: String?, width: Int, height: Int) {
+    if (!isActivityNotDestroyed()) return
+    Glide.with(this).load(uri).apply {
+        RequestOptions().placeholder(holder?.toDrawable()).override(width, height)
+    }.into(this)
 }
 
 fun ImageView.loadSticker(uri: String?, type: String?) {
