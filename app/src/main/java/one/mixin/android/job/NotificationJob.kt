@@ -28,6 +28,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ChannelManager
 import one.mixin.android.util.ChannelManager.Companion.CHANNEL_MESSAGE
+import one.mixin.android.util.ChannelManager.Companion.CHANNEL_VERSION
 import one.mixin.android.util.ChannelManager.Companion.getChannelId
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
@@ -47,7 +48,7 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
     }
 
     override fun onRun() {
-        ChannelManager.updateSound(MixinApplication.appContext)
+        ChannelManager.updateChannelSound(MixinApplication.appContext)
         notifyMessage(message)
     }
 
@@ -74,9 +75,9 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
 
         notificationBuilder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (conversation.isGroup()) {
-                NotificationCompat.Builder(context, getChannelId(MixinApplication.appContext, true))
+                NotificationCompat.Builder(context, getChannelId(true, CHANNEL_VERSION))
             } else {
-                NotificationCompat.Builder(context, getChannelId(MixinApplication.appContext, false))
+                NotificationCompat.Builder(context, getChannelId(false, CHANNEL_VERSION))
             }
         } else {
             NotificationCompat.Builder(context, CHANNEL_MESSAGE)
@@ -245,7 +246,9 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
         notificationBuilder.color = ContextCompat.getColor(context, R.color.gray_light)
         notificationBuilder.setWhen(System.currentTimeMillis())
 
-        notificationBuilder.setSound(Uri.parse("android.resource://" + context.packageName + "/" + R.raw.mixin))
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            notificationBuilder.setSound(Uri.parse("android.resource://" + context.packageName + "/" + R.raw.mixin))
+        }
         notificationBuilder.setAutoCancel(true)
         notificationBuilder.priority = NotificationCompat.PRIORITY_HIGH
         user.notNullWithElse({
