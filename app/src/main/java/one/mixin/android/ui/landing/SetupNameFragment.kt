@@ -1,6 +1,5 @@
 package one.mixin.android.ui.landing
 
-import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -67,7 +66,7 @@ class SetupNameFragment : BaseFragment() {
                     }
 
                     name_et?.hideKeyboard()
-                    startActivity(Intent(context, MainActivity::class.java))
+                    MainActivity.show(requireContext())
                     activity?.finish()
                 }, { t: Throwable ->
                     name_fab?.hide()

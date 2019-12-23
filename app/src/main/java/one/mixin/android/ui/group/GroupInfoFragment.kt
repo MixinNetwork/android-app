@@ -1,7 +1,6 @@
 package one.mixin.android.ui.group
 
 import android.app.Dialog
-import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -309,7 +308,7 @@ class GroupInfoFragment : BaseFragment() {
                     }
                     TYPE_DELETE -> {
                         groupViewModel.deleteMessageByConversationId(conversationId)
-                        startActivity(Intent(context, MainActivity::class.java))
+                        MainActivity.show(requireContext())
                     }
                 }
                 dialog.dismiss()

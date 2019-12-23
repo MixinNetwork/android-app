@@ -2,7 +2,6 @@ package one.mixin.android.ui.group
 
 import android.Manifest
 import android.app.Dialog
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -138,16 +137,16 @@ class NewGroupFragment : BaseFragment() {
             if (c != null) {
                 when {
                     c.status == ConversationStatus.SUCCESS.ordinal -> {
-                        liveData.removeObservers(this@NewGroupFragment)
+                        liveData.removeObservers(viewLifecycleOwner)
                         name_desc_et.hideKeyboard()
                         dialog?.dismiss()
-                        startActivity(Intent(context, MainActivity::class.java))
+                        activity?.finish()
                         ConversationActivity.show(requireContext(), conversation.conversationId, null)
                     }
                     c.status == ConversationStatus.FAILURE.ordinal -> {
                         name_desc_et.hideKeyboard()
                         dialog?.dismiss()
-                        startActivity(Intent(context, MainActivity::class.java))
+                        MainActivity.show(requireContext())
                     }
                 }
             }
