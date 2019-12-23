@@ -631,6 +631,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
                 SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
         if (view_pager.currentItem == initialIndex) {
+            findViewPagerChildByTag {
+                it.getChildAt(0)?.player_view?.hideController()
+            }
             VideoPlayer.player().stop()
             super.finishAfterTransition()
         } else {
