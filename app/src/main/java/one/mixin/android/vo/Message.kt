@@ -309,7 +309,9 @@ fun createAttachmentMessage(
     key: ByteArray?,
     digest: ByteArray?,
     mediaStatus: MediaStatus,
-    status: String
+    status: String,
+    quoteMessageId: String? = null,
+    quoteContent: String? = null
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setName(name)
@@ -319,6 +321,8 @@ fun createAttachmentMessage(
     .setMediaKey(key)
     .setMediaDigest(digest)
     .setMediaStatus(mediaStatus.name)
+    .setQuoteMessageId(quoteMessageId)
+    .setQuoteContent(quoteContent)
     .build()
 
 fun createVideoMessage(
@@ -439,10 +443,14 @@ fun createContactMessage(
     content: String,
     sharedUserId: String,
     status: String,
-    createdAt: String
+    createdAt: String,
+    quoteMessageId: String? = null,
+    quoteContent: String? = null
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setSharedUserId(sharedUserId)
+    .setQuoteMessageId(quoteMessageId)
+    .setQuoteContent(quoteContent)
     .build()
 
 fun createRecallMessage(

@@ -77,12 +77,12 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
     private var onItemListener: ConversationAdapter.OnItemListener? = null
 
     fun bind(
-            messageItem: MessageItem,
-            isLast: Boolean,
-            isFirst: Boolean = false,
-            hasSelect: Boolean,
-            isSelect: Boolean,
-            onItemListener: ConversationAdapter.OnItemListener
+        messageItem: MessageItem,
+        isLast: Boolean,
+        isFirst: Boolean = false,
+        hasSelect: Boolean,
+        isSelect: Boolean,
+        onItemListener: ConversationAdapter.OnItemListener
     ) {
         this.onItemListener = onItemListener
         if (hasSelect && isSelect) {
@@ -369,11 +369,11 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
     }
 
     private fun handleClick(
-            hasSelect: Boolean,
-            isSelect: Boolean,
-            isMe: Boolean,
-            messageItem: MessageItem,
-            onItemListener: ConversationAdapter.OnItemListener
+        hasSelect: Boolean,
+        isSelect: Boolean,
+        isMe: Boolean,
+        messageItem: MessageItem,
+        onItemListener: ConversationAdapter.OnItemListener
     ) {
         if (hasSelect) {
             onItemListener.onSelect(!isSelect, messageItem, adapterPosition)

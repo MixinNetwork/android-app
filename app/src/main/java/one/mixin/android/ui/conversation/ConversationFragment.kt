@@ -1463,8 +1463,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 conversationId,
                 sender,
                 attachment,
-                isPlainMessage()
+                isPlainMessage(),
+                reply_view.messageItem
             )
+            if (reply_view.messageItem != null) {
+                reply_view.fadeOut()
+                reply_view.messageItem = null
+            }
+
             scrollToDown()
             markRead()
         }
@@ -1483,7 +1489,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun sendContactMessage(userId: String) {
         createConversation {
-            chatViewModel.sendContactMessage(conversationId, sender, userId, isPlainMessage())
+            chatViewModel.sendContactMessage(conversationId, sender, userId, isPlainMessage(), reply_view.messageItem)
+            if (reply_view.messageItem != null) {
+                reply_view.fadeOut()
+                reply_view.messageItem = null
+            }
             scrollToDown()
             markRead()
         }
