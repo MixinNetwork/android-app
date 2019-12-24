@@ -29,6 +29,10 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
         MixinApplication.appContext.dpToPx(6f)
     }
 
+    private val dp1 by lazy {
+        MixinApplication.appContext.dpToPx(1f)
+    }
+
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
@@ -47,10 +51,10 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
             (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
         }
         (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd =
-            if (isMe && isLast) {
-                0
-            } else {
+            if (isMe && !isLast) {
                 dp6
+            } else {
+                dp1
             }
         val lp = (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {

@@ -43,7 +43,7 @@ class ShadowLayout : ViewGroup {
                     width - secondView.measuredWidth - secondView.marginEnd,
                     height - secondView.measuredHeight - secondView.marginBottom,
                     width - secondView.marginEnd,
-                    height - marginBottom
+                    height - secondView.marginBottom
                 )
                 thirdView.layout(
                     width - thirdView.measuredWidth - thirdView.marginEnd,
