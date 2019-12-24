@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/chat_msg_layout"
-    android:gravity="center"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -115,21 +114,20 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/chat_audio_layout"
-                android:layout_width="match_parent"
+                android:layout_width="240dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:layout_marginEnd="4dp"
                 android:layout_marginStart="4dp"
-                android:layout_marginTop="1.5dp">
+                android:layout_marginTop="1.5dp"
+                android:layout_marginEnd="4dp">
 
                 <one.mixin.android.widget.CircleProgress
-                    android:id="@+id/audio_progress"
+                    android:id="@+id/file_progress"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:layout_marginBottom="8dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
                     android:src="@drawable/ic_avatar_place_holder"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -137,50 +135,42 @@
                     app:progressColor="@color/colorDarkBlue"
                     app:progressWidth="1.5dp"
                     app:shadowColor="@color/progress_gary"
-                    app:size="40dp" />
+                    app:size="40dp"/>
 
                 <ImageView
-                    android:id="@+id/audio_expired"
+                    android:id="@+id/file_expired"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:layout_marginBottom="8dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/ic_expired"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <one.mixin.android.widget.WaveformView
-                    android:id="@+id/audio_waveform"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_marginStart="8dp"
-                    android:textColor="?attr/text_primary"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toTopOf="@id/audio_duration"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/audio_progress"
-                    app:layout_constraintTop_toTopOf="@id/audio_progress" />
+                    app:layout_constraintTop_toTopOf="parent"/>
 
                 <TextView
-                    android:id="@+id/audio_duration"
+                    android:id="@+id/file_name_tv"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
                     android:layout_marginEnd="12dp"
-                    android:layout_marginStart="8dp"
-                    android:ellipsize="end"
+                    android:ellipsize="middle"
                     android:singleLine="true"
-                    android:textColor="@color/gray_50"
-                    android:textSize="12sp"
-                    app:layout_constraintBottom_toBottomOf="@id/audio_progress"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="16sp"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/audio_progress" />
+                    app:layout_constraintStart_toEndOf="@id/file_progress"
+                    app:layout_constraintTop_toTopOf="@id/file_progress"/>
 
-                <include
-                    android:id="@+id/bill_time"
-                    layout="@layout/date_wrapper" />
+                <one.mixin.android.widget.FileHolderBottomLayout
+                    android:id="@+id/bottom_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/file_progress"
+                    app:layout_constraintTop_toBottomOf="@id/file_name_tv"/>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -189,6 +179,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|end"
+                android:background="@drawable/chat_bubble_shadow"
                 android:drawablePadding="3dp"
                 android:fontFamily="@font/sf_pro_light"
                 android:gravity="end|bottom"

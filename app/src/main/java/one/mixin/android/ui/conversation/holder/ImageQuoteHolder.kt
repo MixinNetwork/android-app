@@ -337,6 +337,16 @@ class ImageQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
                 (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
                     dp8
             }
+            quoteMessage.type.endsWith("_POST") -> {
+                itemView.reply_content_tv.setText(R.string.post)
+                setIcon(R.drawable.ic_status_file)
+                itemView.reply_iv.visibility = View.GONE
+                itemView.reply_avatar.visibility = View.GONE
+                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp8
+                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
+                    dp8
+            }
             quoteMessage.type.endsWith("_AUDIO") -> {
                 quoteMessage.mediaDuration.notNullWithElse({
                     itemView.reply_content_tv.text = it.toLong().formatMillis()

@@ -12,9 +12,9 @@ class QuoteLayout : ViewGroup {
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
 
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
-        context,
-        attrs,
-        defStyleAttr
+            context,
+            attrs,
+            defStyleAttr
     )
 
     private val minWidth by lazy {
@@ -36,59 +36,65 @@ class QuoteLayout : ViewGroup {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val childCount = childCount
-        if (childCount != 3) {
-            throw RuntimeException("CustomLayout child count must == 3")
+        if (childCount < 2) {
+            throw RuntimeException("QuoteLayout child count must >=2")
         }
         val firstView = getChildAt(0)
         val secondView = getChildAt(1)
-        val thirdView = getChildAt(2)
         if (ratio != 0f) {
             measureChild(
-                secondView, MeasureSpec.makeMeasureSpec(minWidth, MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec((minWidth / ratio).toInt(), MeasureSpec.EXACTLY)
+                    secondView, MeasureSpec.makeMeasureSpec(minWidth, MeasureSpec.EXACTLY),
+                    MeasureSpec.makeMeasureSpec((minWidth / ratio).toInt(), MeasureSpec.EXACTLY)
             )
         } else {
             measureChild(
-                secondView, widthMeasureSpec,
-                heightMeasureSpec
+                    secondView, widthMeasureSpec,
+                    heightMeasureSpec
             )
         }
         measureChild(
-            firstView,
-            MeasureSpec.makeMeasureSpec(
-                secondView.measuredWidth,
-                MeasureSpec.EXACTLY
-            ),
-            heightMeasureSpec
+                firstView,
+                MeasureSpec.makeMeasureSpec(
+                        secondView.measuredWidth,
+                        MeasureSpec.EXACTLY
+                ),
+                heightMeasureSpec
+
         )
-        measureChild(
-            thirdView,
-            MeasureSpec.makeMeasureSpec(minWidth, MeasureSpec.AT_MOST),
-            heightMeasureSpec
-        )
+        if (childCount >= 3) {
+            val thirdView = getChildAt(2)
+
+            measureChild(
+                    thirdView,
+                    MeasureSpec.makeMeasureSpec(minWidth, MeasureSpec.AT_MOST),
+                    heightMeasureSpec
+            )
+        }
 
         setMeasuredDimension(
-            secondView.measuredWidth + offset * 2,
-            firstView.measuredHeight + secondView.measuredHeight + offset * 3
+                secondView.measuredWidth + offset * 2,
+                firstView.measuredHeight + secondView.measuredHeight + offset * 3
         )
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         val firstView = getChildAt(0)
         val secondView = getChildAt(1)
-        val thirdView = getChildAt(2)
         firstView.layout(offset, offset, width - offset, firstView.measuredHeight + offset)
         secondView.layout(
-            offset,
-            height - secondView.measuredHeight - offset,
-            width - offset,
-            height - offset
+                offset,
+                height - secondView.measuredHeight - offset,
+                width - offset,
+                height - offset
         )
-        thirdView.layout(
-            width - thirdView.measuredWidth - offset,
-            height - thirdView.measuredHeight - offset,
-            width - offset,
-            height - offset
-        )
+        if (childCount >= 3) {
+            val thirdView = getChildAt(2)
+            thirdView.layout(
+                    width - thirdView.measuredWidth - offset,
+                    height - thirdView.measuredHeight - offset,
+                    width - offset,
+                    height - offset
+            )
+        }
     }
 }

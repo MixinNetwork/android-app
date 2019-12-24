@@ -13,8 +13,6 @@ import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.PublishSubject
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.item_chat_unread.view.*
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.R
@@ -33,6 +31,7 @@ import one.mixin.android.ui.conversation.holder.CallHolder
 import one.mixin.android.ui.conversation.holder.CardHolder
 import one.mixin.android.ui.conversation.holder.ContactCardHolder
 import one.mixin.android.ui.conversation.holder.FileHolder
+import one.mixin.android.ui.conversation.holder.FileQuoteHolder
 import one.mixin.android.ui.conversation.holder.HyperlinkHolder
 import one.mixin.android.ui.conversation.holder.ImageHolder
 import one.mixin.android.ui.conversation.holder.ImageQuoteHolder
@@ -60,6 +59,8 @@ import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isRecall
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 class ConversationAdapter(
     private val context: Context,
@@ -216,8 +217,7 @@ class ConversationAdapter(
                 }
                 AUDIO_QUOTE_TYPE -> {
                     (holder as AudioQuoteHolder).bind(
-                        it, isFirst(position),
-                        isLast(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it, isLast(position), selectSet.size > 0, isSelect(position), onItemListener
                     )
                 }
                 SYSTEM_TYPE -> {
@@ -239,6 +239,12 @@ class ConversationAdapter(
                 }
                 FILE_TYPE -> {
                     (holder as FileHolder).bind(
+                        it, keyword, isFirst(position),
+                        isLast(position), selectSet.size > 0, isSelect(position), onItemListener
+                    )
+                }
+                FILE_QUOTE_TYPE -> {
+                    (holder as FileQuoteHolder).bind(
                         it, keyword, isFirst(position),
                         isLast(position), selectSet.size > 0, isSelect(position), onItemListener
                     )
@@ -549,6 +555,11 @@ class ConversationAdapter(
                     .inflate(R.layout.item_chat_file, parent, false)
                 FileHolder(item)
             }
+            FILE_QUOTE_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_file_quote, parent, false)
+                FileQuoteHolder(item)
+            }
             AUDIO_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_audio, parent, false)
@@ -652,7 +663,13 @@ class ConversationAdapter(
                 item.type == MessageCategory.SYSTEM_CONVERSATION.name -> SYSTEM_TYPE
                 item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> BILL_TYPE
                 item.type == MessageCategory.SIGNAL_DATA.name ||
-                    item.type == MessageCategory.PLAIN_DATA.name -> FILE_TYPE
+                    item.type == MessageCategory.PLAIN_DATA.name -> {
+                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        FILE_QUOTE_TYPE
+                    } else {
+                        FILE_TYPE
+                    }
+                }
                 item.type == MessageCategory.SIGNAL_STICKER.name ||
                     item.type == MessageCategory.PLAIN_STICKER.name -> STICKER_TYPE
                 item.type == MessageCategory.APP_BUTTON_GROUP.name -> ACTION_TYPE
@@ -700,6 +717,7 @@ class ConversationAdapter(
         const val AUDIO_TYPE = 5
         const val AUDIO_QUOTE_TYPE = -5
         const val FILE_TYPE = 6
+        const val FILE_QUOTE_TYPE = -6
         const val STICKER_TYPE = 7
         const val CONTACT_CARD_TYPE = 8
         const val CARD_TYPE = 9
