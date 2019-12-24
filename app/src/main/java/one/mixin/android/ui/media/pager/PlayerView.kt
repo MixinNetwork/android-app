@@ -198,6 +198,9 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
             unappliedRotationDegrees: Int,
             pixelWidthHeightRatio: Float
         ) {
+            if (VideoPlayer.player().mId != currentMessageId) {
+                return
+            }
             var videoAspectRatio: Float =
                 if (height == 0 || width == 0) 1f else width * pixelWidthHeightRatio / height
             if (unappliedRotationDegrees == 90 || unappliedRotationDegrees == 270) {

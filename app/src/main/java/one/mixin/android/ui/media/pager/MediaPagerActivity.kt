@@ -172,6 +172,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         SystemUIManager.lightUI(window, false)
 
         colorDrawable = ColorDrawable(Color.BLACK)
+        view_pager.offscreenPageLimit = 2
         view_pager.backgroundDrawable = colorDrawable
         view_pager.adapter = adapter
         view_pager.registerOnPageChangeCallback(onPageChangeCallback)
