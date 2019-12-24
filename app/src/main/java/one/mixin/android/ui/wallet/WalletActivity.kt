@@ -11,6 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.Session
@@ -36,6 +37,7 @@ class WalletActivity : BlazeBaseActivity() {
         asset.notNullWithElse({
             navGraph.startDestination = R.id.transactions_fragment
             navGraph.addArgument(ARGS_ASSET, NavArgument.Builder().setDefaultValue(it).build())
+            jobManager.addJobInBackground(RefreshSnapshotsJob(it.assetId))
         }, {
             navGraph.startDestination = R.id.wallet_fragment
         })
