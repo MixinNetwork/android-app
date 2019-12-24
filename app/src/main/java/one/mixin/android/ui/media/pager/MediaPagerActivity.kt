@@ -601,7 +601,13 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
 
     override fun onDismiss() {
         inDismissState = false
-        finishAfterTransition()
+        val messageItem = adapter.currentList?.get(view_pager.currentItem)
+        // workaround with viewPager2 video item crash when call finishAfterTransition()
+        if (messageItem != null && (messageItem.isVideo() || messageItem.isLive())) {
+            finish()
+        } else {
+            finishAfterTransition()
+        }
     }
 
     override fun onCancel() {
@@ -635,7 +641,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
             findViewPagerChildByTag {
                 it.getChildAt(0)?.player_view?.hideController()
             }
-            VideoPlayer.player().stop()
             super.finishAfterTransition()
         } else {
             finish()
@@ -645,6 +650,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
     override fun finish() {
         VideoPlayer.player().stop()
         super.finish()
+        overridePendingTransition(0, 0)
     }
 
     private val mediaPagerAdapterListener = object : MediaPagerAdapterListener {
