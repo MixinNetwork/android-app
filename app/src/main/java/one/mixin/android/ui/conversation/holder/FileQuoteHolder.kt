@@ -80,13 +80,13 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
     private var onItemListener: ConversationAdapter.OnItemListener? = null
 
     fun bind(
-            messageItem: MessageItem,
-            keyword: String?,
-            isFirst: Boolean,
-            isLast: Boolean,
-            hasSelect: Boolean,
-            isSelect: Boolean,
-            onItemListener: ConversationAdapter.OnItemListener
+        messageItem: MessageItem,
+        keyword: String?,
+        isFirst: Boolean,
+        isLast: Boolean,
+        hasSelect: Boolean,
+        isSelect: Boolean,
+        onItemListener: ConversationAdapter.OnItemListener
     ) {
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
@@ -418,11 +418,11 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
         })
     }
     private fun handleClick(
-            hasSelect: Boolean,
-            isSelect: Boolean,
-            isMe: Boolean,
-            messageItem: MessageItem,
-            onItemListener: ConversationAdapter.OnItemListener
+        hasSelect: Boolean,
+        isSelect: Boolean,
+        isMe: Boolean,
+        messageItem: MessageItem,
+        onItemListener: ConversationAdapter.OnItemListener
     ) {
         if (hasSelect) {
             onItemListener.onSelect(!isSelect, messageItem, adapterPosition)

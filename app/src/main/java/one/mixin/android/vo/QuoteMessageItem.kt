@@ -80,3 +80,8 @@ data class QuoteMessageItem(
 fun MessageItem.toQuoteMessageItem(): String? {
     return GsonHelper.customGson.toJson(QuoteMessageItem(this))
 }
+
+fun QuoteMessageItem?.toJson(): String? {
+    val message = this ?: return null
+    return GsonHelper.customGson.toJson(message)
+}

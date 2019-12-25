@@ -16,6 +16,10 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.io.File
+import java.io.FileInputStream
+import java.util.UUID
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,8 +30,35 @@ import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.crypto.Base64
-import one.mixin.android.extension.*
-import one.mixin.android.job.*
+import one.mixin.android.extension.bitmap2String
+import one.mixin.android.extension.blurThumbnail
+import one.mixin.android.extension.copyFromInputStream
+import one.mixin.android.extension.createGifTemp
+import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.deserialize
+import one.mixin.android.extension.fileExists
+import one.mixin.android.extension.getAttachment
+import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getImageSize
+import one.mixin.android.extension.getMimeType
+import one.mixin.android.extension.getUriForFile
+import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.putString
+import one.mixin.android.job.AttachmentDownloadJob
+import one.mixin.android.job.ConvertVideoJob
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshStickerAlbumJob
+import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.job.RemoveStickersJob
+import one.mixin.android.job.SendAckMessageJob
+import one.mixin.android.job.SendAttachmentMessageJob
+import one.mixin.android.job.SendGiphyJob
+import one.mixin.android.job.SendMessageJob
+import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
@@ -37,7 +68,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.util.image.Compressor
-<<<<<<< HEAD
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
@@ -68,36 +98,24 @@ import one.mixin.android.vo.createReplyTextMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
-=======
 import one.mixin.android.vo.*
->>>>>>> 9a1b5076... Send quote message
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
-import one.mixin.android.websocket.*
+import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.toQuoteMessageItem
+import one.mixin.android.vo.toUser
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
+import one.mixin.android.websocket.BlazeAckMessage
+import one.mixin.android.websocket.CREATE_MESSAGE
+import one.mixin.android.websocket.ContactMessagePayload
+import one.mixin.android.websocket.LiveMessagePayload
+import one.mixin.android.websocket.RecallMessagePayload
+import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import timber.log.Timber
-import java.io.File
-import java.io.FileInputStream
-import java.util.*
-import javax.inject.Inject
-import kotlin.collections.ArrayList
-import kotlin.collections.List
-import kotlin.collections.Set
-import kotlin.collections.arrayListOf
-import kotlin.collections.chunked
-import kotlin.collections.dropLast
-import kotlin.collections.filter
-import kotlin.collections.forEach
-import kotlin.collections.isNotEmpty
-import kotlin.collections.isNullOrEmpty
-import kotlin.collections.joinToString
-import kotlin.collections.last
-import kotlin.collections.listOf
-import kotlin.collections.map
-import kotlin.collections.toList
-import kotlin.collections.toMutableList
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class ConversationViewModel
@@ -184,8 +202,7 @@ internal constructor(
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
-
-    fun sendAttachmentMessage(conversationId: String, sender: User, attachment: Attachment, isPlain: Boolean, replyMessage: MessageItem?=null) {
+    fun sendAttachmentMessage(conversationId: String, sender: User, attachment: Attachment, isPlain: Boolean, replyMessage: MessageItem? = null) {
         val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
         val message = createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
             null, attachment.filename, attachment.uri.toString(),
