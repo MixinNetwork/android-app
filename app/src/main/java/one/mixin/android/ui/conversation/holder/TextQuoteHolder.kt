@@ -7,23 +7,15 @@ import android.text.style.BackgroundColorSpan
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
-import androidx.annotation.DrawableRes
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
-import com.google.gson.Gson
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_text_quote.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.formatMillis
-import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.vo.MessageCategory
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.widget.linktext.AutoLinkMode
@@ -87,11 +79,6 @@ class TextQuoteHolder constructor(containerView: View) : BaseViewHolder(containe
                 )
             }
         }
-    }
-
-    init {
-        itemView.reply_layout.round(dp6)
-        itemView.reply_iv.round(dp6)
     }
 
     private var onItemListener: ConversationAdapter.OnItemListener? = null
@@ -207,180 +194,15 @@ class TextQuoteHolder constructor(containerView: View) : BaseViewHolder(containe
             }
         }
 
-        val quoteMessage = Gson().fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
-        itemView.reply_name_tv.text = quoteMessage.userFullName
-        itemView.reply_name_tv.setTextColor(getColorById(quoteMessage.userId))
-        itemView.reply_layout.setBackgroundColor(getColorById(quoteMessage.userId))
-        itemView.reply_layout.background.alpha = 0x0D
-        itemView.start_view.setBackgroundColor(getColorById(quoteMessage.userId))
-        when {
-            quoteMessage.type.endsWith("_TEXT") -> {
-                itemView.reply_content_tv.text = quoteMessage.content
-                itemView.reply_iv.visibility = View.GONE
-                itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp8
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp8
-                setIcon()
-            }
-            quoteMessage.type == MessageCategory.MESSAGE_RECALL.name -> {
-                itemView.reply_content_tv.setText(R.string.chat_recall_me)
-                itemView.reply_iv.visibility = View.GONE
-                itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp8
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp8
-                setIcon(R.drawable.ic_status_recall)
-            }
-            quoteMessage.type.endsWith("_IMAGE") -> {
-                itemView.reply_iv.loadImageCenterCrop(
-                    quoteMessage.mediaUrl,
-                    R.drawable.image_holder
-                )
-                itemView.reply_content_tv.setText(R.string.photo)
-                setIcon(R.drawable.ic_status_pic)
-                itemView.reply_iv.visibility = View.VISIBLE
-                itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp16
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp16
-            }
-            quoteMessage.type.endsWith("_VIDEO") -> {
-                itemView.reply_iv.loadImageCenterCrop(
-                    quoteMessage.mediaUrl,
-                    R.drawable.image_holder
-                )
-                itemView.reply_content_tv.setText(R.string.video)
-                setIcon(R.drawable.ic_status_video)
-                itemView.reply_iv.visibility = View.VISIBLE
-                itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp16
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp16
-            }
-            quoteMessage.type.endsWith("_LIVE") -> {
-                itemView.reply_iv.loadImageCenterCrop(
-                    quoteMessage.thumbUrl,
-                    R.drawable.image_holder
-                )
-                itemView.reply_content_tv.setText(R.string.live)
-                setIcon(R.drawable.ic_status_live)
-                itemView.reply_iv.visibility = View.VISIBLE
-                itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp16
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp16
-            }
-            quoteMessage.type.endsWith("_DATA") -> {
-                quoteMessage.mediaName.notNullWithElse({
-                    itemView.reply_content_tv.text = it
-                }, {
-                    itemView.reply_content_tv.setText(R.string.document)
-                })
-                setIcon(R.drawable.ic_status_file)
-                itemView.reply_iv.visibility = View.GONE
-                itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp8
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp8
-            }
-            quoteMessage.type.endsWith("_POST") -> {
-                itemView.reply_content_tv.setText(R.string.post)
-                setIcon(R.drawable.ic_status_file)
-                itemView.reply_iv.visibility = View.GONE
-                itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp8
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp8
-            }
-            quoteMessage.type.endsWith("_AUDIO") -> {
-                quoteMessage.mediaDuration.notNullWithElse({
-                    itemView.reply_content_tv.text = it.toLong().formatMillis()
-                }, {
-                    itemView.reply_content_tv.setText(R.string.audio)
-                })
-                setIcon(R.drawable.ic_status_audio)
-                itemView.reply_iv.visibility = View.GONE
-                itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp8
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp8
-            }
-            quoteMessage.type.endsWith("_STICKER") -> {
-                itemView.reply_content_tv.setText(R.string.conversation_status_sticker)
-                setIcon(R.drawable.ic_status_stiker)
-                itemView.reply_iv.loadImageCenterCrop(
-                    quoteMessage.assetUrl,
-                    R.drawable.image_holder
-                )
-                itemView.reply_iv.visibility = View.VISIBLE
-                itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp16
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp16
-            }
-            quoteMessage.type.endsWith("_CONTACT") -> {
-                itemView.reply_content_tv.text = quoteMessage.sharedUserIdentityNumber
-                setIcon(R.drawable.ic_status_contact)
-                itemView.reply_avatar.setInfo(
-                    quoteMessage.sharedUserFullName,
-                    quoteMessage.sharedUserAvatarUrl,
-                    quoteMessage.sharedUserId
-                        ?: "0"
-                )
-                itemView.reply_avatar.visibility = View.VISIBLE
-                itemView.reply_iv.visibility = View.INVISIBLE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp16
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp16
-            }
-            quoteMessage.type == MessageCategory.APP_BUTTON_GROUP.name || quoteMessage.type == MessageCategory.APP_CARD.name -> {
-                itemView.reply_content_tv.setText(R.string.extensions)
-                setIcon(R.drawable.ic_touch_app)
-                itemView.reply_iv.visibility = View.GONE
-                itemView.reply_avatar.visibility = View.GONE
-                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp8
-                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd =
-                    dp8
-            }
-            else -> {
-                itemView.reply_iv.visibility = View.GONE
+        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
+        itemView.chat_quote.bind(quoteMessage)
+        itemView.chat_quote.setOnClickListener {
+            if (!hasSelect) {
+                onItemListener.onMessageClick(messageItem.quoteId)
+            } else {
+                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
             }
         }
         chatLayout(isMe, isLast)
-    }
-
-    private fun setIcon(@DrawableRes icon: Int? = null) {
-        icon.notNullWithElse({ drawable ->
-            AppCompatResources.getDrawable(itemView.context, drawable).let {
-                it?.setBounds(0, 0, itemView.context.dpToPx(10f), itemView.context.dpToPx(10f))
-                TextViewCompat.setCompoundDrawablesRelative(
-                    itemView.reply_content_tv,
-                    it,
-                    null,
-                    null,
-                    null
-                )
-            }
-        }, {
-            TextViewCompat.setCompoundDrawablesRelative(
-                itemView.reply_content_tv,
-                null,
-                null,
-                null,
-                null
-            )
-        })
     }
 }

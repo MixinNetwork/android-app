@@ -2,11 +2,11 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.view.View
-import com.google.gson.Gson
 import kotlinx.android.synthetic.main.item_chat_action_card.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadRoundImage
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageItem
 import org.jetbrains.anko.dip
@@ -51,7 +51,7 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
         } else {
             itemView.chat_name.visibility = View.GONE
         }
-        val actionCard = Gson().fromJson(messageItem.content, AppCardData::class.java)
+        val actionCard = GsonHelper.customGson.fromJson(messageItem.content, AppCardData::class.java)
         itemView.chat_icon.loadRoundImage(actionCard.iconUrl, radius, R.drawable.holder_bot)
         itemView.chat_title.text = actionCard.title
         itemView.chat_description.text = actionCard.description

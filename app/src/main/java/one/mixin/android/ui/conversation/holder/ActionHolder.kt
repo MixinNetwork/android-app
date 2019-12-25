@@ -4,10 +4,10 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
-import com.google.gson.Gson
 import kotlinx.android.synthetic.main.item_chat_action.view.*
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.ColorUtil
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.ActionButton
@@ -57,7 +57,7 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
             itemView.chat_name.visibility = View.GONE
         }
         if (itemView.tag != messageItem.content?.hashCode()) {
-            val buttons = Gson().fromJson(messageItem.content, Array<AppButtonData>::class.java)
+            val buttons = GsonHelper.customGson.fromJson(messageItem.content, Array<AppButtonData>::class.java)
             itemView.flow_layout.removeAllViews()
             for (b in buttons) {
                 val button = ActionButton(itemView.context)
