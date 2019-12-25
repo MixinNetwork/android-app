@@ -32,6 +32,7 @@ import one.mixin.android.ui.conversation.holder.BillHolder
 import one.mixin.android.ui.conversation.holder.CallHolder
 import one.mixin.android.ui.conversation.holder.CardHolder
 import one.mixin.android.ui.conversation.holder.ContactCardHolder
+import one.mixin.android.ui.conversation.holder.ContactCardQuoteHolder
 import one.mixin.android.ui.conversation.holder.FileHolder
 import one.mixin.android.ui.conversation.holder.FileQuoteHolder
 import one.mixin.android.ui.conversation.holder.HyperlinkHolder
@@ -305,6 +306,11 @@ class ConversationAdapter(
                     (holder as ContactCardHolder).bind(
                         it, isFirst(position), isLast(position),
                         selectSet.size > 0, isSelect(position), onItemListener
+                    )
+                }
+                CONTACT_CARD_QUOTE_TYPE -> {
+                    (holder as ContactCardQuoteHolder).bind(
+                        it, isFirst(position), isLast(position), selectSet.size > 0, isSelect(position), onItemListener
                     )
                 }
                 SECRET_TYPE -> {
@@ -595,6 +601,11 @@ class ConversationAdapter(
                     .inflate(R.layout.item_chat_contact_card, parent, false)
                 ContactCardHolder(item)
             }
+            CONTACT_CARD_QUOTE_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_contact_card_quote, parent, false)
+                ContactCardQuoteHolder(item)
+            }
             VIDEO_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_video, parent, false)
@@ -675,7 +686,13 @@ class ConversationAdapter(
                 item.type == MessageCategory.APP_BUTTON_GROUP.name -> ACTION_TYPE
                 item.type == MessageCategory.APP_CARD.name -> ACTION_CARD_TYPE
                 item.type == MessageCategory.SIGNAL_CONTACT.name ||
-                    item.type == MessageCategory.PLAIN_CONTACT.name -> CONTACT_CARD_TYPE
+                    item.type == MessageCategory.PLAIN_CONTACT.name -> {
+                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        CONTACT_CARD_QUOTE_TYPE
+                    } else {
+                        CONTACT_CARD_TYPE
+                    }
+                }
                 item.type == MessageCategory.SIGNAL_VIDEO.name ||
                     item.type == MessageCategory.PLAIN_VIDEO.name ||
                     item.type == MessageCategory.SIGNAL_LIVE.name ||
@@ -720,6 +737,7 @@ class ConversationAdapter(
         const val FILE_QUOTE_TYPE = -6
         const val STICKER_TYPE = 7
         const val CONTACT_CARD_TYPE = 8
+        const val CONTACT_CARD_QUOTE_TYPE = -8
         const val CARD_TYPE = 9
         const val BILL_TYPE = 10
         const val POST_TYPE = 11
