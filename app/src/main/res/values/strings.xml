@@ -424,6 +424,7 @@
     <string name="conversation_status_pic">Photo</string>
     <string name="conversation_status_video">Video</string>
     <string name="conversation_status_file">File</string>
+    <string name="conversation_status_post">Post</string>
     <string name="conversation_status_audio">Audio</string>
     <string name="conversation_status_voice">Voice call</string>
     <string name="conversation_status_transfer">Transfer</string>
@@ -586,6 +587,7 @@
     <string name="video">Video</string>
     <string name="audio">Audio</string>
     <string name="live">Live</string>
+    <string name="post">Post</string>
     <!--pay-->
     <string name="pay_paid">This payment link has already been paid by someone, you can not make a duplicate payment.</string>
 

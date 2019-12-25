@@ -33,6 +33,9 @@ abstract class BaseViewHolder constructor(containerView: View) :
         fun getColorById(id: String) = colors[id.getColorCode(CodeType.Name(colors.size))]
     }
 
+    protected val dp3 by lazy {
+        MixinApplication.appContext.dpToPx(3f)
+    }
     protected val dp10 by lazy {
         MixinApplication.appContext.dpToPx(10f)
     }

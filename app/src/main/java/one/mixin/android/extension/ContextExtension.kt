@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Context.CLIPBOARD_SERVICE
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.res.Configuration
 import android.database.Cursor
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -65,6 +66,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
+import org.jetbrains.anko.configuration
 import org.jetbrains.anko.displayMetrics
 import timber.log.Timber
 
@@ -625,4 +627,15 @@ fun Context.showConfirmDialog(
                 getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(Color.RED)
             }
         }.show()
+}
+
+fun Context.isNightMode(): Boolean {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+    } else {
+        defaultSharedPreferences.getInt(
+            Constants.Theme.THEME_CURRENT_ID,
+            Constants.Theme.THEME_DEFAULT_ID
+        ) == Constants.Theme.THEME_NIGHT_ID
+    }
 }

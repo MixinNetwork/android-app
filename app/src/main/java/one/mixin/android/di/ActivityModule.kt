@@ -21,6 +21,7 @@ import one.mixin.android.ui.address.AddressActivity
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.InviteActivity
@@ -85,6 +86,9 @@ abstract class ActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeRestore(): RestoreActivity
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeRecycler(): MarkdownActivity
 
     @ContributesAndroidInjector(modules = [(CommonModule::class), (SharedMediaActivityModule::class)])
     internal abstract fun contributeSharedMedia(): SharedMediaActivity

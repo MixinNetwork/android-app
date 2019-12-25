@@ -120,6 +120,7 @@ import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListe
 import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuType
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
@@ -568,6 +569,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }
                     }
                 }
+            }
+
+            override fun onPostClick(view: View, messageItem: MessageItem) {
+                // MarkdownActivity.show(requireActivity(), messageItem.content!!)
+                MarkdownActivity.show(requireActivity(), messageItem.content!!)
             }
 
             override fun onCallClick(messageItem: MessageItem) {

@@ -144,6 +144,8 @@ fun MessageItem.isImage() = type == MessageCategory.PLAIN_IMAGE.name || type == 
 
 fun MessageItem.isVideo() = type == MessageCategory.SIGNAL_VIDEO.name || type == MessageCategory.PLAIN_VIDEO.name
 
+fun MessageItem.isPost() = type == MessageCategory.SIGNAL_POST.name || type == MessageCategory.SIGNAL_POST.name
+
 fun MessageItem.isAudio() =
     type == MessageCategory.PLAIN_AUDIO.name ||
         type == MessageCategory.SIGNAL_AUDIO.name

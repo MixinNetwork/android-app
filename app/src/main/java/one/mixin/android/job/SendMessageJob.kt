@@ -30,8 +30,10 @@ open class SendMessageJob(
     private var recipientId: String? = null,
     private val recallMessageId: String? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
-) : MixinJob(Params(messagePriority).addTags(message.id).groupBy("send_message_group")
-    .requireWebSocketConnected().persist(), message.id) {
+) : MixinJob(
+    Params(messagePriority).addTags(message.id).groupBy("send_message_group")
+        .requireWebSocketConnected().persist(), message.id
+) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -137,7 +139,8 @@ open class SendMessageJob(
             message.id,
             message.category,
             content,
-            quote_message_id = message.quoteMessageId)
+            quote_message_id = message.quoteMessageId
+        )
         val blazeMessage = if (message.isCall()) {
             createCallMessage(blazeParam)
         } else {
@@ -162,7 +165,12 @@ open class SendMessageJob(
 
     private fun encryptNormalMessage(): BlazeMessage {
         return if (resendData != null) {
-            signalProtocol.encryptSessionMessage(message, resendData.userId, resendData.messageId, resendData.sessionId)
+            signalProtocol.encryptSessionMessage(
+                message,
+                resendData.userId,
+                resendData.messageId,
+                resendData.sessionId
+            )
         } else {
             signalProtocol.encryptGroupMessage(message)
         }

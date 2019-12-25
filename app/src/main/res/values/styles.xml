@@ -45,6 +45,7 @@
         <item name="flag_night">false</item>
         <item name="bg_gray_light">@color/bgGrayLight</item>
         <item name="bg_confirmation">@color/bgConfirmation</item>
+        <item name="bg_block">@color/bgBlock</item>
 
     </style>
 

@@ -254,6 +254,15 @@ dependencies {
     implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
     implementation "com.github.SeniorZhai:LargeImage:${largeImageViewVersion}"
     implementation "com.github.tougee:BiometricPromptCompat:${biometricpromptVersion}"
+    implementation "io.noties.markwon:core:${markwonVersion}"
+    implementation "io.noties.markwon:image:${markwonVersion}"
+    implementation "io.noties.markwon:image-glide:${markwonVersion}"
+    implementation "io.noties.markwon:ext-tables:${markwonVersion}"
+    implementation "io.noties.markwon:recycler:${markwonVersion}"
+    implementation "io.noties.markwon:recycler-table:${markwonVersion}"
+    implementation "io.noties.markwon:ext-strikethrough:${markwonVersion}"
+    implementation "io.noties:prism4j:${prism4jVersion}"
+    implementation "io.noties.markwon:syntax-highlight:${markwonVersion}"
     implementation "org.webrtc:google-webrtc:${webrtcVersion}"
 }
 
@@ -273,6 +282,10 @@ task ktlintFormat(type: JavaExec, group: "formatting") {
     classpath = configurations.ktlint
     main = "com.pinterest.ktlint.Main"
     args "-F", "src/**/*.kt"
+}
+
+configurations.all {
+    exclude group: 'org.jetbrains', module: 'annotations-java5'
 }
 
 // preBuild.dependsOn ktlint
