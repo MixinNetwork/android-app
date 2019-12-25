@@ -10,8 +10,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.BuildConfig
+import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.MixinApplication
@@ -158,7 +158,7 @@ abstract class MixinDatabase : RoomDatabase() {
                     val builder = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
                         .openHelperFactory(
                             MixinOpenHelperFactory(
-                                FrameworkSQLiteOpenHelperFactory(),
+                                RequerySQLiteOpenHelperFactory(),
                                 listOf(object : MixinCorruptionCallback {
                                     override fun onCorruption(database: SupportSQLiteDatabase) {
                                         val e = IllegalStateException("Mixin database is corrupted, current DB version: $CURRENT_VERSION")

@@ -217,6 +217,8 @@ dependencies {
     implementation "androidx.emoji2:emoji2-bundled:${emojiVerison}"
     implementation "androidx.emoji2:emoji2-views-helper:${emojiVerison}"
 
+    implementation "com.github.requery:sqlite-android:${sqliteVersion}"
+
     // DI
     implementation "com.google.dagger:hilt-android:${hiltVersion}"
     kapt "com.google.dagger:hilt-android-compiler:${hiltVersion}"
