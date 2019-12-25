@@ -7,6 +7,7 @@ import android.text.style.BackgroundColorSpan
 import android.view.Gravity
 import android.view.View
 import android.widget.SeekBar
+import androidx.core.widget.TextViewCompat
 import com.google.android.exoplayer2.util.MimeTypes
 import kotlinx.android.synthetic.main.item_chat_file_quote.view.*
 import kotlinx.android.synthetic.main.layout_file_holder_bottom.view.*
@@ -96,6 +97,12 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
             itemView.chat_name.visibility = View.GONE
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
+        setStatusIcon(isMe, messageItem.status, {
+            it?.setBounds(0, 0, dp12, dp12)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
+        }, {
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
+        })
         keyword.notNullWithElse({ k ->
             messageItem.mediaName?.let { str ->
                 val start = str.indexOf(k, 0, true)

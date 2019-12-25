@@ -3,7 +3,7 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.Gravity
 import android.view.View
-import kotlinx.android.synthetic.main.date_wrapper.view.*
+import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.item_chat_contact_card_quote.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -99,12 +99,6 @@ class ContactCardQuoteHolder constructor(containerView: View) : MediaHolder(cont
             itemView.chat_name.visibility = View.GONE
         }
 
-        setStatusIcon(isMe, messageItem.status, {
-            itemView.chat_flag.setImageDrawable(it)
-            itemView.chat_flag.visibility = View.VISIBLE
-        }, {
-            itemView.chat_flag.visibility = View.GONE
-        })
         chatLayout(isMe, isLast)
 
         itemView.chat_layout.setOnClickListener {
@@ -144,5 +138,11 @@ class ContactCardQuoteHolder constructor(containerView: View) : MediaHolder(cont
             }
         }
         itemView.chat_quote.bind(quoteMessage)
+        setStatusIcon(isMe, messageItem.status, {
+            it?.setBounds(0, 0, dp12, dp12)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
+        }, {
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
+        })
     }
 }

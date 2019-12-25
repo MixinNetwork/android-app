@@ -26,7 +26,9 @@
     <FrameLayout
         android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp">
 
         <one.mixin.android.widget.QuoteLayout
             android:id="@+id/chat_quote_layout"
@@ -36,7 +38,7 @@
             <one.mixin.android.widget.QuoteView
                 android:id="@+id/chat_quote"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content" />
 
             <FrameLayout
                 android:id="@+id/chat_image_layout"

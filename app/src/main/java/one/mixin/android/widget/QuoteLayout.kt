@@ -89,12 +89,25 @@ class QuoteLayout : ViewGroup {
         )
         if (childCount >= 3) {
             val thirdView = getChildAt(2)
+            val lp = thirdView.layoutParams as MarginLayoutParams
             thirdView.layout(
-                    width - thirdView.measuredWidth - offset,
-                    height - thirdView.measuredHeight - offset,
-                    width - offset,
-                    height - offset
+                    width - thirdView.measuredWidth - offset - lp.marginEnd,
+                    height - thirdView.measuredHeight - offset - lp.bottomMargin,
+                    width - offset - lp.marginEnd,
+                    height - offset - lp.bottomMargin
             )
         }
+    }
+
+    override fun generateDefaultLayoutParams(): MarginLayoutParams {
+        return MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
+    }
+
+    override fun generateLayoutParams(p: LayoutParams): MarginLayoutParams {
+        return MarginLayoutParams(p)
+    }
+
+    override fun generateLayoutParams(attrs: AttributeSet): MarginLayoutParams {
+        return MarginLayoutParams(context, attrs)
     }
 }

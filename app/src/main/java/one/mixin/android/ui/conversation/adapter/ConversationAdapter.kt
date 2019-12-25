@@ -218,7 +218,7 @@ class ConversationAdapter(
                 }
                 AUDIO_QUOTE_TYPE -> {
                     (holder as AudioQuoteHolder).bind(
-                        it, isLast(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it, isFirst(position), isLast(position), selectSet.size > 0, isSelect(position), onItemListener
                     )
                 }
                 SYSTEM_TYPE -> {

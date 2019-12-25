@@ -3,9 +3,8 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.Gravity
 import android.view.View
-import kotlinx.android.synthetic.main.date_wrapper.view.*
+import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.item_chat_audio_quote.view.*
-import kotlinx.android.synthetic.main.item_chat_audio_quote.view.chat_time
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
@@ -18,18 +17,12 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.mediaDownloaded
+import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 
 class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerView) {
-    private val dp15 = itemView.context.dpToPx(15f)
-    private val dp16 = itemView.context.dpToPx(16f)
-    private val dp8 = itemView.context.dpToPx(8f)
     private val maxWidth by lazy {
         itemView.context.dpToPx(255f)
-    }
-
-    private val minWidth by lazy {
-        itemView.context.dpToPx(180f)
     }
 
     init {
@@ -45,30 +38,30 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
             itemView.chat_msg_layout.gravity = Gravity.END
             if (isLast) {
                 setItemBackgroundResource(
-                        itemView.chat_layout,
-                        R.drawable.chat_bubble_reply_me_last,
-                        R.drawable.chat_bubble_reply_me_last_night
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_reply_me_last,
+                    R.drawable.chat_bubble_reply_me_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                        itemView.chat_layout,
-                        R.drawable.chat_bubble_reply_me,
-                        R.drawable.chat_bubble_reply_me_night
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_reply_me,
+                    R.drawable.chat_bubble_reply_me_night
                 )
             }
         } else {
             itemView.chat_msg_layout.gravity = Gravity.START
             if (isLast) {
                 setItemBackgroundResource(
-                        itemView.chat_layout,
-                        R.drawable.chat_bubble_reply_other_last,
-                        R.drawable.chat_bubble_reply_other_last_night
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_reply_other_last,
+                    R.drawable.chat_bubble_reply_other_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                        itemView.chat_layout,
-                        R.drawable.chat_bubble_reply_other,
-                        R.drawable.chat_bubble_reply_other_night
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_reply_other,
+                    R.drawable.chat_bubble_reply_other_night
                 )
             }
         }
@@ -78,6 +71,7 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
 
     fun bind(
         messageItem: MessageItem,
+        isFirst: Boolean,
         isLast: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
@@ -97,13 +91,28 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
         } else {
             itemView.audio_duration.text = messageItem.mediaDuration!!.toLong().formatMillis()
         }
-
         setStatusIcon(isMe, messageItem.status, {
-            itemView.chat_flag.setImageDrawable(it)
-            itemView.chat_flag.visibility = View.VISIBLE
+            it?.setBounds(0, 0, dp12, dp12)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
         }, {
-            itemView.chat_flag.visibility = View.GONE
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
         })
+
+        if (isFirst && !isMe) {
+            itemView.chat_name.visibility = View.VISIBLE
+            itemView.chat_name.text = messageItem.userFullName
+            if (messageItem.appId != null) {
+                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
+                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+            } else {
+                itemView.chat_name.setCompoundDrawables(null, null, null, null)
+            }
+            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
+            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+        } else {
+            itemView.chat_name.visibility = View.GONE
+        }
+
         messageItem.mediaWaveform?.let {
             itemView.audio_waveform.setWaveform(it)
         }
@@ -201,7 +210,8 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
                 true
             }
         }
-        val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
+        val quoteMessage =
+            GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
         itemView.chat_quote.bind(quoteMessage)
         itemView.chat_quote.setOnClickListener {
             if (!hasSelect) {

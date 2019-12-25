@@ -27,7 +27,9 @@
     <FrameLayout
         android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp">
 
         <one.mixin.android.widget.QuoteLayout
             android:id="@+id/chat_quote_layout"
@@ -37,11 +39,12 @@
             <one.mixin.android.widget.QuoteView
                 android:id="@+id/chat_quote"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content" />
 
             <RelativeLayout
                 android:layout_width="240dp"
-                android:layout_height="68dp">
+                android:layout_height="68dp"
+                android:padding="4dp">
 
                 <Space
                     android:id="@+id/center"
@@ -113,8 +116,21 @@
                     android:textColor="@color/gray_50"
                     android:textSize="12sp" />
 
-                <include layout="@layout/date_wrapper" />
             </RelativeLayout>
         </one.mixin.android.widget.QuoteLayout>
+
+        <TextView
+            android:id="@+id/chat_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="4dp"
+            android:drawablePadding="3dp"
+            android:fontFamily="@font/sf_pro_light"
+            android:gravity="end|bottom"
+            android:textColor="@color/color_chat_date"
+            android:textSize="@dimen/chat_date_size"
+            tools:text="7:48AM" />
     </FrameLayout>
 </LinearLayout>
