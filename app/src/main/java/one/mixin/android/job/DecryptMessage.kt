@@ -575,7 +575,7 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.SIGNAL_AUDIO.name ||
             data.category == MessageCategory.SIGNAL_STICKER.name ||
             data.category == MessageCategory.SIGNAL_CONTACT.name ||
-            data.category == MessageCategory.SIGNAL_POST.name ) {
+            data.category == MessageCategory.SIGNAL_POST.name) {
             messageDao.insert(createMessage(data.messageId, data.conversationId,
                 data.userId, data.category, data.data, data.createdAt, MessageStatus.FAILED.name))
         }

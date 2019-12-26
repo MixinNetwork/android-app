@@ -47,6 +47,10 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import java.io.ByteArrayInputStream
+import java.io.FileInputStream
+import java.net.URISyntaxException
+import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import kotlinx.coroutines.launch
@@ -86,10 +90,6 @@ import org.jetbrains.anko.configuration
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
-import java.io.ByteArrayInputStream
-import java.io.FileInputStream
-import java.net.URISyntaxException
-import java.util.concurrent.TimeUnit
 
 class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
@@ -281,9 +281,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.settings.useWideViewPort = true
         contentView.chat_web_view.settings.loadWithOverviewMode = true
         supportsQ {
-            contentView.chat_web_view.settings.forceDark = if(isNightMode()){
+            contentView.chat_web_view.settings.forceDark = if (isNightMode()) {
                 FORCE_DARK_ON
-            }else{
+            } else {
                 FORCE_DARK_AUTO
             }
         }
