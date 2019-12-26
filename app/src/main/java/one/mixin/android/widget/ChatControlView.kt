@@ -166,6 +166,30 @@ class ChatControlView : FrameLayout {
         chat_slide.parent.requestDisallowInterceptTouchEvent(false)
     }
 
+    fun hideOtherInput() {
+        if (!botHide) {
+            chat_bot_iv.isGone = true
+        }
+        chat_sticker_ib.isGone = true
+        chat_menu_iv.isGone = true
+        chat_img_iv.isGone = true
+        sendStatus = REPLY
+    }
+
+    fun showOtherInput() {
+        chat_menu_iv.isVisible = true
+        sendStatus = if (sendStatus == REPLY && chat_et.text.toString().trim().isNotEmpty()) {
+            SEND
+        } else {
+            checkSticker()
+            if (!botHide) {
+                chat_bot_iv.isVisible = true
+            }
+            chat_img_iv.isVisible = true
+            lastSendStatus
+        }
+    }
+
     private var botHide = false
 
     fun hideBot() {
