@@ -87,8 +87,8 @@ abstract class ActivityModule {
     @ContributesAndroidInjector
     internal abstract fun contributeRestore(): RestoreActivity
 
-    @ContributesAndroidInjector
-    internal abstract fun contributeRecycler(): MarkdownActivity
+    @ContributesAndroidInjector(modules = [(CommonModule::class)])
+    internal abstract fun contributeMarkdown(): MarkdownActivity
 
     @ContributesAndroidInjector(modules = [(CommonModule::class), (SharedMediaActivityModule::class)])
     internal abstract fun contributeSharedMedia(): SharedMediaActivity

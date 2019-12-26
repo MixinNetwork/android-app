@@ -42,6 +42,7 @@
             android:minHeight="32dp"
             android:textColor="?attr/text_primary"
             android:textSize="14sp"
+            android:autoLink="none"
             tools:text="message" />
 
         <TextView

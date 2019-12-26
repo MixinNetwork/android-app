@@ -3,7 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:autoLink="none"
     android:textAppearance="?android:attr/textAppearanceMedium"
     android:textColor="?attr/text_primary"
+    android:textIsSelectable="true"
     android:textSize="16sp"
     tools:text="Table content" />
