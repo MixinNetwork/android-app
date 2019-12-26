@@ -222,22 +222,13 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             when {
                 isInnerTransfer() && shouldShowTransferTip() -> {
                     currentAsset?.let {
-                        val transferTipBottomSheetDialogFragment =
-                            TransferTipBottomSheetDialogFragment.newInstance(
-                                user?.fullName,
-                                it,
-                                BigDecimal(getAmount()).toDouble() * currentAsset!!.priceUsd.toDouble()
-                            )
-                        transferTipBottomSheetDialogFragment.showNow(
+                        TransferBottomSheetDialogFragment.checkAmountAndShow(
                             parentFragmentManager,
-                            TransferTipBottomSheetDialogFragment.TAG
+                            user?.fullName,
+                            it,
+                            BigDecimal(getAmount()).toDouble() * currentAsset!!.priceUsd.toDouble(),
+                            whenSuccess = { showTransferBottom() }
                         )
-                        transferTipBottomSheetDialogFragment.callback =
-                            object : TransferTipBottomSheetDialogFragment.Callback {
-                                override fun onSuccess() {
-                                    showTransferBottom()
-                                }
-                            }
                     }
                 }
                 isInnerTransfer() -> showTransferBottom()
@@ -265,12 +256,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
     private fun shouldShowTransferTip(): Boolean {
         if (currentAsset == null) return false
-        return try {
-            val amount = BigDecimal(getAmount()).toDouble() * currentAsset!!.priceUsd.toDouble()
-            amount >= (Session.getAccount()!!.transferConfirmationThreshold)
-        } catch (e: NumberFormatException) {
-            false
-        }
+        return TransferTipBottomSheetDialogFragment.shouldShowTransferTip(getAmount(), currentAsset!!)
     }
 
     private fun shouldShowWithdrawalTip(): Boolean {

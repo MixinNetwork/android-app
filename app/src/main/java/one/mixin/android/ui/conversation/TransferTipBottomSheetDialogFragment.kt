@@ -18,6 +18,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
@@ -27,6 +28,15 @@ class TransferTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "TransferTipBottomSheetDialogFragment"
         private const val ARGS_NAME = "name"
         private const val ARGS_AMOUNT = "amount"
+
+        fun shouldShowTransferTip(amountString: String, assetItem: AssetItem): Boolean {
+            return try {
+                val amount = BigDecimal(amountString).toDouble() * assetItem.priceUsd.toDouble()
+                amount >= (Session.getAccount()!!.transferConfirmationThreshold)
+            } catch (e: NumberFormatException) {
+                false
+            }
+        }
 
         fun newInstance(name: String?, assetItem: AssetItem, amount: Double) =
             TransferTipBottomSheetDialogFragment().withArgs {
@@ -83,7 +93,10 @@ class TransferTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             callback?.onSuccess()
             dismiss()
         }
-        contentView.cancel_tv.setOnClickListener { dismiss() }
+        contentView.cancel_tv.setOnClickListener {
+            callback?.onCancel()
+            dismiss()
+        }
 
         startCountDown()
     }
@@ -125,5 +138,7 @@ class TransferTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     interface Callback {
         fun onSuccess()
+
+        fun onCancel()
     }
 }

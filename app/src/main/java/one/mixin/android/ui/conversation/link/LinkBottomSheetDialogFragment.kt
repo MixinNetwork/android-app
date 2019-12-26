@@ -26,6 +26,7 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.math.BigDecimal
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
 import kotlinx.coroutines.Dispatchers
@@ -57,6 +58,7 @@ import one.mixin.android.ui.common.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.TransferTipBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
@@ -218,7 +220,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                         if (asset != null && asset.destination.isNotEmpty()) {
                             authOrPay = true
                             showTransferBottom(paymentResponse.recipient, amount, asset, trace, memo, paymentResponse.status)
-                            dismiss()
                         } else {
                             error()
                         }
@@ -560,9 +561,37 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
     }
 
     private fun showTransferBottom(user: User, amount: String, asset: AssetItem, trace: String?, memo: String?, state: String) {
-        TransferBottomSheetDialogFragment
-            .newInstance(TransferBiometricItem(user, asset, amount, null, trace, memo, state))
-            .showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+        val showTransferBottomAction = {
+            TransferBottomSheetDialogFragment
+                .newInstance(
+                    TransferBiometricItem(
+                        user,
+                        asset,
+                        amount,
+                        null,
+                        trace,
+                        memo,
+                        state
+                    )
+                )
+                .showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+        }
+        if (TransferTipBottomSheetDialogFragment.shouldShowTransferTip(amount, asset)) {
+            TransferBottomSheetDialogFragment.checkAmountAndShow(
+                parentFragmentManager,
+                user.fullName,
+                asset,
+                BigDecimal(amount).toDouble() * asset.priceUsd.toDouble(),
+                whenSuccess = {
+                    showTransferBottomAction()
+                    dismiss()
+                },
+                whenCancel = { dismiss() }
+            )
+        } else {
+            showTransferBottomAction()
+            dismiss()
+        }
     }
 
     private val mBottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {

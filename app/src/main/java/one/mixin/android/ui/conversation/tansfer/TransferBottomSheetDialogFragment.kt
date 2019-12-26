@@ -7,6 +7,7 @@ import android.text.TextUtils
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import androidx.fragment.app.FragmentManager
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import one.mixin.android.Constants
@@ -22,12 +23,40 @@ import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
+import one.mixin.android.ui.conversation.TransferTipBottomSheetDialogFragment
+import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
 
 class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<BiometricItem>() {
 
     companion object {
         const val TAG = "TransferBottomSheetDialogFragment"
+
+        fun checkAmountAndShow(
+            fragmentManager: FragmentManager,
+            name: String?,
+            assetItem: AssetItem,
+            amount: Double,
+            whenSuccess: () -> Unit,
+            whenCancel: (() -> Unit)? = null
+        ) {
+            val transferTipBottomSheetDialogFragment =
+                TransferTipBottomSheetDialogFragment.newInstance(name, assetItem, amount)
+            transferTipBottomSheetDialogFragment.showNow(
+                fragmentManager,
+                TransferTipBottomSheetDialogFragment.TAG
+            )
+            transferTipBottomSheetDialogFragment.callback =
+                object : TransferTipBottomSheetDialogFragment.Callback {
+                    override fun onSuccess() {
+                        whenSuccess()
+                    }
+
+                    override fun onCancel() {
+                        whenCancel?.invoke()
+                    }
+                }
+        }
 
         inline fun <reified T : BiometricItem> newInstance(t: T) =
             TransferBottomSheetDialogFragment().withArgs {
