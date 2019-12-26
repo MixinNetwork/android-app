@@ -170,6 +170,7 @@ dependencies {
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
     implementation("com.bugsnag:bugsnag-android:${bugsnagVersion}") {
         exclude group: "com.bugsnag", module: "bugsnag-plugin-android-anr"
+        exclude group: "com.bugsnag", module: "bugsnag-plugin-android-ndk"
     }
     implementation "org.jsoup:jsoup:${jsoupVersion}"
 

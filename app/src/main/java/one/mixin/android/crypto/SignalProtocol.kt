@@ -116,7 +116,6 @@ class SignalProtocol(ctx: Context) {
     }
 
     fun decrypt(groupId: String, senderId: String, dataType: Int, cipherText: ByteArray, category: String, sessionId: String?, callback: DecryptionCallback) {
-
         val address = SignalProtocolAddress(senderId, sessionId.getDeviceId())
         val sessionCipher = SessionCipher(signalProtocolStore, address)
         if (category == MessageCategory.SIGNAL_KEY.name) {
