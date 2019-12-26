@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
+import io.noties.markwon.Markwon
 import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
 import kotlinx.android.synthetic.main.item_chat_post.view.*
 import one.mixin.android.MixinApplication
@@ -14,7 +15,6 @@ import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.MessageItem
 import org.jetbrains.anko.dip
 
@@ -90,17 +90,15 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
         }
     }
 
-    private var onItemListener: ConversationAdapter.OnItemListener? = null
-
     fun bind(
         messageItem: MessageItem,
         isLast: Boolean,
         isFirst: Boolean = false,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: ConversationAdapter.OnItemListener,
+        miniMarkwon: Markwon
     ) {
-        this.onItemListener = onItemListener
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
@@ -130,8 +128,7 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
         }
 
         messageItem.content?.let {
-            MarkwonUtil.getMiniSingle(itemView.context)
-                .setMarkdown(itemView.chat_tv, it.split("\n").take(20).joinToString("\n"))
+            miniMarkwon.setMarkdown(itemView.chat_tv, it.split("\n").take(20).joinToString("\n"))
         }
 
         itemView.setOnLongClickListener {

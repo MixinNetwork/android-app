@@ -30,119 +30,108 @@ import org.commonmark.node.FencedCodeBlock
 
 class MarkwonUtil {
     companion object {
-        private var markDownNight: Boolean = false
-        private var markDown: Markwon? = null
-        private var linkResolver: ((String) -> Unit)? = null
-        fun getSingle(
+        fun getMarkwon(
             context: Context,
             linkResolver: (String) -> Unit
         ): Markwon {
-            val isNightMode = context.isNightMode()
-            this.linkResolver = linkResolver
-            if (markDown == null || markDownNight != isNightMode) {
-                val prism4j = Prism4j(LanguageGrammerLocator())
-                val prism4jTheme = Prism4jThemeDefault.create()
-                markDown = Markwon.builder(context)
-                    .usePlugin(CorePlugin.create())
-                    .usePlugin(StrikethroughPlugin.create())
-                    .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
-                    .usePlugin(TableEntryPlugin.create(context))
-                    .usePlugin(GlideImagesPlugin.create(context))
-                    .usePlugin(GlideImagesPlugin.create(Glide.with(context)))
-                    .usePlugin(GlideImagesPlugin.create(object : GlideImagesPlugin.GlideStore {
-                        override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
-                            Glide.with(context).clear(target)
-                        }
+            val requestManager = Glide.with(context)
+            val prism4j = Prism4j(LanguageGrammerLocator())
+            val prism4jTheme = Prism4jThemeDefault.create()
+            return Markwon.builder(context)
+                .usePlugin(CorePlugin.create())
+                .usePlugin(StrikethroughPlugin.create())
+                .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
+                .usePlugin(TableEntryPlugin.create(context))
+                .usePlugin(GlideImagesPlugin.create(context))
+                .usePlugin(GlideImagesPlugin.create(Glide.with(context)))
+                .usePlugin(GlideImagesPlugin.create(object : GlideImagesPlugin.GlideStore {
+                    override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
+                        requestManager.clear(target)
+                    }
 
-                        override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
-                            return Glide.with(context).load(drawable.destination)
-                        }
-                    }))
+                    override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
+                        return requestManager.load(drawable.destination)
+                    }
+                }))
+                .usePlugin(object : AbstractMarkwonPlugin() {
+                    override fun configureTheme(builder: MarkwonTheme.Builder) {
+                        builder.headingBreakHeight(0)
+                    }
 
-                    .usePlugin(object : AbstractMarkwonPlugin() {
-                        override fun configureTheme(builder: MarkwonTheme.Builder) {
-                            builder.headingBreakHeight(0)
+                    override fun configureVisitor(builder: MarkwonVisitor.Builder) {
+                        builder.on(
+                            FencedCodeBlock::class.java
+                        ) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
+                            val code = visitor.configuration()
+                                .syntaxHighlight()
+                                .highlight(
+                                    fencedCodeBlock.info,
+                                    fencedCodeBlock.literal.trim { it <= ' ' }
+                                )
+                            visitor.builder().append(code)
                         }
+                    }
 
-                        override fun configureVisitor(builder: MarkwonVisitor.Builder) {
-                            builder.on(
-                                FencedCodeBlock::class.java
-                            ) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
-                                val code = visitor.configuration()
-                                    .syntaxHighlight()
-                                    .highlight(
-                                        fencedCodeBlock.info,
-                                        fencedCodeBlock.literal.trim { it <= ' ' }
-                                    )
-                                visitor.builder().append(code)
-                            }
-                        }
-
-                        override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
-                            builder.linkResolver(object : LinkResolverDef() {
-                                override fun resolve(view: View, link: String) {
-                                    if (isMixinUrl(link)) {
-                                        this@Companion.linkResolver?.invoke(link)
-                                    } else {
-                                        super.resolve(view, link)
-                                    }
+                    override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
+                        builder.linkResolver(object : LinkResolverDef() {
+                            override fun resolve(view: View, link: String) {
+                                if (isMixinUrl(link)) {
+                                    linkResolver.invoke(link)
+                                } else {
+                                    super.resolve(view, link)
                                 }
-                            })
-                        }
-                    }).build()
-            }
-            return markDown!!
+                            }
+                        })
+                    }
+                }).build()
         }
 
-        private var miniMarkDownNight: Boolean = false
-        private var miniMarkDown: Markwon? = null
-        fun getMiniSingle(context: Context): Markwon {
+        fun getMiniMarkwon(context: Context): Markwon {
             val isNightMode = context.isNightMode()
-            if (miniMarkDown == null || miniMarkDownNight != isNightMode) {
-                val prism4j = Prism4j(LanguageGrammerLocator())
-                val prism4jTheme = if (isNightMode) {
-                    Prism4jThemeDarkula.create()
-                } else Prism4jThemeDefault.create()
-                miniMarkDown = Markwon.builder(context)
-                    .usePlugin(CorePlugin.create())
-                    .usePlugin(StrikethroughPlugin.create())
-                    .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
-                    .usePlugin(TablePlugin.create(getTheme()))
-                    .usePlugin(GlideImagesPlugin.create(context))
-                    .usePlugin(GlideImagesPlugin.create(Glide.with(context)))
-                    .usePlugin(GlideImagesPlugin.create(object : GlideImagesPlugin.GlideStore {
-                        override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
-                            Glide.with(context).clear(target)
-                        }
+            val requestManager = Glide.with(context)
 
-                        override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
-                            return Glide.with(context).load(drawable.destination)
-                        }
-                    }))
-                    .usePlugin(object : AbstractMarkwonPlugin() {
-                        override fun configureTheme(builder: MarkwonTheme.Builder) {
-                            builder.headingBreakHeight(0)
-                                .codeBlockBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
-                                .codeBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
-                                .headingTextSizeMultipliers(
-                                    floatArrayOf(
-                                        1.3F,
-                                        1.2F,
-                                        1.1F,
-                                        .9F,
-                                        .8F,
-                                        .7F
-                                    )
+            val prism4j = Prism4j(LanguageGrammerLocator())
+            val prism4jTheme = if (isNightMode) {
+                Prism4jThemeDarkula.create()
+            } else Prism4jThemeDefault.create()
+            return Markwon.builder(context)
+                .usePlugin(CorePlugin.create())
+                .usePlugin(StrikethroughPlugin.create())
+                .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
+                .usePlugin(TablePlugin.create(getTheme()))
+                .usePlugin(GlideImagesPlugin.create(context))
+                .usePlugin(GlideImagesPlugin.create(Glide.with(context)))
+                .usePlugin(GlideImagesPlugin.create(object : GlideImagesPlugin.GlideStore {
+                    override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
+                        requestManager.clear(target)
+                    }
+
+                    override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
+                        return requestManager.load(drawable.destination)
+                    }
+                }))
+                .usePlugin(object : AbstractMarkwonPlugin() {
+                    override fun configureTheme(builder: MarkwonTheme.Builder) {
+                        builder.headingBreakHeight(0)
+                            .codeBlockBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
+                            .codeBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
+                            .headingTextSizeMultipliers(
+                                floatArrayOf(
+                                    1.3F,
+                                    1.2F,
+                                    1.1F,
+                                    .9F,
+                                    .8F,
+                                    .7F
                                 )
-                        }
+                            )
+                    }
 
-                        override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
-                            builder.linkResolver { _, _ -> }
-                        }
-                    })
-                    .build()
-            }
-            return miniMarkDown!!
+                    override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
+                        builder.linkResolver { _, _ -> }
+                    }
+                })
+                .build()
         }
 
         private fun getTheme(): TableTheme {

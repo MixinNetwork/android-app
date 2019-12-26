@@ -219,7 +219,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private var unreadTipCount: Int = 0
     private val chatAdapter: ConversationAdapter by lazy {
-        ConversationAdapter(keyword, onItemListener, isGroup, !isPlainMessage()).apply {
+        ConversationAdapter(requireContext(), keyword, onItemListener, isGroup, !isPlainMessage()).apply {
             registerAdapterDataObserver(chatAdapterDataObserver)
         }
     }

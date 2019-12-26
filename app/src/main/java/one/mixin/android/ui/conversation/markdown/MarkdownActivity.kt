@@ -50,7 +50,7 @@ class MarkdownActivity : BaseActivity() {
         recycler_view.layoutManager = LinearLayoutManager(this)
         recycler_view.setHasFixedSize(true)
         recycler_view.adapter = adapter
-        val markwon = MarkwonUtil.getSingle(this) { link ->
+        val markwon = MarkwonUtil.getMarkwon(this) { link ->
             LinkBottomSheetDialogFragment.newInstance(link)
                 .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         }
