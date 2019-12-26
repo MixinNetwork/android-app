@@ -650,7 +650,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
     override fun finish() {
         VideoPlayer.player().stop()
         super.finish()
-        overridePendingTransition(0, 0)
+        overridePendingTransition(0, R.anim.scale_out)
     }
 
     private val mediaPagerAdapterListener = object : MediaPagerAdapterListener {
