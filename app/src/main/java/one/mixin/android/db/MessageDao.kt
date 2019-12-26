@@ -177,7 +177,7 @@ interface MessageDao : BaseDao<Message> {
             FROM messages m INNER JOIN users u ON c.owner_id = u.user_id
             INNER JOIN conversations c ON c.conversation_id = m.conversation_id
             WHERE m.rowid in (SELECT rowid FROM messages_fts WHERE messages_fts MATCH :query) AND m.status != 'FAILED' 
-            AND (m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT' OR m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA')
+            AND m.category IN('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST') 
             GROUP BY m.conversation_id
             ORDER BY m.created_at DESC
             LIMIT :limit
@@ -191,8 +191,8 @@ interface MessageDao : BaseDao<Message> {
             m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
             FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
             WHERE m.rowid in (SELECT rowid FROM messages_fts WHERE messages_fts MATCH :query) AND m.status != 'FAILED' 
-            AND (m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT' OR m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA')
-            AND  m.conversation_id = :conversationId
+            AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST') 
+            AND m.conversation_id = :conversationId
             ORDER BY m.created_at DESC
             """
     )
