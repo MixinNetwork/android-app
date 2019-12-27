@@ -14,7 +14,7 @@
         android:paddingBottom="30dp" />
 
     <one.mixin.android.widget.WebControlView
-        android:id="@+id/web_control"
+        android:id="@+id/control"
         android:layout_width="88dp"
         android:layout_height="32dp"
         android:layout_gravity="end|top"

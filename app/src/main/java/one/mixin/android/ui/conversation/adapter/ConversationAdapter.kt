@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -46,6 +47,7 @@ import one.mixin.android.ui.conversation.holder.TransparentHolder
 import one.mixin.android.ui.conversation.holder.UnknownHolder
 import one.mixin.android.ui.conversation.holder.VideoHolder
 import one.mixin.android.ui.conversation.holder.WaitingHolder
+import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
@@ -57,6 +59,7 @@ import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
 
 class ConversationAdapter(
+    private val context: Context,
     private val keyword: String?,
     private val onItemListener: OnItemListener,
     private val isGroup: Boolean,
@@ -66,7 +69,9 @@ class ConversationAdapter(
     var selectSet: ArraySet<MessageItem> = ArraySet()
     var unreadMsgId: String? = null
     var recipient: User? = null
-
+    val miniMarkwon by lazy {
+        MarkwonUtil.getMiniMarkwon(context)
+    }
     var hasBottomView = false
         set(value) {
             if (field != value) {
@@ -145,7 +150,8 @@ class ConversationAdapter(
                 POST_TYPE -> {
                     (holder as PostHolder).bind(
                         it, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener,
+                        miniMarkwon
                     )
                 }
                 IMAGE_TYPE -> {

@@ -37,12 +37,14 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import one.mixin.android.R
+import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.util.SystemUIManager
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.displayMetrics
 
@@ -190,6 +192,16 @@ class BottomSheet(
                 params.flags = params.flags or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
             }
             window.attributes = params
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        window?.let { window ->
+            SystemUIManager.lightUI(
+                window,
+                !context.booleanFromAttribute(R.attr.flag_night)
+            )
         }
     }
 

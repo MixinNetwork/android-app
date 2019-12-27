@@ -19,6 +19,7 @@ data class ForwardMessage(
 
 enum class ForwardCategory {
     TEXT,
+    POST,
     IMAGE,
     DATA,
     VIDEO,

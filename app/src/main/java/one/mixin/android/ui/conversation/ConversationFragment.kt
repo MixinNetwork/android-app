@@ -219,7 +219,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private var unreadTipCount: Int = 0
     private val chatAdapter: ConversationAdapter by lazy {
-        ConversationAdapter(keyword, onItemListener, isGroup, !isPlainMessage()).apply {
+        ConversationAdapter(requireContext(), keyword, onItemListener, isGroup, !isPlainMessage()).apply {
             registerAdapterDataObserver(chatAdapterDataObserver)
         }
     }
@@ -1320,6 +1320,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             ForwardCategory.TEXT.name -> {
                                 item.content?.let { content -> sendMessage(content) }
                             }
+                            ForwardCategory.POST.name -> {
+                                item.content?.let { content -> sendPost(content) }
+                            }
                         }
                     }
                 }
@@ -1469,6 +1472,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chat_control.chat_et.setText("")
             createConversation {
                 chatViewModel.sendTextMessage(conversationId, sender, message, isPlainMessage())
+                scrollToDown()
+                markRead()
+            }
+        }
+    }
+
+    private fun sendPost(message: String) {
+        if (message.isNotBlank()) {
+            createConversation {
+                chatViewModel.sendPostMessage(conversationId, sender, message, isPlainMessage())
                 scrollToDown()
                 markRead()
             }

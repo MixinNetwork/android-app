@@ -2,10 +2,10 @@ package one.mixin.android.widget.gallery.ui
 
 import android.app.Activity
 import android.content.Intent
+import android.content.res.Configuration
 import android.database.Cursor
 import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
-import android.graphics.Color
 import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Build
@@ -17,8 +17,12 @@ import android.view.View
 import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_gallery.*
+import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.internal.entity.SelectionSpec
@@ -29,8 +33,12 @@ import one.mixin.android.widget.gallery.internal.ui.adapter.AlbumMediaAdapter
 import one.mixin.android.widget.gallery.internal.ui.adapter.AlbumsAdapter
 import one.mixin.android.widget.gallery.internal.ui.widget.AlbumsSpinner
 import one.mixin.android.widget.gallery.internal.utils.MediaStoreCompat
+import org.jetbrains.anko.configuration
 
-class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, AdapterView.OnItemSelectedListener, MediaSelectionFragment.SelectionProvider, AlbumMediaAdapter.CheckStateListener, AlbumMediaAdapter.OnMediaClickListener, AlbumMediaAdapter.OnPhotoCapture {
+class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks,
+    AdapterView.OnItemSelectedListener, MediaSelectionFragment.SelectionProvider,
+    AlbumMediaAdapter.CheckStateListener, AlbumMediaAdapter.OnMediaClickListener,
+    AlbumMediaAdapter.OnPhotoCapture {
     private val mAlbumCollection = AlbumCollection()
     private val mSelectedCollection = SelectedItemCollection(this)
 
@@ -40,7 +48,36 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
     private lateinit var mAlbumsSpinner: AlbumsSpinner
     private lateinit var mAlbumsAdapter: AlbumsAdapter
 
+    private fun isNightMode(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+        } else {
+            defaultSharedPreferences.getInt(
+                Constants.Theme.THEME_CURRENT_ID,
+                Constants.Theme.THEME_DEFAULT_ID
+            ) == Constants.Theme.THEME_NIGHT_ID
+        }
+    }
+
+    private fun getNightThemeId(): Int {
+        return R.style.AppTheme_Night_NoActionBar
+    }
+
+    private fun getDefaultThemeId(): Int {
+        return R.style.AppTheme_NoActionBar
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (isNightMode()) {
+            setTheme(getNightThemeId())
+            SystemUIManager.lightUI(window, false)
+        } else {
+            setTheme(getDefaultThemeId())
+            SystemUIManager.lightUI(window, true)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
+        }
         mSpec = SelectionSpec.getInstance()
         super.onCreate(savedInstanceState)
         if (!mSpec.hasInited) {
@@ -67,10 +104,10 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
         actionBar.setDisplayHomeAsUpEnabled(true)
         val navigationIcon = toolbar.navigationIcon!!
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            navigationIcon.colorFilter = BlendModeColorFilter(Color.BLACK, BlendMode.SRC_IN)
+            navigationIcon.colorFilter = BlendModeColorFilter(colorFromAttribute(R.attr.icon_black), BlendMode.SRC_IN)
         } else {
             @Suppress("DEPRECATION")
-            navigationIcon.setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN)
+            navigationIcon.setColorFilter(colorFromAttribute(R.attr.icon_black), PorterDuff.Mode.SRC_IN)
         }
 
         mSelectedCollection.onCreate(savedInstanceState)
@@ -130,8 +167,10 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
         val handler = Handler(Looper.getMainLooper())
         handler.post {
             cursor.moveToPosition(mAlbumCollection.currentSelection)
-            mAlbumsSpinner.setSelection(this@GalleryActivity,
-                mAlbumCollection.currentSelection)
+            mAlbumsSpinner.setSelection(
+                this@GalleryActivity,
+                mAlbumCollection.currentSelection
+            )
             val album = Album.valueOf(cursor)
             if (album.isAll && SelectionSpec.getInstance().capture) {
                 album.addCaptureCount()
@@ -162,7 +201,8 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
     override fun onUpdate() {
         if (mSpec.onSelectedListener != null) {
             mSpec.onSelectedListener.onSelected(
-                mSelectedCollection.asListOfUri(), mSelectedCollection.asListOfString())
+                mSelectedCollection.asListOfUri(), mSelectedCollection.asListOfString()
+            )
         }
     }
 

@@ -4,13 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import io.noties.markwon.recycler.MarkwonAdapter
 import io.noties.markwon.recycler.SimpleEntry
 import io.noties.markwon.recycler.table.TableEntry
 import kotlinx.android.synthetic.main.activity_markdown.*
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.widget.WebControlView
 import org.commonmark.ext.gfm.tables.TableBlock
@@ -20,8 +20,8 @@ class MarkdownActivity : BaseActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_markdown)
-        web_control.mode = isNightMode()
-        web_control.callback = object : WebControlView.Callback {
+        control.mode = isNightMode()
+        control.callback = object : WebControlView.Callback {
             override fun onMoreClick() {
                 // Todo
             }
@@ -47,11 +47,13 @@ class MarkdownActivity : BaseActivity() {
                     .textLayoutIsRoot(R.layout.item_markdown_cell)
             }
         ).build()
-        val recyclerView: RecyclerView = findViewById(R.id.recycler_view)
-        recyclerView.layoutManager = LinearLayoutManager(this)
-        recyclerView.setHasFixedSize(true)
-        recyclerView.adapter = adapter
-        val markwon = MarkwonUtil.getSingle(this)
+        recycler_view.layoutManager = LinearLayoutManager(this)
+        recycler_view.setHasFixedSize(true)
+        recycler_view.adapter = adapter
+        val markwon = MarkwonUtil.getMarkwon(this) { link ->
+            LinkBottomSheetDialogFragment.newInstance(link)
+                .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+        }
         val markdown = intent.getStringExtra(CONTENT) ?: return
         adapter.setMarkdown(markwon, markdown)
         adapter.notifyDataSetChanged()

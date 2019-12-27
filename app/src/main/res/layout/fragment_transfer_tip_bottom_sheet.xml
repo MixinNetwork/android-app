@@ -58,7 +58,7 @@
                 android:layout_gravity="center_horizontal|bottom"
                 android:layout_marginTop="32dp"
                 android:text="@string/wallet_transaction_continue"
-                android:textColor="@color/white"
+                android:textColor="@color/text_button"
                 android:textSize="14sp"/>
 
             <TextView

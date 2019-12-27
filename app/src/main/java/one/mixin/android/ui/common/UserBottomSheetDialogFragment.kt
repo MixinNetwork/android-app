@@ -20,9 +20,7 @@ import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
-import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.*
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.transfer_fl
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -79,7 +77,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         const val MUTE_1_YEAR = 365 * 24 * 60 * 60
         private var instant: UserBottomSheetDialogFragment? = null
         fun newInstance(user: User, conversationId: String? = null): UserBottomSheetDialogFragment {
-            instant?.dismiss()
+            try {
+                instant?.dismiss()
+            } catch (ignored: IllegalStateException) {
+            }
             instant = null
             return UserBottomSheetDialogFragment().apply {
                 arguments = Bundle().apply {
