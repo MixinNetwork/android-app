@@ -12,6 +12,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.supportsOreo
+import one.mixin.android.extension.supportsQ
 import org.jetbrains.anko.notificationManager
 import timber.log.Timber
 
@@ -21,7 +22,7 @@ class ChannelManager {
         private const val CHANNEL_GROUP = "channel_group"
         const val CHANNEL_MESSAGE = "channel_message"
         private const val CHANNEL_UPDATED_WITH_VERSION = "channel_updated_with_version"
-        const val CHANNEL_VERSION = 1
+        const val CHANNEL_VERSION = 2
 
         fun create(context: Context, channelVersion: Int) {
             supportsOreo {
@@ -32,7 +33,6 @@ class ChannelManager {
                         NotificationManager.IMPORTANCE_HIGH
                     )
 
-                messageChannel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
                 val uri =
                     Uri.parse("android.resource://${context.packageName}/${R.raw.mixin}").toString()
                 messageChannel.setSound(
@@ -41,8 +41,15 @@ class ChannelManager {
                         .setUsage(AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_INSTANT)
                         .build()
                 )
+                messageChannel.enableVibration(true)
+                messageChannel.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
                 val groupChannel = copyChannel(messageChannel, getChannelId(true, channelVersion))
                 groupChannel.name = context.getString(R.string.notification_group)
+
+                supportsQ {
+                    groupChannel.setAllowBubbles(true)
+                    messageChannel.setAllowBubbles(true)
+                }
                 context.notificationManager.createNotificationChannels(
                     listOf(messageChannel, groupChannel)
                 )
