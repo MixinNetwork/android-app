@@ -37,7 +37,6 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
                 videoComponent?.addVideoListener(componentListener)
                 addListener(componentListener)
             }
-            maybeShowController(false)
         }
 
     var callback: Callback? = null
@@ -96,6 +95,9 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
     private fun updateRefreshViewVisibility(visible: Boolean) {
         refresh_view.isVisible = visible
         player_control_view.inRefreshState = visible
+        if (!visible) {
+            hideController()
+        }
     }
 
     private fun applyTextureViewRotation(video_texture: TextureView, video_textureRotation: Int) {
@@ -227,9 +229,9 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
                     }
                     else -> {
                         pb_view.isVisible = false
+                        maybeShowController(false)
                     }
                 }
-                maybeShowController(false)
             }
         }
 

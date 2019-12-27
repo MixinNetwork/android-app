@@ -86,7 +86,6 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
             value?.apply {
                 addListener(componentListener)
             }
-            updateAll()
         }
 
     var messageId: String? = null

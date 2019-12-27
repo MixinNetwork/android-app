@@ -153,6 +153,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        window.sharedElementEnterTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
+        window.sharedElementExitTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
         setContentView(R.layout.activity_media_pager)
         window.decorView.systemUiVisibility =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -187,6 +189,13 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
                     if (firstLoad) {
                         firstLoad = false
                         view_pager.setCurrentItem(initialIndex, false)
+
+                        val messageItem = it.snapshot()[initialIndex] ?: return@Observer
+                        if (messageItem.isVideo() || messageItem.isLive()) {
+                            messageItem.loadVideoOrLive {
+                                VideoPlayer.player().start()
+                            }
+                        }
                     }
                 })
         }
@@ -476,8 +485,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
 
     private fun dismiss() {
         view_pager.visibility = View.INVISIBLE
-        overridePendingTransition(0, 0)
-        super.finish()
+        finishAfterTransition()
     }
 
     private fun checkInlinePermissions(): Boolean {
@@ -570,12 +578,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
                 VideoPlayer.player().stop()
                 VideoPlayer.player().pause()
             }
+            firstLoadVideo = false
             val messageItem = adapter.currentList?.get(position) ?: return
             loadVideoMessage(messageItem)
-            if (firstLoadVideo) {
-                firstLoadVideo = false
-                VideoPlayer.player().start()
-            }
         }
     }
 
@@ -703,6 +708,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         private const val EXCLUDE_LIVE = "exclude_live"
         private const val ALPHA_MAX = 0xFF
         const val PREFIX = "media"
+
+        private const val SHARED_ELEMENT_TRANSITION_DURATION = 200L
 
         fun show(
             activity: Activity,

@@ -52,6 +52,16 @@ class VideoHolder(
 
         itemView.player_view.apply {
             currentMessageId = messageItem.messageId
+            if (messageItem.isLive()) {
+                setUseLayout(useTopLayout = true, useBottomLayout = false)
+            } else {
+                if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
+                    setUseLayout(useTopLayout = true, useBottomLayout = true)
+                } else {
+                    setUseLayout(useTopLayout = true, useBottomLayout = false)
+                    hideController()
+                }
+            }
             if (needPostTransition) {
                 player = VideoPlayer.player().player
             }
@@ -90,7 +100,6 @@ class VideoHolder(
         itemView.tag = "$PREFIX${messageItem.messageId}"
         if (messageItem.isLive()) {
             circleProgress.isVisible = false
-            itemView.player_view.setUseLayout(useTopLayout = true, useBottomLayout = false)
             itemView.preview_iv.loadImage(messageItem.thumbUrl, messageItem.thumbImage)
         } else {
             if (messageItem.mediaUrl != null) {
@@ -102,11 +111,8 @@ class VideoHolder(
             if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
                 maybeLoadVideo(videoStatusCache, messageItem)
                 circleProgress.isVisible = false
-                itemView.player_view.setUseLayout(useTopLayout = true, useBottomLayout = true)
                 circleProgress.setBindId(null)
             } else {
-                itemView.player_view.hideController()
-                itemView.player_view.setUseLayout(useTopLayout = true, useBottomLayout = false)
                 circleProgress.isVisible = true
                 circleProgress.setBindId(messageItem.messageId)
                 if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
@@ -136,7 +142,6 @@ class VideoHolder(
         if (preStatus != MediaStatus.DONE.name && preStatus != MediaStatus.READ.name &&
             (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name)) {
             messageItem.loadVideoOrLive {
-                itemView.player_view.player = VideoPlayer.player().player
                 VideoPlayer.player().start()
             }
         }
