@@ -96,6 +96,11 @@
         <item name="android:windowLightStatusBar">false</item>
     </style>
 
+    <style name="AppTheme.Markdown" parent="AppTheme.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+    </style>
+
     <style name="MixinAlertDialogTheme" parent="Theme.AppCompat.DayNight.Dialog.Alert">
         <item name="colorAccent">@color/colorDarkBlue</item>
         <item name="android:textColorPrimary">?attr/text_primary</item>

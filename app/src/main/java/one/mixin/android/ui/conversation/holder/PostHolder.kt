@@ -118,12 +118,12 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
             } else {
-                onItemListener.onPostClick(itemView, messageItem)
+                onItemListener.onPostClick(itemView.chat_tv, messageItem)
             }
         }
         itemView.chat_layout.setOnClickListener {
             if (!hasSelect) {
-                onItemListener.onPostClick(itemView, messageItem)
+                onItemListener.onPostClick(itemView.chat_tv, messageItem)
             }
         }
 

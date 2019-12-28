@@ -45,9 +45,6 @@ import com.google.android.exoplayer2.util.MimeTypes
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.io.File
-import javax.inject.Inject
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
@@ -173,6 +170,9 @@ import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardSho
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.File
+import javax.inject.Inject
+import kotlin.math.abs
 
 @SuppressLint("InvalidWakeLockTag")
 class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
@@ -572,8 +572,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onPostClick(view: View, messageItem: MessageItem) {
-                // MarkdownActivity.show(requireActivity(), messageItem.content!!)
-                MarkdownActivity.show(requireActivity(), messageItem.content!!)
+                val loc = IntArray(2)
+                view.getLocationOnScreen(loc)
+                MarkdownActivity.show(
+                    requireActivity(),
+                    messageItem.content!!,
+                    intArrayOf(loc[0], loc[1], loc[0] + view.measuredWidth, loc[1] + view.measuredHeight)
+                )
             }
 
             override fun onCallClick(messageItem: MessageItem) {
