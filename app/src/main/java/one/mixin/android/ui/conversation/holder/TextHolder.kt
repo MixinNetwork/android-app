@@ -8,7 +8,7 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
-import kotlinx.android.synthetic.main.item_chat_message.view.*
+import kotlinx.android.synthetic.main.item_chat_text.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.notNullWithElse
@@ -18,7 +18,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
-class MessageHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class TextHolder constructor(containerView: View) : BaseViewHolder(containerView) {
 
     init {
         itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)

@@ -26,26 +26,31 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
+import one.mixin.android.ui.conversation.holder.AudioQuoteHolder
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.BillHolder
 import one.mixin.android.ui.conversation.holder.CallHolder
 import one.mixin.android.ui.conversation.holder.CardHolder
 import one.mixin.android.ui.conversation.holder.ContactCardHolder
+import one.mixin.android.ui.conversation.holder.ContactCardQuoteHolder
 import one.mixin.android.ui.conversation.holder.FileHolder
+import one.mixin.android.ui.conversation.holder.FileQuoteHolder
 import one.mixin.android.ui.conversation.holder.HyperlinkHolder
 import one.mixin.android.ui.conversation.holder.ImageHolder
-import one.mixin.android.ui.conversation.holder.MessageHolder
+import one.mixin.android.ui.conversation.holder.ImageQuoteHolder
 import one.mixin.android.ui.conversation.holder.PostHolder
 import one.mixin.android.ui.conversation.holder.RecallHolder
-import one.mixin.android.ui.conversation.holder.ReplyHolder
 import one.mixin.android.ui.conversation.holder.SecretHolder
 import one.mixin.android.ui.conversation.holder.StickerHolder
 import one.mixin.android.ui.conversation.holder.StrangerHolder
 import one.mixin.android.ui.conversation.holder.SystemHolder
+import one.mixin.android.ui.conversation.holder.TextHolder
+import one.mixin.android.ui.conversation.holder.TextQuoteHolder
 import one.mixin.android.ui.conversation.holder.TimeHolder
 import one.mixin.android.ui.conversation.holder.TransparentHolder
 import one.mixin.android.ui.conversation.holder.UnknownHolder
 import one.mixin.android.ui.conversation.holder.VideoHolder
+import one.mixin.android.ui.conversation.holder.VideoQuoteHolder
 import one.mixin.android.ui.conversation.holder.WaitingHolder
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.MessageCategory
@@ -141,8 +146,19 @@ class ConversationAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         getItem(position)?.let {
             when (getItemViewType(position)) {
-                MESSAGE_TYPE -> {
-                    (holder as MessageHolder).bind(
+                TEXT_TYPE -> {
+                    (holder as TextHolder).bind(
+                        it,
+                        keyword,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
+                }
+                TEXT_QUOTE_TYPE -> {
+                    (holder as TextQuoteHolder).bind(
                         it, keyword, isLast(position),
                         isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
                     )
@@ -156,20 +172,53 @@ class ConversationAdapter(
                 }
                 IMAGE_TYPE -> {
                     (holder as ImageHolder).bind(
-                        it, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
+                }
+                IMAGE_QUOTE_TYPE -> {
+                    (holder as ImageQuoteHolder).bind(
+                        it,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 VIDEO_TYPE -> {
                     (holder as VideoHolder).bind(
-                        it, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
+                }
+                VIDEO_QUOTE_TYPE -> {
+                    (holder as VideoQuoteHolder).bind(
+                        it,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 AUDIO_TYPE -> {
                     (holder as AudioHolder).bind(
                         it, isFirst(position),
                         isLast(position), selectSet.size > 0, isSelect(position), onItemListener
+                    )
+                }
+                AUDIO_QUOTE_TYPE -> {
+                    (holder as AudioQuoteHolder).bind(
+                        it, isFirst(position), isLast(position), selectSet.size > 0, isSelect(position), onItemListener
                     )
                 }
                 SYSTEM_TYPE -> {
@@ -195,18 +244,18 @@ class ConversationAdapter(
                         isLast(position), selectSet.size > 0, isSelect(position), onItemListener
                     )
                 }
+                FILE_QUOTE_TYPE -> {
+                    (holder as FileQuoteHolder).bind(
+                        it, keyword, isFirst(position),
+                        isLast(position), selectSet.size > 0, isSelect(position), onItemListener
+                    )
+                }
                 WAITING_TYPE -> {
                     (holder as WaitingHolder).bind(
                         it,
                         isLast(position),
                         isFirst(position),
                         onItemListener
-                    )
-                }
-                REPLY_TYPE -> {
-                    (holder as ReplyHolder).bind(
-                        it, keyword, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
                     )
                 }
                 STRANGER_TYPE -> {
@@ -226,8 +275,13 @@ class ConversationAdapter(
                 }
                 LINK_TYPE -> {
                     (holder as HyperlinkHolder).bind(
-                        it, keyword, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        keyword,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 ACTION_TYPE -> {
@@ -252,6 +306,11 @@ class ConversationAdapter(
                     (holder as ContactCardHolder).bind(
                         it, isFirst(position), isLast(position),
                         selectSet.size > 0, isSelect(position), onItemListener
+                    )
+                }
+                CONTACT_CARD_QUOTE_TYPE -> {
+                    (holder as ContactCardQuoteHolder).bind(
+                        it, isFirst(position), isLast(position), selectSet.size > 0, isSelect(position), onItemListener
                     )
                 }
                 SECRET_TYPE -> {
@@ -437,12 +496,20 @@ class ConversationAdapter(
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): RecyclerView.ViewHolder =
         when (viewType) {
-            MESSAGE_TYPE -> {
+            TEXT_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_message, parent, false)
-                MessageHolder(item)
+                    .inflate(R.layout.item_chat_text, parent, false)
+                TextHolder(item)
+            }
+            TEXT_QUOTE_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_text_quote, parent, false)
+                TextQuoteHolder(item)
             }
             POST_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
@@ -453,6 +520,11 @@ class ConversationAdapter(
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_image, parent, false)
                 ImageHolder(item)
+            }
+            IMAGE_QUOTE_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_image_quote, parent, false)
+                ImageQuoteHolder(item)
             }
             SYSTEM_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
@@ -468,11 +540,6 @@ class ConversationAdapter(
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_bill, parent, false)
                 BillHolder(item)
-            }
-            REPLY_TYPE -> {
-                val item = LayoutInflater.from(parent.context)
-                    .inflate(R.layout.item_chat_reply, parent, false)
-                ReplyHolder(item)
             }
             WAITING_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
@@ -494,10 +561,20 @@ class ConversationAdapter(
                     .inflate(R.layout.item_chat_file, parent, false)
                 FileHolder(item)
             }
+            FILE_QUOTE_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_file_quote, parent, false)
+                FileQuoteHolder(item)
+            }
             AUDIO_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_audio, parent, false)
                 AudioHolder(item)
+            }
+            AUDIO_QUOTE_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_audio_quote, parent, false)
+                AudioQuoteHolder(item)
             }
             STICKER_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
@@ -524,10 +601,20 @@ class ConversationAdapter(
                     .inflate(R.layout.item_chat_contact_card, parent, false)
                 ContactCardHolder(item)
             }
+            CONTACT_CARD_QUOTE_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_contact_card_quote, parent, false)
+                ContactCardQuoteHolder(item)
+            }
             VIDEO_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_video, parent, false)
                 VideoHolder(item)
+            }
+            VIDEO_QUOTE_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_video_quote, parent, false)
+                VideoQuoteHolder(item)
             }
             SECRET_TYPE -> {
                 val item = LayoutInflater.from(parent.context)
@@ -569,31 +656,61 @@ class ConversationAdapter(
                 item.status == MessageStatus.FAILED.name -> WAITING_TYPE
                 item.type == MessageCategory.SIGNAL_TEXT.name || item.type == MessageCategory.PLAIN_TEXT.name -> {
                     if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
-                        REPLY_TYPE
+                        TEXT_QUOTE_TYPE
                     } else if (!item.siteName.isNullOrBlank() || !item.siteDescription.isNullOrBlank()) {
                         LINK_TYPE
                     } else {
-                        MESSAGE_TYPE
+                        TEXT_TYPE
                     }
                 }
                 item.type == MessageCategory.SIGNAL_IMAGE.name ||
-                    item.type == MessageCategory.PLAIN_IMAGE.name -> IMAGE_TYPE
+                    item.type == MessageCategory.PLAIN_IMAGE.name -> {
+                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        IMAGE_QUOTE_TYPE
+                    } else {
+                        IMAGE_TYPE
+                    }
+                }
                 item.type == MessageCategory.SYSTEM_CONVERSATION.name -> SYSTEM_TYPE
                 item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> BILL_TYPE
                 item.type == MessageCategory.SIGNAL_DATA.name ||
-                    item.type == MessageCategory.PLAIN_DATA.name -> FILE_TYPE
+                    item.type == MessageCategory.PLAIN_DATA.name -> {
+                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        FILE_QUOTE_TYPE
+                    } else {
+                        FILE_TYPE
+                    }
+                }
                 item.type == MessageCategory.SIGNAL_STICKER.name ||
                     item.type == MessageCategory.PLAIN_STICKER.name -> STICKER_TYPE
                 item.type == MessageCategory.APP_BUTTON_GROUP.name -> ACTION_TYPE
                 item.type == MessageCategory.APP_CARD.name -> ACTION_CARD_TYPE
                 item.type == MessageCategory.SIGNAL_CONTACT.name ||
-                    item.type == MessageCategory.PLAIN_CONTACT.name -> CONTACT_CARD_TYPE
+                    item.type == MessageCategory.PLAIN_CONTACT.name -> {
+                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        CONTACT_CARD_QUOTE_TYPE
+                    } else {
+                        CONTACT_CARD_TYPE
+                    }
+                }
                 item.type == MessageCategory.SIGNAL_VIDEO.name ||
                     item.type == MessageCategory.PLAIN_VIDEO.name ||
                     item.type == MessageCategory.SIGNAL_LIVE.name ||
-                    item.type == MessageCategory.PLAIN_LIVE.name -> VIDEO_TYPE
+                    item.type == MessageCategory.PLAIN_LIVE.name -> {
+                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        VIDEO_QUOTE_TYPE
+                    } else {
+                        VIDEO_TYPE
+                    }
+                }
                 item.type == MessageCategory.SIGNAL_AUDIO.name ||
-                    item.type == MessageCategory.PLAIN_AUDIO.name -> AUDIO_TYPE
+                    item.type == MessageCategory.PLAIN_AUDIO.name -> {
+                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        AUDIO_QUOTE_TYPE
+                    } else {
+                        AUDIO_TYPE
+                    }
+                }
                 item.type == MessageCategory.PLAIN_POST.name ||
                     item.type == MessageCategory.SIGNAL_POST.name -> POST_TYPE
                 item.isCallMessage() -> CALL_TYPE
@@ -605,35 +722,43 @@ class ConversationAdapter(
     override fun getItemViewType(position: Int): Int = getItemType(getItem(position))
 
     companion object {
-        const val NULL_TYPE = -2
-        const val UNKNOWN_TYPE = -1
-        const val MESSAGE_TYPE = 0
-        const val IMAGE_TYPE = 1
-        const val SYSTEM_TYPE = 2
-        const val CARD_TYPE = 3
-        const val BILL_TYPE = 4
+        const val NULL_TYPE = 99
+        const val UNKNOWN_TYPE = 0
+        const val TEXT_TYPE = 1
+        const val TEXT_QUOTE_TYPE = -1
+        const val IMAGE_TYPE = 2
+        const val IMAGE_QUOTE_TYPE = -2
+        const val LINK_TYPE = 3
+        const val VIDEO_TYPE = 4
+        const val VIDEO_QUOTE_TYPE = -4
+        const val AUDIO_TYPE = 5
+        const val AUDIO_QUOTE_TYPE = -5
         const val FILE_TYPE = 6
+        const val FILE_QUOTE_TYPE = -6
         const val STICKER_TYPE = 7
-        const val ACTION_TYPE = 8
-        const val ACTION_CARD_TYPE = 9
-        const val REPLY_TYPE = 10
-        const val WAITING_TYPE = 11
-        const val LINK_TYPE = 12
-        const val STRANGER_TYPE = 13
-        const val SECRET_TYPE = 14
-        const val CONTACT_CARD_TYPE = 15
-        const val VIDEO_TYPE = 16
-        const val AUDIO_TYPE = 17
+        const val CONTACT_CARD_TYPE = 8
+        const val CONTACT_CARD_QUOTE_TYPE = -8
+        const val CARD_TYPE = 9
+        const val BILL_TYPE = 10
+        const val POST_TYPE = 11
+        const val ACTION_TYPE = 12
+        const val ACTION_CARD_TYPE = 13
+        const val SYSTEM_TYPE = 14
+        const val WAITING_TYPE = 15
+        const val STRANGER_TYPE = 16
+        const val SECRET_TYPE = 17
         const val CALL_TYPE = 18
-        const val POST_TYPE = 19
-        const val RECALL_TYPE = 20
+        const val RECALL_TYPE = 19
 
         private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
             override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
                 return oldItem.messageId == newItem.messageId
             }
 
-            override fun areContentsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
+            override fun areContentsTheSame(
+                oldItem: MessageItem,
+                newItem: MessageItem
+            ): Boolean {
                 return oldItem.mediaStatus == newItem.mediaStatus &&
                     oldItem.type == newItem.type &&
                     oldItem.status == newItem.status &&

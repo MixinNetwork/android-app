@@ -15,8 +15,10 @@ import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createVideoMessage
+import one.mixin.android.vo.toQuoteMessageItem
 
 class ConvertVideoJob(
     private val conversationId: String,
@@ -24,7 +26,8 @@ class ConvertVideoJob(
     private val uri: Uri,
     isPlain: Boolean,
     private val messageId: String,
-    createdAt: String? = null
+    createdAt: String? = null,
+    private val replyMessage: MessageItem? = null
 ) : MixinJob(Params(PRIORITY_BACKGROUND).addTags(TAG).groupBy(GROUP_ID), messageId) {
 
     companion object {
@@ -50,7 +53,8 @@ class ConvertVideoJob(
         val message = createVideoMessage(messageId, conversationId, senderId, category, null,
             video.fileName, uri.toString(), video.duration, video.resultWidth,
             video.resultHeight, video.thumbnail, "video/mp4",
-            0L, createdAt, null, null, MediaStatus.PENDING, MessageStatus.SENDING.name)
+            0L, createdAt, null, null, MediaStatus.PENDING, MessageStatus.SENDING.name,
+            replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
         // insert message with mediaSize 0L
         // for show video place holder in chat list before convert video
         messageDao.insert(message)
