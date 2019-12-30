@@ -12,7 +12,6 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.database.Cursor
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.graphics.Point
 import android.hardware.SensorManager
 import android.media.MediaMetadataRetriever
@@ -68,6 +67,7 @@ import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import org.jetbrains.anko.configuration
 import org.jetbrains.anko.displayMetrics
+import org.jetbrains.anko.textColorResource
 import timber.log.Timber
 
 private val uiHandler = Handler(Looper.getMainLooper())
@@ -630,7 +630,7 @@ fun Context.showConfirmDialog(
             dialog.dismiss()
         }.create().apply {
             setOnShowListener {
-                getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(Color.RED)
+                getButton(DialogInterface.BUTTON_POSITIVE).textColorResource = R.color.colorRed
             }
         }.show()
 }

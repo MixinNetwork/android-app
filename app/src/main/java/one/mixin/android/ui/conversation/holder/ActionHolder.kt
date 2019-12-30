@@ -1,10 +1,14 @@
 package one.mixin.android.ui.conversation.holder
 
+import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.item_chat_action.view.*
+import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
@@ -15,6 +19,7 @@ import org.jetbrains.anko.dip
 
 class ActionHolder constructor(containerView: View) : BaseViewHolder(containerView) {
 
+    @SuppressLint("RestrictedApi")
     fun bind(
         messageItem: MessageItem,
         isFirst: Boolean,
@@ -70,6 +75,7 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
                 )
                 button.setTypeface(null, Typeface.BOLD)
                 button.text = b.label
+                button.supportBackgroundTintList = ColorStateList.valueOf(itemView.context.colorFromAttribute(R.attr.bg_bubble))
                 itemView.flow_layout.addView(button)
                 (button.layoutParams as ViewGroup.MarginLayoutParams).marginStart =
                     button.dip(8)

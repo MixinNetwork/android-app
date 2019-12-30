@@ -16,13 +16,11 @@
         <item name="text_checked">@color/textPrimaryNight</item>
 
         <item name="icon_default">@color/colorIconNight</item>
-        <item name="icon_light">@color/colorIconLightNight</item>
-        <item name="icon_dark">@color/colorIconDarkNight</item>
         <item name="icon_white">@color/colorIconWhiteNight</item>
         <item name="icon_gray">@color/colorIconGrayNight</item>
         <item name="icon_black">@color/colorIconBlackNight</item>
 
-        <item name="badger">@color/badgerNight</item>
+        <item name="badger">@color/badger</item>
 
         <item name="bg_input">@color/bgInputNight</item>
         <item name="bg_white">@color/bgWhiteNight</item>
@@ -35,6 +33,11 @@
         <item name="bg_gray_light">@color/bgGrayLightNight</item>
         <item name="bg_confirmation">@color/bgConfirmationNight</item>
         <item name="bg_block">@color/bgBlockNight</item>
+        <item name="bg_post">@color/bgPostNight</item>
+        <item name="bg_bubble">@color/bgBubbleNight</item>
+
+        <item name="icon_emergency">@drawable/ic_emergency_avatar_night</item>
+        <item name="icon_emergency_contact">@drawable/ic_emergency_contact_night</item>
 
         <item name="flag_night">true</item>
     </style>

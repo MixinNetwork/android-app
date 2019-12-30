@@ -27,17 +27,17 @@ class ShadowCircleView : View {
     private var frameRect: RectF? = null
     private var circleRect: RectF? = null
 
+    private val isNight = context.booleanFromAttribute(R.attr.flag_night)
+
     private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         color = if (isNight) {
-            Color.parseColor("#737373")
+            Color.parseColor("#CCFFFFFF")
         } else {
             Color.parseColor("#979797")
         }
         strokeWidth = dip(3f).toFloat()
     }
-
-    private val isNight = context.booleanFromAttribute(R.attr.flag_night)
 
     private val framePaint = Paint()
 

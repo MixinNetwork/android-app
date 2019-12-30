@@ -13,9 +13,7 @@
     <color name="textAssist">#B8BDC7</color>
     <color name="textRemarks">#BCBEC3</color>
 
-    <color name="colorIconLight">#3A3C3E</color>
     <color name="colorIcon">#FF000000</color>
-    <color name="colorIconDark">#BBBEC3</color>
     <color name="colorIconWhite">#FFFFFF</color>
     <color name="colorIconGray">#E5E7EC</color>
 
@@ -24,11 +22,13 @@
     <color name="bgInput">#F5F5F5</color>
     <color name="bgWhite">#FFFFFF</color>
     <color name="bgWindow">#F6F7FA</color>
+    <color name="bgPost">#FFFFFF</color>
     <color name="bgGray">#E5E5E5</color>
     <color name="bgMenu">#F5F7FA</color>
     <color name="bgDark">#999999</color>
     <color name="bgMenuBorder">#E5E7EC</color>
     <color name="bgGrayLight">#F5F7FA</color>
+    <color name="bgBubble">#FFFFFF</color>
     <color name="bgConfirmation">@color/wallet_blue_light</color>
 
     <color name="bgBlock">#F6F7FA</color>
@@ -89,53 +89,55 @@
     <color name="text_color_error_tip">#F67070</color>
 
     <array name="name_colors">
+        <item>#8C8DFF</item>
+        <item>#7983C2</item>
+        <item>#6D8DDE</item>
+        <item>#5979F0</item>
+        <item>#6695DF</item>
+        <item>#8F7AC5</item>
+        <item>#9D77A5</item>
+        <item>#8A64D0</item>
+        <item>#AA66C3</item>
+        <item>#A75C96</item>
+        <item>#C8697D</item>
+        <item>#B74D62</item>
+        <item>#BD637C</item>
+        <item>#B3798E</item>
+        <item>#9B6D77</item>
+        <item>#B87F7F</item>
+        <item>#C5595A</item>
         <item>#AA4848</item>
         <item>#B0665E</item>
-        <item>#EF8A44</item>
-        <item>#A09555</item>
-        <item>#727234</item>
-        <item>#9CAD23</item>
-        <item>#AA9100</item>
-        <item>#C49B4B</item>
-        <item>#A47758</item>
-        <item>#DF694C</item>
-        <item>#D65859</item>
-        <item>#C2405A</item>
-        <item>#A75C96</item>
-        <item>#BD637C</item>
-        <item>#8F7AC5</item>
-        <item>#7983C2</item>
-        <item>#728DB8</item>
-        <item>#5977C2</item>
-        <item>#5E6DA2</item>
-        <item>#3D98D0</item>
-        <item>#5E97A1</item>
-        <item>#4EABAA</item>
-        <item>#63A082</item>
-        <item>#877C9B</item>
-        <item>#AA66C3</item>
+        <item>#B76753</item>
         <item>#BB5334</item>
-        <item>#667355</item>
-        <item>#668899</item>
-        <item>#83BE44</item>
-        <item>#BBA600</item>
-        <item>#429AB6</item>
-        <item>#75856F</item>
-        <item>#88A299</item>
-        <item>#B3798E</item>
-        <item>#447899</item>
-        <item>#D79200</item>
-        <item>#728DB8</item>
-        <item>#DD637C</item>
-        <item>#887C66</item>
+        <item>#C97B46</item>
         <item>#BE6C2C</item>
-        <item>#9B6D77</item>
+        <item>#CB7F40</item>
+        <item>#A47758</item>
         <item>#B69370</item>
-        <item>#976236</item>
-        <item>#9D77A5</item>
-        <item>#8A660E</item>
-        <item>#5E935E</item>
-        <item>#9B8484</item>
-        <item>#92B288</item>
+        <item>#A49373</item>
+        <item>#AA8A46</item>
+        <item>#AA8220</item>
+        <item>#76A048</item>
+        <item>#9CAD23</item>
+        <item>#A19431</item>
+        <item>#AA9100</item>
+        <item>#A09555</item>
+        <item>#C49B4B</item>
+        <item>#5FB05F</item>
+        <item>#6AB48F</item>
+        <item>#71B15C</item>
+        <item>#B3B357</item>
+        <item>#A3B561</item>
+        <item>#909F45</item>
+        <item>#93B289</item>
+        <item>#3D98D0</item>
+        <item>#429AB6</item>
+        <item>#4EABAA</item>
+        <item>#6BC0CE</item>
+        <item>#64B5D9</item>
+        <item>#3E9CCB</item>
+        <item>#2887C4</item>
+        <item>#52A98B</item>
     </array>
 </resources>

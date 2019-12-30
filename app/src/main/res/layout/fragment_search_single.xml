@@ -4,12 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_white"
+    android:background="?attr/bg_window"
     android:orientation="vertical">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize">
+        android:layout_height="?actionBarSize"
+        android:background="?attr/bg_white">
 
         <ImageButton
             android:id="@+id/back_ib"
@@ -61,5 +62,5 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_rv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="wrap_content" />
 </LinearLayout>

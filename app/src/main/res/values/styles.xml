@@ -26,8 +26,6 @@
         <item name="text_checked">@color/textPrimary</item>
 
         <item name="icon_default">@color/colorIcon</item>
-        <item name="icon_light">@color/colorIconLight</item>
-        <item name="icon_dark">@color/colorIconDark</item>
         <item name="icon_white">@color/colorIconWhite</item>
         <item name="icon_black">@color/colorIcon</item>
         <item name="icon_gray">@color/colorIconGray</item>
@@ -46,6 +44,11 @@
         <item name="bg_gray_light">@color/bgGrayLight</item>
         <item name="bg_confirmation">@color/bgConfirmation</item>
         <item name="bg_block">@color/bgBlock</item>
+        <item name="bg_post">@color/bgPost</item>
+        <item name="bg_bubble">@color/bgBubble</item>
+
+        <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
+        <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
 
     </style>
 

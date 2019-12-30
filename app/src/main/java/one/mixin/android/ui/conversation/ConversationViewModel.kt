@@ -68,6 +68,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.util.image.Compressor
+import one.mixin.android.vo.*
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
@@ -98,7 +99,6 @@ import one.mixin.android.vo.createReplyTextMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
-import one.mixin.android.vo.*
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isImage
@@ -259,7 +259,7 @@ internal constructor(
         val transferContactData = ContactMessagePayload(shareUserId)
         val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferContactData).toByteArray())
         val message = createContactMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
-            category, encoded, shareUserId, MessageStatus.SENDING.name, nowInUtc(),  replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
+            category, encoded, shareUserId, MessageStatus.SENDING.name, nowInUtc(), replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 

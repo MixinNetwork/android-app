@@ -5,24 +5,24 @@
     <color name="colorAccentNight">#4191FF</color>
 
     <color name="textPrimaryNight">#E6FFFFFF</color>
-    <color name="textMinorNight">#7D8B97</color>
+    <color name="textMinorNight">#AAD8D8D8</color>
     <color name="textAssistNight">#788691</color>
     <color name="textRemarksNight">#707883</color>
 
     <color name="colorIconNight">#EAEAEB</color>
-    <color name="colorIconLightNight">#EAEAEB</color>
-    <color name="colorIconDarkNight">#EAEAEB</color>
     <color name="colorIconWhiteNight">#22272B</color>
     <color name="colorIconGrayNight">#555A5E</color>
     <color name="colorIconBlackNight">#FFFFFF</color>
 
-    <color name="badgerNight">#3E5264</color>
+    <color name="badgerNight">#4E93F3</color>
 
     <color name="bgInputNight">#414D5A</color>
     <color name="bgWhiteNight">#2c3136</color>
     <color name="bgWindowNight">#23272B</color>
+    <color name="bgPostNight">#424242</color>
     <color name="bgDarkNight">#121212</color>
     <color name="bgGrayNight">#3B3F44</color>
+    <color name="bgBubbleNight">#3B3F44</color>
 
     <color name="bgMenuNight">#23272B</color>
     <color name="bgMenuBorderNight">#3E5264</color>

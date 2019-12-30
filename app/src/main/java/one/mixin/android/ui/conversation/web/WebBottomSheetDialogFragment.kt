@@ -60,6 +60,7 @@ import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_CAMERA
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
@@ -634,7 +635,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             val dark = ColorUtils.calculateLuminance(c) < 0.5
             refreshByLuminance(dark, c)
         } catch (e: Exception) {
-            refreshByLuminance(false, Color.WHITE)
+            refreshByLuminance(isNightMode(), requireContext().colorFromAttribute(R.attr.icon_white))
         }
     }
 

@@ -33,7 +33,8 @@
     <one.mixin.android.widget.ConfirmationBgView
         android:id="@+id/foreground_rl"
         android:layout_width="match_parent"
-        android:layout_height="84dp">
+        android:layout_height="84dp"
+        android:foreground="?attr/selectableItemBackground">
 
         <one.mixin.android.widget.BadgeCircleImageView
             android:id="@+id/avatar"

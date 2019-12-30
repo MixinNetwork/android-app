@@ -432,6 +432,7 @@
     <string name="conversation_status_live">Live</string>
     <string name="setting_no_blocked">No blocked users</string>
     <string name="setting_authentications">Authentications</string>
+    <string name="setting_no_authentications">No RESULT</string>
     <string name="setting_emergency">Emergency Contact</string>
     <string name="setting_emergency_content">The emergency contact is designed to help you log in to your account if you are lost and can not retrieve your mobile number.</string>
     <string name="setting_emergency_warning">Attention: the Emergency Contact cannot help you to recover PIN</string>
@@ -550,6 +551,9 @@
     <string name="alert_key_contact_audio_call_message">ask you an audio call</string>
     <string name="unread">New Messages</string>
     <string name="stranger_from">The sender is not in your contacts</string>
+    <string name="bot_interact_info">Click the button to interact with the bot</string>
+    <string name="bot_interact_open">Open Home page</string>
+    <string name="bot_interact_hi">Say Hi</string>
     <string name="notification_group">Group Notification</string>
     <string name="notification_message">Message Notification</string>
     <string name="notification_node">Messaging Node</string>
