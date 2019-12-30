@@ -576,7 +576,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onSayHi() {
-                sendMessage("hi")
+                sendMessage("Hi")
             }
 
             override fun onOpenHomePage() {
