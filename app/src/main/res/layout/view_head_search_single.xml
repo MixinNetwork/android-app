@@ -6,4 +6,5 @@
     android:gravity="center_vertical"
     android:paddingStart="@dimen/margin12"
     android:paddingEnd="@dimen/margin12"
-    android:textColor="?attr/text_primary"/>
+    android:textColor="?attr/text_primary"
+    android:background="?attr/bg_white"/>

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_white">
+    android:background="?attr/bg_window">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_rv"
@@ -20,6 +20,7 @@
         android:id="@+id/app_rv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?attr/bg_white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
