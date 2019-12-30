@@ -186,7 +186,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
             setFixedDataSource()
 
             initialIndex = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
-            adapter.initialPos = initialIndex
             viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
                 .observe(this@MediaPagerActivity, Observer {
                     adapter.submitList(it)
@@ -210,6 +209,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         ).setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
             .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
             .build()
+        adapter.initialPos = initialIndex
         adapter.submitList(pagedList)
         if (messageItem.isVideo() || messageItem.isLive()) {
             messageItem.loadVideoOrLive {
@@ -648,12 +648,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
     }
 
     override fun finishAfterTransition() {
-        window.decorView.systemUiVisibility =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-            } else {
-                SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            }
         if (view_pager.currentItem == initialIndex) {
             findViewPagerChildByTag {
                 it.getChildAt(0)?.player_view?.hideController()
@@ -665,6 +659,12 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
     }
 
     override fun finish() {
+        window.decorView.systemUiVisibility =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            } else {
+                SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            }
         VideoPlayer.player().stop()
         super.finish()
         overridePendingTransition(0, R.anim.scale_out)

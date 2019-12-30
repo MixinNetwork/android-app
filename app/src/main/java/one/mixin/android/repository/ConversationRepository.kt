@@ -148,7 +148,7 @@ internal constructor(
     }
 
     suspend fun getMediaMessage(conversationId: String, messageId: String) =
-        messageDao.getMediaMessage(conversationId, messageId)
+        readMessageDao.getMediaMessage(conversationId, messageId)
 
     suspend fun getConversationIdIfExistsSync(recipientId: String) =
         readConversationDao.getConversationIdIfExistsSync(recipientId)
