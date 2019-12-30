@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     android:clipChildren="false"
     android:clipToPadding="false"
+    android:layout_marginBottom="8dp"
     android:paddingTop="3dp">
 
     <TextView
@@ -25,13 +26,13 @@
         android:layout_marginEnd="16dp"
         android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/bg_round_white"
         android:foreground="?attr/selectableItemBackground"
+        android:background="@drawable/bg_round_white"
         android:gravity="center"
-        android:padding="8dp"
+        android:padding="10dp"
         android:text="@string/setting_block"
         android:textColor="@color/colorBlue"
-        android:textSize="12sp"
+        android:textSize="14sp"
         app:layout_constraintEnd_toStartOf="@id/stranger_add_bn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/stranger_info" />
@@ -46,10 +47,10 @@
         android:background="@drawable/bg_round_white"
         android:foreground="?attr/selectableItemBackground"
         android:gravity="center"
-        android:padding="8dp"
+        android:padding="10dp"
         android:text="@string/contact_add_contact_title"
         android:textColor="@color/colorBlue"
-        android:textSize="12sp"
+        android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/stranger_block_bn"
         app:layout_constraintTop_toBottomOf="@id/stranger_info" />
