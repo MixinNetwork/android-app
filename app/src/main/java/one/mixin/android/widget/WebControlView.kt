@@ -1,7 +1,6 @@
 package one.mixin.android.widget
 
 import android.content.Context
-import android.graphics.Color
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
@@ -34,12 +33,12 @@ class WebControlView(context: Context, attrs: AttributeSet) : LinearLayout(conte
             setBackgroundResource(R.drawable.bg_view_web_control_black)
             more_iv.setImageResource(R.drawable.ic_more_horiz_white_24dp)
             close_iv.setImageResource(R.drawable.ic_close_white_24dp)
-            divide.setBackgroundColor(Color.parseColor("#1Affffff"))
+            divide.setBackgroundColor(context.getColor(R.color.bgWhiteNight))
         } else {
             setBackgroundResource(R.drawable.bg_view_web_control_white)
             more_iv.setImageResource(R.drawable.ic_more_horiz_black_24dp)
             close_iv.setImageResource(R.drawable.ic_close_dark_24dp)
-            divide.setBackgroundColor(Color.parseColor("#0F000000"))
+            divide.setBackgroundColor(context.getColor(R.color.bgWhite))
         }
     }
 

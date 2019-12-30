@@ -18,7 +18,8 @@
         android:id="@+id/input_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/margin12">
+        android:layout_marginBottom="@dimen/margin12"
+        app:counterTextColor="?attr/text_primary">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/edit_et"

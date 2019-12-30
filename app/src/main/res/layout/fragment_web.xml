@@ -39,7 +39,7 @@
             android:maxHeight="50dp"
             android:maxLines="1"
             android:textSize="18sp"
-            android:textColor="@color/black" />
+            android:textColor="?attr/text_primary" />
     </LinearLayout>
 
     <WebView
