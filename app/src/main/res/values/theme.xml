@@ -35,6 +35,7 @@
     <attr name="bg_gray_light" format="color|reference" />
     <attr name="bg_confirmation" format="color|reference" />
     <attr name="bg_block" format="color|reference" />
+    <attr name="bg_post" format="color|reference" />
 
     <attr name="flag_night" format="boolean|reference" />
 </resources>
