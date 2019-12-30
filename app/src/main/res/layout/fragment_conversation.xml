@@ -87,7 +87,7 @@
                         android:layout_height="42dp"
                         android:background="@drawable/bg_quick_flag"
                         android:padding="6dp"
-                        android:src="@drawable/ic_volume_up"
+                        android:src="@drawable/ic_notice"
                         android:translationZ="1dp"
                         tools:ignore="ContentDescription"/>
 

@@ -13,9 +13,7 @@
     <color name="textAssist">#B8BDC7</color>
     <color name="textRemarks">#BCBEC3</color>
 
-    <color name="colorIconLight">#3A3C3E</color>
     <color name="colorIcon">#FF000000</color>
-    <color name="colorIconDark">#BBBEC3</color>
     <color name="colorIconWhite">#FFFFFF</color>
     <color name="colorIconGray">#E5E7EC</color>
 

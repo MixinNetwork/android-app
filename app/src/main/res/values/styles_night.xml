@@ -16,8 +16,6 @@
         <item name="text_checked">@color/textPrimaryNight</item>
 
         <item name="icon_default">@color/colorIconNight</item>
-        <item name="icon_light">@color/colorIconLightNight</item>
-        <item name="icon_dark">@color/colorIconDarkNight</item>
         <item name="icon_white">@color/colorIconWhiteNight</item>
         <item name="icon_gray">@color/colorIconGrayNight</item>
         <item name="icon_black">@color/colorIconBlackNight</item>
