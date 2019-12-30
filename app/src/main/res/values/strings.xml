@@ -550,6 +550,9 @@
     <string name="alert_key_contact_audio_call_message">ask you an audio call</string>
     <string name="unread">New Messages</string>
     <string name="stranger_from">The sender is not in your contacts</string>
+    <string name="bot_interact_info">Click the button to interact with the bot</string>
+    <string name="bot_interact_open">Open Home page</string>
+    <string name="bot_interact_hi">Say Hi</string>
     <string name="notification_group">Group Notification</string>
     <string name="notification_message">Message Notification</string>
     <string name="notification_node">Messaging Node</string>

@@ -219,7 +219,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private var unreadTipCount: Int = 0
     private val chatAdapter: ConversationAdapter by lazy {
-        ConversationAdapter(requireContext(), keyword, onItemListener, isGroup, !isPlainMessage()).apply {
+        ConversationAdapter(requireContext(), keyword, onItemListener, isGroup, !isPlainMessage(), isBot).apply {
             registerAdapterDataObserver(chatAdapterDataObserver)
         }
     }
@@ -572,8 +572,28 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onPostClick(view: View, messageItem: MessageItem) {
-                // MarkdownActivity.show(requireActivity(), messageItem.content!!)
                 MarkdownActivity.show(requireActivity(), messageItem.content!!)
+            }
+
+            override fun onSayHi() {
+                sendMessage("hi")
+            }
+
+            override fun onOpenHomePage() {
+                hideIfShowBottomSheet()
+                app?.let {
+                    chat_control.chat_et.hideKeyboard()
+                    recipient?.let { user -> chatViewModel.refreshUser(user.userId, true) }
+                    botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(
+                        it.homeUri,
+                        conversationId,
+                        it.appId,
+                        it.name,
+                        it.icon_url,
+                        it.capabilities
+                    )
+                    botWebBottomSheet?.showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                }
             }
 
             override fun onCallClick(messageItem: MessageItem) {
@@ -1210,10 +1230,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         unreadTipCount += (list.size - chatAdapter.getRealItemCount())
                     }
                     chatViewModel.viewModelScope.launch {
-                        chatAdapter.hasBottomView = !isGroup &&
-                            !list.isEmpty() &&
-                            recipient?.relationship == UserRelationship.STRANGER.name &&
-                            chatViewModel.isSilence(conversationId, sender.userId)
+                        chatAdapter.hasBottomView = ((isBot && list.isEmpty()) ||
+                            (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(conversationId, sender.userId))) &&
+                            recipient?.relationship == UserRelationship.STRANGER.name
                     }
                     if (isFirstLoad && messageId == null && unreadCount > 0) {
                         chatAdapter.unreadMsgId = unreadMessageId

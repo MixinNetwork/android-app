@@ -539,6 +539,9 @@
 
     <string name="unread">未读消息</string>
     <string name="stranger_from">他/她不是你的联系人</string>
+    <string name="bot_interact_info">点击下列按钮与机器人互动</string>
+    <string name="bot_interact_open">打开主页</string>
+    <string name="bot_interact_hi">打招呼</string>
     <string name="notification_group">群组通知</string>
     <string name="notification_message">消息通知</string>
     <string name="notification_node">消息节点</string>
@@ -678,7 +681,7 @@
     <string name="call_mute">静音</string>
 
     <!-- restore&backup -->
-    <string name="restore_info">从外部存储还原您的对话。如果您选择现在不进行还原，您稍后讲无法还原资料。</string>
+    <string name="restore_info">从外部存储还原您的对话。如果您选择现在不进行还原，您稍后将无法还原资料。</string>
     <string name="restore_found">找到备份</string>
     <string name="restore_skip">跳过</string>
     <string name="restore_retry">重试</string>

@@ -68,7 +68,8 @@ class ConversationAdapter(
     private val keyword: String?,
     private val onItemListener: OnItemListener,
     private val isGroup: Boolean,
-    private val isSecret: Boolean = true
+    private val isSecret: Boolean = true,
+    private val isBot: Boolean = false
 ) : PagedListAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback),
     MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     var selectSet: ArraySet<MessageItem> = ArraySet()
@@ -259,7 +260,7 @@ class ConversationAdapter(
                     )
                 }
                 STRANGER_TYPE -> {
-                    (holder as StrangerHolder).bind(onItemListener)
+                    (holder as StrangerHolder).bind(onItemListener, isBot)
                 }
                 UNKNOWN_TYPE -> {
                     (holder as UnknownHolder).bind()
@@ -817,6 +818,10 @@ class ConversationAdapter(
         open fun onCallClick(messageItem: MessageItem) {}
 
         open fun onPostClick(view: View, messageItem: MessageItem) {}
+
+        open fun onOpenHomePage() {}
+
+        open fun onSayHi() {}
     }
 
     fun addSelect(messageItem: MessageItem): Boolean {
