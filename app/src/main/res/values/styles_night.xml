@@ -36,6 +36,9 @@
         <item name="bg_post">@color/bgPostNight</item>
         <item name="bg_bubble">@color/bgBubbleNight</item>
 
+        <item name="icon_emergency">@drawable/ic_emergency_avatar_night</item>
+        <item name="icon_emergency_contact">@drawable/ic_emergency_contact_night</item>
+
         <item name="flag_night">true</item>
     </style>
 

@@ -10,25 +10,56 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_authentications"/>
+        app:titleText="@string/setting_authentications" />
 
-    <FrameLayout
+    <ViewAnimator
+        android:id="@+id/auth_va"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/auth_rv"
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/auth_rv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            <ProgressBar
+                android:id="@+id/progress"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:theme="@style/AppTheme.BlueProgress" />
+
+        </FrameLayout>
+
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+            android:orientation="vertical">
 
-        <ProgressBar
-            android:id="@+id/progress"
-            style="?android:attr/progressBarStyleLarge"
-            android:layout_gravity="center"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:theme="@style/AppTheme.BlueProgress"/>
-    </FrameLayout>
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_above="@+id/empty_tv"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="8dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_authentication" />
+
+            <TextView
+                android:id="@+id/empty_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="@string/setting_no_blocked"
+                android:textColor="?attr/text_minor"
+                android:textSize="16sp" />
+        </RelativeLayout>
+    </ViewAnimator>
 
 </LinearLayout>

@@ -161,11 +161,9 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
             contentView.auth_tv.text = getString(R.string.setting_logout_desktop)
             contentView.desc_tv.text = getString(R.string.setting_desktop_signed)
             contentView.auth_tv.textColor = requireContext().colorFromAttribute(R.attr.text_blue)
-            contentView.logo_iv.setImageResource(R.drawable.ic_desktop_online)
         } else {
             contentView.auth_tv.text = getString(R.string.setting_scan_qr_code)
             contentView.desc_tv.text = getString(R.string.setting_scan_qr_code)
-            contentView.logo_iv.setImageResource(R.drawable.ic_desktop_offline)
         }
     }
 

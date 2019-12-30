@@ -49,11 +49,19 @@ class AuthenticationsFragment : BaseViewModelFragment<SettingViewModel>() {
                         this[it]
                     }
                 }
+                if (this.list?.isNotEmpty() == true) {
+                    auth_va.displayedChild = 0
+                } else {
+                    auth_va.displayedChild = 1
+                }
                 adapter.submitList(this.list)
+            } else {
+                auth_va.displayedChild = 1
             }
             progress.visibility = View.GONE
         }, {
             progress.visibility = View.GONE
+            auth_va.displayedChild = 1
             ErrorHandler.handleError(it)
         })
         auth_rv.adapter = adapter

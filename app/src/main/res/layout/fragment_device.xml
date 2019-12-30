@@ -31,7 +31,7 @@
             android:id="@+id/logo_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_desktop_offline"
+            android:src="@drawable/ic_desktop"
             android:layout_marginTop="32dp"
             android:layout_marginBottom="32dp"
             android:layout_gravity="center"

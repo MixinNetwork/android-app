@@ -51,7 +51,7 @@
                 android:layout_marginTop="36dp"
                 android:layout_marginBottom="36dp"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/ic_emergency_contact"/>
+                android:src="?attr/icon_emergency_contact"/>
 
             <Button
                 style="@style/AppTheme.MaterialButton"
