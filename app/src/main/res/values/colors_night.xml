@@ -22,6 +22,7 @@
     <color name="bgPostNight">#424242</color>
     <color name="bgDarkNight">#121212</color>
     <color name="bgGrayNight">#3B3F44</color>
+    <color name="bgBubbleNight">#3B3F44</color>
 
     <color name="bgMenuNight">#23272B</color>
     <color name="bgMenuBorderNight">#3E5264</color>
