@@ -17,6 +17,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
@@ -34,8 +35,8 @@ class SharedMediaViewModel @Inject constructor(
         return LivePagedListBuilder(
             conversationRepository.getMediaMessagesExcludeLive(conversationId),
             PagedList.Config.Builder()
-                .setPrefetchDistance(PAGE_SIZE * 2)
-                .setPageSize(PAGE_SIZE)
+                .setPrefetchDistance(MediaPagerActivity.PAGE_SIZE * 2)
+                .setPageSize(MediaPagerActivity.PAGE_SIZE)
                 .setEnablePlaceholders(true)
                 .build()
         )
@@ -158,6 +159,9 @@ class SharedMediaViewModel @Inject constructor(
         index: Int,
         excludeLive: Boolean
     ) = conversationRepository.getMediaMessages(conversationId, index, excludeLive)
+
+    suspend fun getMediaMessage(conversationId: String, messageId: String) =
+        conversationRepository.getMediaMessage(conversationId, messageId)
 
     fun downloadByMessageId(messageId: String) = viewModelScope.launch {
         conversationRepository.suspendFindMessageById(messageId)?.let {

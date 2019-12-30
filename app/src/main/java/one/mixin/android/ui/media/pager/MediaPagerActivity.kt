@@ -29,12 +29,14 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.core.net.toUri
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.PagedList
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.exoplayer2.Player
 import com.google.firebase.ml.vision.FirebaseVision
@@ -83,6 +85,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.XiaomiUtilities
+import one.mixin.android.vo.FixedMessageDataSource
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isImage
@@ -116,7 +119,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
     }
 
     private var initialIndex: Int = 0
-    private var firstLoad = true
     private var firstLoadVideo = true
 
     private val pipVideoView by lazy {
@@ -181,22 +183,13 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         VideoPlayer.player().setCycle(false)
 
         lifecycleScope.launch {
+            setFixedDataSource()
+
             initialIndex = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
             adapter.initialPos = initialIndex
             viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
                 .observe(this@MediaPagerActivity, Observer {
                     adapter.submitList(it)
-                    if (firstLoad) {
-                        firstLoad = false
-                        view_pager.setCurrentItem(initialIndex, false)
-
-                        val messageItem = it.snapshot()[initialIndex] ?: return@Observer
-                        if (messageItem.isVideo() || messageItem.isLive()) {
-                            messageItem.loadVideoOrLive {
-                                VideoPlayer.player().start()
-                            }
-                        }
-                    }
                 })
         }
     }
@@ -204,6 +197,25 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
     override fun onDestroy() {
         super.onDestroy()
         view_pager?.unregisterOnPageChangeCallback(onPageChangeCallback)
+    }
+
+    private suspend fun setFixedDataSource() {
+        val messageItem = viewModel.getMediaMessage(conversationId, messageId)
+        val pagedConfig = PagedList.Config.Builder()
+            .setInitialLoadSizeHint(1)
+            .setPageSize(1)
+            .build()
+        val pagedList = PagedList.Builder<Int, MessageItem>(
+            FixedMessageDataSource(listOf(messageItem)), pagedConfig
+        ).setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
+            .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
+            .build()
+        adapter.submitList(pagedList)
+        if (messageItem.isVideo() || messageItem.isLive()) {
+            messageItem.loadVideoOrLive {
+                VideoPlayer.player().start()
+            }
+        }
     }
 
     private fun showVideoBottom(messageItem: MessageItem) {
@@ -574,7 +586,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         override fun onPageSelected(position: Int) {
             if (downloadMedia(position)) return
 
-            if (!firstLoadVideo) {
+            if (!firstLoadVideo && position != initialIndex) {
                 VideoPlayer.player().stop()
                 VideoPlayer.player().pause()
             }
@@ -708,6 +720,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         private const val EXCLUDE_LIVE = "exclude_live"
         private const val ALPHA_MAX = 0xFF
         const val PREFIX = "media"
+        const val PAGE_SIZE = 3
 
         private const val SHARED_ELEMENT_TRANSITION_DURATION = 200L
 

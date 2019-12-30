@@ -9,6 +9,7 @@ import android.os.Parcelable
 import android.view.View
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
+import androidx.paging.PositionalDataSource
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -240,5 +241,18 @@ fun MessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {
             VideoPlayer.player().loadVideo(it, messageId)
         }
         actionAfterLoad?.invoke()
+    }
+}
+
+class FixedMessageDataSource(private val messageItems: List<MessageItem>) : PositionalDataSource<MessageItem>() {
+    override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<MessageItem>) {
+        callback.onResult(messageItems)
+    }
+
+    override fun loadInitial(
+        params: LoadInitialParams,
+        callback: LoadInitialCallback<MessageItem>
+    ) {
+        callback.onResult(messageItems, 0, 1)
     }
 }
