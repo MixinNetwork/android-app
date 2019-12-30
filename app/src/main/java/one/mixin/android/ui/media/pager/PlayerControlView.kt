@@ -65,7 +65,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     }
 
     var useTopLayout = true
-    var useBottomLayout = true
+    var useBottomLayout = false
     var inRefreshState = false
         set(value) {
             field = value
@@ -159,7 +159,14 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     }
 
     fun updateLiveView() {
-        liveView.isVisible = player?.isCurrentWindowDynamic ?: false
+        // TODO support multiWindowTimeBar
+        player?.let {
+            val timeLine = it.currentTimeline
+            val windowIndex = it.currentWindowIndex
+            val currentWindow = timeLine.getWindow(windowIndex, window)
+            liveView.isVisible = currentWindow.isLive
+            useBottomLayout = currentWindow.isSeekable
+        }
     }
 
     private fun hideAfterTimeout() {

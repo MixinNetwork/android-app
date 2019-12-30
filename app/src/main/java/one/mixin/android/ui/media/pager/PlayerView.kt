@@ -87,11 +87,6 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
         player_control_view.layoutDirection = layoutDirection
     }
 
-    fun setUseLayout(useTopLayout: Boolean, useBottomLayout: Boolean) {
-        player_control_view.useTopLayout = useTopLayout
-        player_control_view.useBottomLayout = useBottomLayout
-    }
-
     private fun updateRefreshViewVisibility(visible: Boolean) {
         refresh_view.isVisible = visible
         player_control_view.inRefreshState = visible

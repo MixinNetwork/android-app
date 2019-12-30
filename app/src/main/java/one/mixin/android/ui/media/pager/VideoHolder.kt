@@ -52,16 +52,6 @@ class VideoHolder(
 
         itemView.player_view.apply {
             currentMessageId = messageItem.messageId
-            if (messageItem.isLive()) {
-                setUseLayout(useTopLayout = true, useBottomLayout = false)
-            } else {
-                if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
-                    setUseLayout(useTopLayout = true, useBottomLayout = true)
-                } else {
-                    setUseLayout(useTopLayout = true, useBottomLayout = false)
-                    hideController()
-                }
-            }
             if (needPostTransition) {
                 player = VideoPlayer.player().player
             }
