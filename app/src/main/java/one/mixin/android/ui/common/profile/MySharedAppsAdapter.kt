@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.ui.common.profile.holder.FootterHolder
+import one.mixin.android.ui.common.profile.holder.FooterHolder
 import one.mixin.android.ui.common.profile.holder.ItemViewHolder
 import one.mixin.android.ui.common.profile.holder.LocalAppHolder
 import one.mixin.android.ui.common.profile.holder.SharedAppHolder
@@ -46,7 +46,7 @@ class MySharedAppsAdapter(
                 val view =
                     LayoutInflater.from(parent.context)
                         .inflate(R.layout.item_shared_footer, parent, false)
-                FootterHolder(view)
+                FooterHolder(view)
             }
         }
     }

@@ -11,10 +11,11 @@ import one.mixin.android.vo.SnapshotItem
 interface SnapshotDao : BaseDao<Snapshot> {
     companion object {
         const val SNAPSHOT_ITEM_PREFIX =
-            "SELECT s.*, u.full_name AS opponentFullName, a.symbol AS asset_symbol, a.confirmations AS asset_confirmations, u.avatar_url AS avatarUrl " +
-                "FROM snapshots s " +
-                "LEFT JOIN users u ON u.user_id = s.opponent_id " +
-                "LEFT JOIN assets a ON a.asset_id = s.asset_id "
+            """
+                SELECT s.*, u.avatar_url, u.full_name AS opponent_ful_name, a.symbol AS asset_symbol, a.confirmations AS asset_confirmations FROM snapshots s 
+                LEFT JOIN users u ON u.user_id = s.opponent_id 
+                LEFT JOIN assets a ON a.asset_id = s.asset_id 
+            """
     }
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC")
