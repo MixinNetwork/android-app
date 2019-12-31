@@ -7,17 +7,27 @@ import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.item_chat_action.view.*
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.ActionButton
+import org.jetbrains.anko.bottomPadding
 import org.jetbrains.anko.dip
+import org.jetbrains.anko.leftPadding
+import org.jetbrains.anko.rightPadding
+import org.jetbrains.anko.topPadding
 
 class ActionHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+
+    protected val dp8 by lazy {
+        MixinApplication.appContext.dpToPx(8f)
+    }
 
     @SuppressLint("RestrictedApi")
     fun bind(
@@ -77,8 +87,11 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
                 button.text = b.label
                 button.supportBackgroundTintList = ColorStateList.valueOf(itemView.context.colorFromAttribute(R.attr.bg_bubble))
                 itemView.flow_layout.addView(button)
-                (button.layoutParams as ViewGroup.MarginLayoutParams).marginStart =
-                    button.dip(8)
+                (button.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp8
+                button.topPadding = dp8
+                button.bottomPadding = dp8
+                button.leftPadding = dp12
+                button.rightPadding = dp12
                 button.setOnLongClickListener {
                     if (!hasSelect) {
                         onItemListener.onLongClick(messageItem, adapterPosition)
