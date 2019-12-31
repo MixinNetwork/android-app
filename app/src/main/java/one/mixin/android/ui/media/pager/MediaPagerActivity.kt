@@ -183,13 +183,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         VideoPlayer.player().setCycle(false)
 
         lifecycleScope.launch {
-            setFixedDataSource()
-
-            initialIndex = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
-            viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
-                .observe(this@MediaPagerActivity, Observer {
-                    adapter.submitList(it)
-                })
+            loadData()
         }
     }
 
@@ -198,7 +192,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         view_pager?.unregisterOnPageChangeCallback(onPageChangeCallback)
     }
 
-    private suspend fun setFixedDataSource() {
+    private suspend fun loadData() {
         val messageItem = viewModel.getMediaMessage(conversationId, messageId)
         val pagedConfig = PagedList.Config.Builder()
             .setInitialLoadSizeHint(1)
@@ -210,12 +204,25 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
             .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
             .build()
         adapter.initialPos = initialIndex
-        adapter.submitList(pagedList)
+        adapter.submitList(pagedList) {
+            observeAllDataSource()
+        }
         if (messageItem.isVideo() || messageItem.isLive()) {
             messageItem.loadVideoOrLive {
                 VideoPlayer.player().start()
             }
         }
+    }
+
+    private fun observeAllDataSource() = lifecycleScope.launch {
+        initialIndex = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
+        viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
+            .observe(this@MediaPagerActivity, Observer {
+                adapter.submitList(it) {
+                    adapter.initialPos = initialIndex
+                    view_pager.setCurrentItem(initialIndex, false)
+                }
+            })
     }
 
     private fun showVideoBottom(messageItem: MessageItem) {
@@ -444,7 +451,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
                 }
             val changedTextureView = pipVideoView.show(
                 this, videoAspectRatioLayout.aspectRatio, videoAspectRatioLayout.videoRotation,
-                conversationId, messageItem.messageId, messageItem.isVideo(), messageItem.mediaUrl
+                conversationId, messageItem.messageId, messageItem.isVideo(), excludeLive, messageItem.mediaUrl
             )
 
             val videoTexture = view.findViewById<TextureView>(R.id.video_texture)
@@ -497,7 +504,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
 
     private fun dismiss() {
         view_pager.visibility = View.INVISIBLE
-        finishAfterTransition()
+        overridePendingTransition(0, 0)
+        super.finish()
     }
 
     private fun checkInlinePermissions(): Boolean {
@@ -744,12 +752,19 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
             )
         }
 
-        fun show(context: Context, conversationId: String, messageId: String, ratio: Float) {
+        fun show(
+            context: Context,
+            conversationId: String,
+            messageId: String,
+            ratio: Float,
+            excludeLive: Boolean = false
+        ) {
             val intent = Intent(context, MediaPagerActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 putExtra(CONVERSATION_ID, conversationId)
                 putExtra(MESSAGE_ID, messageId)
                 putExtra(RATIO, ratio)
+                putExtra(EXCLUDE_LIVE, excludeLive)
             }
             context.startActivity(intent)
         }

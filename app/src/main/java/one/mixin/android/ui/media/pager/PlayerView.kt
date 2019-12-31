@@ -11,6 +11,7 @@ import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ExoPlaybackException
+import com.google.android.exoplayer2.PlaybackPreparer
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.spherical.SingleTapListener
 import com.google.android.exoplayer2.video.VideoListener
@@ -157,6 +158,12 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
 
     fun hideController() {
         player_control_view.hide()
+    }
+
+    fun setPlaybackPrepare(playbackPreparer: PlaybackPreparer) {
+        if (!useController) return
+
+        player_control_view.playbackPreparer = playbackPreparer
     }
 
     private fun shouldShowControllerIndefinitely(): Boolean {

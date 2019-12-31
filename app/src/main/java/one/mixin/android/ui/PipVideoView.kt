@@ -155,6 +155,7 @@ class PipVideoView {
         conversationId: String,
         messageId: String,
         isVideo: Boolean,
+        excludeLive: Boolean,
         mediaUrl: String?
     ): TextureView {
         this.mediaUrl = mediaUrl
@@ -256,7 +257,8 @@ class PipVideoView {
                     MixinApplication.appContext,
                     conversationId,
                     messageId,
-                    aspectRatio
+                    aspectRatio,
+                    excludeLive
                 )
             }
         }

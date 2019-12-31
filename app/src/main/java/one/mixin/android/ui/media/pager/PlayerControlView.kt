@@ -64,8 +64,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
         hide()
     }
 
-    var useTopLayout = true
-    var useBottomLayout = false
+    private var useBottomLayout = false
     var inRefreshState = false
         set(value) {
             field = value
@@ -219,12 +218,8 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
         updatePlayView()
         updateNavigation()
         updateTimeline()
-        if (useTopLayout) {
-            if (!topLayout.isVisible) {
-                topLayout.isVisible = true
-            }
-        } else {
-            topLayout.isVisible = false
+        if (!topLayout.isVisible) {
+            topLayout.isVisible = true
         }
         if (useBottomLayout) {
             if (!bottomLayout.isVisible) {

@@ -6,6 +6,7 @@ import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
+import com.google.android.exoplayer2.PlaybackPreparer
 import kotlinx.android.synthetic.main.exo_playback_control_view.view.*
 import kotlinx.android.synthetic.main.item_pager_video_layout.view.*
 import kotlinx.android.synthetic.main.layout_player_view.view.*
@@ -52,17 +53,14 @@ class VideoHolder(
 
         itemView.player_view.apply {
             currentMessageId = messageItem.messageId
+            setPlaybackPrepare(PlaybackPreparer {
+                load(messageItem)
+            })
             if (needPostTransition) {
                 player = VideoPlayer.player().player
             }
             refreshAction = {
-                messageItem.mediaUrl?.let {
-                    if (messageItem.isLive()) {
-                        VideoPlayer.player().loadHlsVideo(it, messageItem.messageId)
-                    } else {
-                        VideoPlayer.player().loadVideo(it, messageItem.messageId)
-                    }
-                }
+                load(messageItem)
             }
             callback = object : PlayerView.Callback {
                 override fun onClick() {
@@ -124,6 +122,16 @@ class VideoHolder(
         if (needPostTransition) {
             ViewCompat.setTransitionName(itemView, "transition")
             mediaPagerAdapterListener.onReadyPostTransition(itemView)
+        }
+    }
+
+    private fun load(messageItem: MessageItem) {
+        messageItem.mediaUrl?.let {
+            if (messageItem.isLive()) {
+                VideoPlayer.player().loadHlsVideo(it, messageItem.messageId)
+            } else {
+                VideoPlayer.player().loadVideo(it, messageItem.messageId)
+            }
         }
     }
 
