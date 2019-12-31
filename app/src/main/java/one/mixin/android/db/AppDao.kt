@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.RoomWarnings
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppItem
@@ -10,6 +11,7 @@ import one.mixin.android.vo.AppItem
 @Dao
 interface AppDao : BaseDao<App> {
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """ SELECT a.app_id as appId, a.app_number as appNumber, a.home_uri as homeUri, a.redirect_uri as redirectUri,
             a.name as name, a.icon_url as iconUrl, a.description as description, a.app_secret as appSecret,
