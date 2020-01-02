@@ -3,7 +3,8 @@ package one.mixin.android.ui.common.biometric
 import android.content.Context
 import android.os.CancellationSignal
 import android.security.keystore.UserNotAuthenticatedException
-import com.bugsnag.android.Bugsnag
+import android.util.Log
+import com.crashlytics.android.Crashlytics
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
 import moe.feng.support.biometricprompt.BiometricPromptCompat
@@ -48,7 +49,8 @@ class BiometricDialog(
                     context.toast(R.string.wallet_biometric_invalid)
                     callback?.onCancel()
                 }
-                else -> Bugsnag.notify(BiometricException("getDecryptCipher. ${e.getStackTraceString()}"))
+                else ->
+                    Crashlytics.log(Log.ERROR, BiometricUtil.CRASHLYTICS_BIOMETRIC, "getDecryptCipher. ${e.getStackTraceString()}")
             }
             return
         }
@@ -81,7 +83,7 @@ class BiometricDialog(
                     val pin = decryptByteArray.toString(Charset.defaultCharset())
                     callback?.onPinComplete(pin)
                 } catch (e: Exception) {
-                    Bugsnag.notify(BiometricException("onAuthenticationSucceeded  ${e.getStackTraceString()}"))
+                    Crashlytics.log(Log.ERROR, BiometricUtil.CRASHLYTICS_BIOMETRIC, "onAuthenticationSucceeded  ${e.getStackTraceString()}")
                 }
             }
         }
@@ -103,5 +105,3 @@ class BiometricDialog(
         fun onCancel()
     }
 }
-
-class BiometricException(message: String) : IllegalStateException(message)
