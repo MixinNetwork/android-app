@@ -176,7 +176,7 @@ constructor(
 
     suspend fun getFiats() = accountService.getFiats()
 
-    suspend fun getPinLogs(offset: Int? = null) = accountService.getPinLogs(offset)
+    suspend fun getPinLogs(offset: Int? = null, limit: Int? = null) = accountService.getPinLogs(offset)
 
     suspend fun preferences(request: AccountUpdateRequest) = accountService.preferences(request)
 
