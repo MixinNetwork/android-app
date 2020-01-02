@@ -581,6 +581,7 @@
     <string name="audio">语音</string>
     <string name="live">直播</string>
     <string name="post">文章</string>
+    <string name="post_tag">文章</string>
     <!--pay-->
     <string name="pay_paid">此付款链接已由某人支付，您无法进行重复付款。</string>
 

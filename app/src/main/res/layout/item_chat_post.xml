@@ -36,7 +36,7 @@
         app:layout_constraintTop_toBottomOf="@id/chat_name"
         app:layout_goneMarginTop="0dp">
 
-        <TextView
+        <one.mixin.android.widget.NonScrollingTextView
             android:id="@+id/chat_tv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -76,7 +76,7 @@
             android:paddingTop="1.5dp"
             android:paddingEnd="5dp"
             android:paddingBottom="1.5dp"
-            android:text="@string/post"
+            android:text="@string/post_tag"
             android:textColor="@color/white"
             android:textSize="10sp"
             tools:ignore="HardcodedText" />
