@@ -50,6 +50,7 @@ import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createLiveMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.createPostMessage
 import one.mixin.android.vo.createReplyTextMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
@@ -320,7 +321,8 @@ class DecryptMessage : Injector() {
             }
              data.category.endsWith("_POST") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
-                val message = createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status)
+                val message = createPostMessage(data.messageId, data.conversationId, data.userId, data.category, plain,
+                    plain.split("\n").take(20).joinToString("\n"), data.createdAt, data.status)
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
             }
