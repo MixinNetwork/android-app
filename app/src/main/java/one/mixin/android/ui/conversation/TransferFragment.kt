@@ -41,6 +41,7 @@ import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
+import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.defaultSharedPreferences
@@ -220,26 +221,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             operateKeyboard(false)
 
             when {
-                isInnerTransfer() && shouldShowTransferTip() -> {
-                    currentAsset?.let {
-                        val transferTipBottomSheetDialogFragment =
-                            TransferTipBottomSheetDialogFragment.newInstance(
-                                user?.fullName,
-                                it,
-                                BigDecimal(getAmount()).toDouble() * currentAsset!!.priceUsd.toDouble()
-                            )
-                        transferTipBottomSheetDialogFragment.showNow(
-                            parentFragmentManager,
-                            TransferTipBottomSheetDialogFragment.TAG
-                        )
-                        transferTipBottomSheetDialogFragment.callback =
-                            object : TransferTipBottomSheetDialogFragment.Callback {
-                                override fun onSuccess() {
-                                    showTransferBottom()
-                                }
-                            }
-                    }
-                }
                 isInnerTransfer() -> showTransferBottom()
                 shouldShowWithdrawalTip() -> {
                     currentAsset?.let {
@@ -513,7 +494,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
 
         val biometricItem = if (user != null) {
-            TransferBiometricItem(user!!, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo, "")
+            TransferBiometricItem(user!!, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo, PaymentStatus.pending.name)
         } else {
             WithdrawBiometricItem(address!!.displayAddress(), address!!.addressId,
                 address!!.label, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo, "")

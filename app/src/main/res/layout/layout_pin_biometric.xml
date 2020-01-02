@@ -41,8 +41,8 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center">
+        android:layout_height="120dp"
+        android:layout_gravity="center_horizontal">
 
         <ProgressBar
             style="?android:attr/progressBarStyleSmall"
@@ -55,8 +55,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin20"
-        android:layout_marginBottom="@dimen/margin20"
+        android:layout_gravity="center_vertical"
         android:orientation="vertical">
 
         <TextView
@@ -64,6 +63,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginTop="@dimen/margin20"
+            android:layout_marginBottom="32dp"
             android:layout_marginStart="@dimen/margin20"
             android:layout_marginEnd="@dimen/margin20"
             android:background="@drawable/bg_round_8_solid_gray"
@@ -80,7 +81,9 @@
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="20dp"
+            android:layout_marginBottom="32dp"
+            android:paddingStart="@dimen/margin20"
+            android:paddingEnd="@dimen/margin20"
             android:enabled="true"
             android:text="@string/common_continue"
             android:textSize="14sp"/>
