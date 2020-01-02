@@ -49,9 +49,15 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     abstract fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String)
 
-    protected fun showErrorInfo(content: String, animate: Boolean = false) {
+    protected fun showErrorInfo(
+        content: String,
+        animate: Boolean = false,
+        tickMillis: Long = 0L,
+        errorAction: BiometricLayout.ErrorAction? = null,
+        clickCallback: (() -> Unit)? = null
+    ) {
         if (!isAdded) return
-        contentView.biometric_layout.showErrorInfo(content, animate)
+        contentView.biometric_layout.showErrorInfo(content, animate, tickMillis, errorAction, clickCallback)
     }
 
     private fun showBiometricPrompt() {
@@ -97,7 +103,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             })
         } else {
             contentView.biometric_layout?.let { layout ->
-                layout.setErrorButton(response.errorCode)
+                layout.setErrorButton(layout.getErrorActionByErrorCode(response.errorCode))
                 layout.pin.clear()
             }
             showErrorInfo(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription), true)
