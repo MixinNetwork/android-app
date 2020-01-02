@@ -93,7 +93,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     var visibilityListener: VisibilityListener? = null
 
     init {
-        LayoutInflater.from(context).inflate(R.layout.exo_playback_control_view, this)
+        LayoutInflater.from(context).inflate(R.layout.view_player_control, this)
         topLayout = findViewById(R.id.top_fl)
         bottomLayout = findViewById(R.id.bottom_ll)
         playView = findViewById(R.id.play_view)

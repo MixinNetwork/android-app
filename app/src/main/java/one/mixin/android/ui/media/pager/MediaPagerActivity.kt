@@ -48,7 +48,7 @@ import java.io.FileInputStream
 import javax.inject.Inject
 import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_media_pager.*
-import kotlinx.android.synthetic.main.exo_playback_control_view.view.*
+import kotlinx.android.synthetic.main.view_player_control.view.*
 import kotlinx.android.synthetic.main.item_pager_video_layout.view.*
 import kotlinx.android.synthetic.main.layout_player_view.view.*
 import kotlinx.android.synthetic.main.view_drag_image_bottom.view.*
