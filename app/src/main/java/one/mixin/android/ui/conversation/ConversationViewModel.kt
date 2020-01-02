@@ -682,7 +682,7 @@ internal constructor(
                     conversationRepository.batchMarkReadAndTake(
                         conversationId,
                         Session.getAccountId()!!,
-                        list.last().created_at
+                        list.last().createdAt
                     )
                     list.map {
                         createAckJob(
@@ -858,7 +858,7 @@ internal constructor(
                         conversationRepository.batchMarkReadAndTake(
                             conversationId,
                             Session.getAccountId()!!,
-                            list.last().created_at
+                            list.last().createdAt
                         )
                         list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }
                             .let { messages ->

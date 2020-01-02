@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.NotificationManager
 import android.util.Log
 import androidx.collection.arrayMapOf
+import androidx.collection.arraySetOf
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
 import java.io.File
@@ -249,19 +250,22 @@ class DecryptMessage : Injector() {
             } else if (plainData.action == PlainDataAction.NO_KEY.name) {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, data.sessionId.getDeviceId()).toString())
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
+                val accountId = Session.getAccountId()!!
                 plainData.ackMessages?.let {
+                    val updateList = arraySetOf<String>()
                     for (m in it) {
                         if (m.status != MessageStatus.READ.name) {
                             continue
                         }
-                        val curStatus = messageDao.findMessageStatusById(m.message_id)
-                        if (curStatus != null && MessageStatus.valueOf(m.status) > MessageStatus.valueOf(curStatus)) {
+                        val message = messageDao.findSimpleMessageById(m.message_id)
+                        if (message != null && MessageStatus.valueOf(m.status) > MessageStatus.valueOf(message.status)) {
                             messageDao.updateMessageStatus(m.status, m.message_id)
-                            messageDao.findConversationById(m.message_id)?.let { conversationId ->
-                                messageDao.takeUnseen(Session.getAccountId()!!, conversationId)
-                                notificationManager.cancel(conversationId.hashCode())
-                            }
+                            updateList.add(message.conversationId)
                         }
+                    }
+                    updateList.forEach { cId ->
+                        messageDao.takeUnseen(accountId, cId)
+                        notificationManager.cancel(cId.hashCode())
                     }
                 }
             }

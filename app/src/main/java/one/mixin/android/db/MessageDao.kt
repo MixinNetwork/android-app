@@ -240,7 +240,7 @@ interface MessageDao : BaseDao<Message> {
     fun updateHyperlink(hyperlink: String, id: String)
 
     @Query(
-        "SELECT id, created_at FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
+        "SELECT id, conversation_id, user_id, status, created_at FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
             "AND status IN ('SENT', 'DELIVERED') ORDER BY created_at ASC"
     )
     fun getUnreadMessage(conversationId: String, userId: String): List<MessageMinimal>
@@ -304,12 +304,12 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages WHERE id = :messageId")
     fun findMessageIdById(messageId: String): String?
 
-    @Query("SELECT conversation_id FROM messages WHERE id = :messageId")
-    fun findConversationById(messageId: String): String?
+    @Query("SELECT id, conversation_id, user_id, status, created_at FROM messages WHERE id = :messageId")
+    fun findSimpleMessageById(messageId: String): MessageMinimal?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
-        "SELECT id, created_at FROM messages WHERE conversation_id = :conversationId " +
+        "SELECT id, conversation_id, user_id, status, created_at FROM messages WHERE conversation_id = :conversationId " +
             "AND user_id != :userId AND status IN ('SENT', 'DELIVERED') ORDER BY created_at ASC"
     )
     fun findUnreadMessagesSync(
@@ -339,8 +339,8 @@ interface MessageDao : BaseDao<Message> {
     fun batchMarkRead(conversationId: String, userId: String, createdAt: String)
 
     @Query(
-        "UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.user_id != :userId " +
-            "AND m.status IN ('SENT', 'DELIVERED') AND m.conversation_id = :conversationId) WHERE conversation_id = :conversationId "
+        "UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId " +
+            "AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId "
     )
     fun takeUnseen(userId: String, conversationId: String)
 
