@@ -195,4 +195,6 @@ internal constructor(
     fun observeTopAssets() = assetRepository.observeTopAssets()
 
     fun getUser(userId: String) = userRepository.getUserById(userId)
+
+    suspend fun errorCount() = accountRepository.errorCount()
 }

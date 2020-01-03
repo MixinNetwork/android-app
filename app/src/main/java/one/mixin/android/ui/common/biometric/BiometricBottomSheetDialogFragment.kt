@@ -106,7 +106,13 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 layout.setErrorButton(layout.getErrorActionByErrorCode(response.errorCode))
                 layout.pin.clear()
             }
-            showErrorInfo(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription), true)
+            val errorInfo = if (response.errorCode == ErrorHandler.PIN_INCORRECT) {
+                val errorCount = bottomViewModel.errorCount()
+                getString(R.string.error_pin_incorrect_with_times, ErrorHandler.PIN_INCORRECT, errorCount)
+            } else {
+                requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription)
+            }
+            showErrorInfo(errorInfo, true)
         }
     }
 

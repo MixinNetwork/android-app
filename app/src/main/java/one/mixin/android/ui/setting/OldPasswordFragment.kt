@@ -78,6 +78,7 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
             invokeNetwork = { walletViewModel.verifyPin(pinCode) },
             switchContext = Dispatchers.IO,
             successBlock = { response ->
+                dialog.dismiss()
                 context?.updatePinCheck()
                 response.data?.let {
                     val pin = pin.code()
@@ -93,12 +94,18 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
             failureBlock = {
                 pin.clear()
                 if (it.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+                    dialog.dismiss()
                     toast(R.string.error_pin_check_too_many_request)
                     return@handleMixinResponse true
+                } else if (it.errorCode == ErrorHandler.PIN_INCORRECT) {
+                    val errorCount = walletViewModel.errorCount()
+                    toast(getString(R.string.error_pin_incorrect_with_times, ErrorHandler.PIN_INCORRECT, errorCount))
+                    dialog.dismiss()
+                    return@handleMixinResponse true
                 }
+                dialog.dismiss()
                 return@handleMixinResponse false
-            },
-            doAfterNetworkSuccess = { dialog.dismiss() }
+            }
         )
     }
 

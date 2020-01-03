@@ -27,7 +27,6 @@ import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.extension.escapeSql
-import one.mixin.android.extension.within24Hours
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
@@ -453,24 +452,7 @@ class BottomSheetViewModel @Inject internal constructor(
         userRepository.upsert(user)
     }
 
-    suspend fun errorCount(user: User): Int = withContext(Dispatchers.IO) {
-        val response = accountRepository.getPinLogs(limit = 5)
-        if (response.isSuccess) {
-            val list = response.data ?: return@withContext 0
-            for ((index, item) in list.withIndex()) {
-                if (index == 4 && item.createdAt.within24Hours()) {
-                    return@withContext 5
-                } else if (item.createdAt.within24Hours()) {
-                    continue
-                } else {
-                    return@withContext index
-                }
-            }
-            return@withContext 0
-        } else {
-            return@withContext 0
-        }
-    }
+    suspend fun errorCount() = accountRepository.errorCount()
 
     suspend fun loadFavoriteApps(userId: String, loadAction: (List<App>?) -> Unit) {
         withContext(Dispatchers.IO) {

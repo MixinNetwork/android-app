@@ -75,6 +75,8 @@ class PinCheckDialogFragment : DialogFragment(), Injectable {
             invokeNetwork = { pinCheckViewModel.verifyPin(pinCode) },
             switchContext = Dispatchers.IO,
             successBlock = {
+                contentView.pin?.clear()
+                contentView.pin_va?.displayedChild = POS_PIN
                 context?.updatePinCheck()
                 dismiss()
             },
@@ -86,7 +88,9 @@ class PinCheckDialogFragment : DialogFragment(), Injectable {
             failureBlock = { response ->
                 contentView.pin?.clear()
                 if (response.errorCode == ErrorHandler.PIN_INCORRECT) {
-                    contentView.pin?.error(getString(R.string.error_pin_incorrect, ErrorHandler.PIN_INCORRECT))
+                    val errorCount = pinCheckViewModel.errorCount()
+                    contentView.pin_va?.displayedChild = POS_PIN
+                    contentView.pin?.error(getString(R.string.error_pin_incorrect_with_times, ErrorHandler.PIN_INCORRECT, errorCount))
                 } else if (response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
                     contentView.pin_va?.displayedChild = POS_TIP
                     contentView.tip_va?.showNext()
@@ -95,10 +99,6 @@ class PinCheckDialogFragment : DialogFragment(), Injectable {
                     contentView.keyboard?.animate()?.translationY(contentView.keyboard.height.toFloat())?.start()
                 }
                 return@handleMixinResponse false
-            },
-            doAfterNetworkSuccess = {
-                contentView.pin_va?.displayedChild = POS_PIN
-                contentView.pin?.clear()
             }
         )
     }
