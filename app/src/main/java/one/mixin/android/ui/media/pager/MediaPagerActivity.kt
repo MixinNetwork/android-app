@@ -119,6 +119,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
     }
 
     private var initialIndex: Int = 0
+    private var firstLoad = true
     private var firstLoadVideo = true
 
     private val pipVideoView by lazy {
@@ -219,8 +220,11 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
             .observe(this@MediaPagerActivity, Observer {
                 adapter.submitList(it) {
-                    adapter.initialPos = initialIndex
-                    view_pager.setCurrentItem(initialIndex, false)
+                    if (firstLoad) {
+                        adapter.initialPos = initialIndex
+                        view_pager.setCurrentItem(initialIndex, false)
+                        firstLoad = false
+                    }
                 }
             })
     }
