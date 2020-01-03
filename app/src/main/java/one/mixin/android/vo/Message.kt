@@ -253,6 +253,20 @@ fun createMessage(
     .setSnapshotId(snapshotId)
     .build()
 
+fun createPostMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    category: String,
+    content: String,
+    thumbImage: String,
+    createdAt: String,
+    status: String
+) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
+    .setContent(content)
+    .setThumbImage(thumbImage)
+    .build()
+
 fun createCallMessage(
     messageId: String,
     conversationId: String,

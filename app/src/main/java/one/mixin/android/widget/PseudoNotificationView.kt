@@ -31,7 +31,6 @@ class PseudoNotificationView : RelativeLayout {
         val size = context.dip(12)
         d.setBounds(0, 0, size, size)
         title_tv.setCompoundDrawables(d, null, null, null)
-        backgroundResource = R.drawable.bg_round_gray
     }
 
     fun addContent(s: String) {

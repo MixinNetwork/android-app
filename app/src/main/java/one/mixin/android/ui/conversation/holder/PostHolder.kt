@@ -127,8 +127,12 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
             }
         }
 
-        messageItem.content?.let {
-            miniMarkwon.setMarkdown(itemView.chat_tv, it.split("\n").take(20).joinToString("\n"))
+        if (!messageItem.thumbImage.isNullOrEmpty()) {
+            miniMarkwon.setMarkdown(itemView.chat_tv, messageItem.thumbImage)
+        } else if (!messageItem.content.isNullOrEmpty()) {
+            miniMarkwon.setMarkdown(itemView.chat_tv, messageItem.content.split("\n").take(20).joinToString("\n"))
+        } else {
+            itemView.chat_tv.text = null
         }
 
         itemView.setOnLongClickListener {
