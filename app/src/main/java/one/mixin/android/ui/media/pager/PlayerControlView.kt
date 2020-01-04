@@ -162,9 +162,12 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
         player?.let {
             val timeLine = it.currentTimeline
             val windowIndex = it.currentWindowIndex
-            val currentWindow = timeLine.getWindow(windowIndex, window)
-            liveView.isVisible = currentWindow.isLive
-            useBottomLayout = currentWindow.isSeekable
+            try {
+                val currentWindow = timeLine.getWindow(windowIndex, window)
+                liveView.isVisible = currentWindow.isLive
+                useBottomLayout = currentWindow.isSeekable
+            } catch (ignored: IndexOutOfBoundsException) {
+            }
         }
     }
 

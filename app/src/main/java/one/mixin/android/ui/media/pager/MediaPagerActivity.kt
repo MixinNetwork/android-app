@@ -48,12 +48,12 @@ import java.io.FileInputStream
 import javax.inject.Inject
 import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_media_pager.*
-import kotlinx.android.synthetic.main.view_player_control.view.*
 import kotlinx.android.synthetic.main.item_pager_video_layout.view.*
 import kotlinx.android.synthetic.main.layout_player_view.view.*
 import kotlinx.android.synthetic.main.view_drag_image_bottom.view.*
 import kotlinx.android.synthetic.main.view_drag_video_bottom.view.*
 import kotlinx.android.synthetic.main.view_drag_video_bottom.view.cancel
+import kotlinx.android.synthetic.main.view_player_control.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -630,13 +630,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
 
     override fun onDismiss() {
         inDismissState = false
-        val messageItem = adapter.currentList?.get(view_pager.currentItem)
-        // workaround with viewPager2 video item crash when call finishAfterTransition()
-        if (messageItem != null && (messageItem.isVideo() || messageItem.isLive())) {
-            finish()
-        } else {
-            finishAfterTransition()
-        }
+        finishAfterTransition()
     }
 
     override fun onCancel() {

@@ -7,9 +7,9 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import com.bumptech.glide.Glide
 import com.google.android.exoplayer2.PlaybackPreparer
-import kotlinx.android.synthetic.main.view_player_control.view.*
 import kotlinx.android.synthetic.main.item_pager_video_layout.view.*
 import kotlinx.android.synthetic.main.layout_player_view.view.*
+import kotlinx.android.synthetic.main.view_player_control.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.loadImage

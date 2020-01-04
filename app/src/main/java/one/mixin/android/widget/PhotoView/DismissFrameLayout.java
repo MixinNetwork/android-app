@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.FrameLayout;
 import com.shizhefei.view.largeimage.LargeImageView;
 
+import static one.mixin.android.widget.PhotoView.SwipeGestureDetector.DIRECTION_LEFT_RIGHT;
+
 public class DismissFrameLayout extends FrameLayout {
     private SwipeGestureDetector swipeGestureDetector;
     private OnDismissListener dismissListener;
@@ -66,12 +68,23 @@ public class DismissFrameLayout extends FrameLayout {
                             }
                         }
                     }
+
+                    @Override
+                    public void onReset() {
+                        requestDisallowInterceptTouchEvent(false);
+                    }
                 });
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        return swipeGestureDetector.onInterceptTouchEvent(ev);
+        boolean intercept = swipeGestureDetector.onInterceptTouchEvent(ev);
+        if (intercept && swipeGestureDetector.getDirection() != DIRECTION_LEFT_RIGHT) {
+            requestDisallowInterceptTouchEvent(true);
+        } else {
+            requestDisallowInterceptTouchEvent(false);
+        }
+        return intercept;
     }
 
     @SuppressLint("ClickableViewAccessibility")
