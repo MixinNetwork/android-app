@@ -23,6 +23,7 @@ import java.util.Formatter
 import java.util.Locale
 import kotlin.math.min
 import one.mixin.android.R
+import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.widget.PlayView2
 import one.mixin.android.widget.PlayView2.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView2.Companion.STATUS_PLAYING
@@ -106,6 +107,12 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
         pipView = findViewById(R.id.pip_iv)
     }
 
+    override fun onFinishInflate() {
+        super.onFinishInflate()
+        val statusBarHeight = context.statusBarHeight()
+        topLayout.setPadding(0, statusBarHeight, 0, 0)
+    }
+
     public override fun onAttachedToWindow() {
         super.onAttachedToWindow()
         attachedToWindow = true
@@ -164,8 +171,8 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
             val windowIndex = it.currentWindowIndex
             try {
                 val currentWindow = timeLine.getWindow(windowIndex, window)
-                liveView.isVisible = currentWindow.isLive
-                useBottomLayout = currentWindow.isSeekable
+                liveView.isVisible = currentWindow.isDynamic
+                useBottomLayout = currentWindow.isDynamic
             } catch (ignored: IndexOutOfBoundsException) {
             }
         }
