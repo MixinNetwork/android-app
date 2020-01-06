@@ -21,17 +21,15 @@ class CallButton(context: Context, attr: AttributeSet) : LinearLayout(context, a
     init {
         LayoutInflater.from(context).inflate(R.layout.view_call_button, this, true)
         val ta = context.obtainStyledAttributes(attr, R.styleable.CallButton)
-        ta?.let {
-            checkable = ta.getBoolean(R.styleable.CallButton_android_checkable, false)
-            checked = ta.getBoolean(R.styleable.CallButton_android_checked, true)
-            bgChecked = ta.getResourceId(R.styleable.CallButton_bg_circle_checked, 0)
-            bgUnchecked = ta.getResourceId(R.styleable.CallButton_bg_circle_unchecked, 0)
-            srcChecked = ta.getResourceId(R.styleable.CallButton_ic_checked, 0)
-            srcUnchecked = ta.getResourceId(R.styleable.CallButton_ic_unchecked, 0)
-            text.text = ta.getText(R.styleable.CallButton_android_text)
+        checkable = ta.getBoolean(R.styleable.CallButton_android_checkable, false)
+        checked = ta.getBoolean(R.styleable.CallButton_android_checked, true)
+        bgChecked = ta.getResourceId(R.styleable.CallButton_bg_circle_checked, 0)
+        bgUnchecked = ta.getResourceId(R.styleable.CallButton_bg_circle_unchecked, 0)
+        srcChecked = ta.getResourceId(R.styleable.CallButton_ic_checked, 0)
+        srcUnchecked = ta.getResourceId(R.styleable.CallButton_ic_unchecked, 0)
+        text.text = ta.getText(R.styleable.CallButton_android_text)
 
-            ta.recycle()
-        }
+        ta.recycle()
         update(isChecked)
 
         if (checkable) {

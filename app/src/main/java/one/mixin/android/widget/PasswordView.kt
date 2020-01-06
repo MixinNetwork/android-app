@@ -42,14 +42,12 @@ class PasswordView : View {
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.PasswordView)
-        ta?.let {
-            if (ta.hasValue(R.styleable.PasswordView_circleColor)) {
-                circleColor = ta.getColor(R.styleable.PasswordView_circleColor, ContextCompat.getColor(context, COLOR))
-                ringPaint.color = circleColor
-                circlePaint.color = circleColor
-            }
-            ta.recycle()
+        if (ta.hasValue(R.styleable.PasswordView_circleColor)) {
+            circleColor = ta.getColor(R.styleable.PasswordView_circleColor, ContextCompat.getColor(context, COLOR))
+            ringPaint.color = circleColor
+            circlePaint.color = circleColor
         }
+        ta.recycle()
 
         attrs?.let {
             val bgValue = it.getAttributeValue("http://schemas.android.com/apk/res/android", "background")

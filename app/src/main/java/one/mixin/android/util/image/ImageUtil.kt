@@ -24,7 +24,7 @@ internal object ImageUtil {
         destinationPath: String
     ): File {
         var fileOutputStream: FileOutputStream? = null
-        val file = File(destinationPath).parentFile
+        val file = File(destinationPath).parentFile!!
         if (!file.exists()) {
             file.mkdirs()
         }

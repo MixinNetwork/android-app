@@ -17,12 +17,10 @@ class BalanceLayout : ViewGroup {
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.BalanceLayout)
-        if (ta != null) {
-            if (ta.hasValue(R.styleable.BalanceLayout_center)) {
-                center = ta.getBoolean(R.styleable.BalanceLayout_center, false)
-            }
-            ta.recycle()
+        if (ta.hasValue(R.styleable.BalanceLayout_center)) {
+            center = ta.getBoolean(R.styleable.BalanceLayout_center, false)
         }
+        ta.recycle()
     }
 
     private val symbolOffset by lazy { context.dpToPx(8f) }

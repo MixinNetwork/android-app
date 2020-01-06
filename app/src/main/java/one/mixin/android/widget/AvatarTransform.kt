@@ -65,7 +65,7 @@ class AvatarTransform(private val bitmap: Bitmap) : Transition() {
 
     private fun captureValues(transitionValues: TransitionValues) {
         val view = transitionValues.view
-        if (view == null || view.width <= 0 || view.height <= 0) return
+        if (view.width <= 0 || view.height <= 0) return
         transitionValues.values[BOUNDS] = Rect(view.left, view.top, view.right, view.bottom)
     }
 }

@@ -28,11 +28,9 @@ class MessageLayout : ViewGroup {
     ) {
         offset = context.dpToPx(8f)
         val ta = context.obtainStyledAttributes(attrs, R.styleable.MessageLayout, defStyleAttr, 0)
-        ta?.let {
-            maxWidth = ta.getDimensionPixelSize(R.styleable.MessageLayout_max_width, dip(300))
-            contentPadding = ta.getDimensionPixelSize(R.styleable.MessageLayout_content_padding, 0)
-            ta.recycle()
-        }
+        maxWidth = ta.getDimensionPixelSize(R.styleable.MessageLayout_max_width, dip(300))
+        contentPadding = ta.getDimensionPixelSize(R.styleable.MessageLayout_content_padding, 0)
+        ta.recycle()
     }
 
     fun setMaxWidth(maxWidth: Int) {
