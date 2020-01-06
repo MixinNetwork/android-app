@@ -11,7 +11,6 @@ import androidx.collection.ArraySet
 import kotlinx.android.synthetic.main.view_pseudo_notification.view.*
 import one.mixin.android.R
 import one.mixin.android.ui.url.isMixinUrl
-import org.jetbrains.anko.backgroundResource
 import org.jetbrains.anko.dip
 
 class PseudoNotificationView : RelativeLayout {

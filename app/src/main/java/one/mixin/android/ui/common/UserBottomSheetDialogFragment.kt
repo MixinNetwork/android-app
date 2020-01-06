@@ -315,11 +315,43 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 }
             }
         }
+        if (u.relationship == UserRelationship.FRIEND.name) {
+            list.groups.add(menuGroup {
+                menu(muteMenu)
+                menu(editNameMenu)
+            })
+            list.groups.add(if (u.isBot()) {
+                menuGroup {
+                    menu(developerMenu)
+                    menu(transactionMenu)
+                }
+            } else {
+                menuGroup {
+                    menu(transactionMenu)
+                }
+            })
+        } else {
+            if (u.isBot()) {
+                list.groups.add(menuGroup {
+                    menu(muteMenu)
+                })
+                list.groups.add(menuGroup {
+                    menu(developerMenu)
+                    menu(transactionMenu)
+                })
+            } else {
+                list.groups.add(menuGroup {
+                    menu(muteMenu)
+                    menu(transactionMenu)
+                })
+            }
+        }
         when (u.relationship) {
             UserRelationship.BLOCKING.name -> {
                 list.groups.add(menuGroup {
                     menu {
                         title = getString(R.string.contact_other_unblock)
+                        style = MenuStyle.Danger
                         action = {
                             bottomViewModel.updateRelationship(
                                 RelationshipRequest(
@@ -334,21 +366,6 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
             UserRelationship.FRIEND.name -> {
                 list.groups.add(menuGroup {
-                    menu(muteMenu)
-                    menu(editNameMenu)
-                })
-                val developerTransactionList = if (u.isBot()) {
-                    menuGroup {
-                        menu(developerMenu)
-                        menu(transactionMenu)
-                    }
-                } else {
-                    menuGroup {
-                        menu(transactionMenu)
-                    }
-                }
-                list.groups.add(developerTransactionList)
-                list.groups.add(menuGroup {
                     menu {
                         title = getString(R.string.contact_other_remove)
                         style = MenuStyle.Danger
@@ -362,10 +379,6 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 })
             }
             UserRelationship.STRANGER.name -> {
-                list.groups.add(menuGroup {
-                    menu(muteMenu)
-                    menu(transactionMenu)
-                })
                 list.groups.add(menuGroup {
                     menu {
                         title = getString(R.string.contact_other_block)
