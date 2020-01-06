@@ -5,6 +5,9 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.text.method.LinkMovementMethod
 import android.view.View
+import android.view.View.GONE
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.doOnPreDraw
@@ -89,23 +92,28 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         contentView.title.right_iv.setOnClickListener { dismiss() }
         contentView.join_tv.setOnClickListener {
             if (code == null) return@setOnClickListener
-
+            contentView.join_tv.visibility = INVISIBLE
+            contentView.join_progress.visibility = VISIBLE
             bottomViewModel.join(code!!).autoDispose(stopScope).subscribe({
                 if (it.isSuccess) {
-                    dismiss()
                     val conversationResponse = it.data as ConversationResponse
                     val accountId = Session.getAccountId()
-                    conversationResponse.participants.forEach { request ->
-                        if (request.userId == accountId) {
-                            bottomViewModel.refreshConversation(conversationId)
-                            return@forEach
-                        }
+                    val result = conversationResponse.participants.any { participant ->
+                        participant.userId == accountId
                     }
-                    ConversationActivity.show(requireContext(), conversationId)
+                    dismiss()
+                    if (result) {
+                        bottomViewModel.refreshConversation(conversationId)
+                        ConversationActivity.show(requireContext(), conversationId)
+                    }
                 } else {
                     ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
                 }
+                contentView.join_tv.visibility = VISIBLE
+                contentView.join_progress.visibility = GONE
             }, {
+                contentView.join_tv.visibility = VISIBLE
+                contentView.join_progress.visibility = GONE
                 ErrorHandler.handleError(it)
             })
         }
