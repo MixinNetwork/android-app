@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 28,
-    "identityHash": "9b54586acdab07c2034522fe6bb1dc5f",
+    "identityHash": "4621acf503197e21ee03769f565bd327",
     "entities": [
       {
         "tableName": "users",
@@ -443,6 +443,17 @@
               "created_at"
             ],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_user_id_status_created_at` ON `${TABLE_NAME}` (`conversation_id`, `user_id`, `status`, `created_at`)"
+          },
+          {
+            "name": "index_messages_conversation_id_created_at_user_id_category",
+            "unique": false,
+            "columnNames": [
+              "conversation_id",
+              "created_at",
+              "user_id",
+              "category"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_conversation_id_created_at_user_id_category` ON `${TABLE_NAME}` (`conversation_id`, `created_at`, `user_id`, `category`)"
           },
           {
             "name": "index_messages_user_id",
@@ -1586,7 +1597,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9b54586acdab07c2034522fe6bb1dc5f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4621acf503197e21ee03769f565bd327')"
     ]
   }
 }

@@ -32,6 +32,7 @@ interface MessageDao : BaseDao<Message> {
                 su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId,
                 c.name AS groupName
                 FROM messages m
+                indexed by index_messages_conversation_id_created_at_user_id_category
                 INNER JOIN users u ON m.user_id = u.user_id
                 LEFT JOIN users u1 ON m.participant_id = u1.user_id
                 LEFT JOIN snapshots s ON m.snapshot_id = s.snapshot_id

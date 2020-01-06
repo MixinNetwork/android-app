@@ -13,6 +13,7 @@ import java.io.Serializable
     tableName = "messages",
     indices = [Index(value = arrayOf("conversation_id", "created_at")),
         Index(value = arrayOf("conversation_id", "user_id", "status", "created_at")),
+        Index(value = arrayOf("conversation_id", "created_at", "user_id", "category")),
         Index(value = arrayOf("user_id"))],
     foreignKeys = [(ForeignKey(
         entity = Conversation::class,
