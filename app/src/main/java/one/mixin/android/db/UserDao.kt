@@ -10,10 +10,10 @@ import one.mixin.android.vo.User
 @Dao
 interface UserDao : BaseDao<User> {
 
-    @Query("SELECT * FROM users WHERE relationship = 'FRIEND' ORDER BY full_name, user_id ASC")
+    @Query("SELECT * FROM users WHERE relationship = 'FRIEND' ORDER BY full_name COLLATE LOCALIZED ASC, user_id ASC")
     fun findFriends(): LiveData<List<User>>
 
-    @Query("SELECT * FROM users WHERE relationship = 'FRIEND' ORDER BY full_name, user_id ASC")
+    @Query("SELECT * FROM users WHERE relationship = 'FRIEND' ORDER BY full_name COLLATE LOCALIZED ASC, user_id ASC")
     suspend fun getFriends(): List<User>
 
     @Query("SELECT * FROM users WHERE user_id = :id")
