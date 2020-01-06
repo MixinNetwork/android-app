@@ -152,5 +152,22 @@ class MixinDatabaseMigrations private constructor() {
                 """)
             }
         }
+        val MIGRATION_27_28: Migration = object : Migration(27, 28) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `new_apps` (`app_id` TEXT NOT NULL, `app_number` TEXT NOT NULL, `home_uri` TEXT NOT NULL, `redirect_uri` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `description` TEXT NOT NULL, `capabilities` TEXT, `creator_id` TEXT NOT NULL, PRIMARY KEY(`app_id`))
+                """
+                )
+                database.execSQL(
+                    """
+                    INSERT INTO new_apps (`app_id`, `app_number`, `home_uri`, `redirect_uri`, `name`, `icon_url`, `description`, `capabilities`, `creator_id`) 
+                    SELECT `app_id`, `app_number`, `home_uri`, `redirect_uri`, `name`, `icon_url`, `description`, `capabilities`, `creator_id` FROM apps 
+                """
+                )
+                database.execSQL("DROP TABLE IF EXISTS apps")
+                database.execSQL("ALTER TABLE new_apps RENAME TO apps")
+            }
+        }
     }
 }

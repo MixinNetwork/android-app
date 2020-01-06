@@ -37,9 +37,6 @@ data class App(
     @SerializedName("description")
     @ColumnInfo(name = "description")
     val description: String,
-    @SerializedName("app_secret")
-    @ColumnInfo(name = "app_secret")
-    val appSecret: String,
     @SerializedName("capabilities")
     @ColumnInfo(name = "capabilities")
     val capabilities: ArrayList<String>?,

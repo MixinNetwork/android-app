@@ -12,7 +12,6 @@ class AppItem(
     val name: String,
     val iconUrl: String,
     val description: String,
-    val appSecret: String,
     val capabilities: ArrayList<String>?,
     val creatorId: String,
     val userId: String? = null,
