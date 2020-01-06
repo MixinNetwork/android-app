@@ -87,6 +87,9 @@
     <string name="verify_by_PIN">用密码来验证</string>
     <string name="verify_by_biometric">用生物识别来验证</string>
     <string name="transfer_without_pin">转账前请先设置密码</string>
+    <string name="voice_call">语音通话</string>
+    <string name="telephone_call">电话呼叫</string>
+    <string name="call_who">呼叫 %1$s</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
