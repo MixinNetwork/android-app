@@ -114,8 +114,10 @@ class NewGroupFragment : BaseFragment() {
 
     private fun createGroup() = lifecycleScope.launch {
         if (dialog == null) {
-            dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message,
-                title = R.string.group_creating).apply {
+            dialog = indeterminateProgressDialog(
+                message = R.string.pb_dialog_message,
+                title = R.string.group_creating
+            ).apply {
                 setCancelable(false)
             }
         }
@@ -136,15 +138,16 @@ class NewGroupFragment : BaseFragment() {
         val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)
         liveData.observe(viewLifecycleOwner, Observer { c ->
             if (c != null) {
-                when {
-                    c.status == ConversationStatus.SUCCESS.ordinal -> {
-                        liveData.removeObservers(this@NewGroupFragment)
+                when (c.status) {
+                    ConversationStatus.SUCCESS.ordinal -> {
+                        liveData.removeObservers(viewLifecycleOwner)
                         name_desc_et.hideKeyboard()
                         dialog?.dismiss()
-                        startActivity(Intent(context, MainActivity::class.java))
-                        ConversationActivity.show(requireContext(), conversation.conversationId, null)
+                        activity?.finish()
+                        ConversationActivity.showAndClear(requireContext(), conversation.conversationId)
                     }
-                    c.status == ConversationStatus.FAILURE.ordinal -> {
+                    ConversationStatus.FAILURE.ordinal -> {
+                        liveData.removeObservers(viewLifecycleOwner)
                         name_desc_et.hideKeyboard()
                         dialog?.dismiss()
                         startActivity(Intent(context, MainActivity::class.java))
