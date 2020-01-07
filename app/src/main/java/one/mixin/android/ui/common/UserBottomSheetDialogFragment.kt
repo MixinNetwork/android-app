@@ -360,7 +360,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     menu(voiceCallMenu)
                     menu(telephoneCallMenu)
                 })
-            } else {
+            } else if (!u.isBot()) {
                 list.groups.add(menuGroup {
                     menu(voiceCallMenu)
                 })
