@@ -31,6 +31,10 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
         notifyDataSetChanged()
     }
 
+    fun clearUser(user: User) {
+        mCheckedMap[user.identityNumber] = false
+        notifyDataSetChanged()
+    }
     override fun getItemCount(): Int = data?.size ?: 0
 
     override fun getHeaderId(position: Int): Long {
@@ -110,7 +114,6 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
             }
         }
     }
-
     class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(user: User) {
             itemView.header.text = if (user.fullName != null && user.fullName.isNotEmpty())
