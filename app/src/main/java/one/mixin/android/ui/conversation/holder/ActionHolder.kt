@@ -7,10 +7,8 @@ import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.item_chat_action.view.*
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
@@ -24,10 +22,6 @@ import org.jetbrains.anko.rightPadding
 import org.jetbrains.anko.topPadding
 
 class ActionHolder constructor(containerView: View) : BaseViewHolder(containerView) {
-
-    protected val dp8 by lazy {
-        MixinApplication.appContext.dpToPx(8f)
-    }
 
     @SuppressLint("RestrictedApi")
     fun bind(

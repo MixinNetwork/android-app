@@ -36,6 +36,9 @@ abstract class BaseViewHolder constructor(containerView: View) :
     protected val dp3 by lazy {
         MixinApplication.appContext.dpToPx(3f)
     }
+    protected val dp8 by lazy {
+        MixinApplication.appContext.dpToPx(8f)
+    }
     protected val dp10 by lazy {
         MixinApplication.appContext.dpToPx(10f)
     }
@@ -129,12 +132,30 @@ abstract class BaseViewHolder constructor(containerView: View) :
     protected fun setStatusIcon(
         isMe: Boolean,
         status: String,
-        setIcon: (Drawable?) -> Unit,
-        hideIcon: () -> Unit,
-        isWhite: Boolean = false
+        isSecret: Boolean,
+        handleAction: (Drawable?, Drawable?) -> Unit
     ) {
+        setStatusIcon(isMe, status, isSecret, false, handleAction)
+    }
+
+    protected fun setStatusIcon(
+        isMe: Boolean,
+        status: String,
+        isSecret: Boolean,
+        isWhite: Boolean,
+        handleAction: (Drawable?, Drawable?) -> Unit
+    ) {
+        val secretIcon = if (isSecret) {
+            if (isWhite) {
+                AppCompatResources.getDrawable(itemView.context, R.drawable.ic_secret_white)
+            } else {
+                AppCompatResources.getDrawable(itemView.context, R.drawable.ic_secret)
+            }
+        } else {
+            null
+        }
         if (isMe) {
-            val drawable: Drawable? =
+            val statusIcon: Drawable? =
                 when (status) {
                     MessageStatus.SENDING.name ->
                         AppCompatResources.getDrawable(
@@ -166,9 +187,9 @@ abstract class BaseViewHolder constructor(containerView: View) :
                         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_read)
                     else -> null
                 }
-            setIcon(drawable)
+            handleAction(statusIcon, secretIcon)
         } else {
-            hideIcon()
+            handleAction(null, secretIcon)
         }
     }
 }

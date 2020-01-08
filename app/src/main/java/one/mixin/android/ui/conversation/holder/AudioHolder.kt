@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
+import androidx.core.view.isVisible
 import kotlin.math.min
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_audio.view.*
@@ -15,6 +16,7 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.mediaDownloaded
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
@@ -80,12 +82,12 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                     min((minWidth + (it / 1000f) * dp15).toInt(), maxWidth)
             }
         }
-        setStatusIcon(isMe, messageItem.status, {
-            itemView.chat_flag.setImageDrawable(it)
-            itemView.chat_flag.visibility = View.VISIBLE
-        }, {
-            itemView.chat_flag.visibility = View.GONE
-        })
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
+            itemView.chat_flag.isVisible = statusIcon != null
+            itemView.chat_flag.setImageDrawable(statusIcon)
+            itemView.chat_secret.isVisible = secretIcon != null
+        }
+
         messageItem.mediaWaveform?.let {
             itemView.audio_waveform.setWaveform(it)
         }

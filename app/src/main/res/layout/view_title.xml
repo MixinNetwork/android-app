@@ -40,7 +40,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
-            android:textColor="?attr/text_minor"
+            android:textColor="?attr/text_subtitle"
             android:textSize="16sp" />
 
         <ProgressBar

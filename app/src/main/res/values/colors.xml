@@ -12,6 +12,7 @@
     <color name="textMinor">#bbbbbb</color>
     <color name="textAssist">#B8BDC7</color>
     <color name="textRemarks">#BCBEC3</color>
+    <color name="textSubtitle">#BBBEC3</color>
 
     <color name="colorIcon">#FF000000</color>
     <color name="colorIconWhite">#FFFFFF</color>

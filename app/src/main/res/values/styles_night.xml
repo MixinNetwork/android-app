@@ -11,6 +11,7 @@
         <item name="text_assist">@color/textAssistNight</item>
         <item name="text_remarks">@color/textRemarksNight</item>
         <item name="text_blue">@color/colorLightBlue</item>
+        <item name="text_subtitle">@color/textSubtitleNight</item>
 
         <item name="text_default">@color/textPrimaryNight</item>
         <item name="text_checked">@color/textPrimaryNight</item>

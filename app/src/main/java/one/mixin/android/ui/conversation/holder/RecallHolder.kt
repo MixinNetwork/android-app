@@ -4,12 +4,14 @@ import android.graphics.Color
 import android.view.View
 import android.view.View.GONE
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_recall.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 
 class RecallHolder constructor(containerView: View) : BaseViewHolder(containerView) {
@@ -42,7 +44,7 @@ class RecallHolder constructor(containerView: View) : BaseViewHolder(containerVi
         } else {
             itemView.chat_name.visibility = View.GONE
         }
-
+        itemView.chat_secret.isVisible = messageItem.isSignal()
         if (messageItem.appId != null) {
             itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
             itemView.chat_name.compoundDrawablePadding = itemView.dip(3)

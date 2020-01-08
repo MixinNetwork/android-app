@@ -99,12 +99,14 @@ data class MessageItem(
     }
 }
 
-fun create(type: String, createdAt: String? = null) = MessageItem("", "", "", "", "",
+fun create(type: String, createdAt: String? = null) = MessageItem(
+    "", "", "", "", "",
     type, null, createdAt
-    ?: nowInUtc(), MessageStatus.READ.name, null, null,
+        ?: nowInUtc(), MessageStatus.READ.name, null, null,
     null, null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null,
-    null, null, null, null, null, null, null, null, null, null)
+    null, null, null, null, null, null, null, null, null, null
+)
 
 fun MessageItem.isMedia(): Boolean = this.type == MessageCategory.SIGNAL_IMAGE.name ||
     this.type == MessageCategory.PLAIN_IMAGE.name ||
@@ -177,10 +179,14 @@ fun MessageItem.canRecall(): Boolean {
 
 fun MessageItem.isRecall() = type == MessageCategory.MESSAGE_RECALL.name
 
-fun MessageItem.toMessage() = Message(messageId, conversationId, userId, type, content, mediaUrl, mediaMimeType, mediaSize,
+fun MessageItem.isSignal() = type.startsWith("SIGNAL_")
+
+fun MessageItem.toMessage() = Message(
+    messageId, conversationId, userId, type, content, mediaUrl, mediaMimeType, mediaSize,
     mediaDuration, mediaWidth, mediaHeight, null, thumbImage, thumbUrl, null, null, mediaStatus, status,
     createdAt, actionName, participantUserId, snapshotId, hyperlink = null, name = mediaName, albumId = null, stickerId = stickerId,
-    sharedUserId = sharedUserId, mediaWaveform = mediaWaveform, mediaMineType = null, quoteMessageId = quoteId, quoteContent = quoteContent)
+    sharedUserId = sharedUserId, mediaWaveform = mediaWaveform, mediaMineType = null, quoteMessageId = quoteId, quoteContent = quoteContent
+)
 
 fun MessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
     when {

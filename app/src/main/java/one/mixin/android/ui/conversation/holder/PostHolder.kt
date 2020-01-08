@@ -4,10 +4,12 @@ import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
+import androidx.core.view.isVisible
 import io.noties.markwon.Markwon
+import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
 import kotlinx.android.synthetic.main.item_chat_post.view.*
+import kotlinx.android.synthetic.main.item_chat_post.view.chat_time
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -16,6 +18,7 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 
 class PostHolder constructor(containerView: View) : BaseViewHolder(containerView) {
@@ -173,12 +176,11 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
             itemView.chat_name.setCompoundDrawables(null, null, null, null)
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, {
-            it?.setBounds(0, 0, dp12, dp12)
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
-        }, {
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
-        }, true)
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), true) { statusIcon, secretIcon ->
+            itemView.chat_flag.isVisible = statusIcon != null
+            itemView.chat_flag.setImageDrawable(statusIcon)
+            itemView.chat_secret.isVisible = secretIcon != null
+        }
         chatLayout(isMe, isLast)
     }
 }

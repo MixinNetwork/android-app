@@ -7,6 +7,8 @@ import android.text.style.BackgroundColorSpan
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
+import androidx.core.view.isVisible
+import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_text_quote.view.*
 import one.mixin.android.R
@@ -18,12 +20,12 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
 class TextQuoteHolder constructor(containerView: View) : BaseViewHolder(containerView) {
     private val dp16 = itemView.context.dpToPx(16f)
-    private val dp8 = itemView.context.dpToPx(8f)
     private val dp6 = itemView.context.dpToPx(6f)
 
     init {
@@ -179,13 +181,12 @@ class TextQuoteHolder constructor(containerView: View) : BaseViewHolder(containe
         } else {
             itemView.chat_name.setCompoundDrawables(null, null, null, null)
         }
-        setStatusIcon(isMe, messageItem.status, {
-            itemView.chat_flag.setImageDrawable(it)
-            itemView.chat_flag.visibility = View.VISIBLE
-        }, {
-            itemView.chat_flag.visibility = View.GONE
-        })
-
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
+            statusIcon?.setBounds(0, 0, dp12, dp12)
+            secretIcon?.setBounds(0, 0, dp8, dp8)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
+        }
+        itemView.chat_secret.isVisible = messageItem.isSignal()
         itemView.chat_layout.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onMessageClick(messageItem.quoteId)
