@@ -274,6 +274,28 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             title = getString(R.string.edit_name)
             action = { showDialog(u.fullName) }
         }
+        val voiceCallMenu = menu {
+            title = getString(R.string.voice_call)
+            action = {
+                startVoiceCall()
+            }
+        }
+        val phoneNum = user.phone
+        val telephoneCallMenu = if (!phoneNum.isNullOrEmpty()) {
+            val phoneUri = Uri.parse("tel:$phoneNum")
+            menu {
+                title = getString(R.string.telephone_call)
+                subtitle = phoneNum
+                action = {
+                    requireContext().showConfirmDialog(getString(R.string.call_who, phoneNum)) {
+                        Intent(Intent.ACTION_DIAL).run {
+                            this.data = phoneUri
+                            startActivity(this)
+                        }
+                    }
+                }
+            }
+        } else null
         val developerMenu = menu {
             title = getString(R.string.developer)
             action = {
@@ -330,67 +352,42 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 }
             }
         }
+
         if (u.relationship == UserRelationship.FRIEND.name) {
             list.groups.add(menuGroup {
                 menu(muteMenu)
                 menu(editNameMenu)
             })
-            val voiceCallMenu = menu {
-                title = getString(R.string.voice_call)
-                action = {
-                    startVoiceCall()
-                }
-            }
-            val phoneNum = user.phone
-            if (!phoneNum.isNullOrEmpty()) {
-                val phoneUri = Uri.parse("tel:$phoneNum")
-                val telephoneCallMenu = menu {
-                    title = getString(R.string.telephone_call)
-                    subtitle = phoneNum
-                    action = {
-                        requireContext().showConfirmDialog(getString(R.string.call_who, phoneNum)) {
-                            Intent(Intent.ACTION_DIAL).run {
-                                this.data = phoneUri
-                                startActivity(this)
-                            }
-                        }
-                    }
-                }
+        } else {
+            list.groups.add(menuGroup {
+                menu(muteMenu)
+            })
+        }
+
+        if (u.isBot()) {
+            if (telephoneCallMenu != null) {
                 list.groups.add(menuGroup {
-                    menu(voiceCallMenu)
                     menu(telephoneCallMenu)
                 })
-            } else if (!u.isBot()) {
-                list.groups.add(menuGroup {
-                    menu(voiceCallMenu)
-                })
             }
-            list.groups.add(if (u.isBot()) {
-                menuGroup {
-                    menu(developerMenu)
-                    menu(transactionMenu)
-                }
-            } else {
-                menuGroup {
-                    menu(transactionMenu)
-                }
+        } else {
+            list.groups.add(menuGroup {
+                menu(voiceCallMenu)
+                telephoneCallMenu?.let { menu(it) }
+            })
+        }
+
+        if (u.isBot()) {
+            list.groups.add(menuGroup {
+                menu(developerMenu)
+                menu(transactionMenu)
             })
         } else {
-            if (u.isBot()) {
-                list.groups.add(menuGroup {
-                    menu(muteMenu)
-                })
-                list.groups.add(menuGroup {
-                    menu(developerMenu)
-                    menu(transactionMenu)
-                })
-            } else {
-                list.groups.add(menuGroup {
-                    menu(muteMenu)
-                    menu(transactionMenu)
-                })
-            }
+            list.groups.add(menuGroup {
+                menu(transactionMenu)
+            })
         }
+
         when (u.relationship) {
             UserRelationship.BLOCKING.name -> {
                 list.groups.add(menuGroup {
