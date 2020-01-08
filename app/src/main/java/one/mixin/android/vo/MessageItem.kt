@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.android.exoplayer2.util.MimeTypes
+import java.io.File
+import java.io.FileInputStream
 import kotlinx.android.parcel.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -23,8 +25,6 @@ import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toast
-import java.io.File
-import java.io.FileInputStream
 
 @SuppressLint("ParcelCreator")
 @Entity
