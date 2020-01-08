@@ -172,7 +172,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
             try {
                 val currentWindow = timeLine.getWindow(windowIndex, window)
                 liveView.isVisible = currentWindow.isDynamic
-                useBottomLayout = currentWindow.isDynamic
+                useBottomLayout = !currentWindow.isDynamic
             } catch (ignored: IndexOutOfBoundsException) {
             }
         }

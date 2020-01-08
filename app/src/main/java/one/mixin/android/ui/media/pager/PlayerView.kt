@@ -229,6 +229,14 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
                         pb_view.isVisible = true
                         updateRefreshViewVisibility(false)
                     }
+                    Player.STATE_READY -> {
+                        pb_view.isVisible = false
+                        if (playWhenReady) {
+                            hideController()
+                        } else {
+                            maybeShowController(false)
+                        }
+                    }
                     else -> {
                         pb_view.isVisible = false
                         maybeShowController(false)
