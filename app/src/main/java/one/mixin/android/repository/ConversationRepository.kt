@@ -296,4 +296,6 @@ internal constructor(
         participantSessionDao.insertListSuspend(ps)
 
     suspend fun upgradeFtsMessage() = messageDao.upgradeFtsMessage()
+
+    suspend fun getAnnouncementByConversationId(conversationId: String) = conversationDao.getAnnouncementByConversationId(conversationId)
 }

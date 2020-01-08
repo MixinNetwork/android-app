@@ -68,7 +68,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.util.image.Compressor
-import one.mixin.android.vo.*
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
@@ -1015,4 +1014,6 @@ internal constructor(
             list
         }
     }
+
+    suspend fun getAnnouncementByConversationId(conversationId: String) = conversationRepository.getAnnouncementByConversationId(conversationId)
 }

@@ -12,7 +12,7 @@ import androidx.appcompat.widget.AppCompatTextView
 import java.util.LinkedList
 import java.util.regex.Pattern
 
-class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextView(context, attrs) {
+open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextView(context, attrs) {
 
     private var autoLinkOnClickListener: ((AutoLinkMode, String) -> Unit)? = null
 

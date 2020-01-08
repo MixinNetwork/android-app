@@ -153,4 +153,7 @@ interface ConversationDao : BaseDao<Conversation> {
         left join participants p on p.conversation_id = c.conversation_id
         where  p.user_id = :userId AND u.app_id IS NULL""")
     fun getConversationsByUserId(userId: String): List<String>
+
+    @Query("SELECT announcement FROM conversations WHERE conversation_id = :conversationId ")
+    suspend fun getAnnouncementByConversationId(conversationId: String): String?
 }
