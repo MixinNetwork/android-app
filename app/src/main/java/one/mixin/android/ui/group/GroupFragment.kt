@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -27,6 +28,7 @@ import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
 import one.mixin.android.job.ConversationJob.Companion.TYPE_REMOVE
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.group.adapter.GroupFriendAdapter
+import one.mixin.android.ui.group.adapter.GroupSelectAdapter
 import one.mixin.android.vo.User
 import org.jetbrains.anko.textColor
 
@@ -87,6 +89,14 @@ class GroupFragment : BaseFragment() {
     private var checkedUsers: MutableList<User> = mutableListOf()
     private var dialog: Dialog? = null
 
+    private val groupAdapter: GroupSelectAdapter by lazy {
+        GroupSelectAdapter { user ->
+            checkedUsers.remove(user)
+            groupFriendAdapter.clearUser(user)
+            groupAdapter.notifyDataSetChanged()
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -105,6 +115,9 @@ class GroupFragment : BaseFragment() {
         } else if (from == TYPE_CREATE) {
             updateTitle(0)
         }
+        select_rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        select_rv.adapter = groupAdapter
+        groupAdapter.checkedUsers = checkedUsers
         title_view.right_animator.setOnClickListener {
             search_et.hideKeyboard()
             if (from == TYPE_ADD || from == TYPE_REMOVE) {
@@ -208,7 +221,8 @@ class GroupFragment : BaseFragment() {
                 if (from == TYPE_ADD || from == TYPE_CREATE)
                     checkedUsers.size + existCount else existCount - checkedUsers.size
             )
-
+            groupAdapter.notifyDataSetChanged()
+            select_rv.layoutManager?.scrollToPosition(checkedUsers.size - 1)
             if (checkedUsers.isEmpty()) {
                 title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
                 title_view.right_animator.isEnabled = false

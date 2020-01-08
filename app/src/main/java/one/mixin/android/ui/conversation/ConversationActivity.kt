@@ -149,5 +149,19 @@ class ConversationActivity : BlazeBaseActivity() {
                 )
             }
         }
+
+        fun showAndClear(
+            context: Context,
+            conversationId: String? = null,
+            recipientId: String? = null,
+            messageId: String? = null,
+            keyword: String? = null,
+            messages: ArrayList<ForwardMessage>? = null
+        ) {
+            val mainIntent = Intent(context, ConversationActivity::class.java)
+            mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            val conversationIntent = putIntent(context, conversationId, recipientId, messageId, keyword, messages)
+            context.startActivities(arrayOf(mainIntent, conversationIntent))
+        }
     }
 }

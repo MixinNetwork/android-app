@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/bg_window"
+    android:animateLayoutChanges="true"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -29,6 +30,17 @@
         android:textColor="?attr/text_primary"
         android:textColorHint="?attr/text_minor"
         android:textSize="14sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="?attr/bg_window" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/select_rv"
+        android:layout_width="match_parent"
+        android:background="?attr/bg_white"
+        android:layout_height="wrap_content" />
 
     <View
         android:id="@+id/line"
