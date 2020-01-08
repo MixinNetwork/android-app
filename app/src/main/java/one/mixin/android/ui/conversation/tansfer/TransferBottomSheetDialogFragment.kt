@@ -92,7 +92,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         } else if (state == PaymentStatus.pending.name && shouldShowTransferTip()) {
             (t as TransferBiometricItem).let {
                 val fiatAmount =
-                    BigDecimal(t.amount).multiply(BigDecimal(Fiats.getRate())).numberFormat2()
+                    (BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()
                 showErrorInfo(
                     getString(
                         R.string.wallet_transaction_tip, it.user.fullName,
