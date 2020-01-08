@@ -22,12 +22,12 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 
 class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerView) {
     private val dp16 = itemView.context.dpToPx(16f)
-    private val dp8 = itemView.context.dpToPx(8f)
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
@@ -97,12 +97,11 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
             itemView.chat_name.visibility = View.GONE
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, {
-            it?.setBounds(0, 0, dp12, dp12)
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
-        }, {
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
-        })
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
+            statusIcon?.setBounds(0, 0, dp12, dp12)
+            secretIcon?.setBounds(0, 0, dp8, dp8)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
+        }
         keyword.notNullWithElse({ k ->
             messageItem.mediaName?.let { str ->
                 val start = str.indexOf(k, 0, true)

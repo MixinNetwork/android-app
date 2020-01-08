@@ -16,6 +16,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.mediaDownloaded
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
@@ -91,12 +92,11 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
         } else {
             itemView.audio_duration.text = messageItem.mediaDuration!!.toLong().formatMillis()
         }
-        setStatusIcon(isMe, messageItem.status, {
-            it?.setBounds(0, 0, dp12, dp12)
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
-        }, {
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
-        })
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
+            statusIcon?.setBounds(0, 0, dp12, dp12)
+            secretIcon?.setBounds(0, 0, dp8, dp8)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
+        }
 
         if (isFirst && !isMe) {
             itemView.chat_name.visibility = View.VISIBLE

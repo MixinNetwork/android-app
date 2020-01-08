@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.SeekBar
+import androidx.core.view.isVisible
 import com.google.android.exoplayer2.util.MimeTypes
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_file.view.*
@@ -20,6 +21,7 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 
@@ -42,7 +44,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-
+        itemView.chat_secret.isVisible = messageItem.isSignal()
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
@@ -80,12 +82,11 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         } else {
             itemView.file_size_tv.text = "${messageItem.mediaSize?.fileSize()}"
         }
-        setStatusIcon(isMe, messageItem.status, {
-            itemView.chat_flag.setImageDrawable(it)
-            itemView.chat_flag.visibility = View.VISIBLE
-        }, {
-            itemView.chat_flag.visibility = View.GONE
-        })
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
+            itemView.chat_flag.isVisible = statusIcon != null
+            itemView.chat_flag.setImageDrawable(statusIcon)
+            itemView.chat_secret.isVisible = secretIcon != null
+        }
         itemView.seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
             }

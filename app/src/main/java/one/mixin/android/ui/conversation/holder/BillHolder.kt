@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
+import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_bill.view.*
 import one.mixin.android.R
@@ -12,6 +13,7 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isSignal
 
 class BillHolder constructor(containerView: View) : BaseViewHolder(containerView) {
 
@@ -35,7 +37,7 @@ class BillHolder constructor(containerView: View) : BaseViewHolder(containerView
         itemView.bill_iv.loadImage(messageItem.assetIcon, R.drawable.ic_avatar_place_holder)
         itemView.bill_tv.text = messageItem.snapshotAmount?.numberFormat8()
         itemView.bill_symbol_tv.text = messageItem.assetSymbol
-
+        itemView.chat_secret.isVisible = messageItem.isSignal()
         itemView.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, adapterPosition)

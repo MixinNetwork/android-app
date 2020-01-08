@@ -15,11 +15,11 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 
 class ImageQuoteHolder constructor(containerView: View) : BaseViewHolder(containerView) {
     private val dp16 = itemView.context.dpToPx(16f)
-    private val dp8 = itemView.context.dpToPx(8f)
 
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
@@ -239,13 +239,11 @@ class ImageQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
         } else {
             itemView.chat_name.setCompoundDrawables(null, null, null, null)
         }
-        setStatusIcon(isMe, messageItem.status, {
-            it?.setBounds(0, 0, dp12, dp12)
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
-        }, {
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
-        }, true)
-
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
+            statusIcon?.setBounds(0, 0, dp12, dp12)
+            secretIcon?.setBounds(0, 0, dp8, dp8)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
+        }
         val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
         itemView.chat_quote.bind(quoteMessage)
         itemView.chat_quote.setOnClickListener {

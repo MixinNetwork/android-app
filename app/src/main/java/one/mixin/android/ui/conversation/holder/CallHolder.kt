@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.view.View
 import android.view.View.GONE
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_call.view.*
 import one.mixin.android.R
@@ -12,6 +13,7 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isSignal
 
 class CallHolder constructor(containerView: View) : BaseViewHolder(containerView) {
 
@@ -29,6 +31,7 @@ class CallHolder constructor(containerView: View) : BaseViewHolder(containerView
         val ctx = itemView.context
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
+        itemView.chat_secret.isVisible = messageItem.isSignal()
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         itemView.call_tv.text = when (messageItem.type) {
             MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {

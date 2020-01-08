@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
-import kotlin.math.min
 import kotlinx.android.synthetic.main.item_chat_image.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -19,8 +18,10 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.dip
+import kotlin.math.min
 
 class ImageHolder constructor(containerView: View) : MediaHolder(containerView) {
 
@@ -170,12 +171,11 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
                 }
             }
         }
-        setStatusIcon(isMe, messageItem.status, {
-            it?.setBounds(0, 0, dp12, dp12)
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
-        }, {
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
-        }, true)
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
+            statusIcon?.setBounds(0, 0, dp12, dp12)
+            secretIcon?.setBounds(0, 0, dp8, dp8)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
+        }
 
         dataWidth = messageItem.mediaWidth
         dataHeight = messageItem.mediaHeight

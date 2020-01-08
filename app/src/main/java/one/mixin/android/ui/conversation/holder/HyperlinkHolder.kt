@@ -6,6 +6,7 @@ import android.text.Spanned
 import android.text.style.BackgroundColorSpan
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
 import kotlinx.android.synthetic.main.item_chat_hyperlink.view.*
@@ -17,6 +18,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
@@ -170,12 +172,11 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
             itemView.chat_name.setCompoundDrawables(null, null, null, null)
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, {
-            itemView.chat_flag.setImageDrawable(it)
-            itemView.chat_flag.visibility = View.VISIBLE
-        }, {
-            itemView.chat_flag.visibility = View.GONE
-        })
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
+            itemView.chat_flag.isVisible = statusIcon != null
+            itemView.chat_flag.setImageDrawable(statusIcon)
+            itemView.chat_secret.isVisible = secretIcon != null
+        }
 
         itemView.setOnClickListener {
             if (hasSelect) {
