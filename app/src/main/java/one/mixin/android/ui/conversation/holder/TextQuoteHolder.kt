@@ -8,7 +8,6 @@ import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
-import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_text_quote.view.*
 import one.mixin.android.R
@@ -182,9 +181,9 @@ class TextQuoteHolder constructor(containerView: View) : BaseViewHolder(containe
             itemView.chat_name.setCompoundDrawables(null, null, null, null)
         }
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
+            itemView.chat_flag.isVisible = statusIcon != null
+            itemView.chat_flag.setImageDrawable(statusIcon)
+            itemView.chat_secret.isVisible = secretIcon != null
         }
         itemView.chat_secret.isVisible = messageItem.isSignal()
         itemView.chat_layout.setOnClickListener {

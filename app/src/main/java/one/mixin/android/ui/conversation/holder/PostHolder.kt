@@ -4,12 +4,10 @@ import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
+import androidx.core.widget.TextViewCompat
 import io.noties.markwon.Markwon
-import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
 import kotlinx.android.synthetic.main.item_chat_post.view.*
-import kotlinx.android.synthetic.main.item_chat_post.view.chat_time
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -177,9 +175,9 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), true) { statusIcon, secretIcon ->
-            itemView.chat_flag.isVisible = statusIcon != null
-            itemView.chat_flag.setImageDrawable(statusIcon)
-            itemView.chat_secret.isVisible = secretIcon != null
+            statusIcon?.setBounds(0, 0, dp12, dp12)
+            secretIcon?.setBounds(0, 0, dp8, dp8)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
         }
         chatLayout(isMe, isLast)
     }
