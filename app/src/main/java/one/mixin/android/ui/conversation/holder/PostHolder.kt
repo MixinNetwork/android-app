@@ -176,7 +176,7 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
             itemView.chat_name.setCompoundDrawables(null, null, null, null)
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), true) { statusIcon, secretIcon ->
             itemView.chat_flag.isVisible = statusIcon != null
             itemView.chat_flag.setImageDrawable(statusIcon)
             itemView.chat_secret.isVisible = secretIcon != null
