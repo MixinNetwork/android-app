@@ -8,6 +8,7 @@ import kotlinx.android.synthetic.main.item_group_select.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.User
+import one.mixin.android.vo.showVerifiedOrBot
 
 class GroupSelectAdapter(val removeUser: (User) -> Unit) : RecyclerView.Adapter<GroupSelectAdapter.SelectViewHolder>() {
 
@@ -28,6 +29,8 @@ class GroupSelectAdapter(val removeUser: (User) -> Unit) : RecyclerView.Adapter<
         checkedUsers?.let { list ->
             val user = list[position]
             holder.itemView.avatar_view.setInfo(user.fullName, user.avatarUrl, user.userId)
+            holder.itemView.name_tv.text = user.fullName
+            user.showVerifiedOrBot(holder.itemView.verified_iv, holder.itemView.bot_iv)
         }
         holder.itemView.setOnClickListener {
             checkedUsers?.let { list ->
