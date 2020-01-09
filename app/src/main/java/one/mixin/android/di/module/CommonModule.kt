@@ -7,6 +7,7 @@ import one.mixin.android.ui.common.AppListBottomSheetDialogFragment
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
+import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserListBottomSheetDialogFragment
@@ -100,4 +101,7 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeAppListBottomSheetDialogFragment(): AppListBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeQrBottomSheetDialogFragment(): QrBottomSheetDialogFragment
 }
