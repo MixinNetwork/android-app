@@ -10,7 +10,6 @@ import android.app.ActivityOptions
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
@@ -18,6 +17,7 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import android.provider.Settings
 import android.view.TextureView
 import android.view.View
@@ -47,6 +47,7 @@ import java.io.File
 import java.io.FileInputStream
 import javax.inject.Inject
 import kotlin.math.min
+import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.activity_media_pager.*
 import kotlinx.android.synthetic.main.item_pager_video_layout.view.*
 import kotlinx.android.synthetic.main.layout_player_view.view.*
@@ -59,7 +60,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
@@ -108,9 +108,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
     private val conversationId by lazy {
         intent.getStringExtra(CONVERSATION_ID)
     }
-    private val messageId by lazy {
-        intent.getStringExtra(MESSAGE_ID)
-    }
+    private lateinit var messageId: String
+
     private val excludeLive by lazy {
         intent.getBooleanExtra(EXCLUDE_LIVE, false)
     }
@@ -148,13 +147,14 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         if (ratio == 0f) {
             postponeEnterTransition()
         }
+        val mediaState = if (savedInstanceState != null) {
+            savedInstanceState.getParcelable<MediaState>(STATE_MEDIA)
+        } else null
+        messageId = mediaState?.messageId ?: intent.getStringExtra(MESSAGE_ID)!!
         if (pipVideoView.shown) {
             pipVideoView.close(messageId != VideoPlayer.player().mId)
         }
         super.onCreate(savedInstanceState)
-        belowOreo {
-            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         window.sharedElementEnterTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
         window.sharedElementExitTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
@@ -177,15 +177,24 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         SystemUIManager.lightUI(window, false)
 
         colorDrawable = ColorDrawable(Color.BLACK)
-        view_pager.offscreenPageLimit = 2
+        view_pager.offscreenPageLimit = 1
         view_pager.backgroundDrawable = colorDrawable
         view_pager.adapter = adapter
         view_pager.registerOnPageChangeCallback(onPageChangeCallback)
         VideoPlayer.player().setCycle(false)
 
-        lifecycleScope.launch {
-            loadData()
-        }
+        loadData(mediaState)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        val curPos = view_pager.currentItem
+        outState.putParcelable(STATE_MEDIA, MediaState(
+            curPos,
+            adapter.currentList?.get(curPos)?.messageId ?: messageId,
+            VideoPlayer.player().isPlaying(),
+            VideoPlayer.player().getCurrentPos()
+        ))
+        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroy() {
@@ -193,7 +202,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         view_pager?.unregisterOnPageChangeCallback(onPageChangeCallback)
     }
 
-    private suspend fun loadData() {
+    private fun loadData(mediaState: MediaState?) = lifecycleScope.launch {
         val messageItem = viewModel.getMediaMessage(conversationId, messageId)
         val pagedConfig = PagedList.Config.Builder()
             .setInitialLoadSizeHint(1)
@@ -206,23 +215,33 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
             .build()
         adapter.initialPos = initialIndex
         adapter.submitList(pagedList) {
-            observeAllDataSource()
+            observeAllDataSource(mediaState)
         }
         if (messageItem.isVideo() || messageItem.isLive()) {
-            messageItem.loadVideoOrLive {
-                VideoPlayer.player().start()
+            if (mediaState != null) {
+                if (mediaState.isPlaying) {
+                    VideoPlayer.player().start()
+                }
+                mediaState.videoPos.let {
+                    VideoPlayer.player().seekTo(it)
+                }
+            } else {
+                messageItem.loadVideoOrLive {
+                    VideoPlayer.player().start()
+                }
             }
         }
     }
 
-    private fun observeAllDataSource() = lifecycleScope.launch {
+    private fun observeAllDataSource(mediaState: MediaState?) = lifecycleScope.launch {
         initialIndex = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
         viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
             .observe(this@MediaPagerActivity, Observer {
                 adapter.submitList(it) {
                     if (firstLoad) {
                         adapter.initialPos = initialIndex
-                        view_pager.setCurrentItem(initialIndex, false)
+                        val pos = mediaState?.pos ?: initialIndex
+                        view_pager.setCurrentItem(pos, false)
                         firstLoad = false
                     }
                 }
@@ -492,12 +511,13 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
 
                 override fun onAnimationEnd(animation: Animator?) {
                     pipAnimationInProgress = false
-                    VideoPlayer.player().setVideoTextureView(changedTextureView)
                     if (messageItem.isVideo() && VideoPlayer.player().player.playbackState == Player.STATE_IDLE) {
                         VideoPlayer.player()
                             .loadVideo(messageItem.mediaUrl!!, messageItem.messageId, true)
                         VideoPlayer.player().setVideoTextureView(changedTextureView)
                         VideoPlayer.player().pause()
+                    } else {
+                        VideoPlayer.player().setVideoTextureView(changedTextureView)
                     }
                     dismiss()
                 }
@@ -603,6 +623,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
                 VideoPlayer.player().pause()
             }
             firstLoadVideo = false
+
             val messageItem = adapter.currentList?.get(position) ?: return
             loadVideoMessage(messageItem)
         }
@@ -719,6 +740,14 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         }
     }
 
+    @Parcelize
+    data class MediaState(
+        val pos: Int,
+        val messageId: String,
+        val isPlaying: Boolean = true,
+        val videoPos: Long
+    ) : Parcelable
+
     companion object {
         private const val MESSAGE_ID = "id"
         private const val RATIO = "ratio"
@@ -727,6 +756,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         private const val ALPHA_MAX = 0xFF
         const val PREFIX = "media"
         const val PAGE_SIZE = 3
+
+        private const val STATE_MEDIA = "state_media"
 
         private const val SHARED_ELEMENT_TRANSITION_DURATION = 200L
 

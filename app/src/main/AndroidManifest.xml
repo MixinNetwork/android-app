@@ -201,7 +201,7 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
             android:name=".ui.media.pager.MediaPagerActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:screenOrientation="sensor"
             android:theme="@style/AppTheme.Photo"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
