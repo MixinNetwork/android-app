@@ -8,7 +8,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Load.IS_LOADED
 import one.mixin.android.Constants.Load.IS_SYNC_SESSION
 import one.mixin.android.MixinApplication
@@ -77,7 +79,9 @@ class LoadingFragment : BaseFragment() {
                         requireContext().defaultSharedPreferences.putBoolean(IS_LOADED, true)
                     }
                     response.errorCode == ErrorHandler.AUTHENTICATION -> {
-                        MixinApplication.get().closeAndClear()
+                        withContext(Dispatchers.IO) {
+                            MixinApplication.get().closeAndClear()
+                        }
                         activity?.finish()
                     }
                     else -> load()

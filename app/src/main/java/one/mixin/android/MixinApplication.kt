@@ -17,12 +17,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.db.SignalDatabase
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.AppComponent
 import one.mixin.android.di.AppInjector
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.putString
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.landing.InitializeActivity
@@ -97,38 +97,33 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
         }
     }
 
-    fun closeAndClear(toLanding: Boolean = true) {
+    fun closeAndClear() {
         if (onlining.compareAndSet(true, false)) {
+            val accountId = Session.getAccountId()
             BlazeMessageService.stopService(this)
             CallService.disconnect(this)
             notificationManager.cancelAll()
             Session.clearAccount()
             defaultSharedPreferences.clear()
-            defaultSharedPreferences.putBoolean(Constants.Account.PREF_LOGOUT_COMPLETE, false)
             CookieManager.getInstance().removeAllCookies(null)
             CookieManager.getInstance().flush()
             WebStorage.getInstance().deleteAllData()
-            if (toLanding) {
-                doAsync {
-                    clearData()
-
-                    uiThread {
-                        inject()
-                        LandingActivity.show(this@MixinApplication)
-                    }
-                }
-            } else {
+            doAsync {
                 clearData()
-                inject()
+
+                uiThread {
+                    inject()
+                    defaultSharedPreferences.putString(Constants.Account.PREF_LAST_USER_ID, accountId)
+                    LandingActivity.show(this@MixinApplication)
+                }
             }
         }
     }
 
-    fun clearData() {
+    private fun clearData() {
         jobManager.cancelAllJob()
         jobManager.clear()
         SignalDatabase.getDatabase(this).clearAllTables()
-        MixinDatabase.getDatabase(this).clearAllTables()
-        defaultSharedPreferences.putBoolean(Constants.Account.PREF_LOGOUT_COMPLETE, true)
+        defaultSharedPreferences.putBoolean(Constants.Account.PREF_LAST_USER_ID, true)
     }
 }

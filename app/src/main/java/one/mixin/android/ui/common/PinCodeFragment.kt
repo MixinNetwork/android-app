@@ -4,16 +4,21 @@ import android.graphics.Point
 import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import java.security.KeyPair
 import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Account.PREF_LAST_USER_ID
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.crypto.getPrivateKeyPem
 import one.mixin.android.crypto.rsaDecrypt
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.vibrate
@@ -51,7 +56,8 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
         pin_verification_tip_tv.visibility = View.VISIBLE
         pin_verification_tip_tv.text = getString(R.string.landing_validation_error)
         if (r.errorCode == ErrorHandler.PHONE_VERIFICATION_CODE_INVALID ||
-            r.errorCode == ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED) {
+            r.errorCode == ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED
+        ) {
             verification_next_fab.visibility = View.INVISIBLE
         }
         ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
@@ -84,7 +90,6 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
         Session.storeToken(sessionKey.getPrivateKeyPem())
         val key = rsaDecrypt(sessionKey.private, account.session_id, account.pin_token)
         Session.storePinToken(key)
-
         verification_keyboard.animate().translationY(300f).start()
         MixinApplication.get().onlining.set(true)
         if (account.full_name.isNullOrBlank()) {
@@ -94,6 +99,42 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
             RestoreActivity.show(requireContext())
         }
         activity?.finish()
+
+        val lastUserId = requireContext().defaultSharedPreferences.getString(PREF_LAST_USER_ID, null)
+        val sameUser = lastUserId != null && lastUserId == account.userId
+        viewModel.viewModelScope.launch {
+            handleDifferentUser(sameUser) {
+                Session.storeAccount(account)
+                Session.storeToken(sessionKey.getPrivateKeyPem())
+                val key = rsaDecrypt(sessionKey.private, account.session_id, account.pin_token)
+                Session.storePinToken(key)
+                verification_keyboard.animate().translationY(300f).start()
+                MixinApplication.get().onlining.set(true)
+                when {
+                    sameUser -> {
+                        insertUser(account.toUser())
+                        InitializeActivity.showLoading(requireContext())
+                    }
+                    account.full_name.isNullOrBlank() -> {
+                        insertUser(account.toUser())
+                        InitializeActivity.showSetupName(requireContext())
+                    }
+                    else -> {
+                        RestoreActivity.show(requireContext())
+                    }
+                }
+                activity?.finish()
+            }
+        }
+    }
+
+    private suspend fun handleDifferentUser(sameUser: Boolean, complete: () -> Unit) {
+        if (!sameUser) {
+            withContext(Dispatchers.IO) {
+                MixinDatabase.getDatabase(requireContext()).clearAllTables()
+            }
+        }
+        complete()
     }
 
     abstract fun clickNextFab()
