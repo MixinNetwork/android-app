@@ -121,7 +121,7 @@
                     android:background="@drawable/bg_notice"
                     android:clipChildren="false"
                     android:clipToPadding="false"
-                    android:padding="8dp"
+                    android:padding="12dp"
                     android:translationZ="1dp"
                     android:visibility="gone">
 
@@ -129,29 +129,33 @@
                         android:id="@+id/group_icon"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="6dp"
+                        android:paddingStart="4dp"
+                        android:paddingTop="8dp"
+                        android:paddingEnd="8dp"
+                        android:paddingBottom="4dp"
                         android:src="@drawable/ic_notice"
-                        android:translationZ="1dp"
                         tools:ignore="ContentDescription" />
 
                     <ImageView
                         android:id="@+id/group_close"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
                         android:layout_alignParentEnd="true"
-                        android:src="@drawable/ic_close_dark_24dp" />
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/mixin_ripple"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_close_grey" />
 
                     <one.mixin.android.widget.linktext.GroupTextView
                         android:id="@+id/group_desc"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginEnd="8dp"
                         android:layout_toStartOf="@id/group_close"
                         android:layout_toEndOf="@id/group_icon"
-                        android:lines="2"
                         android:maxLength="1024"
-                        android:scrollbars="vertical"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:scrollbars="none"
                         android:textColor="?attr/text_primary"
                         android:textIsSelectable="true" />
                 </RelativeLayout>

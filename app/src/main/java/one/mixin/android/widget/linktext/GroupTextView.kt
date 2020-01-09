@@ -13,4 +13,29 @@ class GroupTextView(context: Context, attrs: AttributeSet?) : AutoLinkTextView(c
             Gravity.CENTER
         }
     }
+
+    private var expand = true
+    fun expand() {
+        if (!expand) {
+            maxLines = Int.MAX_VALUE
+            expand = true
+        }
+    }
+
+    fun collapse() {
+        if (expand) {
+            maxLines = 2
+            expand = false
+            super.scrollTo(0, 0)
+        }
+    }
+
+    init {
+        maxLines = 2
+        minLines = 2
+    }
+
+    override fun scrollTo(x: Int, y: Int) {
+        // do nothing
+    }
 }

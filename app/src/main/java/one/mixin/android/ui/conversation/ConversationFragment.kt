@@ -247,7 +247,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         ) {
                             chatViewModel.viewModelScope.launch {
                                 group_desc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
+                                group_desc.collapse()
                             }
+                            group_flag.isVisible = true
                         }
                         val position = if (messageId != null) {
                             unreadCount + 1
@@ -756,6 +758,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     if (it.conversationId == conversationId) {
                         chatViewModel.viewModelScope.launch {
                             group_desc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
+                            group_desc.collapse()
                         }
                         group_flag.isVisible = true
                     }
@@ -1139,7 +1142,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         group_desc.setAutoLinkOnClickListener { _, url ->
             openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
         }
-
+        group_flag.setOnClickListener {
+            group_desc.expand()
+        }
+        group_desc.setOnClickListener {
+            group_desc.expand()
+        }
+        group_close.setOnClickListener {
+            requireActivity().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(conversationId, false)
+            group_flag.isVisible = false
+        }
         callState.observe(viewLifecycleOwner, Observer { info ->
             chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
         })
@@ -1586,10 +1598,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         action_bar.avatar_iv.visibility = VISIBLE
         action_bar.avatar_iv.setOnClickListener {
             showGroupBottomSheet(false)
-        }
-        group_flag.setOnClickListener {
-            requireContext().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                .putBoolean(conversationId, false)
         }
         chatViewModel.getConversationById(conversationId).observe(viewLifecycleOwner, Observer {
             it?.let {
