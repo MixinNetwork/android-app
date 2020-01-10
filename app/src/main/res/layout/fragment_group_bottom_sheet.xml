@@ -57,10 +57,12 @@
                 android:textSize="12sp" />
 
             <FrameLayout
+                android:id="@+id/join_fl"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="40dp"
-                android:layout_gravity="center_horizontal">
+                android:layout_gravity="center_horizontal"
+                android:visibility="gone" >
 
                 <TextView
                     android:id="@+id/join_tv"
@@ -72,8 +74,7 @@
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp"
                     android:text="@string/group_join"
-                    android:textColor="@color/wallet_blue"
-                    android:visibility="gone" />
+                    android:textColor="@color/wallet_blue" />
 
                 <ProgressBar
                     android:id="@+id/join_progress"

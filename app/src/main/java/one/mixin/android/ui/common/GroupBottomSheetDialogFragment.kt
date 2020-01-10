@@ -185,13 +185,13 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         me = localMe
         if (me != null) {
             contentView.ops_ll.isVisible = true
-            contentView.join_tv.isVisible = false
+            contentView.join_fl.isVisible = false
             contentView.scroll_view.isEnabled = true
         } else {
             val withoutCode = conversation.status == ConversationStatus.QUIT.ordinal && code == null
             contentView.scroll_view.isEnabled = withoutCode
             contentView.ops_ll.isVisible = withoutCode
-            contentView.join_tv.isVisible = code != null
+            contentView.join_fl.isVisible = code != null
         }
 
         contentView.doOnPreDraw {
