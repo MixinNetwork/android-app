@@ -70,6 +70,7 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.isGooglePlayServicesAvailable
+import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
@@ -147,9 +148,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         if (ratio == 0f) {
             postponeEnterTransition()
         }
-        val mediaState = if (savedInstanceState != null) {
-            savedInstanceState.getParcelable<MediaState>(STATE_MEDIA)
-        } else null
+        val mediaState = savedInstanceState?.getParcelable<MediaState>(STATE_MEDIA)
         messageId = mediaState?.messageId ?: intent.getStringExtra(MESSAGE_ID)!!
         if (pipVideoView.shown) {
             pipVideoView.close(messageId != VideoPlayer.player().mId)
@@ -461,8 +460,17 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
             val videoAspectRatioLayout =
                 windowView.player_view.video_aspect_ratio
             val rect = PipVideoView.getPipRect(videoAspectRatioLayout.aspectRatio)
-            val with = windowView.width
-            val scale = rect.width / with
+            val isLandscape = isLandscape()
+            if (isLandscape) {
+                val screenHeight = realSize().y
+                if (rect.width > screenHeight) {
+                    val ratio = rect.width / rect.height
+                    rect.height = screenHeight / ratio
+                    rect.width = screenHeight.toFloat()
+                }
+            }
+            val width = if (isLandscape) windowView.height else windowView.width
+            val scale = (if (isLandscape) rect.height else rect.width) / width
             val animatorSet = AnimatorSet()
             val position = IntArray(2)
             videoAspectRatioLayout.getLocationOnScreen(position)

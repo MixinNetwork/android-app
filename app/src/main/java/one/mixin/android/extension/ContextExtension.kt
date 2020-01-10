@@ -645,3 +645,5 @@ fun Context.isNightMode(): Boolean {
         ) == Constants.Theme.THEME_NIGHT_ID
     }
 }
+
+fun Context.isLandscape() = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
