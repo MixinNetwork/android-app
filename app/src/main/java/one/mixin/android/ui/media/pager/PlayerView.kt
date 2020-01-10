@@ -16,6 +16,8 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ui.spherical.SingleTapListener
 import com.google.android.exoplayer2.video.VideoListener
 import kotlinx.android.synthetic.main.layout_player_view.view.*
+import kotlinx.android.synthetic.main.layout_player_view.view.video_aspect_ratio
+import kotlinx.android.synthetic.main.layout_player_view.view.video_texture
 import one.mixin.android.R
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.widget.AspectRatioFrameLayout

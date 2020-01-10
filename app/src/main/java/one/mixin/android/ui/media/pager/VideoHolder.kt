@@ -3,8 +3,10 @@ package one.mixin.android.ui.media.pager
 import android.content.Context
 import android.util.LruCache
 import android.view.View
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import com.bumptech.glide.Glide
 import com.google.android.exoplayer2.PlaybackPreparer
 import kotlinx.android.synthetic.main.item_pager_video_layout.view.*
@@ -72,6 +74,10 @@ class VideoHolder(
 
                 override fun onRenderFirstFrame() {
                     if (VideoPlayer.player().mId == messageItem.messageId) {
+                        itemView.video_aspect_ratio.updateLayoutParams {
+                            width = MATCH_PARENT
+                            height = MATCH_PARENT
+                        }
                         itemView.preview_iv.isVisible = false
                         itemView.pip_iv.isEnabled = true
                         itemView.pip_iv.alpha = 1f
@@ -148,26 +154,15 @@ class VideoHolder(
     private fun setSize(context: Context, ratio: Float, view: View) {
         val w = context.realSize().x
         val h = context.realSize().y
+        val deviceRatio = w / h.toFloat()
         val ratioParams = view.player_view.video_aspect_ratio.layoutParams
         val previewParams = view.preview_iv.layoutParams
-        if (ratio >= 1f) {
-            val scaleH = (w / ratio).toInt()
-            if (scaleH > h) {
-                ratioParams.width = (h * ratio).toInt()
-                ratioParams.height = h
-            } else {
-                ratioParams.width = w
-                ratioParams.height = scaleH
-            }
+        if (deviceRatio > ratio) {
+            ratioParams.height = h
+            ratioParams.width = (h * ratio).toInt()
         } else {
-            val scaleW = (h * ratio).toInt()
-            if (scaleW > w) {
-                ratioParams.width = w
-                ratioParams.height = (w / ratio).toInt()
-            } else {
-                ratioParams.width = scaleW
-                ratioParams.height = h
-            }
+            ratioParams.width = w
+            ratioParams.height = (w / ratio).toInt()
         }
         previewParams.width = ratioParams.width
         previewParams.height = ratioParams.height
