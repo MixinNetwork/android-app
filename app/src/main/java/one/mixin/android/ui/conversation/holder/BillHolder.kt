@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.item_chat_bill.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.realSize
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
@@ -19,6 +20,7 @@ class BillHolder constructor(containerView: View) : BaseViewHolder(containerView
 
     init {
         itemView.chat_flag.visibility = View.GONE
+        itemView.chat_layout.layoutParams.width = (itemView.context.realSize().x * 0.6).toInt()
     }
 
     private var onItemListener: ConversationAdapter.OnItemListener? = null
