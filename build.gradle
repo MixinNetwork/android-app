@@ -20,7 +20,7 @@ buildscript {
         ext.ktxVersion = '1.2.0-rc01'
         ext.espressoVersion = '3.2.0'
         ext.cameraxVersion = '1.0.0-alpha06'
-        ext.glideVersion = '4.11.0'
+        ext.glideVersion = '4.10.0'
         ext.webpdecoderVesion = '1.6.4.10.0'
         ext.timberVersion = '4.7.1'
         ext.okhttpVersion = '3.13.1'
