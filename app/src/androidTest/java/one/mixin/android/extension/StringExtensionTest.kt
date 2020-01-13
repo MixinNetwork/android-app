@@ -82,4 +82,13 @@ class StringExtensionTest {
         assertEquals("0.000112312000827543897052", s4.numberFormat())
         assertEquals("1,234,567.0010123049580234598807834658927346001234", s5.numberFormat())
     }
+
+    @Test
+    fun filterNonAscii() {
+        val s1 = "A-中文_B"
+        val s2 = "öäü"
+
+        assertEquals("A-_B", s1.filterNonAscii())
+        assertEquals("", s2.filterNonAscii())
+    }
 }

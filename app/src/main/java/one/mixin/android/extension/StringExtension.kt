@@ -367,3 +367,5 @@ inline fun String?.getDeviceId(): Int {
         UUID.fromString(this).hashCode()
     }
 }
+
+fun String.filterNonAscii() = replace("[^\\p{ASCII}]".toRegex(), "")

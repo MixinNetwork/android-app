@@ -50,6 +50,7 @@ import one.mixin.android.db.OffsetDao
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.di.worker.MixinWorkerFactory
+import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
@@ -107,7 +108,7 @@ internal class AppModule {
         })
         builder.addInterceptor { chain ->
             val request = chain.request().newBuilder()
-                .addHeader("User-Agent", API_UA)
+                .addHeader("User-Agent", API_UA.filterNonAscii())
                 .addHeader("Accept-Language", Locale.getDefault().language)
                 .addHeader("Mixin-Device-Id", getDeviceId(resolver))
                 .build()
