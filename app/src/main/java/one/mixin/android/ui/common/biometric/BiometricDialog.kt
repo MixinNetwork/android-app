@@ -44,7 +44,7 @@ class BiometricDialog(
         } catch (e: Exception) {
             when (e) {
                 is UserNotAuthenticatedException -> callback?.showAuthenticationScreen()
-                is InvalidKeyException -> {
+                is InvalidKeyException, is NullPointerException -> {
                     BiometricUtil.deleteKey(context)
                     context.toast(R.string.wallet_biometric_invalid)
                     callback?.onCancel()
