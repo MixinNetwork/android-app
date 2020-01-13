@@ -282,10 +282,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                         val multisigs = result.second as MultisigsResponse
                         lifecycleScope.launch {
                             var asset = linkViewModel.findAssetItemById(multisigs.assetId)
-                            if (asset == null || asset!!.destination.isEmpty()) {
+                            if (asset == null) {
                                 asset = linkViewModel.refreshAsset(multisigs.assetId)
                             }
-                            if (asset != null && asset!!.destination.isNotEmpty()) {
+                            if (asset != null) {
                                 val multisigsBiometricItem = Multi2MultiBiometricItem(
                                     requestId = multisigs.requestId,
                                     action = multisigs.action,
@@ -310,10 +310,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                         val paymentCodeResponse = result.second as PaymentCodeResponse
                         lifecycleScope.launch {
                             var asset = linkViewModel.findAssetItemById(paymentCodeResponse.assetId)
-                            if (asset == null || asset!!.destination.isEmpty()) {
+                            if (asset == null) {
                                 asset = linkViewModel.refreshAsset(paymentCodeResponse.assetId)
                             }
-                            if (asset != null && asset!!.destination.isNotEmpty()) {
+                            if (asset != null) {
                                 val multisigsBiometricItem = One2MultiBiometricItem(
                                     threshold = paymentCodeResponse.threshold,
                                     senders = arrayOf(Session.getAccountId()!!),
@@ -356,10 +356,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                             error(R.string.error_address_exists)
                         } else {
                             var asset = linkViewModel.findAssetItemById(assetId)
-                            if (asset == null || asset?.destination.isNullOrEmpty()) {
+                            if (asset == null) {
                                 asset = linkViewModel.refreshAsset(assetId)
                             }
-                            if (asset != null && asset!!.destination.isNotEmpty()) {
+                            if (asset != null) {
                                 PinAddrBottomSheetDialogFragment.newInstance(
                                     assetId = assetId,
                                     assetUrl = asset!!.iconUrl,
@@ -392,10 +392,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                 if (assetId != null && assetId.isUUID() && !destination.isNullOrEmpty() && !label.isNullOrEmpty()) {
                     lifecycleScope.launch {
                         var asset = linkViewModel.findAssetItemById(assetId)
-                        if (asset == null || asset?.destination.isNullOrEmpty()) {
+                        if (asset == null) {
                             asset = linkViewModel.refreshAsset(assetId)
                         }
-                        if (asset != null && asset!!.destination.isNotEmpty()) {
+                        if (asset != null) {
                             PinAddrBottomSheetDialogFragment.newInstance(
                                 assetId = assetId,
                                 assetUrl = asset!!.iconUrl,
@@ -486,7 +486,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                         lifecycleScope.launch {
                             val address = linkViewModel.findAddressById(addressId, assetId)
                             var asset = linkViewModel.findAssetItemById(assetId)
-                            if (asset == null || asset?.destination.isNullOrEmpty()) {
+                            if (asset == null) {
                                 asset = linkViewModel.refreshAsset(assetId)
                             }
                             if (asset != null) {
