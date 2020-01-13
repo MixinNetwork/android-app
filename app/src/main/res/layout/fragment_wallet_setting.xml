@@ -42,6 +42,17 @@
                 tools:ignore="RelativeOverlap"/>
     </RelativeLayout>
 
+    <TextView
+        android:id="@+id/biometric_error_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:textColor="@color/colorRed"
+        android:textSize="12sp"/>
+
     <RelativeLayout
             android:id="@+id/time_rl"
             android:layout_width="match_parent"

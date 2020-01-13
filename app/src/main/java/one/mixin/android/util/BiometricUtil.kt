@@ -35,8 +35,24 @@ object BiometricUtil {
 
     const val CRASHLYTICS_BIOMETRIC = "biometric"
 
-    fun isSupport(ctx: Context): Boolean {
-        return isKeyguardSecure(ctx) && isSecureHardware() && BiometricPromptCompat.isHardwareDetected(ctx) && !RootUtil.isDeviceRooted
+    private fun isSupport(ctx: Context): Boolean {
+        return BiometricPromptCompat.isHardwareDetected(ctx) && isKeyguardSecure(ctx) && isSecureHardware() && !RootUtil.isDeviceRooted
+    }
+
+    fun isSupportWithErrorInfo(ctx: Context): Pair<Boolean, String?> {
+        if (!BiometricPromptCompat.isHardwareDetected(ctx)) {
+            return Pair(false, "Low device software version")
+        }
+        if (!isKeyguardSecure(ctx)) {
+            return Pair(false, "The PIN, pattern or password is NOT set or a SIM card is unlocked")
+        }
+        if (!isSecureHardware()) {
+            return Pair(false, "The key NOT resides inside secure hardware (TEE)")
+        }
+        if (RootUtil.isDeviceRooted) {
+            return Pair(false, "The device has been rooted")
+        }
+        return Pair(true, null)
     }
 
     fun showAuthenticationScreen(fragment: Fragment) {
