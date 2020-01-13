@@ -87,10 +87,10 @@ object BiometricUtil {
     }
 
     fun deleteKey(ctx: Context) {
-        val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
-            load(null)
-        }
         try {
+            val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
+                load(null)
+            }
             ks.deleteEntry(BIOMETRICS_ALIAS)
         } catch (e: Exception) {
             Crashlytics.log(Log.ERROR, CRASHLYTICS_BIOMETRIC, "delete entry BIOMETRICS_ALIAS failed. ${e.getStackTraceString()}")
