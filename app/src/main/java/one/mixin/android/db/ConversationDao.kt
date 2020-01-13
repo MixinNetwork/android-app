@@ -153,4 +153,18 @@ interface ConversationDao : BaseDao<Conversation> {
         left join participants p on p.conversation_id = c.conversation_id
         where  p.user_id = :userId AND u.app_id IS NULL""")
     fun getConversationsByUserId(userId: String): List<String>
+
+    @Query(
+        """
+        UPDATE conversations SET last_read_message_id = (SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND status IN ('SENT', 'DELIVERED') ORDER BY created_at, rowid ASC LIMIT 1) WHERE last_message_id IS NULL AND conversation_id = :conversationId
+    """
+    )
+    fun updateFirstUnreadMessageId(conversationId: String, userId: String)
+
+    @Query(
+        """
+            SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND status IN ('SENT', 'DELIVERED') ORDER BY created_at, rowid ASC LIMIT 1
+    """
+    )
+    suspend fun findFirstUnreadMessageId(conversationId: String, userId: String): String?
 }

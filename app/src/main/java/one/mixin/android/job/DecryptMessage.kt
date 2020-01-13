@@ -449,6 +449,9 @@ class DecryptMessage : Injector() {
                 sendNotificationJob(message, data.source)
             }
         }
+        if (MixinApplication.conversationId != data.conversationId && data.userId != Session.getAccountId()) {
+            conversationDao.updateFirstUnreadMessageId(data.conversationId, Session.getAccountId()!!)
+        }
     }
 
     private fun processSystemSessionMessage(data: BlazeMessageData, systemSession: SystemSessionMessagePayload) {
@@ -487,6 +490,10 @@ class DecryptMessage : Injector() {
 
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
             sendNotificationJob(message, data.source)
+        }
+
+        if (MixinApplication.conversationId != data.conversationId && data.userId != Session.getAccountId()) {
+            conversationDao.updateFirstUnreadMessageId(data.conversationId, Session.getAccountId()!!)
         }
     }
 

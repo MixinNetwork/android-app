@@ -366,12 +366,6 @@ interface MessageDao : BaseDao<Message> {
         messageId: String
     ): Message?
 
-    @Query(
-        "SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND status IN ('SENT', 'DELIVERED') " +
-            "ORDER BY created_at, rowid ASC LIMIT 1"
-    )
-    suspend fun findFirstUnreadMessageId(conversationId: String, userId: String): String?
-
     @Query("SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY created_at DESC LIMIT 1")
     suspend fun findLastMessage(conversationId: String): String?
 
