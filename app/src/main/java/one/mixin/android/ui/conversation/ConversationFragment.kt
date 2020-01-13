@@ -777,7 +777,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 reply_view.messageItem?.let {
                     if (it.messageId == event.messageId) {
-                        reply_view.fadeOut()
+                        reply_view.fadeOut(isGone = true)
                         chat_control.showOtherInput()
                         reply_view.messageItem = null
                     }
@@ -929,7 +929,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 true
             }
             reply_view.visibility == VISIBLE -> {
-                reply_view.fadeOut()
+                reply_view.fadeOut(isGone = true)
                 chat_control.showOtherInput()
                 true
             }
@@ -944,8 +944,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         ) {
             chat_control.reset()
         }
-        if (reply_view.visibility == VISIBLE) {
-            reply_view.fadeOut()
+        if (reply_view.isVisible) {
+            reply_view.fadeOut(isGone = true)
             chat_control.showOtherInput()
         }
     }
@@ -1071,7 +1071,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             closeTool()
         }
         reply_view.reply_close_iv.setOnClickListener {
-            reply_view.fadeOut()
+            reply_view.fadeOut(isGone = true)
             chat_control.showOtherInput()
         }
         tool_view.copy_iv.setOnClickListener {
@@ -1412,7 +1412,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     when (it) {
                         0 -> {
                             if (reply_view.messageItem != null) {
-                                reply_view.fadeOut()
+                                reply_view.fadeOut(isGone = true)
                                 reply_view.messageItem = null
                             }
                             scrollToDown()
@@ -1461,7 +1461,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     reply_view.messageItem
                 )
                 if (reply_view.messageItem != null) {
-                    reply_view.fadeOut()
+                    reply_view.fadeOut(isGone = true)
                     reply_view.messageItem = null
                     chat_control.showOtherInput()
                 }
@@ -1480,7 +1480,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 replyMessage = reply_view.messageItem
             )
             if (reply_view.messageItem != null) {
-                reply_view.fadeOut()
+                reply_view.fadeOut(isGone = true)
                 reply_view.messageItem = null
                 chat_control.showOtherInput()
             }
@@ -1515,7 +1515,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 reply_view.messageItem
             )
             if (reply_view.messageItem != null) {
-                reply_view.fadeOut()
+                reply_view.fadeOut(isGone = true)
                 reply_view.messageItem = null
                 chat_control.showOtherInput()
             }
@@ -1539,7 +1539,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         createConversation {
             chatViewModel.sendContactMessage(conversationId, sender, userId, isPlainMessage(), reply_view.messageItem)
             if (reply_view.messageItem != null) {
-                reply_view.fadeOut()
+                reply_view.fadeOut(isGone = true)
                 reply_view.messageItem = null
                 chat_control.showOtherInput()
             }
@@ -1581,7 +1581,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     reply_view.messageItem!!,
                     isPlainMessage()
                 )
-                reply_view.fadeOut()
+                reply_view.fadeOut(isGone = true)
                 reply_view.messageItem = null
                 chat_control.showOtherInput()
                 scrollToDown()
@@ -1637,9 +1637,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 mentionAdapter.list = users
                 val text = chat_control.chat_et.text
-                if (mention_layout.isGone && inMentionState(text.toString())) {
+                if (mention_rv.isGone && inMentionState(text.toString())) {
                     submitMentionList(text.toString())
-                    mention_layout.show()
+                    floating_layout.showMention()
                 }
             })
     }
@@ -2364,15 +2364,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 mentionAdapter.keyword = s?.toString()
                 if (mention_rv.adapter != null && inMentionState(s.toString())) {
                     val targetList = submitMentionList(s.toString())
-                    if (mention_layout.isGone) {
-                        mention_layout.show()
+                    if (mention_rv.isGone) {
+                        floating_layout.showMention()
                     } else {
-                        mention_layout.animate2RightHeight(targetList?.size ?: 0)
+                        floating_layout.animate2RightHeight(targetList?.size ?: 0)
                     }
                     mention_rv.layoutManager?.smoothScrollToPosition(mention_rv, null, 0)
                 } else {
-                    if (mention_layout.isVisible) {
-                        mention_layout.hide()
+                    if (mention_rv.isVisible) {
+                        floating_layout.hideMention()
                     }
                 }
             }

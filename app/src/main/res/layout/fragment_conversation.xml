@@ -106,24 +106,28 @@
                 </FrameLayout>
             </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
+            <one.mixin.android.widget.FloatingLayout
+                android:id="@+id/floating_layout"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
                 app:layout_constraintBottom_toTopOf="@id/chat_control"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
 
                 <RelativeLayout
                     android:id="@+id/group_flag"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_above="@id/mention_rv"
+                    android:layout_alignWithParentIfMissing="true"
                     android:layout_margin="8dp"
                     android:background="@drawable/bg_notice"
                     android:clipChildren="false"
                     android:clipToPadding="false"
+                    android:visibility="gone"
                     android:padding="12dp"
-                    android:translationZ="1dp"
-                    android:visibility="gone">
+                    android:translationZ="1dp">
 
                     <ImageView
                         android:id="@+id/group_icon"
@@ -160,27 +164,23 @@
                         android:textIsSelectable="true" />
                 </RelativeLayout>
 
-                <one.mixin.android.widget.MentionLayout
-                    android:id="@+id/mention_layout"
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/mention_rv"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:visibility="gone">
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/mention_rv"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="bottom"
-                        android:background="?attr/bg_white" />
-                </one.mixin.android.widget.MentionLayout>
+                    android:visibility="gone"
+                    android:layout_alignWithParentIfMissing="true"
+                    android:layout_above="@id/reply_view"
+                    android:background="?attr/bg_white" />
 
                 <one.mixin.android.widget.ReplyView
                     android:id="@+id/reply_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:visibility="gone"
+                    android:layout_alignParentBottom="true"
                     tools:ignore="MissingConstraints" />
-            </LinearLayout>
+            </one.mixin.android.widget.FloatingLayout>
 
             <FrameLayout
                 android:id="@+id/bottom_layout"

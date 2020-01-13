@@ -15,6 +15,7 @@ import android.util.Property
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
+import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
@@ -66,7 +67,7 @@ fun View.fadeIn(maxAlpha: Float = 1f) {
 }
 
 fun View.fadeIn(duration: Long, maxAlpha: Float = 1f) {
-    this.visibility = View.VISIBLE
+    this.visibility = VISIBLE
     this.alpha = 0f
     ViewCompat.animate(this).alpha(maxAlpha).setDuration(duration).setListener(object : ViewPropertyAnimatorListener {
         override fun onAnimationStart(view: View) {
@@ -79,11 +80,11 @@ fun View.fadeIn(duration: Long, maxAlpha: Float = 1f) {
     }).start()
 }
 
-fun View.fadeOut() {
-    this.fadeOut(ANIMATION_DURATION_SHORTEST)
+fun View.fadeOut(isGone: Boolean = false) {
+    this.fadeOut(ANIMATION_DURATION_SHORTEST, isGone = isGone)
 }
 
-fun View.fadeOut(duration: Long, delay: Long = 0) {
+fun View.fadeOut(duration: Long, delay: Long = 0, isGone: Boolean = false) {
     this.alpha = 1f
     ViewCompat.animate(this).alpha(0f).setStartDelay(delay).setDuration(duration).setListener(object : ViewPropertyAnimatorListener {
         override fun onAnimationStart(view: View) {
@@ -91,7 +92,7 @@ fun View.fadeOut(duration: Long, delay: Long = 0) {
         }
 
         override fun onAnimationEnd(view: View) {
-            view.visibility = View.INVISIBLE
+            view.visibility = if (isGone) GONE else INVISIBLE
             view.alpha = 0f
             view.isDrawingCacheEnabled = false
         }
