@@ -156,15 +156,25 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query(
         """
-        UPDATE conversations SET last_read_message_id = (SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND status IN ('SENT', 'DELIVERED') ORDER BY created_at, rowid ASC LIMIT 1) WHERE last_message_id IS NULL AND conversation_id = :conversationId
+        UPDATE conversations SET last_read_message_id = (SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND status IN ('SENT', 'DELIVERED') ORDER BY created_at, rowid ASC LIMIT 1) WHERE last_read_message_id IS NULL AND conversation_id = :conversationId
     """
     )
     fun updateFirstUnreadMessageId(conversationId: String, userId: String)
 
     @Query(
         """
-            SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND status IN ('SENT', 'DELIVERED') ORDER BY created_at, rowid ASC LIMIT 1
+            SELECT last_read_message_id FROM conversations WHERE conversation_id = :conversationId 
     """
     )
-    suspend fun findFirstUnreadMessageId(conversationId: String, userId: String): String?
+    suspend fun findFirstUnreadMessageId(conversationId: String): String?
+
+    @Query("""
+        UPDATE conversations SET last_read_message_id = NULL WHERE conversation_id = :conversationId
+    """)
+    suspend fun clearFirstUnreadMessageId(conversationId: String)
+
+    @Query("""
+        UPDATE conversations SET last_read_message_id = NULL WHERE conversation_id = :conversationId
+    """)
+    fun clearFirstUnreadMessageIdSync(conversationId: String)
 }

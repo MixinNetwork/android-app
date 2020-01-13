@@ -239,6 +239,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
                 when {
                     isFirstLoad -> {
+                        chatViewModel.clearFirstUnreadMessageId(conversationId)
                         isFirstLoad = false
                         if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
                                 ?.getBoolean(conversationId, false) == true

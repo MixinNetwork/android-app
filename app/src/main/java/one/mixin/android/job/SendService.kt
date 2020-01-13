@@ -8,6 +8,7 @@ import androidx.core.content.getSystemService
 import dagger.android.AndroidInjection
 import java.util.UUID
 import javax.inject.Inject
+import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.batchMarkReadAndTake
@@ -32,6 +33,8 @@ class SendService : IntentService("SendService") {
     @Inject
     @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var messageDao: MessageDao
+    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
+    lateinit var conversationDao: ConversationDao
     @Inject
     lateinit var jobDao: JobDao
 
@@ -59,6 +62,7 @@ class SendService : IntentService("SendService") {
         }
         val manager = getSystemService<NotificationManager>()
         manager?.cancel(conversationId.hashCode())
+        conversationDao.clearFirstUnreadMessageIdSync(conversationId)
         messageDao.findUnreadMessagesSync(conversationId)?.let { list ->
             if (list.isNotEmpty()) {
                 messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().createdAt)
