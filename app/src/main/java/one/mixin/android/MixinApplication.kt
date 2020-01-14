@@ -124,6 +124,5 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
         jobManager.cancelAllJob()
         jobManager.clear()
         SignalDatabase.getDatabase(this).clearAllTables()
-        defaultSharedPreferences.putBoolean(Constants.Account.PREF_LAST_USER_ID, true)
     }
 }
