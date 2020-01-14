@@ -112,7 +112,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                         keys.add(BlazeMessageParamSession(key.userId, key.sessionId))
                     }
                 } else {
-                    Log.e(TAG, "No any group signal key from server")
+                    Log.e(TAG, "No any group signal key from server: " + requestSignalKeyUsers.toString())
                 }
 
                 val noKeyList = requestSignalKeyUsers.filter { !keys.contains(it) }
