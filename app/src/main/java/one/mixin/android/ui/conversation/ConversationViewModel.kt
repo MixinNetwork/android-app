@@ -68,7 +68,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.util.image.Compressor
-import one.mixin.android.vo.*
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
@@ -143,8 +142,8 @@ internal constructor(
     suspend fun indexUnread(conversationId: String) =
         conversationRepository.indexUnread(conversationId) ?: 0
 
-    suspend fun findFirstUnreadMessageId(conversationId: String, userId: String): String? =
-        conversationRepository.findFirstUnreadMessageId(conversationId, userId)
+    suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
+        conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 
     fun searchConversationById(id: String) =
         conversationRepository.searchConversationById(id)
