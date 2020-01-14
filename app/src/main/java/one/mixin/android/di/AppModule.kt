@@ -70,8 +70,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 internal class AppModule {
 
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
-    private val API_UA = "Mixin/" + BuildConfig.VERSION_NAME +
-        " (Android " + android.os.Build.VERSION.RELEASE + "; " + android.os.Build.FINGERPRINT + "; " + LOCALE + ")"
+    private val API_UA = ("Mixin/" + BuildConfig.VERSION_NAME +
+        " (Android " + android.os.Build.VERSION.RELEASE + "; " + android.os.Build.FINGERPRINT + "; " + LOCALE + ")").filterNonAscii()
 
     private fun getDeviceId(resolver: ContentResolver): String {
         var deviceId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)
@@ -108,7 +108,7 @@ internal class AppModule {
         })
         builder.addInterceptor { chain ->
             val request = chain.request().newBuilder()
-                .addHeader("User-Agent", API_UA.filterNonAscii())
+                .addHeader("User-Agent", API_UA)
                 .addHeader("Accept-Language", Locale.getDefault().language)
                 .addHeader("Mixin-Device-Id", getDeviceId(resolver))
                 .build()
