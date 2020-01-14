@@ -28,6 +28,12 @@ fun String.date(): String {
     return date as String
 }
 
+fun String.within24Hours(): Boolean {
+    val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)
+    val offset = System.currentTimeMillis() - date.toInstant().toEpochMilli()
+    return offset < 86400000L // 24hours
+}
+
 fun String.timeAgo(context: Context): String {
     var timeAgo = TimeCache.singleton.getTimeAgo(this)
     if (timeAgo == null) {

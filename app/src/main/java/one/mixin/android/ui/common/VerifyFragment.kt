@@ -83,6 +83,8 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
             invokeNetwork = { accountRepository.verifyPin(pinCode) },
             switchContext = Dispatchers.IO,
             successBlock = {
+                hideLoading()
+                pin?.clear()
                 context?.updatePinCheck()
                 activity?.supportFragmentManager?.inTransaction {
                     remove(this@VerifyFragment)
@@ -95,20 +97,24 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
                 }
             },
             failureBlock = {
+                pin?.clear()
                 if (it.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+                    hideLoading()
                     toast(R.string.error_pin_check_too_many_request)
                     return@handleMixinResponse true
+                } else if (it.errorCode == ErrorHandler.PIN_INCORRECT) {
+                    val errorCount = accountRepository.errorCount()
+                    hideLoading()
+                    toast(getString(R.string.error_pin_incorrect_with_times, ErrorHandler.PIN_INCORRECT, errorCount))
+                    return@handleMixinResponse true
                 }
+                hideLoading()
                 return@handleMixinResponse false
             },
             exceptionBlock = {
                 hideLoading()
                 pin?.clear()
                 return@handleMixinResponse false
-            },
-            doAfterNetworkSuccess = {
-                hideLoading()
-                pin?.clear()
             }
         )
     }

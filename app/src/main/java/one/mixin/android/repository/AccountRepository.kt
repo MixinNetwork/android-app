@@ -5,6 +5,9 @@ import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.PIN_ERROR_MAX
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -35,6 +38,7 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.extension.within24Hours
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
@@ -176,7 +180,26 @@ constructor(
 
     suspend fun getFiats() = accountService.getFiats()
 
-    suspend fun getPinLogs(offset: Int? = null) = accountService.getPinLogs(offset)
+    suspend fun getPinLogs(offset: Int? = null, limit: Int? = null) = accountService.getPinLogs(offset, limit)
+
+    suspend fun errorCount(): Int = PIN_ERROR_MAX - withContext(Dispatchers.IO) {
+        val response = getPinLogs(limit = PIN_ERROR_MAX)
+        if (response.isSuccess) {
+            val list = response.data ?: return@withContext 0
+            for ((index, item) in list.withIndex()) {
+                if (index == PIN_ERROR_MAX - 1 && item.createdAt.within24Hours()) {
+                    return@withContext PIN_ERROR_MAX
+                } else if (item.createdAt.within24Hours()) {
+                    continue
+                } else {
+                    return@withContext index
+                }
+            }
+            return@withContext 0
+        } else {
+            return@withContext 0
+        }
+    }
 
     suspend fun preferences(request: AccountUpdateRequest) = accountService.preferences(request)
 

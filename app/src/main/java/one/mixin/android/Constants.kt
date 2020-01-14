@@ -137,4 +137,6 @@ object Constants {
     const val BIOMETRIC_PIN_CHECK = "biometric_pin_check"
 
     const val RECENT_USED_BOTS_MAX_COUNT = 12
+
+    const val PIN_ERROR_MAX = 5
 }

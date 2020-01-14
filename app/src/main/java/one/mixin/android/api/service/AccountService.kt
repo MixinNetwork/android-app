@@ -90,7 +90,7 @@ interface AccountService {
     suspend fun getFiats(): MixinResponse<List<Fiat>>
 
     @GET("pin_logs")
-    suspend fun getPinLogs(@Query("offset") offset: Int? = null): MixinResponse<List<PINLogResponse>>
+    suspend fun getPinLogs(@Query("offset") offset: Int? = null, @Query("limit") limit: Int? = null): MixinResponse<List<PINLogResponse>>
 
     @POST("multisigs/{id}/cancel")
     suspend fun cancelMultisigs(@Path("id") id: String): MixinResponse<Void>

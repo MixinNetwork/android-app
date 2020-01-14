@@ -452,6 +452,8 @@ class BottomSheetViewModel @Inject internal constructor(
         userRepository.upsert(user)
     }
 
+    suspend fun errorCount() = accountRepository.errorCount()
+
     suspend fun loadFavoriteApps(userId: String, loadAction: (List<App>?) -> Unit) {
         withContext(Dispatchers.IO) {
             withContext(Dispatchers.Main) {

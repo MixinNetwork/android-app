@@ -17,6 +17,7 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
+import org.jetbrains.anko.textColor
 
 class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimator(context, attributeSet) {
     init {
@@ -174,6 +175,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
     private fun startCountDown(tickMillis: Long) {
         countDownTimer?.cancel()
         error_btn.isEnabled = false
+        error_btn.textColor = context.getColor(R.color.wallet_text_gray)
         countDownTimer = object : CountDownTimer(tickMillis, 1000) {
 
             override fun onTick(l: Long) {
@@ -184,6 +186,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
             override fun onFinish() {
                 error_btn.text = getString(R.string.wallet_transaction_continue)
                 error_btn.isEnabled = true
+                error_btn.textColor = context.getColor(R.color.white)
             }
         }
         countDownTimer?.start()
