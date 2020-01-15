@@ -261,8 +261,8 @@ internal constructor(
         }
     }
 
-    suspend fun findFirstUnreadMessageId(conversationId: String, userId: String): String? =
-        messageDao.findFirstUnreadMessageId(conversationId, userId)
+    suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
+        messageDao.findFirstUnreadMessageId(conversationId, offset)
 
     suspend fun findLastMessage(conversationId: String) = messageDao.findLastMessage(conversationId)
 

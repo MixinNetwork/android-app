@@ -1300,7 +1300,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chatViewModel.indexUnread(conversationId)
             }
             val msgId = messageId
-                ?: chatViewModel.findFirstUnreadMessageId(conversationId, Session.getAccountId()!!)
+                ?: if (unreadCount <= 0) {
+                    null
+                } else {
+                    chatViewModel.findFirstUnreadMessageId(conversationId, unreadCount - 1)
+                }
             liveDataMessage(unreadCount, msgId)
         }
 
