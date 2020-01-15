@@ -72,32 +72,38 @@ class PipVideoView {
             val sidey = prefreences.getInt(SIDEY, 0)
             val px = prefreences.getFloat(PX, 0f)
             val py = prefreences.getFloat(PY, 0f)
+
+            val isLandscape = appContext.isLandscape()
+            val realSize = appContext.realSize()
+            val realX = if (isLandscape) realSize.y else realSize.x
+            val realY = if (isLandscape) realSize.x else realSize.y
+
             var videoWidth: Int
             var videoHeight: Int
             if (aspectRatio > 1f) {
-                videoWidth = appContext.realSize().x * 2 / 3
+                videoWidth = realX * 2 / 3
                 videoHeight = (videoWidth / aspectRatio).toInt()
             } else {
-                videoHeight = appContext.realSize().y / 3
+                videoHeight = realY / 3
                 videoWidth = (videoHeight * aspectRatio).toInt()
-                if (videoWidth > appContext.realSize().x / 2) {
-                    videoWidth = appContext.realSize().x / 2
+                if (videoWidth > realX / 2) {
+                    videoWidth = realX / 2
                     videoHeight = (videoWidth / aspectRatio).toInt()
                 }
             }
             return Rect(
-                getSideCoord(true, sidex, px, videoWidth).toFloat(),
-                getSideCoord(false, sidey, py, videoHeight).toFloat(),
+                getSideCoord(true, sidex, px, videoWidth, realX, realY).toFloat(),
+                getSideCoord(false, sidey, py, videoHeight, realX, realY).toFloat(),
                 videoWidth.toFloat(),
                 videoHeight.toFloat()
             )
         }
 
-        fun getSideCoord(isX: Boolean, side: Int, p: Float, sideSize: Int): Int {
+        fun getSideCoord(isX: Boolean, side: Int, p: Float, sideSize: Int, realX: Int, realY: Int): Int {
             val total = if (isX) {
-                appContext.realSize().x - sideSize
+                realX - sideSize
             } else {
-                appContext.realSize().y - sideSize
+                realY - sideSize
             }
             return when (side) {
                 0 -> appContext.dpToPx(10f)
@@ -399,8 +405,8 @@ class PipVideoView {
             windowLayoutParams = WindowManager.LayoutParams()
             windowLayoutParams.width = videoWidth
             windowLayoutParams.height = videoHeight
-            windowLayoutParams.x = getSideCoord(true, sidex, px, videoWidth)
-            windowLayoutParams.y = getSideCoord(false, sidey, py, videoHeight)
+            windowLayoutParams.x = getSideCoord(true, sidex, px, videoWidth, realX, realY)
+            windowLayoutParams.y = getSideCoord(false, sidey, py, videoHeight, realX, realY)
             windowLayoutParams.format = PixelFormat.TRANSLUCENT
             windowLayoutParams.gravity = Gravity.TOP or Gravity.START
             if (Build.VERSION.SDK_INT >= 26) {
@@ -461,11 +467,13 @@ class PipVideoView {
     private var decelerateInterpolator: DecelerateInterpolator? = null
     private fun animateToBoundsMaybe() {
         val realSize = appContext.realSize()
-        val realX = if (appContext.isLandscape()) realSize.y else realSize.x
-        val startX = getSideCoord(true, 0, 0f, videoWidth)
-        val endX = getSideCoord(true, 1, 0f, videoWidth)
-        val startY = getSideCoord(false, 0, 0f, videoHeight)
-        val endY = getSideCoord(false, 1, 0f, videoHeight)
+        val isLandscape = appContext.isLandscape()
+        val realX = if (isLandscape) realSize.y else realSize.x
+        val realY = if (isLandscape) realSize.x else realSize.y
+        val startX = getSideCoord(true, 0, 0f, videoWidth, realX, realY)
+        val endX = getSideCoord(true, 1, 0f, videoWidth, realX, realY)
+        val startY = getSideCoord(false, 0, 0f, videoHeight, realX, realY)
+        val endY = getSideCoord(false, 1, 0f, videoHeight, realX, realY)
         var animators: ArrayList<Animator>? = null
         val editor = appContext.defaultSharedPreferences.edit()
         val maxDiff = appContext.dip(20f)
