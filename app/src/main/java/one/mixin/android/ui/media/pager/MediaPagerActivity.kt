@@ -120,7 +120,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
 
     private var initialIndex: Int = 0
     private var firstLoad = true
-    private var firstLoadVideo = true
+    private var firstLoadVideoStep = 2
 
     private val pipVideoView by lazy {
         PipVideoView.getInstance()
@@ -218,6 +218,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         }
         if (messageItem.isVideo() || messageItem.isLive()) {
             if (mediaState != null) {
+                firstLoadVideoStep = 2
                 if (mediaState.isPlaying) {
                     VideoPlayer.player().start()
                 }
@@ -617,6 +618,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
                     view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${messageItem.messageId}")
                 if (view != null) {
                     view.player_view.player = VideoPlayer.player().player
+                    view.player_view.showPb()
                 }
             }
         }
@@ -626,11 +628,11 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener 
         override fun onPageSelected(position: Int) {
             if (downloadMedia(position)) return
 
-            if (!firstLoadVideo && position != initialIndex) {
+            if (firstLoadVideoStep <= 0) {
                 VideoPlayer.player().stop()
                 VideoPlayer.player().pause()
             }
-            firstLoadVideo = false
+            firstLoadVideoStep--
 
             val messageItem = adapter.currentList?.get(position) ?: return
             loadVideoMessage(messageItem)

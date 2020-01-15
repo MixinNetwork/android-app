@@ -70,7 +70,6 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
         ta.recycle()
 
         setOnClickListener {
-            callback?.onClick()
             if (!this.useController || player == null) return@setOnClickListener
             toggleControllerVisibility()
         }
@@ -168,6 +167,11 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
         player_control_view.playbackPreparer = playbackPreparer
     }
 
+    fun showPb() {
+        pb_view.isVisible = true
+        updateRefreshViewVisibility(false)
+    }
+
     private fun shouldShowControllerIndefinitely(): Boolean {
         if (player == null) return true
 
@@ -228,8 +232,7 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
             if (VideoPlayer.player().mId == currentMessageId) {
                 when (playbackState) {
                     Player.STATE_BUFFERING -> {
-                        pb_view.isVisible = true
-                        updateRefreshViewVisibility(false)
+                        showPb()
                     }
                     Player.STATE_READY -> {
                         pb_view.isVisible = false
@@ -263,8 +266,6 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
     }
 
     interface Callback {
-        fun onClick()
-
         fun onLongClick()
 
         fun onRenderFirstFrame()

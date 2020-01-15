@@ -56,18 +56,15 @@ class VideoHolder(
         itemView.player_view.apply {
             currentMessageId = messageItem.messageId
             setPlaybackPrepare(PlaybackPreparer {
-                load(messageItem)
+                messageItem.loadVideoOrLive { showPb() }
             })
             if (needPostTransition) {
                 player = VideoPlayer.player().player
             }
             refreshAction = {
-                load(messageItem)
+                messageItem.loadVideoOrLive { showPb() }
             }
             callback = object : PlayerView.Callback {
-                override fun onClick() {
-                }
-
                 override fun onLongClick() {
                     mediaPagerAdapterListener.onLongClick(messageItem, itemView)
                 }
@@ -128,16 +125,6 @@ class VideoHolder(
         if (needPostTransition) {
             ViewCompat.setTransitionName(itemView, "transition")
             mediaPagerAdapterListener.onReadyPostTransition(itemView)
-        }
-    }
-
-    private fun load(messageItem: MessageItem) {
-        messageItem.mediaUrl?.let {
-            if (messageItem.isLive()) {
-                VideoPlayer.player().loadHlsVideo(it, messageItem.messageId)
-            } else {
-                VideoPlayer.player().loadVideo(it, messageItem.messageId)
-            }
         }
     }
 
