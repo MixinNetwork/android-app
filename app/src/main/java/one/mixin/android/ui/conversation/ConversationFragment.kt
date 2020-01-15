@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings
+import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -170,6 +171,7 @@ import one.mixin.android.widget.buildBottomSheetView
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardShownListener
+import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
@@ -243,8 +245,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
                                 ?.getBoolean(conversationId, false) == true
                         ) {
-                            showGroupNotification = true
-                            showAlert(0)
+                            chatViewModel.viewModelScope.launch {
+                                group_desc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
+                                group_desc.collapse()
+                            }
+                            group_flag.isVisible = true
                         }
                         val position = if (messageId != null) {
                             unreadCount + 1
@@ -732,7 +737,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
     }
 
-    private var showGroupNotification = false
     private var paused = false
     private var starTransition = false
 
@@ -752,8 +756,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 .autoDispose(stopScope)
                 .subscribe {
                     if (it.conversationId == conversationId) {
-                        showGroupNotification = true
-                        showAlert()
+                        chatViewModel.viewModelScope.launch {
+                            group_desc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
+                            group_desc.collapse()
+                        }
+                        group_flag.isVisible = true
                     }
                 }
         }
@@ -770,7 +777,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 reply_view.messageItem?.let {
                     if (it.messageId == event.messageId) {
-                        reply_view.fadeOut()
+                        reply_view.fadeOut(isGone = true)
                         chat_control.showOtherInput()
                         reply_view.messageItem = null
                     }
@@ -922,7 +929,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 true
             }
             reply_view.visibility == VISIBLE -> {
-                reply_view.fadeOut()
+                reply_view.fadeOut(isGone = true)
                 chat_control.showOtherInput()
                 true
             }
@@ -937,8 +944,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         ) {
             chat_control.reset()
         }
-        if (reply_view.visibility == VISIBLE) {
-            reply_view.fadeOut()
+        if (reply_view.isVisible) {
+            reply_view.fadeOut(isGone = true)
             chat_control.showOtherInput()
         }
     }
@@ -1064,7 +1071,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             closeTool()
         }
         reply_view.reply_close_iv.setOnClickListener {
-            reply_view.fadeOut()
+            reply_view.fadeOut(isGone = true)
             chat_control.showOtherInput()
         }
         tool_view.copy_iv.setOnClickListener {
@@ -1129,6 +1136,22 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             closeTool()
         }
 
+        group_desc.movementMethod = LinkMovementMethod()
+        group_desc.addAutoLinkMode(AutoLinkMode.MODE_URL)
+        group_desc.setUrlModeColor(BaseViewHolder.LINK_COLOR)
+        group_desc.setAutoLinkOnClickListener { _, url ->
+            openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
+        }
+        group_flag.setOnClickListener {
+            group_desc.expand()
+        }
+        group_desc.setOnClickListener {
+            group_desc.expand()
+        }
+        group_close.setOnClickListener {
+            requireActivity().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(conversationId, false)
+            group_flag.isVisible = false
+        }
         callState.observe(viewLifecycleOwner, Observer { info ->
             chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
         })
@@ -1389,7 +1412,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     when (it) {
                         0 -> {
                             if (reply_view.messageItem != null) {
-                                reply_view.fadeOut()
+                                reply_view.fadeOut(isGone = true)
                                 reply_view.messageItem = null
                             }
                             scrollToDown()
@@ -1438,7 +1461,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     reply_view.messageItem
                 )
                 if (reply_view.messageItem != null) {
-                    reply_view.fadeOut()
+                    reply_view.fadeOut(isGone = true)
                     reply_view.messageItem = null
                     chat_control.showOtherInput()
                 }
@@ -1457,7 +1480,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 replyMessage = reply_view.messageItem
             )
             if (reply_view.messageItem != null) {
-                reply_view.fadeOut()
+                reply_view.fadeOut(isGone = true)
                 reply_view.messageItem = null
                 chat_control.showOtherInput()
             }
@@ -1492,7 +1515,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 reply_view.messageItem
             )
             if (reply_view.messageItem != null) {
-                reply_view.fadeOut()
+                reply_view.fadeOut(isGone = true)
                 reply_view.messageItem = null
                 chat_control.showOtherInput()
             }
@@ -1516,7 +1539,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         createConversation {
             chatViewModel.sendContactMessage(conversationId, sender, userId, isPlainMessage(), reply_view.messageItem)
             if (reply_view.messageItem != null) {
-                reply_view.fadeOut()
+                reply_view.fadeOut(isGone = true)
                 reply_view.messageItem = null
                 chat_control.showOtherInput()
             }
@@ -1558,7 +1581,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     reply_view.messageItem!!,
                     isPlainMessage()
                 )
-                reply_view.fadeOut()
+                reply_view.fadeOut(isGone = true)
                 reply_view.messageItem = null
                 chat_control.showOtherInput()
                 scrollToDown()
@@ -1574,16 +1597,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun renderGroup() {
         action_bar.avatar_iv.visibility = VISIBLE
         action_bar.avatar_iv.setOnClickListener {
-            showGroupNotification = false
-            hideAlert()
             showGroupBottomSheet(false)
-        }
-        group_flag.setOnClickListener {
-            showGroupNotification = false
-            requireContext().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                .putBoolean(conversationId, false)
-            hideAlert()
-            showGroupBottomSheet(true)
         }
         chatViewModel.getConversationById(conversationId).observe(viewLifecycleOwner, Observer {
             it?.let {
@@ -1623,9 +1637,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 mentionAdapter.list = users
                 val text = chat_control.chat_et.text
-                if (mention_layout.isGone && inMentionState(text.toString())) {
+                if (mention_rv.isGone && inMentionState(text.toString())) {
                     submitMentionList(text.toString())
-                    mention_layout.show()
+                    floating_layout.showMention()
                 }
             })
     }
@@ -2032,11 +2046,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun showAlert(duration: Long = 100) {
         if (isGroup) {
-            if (showGroupNotification) {
-                group_flag.visibility = VISIBLE
-            } else {
-                group_flag.visibility = GONE
-            }
             if (!isBottom) {
                 down_flag.visibility = VISIBLE
             } else {
@@ -2054,17 +2063,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun hideAlert() {
         if (isGroup) {
-            if (showGroupNotification) {
-                group_flag.visibility = VISIBLE
-            } else {
-                group_flag.visibility = GONE
-            }
             if (isBottom) {
-                if (showGroupNotification) {
-                    bg_quick_flag.translationY(requireContext().dpToPx(60f).toFloat(), 100)
-                } else if (isBottom) {
-                    bg_quick_flag.translationY(requireContext().dpToPx(130f).toFloat(), 100)
-                }
+                bg_quick_flag.translationY(requireContext().dpToPx(130f).toFloat(), 100)
             }
         } else {
             bg_quick_flag.translationY(requireContext().dpToPx(130f).toFloat(), 100)
@@ -2364,15 +2364,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 mentionAdapter.keyword = s?.toString()
                 if (mention_rv.adapter != null && inMentionState(s.toString())) {
                     val targetList = submitMentionList(s.toString())
-                    if (mention_layout.isGone) {
-                        mention_layout.show()
+                    if (mention_rv.isGone) {
+                        floating_layout.showMention()
                     } else {
-                        mention_layout.animate2RightHeight(targetList?.size ?: 0)
+                        floating_layout.animate2RightHeight(targetList?.size ?: 0)
                     }
                     mention_rv.layoutManager?.smoothScrollToPosition(mention_rv, null, 0)
                 } else {
-                    if (mention_layout.isVisible) {
-                        mention_layout.hide()
+                    if (mention_rv.isVisible) {
+                        floating_layout.hideMention()
                     }
                 }
             }
