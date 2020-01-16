@@ -28,6 +28,7 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.ParticipantDao
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.networkConnected
@@ -78,6 +79,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     lateinit var webSocket: ChatWebSocket
     @Inject
     lateinit var floodMessageDao: FloodMessageDao
+    @Inject
+    lateinit var participantDao: ParticipantDao
     @Inject
     lateinit var jobDao: JobDao
     @Inject
@@ -230,7 +233,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     ackMessages = it)
             )
             val encoded = Base64.encodeBytes(plainText.toByteArray())
-            val bm = createParamBlazeMessage(createPlainJsonParam(jobs.first().conversationId!!, accountId, encoded, sessionId))
+            val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId), accountId, encoded, sessionId))
             jobManager.addJobInBackground(SendPlaintextJob(bm))
             jobDao.deleteList(jobs)
         }
