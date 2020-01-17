@@ -33,6 +33,7 @@
     <string name="welcome" translatable="false">Welcome to Mixin</string>
     <string name="not_logged_in">Not logged in</string>
     <string name="got_it">Got it</string>
+    <string name="got_it_count">Got it (%1$d)</string>
     <string name="exit">Exit</string>
     <string name="receiver">Receiver</string>
     <string name="sender">Sender</string>
