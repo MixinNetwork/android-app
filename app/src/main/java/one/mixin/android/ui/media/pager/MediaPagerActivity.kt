@@ -11,6 +11,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
@@ -69,6 +70,7 @@ import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.getUriForFile
+import one.mixin.android.extension.isAutoRotate
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.openPermissionSetting
@@ -122,9 +124,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     private var initialIndex: Int = 0
     private var firstLoad = true
-    private var firstLoadVideoStep = 2
-
-    private var afterOrientationChanged = false
 
     private val pipVideoView by lazy {
         PipVideoView.getInstance()
@@ -181,6 +180,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         view_pager.registerOnPageChangeCallback(onPageChangeCallback)
         VideoPlayer.player().setCycle(false)
 
+        lock_tv.setOnClickListener(onLockClickListener)
+
         SensorOrientationChangeNotifier.listener = this
         loadData()
     }
@@ -188,11 +189,17 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     override fun onResume() {
         super.onResume()
         SensorOrientationChangeNotifier.resume()
+        checkOrientation(false)
     }
 
     override fun onPause() {
         super.onPause()
         SensorOrientationChangeNotifier.pause()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        lock_tv.removeCallbacks(hideLockRunnable)
     }
 
     override fun onDestroy() {
@@ -202,16 +209,31 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     }
 
     override fun onOrientationChange(oldOrientation: Int, newOrientation: Int) {
-        requestedOrientation = if (newOrientation == 90 || newOrientation == 270) {
-            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-        } else {
-            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        if (!isAutoRotate()) return
+
+        showLock()
+
+        if (isLocked) return
+
+        changeOrientation(newOrientation, true)
+    }
+
+    private fun changeOrientation(orientation: Int, scrollViewPager: Boolean) {
+        requestedOrientation = when (orientation) {
+            270 -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            180 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
+            90 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
+            else -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
-        val curPos = view_pager.currentItem
-        view_pager.post {
-            (view_pager.getChildAt(0) as RecyclerView).scrollToPosition(curPos)
+        findViewPagerChildByTag {
+            it.getChildAt(0)?.player_view?.switchFullscreen(orientation == 90 || orientation == 270)
         }
-        afterOrientationChanged = true
+        if (scrollViewPager) {
+            val curPos = view_pager.currentItem
+            view_pager.post {
+                (view_pager.getChildAt(0) as RecyclerView).scrollToPosition(curPos)
+            }
+        }
     }
 
     private fun loadData() = lifecycleScope.launch {
@@ -632,20 +654,49 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
     }
 
+    private var isLocked = false
+
+    private fun showLock() {
+        lock_tv.isVisible = true
+        lock_tv.removeCallbacks(hideLockRunnable)
+        lock_tv.postDelayed(hideLockRunnable, 3000)
+    }
+
+    private fun checkOrientation(handleViewPager: Boolean) {
+        if (isAutoRotate() && !isLocked) {
+            val sensorIsLandscape = SensorOrientationChangeNotifier.isLandscape()
+            val activityLandscape = isLandscape()
+            if (sensorIsLandscape != activityLandscape) {
+                changeOrientation(SensorOrientationChangeNotifier.orientation, handleViewPager)
+            }
+        }
+    }
+
+    private val hideLockRunnable = Runnable {
+        lock_tv.isVisible = false
+    }
+
+    private val onLockClickListener = View.OnClickListener {
+        isLocked = !isLocked
+        if (isLocked) {
+            lock_tv.text = getString(R.string.click_unlock)
+        } else {
+            lock_tv.text = getString(R.string.click_lock)
+        }
+        lock_tv.removeCallbacks(hideLockRunnable)
+        lock_tv.postDelayed(hideLockRunnable, 3000)
+        checkOrientation(true)
+    }
+
     private val onPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
             if (downloadMedia(position)) return
 
-            if (firstLoadVideoStep <= 0 && !afterOrientationChanged && !pipVideoView.shown) {
+            val messageItem = adapter.currentList?.get(position) ?: return
+            if (VideoPlayer.player().mId != messageItem.messageId && !pipVideoView.shown) {
                 VideoPlayer.player().stop()
                 VideoPlayer.player().pause()
             }
-            if (afterOrientationChanged) {
-                afterOrientationChanged = false
-            }
-            firstLoadVideoStep--
-
-            val messageItem = adapter.currentList?.get(position) ?: return
             if (messageItem.isVideo() || messageItem.isLive()) {
                 checkPip()
             }
@@ -764,6 +815,12 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         override fun finishAfterTransition() {
             this@MediaPagerActivity.finishAfterTransition()
         }
+
+        override fun switchFullscreen() {
+            val isLandscape = this@MediaPagerActivity.isLandscape()
+            val orientation = if (isLandscape) 0 else 270
+            this@MediaPagerActivity.changeOrientation(orientation, true)
+        }
     }
 
     companion object {
@@ -806,6 +863,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         ) {
             val intent = Intent(context, MediaPagerActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 putExtra(CONVERSATION_ID, conversationId)
                 putExtra(MESSAGE_ID, messageId)
                 putExtra(RATIO, ratio)

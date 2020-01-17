@@ -161,6 +161,10 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
         player_control_view.hide()
     }
 
+    fun switchFullscreen(fullscreen: Boolean) {
+        player_control_view.switchFullscreen(fullscreen)
+    }
+
     fun setPlaybackPrepare(playbackPreparer: PlaybackPreparer) {
         if (!useController) return
 

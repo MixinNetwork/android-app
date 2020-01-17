@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.C
@@ -39,6 +40,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     private val timeBar: TimeBar
     private val liveView: View
     private val pipView: View
+    private val fullscreenView: ImageView
 
     private val componentListener = ComponentListener()
     private val controlDispatcher = DefaultControlDispatcher()
@@ -105,6 +107,7 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
         timeBar.addListener(componentListener)
         liveView = findViewById(R.id.live_tv)
         pipView = findViewById(R.id.pip_iv)
+        fullscreenView = findViewById(R.id.fullscreen_iv)
     }
 
     override fun onFinishInflate() {
@@ -161,6 +164,14 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
             removeCallbacks(updateProgressAction)
             removeCallbacks(hideAction)
             hideAtMs = C.TIME_UNSET
+        }
+    }
+
+    fun switchFullscreen(fullscreen: Boolean) {
+        if (fullscreen) {
+            fullscreenView.setImageResource(R.drawable.ic_fullscreen_exit)
+        } else {
+            fullscreenView.setImageResource(R.drawable.ic_fullscreen)
         }
     }
 

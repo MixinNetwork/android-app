@@ -95,6 +95,8 @@
     <string name="voice_call">Voice call</string>
     <string name="telephone_call">Telephone call</string>
     <string name="call_who">Call %1$s</string>
+    <string name="click_lock">Click to lock</string>
+    <string name="click_unlock">Click to unlock</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

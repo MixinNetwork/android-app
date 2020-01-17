@@ -127,6 +127,8 @@ interface MediaPagerAdapterListener {
     fun switchToPin(messageItem: MessageItem, view: View)
 
     fun finishAfterTransition()
+
+    fun switchFullscreen()
 }
 
 abstract class MediaPagerHolder(itemView: View) : RecyclerView.ViewHolder(itemView)

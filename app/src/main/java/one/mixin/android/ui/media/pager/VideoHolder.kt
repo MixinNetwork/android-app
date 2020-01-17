@@ -46,6 +46,9 @@ class VideoHolder(
             itemView.player_view.hideController()
             mediaPagerAdapterListener.switchToPin(messageItem, itemView)
         }
+        itemView.fullscreen_iv.setOnClickListener {
+            mediaPagerAdapterListener.switchFullscreen()
+        }
         itemView.pip_iv.isEnabled = false
         itemView.pip_iv.alpha = 0.5f
         itemView.close_iv.post {

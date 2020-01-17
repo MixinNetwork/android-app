@@ -10,7 +10,8 @@ import one.mixin.android.MixinApplication
 object SensorOrientationChangeNotifier {
     private const val ORIENTATION_CHANGE_INTERVAL = 800L
 
-    private var orientation = 0
+    var orientation = 0
+        private set
     private val sensorManager = MixinApplication.appContext.getSystemService<SensorManager>()
 
     private var lastOrientationChangeTime = 0L
@@ -25,6 +26,8 @@ object SensorOrientationChangeNotifier {
     fun pause() {
         sensorManager?.unregisterListener(notifierSensorEventListener)
     }
+
+    fun isLandscape() = orientation == 90 || orientation == 270
 
     private val notifierSensorEventListener = object : SensorEventListener {
 
