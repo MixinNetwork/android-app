@@ -152,9 +152,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         if (ratio == 0f) {
             postponeEnterTransition()
         }
-        if (pipVideoView.shown) {
-            pipVideoView.close(messageId != VideoPlayer.player().mId)
-        }
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         window.sharedElementEnterTransition.duration = SHARED_ELEMENT_TRANSITION_DURATION
@@ -233,6 +230,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             observeAllDataSource()
         }
         if (messageItem.isVideo() || messageItem.isLive()) {
+            checkPip()
             messageItem.loadVideoOrLive {
                 VideoPlayer.player().start()
             }
@@ -251,6 +249,12 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     }
                 }
             })
+    }
+
+    private fun checkPip() {
+        if (pipVideoView.shown) {
+            pipVideoView.close(messageId != VideoPlayer.player().mId)
+        }
     }
 
     private fun showVideoBottom(messageItem: MessageItem) {
@@ -632,7 +636,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         override fun onPageSelected(position: Int) {
             if (downloadMedia(position)) return
 
-            if (firstLoadVideoStep <= 0 && !afterOrientationChanged) {
+            if (firstLoadVideoStep <= 0 && !afterOrientationChanged && !pipVideoView.shown) {
                 VideoPlayer.player().stop()
                 VideoPlayer.player().pause()
             }
@@ -642,6 +646,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             firstLoadVideoStep--
 
             val messageItem = adapter.currentList?.get(position) ?: return
+            if (messageItem.isVideo() || messageItem.isLive()) {
+                checkPip()
+            }
             loadVideoMessage(messageItem)
         }
     }
@@ -709,7 +716,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             } else {
                 SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
-        VideoPlayer.player().stop()
+        if (!pipVideoView.shown) {
+            VideoPlayer.player().stop()
+        }
         super.finish()
         overridePendingTransition(0, R.anim.scale_out)
     }
