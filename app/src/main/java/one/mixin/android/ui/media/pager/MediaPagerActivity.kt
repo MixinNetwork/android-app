@@ -11,7 +11,6 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
@@ -38,7 +37,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
-import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.exoplayer2.Player
 import com.google.firebase.ml.vision.FirebaseVision
@@ -103,6 +101,7 @@ import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 
@@ -174,7 +173,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         SystemUIManager.lightUI(window, false)
 
         colorDrawable = ColorDrawable(Color.BLACK)
-        view_pager.offscreenPageLimit = 1
         view_pager.backgroundDrawable = colorDrawable
         view_pager.adapter = adapter
         view_pager.registerOnPageChangeCallback(onPageChangeCallback)
@@ -189,7 +187,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     override fun onResume() {
         super.onResume()
         SensorOrientationChangeNotifier.resume()
-        checkOrientation(false)
+        checkOrientation()
     }
 
     override fun onPause() {
@@ -215,10 +213,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
         if (isLocked) return
 
-        changeOrientation(newOrientation, true)
+        changeOrientation(newOrientation)
     }
 
-    private fun changeOrientation(orientation: Int, scrollViewPager: Boolean) {
+    private fun changeOrientation(orientation: Int) {
         requestedOrientation = when (orientation) {
             270 -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             180 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
@@ -227,12 +225,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
         findViewPagerChildByTag {
             it.getChildAt(0)?.player_view?.switchFullscreen(orientation == 90 || orientation == 270)
-        }
-        if (scrollViewPager) {
-            val curPos = view_pager.currentItem
-            view_pager.post {
-                (view_pager.getChildAt(0) as RecyclerView).scrollToPosition(curPos)
-            }
         }
     }
 
@@ -662,12 +654,12 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         lock_tv.postDelayed(hideLockRunnable, 3000)
     }
 
-    private fun checkOrientation(handleViewPager: Boolean) {
+    private fun checkOrientation() {
         if (isAutoRotate() && !isLocked) {
             val sensorIsLandscape = SensorOrientationChangeNotifier.isLandscape()
             val activityLandscape = isLandscape()
             if (sensorIsLandscape != activityLandscape) {
-                changeOrientation(SensorOrientationChangeNotifier.orientation, handleViewPager)
+                changeOrientation(SensorOrientationChangeNotifier.orientation)
             }
         }
     }
@@ -680,16 +672,21 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         isLocked = !isLocked
         if (isLocked) {
             lock_tv.text = getString(R.string.click_unlock)
+            lock_tv.textColor = getColor(R.color.colorAccent)
         } else {
             lock_tv.text = getString(R.string.click_lock)
+            lock_tv.textColor = getColor(R.color.white)
         }
         lock_tv.removeCallbacks(hideLockRunnable)
         lock_tv.postDelayed(hideLockRunnable, 3000)
-        checkOrientation(true)
+        checkOrientation()
     }
 
     private val onPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
+            lock_tv.removeCallbacks(hideLockRunnable)
+            lock_tv.post(hideLockRunnable)
+
             if (downloadMedia(position)) return
 
             val messageItem = adapter.currentList?.get(position) ?: return
@@ -819,7 +816,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         override fun switchFullscreen() {
             val isLandscape = this@MediaPagerActivity.isLandscape()
             val orientation = if (isLandscape) 0 else 270
-            this@MediaPagerActivity.changeOrientation(orientation, true)
+            this@MediaPagerActivity.changeOrientation(orientation)
         }
     }
 

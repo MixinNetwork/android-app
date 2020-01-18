@@ -48,7 +48,7 @@ class MediaPagerAdapter(
                 LargeImageHolder(layout)
             }
             MediaItemType.Video.ordinal -> {
-                layout.addView(createVideoView(parent))
+                createVideoView(layout)
                 layout.addView(circleProgress)
                 VideoHolder(layout, onMediaPagerAdapterListener)
             }
@@ -100,7 +100,7 @@ class MediaPagerAdapter(
         }
     }
 
-    private fun createVideoView(container: ViewGroup) = container.inflate(R.layout.item_pager_video_layout)
+    private fun createVideoView(container: ViewGroup) = container.inflate(R.layout.item_pager_video_layout, attachToRoot = true)
 
     private fun createLargeImageView(container: ViewGroup) = LargeImageView(container.context)
 
