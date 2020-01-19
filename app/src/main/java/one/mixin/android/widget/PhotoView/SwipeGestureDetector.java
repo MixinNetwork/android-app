@@ -8,7 +8,7 @@ import android.view.ViewConfiguration;
 
 class SwipeGestureDetector {
     static final int DIRECTION_TOP_BOTTOM = 1;
-    private static final int DIRECTION_LEFT_RIGHT = 4;
+    static final int DIRECTION_LEFT_RIGHT = 4;
 
     private OnSwipeGestureListener listener;
     private int direction;
@@ -110,10 +110,15 @@ class SwipeGestureDetector {
         return true;
     }
 
+    int getDirection() {
+        return direction;
+    }
+
     private void reset(float x, float y) {
         if (isBeingDragged) {
             listener.onFinish(direction, x - initialMotionX, y - initialMotionY);
         }
+        listener.onReset();
         isBeingDragged = false;
     }
 
@@ -123,6 +128,8 @@ class SwipeGestureDetector {
         void onSwipeLeftRight(float deltaX, float deltaY);
 
         void onFinish(int direction, float distanceX, float distanceY);
+
+        void onReset();
     }
 
 }

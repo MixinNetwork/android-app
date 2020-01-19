@@ -645,3 +645,7 @@ fun Context.isNightMode(): Boolean {
         ) == Constants.Theme.THEME_NIGHT_ID
     }
 }
+
+fun Context.isLandscape() = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+fun Context.isAutoRotate() = Settings.System.getInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0) == 1

@@ -170,7 +170,7 @@
     </style>
 
     <style name="AppTheme.WhiteAccent">
-        <item name="android:indeterminateTint">?attr/bg_white</item>
+        <item name="android:indeterminateTint">@color/white</item>
         <item name="android:indeterminate">true</item>
         <item name="android:indeterminateTintMode">src_atop</item>
     </style>

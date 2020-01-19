@@ -62,17 +62,34 @@ interface MessageDao : BaseDao<Message> {
         m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE m.conversation_id = :conversationId
-        AND ((m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO')
-        OR m.category = 'SIGNAL_LIVE' OR m.category = 'PLAIN_LIVE') ORDER BY m.created_at ASC
+        AND (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO'
+        OR m.category = 'SIGNAL_LIVE' OR m.category = 'PLAIN_LIVE') 
+        ORDER BY m.created_at ASC
         """
     )
     fun getMediaMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
+        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
+        m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
+        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
+        FROM messages m 
+        INNER JOIN users u ON m.user_id = u.user_id 
+        WHERE m.conversation_id = :conversationId
+        AND m.id = :messageId
+        """
+    )
+    suspend fun getMediaMessage(conversationId: String, messageId: String): MessageItem
+
     @Query(
         """SELECT count(*) FROM messages WHERE conversation_id = :conversationId
         AND rowid < (SELECT rowid FROM messages WHERE id = :messageId)
-        AND ((category = 'SIGNAL_IMAGE' OR category = 'PLAIN_IMAGE' OR category = 'SIGNAL_VIDEO' OR category = 'PLAIN_VIDEO')
+        AND (category = 'SIGNAL_IMAGE' OR category = 'PLAIN_IMAGE' OR category = 'SIGNAL_VIDEO' OR category = 'PLAIN_VIDEO'
         OR category = 'SIGNAL_LIVE' OR category = 'PLAIN_LIVE')
+        ORDER BY created_at ASC
         """
     )
     suspend fun indexMediaMessages(conversationId: String, messageId: String): Int
@@ -97,6 +114,7 @@ interface MessageDao : BaseDao<Message> {
         """SELECT count(*) FROM messages WHERE conversation_id = :conversationId 
         AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)
         AND (category = 'SIGNAL_IMAGE' OR category = 'PLAIN_IMAGE' OR category = 'SIGNAL_VIDEO' OR category = 'PLAIN_VIDEO')
+        ORDER BY created_at DESC
         """
     )
     suspend fun indexMediaMessagesExcludeLive(conversationId: String, messageId: String): Int
@@ -296,6 +314,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT * FROM messages WHERE id = :messageId")
     fun findMessageById(messageId: String): Message?
+
+    @Query("SELECT * FROM messages WHERE id = :messageId")
+    suspend fun suspendFindMessageById(messageId: String): Message?
 
     @Query("SELECT status FROM messages WHERE id = :messageId")
     fun findMessageStatusById(messageId: String): String?

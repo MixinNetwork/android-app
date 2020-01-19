@@ -37,10 +37,11 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getPixelsInCM
+import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.media.DragMediaActivity
+import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.video.MixinPlayer
@@ -71,32 +72,38 @@ class PipVideoView {
             val sidey = prefreences.getInt(SIDEY, 0)
             val px = prefreences.getFloat(PX, 0f)
             val py = prefreences.getFloat(PY, 0f)
+
+            val isLandscape = appContext.isLandscape()
+            val realSize = appContext.realSize()
+            val realX = if (isLandscape) realSize.y else realSize.x
+            val realY = if (isLandscape) realSize.x else realSize.y
+
             var videoWidth: Int
             var videoHeight: Int
             if (aspectRatio > 1f) {
-                videoWidth = appContext.realSize().x * 2 / 3
+                videoWidth = realX * 2 / 3
                 videoHeight = (videoWidth / aspectRatio).toInt()
             } else {
-                videoHeight = appContext.realSize().y / 3
+                videoHeight = realY / 3
                 videoWidth = (videoHeight * aspectRatio).toInt()
-                if (videoWidth > appContext.realSize().x / 2) {
-                    videoWidth = appContext.realSize().x / 2
+                if (videoWidth > realX / 2) {
+                    videoWidth = realX / 2
                     videoHeight = (videoWidth / aspectRatio).toInt()
                 }
             }
             return Rect(
-                getSideCoord(true, sidex, px, videoWidth).toFloat(),
-                getSideCoord(false, sidey, py, videoHeight).toFloat(),
+                getSideCoord(true, sidex, px, videoWidth, realX, realY).toFloat(),
+                getSideCoord(false, sidey, py, videoHeight, realX, realY).toFloat(),
                 videoWidth.toFloat(),
                 videoHeight.toFloat()
             )
         }
 
-        fun getSideCoord(isX: Boolean, side: Int, p: Float, sideSize: Int): Int {
+        fun getSideCoord(isX: Boolean, side: Int, p: Float, sideSize: Int, realX: Int, realY: Int): Int {
             val total = if (isX) {
-                appContext.realSize().x - sideSize
+                realX - sideSize
             } else {
-                appContext.realSize().y - sideSize
+                realY - sideSize
             }
             return when (side) {
                 0 -> appContext.dpToPx(10f)
@@ -155,9 +162,14 @@ class PipVideoView {
         conversationId: String,
         messageId: String,
         isVideo: Boolean,
+        excludeLive: Boolean,
         mediaUrl: String?
     ): TextureView {
         this.mediaUrl = mediaUrl
+        val isLandscape = appContext.isLandscape()
+        val realSize = appContext.realSize()
+        val realX = if (isLandscape) realSize.y else realSize.x
+        val realY = if (isLandscape) realSize.x else realSize.y
         windowView = object : FrameLayout(activity) {
             private var startX: Float = 0f
             private var startY: Float = 0f
@@ -194,15 +206,15 @@ class PipVideoView {
                     var maxDiff = videoWidth * 2 / 3
                     if (windowLayoutParams.x < -maxDiff) {
                         windowLayoutParams.x = -maxDiff
-                    } else if (windowLayoutParams.x > appContext.realSize().x - windowLayoutParams.width + maxDiff) {
-                        windowLayoutParams.x = appContext.realSize().x - windowLayoutParams.width + maxDiff
+                    } else if (windowLayoutParams.x > realX - windowLayoutParams.width + maxDiff) {
+                        windowLayoutParams.x = realX - windowLayoutParams.width + maxDiff
                     }
                     var alpha = 1.0f
                     if (windowLayoutParams.x < 0) {
                         alpha = 1.0f + windowLayoutParams.x / maxDiff.toFloat() * 0.5f
-                    } else if (windowLayoutParams.x > appContext.realSize().x - windowLayoutParams.width) {
+                    } else if (windowLayoutParams.x > realX - windowLayoutParams.width) {
                         alpha =
-                            1.0f - (windowLayoutParams.x - appContext.realSize().x + windowLayoutParams.width) / maxDiff.toFloat() * 0.5f
+                            1.0f - (windowLayoutParams.x - realX + windowLayoutParams.width) / maxDiff.toFloat() * 0.5f
                     }
                     if (windowView.alpha != alpha) {
                         windowView.alpha = alpha
@@ -210,9 +222,9 @@ class PipVideoView {
                     maxDiff = 0
                     if (windowLayoutParams.y < -maxDiff) {
                         windowLayoutParams.y = -maxDiff
-                    } else if (windowLayoutParams.y > appContext.realSize().y - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff) {
+                    } else if (windowLayoutParams.y > realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff) {
                         windowLayoutParams.y =
-                            appContext.realSize().y - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff
+                            realY - windowLayoutParams.height - appContext.navigationBarHeight() * 2 + maxDiff
                     }
                     windowManager.updateViewLayout(windowView, windowLayoutParams)
                     startX = x
@@ -224,13 +236,13 @@ class PipVideoView {
             }
         }
         if (aspectRatio > 1f) {
-            videoWidth = appContext.realSize().x * 2 / 3
+            videoWidth = realX * 2 / 3
             videoHeight = (videoWidth / aspectRatio).toInt()
         } else {
-            videoHeight = appContext.realSize().y / 3
+            videoHeight = realY / 3
             videoWidth = (videoHeight * aspectRatio).toInt()
-            if (videoWidth > appContext.realSize().x / 2) {
-                videoWidth = appContext.realSize().x / 2
+            if (videoWidth > realX / 2) {
+                videoWidth = realX / 2
                 videoHeight = (videoWidth / aspectRatio).toInt()
             }
         }
@@ -252,11 +264,12 @@ class PipVideoView {
                 if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
                     appContext.toast(R.string.need_background_permission)
                 }
-                DragMediaActivity.show(
+                MediaPagerActivity.show(
                     MixinApplication.appContext,
                     conversationId,
                     messageId,
-                    aspectRatio
+                    aspectRatio,
+                    excludeLive
                 )
             }
         }
@@ -392,8 +405,8 @@ class PipVideoView {
             windowLayoutParams = WindowManager.LayoutParams()
             windowLayoutParams.width = videoWidth
             windowLayoutParams.height = videoHeight
-            windowLayoutParams.x = getSideCoord(true, sidex, px, videoWidth)
-            windowLayoutParams.y = getSideCoord(false, sidey, py, videoHeight)
+            windowLayoutParams.x = getSideCoord(true, sidex, px, videoWidth, realX, realY)
+            windowLayoutParams.y = getSideCoord(false, sidey, py, videoHeight, realX, realY)
             windowLayoutParams.format = PixelFormat.TRANSLUCENT
             windowLayoutParams.gravity = Gravity.TOP or Gravity.START
             if (Build.VERSION.SDK_INT >= 26) {
@@ -453,10 +466,14 @@ class PipVideoView {
 
     private var decelerateInterpolator: DecelerateInterpolator? = null
     private fun animateToBoundsMaybe() {
-        val startX = getSideCoord(true, 0, 0f, videoWidth)
-        val endX = getSideCoord(true, 1, 0f, videoWidth)
-        val startY = getSideCoord(false, 0, 0f, videoHeight)
-        val endY = getSideCoord(false, 1, 0f, videoHeight)
+        val realSize = appContext.realSize()
+        val isLandscape = appContext.isLandscape()
+        val realX = if (isLandscape) realSize.y else realSize.x
+        val realY = if (isLandscape) realSize.x else realSize.y
+        val startX = getSideCoord(true, 0, 0f, videoWidth, realX, realY)
+        val endX = getSideCoord(true, 1, 0f, videoWidth, realX, realY)
+        val startY = getSideCoord(false, 0, 0f, videoHeight, realX, realY)
+        val endY = getSideCoord(false, 1, 0f, videoHeight, realX, realY)
         var animators: ArrayList<Animator>? = null
         val editor = appContext.defaultSharedPreferences.edit()
         val maxDiff = appContext.dip(20f)
@@ -470,8 +487,8 @@ class PipVideoView {
                 animators.add(ObjectAnimator.ofFloat(windowView, "alpha", 1.0f))
             }
             animators.add(ObjectAnimator.ofInt(this, "x", startX))
-        } else if (abs(endX - windowLayoutParams.x) <= maxDiff || windowLayoutParams.x > appContext.realSize().x - videoWidth &&
-            windowLayoutParams.x < appContext.realSize().x - videoWidth * 3 / 5
+        } else if (abs(endX - windowLayoutParams.x) <= maxDiff || windowLayoutParams.x > realX - videoWidth &&
+            windowLayoutParams.x < realX - videoWidth * 3 / 5
         ) {
             if (animators == null) {
                 animators = ArrayList()
@@ -488,7 +505,7 @@ class PipVideoView {
             if (windowLayoutParams.x < 0) {
                 animators.add(ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, -videoWidth))
             } else {
-                animators.add(ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, appContext.realSize().x))
+                animators.add(ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, realX))
             }
             slideOut = true
         } else {

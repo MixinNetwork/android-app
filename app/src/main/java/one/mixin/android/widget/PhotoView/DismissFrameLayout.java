@@ -2,15 +2,18 @@ package one.mixin.android.widget.PhotoView;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.AttributeSet;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import androidx.annotation.AttrRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
-import android.util.AttributeSet;
-import android.view.MotionEvent;
-import android.view.View;
-import android.widget.FrameLayout;
 import com.shizhefei.view.largeimage.LargeImageView;
+
+import static one.mixin.android.widget.PhotoView.SwipeGestureDetector.DIRECTION_LEFT_RIGHT;
 
 public class DismissFrameLayout extends FrameLayout {
     private SwipeGestureDetector swipeGestureDetector;
@@ -66,12 +69,23 @@ public class DismissFrameLayout extends FrameLayout {
                             }
                         }
                     }
+
+                    @Override
+                    public void onReset() {
+                        requestDisallowInterceptTouchEvent(false);
+                    }
                 });
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        return swipeGestureDetector.onInterceptTouchEvent(ev);
+        boolean intercept = swipeGestureDetector.onInterceptTouchEvent(ev);
+        if (intercept && swipeGestureDetector.getDirection() != DIRECTION_LEFT_RIGHT) {
+            requestDisallowInterceptTouchEvent(true);
+        } else {
+            requestDisallowInterceptTouchEvent(false);
+        }
+        return intercept;
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -79,7 +93,7 @@ public class DismissFrameLayout extends FrameLayout {
     public boolean onTouchEvent(MotionEvent event) {
         int count = getChildCount();
         if (count > 0) {
-            View view = getChildAt(0);
+            View view = getCurrentChild();
             if (view instanceof PhotoView) {
                 if (((PhotoView) view).getScale() != 1 || event.getPointerCount() > 1) {
                     if (view.onTouchEvent(event)) {
@@ -102,7 +116,7 @@ public class DismissFrameLayout extends FrameLayout {
     private void dragChildView(float deltaY) {
         int count = getChildCount();
         if (count > 0) {
-            View view = getChildAt(0);
+            View view = getCurrentChild();
             moveChildView(view, deltaY);
         }
     }
@@ -140,7 +154,7 @@ public class DismissFrameLayout extends FrameLayout {
     private void reset() {
         int count = getChildCount();
         if (count > 0) {
-            View view = getChildAt(0);
+            View view = getCurrentChild();
             MarginLayoutParams params = (MarginLayoutParams) view.getLayoutParams();
             params.width = initWidth;
             params.height = initHeight;
@@ -149,6 +163,32 @@ public class DismissFrameLayout extends FrameLayout {
             percent = 0;
             view.setLayoutParams(params);
         }
+    }
+
+    @SuppressWarnings("SuspiciousNameCombination")
+    public void resetChildren() {
+        if (initWidth == 0 || initHeight == 0) {
+            return;
+        }
+        int tmp = initWidth;
+        initWidth = initHeight;
+        initHeight = tmp;
+        int count = getChildCount();
+        for (int i = 0; i < count; i++) {
+            View view = getChildAt(i);
+            ViewGroup.LayoutParams params = view.getLayoutParams();
+            params.width = initWidth;
+            params.height = initHeight;
+            view.setLayoutParams(params);
+        }
+    }
+
+    private View getCurrentChild() {
+        View view = getChildAt(0);
+        if (view.getVisibility() == GONE) {
+            view = getChildAt(1);
+        }
+        return view;
     }
 
     public void setDismissListener(OnDismissListener dismissListener) {

@@ -15,6 +15,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.common.recyclerview.StickyRecyclerHeadersDecorationForGrid
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
+import one.mixin.android.ui.media.pager.MediaPagerActivity
 import org.jetbrains.anko.dip
 
 class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
@@ -37,7 +38,7 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     }
 
     private val adapter = MediaAdapter(fun(imageView: View, messageId: String) {
-        DragMediaActivity.show(requireActivity(), imageView, conversationId, messageId, true)
+        MediaPagerActivity.show(requireActivity(), imageView, conversationId, messageId, true)
     })
 
     override fun getModelClass() = SharedMediaViewModel::class.java

@@ -90,6 +90,8 @@
     <string name="voice_call">语音通话</string>
     <string name="phone_call">电话呼叫</string>
     <string name="call_who">呼叫 %1$s</string>
+    <string name="click_lock">点击锁定</string>
+    <string name="click_unlock">点击解锁</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>

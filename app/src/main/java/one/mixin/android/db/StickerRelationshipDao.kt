@@ -12,10 +12,13 @@ interface StickerRelationshipDao : BaseDao<StickerRelationship> {
     @Query("SELECT s.* FROM sticker_relationships sr INNER JOIN stickers s ON s.sticker_id = sr.sticker_id WHERE sr.album_id = :id ORDER BY s.created_at DESC")
     fun observeStickersByAlbumId(id: String): LiveData<List<Sticker>>
 
-    @Query("SELECT s.* FROM sticker_albums sa " +
-        "INNER JOIN sticker_relationships sr ON sr.album_id = sa.album_id " +
-        "INNER JOIN stickers s ON sr.sticker_id = s.sticker_id " +
-        "WHERE sa.category = 'PERSONAL' ORDER BY s.created_at")
+    @Query("""
+        SELECT s.* FROM sticker_albums sa
+        INNER JOIN sticker_relationships sr ON sr.album_id = sa.album_id
+        INNER JOIN stickers s ON sr.sticker_id = s.sticker_id
+        WHERE sa.category = 'PERSONAL' ORDER BY s.created_at
+    """
+    )
     fun observePersonalStickers(): LiveData<List<Sticker>>
 
     @Query("DELETE FROM sticker_relationships  WHERE sticker_id = :stickerId AND album_id = :albumId")

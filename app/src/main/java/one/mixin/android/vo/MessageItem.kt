@@ -9,6 +9,7 @@ import android.os.Parcelable
 import android.view.View
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
+import androidx.paging.PositionalDataSource
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -25,6 +26,7 @@ import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toast
+import one.mixin.android.util.VideoPlayer
 
 @SuppressLint("ParcelCreator")
 @Entity
@@ -229,4 +231,28 @@ fun MessageItem.saveToLocal(context: Context) {
     outFile.copyFromInputStream(FileInputStream(file))
     context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
     MixinApplication.appContext.toast(R.string.save_success)
+}
+
+fun MessageItem.loadVideoOrLive(actionAfterLoad: (() -> Unit)? = null) {
+    mediaUrl?.let {
+        if (isLive()) {
+            VideoPlayer.player().loadHlsVideo(it, messageId)
+        } else {
+            VideoPlayer.player().loadVideo(it, messageId)
+        }
+        actionAfterLoad?.invoke()
+    }
+}
+
+class FixedMessageDataSource(private val messageItems: List<MessageItem>) : PositionalDataSource<MessageItem>() {
+    override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<MessageItem>) {
+        callback.onResult(messageItems)
+    }
+
+    override fun loadInitial(
+        params: LoadInitialParams,
+        callback: LoadInitialCallback<MessageItem>
+    ) {
+        callback.onResult(messageItems, 0, 1)
+    }
 }

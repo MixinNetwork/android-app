@@ -10,6 +10,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlin.experimental.and
 import kotlin.experimental.or
+import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.min
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
@@ -43,7 +46,7 @@ class WaveformView : View {
         if (progress < 0) {
             return
         }
-        thumbX = Math.ceil((width * progress).toDouble()).toInt()
+        thumbX = ceil((width * progress).toDouble()).toInt()
         if (thumbX < 0) {
             thumbX = 0
         } else if (thumbX > width) {
@@ -133,7 +136,7 @@ class WaveformView : View {
             val byteBitOffset = bitPointer - byteNum * 8
             val currentByteCount = 8 - byteBitOffset
             val nextByteRest = 5 - currentByteCount
-            value = (waveformBytes!![byteNum].toInt() shr byteBitOffset and (2 shl Math.min(5, currentByteCount) - 1) - 1).toByte()
+            value = (waveformBytes!![byteNum].toInt() shr byteBitOffset and (2 shl min(5, currentByteCount) - 1) - 1).toByte()
             if (nextByteRest > 0) {
                 value = (value.toInt() shl nextByteRest).toByte()
                 value = value or (waveformBytes!![byteNum + 1] and ((2 shl nextByteRest - 1) - 1).toByte())
@@ -142,11 +145,11 @@ class WaveformView : View {
             for (b in 0 until drawBarCount) {
                 val x = barNum * context.dip(3f)
                 if (x < thumbX && x + context.dip(2f) < thumbX) {
-                    canvas.drawRect(x.toFloat(), (y - context.dip(Math.max(1f, 14.0f * value / 31.0f))).toFloat(), (x + context.dip(2f)).toFloat(), (y).toFloat(), paintOuter)
+                    canvas.drawRect(x.toFloat(), (y - context.dip(max(1f, 14.0f * value / 31.0f))).toFloat(), (x + context.dip(2f)).toFloat(), (y).toFloat(), paintOuter)
                 } else {
-                    canvas.drawRect(x.toFloat(), (y - context.dip(Math.max(1f, 14.0f * value / 31.0f))).toFloat(), (x + context.dip(2f)).toFloat(), (y).toFloat(), paintInner)
+                    canvas.drawRect(x.toFloat(), (y - context.dip(max(1f, 14.0f * value / 31.0f))).toFloat(), (x + context.dip(2f)).toFloat(), (y).toFloat(), paintInner)
                     if (x < thumbX) {
-                        canvas.drawRect(x.toFloat(), (y - context.dip(Math.max(1f, 14.0f * value / 31.0f))).toFloat(), thumbX.toFloat(), (y).toFloat(), paintOuter)
+                        canvas.drawRect(x.toFloat(), (y - context.dip(max(1f, 14.0f * value / 31.0f))).toFloat(), thumbX.toFloat(), (y).toFloat(), paintOuter)
                     }
                 }
                 barNum++

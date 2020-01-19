@@ -15,6 +15,7 @@
         android:id="@+id/shared_tl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:tabBackground="?attr/bg_white"
         app:tabTextColor="?attr/text_primary" />
 
     <androidx.viewpager.widget.ViewPager

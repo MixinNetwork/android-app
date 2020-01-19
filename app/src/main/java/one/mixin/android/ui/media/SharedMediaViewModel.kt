@@ -9,7 +9,7 @@ import androidx.paging.PagedList
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
+import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
@@ -17,6 +17,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
@@ -34,8 +35,8 @@ class SharedMediaViewModel @Inject constructor(
         return LivePagedListBuilder(
             conversationRepository.getMediaMessagesExcludeLive(conversationId),
             PagedList.Config.Builder()
-                .setPrefetchDistance(Constants.PAGE_SIZE * 2)
-                .setPageSize(Constants.PAGE_SIZE)
+                .setPrefetchDistance(MediaPagerActivity.PAGE_SIZE * 2)
+                .setPageSize(MediaPagerActivity.PAGE_SIZE)
                 .setEnablePlaceholders(true)
                 .build()
         )
@@ -70,8 +71,8 @@ class SharedMediaViewModel @Inject constructor(
         return LivePagedListBuilder(
             sortedDataSource,
             PagedList.Config.Builder()
-                .setPrefetchDistance(Constants.PAGE_SIZE * 2)
-                .setPageSize(Constants.PAGE_SIZE)
+                .setPrefetchDistance(PAGE_SIZE * 2)
+                .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
                 .build()
         )
@@ -82,8 +83,8 @@ class SharedMediaViewModel @Inject constructor(
         return LivePagedListBuilder(
             conversationRepository.getLinkMessages(conversationId),
             PagedList.Config.Builder()
-                .setPrefetchDistance(Constants.PAGE_SIZE * 2)
-                .setPageSize(Constants.PAGE_SIZE)
+                .setPrefetchDistance(PAGE_SIZE * 2)
+                .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
                 .build()
         )
@@ -94,8 +95,8 @@ class SharedMediaViewModel @Inject constructor(
         return LivePagedListBuilder(
             conversationRepository.getFileMessages(conversationId),
             PagedList.Config.Builder()
-                .setPrefetchDistance(Constants.PAGE_SIZE * 2)
-                .setPageSize(Constants.PAGE_SIZE)
+                .setPrefetchDistance(PAGE_SIZE * 2)
+                .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
                 .build()
         )
@@ -145,5 +146,26 @@ class SharedMediaViewModel @Inject constructor(
         jobManager.findJobById(id).notNullWithElse({ it.cancel() }, {
             conversationRepository.updateMediaStatus(MediaStatus.CANCELED.name, id)
         })
+    }
+
+    suspend fun indexMediaMessages(
+        conversationId: String,
+        messageId: String,
+        excludeLive: Boolean
+    ): Int = conversationRepository.indexMediaMessages(conversationId, messageId, excludeLive)
+
+    fun getMediaMessages(
+        conversationId: String,
+        index: Int,
+        excludeLive: Boolean
+    ) = conversationRepository.getMediaMessages(conversationId, index, excludeLive)
+
+    suspend fun getMediaMessage(conversationId: String, messageId: String) =
+        conversationRepository.getMediaMessage(conversationId, messageId)
+
+    fun downloadByMessageId(messageId: String) = viewModelScope.launch {
+        conversationRepository.suspendFindMessageById(messageId)?.let {
+            jobManager.addJobInBackground(AttachmentDownloadJob(it))
+        }
     }
 }
