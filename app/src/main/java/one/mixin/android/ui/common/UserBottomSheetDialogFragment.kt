@@ -284,7 +284,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         val telephoneCallMenu = if (!phoneNum.isNullOrEmpty()) {
             val phoneUri = Uri.parse("tel:$phoneNum")
             menu {
-                title = getString(R.string.telephone_call)
+                title = getString(R.string.phone_call)
                 subtitle = phoneNum
                 action = {
                     requireContext().showConfirmDialog(getString(R.string.call_who, phoneNum)) {
