@@ -16,7 +16,7 @@
         android:layout_gravity="center"
         android:text="@string/click_lock"
         android:textColor="@color/white"
-        android:background="@color/black_70"
+        android:background="@drawable/bg_lock"
         android:textSize="16sp"
         android:visibility="gone"
         android:paddingStart="@dimen/margin12"

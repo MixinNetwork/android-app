@@ -180,14 +180,14 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
         lock_tv.setOnClickListener(onLockClickListener)
 
-        SensorOrientationChangeNotifier.listener = this
+        SensorOrientationChangeNotifier.init(this, requestedOrientation)
+
         loadData()
     }
 
     override fun onResume() {
         super.onResume()
         SensorOrientationChangeNotifier.resume()
-        checkOrientation()
     }
 
     override fun onPause() {
@@ -202,7 +202,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     override fun onDestroy() {
         super.onDestroy()
-        SensorOrientationChangeNotifier.listener = null
+        SensorOrientationChangeNotifier.reset()
         view_pager?.unregisterOnPageChangeCallback(onPageChangeCallback)
     }
 
@@ -216,6 +216,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         changeOrientation(newOrientation)
     }
 
+    @Synchronized
     private fun changeOrientation(orientation: Int) {
         requestedOrientation = when (orientation) {
             270 -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -224,7 +225,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             else -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         findViewPagerChildByTag {
-            it.getChildAt(0)?.player_view?.switchFullscreen(orientation == 90 || orientation == 270)
+            it.player_view?.switchFullscreen(orientation == 90 || orientation == 270)
+            (it as DismissFrameLayout).resetChildren()
         }
     }
 
@@ -259,6 +261,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     if (firstLoad) {
                         adapter.initialPos = initialIndex
                         view_pager.setCurrentItem(initialIndex, false)
+                        checkOrientation()
                         firstLoad = false
                     }
                 }
@@ -710,7 +713,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             val messageItem = adapter.currentList?.get(view_pager.currentItem) ?: return
             if (messageItem.isLive() || messageItem.isVideo()) {
                 findViewPagerChildByTag {
-                    val playerView = it.getChildAt(0)?.player_view
+                    val playerView = it.player_view
                     if (playerView != null) {
                         controllerVisibleBeforeDismiss = playerView.useController && playerView.player_control_view.isVisible
                         playerView.hideController()
@@ -732,7 +735,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             val messageItem = adapter.currentList?.get(view_pager.currentItem) ?: return
             if (messageItem.isLive() || messageItem.isVideo()) {
                 findViewPagerChildByTag {
-                    val playerView = it.getChildAt(0)?.player_view
+                    val playerView = it.player_view
                     if (playerView != null) {
                         if (controllerVisibleBeforeDismiss) {
                             playerView.showController(false)
@@ -749,7 +752,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     override fun finishAfterTransition() {
         if (view_pager.currentItem == initialIndex) {
             findViewPagerChildByTag {
-                it.getChildAt(0)?.player_view?.hideController()
+                it.player_view?.hideController()
             }
             super.finishAfterTransition()
         } else {

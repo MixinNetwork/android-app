@@ -16,7 +16,17 @@ object SensorOrientationChangeNotifier {
 
     private var lastOrientationChangeTime = 0L
 
-    var listener: Listener? = null
+    private var listener: Listener? = null
+
+    fun init(listener: Listener, requestedOrientation: Int) {
+        this.listener = listener
+        this.orientation = when (requestedOrientation) {
+            0 -> 270
+            8 -> 90
+            9 -> 180
+            else -> 0
+        }
+    }
 
     fun resume() {
         sensorManager?.registerListener(notifierSensorEventListener,
@@ -25,6 +35,11 @@ object SensorOrientationChangeNotifier {
 
     fun pause() {
         sensorManager?.unregisterListener(notifierSensorEventListener)
+    }
+
+    fun reset() {
+        listener = null
+        orientation = 0
     }
 
     fun isLandscape() = orientation == 90 || orientation == 270

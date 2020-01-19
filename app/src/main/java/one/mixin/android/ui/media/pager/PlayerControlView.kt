@@ -60,6 +60,8 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     private var attachedToWindow = false
     private var hideAtMs = C.TIME_UNSET
 
+    private val statusBarHeight = context.statusBarHeight()
+
     private val updateProgressAction = Runnable {
         updateProgress()
     }
@@ -112,7 +114,6 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
 
     override fun onFinishInflate() {
         super.onFinishInflate()
-        val statusBarHeight = context.statusBarHeight()
         topLayout.setPadding(0, statusBarHeight, 0, 0)
     }
 
@@ -170,8 +171,10 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     fun switchFullscreen(fullscreen: Boolean) {
         if (fullscreen) {
             fullscreenView.setImageResource(R.drawable.ic_fullscreen_exit)
+            topLayout.setPadding(0, 0, 0, 0)
         } else {
             fullscreenView.setImageResource(R.drawable.ic_fullscreen)
+            topLayout.setPadding(0, statusBarHeight, 0, 0)
         }
     }
 
