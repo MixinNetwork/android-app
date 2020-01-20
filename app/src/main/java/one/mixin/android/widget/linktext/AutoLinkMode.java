@@ -8,7 +8,6 @@ public enum AutoLinkMode {
     MODE_URL("Url"),
     MODE_PHONE("Phone"),
     MODE_EMAIL("Email"),
-    MODE_BOT("Bot"),
     MODE_CUSTOM("Custom");
 
     private String name;

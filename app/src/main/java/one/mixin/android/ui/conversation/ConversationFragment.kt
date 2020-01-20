@@ -665,6 +665,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chat_control.chat_et.setText("@$appNumber ")
                 chat_control.chat_et.setSelection(chat_control.chat_et.text!!.length)
                 mentionAdapter.submitList(null)
+                floating_layout.hideMention()
             }
         })
     }
@@ -1669,8 +1670,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     mention_rv.layoutManager = LinearLayoutManager(context)
                 }
                 mentionAdapter.list = users
-                val text = chat_control.chat_et.text
-                if (mention_rv.isGone && inMentionState(text.toString())) {
+                val text = chat_control.chat_et.text ?: return@Observer
+                if (mention_rv.isGone && !text.isEmpty() && text.last().equals("@")) {
                     submitMentionList(text.toString())
                     floating_layout.showMention()
                 }
@@ -1767,9 +1768,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         }
     }
-
-    private fun inMentionState(text: String?) =
-        text != null && text.startsWith("@700") && !text.contains(' ')
 
     private fun clickSticker() {
         val stickerAlbumFragment = parentFragmentManager.findFragmentByTag(StickerAlbumFragment.TAG)
@@ -2395,7 +2393,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             if (isGroup) {
                 mentionAdapter.keyword = s?.toString()
-                if (mention_rv.adapter != null && inMentionState(s.toString())) {
+                if (mention_rv.adapter != null && !s.isNullOrEmpty() && s.last().equals("@")) {
                     val targetList = submitMentionList(s.toString())
                     if (mention_rv.isGone) {
                         floating_layout.showMention()
@@ -2403,10 +2401,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         floating_layout.animate2RightHeight(targetList?.size ?: 0)
                     }
                     mention_rv.layoutManager?.smoothScrollToPosition(mention_rv, null, 0)
-                } else {
-                    if (mention_rv.isVisible) {
-                        floating_layout.hideMention()
-                    }
                 }
             }
         }

@@ -3,11 +3,11 @@ package one.mixin.android.di
 import android.app.Application
 import dagger.Module
 import dagger.Provides
-import javax.inject.Singleton
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
+import javax.inject.Singleton
 
 @Module
 internal class BaseDbModule {
@@ -31,7 +31,8 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideSessionParticipantDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.participantSessionDao()
+    fun provideSessionParticipantDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) =
+        db.participantSessionDao()
 
     @Singleton
     @Provides
@@ -65,7 +66,8 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideMessageHistoryDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.messageHistoryDao()
+    fun provideMessageHistoryDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) =
+        db.messageHistoryDao()
 
     @Singleton
     @Provides
@@ -97,11 +99,13 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
-    fun providesResendSessionMessageDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.resendSessionMessageDao()
+    fun providesResendSessionMessageDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) =
+        db.resendSessionMessageDao()
 
     @Singleton
     @Provides
-    fun providesStickerRelationshipDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.stickerRelationshipDao()
+    fun providesStickerRelationshipDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) =
+        db.stickerRelationshipDao()
 
     @Singleton
     @Provides
@@ -110,4 +114,10 @@ internal class BaseDbModule {
     @Singleton
     @Provides
     fun providesFavoriteAppDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.favoriteAppDao()
+
+    // Todo
+    // @Singleton
+    // @Provides
+    // fun providesMentionMessageDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) =
+    //     db.mentionMessageDao()
 }

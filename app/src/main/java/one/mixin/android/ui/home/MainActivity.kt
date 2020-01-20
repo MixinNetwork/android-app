@@ -27,7 +27,6 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -97,6 +96,7 @@ import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.doAsync
+import javax.inject.Inject
 
 class MainActivity : BlazeBaseActivity() {
 
@@ -258,7 +258,11 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun sendSafetyNetRequest() {
-        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(applicationContext, 13000000) != ConnectionResult.SUCCESS) {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+                applicationContext,
+                13000000
+            ) != ConnectionResult.SUCCESS
+        ) {
             return
         }
         runIntervalTask(SAFETY_NET_INTERVAL_KEY, INTERVAL_24_HOURS) {
