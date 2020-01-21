@@ -32,6 +32,7 @@
     <string name="other">其他</string>
     <string name="not_logged_in">还没有登录</string>
     <string name="got_it">知道了</string>
+    <string name="got_it_count">知道了（%1$d）</string>
     <string name="exit">退出</string>
     <string name="receiver">至</string>
     <string name="sender">来自</string>
