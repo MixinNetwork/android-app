@@ -409,8 +409,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                                         QrScanBottomSheetDialogFragment.TAG
                                     )
                             }
-                        } else {
-                            toast(R.string.can_not_recognize)
                         }
                     }
                     .addOnFailureListener {
