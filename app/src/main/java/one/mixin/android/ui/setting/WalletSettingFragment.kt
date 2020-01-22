@@ -144,14 +144,13 @@ class WalletSettingFragment : BaseViewModelFragment<SettingViewModel>() {
                 biometric_error_tv.text = it
                 biometric_error_tv.isVisible = true
             }
+            resetBiometricLayout()
             return@OnClickListener
         } else {
             biometric_error_tv.isVisible = false
         }
         if (biometrics_sc.isChecked) {
-            biometrics_sc.isChecked = false
-            time_rl.visibility = GONE
-            BiometricUtil.deleteKey(requireContext())
+            resetBiometricLayout()
         } else {
             val bottomSheet =
                 PinBiometricsBottomSheetDialogFragment.newInstance(true)
@@ -168,6 +167,12 @@ class WalletSettingFragment : BaseViewModelFragment<SettingViewModel>() {
                 PinBiometricsBottomSheetDialogFragment.TAG
             )
         }
+    }
+
+    private fun resetBiometricLayout() {
+        biometrics_sc.isChecked = false
+        time_rl.visibility = GONE
+        BiometricUtil.deleteKey(requireContext())
     }
 
     @SuppressLint("SetTextI18n")
