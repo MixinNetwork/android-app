@@ -661,8 +661,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private val mentionAdapter: MentionAdapter by lazy {
         MentionAdapter(object : OnUserClickListener {
             @SuppressLint("SetTextI18n")
-            override fun onUserClick(appNumber: String) {
-                chat_control.chat_et.setText("@$appNumber ")
+            override fun onUserClick(fullName: String) {
+                val text = chat_control.chat_et.text
+                // Todo
+                chat_control.chat_et.text = text?.append("${fullName.replace(" ","_")} ")
                 chat_control.chat_et.setSelection(chat_control.chat_et.text!!.length)
                 mentionAdapter.submitList(null)
                 floating_layout.hideMention()
@@ -1663,7 +1665,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                 }
             })
-        chatViewModel.getGroupBotsLiveData(conversationId)
+        chatViewModel.getGroupUsersLiveData(conversationId)
             .observe(viewLifecycleOwner, Observer { users ->
                 if (mention_rv.adapter == null) {
                     mention_rv.adapter = mentionAdapter
@@ -1671,7 +1673,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 mentionAdapter.list = users
                 val text = chat_control.chat_et.text ?: return@Observer
-                if (mention_rv.isGone && !text.isEmpty() && text.last().equals("@")) {
+                if (mention_rv.isGone && !text.isEmpty() && text.last() == '@') {
                     submitMentionList(text.toString())
                     floating_layout.showMention()
                 }
@@ -1679,11 +1681,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun submitMentionList(s: String?): List<User>? {
-        val targetList = mentionAdapter.list?.filter {
-            it.identityNumber.startsWith(s!!.substring(1, s.length))
-        }
-        mentionAdapter.submitList(targetList)
-        return targetList
+        // val targetList = mentionAdapter.list?.filter {
+        //     it.identityNumber.startsWith(s!!.substring(1, s.length))
+        // }
+        mentionAdapter.submitList(mentionAdapter.list)
+        return mentionAdapter.list
     }
 
     private fun showGroupBottomSheet(expand: Boolean) {
@@ -2393,7 +2395,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             if (isGroup) {
                 mentionAdapter.keyword = s?.toString()
-                if (mention_rv.adapter != null && !s.isNullOrEmpty() && s.last().equals("@")) {
+                if (mention_rv.adapter != null && !s.isNullOrEmpty() && s.last() == '@') {
                     val targetList = submitMentionList(s.toString())
                     if (mention_rv.isGone) {
                         floating_layout.showMention()

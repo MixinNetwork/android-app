@@ -89,5 +89,5 @@ interface UserDao : BaseDao<User> {
     suspend fun findUserByIdentityNumber(identityNumber: String): User?
 
     @Query("SELECT * FROM users WHERE full_name =:fullName")
-    suspend fun findUSerByFullNameSuspend(fullName: String): User?
+    fun findUSerByFullNameSuspend(fullName: String): User?
 }

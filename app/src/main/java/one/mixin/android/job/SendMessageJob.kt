@@ -10,6 +10,7 @@ import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
+import one.mixin.android.util.mention.parseMention
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.isCall
@@ -114,6 +115,8 @@ open class SendMessageJob(
                 recipientId?.let {
                     message.category = MessageCategory.PLAIN_TEXT.name
                 }
+            }else{
+                parseMention(message.content,userDao)
             }
         }
         if (message.isPlain() || message.isCall() || message.isRecall()) {
