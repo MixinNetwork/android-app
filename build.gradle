@@ -49,7 +49,7 @@ buildscript {
         ext.fabprogresscircleVersion = '1.01@aar'
         ext.rxContactsVersion = '1.1'
         ext.glideTransformationsVersion = '3.2.0'
-        ext.jobqueueVersion = '2.0.7'
+        ext.jobqueueVersion = '3.0.0'
         ext.stickyheadersrecyclerviewVersion = '0.7'
         ext.threetenabpVersion = '1.2.2'
         ext.signalVersion = '2.8.1'
