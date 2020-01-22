@@ -14,7 +14,6 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
@@ -98,9 +97,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             doWhenInvokeNetworkSuccess(response, pin)
 
             dismiss()
-            callback.notNullWithElse({ action -> action.onSuccess() }, {
-                toast(R.string.successful)
-            })
+            callback ?: toast(R.string.successful)
         } else {
             contentView.biometric_layout?.let { layout ->
                 layout.setErrorButton(layout.getErrorActionByErrorCode(response.errorCode))

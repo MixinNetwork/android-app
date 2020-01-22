@@ -60,7 +60,7 @@ object BiometricUtil {
             fragment.requireContext().getString(R.string.wallet_biometric_screen_lock),
             fragment.requireContext().getString(R.string.wallet_biometric_screen_lock_desc))
         if (intent != null) {
-            fragment.startActivityForResult(intent, REQUEST_CODE_CREDENTIALS)
+            fragment.activity?.startActivityForResult(intent, REQUEST_CODE_CREDENTIALS)
         }
     }
 
@@ -96,9 +96,13 @@ object BiometricUtil {
             Crashlytics.log(Log.ERROR, CRASHLYTICS_BIOMETRIC, "delete entry BIOMETRICS_ALIAS failed. ${e.getStackTraceString()}")
         }
 
-        ctx.defaultSharedPreferences.remove(Constants.BIOMETRICS_IV)
-        ctx.defaultSharedPreferences.remove(BIOMETRICS_ALIAS)
-        ctx.defaultSharedPreferences.remove(Constants.Account.PREF_BIOMETRICS)
+        ctx.defaultSharedPreferences.apply {
+            remove(Constants.BIOMETRICS_IV)
+            remove(Constants.Account.PREF_BIOMETRICS)
+            remove(Constants.BIOMETRICS_PIN)
+            remove(Constants.BIOMETRIC_PIN_CHECK)
+            remove(Constants.BIOMETRIC_INTERVAL)
+        }
     }
 
     fun shouldShowBiometric(ctx: Context): Boolean {
