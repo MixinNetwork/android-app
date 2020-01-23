@@ -25,4 +25,11 @@ class SettingActivity : BlazeBaseActivity() {
             addFragment(fragment, BackUpFragment.newInstance(), BackUpFragment.TAG)
         }
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        val walletSettingFragment =
+            supportFragmentManager.findFragmentByTag(WalletSettingFragment.TAG) as? WalletSettingFragment ?: return
+        walletSettingFragment.onActivityResult(requestCode, resultCode, data)
+    }
 }
