@@ -9,11 +9,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import com.sandro.bitcoinpaymenturi.BitcoinPaymentURI
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_address_add.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
@@ -96,7 +98,13 @@ class AddressAddFragment : BaseFragment() {
         avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         save_tv.setOnClickListener {
-            val destination = addr_et.text.toString()
+            var destination = addr_et.text.toString()
+            if (asset.assetId == BITCOIN_CHAIN_ID) {
+                val dest = BitcoinPaymentURI.parse(destination)
+                if (dest != null) {
+                    destination = dest.address
+                }
+            }
             val bottomSheet =
                 PinAddrBottomSheetDialogFragment.newInstance(
                     asset.assetId,
