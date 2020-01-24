@@ -96,7 +96,7 @@ class AddressAddFragment : BaseFragment() {
         avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         save_tv.setOnClickListener {
-            val destination = addr_et.text.toString().substringAfter(":")
+            val destination = addr_et.text.toString()
             val bottomSheet =
                 PinAddrBottomSheetDialogFragment.newInstance(
                     asset.assetId,
