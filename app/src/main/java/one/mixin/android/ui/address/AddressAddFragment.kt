@@ -99,7 +99,7 @@ class AddressAddFragment : BaseFragment() {
         avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         save_tv.setOnClickListener {
             var destination = addr_et.text.toString()
-            if (asset.assetId == BITCOIN_CHAIN_ID) {
+            if (asset.chainId == BITCOIN_CHAIN_ID) {
                 val dest = BitcoinPaymentURI.parse(destination)
                 if (dest != null) {
                     destination = dest.address
