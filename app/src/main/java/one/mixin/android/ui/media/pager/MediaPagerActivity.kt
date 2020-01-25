@@ -748,14 +748,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     }
 
     override fun finishAfterTransition() {
-        if (view_pager.currentItem == initialIndex) {
-            findViewPagerChildByTag {
-                it.player_view?.hideController()
-            }
-            super.finishAfterTransition()
-        } else {
-            finish()
+        findViewPagerChildByTag {
+            it.player_view?.hideController()
         }
+        super.finishAfterTransition()
     }
 
     override fun finish() {
@@ -766,7 +762,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
         if (!pipVideoView.shown) {
-            VideoPlayer.player().stop()
+            VideoPlayer.destroy()
         }
         super.finish()
         overridePendingTransition(0, R.anim.scale_out)
