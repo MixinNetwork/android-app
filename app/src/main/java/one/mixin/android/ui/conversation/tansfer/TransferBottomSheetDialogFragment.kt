@@ -52,7 +52,6 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         (dialog as BottomSheet).setCustomView(contentView)
     }
 
-    @SuppressLint("SetJavaScriptEnabled", "SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         when (t) {

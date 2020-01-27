@@ -501,12 +501,12 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
 
         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
-        bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         bottom.callback = object : BiometricBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
                 dialog?.dismiss()
             }
         }
+        bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
     }
 
     private val inputFilter = InputFilter { source, _, _, _, _, _ ->

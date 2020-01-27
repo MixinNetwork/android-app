@@ -97,7 +97,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             doWhenInvokeNetworkSuccess(response, pin)
 
             dismiss()
-            callback ?: toast(R.string.successful)
+            callback?.onSuccess() ?: toast(R.string.successful)
         } else {
             contentView.biometric_layout?.let { layout ->
                 layout.setErrorButton(layout.getErrorActionByErrorCode(response.errorCode))
