@@ -62,6 +62,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.ui.address.AddressActivity
 import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
@@ -119,6 +120,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     override fun onDismiss(dialog: DialogInterface) {
         if (isAdded) {
             operateKeyboard(false)
+            if (activity is AddressActivity) {
+                (activity as AddressActivity).finish()
+            }
         }
         super.onDismiss(dialog)
     }
