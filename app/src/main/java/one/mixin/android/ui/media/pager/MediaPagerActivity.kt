@@ -5,6 +5,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityOptions
 import android.content.ContentResolver
@@ -146,7 +147,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         return R.style.AppTheme_Night_Photo
     }
 
+    @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
         if (ratio == 0f) {
             postponeEnterTransition()
         }
