@@ -21,7 +21,19 @@
       android:pathData="M0,66.96L112.32,66.96L106.151,68.331C95.894,70.61 85.419,71.76 74.913,71.76L37.407,71.76C26.901,71.76 16.426,70.61 6.169,68.331L0,66.96L0,66.96Z"
       android:strokeWidth="1"
       android:fillType="evenOdd"
-      android:fillColor="#FF888A8D"/>
+      android:strokeColor="#00000000">
+    <aapt:attr name="android:fillColor">
+      <gradient
+          android:startY="66.96"
+          android:startX="56.16"
+          android:endY="71.76"
+          android:endX="56.16"
+          android:type="linear">
+        <item android:offset="0" android:color="#FF888A8D"/>
+        <item android:offset="1" android:color="#4D888A8D"/>
+      </gradient>
+    </aapt:attr>
+  </path>
   <path
       android:pathData="M1.44,63.36L110.88,63.36C111.675,63.36 112.32,64.005 112.32,64.8L112.32,66.96L112.32,66.96L0,66.96L0,64.8C-0,64.005 0.645,63.36 1.44,63.36Z"
       android:strokeWidth="1"
