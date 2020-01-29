@@ -85,7 +85,7 @@ class BillHolder constructor(containerView: View) : BaseViewHolder(containerView
                     R.drawable.bill_bubble_me_last_night
                 )
             } else {
-                 setItemBackgroundResource(
+                setItemBackgroundResource(
                     itemView.chat_layout,
                     R.drawable.bill_bubble_me,
                     R.drawable.bill_bubble_me_night
@@ -95,13 +95,13 @@ class BillHolder constructor(containerView: View) : BaseViewHolder(containerView
         } else {
             (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
             if (isLast) {
-            setItemBackgroundResource(
+                setItemBackgroundResource(
                     itemView.chat_layout,
                     R.drawable.chat_bubble_other_last,
                     R.drawable.chat_bubble_other_last_night
                 )
             } else {
-             setItemBackgroundResource(
+                setItemBackgroundResource(
                     itemView.chat_layout,
                     R.drawable.chat_bubble_other,
                     R.drawable.chat_bubble_other_night

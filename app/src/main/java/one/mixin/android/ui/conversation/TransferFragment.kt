@@ -120,9 +120,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     override fun onDismiss(dialog: DialogInterface) {
         if (isAdded) {
             operateKeyboard(false)
-            if (activity is AddressActivity) {
-                (activity as AddressActivity).finish()
-            }
+            (activity as? AddressActivity)?.finish()
         }
         super.onDismiss(dialog)
     }

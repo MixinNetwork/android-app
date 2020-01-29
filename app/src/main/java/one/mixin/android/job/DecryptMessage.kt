@@ -319,7 +319,7 @@ class DecryptMessage : Injector() {
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
             }
-             data.category.endsWith("_POST") -> {
+            data.category.endsWith("_POST") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
                 val message = createPostMessage(data.messageId, data.conversationId, data.userId, data.category, plain,
                     plain.split("\n").take(20).joinToString("\n"), data.createdAt, data.status)
