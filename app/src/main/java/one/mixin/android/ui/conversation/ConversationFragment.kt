@@ -248,6 +248,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             chatViewModel.viewModelScope.launch {
                                 group_desc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
                                 group_desc.collapse()
+                                group_desc.requestFocus()
                             }
                             group_flag.isVisible = true
                         }
@@ -759,6 +760,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         chatViewModel.viewModelScope.launch {
                             group_desc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
                             group_desc.collapse()
+                            group_desc.requestFocus()
                         }
                         group_flag.isVisible = true
                     }
