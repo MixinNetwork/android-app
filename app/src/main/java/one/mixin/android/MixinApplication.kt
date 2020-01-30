@@ -4,6 +4,8 @@ import android.app.Application
 import android.content.Context
 import android.webkit.CookieManager
 import android.webkit.WebStorage
+import androidx.camera.camera2.Camera2Config
+import androidx.camera.core.CameraXConfig
 import androidx.work.Configuration
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
@@ -35,8 +37,7 @@ import org.jetbrains.anko.uiThread
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
 
-class MixinApplication : Application(), HasAndroidInjector, Configuration.Provider {
-
+class MixinApplication : Application(), HasAndroidInjector, Configuration.Provider, CameraXConfig.Provider {
     @Inject
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
 
@@ -82,6 +83,8 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
     override fun androidInjector() = dispatchingAndroidInjector
 
     override fun getWorkManagerConfiguration() = workConfiguration
+
+    override fun getCameraXConfig() = Camera2Config.defaultConfig()
 
     var onlining = AtomicBoolean(false)
 
