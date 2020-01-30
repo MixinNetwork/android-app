@@ -1,6 +1,6 @@
 def versionMajor = 0
 def versionMinor = 19
-def versionPatch = 2
+def versionPatch = 3
 def versionBuild = 0
 
 apply plugin: 'com.android.application'
@@ -13,7 +13,7 @@ apply plugin: 'com.google.firebase.firebase-perf'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.2"
+    buildToolsVersion "29.0.3"
     defaultConfig {
         applicationId "one.mixin.messenger"
         minSdkVersion 23
