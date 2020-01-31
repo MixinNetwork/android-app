@@ -30,6 +30,7 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FavoriteAppDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.JobDao
+import one.mixin.android.db.MentionMessageDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MixinDatabase
@@ -155,6 +156,9 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
     @Transient
     @Inject
     lateinit var linkState: LinkState
+    @Inject
+    @Transient
+    lateinit var mentionMessageDao: MentionMessageDao
 
     open fun shouldRetry(throwable: Throwable): Boolean {
         if (throwable is SocketTimeoutException) {

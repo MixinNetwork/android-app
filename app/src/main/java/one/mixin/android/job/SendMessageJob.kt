@@ -116,7 +116,7 @@ open class SendMessageJob(
                     message.category = MessageCategory.PLAIN_TEXT.name
                 }
             } else {
-                parseMention(message.content, userDao)?.also { content ->
+                parseMention(message.content, message.id, message.conversationId, userDao, mentionMessageDao)?.also { content ->
                     message.content = content
                 }
             }

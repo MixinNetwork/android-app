@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 28,
-    "identityHash": "1866a59ac8da8d8486c6adc25fd27ca0",
+    "identityHash": "59876dfcd5b9aa79f8d435244c706a8f",
     "entities": [
       {
         "tableName": "users",
@@ -1590,7 +1590,7 @@
       },
       {
         "tableName": "mention_message",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`message_id`), FOREIGN KEY(`message_id`) REFERENCES `messages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `user_id` TEXT, `has_read` INTEGER NOT NULL, `rid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`message_id`) REFERENCES `messages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "messageId",
@@ -1605,17 +1605,29 @@
             "notNull": true
           },
           {
-            "fieldPath": "createdAt",
-            "columnName": "created_at",
+            "fieldPath": "userId",
+            "columnName": "user_id",
             "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "hasRead",
+            "columnName": "has_read",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rid",
+            "columnName": "rid",
+            "affinity": "INTEGER",
             "notNull": true
           }
         ],
         "primaryKey": {
           "columnNames": [
-            "message_id"
+            "rid"
           ],
-          "autoGenerate": false
+          "autoGenerate": true
         },
         "indices": [],
         "foreignKeys": [
@@ -1636,7 +1648,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1866a59ac8da8d8486c6adc25fd27ca0')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '59876dfcd5b9aa79f8d435244c706a8f')"
     ]
   }
 }

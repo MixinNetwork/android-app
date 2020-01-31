@@ -20,6 +20,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_23_24
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_24_25
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_25_26
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_26_27
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_27_28
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -29,6 +30,7 @@ import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Hyperlink
 import one.mixin.android.vo.Job
+import one.mixin.android.vo.MentionMessage
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts
 import one.mixin.android.vo.MessageHistory
@@ -70,9 +72,8 @@ import one.mixin.android.vo.User
         (TopAsset::class),
         (FavoriteApp::class),
         (Job::class),
-        (MessageFts::class)
-        // Todo
-        // ,(MentionMessage::class)
+        (MessageFts::class),
+        (MentionMessage::class)
     ],
     version = CURRENT_VERSION
 )
@@ -98,8 +99,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun stickerRelationshipDao(): StickerRelationshipDao
     abstract fun topAssetDao(): TopAssetDao
     abstract fun favoriteAppDao(): FavoriteAppDao
-    // Todo
-    // abstract fun mentionMessageDao(): MentionMessageDao
+    abstract fun mentionMessageDao(): MentionMessageDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null
@@ -124,7 +124,8 @@ abstract class MixinDatabase : RoomDatabase() {
                             MIGRATION_23_24,
                             MIGRATION_24_25,
                             MIGRATION_25_26,
-                            MIGRATION_26_27
+                            MIGRATION_26_27,
+                            MIGRATION_27_28
                         )
                         .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)
@@ -154,7 +155,8 @@ abstract class MixinDatabase : RoomDatabase() {
                             MIGRATION_23_24,
                             MIGRATION_24_25,
                             MIGRATION_25_26,
-                            MIGRATION_26_27
+                            MIGRATION_26_27,
+                            MIGRATION_27_28
                         )
                         .enableMultiInstanceInvalidation()
                         .build()

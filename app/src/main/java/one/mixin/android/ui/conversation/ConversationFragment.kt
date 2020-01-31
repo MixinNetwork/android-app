@@ -481,7 +481,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
             }
 
-            override fun onMentionClick(name: String) {
+            override fun onMentionClick(messageId: String, index: Int) {
+                chatViewModel.viewModelScope.launch {
+                    val user = chatViewModel.suspendFindUserFromMentionMessageByMessageId(messageId, index)
+                    if (user != null) {
+                        UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    }
+                }
             }
 
             private var userJob: Job? = null

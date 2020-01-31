@@ -35,19 +35,6 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
         itemView.chat_name.maxWidth = itemView.context.maxItemWidth() - dp24
         itemView.chat_name_tv.maxWidth = itemView.context.maxItemWidth() - dp24
         itemView.chat_description_tv.maxWidth = itemView.context.maxItemWidth() - dp24
-
-        itemView.chat_tv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
-            when (autoLinkMode) {
-                AutoLinkMode.MODE_URL -> {
-                    onItemListener?.onUrlClick(matchedText)
-                }
-                AutoLinkMode.MODE_MENTION -> {
-                    onItemListener?.onMentionClick(matchedText)
-                }
-                else -> {
-                }
-            }
-        }
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
@@ -108,6 +95,19 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
             } else {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
                 true
+            }
+        }
+
+        itemView.chat_tv.setAutoLinkMentionOnClickListener { autoLinkMode, matchedText, index ->
+            when (autoLinkMode) {
+                AutoLinkMode.MODE_URL -> {
+                    onItemListener.onUrlClick(matchedText)
+                }
+                AutoLinkMode.MODE_MENTION -> {
+                    onItemListener.onMentionClick(messageItem.messageId, index)
+                }
+                else -> {
+                }
             }
         }
 

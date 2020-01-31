@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.SerializedName
 
 @Entity(
     tableName = "mention_message",
@@ -15,11 +16,15 @@ import androidx.room.PrimaryKey
     ))]
 )
 class MentionMessage(
-    @PrimaryKey
     @ColumnInfo(name = "message_id")
     var messageId: String,
     @ColumnInfo(name = "conversation_id")
     val conversationId: String,
-    @ColumnInfo(name = "created_at")
-    val createdAt: String
+    @ColumnInfo(name = "user_id")
+    val userId: String?,
+    @SerializedName("has_read")
+    @ColumnInfo(name = "has_read")
+    val hasRead: Boolean = false,
+    @PrimaryKey(autoGenerate = true)
+    val rid: Int = 0
 )

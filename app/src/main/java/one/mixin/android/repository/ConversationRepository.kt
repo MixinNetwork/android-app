@@ -11,7 +11,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
@@ -20,6 +19,7 @@ import one.mixin.android.db.MessageProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
+import one.mixin.android.db.UserDao
 import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
@@ -37,6 +37,7 @@ import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SearchMessageItem
+import one.mixin.android.vo.User
 
 @Singleton
 class ConversationRepository
@@ -55,6 +56,7 @@ internal constructor(
     @DatabaseCategory(DatabaseCategoryEnum.READ)
     private val readConversationDao: ConversationDao,
     private val participantDao: ParticipantDao,
+    private val userDao: UserDao,
     private val participantSessionDao: ParticipantSessionDao,
     private val jobDao: JobDao,
     private val conversationService: ConversationService
@@ -304,4 +306,6 @@ internal constructor(
     suspend fun upgradeFtsMessage() = messageDao.upgradeFtsMessage()
 
     suspend fun getAnnouncementByConversationId(conversationId: String) = conversationDao.getAnnouncementByConversationId(conversationId)
+
+    suspend fun suspendFindUserFromMentionMessageByMessageId(messageId: String, index: Int): User? = userDao.suspendFindUserFromMentionMessageByMessageId(messageId, index)
 }

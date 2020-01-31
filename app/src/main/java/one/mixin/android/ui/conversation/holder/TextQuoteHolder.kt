@@ -32,18 +32,6 @@ class TextQuoteHolder constructor(containerView: View) : BaseViewHolder(containe
         itemView.chat_tv.setUrlModeColor(LINK_COLOR)
         itemView.chat_name.maxWidth = itemView.context.maxItemWidth() - dp16
         itemView.chat_msg_content.setMaxWidth(itemView.context.maxItemWidth() - dp16)
-        itemView.chat_tv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
-            when (autoLinkMode) {
-                AutoLinkMode.MODE_URL -> {
-                    onItemListener?.onUrlClick(matchedText)
-                }
-                AutoLinkMode.MODE_MENTION -> {
-                    onItemListener?.onMentionClick(matchedText)
-                }
-                else -> {
-                }
-            }
-        }
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
@@ -98,6 +86,19 @@ class TextQuoteHolder constructor(containerView: View) : BaseViewHolder(containe
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
+        }
+
+        itemView.chat_tv.setAutoLinkMentionOnClickListener { autoLinkMode, matchedText, index ->
+            when (autoLinkMode) {
+                AutoLinkMode.MODE_URL -> {
+                    onItemListener.onUrlClick(matchedText)
+                }
+                AutoLinkMode.MODE_MENTION -> {
+                    onItemListener.onMentionClick(messageItem.messageId, index)
+                }
+                else -> {
+                }
+            }
         }
 
         itemView.chat_tv.setOnLongClickListener {
