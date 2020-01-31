@@ -115,8 +115,10 @@ open class SendMessageJob(
                 recipientId?.let {
                     message.category = MessageCategory.PLAIN_TEXT.name
                 }
-            }else{
-                parseMention(message.content,userDao)
+            } else {
+                parseMention(message.content, userDao)?.also { content ->
+                    message.content = content
+                }
             }
         }
         if (message.isPlain() || message.isCall() || message.isRecall()) {
