@@ -29,6 +29,7 @@ import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
+import one.mixin.android.util.mention.processMentionMessageMention
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
@@ -306,14 +307,15 @@ class DecryptMessage : Injector() {
         when {
             data.category.endsWith("_TEXT") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_TEXT.name) String(Base64.decode(plainText)) else plainText
+                val content = processMentionMessageMention(plain, userDao)
                 val message = generateMessage(data) { quoteMessageItem ->
                     if (quoteMessageItem == null) {
-                        createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status).apply {
+                        createMessage(data.messageId, data.conversationId, data.userId, data.category, content, data.createdAt, data.status).apply {
                             this.content?.findLastUrl()?.let { jobManager.addJobInBackground(ParseHyperlinkJob(it, data.messageId)) }
                         }
                     } else {
                         createReplyTextMessage(data.messageId, data.conversationId, data.userId, data.category,
-                            plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
+                            content, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
                     }
                 }
                 messageDao.insert(message)
