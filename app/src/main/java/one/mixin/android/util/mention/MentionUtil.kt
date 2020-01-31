@@ -9,7 +9,7 @@ fun parseMention(text: String?, userDao: UserDao): String? {
     val matcher = mentionPattern.matcher(text)
     val mentions = mutableListOf<MentionItem>()
     while (matcher.find()) {
-        val name = matcher.group().replace(" ", "").replace("_", " ").replace("@", "")
+        val name = matcher.group().replace(" ", "").replace("\b", " ").replace("@", "")
         val user = userDao.findUSerByFullName(name)
         user?.let { u ->
             mentions.add(MentionItem(matcher.start(), matcher.end(), " @${u.identityNumber} "))
@@ -26,10 +26,10 @@ fun processMentionMessageMention(text: String, userDao: UserDao): String {
     val matcher = mentionNumberPattern.matcher(text)
     val mentions = mutableListOf<MentionItem>()
     while (matcher.find()) {
-        val identityNumber = matcher.group().replace(" ", "").replace("_", " ").replace("@", "")
+        val identityNumber = matcher.group()
         val user = userDao.findUSerByIdentityNumber(identityNumber)
         user?.let { u ->
-            mentions.add(MentionItem(matcher.start(), matcher.end(), " @${u.fullName} "))
+            mentions.add(MentionItem(matcher.start(), matcher.end(), " @${u.fullName?.replace(" ","\b")} "))
         }
     }
 
@@ -42,7 +42,7 @@ fun processMentionMessageMention(text: String, userDao: UserDao): String {
 class MentionItem(val start: Int, val end: Int, val content: String)
 
 private val mentionPattern by lazy {
-    Pattern.compile("(?:^|\\s|\$)@[\\S]+(?:\\s|\$)")
+    Pattern.compile("(?:^|\\s|\$)@(\\S|\\b)+(?:\\s|\$)")
 }
 
 private val mentionNumberPattern by lazy {

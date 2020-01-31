@@ -663,8 +663,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             @SuppressLint("SetTextI18n")
             override fun onUserClick(fullName: String) {
                 val text = chat_control.chat_et.text
-                // Todo
-                chat_control.chat_et.text = text?.append("${fullName.replace(" ","_")} ")
+                chat_control.chat_et.text = text?.append("${fullName.replace(" ","\b")} ")
                 chat_control.chat_et.setSelection(chat_control.chat_et.text!!.length)
                 mentionAdapter.submitList(null)
                 floating_layout.hideMention()
