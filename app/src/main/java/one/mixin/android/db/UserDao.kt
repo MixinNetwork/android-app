@@ -49,10 +49,7 @@ interface UserDao : BaseDao<User> {
         AND relationship = 'FRIEND' 
         AND (full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
         ORDER BY 
-            CASE 
-                WHEN full_name = :username COLLATE NOCASE OR identity_number = :identityNumber COLLATE NOCASE THEN 0
-                ELSE 1
-            END
+            full_name = :username COLLATE NOCASE OR identity_number = :identityNumber COLLATE NOCASE DESC
         """)
     suspend fun fuzzySearchUser(username: String, identityNumber: String, id: String): List<User>
 

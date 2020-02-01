@@ -66,15 +66,12 @@ interface ConversationDao : BaseDao<Conversation> {
             AND (ou.full_name LIKE '%' || :query || '%' $ESCAPE_SUFFIX 
                 OR ou.identity_number like '%' || :query || '%' $ESCAPE_SUFFIX))
         ORDER BY 
-            CASE 
-                WHEN (c.category = 'GROUP' AND c.name = :query COLLATE NOCASE) 
-                    OR (c.category = 'CONTACT' AND ou.relationship != 'FRIEND' 
-                        AND (ou.full_name = :query COLLATE NOCASE
-                            OR ou.identity_number = :query COLLATE NOCASE)) THEN 0
-                ELSE 1
-            END,
-        c.pin_time DESC, 
-        m.created_at DESC
+            (c.category = 'GROUP' AND c.name = :query COLLATE NOCASE) 
+                OR (c.category = 'CONTACT' AND ou.relationship != 'FRIEND' 
+                    AND (ou.full_name = :query COLLATE NOCASE
+                        OR ou.identity_number = :query COLLATE NOCASE)) DESC,
+            c.pin_time DESC, 
+            m.created_at DESC
         """)
     suspend fun fuzzySearchChat(query: String): List<ChatMinimal>
 
