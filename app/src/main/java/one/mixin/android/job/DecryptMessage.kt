@@ -307,19 +307,20 @@ class DecryptMessage : Injector() {
         when {
             data.category.endsWith("_TEXT") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_TEXT.name) String(Base64.decode(plainText)) else plainText
-                val content = processMentionMessageMention(plain, userDao)
-                val message = generateMessage(data) { quoteMessageItem ->
-                    if (quoteMessageItem == null) {
-                        createMessage(data.messageId, data.conversationId, data.userId, data.category, content, data.createdAt, data.status).apply {
-                            this.content?.findLastUrl()?.let { jobManager.addJobInBackground(ParseHyperlinkJob(it, data.messageId)) }
+                processMentionMessageMention(plain, data.messageId, data.conversationId, userDao, mentionMessageDao) { content ->
+                    val message = generateMessage(data) { quoteMessageItem ->
+                        if (quoteMessageItem == null) {
+                            createMessage(data.messageId, data.conversationId, data.userId, data.category, content, data.createdAt, data.status).apply {
+                                this.content?.findLastUrl()?.let { jobManager.addJobInBackground(ParseHyperlinkJob(it, data.messageId)) }
+                            }
+                        } else {
+                            createReplyTextMessage(data.messageId, data.conversationId, data.userId, data.category, content, data.createdAt, data.status,
+                                quoteMessageItem.messageId, quoteMessageItem.toJson())
                         }
-                    } else {
-                        createReplyTextMessage(data.messageId, data.conversationId, data.userId, data.category,
-                            content, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
                     }
+                    messageDao.insert(message)
+                    sendNotificationJob(message, data.source)
                 }
-                messageDao.insert(message)
-                sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_POST") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
