@@ -60,9 +60,9 @@ fun processMentionMessageMention(
 class MentionItem(val start: Int, val end: Int, val content: String)
 
 private val mentionPattern by lazy {
-    Pattern.compile("(?:^|\\s|\$)@(\\S|\\b)+(?:\\s|\$)")
+    Pattern.compile("@(\\S|\\b)+(?:\\s|\$)")
 }
 
 private val mentionNumberPattern by lazy {
-    Pattern.compile("(?:^|\\s|\$)@[0-9]+(?:\\s|\$)")
+    Pattern.compile("@[0-9]+(?:\\s|\$)")
 }
