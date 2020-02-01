@@ -48,9 +48,9 @@ internal constructor(
         } else {
             val escapedQuery = query.trim().escapeSql()
             when (T::class) {
-                AssetItem::class -> assetRepository.fuzzySearchAsset("%$escapedQuery%")
-                User::class -> userRepository.fuzzySearchUser("%$escapedQuery%")
-                ChatMinimal::class -> conversationRepository.fuzzySearchChat("%$escapedQuery%")
+                AssetItem::class -> assetRepository.fuzzySearchAsset(escapedQuery)
+                User::class -> userRepository.fuzzySearchUser(escapedQuery)
+                ChatMinimal::class -> conversationRepository.fuzzySearchChat(escapedQuery)
                 else -> messageControlledRunner.cancelPreviousThenRun {
                     conversationRepository.fuzzySearchMessage(escapedQuery, limit)
                 }

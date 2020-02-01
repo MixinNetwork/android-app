@@ -43,8 +43,17 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
     fun findContactByConversationId(conversationId: String): User?
 
-    @Query("SELECT * FROM users WHERE user_id != :id AND relationship = 'FRIEND' AND (full_name LIKE :username" + ESCAPE_SUFFIX + "OR " +
-        "identity_number like :identityNumber" + ESCAPE_SUFFIX + ")")
+    @Query("""
+        SELECT * FROM users 
+        WHERE user_id != :id 
+        AND relationship = 'FRIEND' 
+        AND (full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
+        ORDER BY 
+            CASE 
+                WHEN full_name = :username COLLATE NOCASE OR identity_number = :identityNumber COLLATE NOCASE THEN 0
+                ELSE 1
+            END
+        """)
     suspend fun fuzzySearchUser(username: String, identityNumber: String, id: String): List<User>
 
     @Query("UPDATE users SET relationship = :relationship WHERE user_id = :id")
