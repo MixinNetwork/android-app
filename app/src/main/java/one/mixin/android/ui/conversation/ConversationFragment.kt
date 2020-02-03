@@ -137,6 +137,8 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.util.mention.mentionDisplay
+import one.mixin.android.util.mention.mentionReplace
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
@@ -669,8 +671,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         MentionAdapter(object : OnUserClickListener {
             @SuppressLint("SetTextI18n")
             override fun onUserClick(fullName: String) {
-                val text = chat_control.chat_et.text
-                chat_control.chat_et.text = text?.append("${fullName.replace(" ","\b")} ")
+                val text = chat_control.chat_et.text ?: return
+                chat_control.chat_et.setText(mentionReplace(text.toString(), fullName))
                 chat_control.chat_et.setSelection(chat_control.chat_et.text!!.length)
                 mentionAdapter.submitList(null)
                 floating_layout.hideMention()
@@ -1679,9 +1681,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 mentionAdapter.list = users
                 val text = chat_control.chat_et.text ?: return@Observer
-                if (mention_rv.isGone && !text.isEmpty() && text.last() == '@') {
+                if (mention_rv.isGone && text.isNotEmpty() && mentionDisplay(text)) {
                     submitMentionList(text.toString())
                     floating_layout.showMention()
+                } else {
+                    floating_layout.hideMention()
                 }
             })
     }
@@ -2401,7 +2405,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             if (isGroup) {
                 mentionAdapter.keyword = s?.toString()
-                if (mention_rv.adapter != null && !s.isNullOrEmpty() && s.last() == '@') {
+                if (mention_rv.adapter != null && !s.isNullOrEmpty() && mentionDisplay(s)) {
                     val targetList = submitMentionList(s.toString())
                     if (mention_rv.isGone) {
                         floating_layout.showMention()
@@ -2409,6 +2413,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         floating_layout.animate2RightHeight(targetList?.size ?: 0)
                     }
                     mention_rv.layoutManager?.smoothScrollToPosition(mention_rv, null, 0)
+                } else {
+                    floating_layout.hideMention()
                 }
             }
         }

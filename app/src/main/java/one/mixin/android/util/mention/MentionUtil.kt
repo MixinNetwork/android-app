@@ -8,7 +8,13 @@ import one.mixin.android.vo.User
 import org.jetbrains.anko.collections.forEachReversedByIndex
 import timber.log.Timber
 
-fun parseMention(text: String?, messageId: String, conversationId: String, userDao: UserDao, mentionMessageDao: MentionMessageDao): String? {
+fun parseMention(
+    text: String?,
+    messageId: String,
+    conversationId: String,
+    userDao: UserDao,
+    mentionMessageDao: MentionMessageDao
+): String? {
     var result = text ?: return null
     val matcher = mentionPattern.matcher(text)
     val mentions = mutableListOf<MentionItem>()
@@ -27,6 +33,7 @@ fun parseMention(text: String?, messageId: String, conversationId: String, userD
     }
     return result
 }
+
 fun processMentionMessageMention(
     text: String,
     messageId: String,
@@ -43,7 +50,7 @@ fun processMentionMessageMention(
         val identityNumber = matcher.group().replace("@", "").replace(" ", "")
         val user = userDao.findUSerByIdentityNumber(identityNumber)
         user?.let { u ->
-            mentions.add(MentionItem(matcher.start(), matcher.end(), " @${u.fullName?.replace(" ","\b")} "))
+            mentions.add(MentionItem(matcher.start(), matcher.end(), " @${u.fullName?.replace(" ", "\b")} "))
         }
         users.add(user)
     }
@@ -57,6 +64,19 @@ fun processMentionMessageMention(
     }
 }
 
+fun mentionDisplay(string: CharSequence): Boolean {
+    val matcher = mentionEndPattern.matcher(string)
+    return matcher.find()
+}
+
+fun mentionReplace(source: String, fullName: String): String {
+    return when (val index = source.lastIndexOf("@")) {
+        -1 -> source
+        0 -> "@${fullName.replace(" ", "\b")}"
+        else -> "${source.substring(0, index)} @${fullName.replace(" ", "\b")} "
+    }
+}
+
 class MentionItem(val start: Int, val end: Int, val content: String)
 
 private val mentionPattern by lazy {
@@ -65,4 +85,8 @@ private val mentionPattern by lazy {
 
 private val mentionNumberPattern by lazy {
     Pattern.compile("@[0-9]+(?:\\s|\$)")
+}
+
+private val mentionEndPattern by lazy {
+    Pattern.compile("(?:\\s|^)@(\\S)*\$")
 }
