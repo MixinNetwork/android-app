@@ -46,7 +46,7 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.asset_key_as_tv.text = asset.assetKey
         contentView.asset_key_as_tv.setOnLongClickListener {
             requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, asset.assetKey))
-            requireContext().toast(R.string.copy_success)
+            requireContext().toast(R.string.wallet_transactions_copy_tip)
             return@setOnLongClickListener true
         }
     }
