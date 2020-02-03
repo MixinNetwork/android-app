@@ -366,6 +366,7 @@
     <string name="wallet_add_asset_already">Asset already added</string>
     <string name="wallet_biometric_invalid">Invalid biometrics state, please reset in wallet setting.</string>
     <string name="wallet_setting_currency_desc" translatable="false">%1$s (%2$s)</string>
+    <string name="wallet_transactions_copy_tip">Copy to clipboard. Warning: this is NOT the deposit address.</string>
     <!--pin logs-->
     <string name="pin_logs">View PIN Incorrect Logs</string>
     <string name="pin_verification">Verify</string>
