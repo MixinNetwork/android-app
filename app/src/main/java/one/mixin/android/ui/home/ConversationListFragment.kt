@@ -14,6 +14,7 @@ import android.view.animation.BounceInterpolator
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -31,16 +32,21 @@ import javax.inject.Inject
 import kotlin.math.min
 import kotlinx.android.synthetic.main.fragment_conversation_list.*
 import kotlinx.android.synthetic.main.item_list_conversation.view.*
+import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
+import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
 import one.mixin.android.R
 import one.mixin.android.extension.animateHeight
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putLong
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.vibrate
@@ -78,7 +84,13 @@ class ConversationListFragment : LinkFragment() {
         ViewModelProvider(this, viewModelFactory).get(ConversationListViewModel::class.java)
     }
 
-    private val messageAdapter by lazy { MessageAdapter() }
+    private val messageAdapter by lazy {
+        MessageAdapter({
+            requireContext().openNotificationSetting()
+        }, {
+            requireContext().defaultSharedPreferences.putLong(PREF_NOTIFICATION_ON, System.currentTimeMillis())
+        })
+    }
 
     private var distance = 0
     private var shadowVisible = true
@@ -188,7 +200,8 @@ class ConversationListFragment : LinkFragment() {
 
             override fun click(position: Int, conversation: ConversationItem) {
                 if (conversation.isGroup() && (conversation.status == ConversationStatus.START.ordinal ||
-                        conversation.status == ConversationStatus.FAILURE.ordinal)) {
+                        conversation.status == ConversationStatus.FAILURE.ordinal)
+                ) {
                     if (!requireContext().networkConnected()) {
                         context?.toast(R.string.error_network)
                         return
@@ -236,13 +249,19 @@ class ConversationListFragment : LinkFragment() {
         val isMute = conversationItem.isMute()
         val hasPin = conversationItem.pinTime != null
         val builder = BottomSheet.Builder(requireActivity())
-        val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_conversation_bottom, null)
+        val view = View.inflate(
+            ContextThemeWrapper(requireActivity(), R.style.Custom),
+            R.layout.view_conversation_bottom,
+            null
+        )
         builder.setCustomView(view)
-        view.mute_tv.setText(if (isMute) {
-            R.string.un_mute
-        } else {
-            R.string.mute
-        })
+        view.mute_tv.setText(
+            if (isMute) {
+                R.string.un_mute
+            } else {
+                R.string.mute
+            }
+        )
         val bottomSheet = builder.create()
         view.mute_tv.setOnClickListener {
             if (isMute) {
@@ -264,7 +283,8 @@ class ConversationListFragment : LinkFragment() {
                     val lastCompleteVisibleItem = lm.findLastCompletelyVisibleItemPosition()
                     val firstCompleteVisibleItem = lm.findFirstCompletelyVisibleItemPosition()
                     if (lastCompleteVisibleItem - firstCompleteVisibleItem <= messageAdapter.itemCount &&
-                        lm.findFirstVisibleItemPosition() == 0) {
+                        lm.findFirstVisibleItemPosition() == 0
+                    ) {
                         shadow_view.animate().translationY(0f).duration = 200
                     }
                     messagesViewModel.deleteConversation(conversationId)
@@ -289,35 +309,78 @@ class ConversationListFragment : LinkFragment() {
         bottomSheet.show()
     }
 
-    class MessageAdapter() : RecyclerView.Adapter<MessageHolder>() {
+    override fun onResume() {
+        super.onResume()
+        val notificationTime = requireContext().defaultSharedPreferences.getLong(PREF_NOTIFICATION_ON, 0)
+        if (System.currentTimeMillis() - notificationTime > 86400000) { // 24 hours
+            messageAdapter.showHeader = !NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()
+        } else {
+            messageAdapter.showHeader = false
+        }
+    }
+
+    class MessageAdapter(val settingAction: () -> Unit, val closeAction: () -> Unit) :
+        RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+        var showHeader = false
+            set(value) {
+                if (field != value) {
+                    field = value
+                    notifyDataSetChanged()
+                }
+            }
 
         var conversations: List<ConversationItem>? = null
 
         var onItemClickListener: OnItemClickListener? = null
 
+        private fun getRealPosition(position: Int): Int {
+            return if (showHeader) {
+                position - 1
+            } else {
+                position
+            }
+        }
+
         fun setConversationList(newConversations: List<ConversationItem>) {
             if (conversations == null) {
                 conversations = newConversations
-                notifyItemRangeInserted(0, newConversations.size)
+                notifyItemRangeInserted(
+                    0, newConversations.size + if (showHeader) {
+                        1
+                    } else {
+                        0
+                    }
+                )
             } else {
                 val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
                     override fun getOldListSize(): Int {
-                        return conversations!!.size
+                        return conversations!!.size + +if (showHeader) {
+                            1
+                        } else {
+                            0
+                        }
                     }
 
                     override fun getNewListSize(): Int {
-                        return newConversations.size
+                        return newConversations.size + if (showHeader) {
+                            1
+                        } else {
+                            0
+                        }
                     }
 
                     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                        val old = conversations!![oldItemPosition]
-                        val newItem = newConversations[newItemPosition]
+                        if (showHeader && (newItemPosition == 0 || oldItemPosition == 0)) return false
+                        val old = conversations!![getRealPosition(oldItemPosition)]
+                        val newItem = newConversations[getRealPosition(newItemPosition)]
                         return old.conversationId == newItem.conversationId
                     }
 
                     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                        val old = conversations!![oldItemPosition]
-                        val newItem = newConversations[newItemPosition]
+                        if (showHeader && (newItemPosition == 0 || oldItemPosition == 0)) return false
+                        val old = conversations!![getRealPosition(oldItemPosition)]
+                        val newItem = newConversations[getRealPosition(newItemPosition)]
                         return old == newItem
                     }
                 })
@@ -326,15 +389,68 @@ class ConversationListFragment : LinkFragment() {
             }
         }
 
-        override fun onBindViewHolder(holder: MessageHolder, position: Int) {
-            holder.bind(onItemClickListener, position, conversations!![position])
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            if (position > 0) {
+                (holder as MessageHolder).bind(
+                    onItemClickListener,
+                    position,
+                    conversations!![getRealPosition(position)]
+                )
+            }
         }
 
-        override fun getItemCount() = conversations?.size ?: 0
+        override fun getItemCount() = conversations.notNullWithElse(
+            {
+                it.size + if (showHeader) {
+                    1
+                } else {
+                    0
+                }
+            }, if (showHeader) {
+                1
+            } else {
+                0
+            }
+        )
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageHolder =
-            MessageHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_list_conversation, parent, false))
+        override fun getItemViewType(position: Int): Int {
+            return if (showHeader && position == 0) {
+                1
+            } else {
+                0
+            }
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            return if (viewType == 0) {
+                MessageHolder(
+                    LayoutInflater.from(parent.context).inflate(
+                        R.layout.item_list_conversation,
+                        parent,
+                        false
+                    )
+                )
+            } else {
+                HeaderHolder(
+                    LayoutInflater.from(parent.context).inflate(
+                        R.layout.item_list_conversation_header,
+                        parent,
+                        false
+                    )
+                ).apply {
+                    itemView.header_close.setOnClickListener {
+                        showHeader = false
+                        closeAction()
+                    }
+                    itemView.header_settings.setOnClickListener {
+                        settingAction()
+                    }
+                }
+            }
+        }
     }
+
+    class HeaderHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView)
 
     class MessageHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView) {
         var context: Context = itemView.context
@@ -446,16 +562,19 @@ class ConversationListFragment : LinkFragment() {
                     when (conversationItem.actionName) {
                         SystemConversationAction.CREATE.name -> {
                             itemView.msg_tv.text =
-                                String.format(getText(R.string.chat_group_create),
+                                String.format(
+                                    getText(R.string.chat_group_create),
                                     if (id == conversationItem.senderId) {
                                         getText(R.string.chat_you_start)
                                     } else {
                                         conversationItem.name
-                                    }, conversationItem.groupName)
+                                    }, conversationItem.groupName
+                                )
                         }
                         SystemConversationAction.ADD.name -> {
                             itemView.msg_tv.text =
-                                String.format(getText(R.string.chat_group_add),
+                                String.format(
+                                    getText(R.string.chat_group_add),
                                     if (id == conversationItem.senderId) {
                                         getText(R.string.chat_you_start)
                                     } else {
@@ -465,11 +584,13 @@ class ConversationListFragment : LinkFragment() {
                                         getText(R.string.chat_you)
                                     } else {
                                         conversationItem.participantFullName
-                                    })
+                                    }
+                                )
                         }
                         SystemConversationAction.REMOVE.name -> {
                             itemView.msg_tv.text =
-                                String.format(getText(R.string.chat_group_remove),
+                                String.format(
+                                    getText(R.string.chat_group_remove),
                                     if (id == conversationItem.senderId) {
                                         getText(R.string.chat_you_start)
                                     } else {
@@ -479,25 +600,30 @@ class ConversationListFragment : LinkFragment() {
                                         getText(R.string.chat_you)
                                     } else {
                                         conversationItem.participantFullName
-                                    })
+                                    }
+                                )
                         }
                         SystemConversationAction.JOIN.name -> {
                             itemView.msg_tv.text =
-                                String.format(getText(R.string.chat_group_join),
+                                String.format(
+                                    getText(R.string.chat_group_join),
                                     if (id == conversationItem.participantUserId) {
                                         getText(R.string.chat_you_start)
                                     } else {
                                         conversationItem.participantFullName
-                                    })
+                                    }
+                                )
                         }
                         SystemConversationAction.EXIT.name -> {
                             itemView.msg_tv.text =
-                                String.format(getText(R.string.chat_group_exit),
+                                String.format(
+                                    getText(R.string.chat_group_exit),
                                     if (id == conversationItem.participantUserId) {
                                         getText(R.string.chat_you_start)
                                     } else {
                                         conversationItem.participantFullName
-                                    })
+                                    }
+                                )
                         }
                         SystemConversationAction.ROLE.name -> {
                             itemView.msg_tv.text = getText(R.string.group_role)
@@ -523,14 +649,22 @@ class ConversationListFragment : LinkFragment() {
                 !conversationItem.isCallMessage() && !conversationItem.isRecall()
             ) {
                 when (conversationItem.messageStatus) {
-                    MessageStatus.SENDING.name -> AppCompatResources.getDrawable(itemView.context,
-                        R.drawable.ic_status_sending)
-                    MessageStatus.SENT.name -> AppCompatResources.getDrawable(itemView.context,
-                        R.drawable.ic_status_sent_large)
-                    MessageStatus.DELIVERED.name -> AppCompatResources.getDrawable(itemView.context,
-                        R.drawable.ic_status_delivered)
-                    MessageStatus.READ.name -> AppCompatResources.getDrawable(itemView.context,
-                        R.drawable.ic_status_read_dark)
+                    MessageStatus.SENDING.name -> AppCompatResources.getDrawable(
+                        itemView.context,
+                        R.drawable.ic_status_sending
+                    )
+                    MessageStatus.SENT.name -> AppCompatResources.getDrawable(
+                        itemView.context,
+                        R.drawable.ic_status_sent_large
+                    )
+                    MessageStatus.DELIVERED.name -> AppCompatResources.getDrawable(
+                        itemView.context,
+                        R.drawable.ic_status_delivered
+                    )
+                    MessageStatus.READ.name -> AppCompatResources.getDrawable(
+                        itemView.context,
+                        R.drawable.ic_status_read_dark
+                    )
                     else -> {
                         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sending)
                     }
@@ -580,8 +714,10 @@ class ConversationListFragment : LinkFragment() {
             if (conversationItem.isGroup()) {
                 itemView.avatar_iv.setGroup(conversationItem.iconUrl())
             } else {
-                itemView.avatar_iv.setInfo(conversationItem.getConversationName(),
-                    conversationItem.iconUrl(), conversationItem.ownerId)
+                itemView.avatar_iv.setInfo(
+                    conversationItem.getConversationName(),
+                    conversationItem.iconUrl(), conversationItem.ownerId
+                )
             }
             itemView.setOnClickListener { onItemClickListener?.click(position, conversationItem) }
             itemView.setOnLongClickListener {
@@ -601,9 +737,11 @@ class ConversationListFragment : LinkFragment() {
     }
 
     private fun showMuteDialog(conversationItem: ConversationItem) {
-        val choices = arrayOf(getString(R.string.contact_mute_8hours),
+        val choices = arrayOf(
+            getString(R.string.contact_mute_8hours),
             getString(R.string.contact_mute_1week),
-            getString(R.string.contact_mute_1year))
+            getString(R.string.contact_mute_1year)
+        )
         var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
         var whichItem = 0
         AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)

@@ -379,6 +379,23 @@ fun Context.openPermissionSetting() {
     toast(R.string.error_permission)
 }
 
+fun Context.openNotificationSetting() {
+    try {
+        val intent = Intent()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            intent.action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+            intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+        } else {
+            intent.action = "android.settings.APP_NOTIFICATION_SETTINGS"
+        }
+        intent.putExtra("app_package", packageName)
+        intent.putExtra("app_uid", applicationInfo.uid)
+        startActivity(intent)
+    } catch (e: Exception) {
+        Timber.e(e)
+    }
+}
+
 fun Fragment.selectDocument() {
     selectMediaType("*/*", arrayOf("*/*"), REQUEST_FILE)
 }

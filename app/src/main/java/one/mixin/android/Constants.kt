@@ -40,6 +40,7 @@ object Constants {
         const val PREF_FIAT_MAP = "pref_fiat_map"
         const val PREF_SET_LANGUAGE = "pref_set_language"
         const val PREF_LANGUAGE = "pref_language"
+        const val PREF_NOTIFICATION_ON = "pref_notification_on"
     }
 
     object Scheme {
