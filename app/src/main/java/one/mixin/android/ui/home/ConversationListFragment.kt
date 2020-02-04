@@ -36,6 +36,7 @@ import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
 import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
+import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.R
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.defaultSharedPreferences
@@ -249,19 +250,13 @@ class ConversationListFragment : LinkFragment() {
         val isMute = conversationItem.isMute()
         val hasPin = conversationItem.pinTime != null
         val builder = BottomSheet.Builder(requireActivity())
-        val view = View.inflate(
-            ContextThemeWrapper(requireActivity(), R.style.Custom),
-            R.layout.view_conversation_bottom,
-            null
-        )
+        val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_conversation_bottom, null)
         builder.setCustomView(view)
-        view.mute_tv.setText(
-            if (isMute) {
-                R.string.un_mute
-            } else {
-                R.string.mute
-            }
-        )
+        view.mute_tv.setText(if (isMute) {
+            R.string.un_mute
+        } else {
+            R.string.mute
+        })
         val bottomSheet = builder.create()
         view.mute_tv.setOnClickListener {
             if (isMute) {
@@ -283,8 +278,7 @@ class ConversationListFragment : LinkFragment() {
                     val lastCompleteVisibleItem = lm.findLastCompletelyVisibleItemPosition()
                     val firstCompleteVisibleItem = lm.findFirstCompletelyVisibleItemPosition()
                     if (lastCompleteVisibleItem - firstCompleteVisibleItem <= messageAdapter.itemCount &&
-                        lm.findFirstVisibleItemPosition() == 0
-                    ) {
+                        lm.findFirstVisibleItemPosition() == 0) {
                         shadow_view.animate().translationY(0f).duration = 200
                     }
                     messagesViewModel.deleteConversation(conversationId)
@@ -312,7 +306,7 @@ class ConversationListFragment : LinkFragment() {
     override fun onResume() {
         super.onResume()
         val notificationTime = requireContext().defaultSharedPreferences.getLong(PREF_NOTIFICATION_ON, 0)
-        if (System.currentTimeMillis() - notificationTime > 86400000) { // 24 hours
+        if (System.currentTimeMillis() - notificationTime > INTERVAL_24_HOURS) {
             messageAdapter.showHeader = !NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()
         } else {
             messageAdapter.showHeader = false
@@ -346,28 +340,16 @@ class ConversationListFragment : LinkFragment() {
             if (conversations == null) {
                 conversations = newConversations
                 notifyItemRangeInserted(
-                    0, newConversations.size + if (showHeader) {
-                        1
-                    } else {
-                        0
-                    }
+                    0, newConversations.size + getOffset()
                 )
             } else {
                 val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
                     override fun getOldListSize(): Int {
-                        return conversations!!.size + +if (showHeader) {
-                            1
-                        } else {
-                            0
-                        }
+                        return conversations!!.size + getOffset()
                     }
 
                     override fun getNewListSize(): Int {
-                        return newConversations.size + if (showHeader) {
-                            1
-                        } else {
-                            0
-                        }
+                        return newConversations.size + getOffset()
                     }
 
                     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
@@ -399,19 +381,7 @@ class ConversationListFragment : LinkFragment() {
             }
         }
 
-        override fun getItemCount() = conversations.notNullWithElse(
-            {
-                it.size + if (showHeader) {
-                    1
-                } else {
-                    0
-                }
-            }, if (showHeader) {
-                1
-            } else {
-                0
-            }
-        )
+        override fun getItemCount() = conversations.notNullWithElse({ it.size + getOffset() }, getOffset())
 
         override fun getItemViewType(position: Int): Int {
             return if (showHeader && position == 0) {
@@ -448,6 +418,8 @@ class ConversationListFragment : LinkFragment() {
                 }
             }
         }
+
+        private fun getOffset(): Int { return if (showHeader) { 1 } else { 0 } }
     }
 
     class HeaderHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView)
@@ -562,19 +534,16 @@ class ConversationListFragment : LinkFragment() {
                     when (conversationItem.actionName) {
                         SystemConversationAction.CREATE.name -> {
                             itemView.msg_tv.text =
-                                String.format(
-                                    getText(R.string.chat_group_create),
+                                String.format(getText(R.string.chat_group_create),
                                     if (id == conversationItem.senderId) {
                                         getText(R.string.chat_you_start)
                                     } else {
                                         conversationItem.name
-                                    }, conversationItem.groupName
-                                )
+                                    }, conversationItem.groupName)
                         }
                         SystemConversationAction.ADD.name -> {
                             itemView.msg_tv.text =
-                                String.format(
-                                    getText(R.string.chat_group_add),
+                                String.format(getText(R.string.chat_group_add),
                                     if (id == conversationItem.senderId) {
                                         getText(R.string.chat_you_start)
                                     } else {
@@ -584,13 +553,11 @@ class ConversationListFragment : LinkFragment() {
                                         getText(R.string.chat_you)
                                     } else {
                                         conversationItem.participantFullName
-                                    }
-                                )
+                                    })
                         }
                         SystemConversationAction.REMOVE.name -> {
                             itemView.msg_tv.text =
-                                String.format(
-                                    getText(R.string.chat_group_remove),
+                                String.format(getText(R.string.chat_group_remove),
                                     if (id == conversationItem.senderId) {
                                         getText(R.string.chat_you_start)
                                     } else {
@@ -600,30 +567,25 @@ class ConversationListFragment : LinkFragment() {
                                         getText(R.string.chat_you)
                                     } else {
                                         conversationItem.participantFullName
-                                    }
-                                )
+                                    })
                         }
                         SystemConversationAction.JOIN.name -> {
                             itemView.msg_tv.text =
-                                String.format(
-                                    getText(R.string.chat_group_join),
+                                String.format(getText(R.string.chat_group_join),
                                     if (id == conversationItem.participantUserId) {
                                         getText(R.string.chat_you_start)
                                     } else {
                                         conversationItem.participantFullName
-                                    }
-                                )
+                                    })
                         }
                         SystemConversationAction.EXIT.name -> {
                             itemView.msg_tv.text =
-                                String.format(
-                                    getText(R.string.chat_group_exit),
+                                String.format(getText(R.string.chat_group_exit),
                                     if (id == conversationItem.participantUserId) {
                                         getText(R.string.chat_you_start)
                                     } else {
                                         conversationItem.participantFullName
-                                    }
-                                )
+                                    })
                         }
                         SystemConversationAction.ROLE.name -> {
                             itemView.msg_tv.text = getText(R.string.group_role)
@@ -649,22 +611,14 @@ class ConversationListFragment : LinkFragment() {
                 !conversationItem.isCallMessage() && !conversationItem.isRecall()
             ) {
                 when (conversationItem.messageStatus) {
-                    MessageStatus.SENDING.name -> AppCompatResources.getDrawable(
-                        itemView.context,
-                        R.drawable.ic_status_sending
-                    )
-                    MessageStatus.SENT.name -> AppCompatResources.getDrawable(
-                        itemView.context,
-                        R.drawable.ic_status_sent_large
-                    )
-                    MessageStatus.DELIVERED.name -> AppCompatResources.getDrawable(
-                        itemView.context,
-                        R.drawable.ic_status_delivered
-                    )
-                    MessageStatus.READ.name -> AppCompatResources.getDrawable(
-                        itemView.context,
-                        R.drawable.ic_status_read_dark
-                    )
+                    MessageStatus.SENDING.name -> AppCompatResources.getDrawable(itemView.context,
+                        R.drawable.ic_status_sending)
+                    MessageStatus.SENT.name -> AppCompatResources.getDrawable(itemView.context,
+                        R.drawable.ic_status_sent_large)
+                    MessageStatus.DELIVERED.name -> AppCompatResources.getDrawable(itemView.context,
+                        R.drawable.ic_status_delivered)
+                    MessageStatus.READ.name -> AppCompatResources.getDrawable(itemView.context,
+                        R.drawable.ic_status_read_dark)
                     else -> {
                         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sending)
                     }
@@ -714,10 +668,8 @@ class ConversationListFragment : LinkFragment() {
             if (conversationItem.isGroup()) {
                 itemView.avatar_iv.setGroup(conversationItem.iconUrl())
             } else {
-                itemView.avatar_iv.setInfo(
-                    conversationItem.getConversationName(),
-                    conversationItem.iconUrl(), conversationItem.ownerId
-                )
+                itemView.avatar_iv.setInfo(conversationItem.getConversationName(),
+                    conversationItem.iconUrl(), conversationItem.ownerId)
             }
             itemView.setOnClickListener { onItemClickListener?.click(position, conversationItem) }
             itemView.setOnLongClickListener {
@@ -737,11 +689,9 @@ class ConversationListFragment : LinkFragment() {
     }
 
     private fun showMuteDialog(conversationItem: ConversationItem) {
-        val choices = arrayOf(
-            getString(R.string.contact_mute_8hours),
+        val choices = arrayOf(getString(R.string.contact_mute_8hours),
             getString(R.string.contact_mute_1week),
-            getString(R.string.contact_mute_1year)
-        )
+            getString(R.string.contact_mute_1year))
         var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
         var whichItem = 0
         AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
