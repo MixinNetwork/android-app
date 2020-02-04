@@ -246,16 +246,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun shouldShowTransferTip(): Boolean {
-        if (currentAsset == null) return false
-        return try {
-            val amount = BigDecimal(getAmount()).toDouble() * currentAsset!!.priceUsd.toDouble()
-            amount >= (Session.getAccount()!!.transferConfirmationThreshold)
-        } catch (e: NumberFormatException) {
-            false
-        }
-    }
-
     private fun shouldShowWithdrawalTip(): Boolean {
         if (currentAsset == null && address == null) return false
 

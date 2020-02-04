@@ -3,6 +3,7 @@ package one.mixin.android.ui.common.biometric
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.view.postDelayed
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
@@ -24,6 +25,7 @@ import one.mixin.android.util.getMixinErrorStringByCode
 
 abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var biometricDialog: BiometricDialog? = null
+    private var dismissRunnable: Runnable? = null
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -40,6 +42,11 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         if (requestCode == BiometricUtil.REQUEST_CODE_CREDENTIALS && resultCode == Activity.RESULT_OK) {
             showBiometricPrompt()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        contentView.removeCallbacks(dismissRunnable)
     }
 
     abstract fun getBiometricInfo(): BiometricInfo
@@ -65,6 +72,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     protected fun showDone() {
         if (!isAdded) return
         contentView.biometric_layout.showDone()
+        dismissRunnable = contentView.postDelayed(3000) {
+            dismiss()
+        }
     }
 
     private fun showBiometricPrompt() {
