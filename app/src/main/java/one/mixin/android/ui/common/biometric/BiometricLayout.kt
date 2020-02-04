@@ -109,6 +109,11 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         })
     }
 
+    fun showDone() {
+        displayedChild = POS_DONE
+        keyboard?.animateHeight(keyboardHeight, 0)
+    }
+
     fun showPb() {
         displayedChild = POS_PB
     }
@@ -210,5 +215,6 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         const val POS_PIN = 0
         const val POS_PB = 1
         const val POS_ERROR = 2
+        const val POS_DONE = 3
     }
 }

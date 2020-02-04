@@ -110,7 +110,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         }
     }
 
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String) {
+    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
         lifecycleScope.launch {
             if (type == ADD || type == MODIFY) {
                 bottomViewModel.saveAddr(response.data as Address)
@@ -121,6 +121,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             callback?.onSuccess()
             dismiss()
         }
+        return true
     }
 
     private fun getTitle() = getString(when (type) {
