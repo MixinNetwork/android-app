@@ -14,6 +14,7 @@ import android.view.animation.BounceInterpolator
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -31,16 +32,22 @@ import javax.inject.Inject
 import kotlin.math.min
 import kotlinx.android.synthetic.main.fragment_conversation_list.*
 import kotlinx.android.synthetic.main.item_list_conversation.view.*
+import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
+import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
+import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.R
 import one.mixin.android.extension.animateHeight
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putLong
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.vibrate
@@ -78,7 +85,13 @@ class ConversationListFragment : LinkFragment() {
         ViewModelProvider(this, viewModelFactory).get(ConversationListViewModel::class.java)
     }
 
-    private val messageAdapter by lazy { MessageAdapter() }
+    private val messageAdapter by lazy {
+        MessageAdapter({
+            requireContext().openNotificationSetting()
+        }, {
+            requireContext().defaultSharedPreferences.putLong(PREF_NOTIFICATION_ON, System.currentTimeMillis())
+        })
+    }
 
     private var distance = 0
     private var shadowVisible = true
@@ -188,7 +201,8 @@ class ConversationListFragment : LinkFragment() {
 
             override fun click(position: Int, conversation: ConversationItem) {
                 if (conversation.isGroup() && (conversation.status == ConversationStatus.START.ordinal ||
-                        conversation.status == ConversationStatus.FAILURE.ordinal)) {
+                        conversation.status == ConversationStatus.FAILURE.ordinal)
+                ) {
                     if (!requireContext().networkConnected()) {
                         context?.toast(R.string.error_network)
                         return
@@ -289,35 +303,66 @@ class ConversationListFragment : LinkFragment() {
         bottomSheet.show()
     }
 
-    class MessageAdapter() : RecyclerView.Adapter<MessageHolder>() {
+    override fun onResume() {
+        super.onResume()
+        val notificationTime = requireContext().defaultSharedPreferences.getLong(PREF_NOTIFICATION_ON, 0)
+        if (System.currentTimeMillis() - notificationTime > INTERVAL_24_HOURS) {
+            messageAdapter.showHeader = !NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()
+        } else {
+            messageAdapter.showHeader = false
+        }
+    }
+
+    class MessageAdapter(val settingAction: () -> Unit, val closeAction: () -> Unit) :
+        RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+        var showHeader = false
+            set(value) {
+                if (field != value) {
+                    field = value
+                    notifyDataSetChanged()
+                }
+            }
 
         var conversations: List<ConversationItem>? = null
 
         var onItemClickListener: OnItemClickListener? = null
 
+        private fun getRealPosition(position: Int): Int {
+            return if (showHeader) {
+                position - 1
+            } else {
+                position
+            }
+        }
+
         fun setConversationList(newConversations: List<ConversationItem>) {
             if (conversations == null) {
                 conversations = newConversations
-                notifyItemRangeInserted(0, newConversations.size)
+                notifyItemRangeInserted(
+                    0, newConversations.size + getOffset()
+                )
             } else {
                 val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
                     override fun getOldListSize(): Int {
-                        return conversations!!.size
+                        return conversations!!.size + getOffset()
                     }
 
                     override fun getNewListSize(): Int {
-                        return newConversations.size
+                        return newConversations.size + getOffset()
                     }
 
                     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                        val old = conversations!![oldItemPosition]
-                        val newItem = newConversations[newItemPosition]
+                        if (showHeader && (newItemPosition == 0 || oldItemPosition == 0)) return false
+                        val old = conversations!![getRealPosition(oldItemPosition)]
+                        val newItem = newConversations[getRealPosition(newItemPosition)]
                         return old.conversationId == newItem.conversationId
                     }
 
                     override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                        val old = conversations!![oldItemPosition]
-                        val newItem = newConversations[newItemPosition]
+                        if (showHeader && (newItemPosition == 0 || oldItemPosition == 0)) return false
+                        val old = conversations!![getRealPosition(oldItemPosition)]
+                        val newItem = newConversations[getRealPosition(newItemPosition)]
                         return old == newItem
                     }
                 })
@@ -326,15 +371,58 @@ class ConversationListFragment : LinkFragment() {
             }
         }
 
-        override fun onBindViewHolder(holder: MessageHolder, position: Int) {
-            holder.bind(onItemClickListener, position, conversations!![position])
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+            if (getItemViewType(position) == 0) {
+                (holder as MessageHolder).bind(
+                    onItemClickListener,
+                    position,
+                    conversations!![getRealPosition(position)]
+                )
+            }
         }
 
-        override fun getItemCount() = conversations?.size ?: 0
+        override fun getItemCount() = conversations.notNullWithElse({ it.size + getOffset() }, getOffset())
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageHolder =
-            MessageHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_list_conversation, parent, false))
+        override fun getItemViewType(position: Int): Int {
+            return if (showHeader && position == 0) {
+                1
+            } else {
+                0
+            }
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+            return if (viewType == 0) {
+                MessageHolder(
+                    LayoutInflater.from(parent.context).inflate(
+                        R.layout.item_list_conversation,
+                        parent,
+                        false
+                    )
+                )
+            } else {
+                HeaderHolder(
+                    LayoutInflater.from(parent.context).inflate(
+                        R.layout.item_list_conversation_header,
+                        parent,
+                        false
+                    )
+                ).apply {
+                    itemView.header_close.setOnClickListener {
+                        showHeader = false
+                        closeAction()
+                    }
+                    itemView.header_settings.setOnClickListener {
+                        settingAction()
+                    }
+                }
+            }
+        }
+
+        private fun getOffset(): Int { return if (showHeader) { 1 } else { 0 } }
     }
+
+    class HeaderHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView)
 
     class MessageHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView) {
         var context: Context = itemView.context
