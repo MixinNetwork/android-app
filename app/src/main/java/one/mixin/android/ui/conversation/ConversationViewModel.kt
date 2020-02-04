@@ -1066,6 +1066,6 @@ internal constructor(
         return null
     }
 
-    suspend fun suspendFindUserFromMentionMessageByMessageId(messageId: String, index: Int) =
-        conversationRepository.suspendFindUserFromMentionMessageByMessageId(messageId, index)
+    suspend fun suspendFindUserFromMentionMessageByMessageId(messageId: String, fullName: String?) =
+        conversationRepository.suspendFindUserFromMentionMessageByMessageId(messageId, fullName)
 }

@@ -16,8 +16,6 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
 
     private var autoLinkOnClickListener: ((AutoLinkMode, String) -> Unit)? = null
 
-    private var autoLinkMentionOnClickListener: ((AutoLinkMode, String, Int) -> Unit)? = null
-
     private var autoLinkModes: Array<out AutoLinkMode>? = null
 
     private var customRegex: String? = null
@@ -59,9 +57,6 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
                     autoLinkOnClickListener?.let {
                         it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText)
                     }
-                    autoLinkMentionOnClickListener?.let {
-                        it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText, autoLinkItem.index)
-                    }
                 }
             }
 
@@ -87,7 +82,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
             val regex = Utils.getRegexByAutoLinkMode(anAutoLinkMode, customRegex)
             val pattern = Pattern.compile(regex)
             val matcher = pattern.matcher(text)
-            var index = 0
+
             if (anAutoLinkMode == AutoLinkMode.MODE_PHONE) {
                 while (matcher.find()) {
                     if (matcher.group().length > MIN_PHONE_NUMBER_LENGTH)
@@ -103,8 +98,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
                         matcher.start(),
                         matcher.end(),
                         matcher.group(),
-                        anAutoLinkMode,
-                        index++))
+                        anAutoLinkMode))
                 }
             }
         }
@@ -161,10 +155,6 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
 
     fun setAutoLinkOnClickListener(autoLinkOnClickListener: (AutoLinkMode, String) -> Unit) {
         this.autoLinkOnClickListener = autoLinkOnClickListener
-    }
-
-    fun setAutoLinkMentionOnClickListener(autoLinkMentionOnClickListener: (AutoLinkMode, String, Int) -> Unit) {
-        this.autoLinkMentionOnClickListener = autoLinkMentionOnClickListener
     }
 
     fun enableUnderLine() {

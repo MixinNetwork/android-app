@@ -94,6 +94,6 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE identity_number =:identityNumber")
     fun findUSerByIdentityNumber(identityNumber: String): User?
 
-    @Query("SELECT u.* FROM users u WHERE u.user_id = (SELECT m.user_id FROM mention_message m WHERE m.message_id =:messageId LIMIT 1 OFFSET :i)")
-    suspend fun suspendFindUserFromMentionMessageByMessageId(messageId: String, i: Int): User?
+    @Query("SELECT u.* FROM users u WHERE u.user_id = (SELECT m.user_id FROM mention_message m WHERE m.message_id =:messageId AND full_name =:fullName)")
+    suspend fun suspendFindUserFromMentionMessageByMessageId(messageId: String, fullName: String?): User?
 }

@@ -22,6 +22,8 @@ class MentionMessage(
     val conversationId: String,
     @ColumnInfo(name = "user_id")
     val userId: String?,
+    @ColumnInfo(name = "full_name")
+    val fullName: String?,
     @SerializedName("has_read")
     @ColumnInfo(name = "has_read")
     val hasRead: Boolean = false,

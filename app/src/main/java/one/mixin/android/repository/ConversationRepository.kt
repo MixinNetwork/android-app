@@ -307,5 +307,5 @@ internal constructor(
 
     suspend fun getAnnouncementByConversationId(conversationId: String) = conversationDao.getAnnouncementByConversationId(conversationId)
 
-    suspend fun suspendFindUserFromMentionMessageByMessageId(messageId: String, index: Int): User? = userDao.suspendFindUserFromMentionMessageByMessageId(messageId, index)
+    suspend fun suspendFindUserFromMentionMessageByMessageId(messageId: String, fullName: String?): User? = userDao.suspendFindUserFromMentionMessageByMessageId(messageId, fullName)
 }

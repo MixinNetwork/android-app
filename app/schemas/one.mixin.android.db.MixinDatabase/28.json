@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 28,
-    "identityHash": "59876dfcd5b9aa79f8d435244c706a8f",
+    "identityHash": "b62f0482509a7f37bf2169b4269eb387",
     "entities": [
       {
         "tableName": "users",
@@ -1590,7 +1590,7 @@
       },
       {
         "tableName": "mention_message",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `user_id` TEXT, `has_read` INTEGER NOT NULL, `rid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`message_id`) REFERENCES `messages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `user_id` TEXT, `full_name` TEXT, `has_read` INTEGER NOT NULL, `rid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`message_id`) REFERENCES `messages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "messageId",
@@ -1607,6 +1607,12 @@
           {
             "fieldPath": "userId",
             "columnName": "user_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fullName",
+            "columnName": "full_name",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -1648,7 +1654,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '59876dfcd5b9aa79f8d435244c706a8f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b62f0482509a7f37bf2169b4269eb387')"
     ]
   }
 }

@@ -98,13 +98,13 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
             }
         }
 
-        itemView.chat_tv.setAutoLinkMentionOnClickListener { autoLinkMode, matchedText, index ->
+        itemView.chat_tv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlClick(matchedText)
                 }
                 AutoLinkMode.MODE_MENTION -> {
-                    onItemListener.onMentionClick(messageItem.messageId, index)
+                    onItemListener.onMentionClick(messageItem.messageId, matchedText.trim().substring(1).replace("\b", " "))
                 }
                 else -> {
                 }

@@ -1,12 +1,12 @@
 package one.mixin.android.util.mention
 
-import java.util.regex.Pattern
 import one.mixin.android.db.MentionMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.vo.MentionMessage
 import one.mixin.android.vo.User
 import org.jetbrains.anko.collections.forEachReversedByIndex
 import timber.log.Timber
+import java.util.regex.Pattern
 
 fun parseMention(
     text: String?,
@@ -25,7 +25,7 @@ fun parseMention(
         user?.let { u ->
             mentions.add(MentionItem(matcher.start(), matcher.end(), " @${u.identityNumber} "))
         }
-        mentionMessageDao.insert(MentionMessage(messageId, conversationId, user?.userId, true))
+        mentionMessageDao.insert(MentionMessage(messageId, conversationId, user?.userId, user?.fullName, true))
     }
 
     mentions.forEachReversedByIndex { item ->
@@ -60,7 +60,7 @@ fun processMentionMessageMention(
     }
     handlerMessage(result)
     users.forEach { u ->
-        mentionMessageDao.insert(MentionMessage(messageId, conversationId, u?.userId))
+        mentionMessageDao.insert(MentionMessage(messageId, conversationId, u?.userId, u?.fullName))
     }
 }
 
