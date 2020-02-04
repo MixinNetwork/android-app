@@ -27,7 +27,7 @@ object Constants {
         const val PREF_PIN_INTERVAL = "pref_pin_interval"
         const val PREF_PIN_ITERATOR = "pref_pin_iterator"
         const val PREF_CAMERA_TIP = "pref_camera_tip"
-        const val PREF_LOGOUT_COMPLETE = "pref_logout_complete"
+        const val PREF_LAST_USER_ID = "pref_last_user_id"
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_WRONG_TIME = "pref_wrong_time"
         const val PREF_FTS_UPGRADE = "pref_fts_upgrade"
