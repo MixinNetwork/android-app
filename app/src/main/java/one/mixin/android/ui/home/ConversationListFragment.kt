@@ -390,7 +390,7 @@ class ConversationListFragment : LinkFragment() {
         }
 
         override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-            if (position > 0) {
+            if (getItemViewType(position) == 0) {
                 (holder as MessageHolder).bind(
                     onItemClickListener,
                     position,
