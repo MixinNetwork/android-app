@@ -46,7 +46,10 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
     override fun onDestroyView() {
         super.onDestroyView()
-        contentView.removeCallbacks(dismissRunnable)
+        if (dismissRunnable != null) {
+            contentView.removeCallbacks(dismissRunnable)
+            callback?.onSuccess()
+        }
     }
 
     abstract fun getBiometricInfo(): BiometricInfo
@@ -73,7 +76,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         if (!isAdded) return
         contentView.biometric_layout.showDone()
         dismissRunnable = contentView.postDelayed(3000) {
+            dismissRunnable = null
             dismiss()
+            callback?.onSuccess()
         }
     }
 
@@ -115,8 +120,6 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             if (doWhenInvokeNetworkSuccess(response, pin)) {
                 dismiss()
                 callback?.onSuccess() ?: toast(R.string.successful)
-            } else {
-                callback?.onSuccess()
             }
         } else {
             contentView.biometric_layout?.let { layout ->
