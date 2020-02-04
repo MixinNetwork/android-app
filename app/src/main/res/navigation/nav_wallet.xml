@@ -72,6 +72,12 @@
             app:destination="@id/user_transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
+            android:id="@+id/action_transactions_to_address_management"
+            app:destination="@id/address_management_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
     </fragment>
 
     <fragment
@@ -185,5 +191,31 @@
             app:destination="@id/transaction_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/address_management_fragment"
+        android:name="one.mixin.android.ui.address.AddressManagementFragment"
+        tools:layout="@layout/fragment_address_management">
+
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.AssetItem"/>
+
+        <action
+            android:id="@+id/action_address_management_to_address_add"
+            app:destination="@id/address_add_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/address_add_fragment"
+        android:name="one.mixin.android.ui.address.AddressAddFragment"
+        tools:layout="@layout/fragment_address_add">
+
+        <argument
+            android:name="args_asset"
+            app:argType="one.mixin.android.vo.AssetItem"/>
     </fragment>
 </navigation>

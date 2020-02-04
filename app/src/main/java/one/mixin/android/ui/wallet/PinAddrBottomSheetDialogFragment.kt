@@ -118,8 +118,6 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
                 bottomViewModel.deleteLocalAddr(addressId!!)
             }
             contentView.biometric_layout.showPin(false)
-            callback?.onSuccess()
-            dismiss()
         }
         return true
     }

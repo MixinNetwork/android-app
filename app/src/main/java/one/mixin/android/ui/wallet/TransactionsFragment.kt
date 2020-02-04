@@ -36,7 +36,6 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.job.RefreshSnapshotsJob
-import one.mixin.android.ui.address.AddressActivity
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
@@ -254,7 +253,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }
         view.address.setOnClickListener {
             bottomSheet.dismiss()
-            AddressActivity.show(requireContext(), false, asset)
+            this@TransactionsFragment.view?.navigate(R.id.action_transactions_to_address_management,
+                Bundle().apply {
+                    putParcelable(ARGS_ASSET, asset)
+                })
         }
         view.send_cancel.setOnClickListener { bottomSheet.dismiss() }
 
