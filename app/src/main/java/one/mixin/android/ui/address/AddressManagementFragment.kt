@@ -17,7 +17,7 @@ import kotlinx.android.synthetic.main.fragment_address_management.*
 import kotlinx.android.synthetic.main.item_address.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.address.adapter.AddressAdapter
 import one.mixin.android.ui.address.adapter.ItemCallback
@@ -34,17 +34,6 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.SearchView
 
 class AddressManagementFragment : BaseFragment() {
-
-    companion object {
-        const val TAG = "AddressManagementFragment"
-
-        fun newInstance(asset: AssetItem) = AddressManagementFragment().apply {
-            val b = Bundle().apply {
-                putParcelable(ARGS_ASSET, asset)
-            }
-            arguments = b
-        }
-    }
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
@@ -67,12 +56,16 @@ class AddressManagementFragment : BaseFragment() {
         super.onActivityCreated(savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         title_view.right_animator.setOnClickListener {
-            activity?.addFragment(this@AddressManagementFragment,
-                AddressAddFragment.newInstance(asset), AddressAddFragment.TAG)
+            view?.navigate(R.id.action_address_management_to_address_add,
+                Bundle().apply {
+                    putParcelable(ARGS_ASSET, asset)
+                })
         }
         empty_tv.setOnClickListener {
-            activity?.addFragment(this@AddressManagementFragment,
-                AddressAddFragment.newInstance(asset), AddressAddFragment.TAG)
+            view?.navigate(R.id.action_address_management_to_address_add,
+                Bundle().apply {
+                    putParcelable(ARGS_ASSET, asset)
+                })
         }
         addressViewModel.addresses(asset.assetId).observe(viewLifecycleOwner, Observer {
             val list = it?.toMutableList()
@@ -101,8 +94,13 @@ class AddressManagementFragment : BaseFragment() {
 
             override fun onAddrClick(addr: Address) {
                 if (Session.getAccount()?.hasPin == true) {
-                    TransferFragment.newInstance(asset = asset, address = addr)
-                        .showNow(parentFragmentManager, TransferFragment.TAG)
+                    val transferFragment = TransferFragment.newInstance(asset = asset, address = addr)
+                    transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
+                    transferFragment.callback = object : TransferFragment.Callback {
+                        override fun onSuccess() {
+                            activity?.onBackPressed()
+                        }
+                    }
                 } else {
                     toast(R.string.transfer_without_pin)
                 }

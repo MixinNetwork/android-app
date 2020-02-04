@@ -34,7 +34,6 @@ import one.mixin.android.ui.qr.CaptureActivity.Companion.REQUEST_CODE
 import one.mixin.android.ui.qr.CaptureActivity.Companion.RESULT_CODE
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.ADD
-import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.ARGS_TYPE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
@@ -43,34 +42,13 @@ import one.mixin.android.vo.AssetItem
 import org.jetbrains.anko.textColor
 
 class AddressAddFragment : BaseFragment() {
-
     companion object {
-        const val TAG = "AddressAddFragment"
-
         const val ARGS_ADDRESS = "args_address"
-
-        fun newInstance(
-            asset: AssetItem,
-            address: Address? = null,
-            type: Int = ADD
-        ) = AddressAddFragment().apply {
-            val b = Bundle().apply {
-                putParcelable(ARGS_ASSET, asset)
-                address?.let { putParcelable(ARGS_ADDRESS, it) }
-                putInt(ARGS_TYPE, type)
-            }
-            arguments = b
-        }
     }
 
     private val asset: AssetItem by lazy {
         arguments!!.getParcelable<AssetItem>(ARGS_ASSET)!!
     }
-    private val address: Address? by lazy {
-        arguments!!.getParcelable<Address?>(ARGS_ADDRESS)
-    }
-
-    private val type: Int by lazy { arguments!!.getInt(ARGS_TYPE) }
     private var memoEnabled = true
 
     override fun onCreateView(
@@ -91,10 +69,7 @@ class AddressAddFragment : BaseFragment() {
             if (tag_et.isFocused) tag_et.hideKeyboard()
             activity?.onBackPressed()
         }
-        title_view.title_tv.text = getString(
-            if (type == ADD) R.string.withdrawal_addr_new
-            else R.string.withdrawal_addr_modify, asset.symbol
-        )
+        title_view.title_tv.text = getString(R.string.withdrawal_addr_new, asset.symbol)
         avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         save_tv.setOnClickListener {
@@ -118,7 +93,7 @@ class AddressAddFragment : BaseFragment() {
                     } else {
                         ""
                     },
-                    type = type
+                    type = ADD
                 )
 
             bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
@@ -138,12 +113,7 @@ class AddressAddFragment : BaseFragment() {
         addr_et.addTextChangedListener(mWatcher)
         tag_et.addTextChangedListener(mWatcher)
         addr_iv.setOnClickListener { handleClick(true) }
-        handleMemo(address)
-        address?.let {
-            label_et.setText(it.label)
-            addr_et.setText(it.destination)
-            title_view.title_tv.text = getString(R.string.withdrawal_addr_modify, asset.symbol)
-        }
+        handleMemo()
         label_et.showKeyboard()
     }
 

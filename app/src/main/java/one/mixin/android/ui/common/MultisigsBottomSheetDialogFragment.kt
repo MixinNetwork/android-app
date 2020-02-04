@@ -176,8 +176,11 @@ class MultisigsBottomSheetDialogFragment :
         }
     }
 
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String) {
+    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
         success = true
+
+        showDone()
+        return false
     }
 
     override fun onDismiss(dialog: DialogInterface) {

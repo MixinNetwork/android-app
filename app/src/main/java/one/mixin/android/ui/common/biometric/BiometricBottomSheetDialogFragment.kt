@@ -3,6 +3,7 @@ package one.mixin.android.ui.common.biometric
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.view.postDelayed
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
@@ -24,6 +25,7 @@ import one.mixin.android.util.getMixinErrorStringByCode
 
 abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var biometricDialog: BiometricDialog? = null
+    private var dismissRunnable: Runnable? = null
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -42,11 +44,22 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        if (dismissRunnable != null) {
+            contentView.removeCallbacks(dismissRunnable)
+            callback?.onSuccess()
+        }
+    }
+
     abstract fun getBiometricInfo(): BiometricInfo
 
     abstract suspend fun invokeNetwork(pin: String): MixinResponse<*>
 
-    abstract fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String)
+    /**
+     * @return Return true will dismiss the bottom sheet, otherwise do nothing.
+     */
+    abstract fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean
 
     protected fun showErrorInfo(
         content: String,
@@ -57,6 +70,16 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     ) {
         if (!isAdded) return
         contentView.biometric_layout.showErrorInfo(content, animate, tickMillis, errorAction, clickCallback)
+    }
+
+    protected fun showDone() {
+        if (!isAdded) return
+        contentView.biometric_layout.showDone()
+        dismissRunnable = contentView.postDelayed(3000) {
+            dismissRunnable = null
+            dismiss()
+            callback?.onSuccess()
+        }
     }
 
     private fun showBiometricPrompt() {
@@ -94,10 +117,10 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             )
             context?.updatePinCheck()
 
-            doWhenInvokeNetworkSuccess(response, pin)
-
-            dismiss()
-            callback?.onSuccess() ?: toast(R.string.successful)
+            if (doWhenInvokeNetworkSuccess(response, pin)) {
+                dismiss()
+                callback?.onSuccess() ?: toast(R.string.successful)
+            }
         } else {
             contentView.biometric_layout?.let { layout ->
                 layout.setErrorButton(layout.getErrorActionByErrorCode(response.errorCode))

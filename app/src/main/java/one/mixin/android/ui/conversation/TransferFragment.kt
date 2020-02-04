@@ -62,7 +62,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.ui.address.AddressActivity
 import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
@@ -120,7 +119,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     override fun onDismiss(dialog: DialogInterface) {
         if (isAdded) {
             operateKeyboard(false)
-            (activity as? AddressActivity)?.finish()
         }
         super.onDismiss(dialog)
     }
@@ -243,16 +241,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_CODE && resultCode == RESULT_CODE) {
             contentView.transfer_memo.setText(data?.getStringExtra(CaptureActivity.ARGS_MEMO_RESULT))
-        }
-    }
-
-    private fun shouldShowTransferTip(): Boolean {
-        if (currentAsset == null) return false
-        return try {
-            val amount = BigDecimal(getAmount()).toDouble() * currentAsset!!.priceUsd.toDouble()
-            amount >= (Session.getAccount()!!.transferConfirmationThreshold)
-        } catch (e: NumberFormatException) {
-            false
         }
     }
 
@@ -506,6 +494,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         bottom.callback = object : BiometricBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
                 dialog?.dismiss()
+                callback?.onSuccess()
             }
         }
         bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
@@ -604,4 +593,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
+    var callback: Callback? = null
+
+    interface Callback {
+        fun onSuccess()
+    }
 }
