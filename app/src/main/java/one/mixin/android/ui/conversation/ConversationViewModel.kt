@@ -64,6 +64,7 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
+import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
@@ -1068,4 +1069,18 @@ internal constructor(
 
     suspend fun suspendFindUserFromMentionMessageByMessageId(messageId: String, fullName: String?) =
         conversationRepository.suspendFindUserFromMentionMessageByMessageId(messageId, fullName)
+
+    private val searchControlledRunner = ControlledRunner<List<User>>()
+
+    suspend fun fuzzySearchUser(conversationId: String, keyword: String?): List<User> {
+        return withContext(Dispatchers.IO) {
+            searchControlledRunner.cancelPreviousThenRun {
+                if (keyword.isNullOrEmpty()) {
+                    userRepository.suspendGetGroupParticipants(conversationId)
+                } else {
+                    userRepository.fuzzySearchGroupUser(conversationId, keyword)
+                }
+            }
+        }
+    }
 }

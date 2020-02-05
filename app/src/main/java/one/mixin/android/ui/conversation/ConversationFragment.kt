@@ -138,6 +138,7 @@ import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.mention.mentionDisplay
+import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
@@ -1673,29 +1674,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                 }
             })
-        chatViewModel.getGroupUsersLiveData(conversationId)
-            .observe(viewLifecycleOwner, Observer { users ->
-                if (mention_rv.adapter == null) {
-                    mention_rv.adapter = mentionAdapter
-                    mention_rv.layoutManager = LinearLayoutManager(context)
-                }
-                mentionAdapter.list = users
-                val text = chat_control.chat_et.text ?: return@Observer
-                if (mention_rv.isGone && text.isNotEmpty() && mentionDisplay(text)) {
-                    submitMentionList(text.toString())
-                    floating_layout.showMention()
-                } else {
-                    floating_layout.hideMention()
-                }
-            })
-    }
-
-    private fun submitMentionList(s: String?): List<User>? {
-        // val targetList = mentionAdapter.list?.filter {
-        //     it.identityNumber.startsWith(s!!.substring(1, s.length))
-        // }
-        mentionAdapter.submitList(mentionAdapter.list)
-        return mentionAdapter.list
+        mention_rv.adapter = mentionAdapter
+        mention_rv.layoutManager = LinearLayoutManager(context)
     }
 
     private fun showGroupBottomSheet(expand: Boolean) {
@@ -2404,18 +2384,27 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             if (isGroup) {
-                mentionAdapter.keyword = s?.toString()
                 if (mention_rv.adapter != null && !s.isNullOrEmpty() && mentionDisplay(s)) {
-                    val targetList = submitMentionList(s.toString())
-                    if (mention_rv.isGone) {
-                        floating_layout.showMention()
-                    } else {
-                        floating_layout.animate2RightHeight(targetList?.size ?: 0)
-                    }
+                    searchMentionUser(s.toString())
                     mention_rv.layoutManager?.smoothScrollToPosition(mention_rv, null, 0)
                 } else {
                     floating_layout.hideMention()
                 }
+            }
+        }
+    }
+
+    private fun searchMentionUser(keyword: String) {
+        chatViewModel.viewModelScope.launch {
+            val mention = mentionEnd(keyword)
+            val users = chatViewModel.fuzzySearchUser(conversationId, mention)
+            mentionAdapter.keyword = mention
+            Timber.d(mention)
+            mentionAdapter.submitList(users)
+            if (mention_rv.isGone) {
+                floating_layout.showMention()
+            } else {
+                floating_layout.animate2RightHeight(users.size)
             }
         }
     }

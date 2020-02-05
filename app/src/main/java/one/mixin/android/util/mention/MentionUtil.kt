@@ -1,12 +1,12 @@
 package one.mixin.android.util.mention
 
+import java.util.regex.Pattern
 import one.mixin.android.db.MentionMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.vo.MentionMessage
 import one.mixin.android.vo.User
 import org.jetbrains.anko.collections.forEachReversedByIndex
 import timber.log.Timber
-import java.util.regex.Pattern
 
 fun parseMention(
     text: String?,
@@ -67,6 +67,15 @@ fun processMentionMessageMention(
 fun mentionDisplay(string: CharSequence): Boolean {
     val matcher = mentionEndPattern.matcher(string)
     return matcher.find()
+}
+
+fun mentionEnd(string: String): String? {
+    val matcher = mentionEndPattern.matcher(string)
+    return if (matcher.find()) {
+        matcher.group().replace(" ", "").replace("@", "")
+    } else {
+        null
+    }
 }
 
 fun mentionReplace(source: String, fullName: String): String {
