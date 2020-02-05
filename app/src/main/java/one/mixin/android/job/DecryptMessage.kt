@@ -569,6 +569,7 @@ class DecryptMessage : Injector() {
                     it.addToTab("Decrypt", "conversation", data.conversationId)
                     it.addToTab("Decrypt", "message_id", data.messageId)
                     it.addToTab("Decrypt", "user", data.userId)
+                    it.addToTab("Decrypt", "session", data.sessionId)
                     it.addToTab("Decrypt", "data", data.data)
                     it.addToTab("Decrypt", "category", data.category)
                     it.addToTab("Decrypt", "created_at", data.createdAt)
