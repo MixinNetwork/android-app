@@ -29,6 +29,7 @@ import one.mixin.android.extension.postOptimize
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.Session
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.AppButtonData
@@ -332,6 +333,7 @@ class DecryptMessage : Injector() {
                 }
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
                 messageDao.insert(message)
+                MessageFts4Helper.insertOrReplaceMessageFts4(MixinApplication.appContext, message)
                 val userMap = mentions?.map { it.identityNumber to it.fullName }?.toMap()
                 sendNotificationJob(message, data.source, userMap, quoteMe || mentionMe)
             }
@@ -397,6 +399,7 @@ class DecryptMessage : Injector() {
                 }
 
                 messageDao.insert(message)
+                MessageFts4Helper.insertOrReplaceMessageFts4(MixinApplication.appContext, message)
                 MixinApplication.appContext.autoDownload(autoDownloadDocument) {
                     jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 }

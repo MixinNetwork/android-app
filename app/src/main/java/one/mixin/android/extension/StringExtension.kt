@@ -387,3 +387,34 @@ fun String.maxLimit(maxSize: Int = 64 * 1024): String {
     val bytes = toByteArray()
     return String(bytes.take(maxSize).toByteArray())
 }
+
+fun String?.joinWhiteSpace(): String {
+    if (this == null) return ""
+
+    return joinWithCharacter(' ')
+}
+
+fun String.joinStar() = joinWithCharacter('*')
+
+fun String.joinWithCharacter(char: Char): String {
+    val result = StringBuilder()
+    this.trim().forEachIndexed { i, c ->
+        val lookAhead = try {
+            this[i + 1]
+        } catch (ignored: IndexOutOfBoundsException) {
+            char
+        }
+        val isSameType = if (c.isAlphabet() && lookAhead.isAlphabet()) {
+            true
+        } else c.isDigit() && lookAhead.isDigit()
+
+        val needWhiteSpace = !isSameType && !c.isWhitespace()
+        result.append(c)
+        if (needWhiteSpace) {
+            result.append(char)
+        }
+    }
+    return result.toString().trim()
+}
+
+private fun Char.isAlphabet() = this in 'a'..'z' || this in 'A'..'Z'

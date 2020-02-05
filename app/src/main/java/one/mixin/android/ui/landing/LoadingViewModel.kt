@@ -116,6 +116,4 @@ constructor(
             }
         }
     }
-
-    suspend fun upgradeFtsMessage() = conversationRepo.upgradeFtsMessage()
 }

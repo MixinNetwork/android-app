@@ -21,6 +21,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_24_25
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_25_26
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_26_27
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_27_28
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_28_29
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -31,7 +32,7 @@ import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Hyperlink
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
-import one.mixin.android.vo.MessageFts
+import one.mixin.android.vo.MessageFts4
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.Offset
@@ -71,10 +72,9 @@ import one.mixin.android.vo.User
     (TopAsset::class),
     (FavoriteApp::class),
     (Job::class),
-    (MessageFts::class),
-    (MessageMention::class)],
-    version = CURRENT_VERSION
-)
+    (MessageMention::class),
+    (MessageFts4::class)],
+    version = CURRENT_VERSION)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao
@@ -98,6 +98,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun topAssetDao(): TopAssetDao
     abstract fun favoriteAppDao(): FavoriteAppDao
     abstract fun mentionMessageDao(): MessageMentionDao
+    abstract fun messageFts4Dao(): MessagesFts4Dao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null
@@ -110,7 +111,7 @@ abstract class MixinDatabase : RoomDatabase() {
             synchronized(lock) {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
-                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28)
+                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28, MIGRATION_28_29)
                         .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)
                         .build()
@@ -127,7 +128,7 @@ abstract class MixinDatabase : RoomDatabase() {
             synchronized(lock) {
                 if (READINSTANCE == null) {
                     READINSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
-                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28)
+                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28, MIGRATION_28_29)
                         .enableMultiInstanceInvalidation()
                         .build()
                 }
@@ -137,20 +138,16 @@ abstract class MixinDatabase : RoomDatabase() {
 
         private val CALLBACK = object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
-                super.onCreate(db)
                 db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_last_message_update AFTER INSERT ON messages BEGIN UPDATE conversations SET last_message_id = new.id WHERE conversation_id = new.conversation_id; END")
                 db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_last_message_delete AFTER DELETE ON messages BEGIN UPDATE conversations SET last_message_id = (select id from messages where conversation_id = old.conversation_id order by created_at DESC limit 1) WHERE conversation_id = old.conversation_id; END")
                 db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_unseen_count_insert AFTER INSERT ON messages BEGIN UPDATE conversations SET unseen_message_count = (SELECT count(m.id) FROM messages m, users u WHERE m.user_id = u.user_id AND u.relationship != 'ME' AND m.status = 'SENT' AND conversation_id = new.conversation_id) where conversation_id = new.conversation_id; END")
             }
 
             override fun onOpen(db: SupportSQLiteDatabase) {
-                super.onOpen(db)
                 supportSQLiteDatabase = db
                 db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_last_message_update AFTER INSERT ON messages BEGIN UPDATE conversations SET last_message_id = new.id WHERE conversation_id = new.conversation_id; END")
                 db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_last_message_delete AFTER DELETE ON messages BEGIN UPDATE conversations SET last_message_id = (select id from messages where conversation_id = old.conversation_id order by created_at DESC limit 1) WHERE conversation_id = old.conversation_id; END")
                 db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_unseen_count_insert AFTER INSERT ON messages BEGIN UPDATE conversations SET unseen_message_count = (SELECT count(m.id) FROM messages m, users u WHERE m.user_id = u.user_id AND u.relationship != 'ME' AND m.status = 'SENT' AND conversation_id = new.conversation_id) where conversation_id = new.conversation_id; END")
-                db.execSQL("DROP TRIGGER IF EXISTS room_fts_content_sync_messages_fts_BEFORE_UPDATE")
-                db.execSQL("DROP TRIGGER IF EXISTS room_fts_content_sync_messages_fts_AFTER_UPDATE")
             }
         }
     }

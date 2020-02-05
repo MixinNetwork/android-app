@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
+import one.mixin.android.MixinApplication
 import java.io.File
 import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
@@ -10,6 +11,7 @@ import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.Session
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.MentionUser
@@ -69,6 +71,7 @@ open class SendMessageJob(
                     parseHyperlink()
                 }
                 messageDao.insert(message)
+                MessageFts4Helper.insertOrReplaceMessageFts4(MixinApplication.appContext, message)
             }
         } else {
             Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
