@@ -78,11 +78,16 @@ fun mentionEnd(string: String): String? {
     }
 }
 
-fun mentionReplace(source: String, fullName: String): String {
-    return when (val index = source.lastIndexOf("@")) {
-        -1 -> source
-        0 -> "@${fullName.replace(" ", "\b")}"
-        else -> "${source.substring(0, index)} @${fullName.replace(" ", "\b")} "
+fun mentionReplace(source: String, user: User): String {
+    val index = source.lastIndexOf("@")
+    return if (index == -1 || user.fullName == null) {
+        source
+    } else if (index == 0 && user.appId!=null) {
+        "@${user.identityNumber} "
+    } else if (index == 0){
+        "@${user.fullName.replace(" ", "\b")} "
+    } else {
+        "${source.substring(0, index)} @${user.fullName.replace(" ", "\b")} "
     }
 }
 
@@ -97,5 +102,5 @@ private val mentionNumberPattern by lazy {
 }
 
 private val mentionEndPattern by lazy {
-    Pattern.compile("(?:\\s|^)@(\\S)*\$")
+    Pattern.compile("(?:\\s|^)@.*\$")
 }

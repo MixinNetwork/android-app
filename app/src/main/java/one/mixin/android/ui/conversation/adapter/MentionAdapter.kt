@@ -33,6 +33,6 @@ class MentionAdapter constructor(private val onClickListener: OnUserClickListene
         )
 
     interface OnUserClickListener {
-        fun onUserClick(fullName: String)
+        fun onUserClick(user: User)
     }
 }

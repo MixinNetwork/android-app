@@ -21,9 +21,7 @@ class MentionHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
         itemView.icon_iv.setInfo(user.fullName, user.avatarUrl, user.userId)
         user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
         itemView.setOnClickListener {
-            user.fullName?.let { name ->
-                listener.onUserClick(name)
-            }
+            listener.onUserClick(user)
         }
     }
 }

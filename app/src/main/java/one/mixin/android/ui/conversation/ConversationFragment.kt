@@ -671,9 +671,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private val mentionAdapter: MentionAdapter by lazy {
         MentionAdapter(object : OnUserClickListener {
             @SuppressLint("SetTextI18n")
-            override fun onUserClick(fullName: String) {
+            override fun onUserClick(user: User) {
                 val text = chat_control.chat_et.text ?: return
-                chat_control.chat_et.setText(mentionReplace(text.toString(), fullName))
+                chat_control.chat_et.setText(mentionReplace(text.toString(), user))
                 chat_control.chat_et.setSelection(chat_control.chat_et.text!!.length)
                 mentionAdapter.submitList(null)
                 floating_layout.hideMention()
