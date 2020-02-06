@@ -49,6 +49,7 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
+import one.mixin.android.extension.alert
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.inTransaction
@@ -95,7 +96,6 @@ import one.mixin.android.worker.RefreshAccountWorker
 import one.mixin.android.worker.RefreshAssetsWorker
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
-import org.jetbrains.anko.alert
 import org.jetbrains.anko.doAsync
 
 class MainActivity : BlazeBaseActivity() {
