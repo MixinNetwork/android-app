@@ -4,11 +4,9 @@ import android.graphics.Point
 import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import java.security.KeyPair
 import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_LAST_USER_ID
 import one.mixin.android.Constants.KEYS
