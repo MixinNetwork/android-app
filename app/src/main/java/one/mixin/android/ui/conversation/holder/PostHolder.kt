@@ -30,33 +30,17 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
         MixinApplication.appContext.dpToPx(6f)
     }
 
-    private val dp1 by lazy {
-        MixinApplication.appContext.dpToPx(1f)
-    }
-
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
-            if (isLast) {
-                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow_last)
-            } else {
-                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
-            }
             (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp12
+            (itemView.chat_post.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp12
         } else {
-            if (isLast) {
-                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
-            } else {
-                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
-            }
             (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
+            (itemView.chat_post.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
         }
-        (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd =
-            if (isMe && !isLast) {
-                dp6
-            } else {
-                dp1
-            }
         val lp = (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
             lp.horizontalBias = 1f

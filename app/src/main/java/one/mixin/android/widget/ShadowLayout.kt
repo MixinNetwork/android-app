@@ -3,9 +3,6 @@ package one.mixin.android.widget
 import android.content.Context
 import android.util.AttributeSet
 import android.view.ViewGroup
-import androidx.core.view.marginBottom
-import androidx.core.view.marginEnd
-import androidx.core.view.marginTop
 
 class ShadowLayout : ViewGroup {
     constructor(context: Context) : super(context)
@@ -32,24 +29,26 @@ class ShadowLayout : ViewGroup {
         val firstView = getChildAt(0)
         val firstLp = firstView.layoutParams as MarginLayoutParams
         val secondView = getChildAt(1)
+        val secondLp = secondView.layoutParams as MarginLayoutParams
         when {
             childCount == 3 -> {
                 val thirdView = getChildAt(2)
+                val thirdLp = thirdView.layoutParams as MarginLayoutParams
                 firstView.layout(
                     firstLp.marginStart, firstLp.topMargin,
                     width - firstLp.marginEnd, height - firstLp.bottomMargin
                 )
                 secondView.layout(
-                    width - secondView.measuredWidth - secondView.marginEnd,
-                    height - secondView.measuredHeight - secondView.marginBottom,
-                    width - secondView.marginEnd,
-                    height - secondView.marginBottom
+                    width - secondView.measuredWidth - secondLp.marginEnd,
+                    height - secondView.measuredHeight - secondLp.bottomMargin,
+                    width - secondLp.marginEnd,
+                    height - secondLp.bottomMargin
                 )
                 thirdView.layout(
-                    width - thirdView.measuredWidth - thirdView.marginEnd,
-                    thirdView.marginTop,
-                    width - thirdView.marginEnd,
-                    thirdView.marginTop + thirdView.measuredHeight
+                    width - thirdView.measuredWidth - thirdLp.marginEnd,
+                    thirdLp.topMargin,
+                    width - thirdLp.marginEnd,
+                    thirdLp.topMargin + thirdView.measuredHeight
                 )
             }
             firstLp.marginStart > 0 -> {
@@ -58,8 +57,10 @@ class ShadowLayout : ViewGroup {
                     firstLp.marginStart + firstView.measuredWidth, firstView.measuredHeight
                 )
                 secondView.layout(
-                    width - secondView.measuredWidth,
-                    height - secondView.measuredHeight, width, height
+                    width - secondView.measuredWidth - secondLp.marginEnd,
+                    height - secondView.measuredHeight - secondLp.bottomMargin,
+                    width - secondLp.marginEnd,
+                    height - secondLp.bottomMargin
                 )
             }
             firstLp.marginEnd > 0 -> {
@@ -68,15 +69,19 @@ class ShadowLayout : ViewGroup {
                     0, width - firstLp.marginEnd, firstView.measuredHeight
                 )
                 secondView.layout(
-                    width - firstLp.marginEnd - secondView.measuredWidth,
-                    height - secondView.measuredHeight, width - firstLp.marginEnd, height
+                    width - secondView.measuredWidth - secondLp.marginEnd,
+                    height - secondView.measuredHeight - secondLp.bottomMargin,
+                    width - secondLp.marginEnd,
+                    height - secondLp.bottomMargin
                 )
             }
             else -> {
                 firstView.layout(0, 0, width, height)
                 secondView.layout(
-                    width - secondView.measuredWidth,
-                    height - secondView.measuredHeight, width, height
+                    width - secondView.measuredWidth - secondLp.marginEnd,
+                    height - secondView.measuredHeight - secondLp.bottomMargin,
+                    width - secondLp.marginEnd,
+                    height - secondLp.bottomMargin
                 )
             }
         }

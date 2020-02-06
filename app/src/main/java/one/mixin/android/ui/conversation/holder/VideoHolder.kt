@@ -262,25 +262,17 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
-            if (isLast) {
-                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow_last)
-            } else {
-                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
-            }
             (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
             (itemView.chat_image_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             (itemView.duration_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
             (itemView.live_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
+            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp10
         } else {
-            if (isLast) {
-                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
-            } else {
-                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
-            }
             (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
             (itemView.chat_image_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             (itemView.duration_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10
             (itemView.live_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10
+            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp3
         }
 
         var width = mediaWidth - dp6
