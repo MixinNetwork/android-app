@@ -32,4 +32,5 @@
     <color name="bgConfirmationNight">@color/badgerNight</color>
 
     <color name="bgBlockNight">#23272B</color>
+    <color name="codeBorderNight">#545859</color>
 </resources>

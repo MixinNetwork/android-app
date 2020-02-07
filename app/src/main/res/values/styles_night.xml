@@ -41,6 +41,7 @@
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact_night</item>
 
         <item name="flag_night">true</item>
+        <item name="code_border">@color/codeBorderNight</item>
     </style>
 
     <style name="AppTheme.Night.NoActionBar" parent="AppTheme.Night">
