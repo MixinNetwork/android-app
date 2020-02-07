@@ -14,3 +14,9 @@ class WebSocketException : IOException() {
         return true
     }
 }
+
+class ChecksumException : IOException() {
+    fun shouldRetry(): Boolean {
+        return true
+    }
+}

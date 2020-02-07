@@ -9,6 +9,7 @@ import java.util.UUID
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.api.ChecksumException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.SignalKey
 import one.mixin.android.api.WebSocketException
@@ -234,7 +235,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 blazeMessage.params?.conversation_id?.let {
                     syncConversation(it)
                 }
-                throw WebSocketException()
+                throw ChecksumException()
             } else if (bm.error.code == FORBIDDEN) {
                 return true
             } else {
