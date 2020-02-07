@@ -56,6 +56,7 @@ class MarkwonUtil {
                 .usePlugin(object : AbstractMarkwonPlugin() {
                     override fun configureTheme(builder: MarkwonTheme.Builder) {
                         builder.headingBreakHeight(0)
+                            .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
                     }
 
                     override fun configureVisitor(builder: MarkwonVisitor.Builder) {
@@ -115,16 +116,7 @@ class MarkwonUtil {
                         builder.headingBreakHeight(0)
                             .codeBlockBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
                             .codeBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
-                            .headingTextSizeMultipliers(
-                                floatArrayOf(
-                                    1.3F,
-                                    1.2F,
-                                    1.1F,
-                                    .9F,
-                                    .8F,
-                                    .7F
-                                )
-                            )
+                            .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
                     }
 
                     override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
