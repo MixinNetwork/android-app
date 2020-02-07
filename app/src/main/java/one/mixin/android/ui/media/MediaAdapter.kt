@@ -79,7 +79,11 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
                 if (item.isVideo()) {
                     itemView.video_iv.isVisible = true
                     itemView.duration_tv.isVisible = true
-                    itemView.duration_tv.text = item.mediaDuration?.toLong()?.formatMillis()
+                    itemView.duration_tv.text = try {
+                        item.mediaDuration?.toLong()?.formatMillis()
+                    } catch (e: Exception) {
+                        ""
+                    }
                 } else {
                     itemView.video_iv.isVisible = false
                     itemView.duration_tv.isVisible = false
