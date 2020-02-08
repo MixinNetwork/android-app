@@ -51,6 +51,7 @@
         <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
 
+        <item name="code_border">@color/codeBorder</item>
     </style>
 
 
