@@ -378,11 +378,7 @@ class MainActivity : BlazeBaseActivity() {
             } else {
                 toast(R.string.transfer_without_pin)
             }
-        } else if (intent.extras != null && intent.extras!!.getString(
-                "conversation_id",
-                null
-            ) != null
-        ) {
+        } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
             alertDialog = alert(getString(R.string.group_wait)) {}.show()
             val conversationId = intent.extras!!.getString("conversation_id")!!

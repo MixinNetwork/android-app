@@ -465,13 +465,7 @@ class DecryptMessage : Injector() {
         } else if (systemSession.action == SystemSessionMessageAction.DESTROY.name) {
             Session.deleteExtensionSessionId()
             signalProtocol.deleteSession(data.userId)
-            val conversations = conversationDao.getConversationsByUserId(systemSession.userId)
-            val ps = conversations.map {
-                ParticipantSession(it, systemSession.userId, systemSession.sessionId)
-            }
-            if (ps.isNotEmpty()) {
-                participantSessionDao.deleteList(ps)
-            }
+            participantSessionDao.deleteByUserIdAndSessionId(systemSession.userId, systemSession.sessionId)
         }
     }
 
