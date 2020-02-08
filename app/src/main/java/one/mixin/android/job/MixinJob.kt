@@ -353,8 +353,12 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         val common = remote.intersect(local)
         val remove = local.minus(common)
         val add = remote.minus(common)
-        participantSessionDao.deleteList(remove)
-        participantSessionDao.insertList(add)
+        if (remove.isNotEmpty()) {
+            participantSessionDao.deleteList(remove)
+        }
+        if (add.isNotEmpty()) {
+            participantSessionDao.insertList(add)
+        }
     }
 
     protected fun insertOrUpdateConversation(data: ConversationResponse) {
