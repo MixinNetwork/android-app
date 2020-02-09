@@ -4,9 +4,8 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.DialogInterface
 import androidx.fragment.app.Fragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import one.mixin.android.R
-import org.jetbrains.anko.AlertBuilder
-import org.jetbrains.anko.alert
 import org.jetbrains.anko.selector
 
 fun Fragment.toast(textResource: Int) = requireActivity().toast(textResource)
@@ -21,9 +20,20 @@ fun Fragment.selector(
 
 fun Fragment.alert(
     message: String,
-    title: String? = null,
-    init: (AlertBuilder<DialogInterface>.() -> Unit)? = null
-) = requireActivity().alert(message, title, init)
+    title: String? = null
+) = requireActivity().alert(message, title)
+
+fun Context.alert(
+    message: CharSequence,
+    title: CharSequence? = null
+): MaterialAlertDialogBuilder {
+    return MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
+        if (title != null) {
+            setTitle(title)
+        }
+        setMessage(message)
+    }
+}
 
 fun Fragment.indeterminateProgressDialog(message: String? = null, title: String? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {
     return requireActivity().indeterminateProgressDialog(message, title, init)
