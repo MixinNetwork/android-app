@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home
 
-import android.app.AlertDialog
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
@@ -8,6 +7,7 @@ import android.content.IntentSender
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
@@ -17,6 +17,7 @@ import com.crashlytics.android.Crashlytics
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.safetynet.SafetyNet
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.InstallStateUpdatedListener
@@ -228,7 +229,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun delayShowModifyMobile() = lifecycleScope.launch {
         delay(2000)
-        androidx.appcompat.app.AlertDialog.Builder(this@MainActivity, R.style.MixinAlertDialogTheme)
+        MaterialAlertDialogBuilder(this@MainActivity, R.style.MixinAlertDialogTheme)
             .setTitle(getString(R.string.setting_emergency_change_mobile))
             .setPositiveButton(R.string.change) { dialog, _ ->
                 supportFragmentManager.inTransaction {
@@ -380,7 +381,7 @@ class MainActivity : BlazeBaseActivity() {
             }
         } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
-            alertDialog = alert(getString(R.string.group_wait)) {}.show()
+            alertDialog = alert(getString(R.string.group_wait)).show()
             val conversationId = intent.extras!!.getString("conversation_id")!!
             Maybe.just(conversationId).map {
                 val innerIntent: Intent?

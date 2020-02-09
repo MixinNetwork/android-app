@@ -52,7 +52,6 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.App
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.linktext.AutoLinkMode
-import org.jetbrains.anko.noButton
 
 class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
     companion object {
@@ -258,8 +257,9 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
     }
 
     private fun changeNumber() {
-        alert(getString(R.string.profile_modify_number)) {
-            positiveButton(R.string.profile_phone) { dialog ->
+        alert(getString(R.string.profile_modify_number))
+            .setNegativeButton(android.R.string.no) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.profile_phone) { dialog, _ ->
                 dialog.dismiss()
                 if (Session.getAccount()?.hasPin == true) {
                     activity?.supportFragmentManager?.inTransaction {
@@ -288,9 +288,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     }
                 }
                 dismiss()
-            }
-            noButton { dialog -> dialog.dismiss() }
-        }.show()
+            }.show()
     }
 
     @SuppressLint("RestrictedApi")
