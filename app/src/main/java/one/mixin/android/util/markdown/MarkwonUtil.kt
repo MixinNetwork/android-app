@@ -35,8 +35,11 @@ class MarkwonUtil {
             linkResolver: (String) -> Unit
         ): Markwon {
             val requestManager = Glide.with(context)
+            val isNightMode = context.isNightMode()
             val prism4j = Prism4j(LanguageGrammerLocator())
-            val prism4jTheme = Prism4jThemeDefault.create()
+            val prism4jTheme = if (isNightMode) {
+                Prism4jThemeDarkula.create()
+            } else Prism4jThemeDefault.create()
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
                 .usePlugin(StrikethroughPlugin.create())
