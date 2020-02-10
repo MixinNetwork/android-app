@@ -117,7 +117,12 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
                 originalResponse.newBuilder().body(ProgressResponseBody(originalResponse.body(),
                     ProgressListener { bytesRead, contentLength, done ->
                         if (!done) {
-                            RxBus.publish(loadingEvent(message.id, bytesRead.toFloat() / contentLength.toFloat()))
+                            val progress = try {
+                                bytesRead.toFloat() / contentLength.toFloat()
+                            } catch (e: Exception) {
+                                0f
+                            }
+                            RxBus.publish(loadingEvent(message.id, progress))
                         }
                     })).build()
             }
