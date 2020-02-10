@@ -232,6 +232,9 @@ class AudioPlayer private constructor() {
         if (timerDisposable == null) {
             timerDisposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread()).subscribe {
+                    if (player.duration() == 0) {
+                        return@subscribe
+                    }
                     progress = player.getCurrentPos().toFloat() / player.duration()
                     id?.let { id ->
                         RxBus.publish(playEvent(id, progress))

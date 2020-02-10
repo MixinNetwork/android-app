@@ -3,6 +3,11 @@ package one.mixin.android.event
 import one.mixin.android.widget.CircleProgress
 
 data class ProgressEvent(val id: String, var progress: Float, val status: Int) {
+    init {
+        if (progress.isNaN()){
+            progress = 0f
+        }
+    }
     companion object {
         fun loadingEvent(id: String, progress: Float) = ProgressEvent(
             id, progress,
