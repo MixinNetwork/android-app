@@ -100,8 +100,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground"
-                android:visibility="gone">
+                android:foreground="?attr/selectableItemBackground">
 
                 <TextView
                     android:id="@+id/night_mode_tv"
@@ -120,7 +119,19 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:textColor="?attr/text_minor" />
+                    android:textColor="?attr/text_minor"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/night_mode_desc_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:textColor="?attr/text_minor"
+                    android:visibility="gone" />
+
             </RelativeLayout>
 
             <View
