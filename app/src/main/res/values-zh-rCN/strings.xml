@@ -486,7 +486,13 @@
     <string name="setting_notification_transfer_amount">转账金额(%1$s)</string>
     <string name="contact_share_apps_no_app">没有应用</string>
     <string name="setting_night">夜间模式</string>
+    <string name="setting_theme">主题颜色</string>
     <string name="setting_transfer_large_summary">当转账金额大于或等于 %1$s 时显示确认弹窗</string>
+    <string-array name="setting_night_array">
+        <item>浅色</item>
+        <item>暗黑</item>
+        <item>跟随系统</item>
+    </string-array>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>

@@ -3,20 +3,36 @@ package one.mixin.android.extension
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.DialogInterface
+import androidx.annotation.ArrayRes
 import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import one.mixin.android.R
-import org.jetbrains.anko.selector
 
 fun Fragment.toast(textResource: Int) = requireActivity().toast(textResource)
 
 fun Fragment.toast(text: CharSequence) = requireActivity().toast(text)
 
-fun Fragment.selector(
+fun Fragment.singleChoice(
     title: CharSequence? = null,
-    items: List<CharSequence>,
+    @ArrayRes itemsId: Int,
+    checkedItem: Int,
     onClick: (DialogInterface, Int) -> Unit
-): Unit = requireActivity().selector(title, items, onClick)
+): Unit = requireActivity().singleChoice(title, itemsId, checkedItem, onClick)
+
+fun Context.singleChoice(
+    title: CharSequence? = null,
+    @ArrayRes itemsId: Int,
+    checkedItem: Int,
+    onClick: (DialogInterface, Int) -> Unit
+) {
+    MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
+        setTitle(title)
+        setSingleChoiceItems(itemsId, checkedItem, onClick)
+        setPositiveButton(android.R.string.cancel) { dialog, _ ->
+            dialog.dismiss()
+        }
+    }.create().show()
+}
 
 fun Fragment.alert(
     message: String,

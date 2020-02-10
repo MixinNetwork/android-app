@@ -93,6 +93,7 @@ object Constants {
         const val THEME_CURRENT_ID = "theme_current_id"
         const val THEME_DEFAULT_ID = 0
         const val THEME_NIGHT_ID = 1
+        const val THEME_AUTO_ID = 2
     }
 
     object Load {

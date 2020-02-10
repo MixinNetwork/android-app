@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.fragment_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.Account.PREF_LANGUAGE
 import one.mixin.android.Constants.Account.PREF_SET_LANGUAGE
+import one.mixin.android.Constants.Theme.THEME_AUTO_ID
 import one.mixin.android.Constants.Theme.THEME_CURRENT_ID
 import one.mixin.android.Constants.Theme.THEME_DEFAULT_ID
 import one.mixin.android.Constants.Theme.THEME_NIGHT_ID
@@ -22,6 +23,7 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.singleChoice
 import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.Session
@@ -70,7 +72,9 @@ class SettingFragment : Fragment() {
             }
         }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            night_mode_rl.isVisible = true
+            night_mode_desc_sw.isVisible = true
+            night_mode_desc_tv.isVisible = false
+            night_mode_tv.setText(R.string.setting_night)
             night_mode_desc_sw.isChecked =
                 defaultSharedPreferences.getInt(
                     THEME_CURRENT_ID,
@@ -85,7 +89,17 @@ class SettingFragment : Fragment() {
                 MainActivity.reopen(requireContext())
             }
         } else {
-            night_mode_rl.isVisible = false
+            night_mode_desc_sw.isVisible = false
+            night_mode_desc_tv.isVisible = true
+            night_mode_tv.setText(R.string.setting_theme)
+            val currentId = defaultSharedPreferences.getInt(THEME_CURRENT_ID, THEME_AUTO_ID)
+            night_mode_desc_tv.text = resources.getStringArray(R.array.setting_night_array)[currentId]
+            night_mode_rl.setOnClickListener {
+                singleChoice(resources.getString(R.string.setting_theme), R.array.setting_night_array, currentId) { _, index ->
+                    defaultSharedPreferences.putInt(THEME_CURRENT_ID, index)
+                    MainActivity.reopen(requireContext())
+                }
+            }
         }
         language_rl.setOnClickListener { showLanguageAlert() }
         notification_rl.setOnClickListener {
