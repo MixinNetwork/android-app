@@ -2,7 +2,6 @@ package one.mixin.android.widget.gallery.ui
 
 import android.app.Activity
 import android.content.Intent
-import android.content.res.Configuration
 import android.database.Cursor
 import android.graphics.BlendMode
 import android.graphics.BlendModeColorFilter
@@ -17,10 +16,9 @@ import android.view.View
 import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_gallery.*
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.gallery.internal.entity.Album
@@ -33,7 +31,6 @@ import one.mixin.android.widget.gallery.internal.ui.adapter.AlbumMediaAdapter
 import one.mixin.android.widget.gallery.internal.ui.adapter.AlbumsAdapter
 import one.mixin.android.widget.gallery.internal.ui.widget.AlbumsSpinner
 import one.mixin.android.widget.gallery.internal.utils.MediaStoreCompat
-import org.jetbrains.anko.configuration
 
 class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks,
     AdapterView.OnItemSelectedListener, MediaSelectionFragment.SelectionProvider,
@@ -47,17 +44,6 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks,
 
     private lateinit var mAlbumsSpinner: AlbumsSpinner
     private lateinit var mAlbumsAdapter: AlbumsAdapter
-
-    private fun isNightMode(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-        } else {
-            defaultSharedPreferences.getInt(
-                Constants.Theme.THEME_CURRENT_ID,
-                Constants.Theme.THEME_DEFAULT_ID
-            ) == Constants.Theme.THEME_NIGHT_ID
-        }
-    }
 
     private fun getNightThemeId(): Int {
         return R.style.AppTheme_Night_NoActionBar

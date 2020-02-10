@@ -8,7 +8,6 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
@@ -55,7 +54,6 @@ import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -63,11 +61,11 @@ import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openCamera
@@ -87,7 +85,6 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.WebControlView
-import org.jetbrains.anko.configuration
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
@@ -282,7 +279,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.settings.useWideViewPort = true
         contentView.chat_web_view.settings.loadWithOverviewMode = true
         supportsQ {
-            contentView.chat_web_view.settings.forceDark = if (isNightMode()) {
+            contentView.chat_web_view.settings.forceDark = if (requireContext().isNightMode()) {
                 FORCE_DARK_ON
             } else {
                 FORCE_DARK_AUTO
@@ -440,17 +437,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             extraHeaders[Mixin_Conversation_ID_HEADER] = it
         }
         contentView.chat_web_view.loadUrl(url, extraHeaders)
-    }
-
-    private fun isNightMode(): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            requireContext().configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-        } else {
-            requireContext().defaultSharedPreferences.getInt(
-                Constants.Theme.THEME_CURRENT_ID,
-                Constants.Theme.THEME_DEFAULT_ID
-            ) == Constants.Theme.THEME_NIGHT_ID
-        }
     }
 
     @Override
@@ -635,7 +621,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             val dark = ColorUtils.calculateLuminance(c) < 0.5
             refreshByLuminance(dark, c)
         } catch (e: Exception) {
-            refreshByLuminance(isNightMode(), requireContext().colorFromAttribute(R.attr.icon_white))
+            refreshByLuminance(requireContext().isNightMode(), requireContext().colorFromAttribute(R.attr.icon_white))
         }
     }
 
@@ -734,7 +720,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         @JavascriptInterface
         fun getContext(): String? = Gson().toJson(
             MixinContext(
-                conversationId, immersive, appearance = if (isNightMode()) {
+                conversationId, immersive, appearance = if (context.isNightMode()) {
                     "dark"
                 } else {
                     "light"
@@ -745,17 +731,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         @JavascriptInterface
         fun reloadTheme() {
             reloadThemeAction.invoke()
-        }
-
-        private fun isNightMode(): Boolean {
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                context.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
-            } else {
-                context.defaultSharedPreferences.getInt(
-                    Constants.Theme.THEME_CURRENT_ID,
-                    Constants.Theme.THEME_DEFAULT_ID
-                ) == Constants.Theme.THEME_NIGHT_ID
-            }
         }
     }
 

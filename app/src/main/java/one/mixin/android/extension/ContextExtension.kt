@@ -654,7 +654,15 @@ fun Context.showConfirmDialog(
 
 fun Context.isNightMode(): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+        val currentId = defaultSharedPreferences.getInt(
+            Constants.Theme.THEME_CURRENT_ID,
+            Constants.Theme.THEME_AUTO_ID
+        )
+        return if (currentId == Constants.Theme.THEME_AUTO_ID) {
+            configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+        } else {
+            currentId == Constants.Theme.THEME_NIGHT_ID
+        }
     } else {
         defaultSharedPreferences.getInt(
             Constants.Theme.THEME_CURRENT_ID,
