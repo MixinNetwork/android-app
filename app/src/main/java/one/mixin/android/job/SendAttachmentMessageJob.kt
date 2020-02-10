@@ -146,7 +146,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
         val duration = if (message.mediaDuration == null) null else message.mediaDuration.toLong()
         val waveform = message.mediaWaveform
         val transferMediaData = AttachmentMessagePayload(key, digest, attachmentId,
-            mimeType, mimeType, size, name, width, height, thumbnail, duration, waveform)
+            mimeType, size, name, width, height, thumbnail, duration, waveform)
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = Base64.encodeBytes(plainText.toByteArray())
         message.content = encoded
