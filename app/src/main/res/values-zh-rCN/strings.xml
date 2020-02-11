@@ -485,10 +485,13 @@
     <string name="setting_notification_transfer_desc">当收到不少于%1$s的转账时显示通知。</string>
     <string name="setting_notification_transfer_amount">转账金额(%1$s)</string>
     <string name="contact_share_apps_no_app">没有应用</string>
-    <string name="setting_night">夜间模式</string>
     <string name="setting_theme">外观</string>
     <string name="setting_transfer_large_summary">当转账金额大于或等于 %1$s 时显示确认弹窗</string>
     <string-array name="setting_night_array">
+        <item>浅色</item>
+        <item>暗黑</item>
+    </string-array>
+    <string-array name="setting_night_array_oreo">
         <item>浅色</item>
         <item>暗黑</item>
         <item>跟随系统</item>

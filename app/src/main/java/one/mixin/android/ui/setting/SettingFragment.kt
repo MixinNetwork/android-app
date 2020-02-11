@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import java.util.Locale
 import kotlinx.android.synthetic.main.fragment_setting.*
@@ -16,7 +15,6 @@ import one.mixin.android.Constants.Account.PREF_SET_LANGUAGE
 import one.mixin.android.Constants.Theme.THEME_AUTO_ID
 import one.mixin.android.Constants.Theme.THEME_CURRENT_ID
 import one.mixin.android.Constants.Theme.THEME_DEFAULT_ID
-import one.mixin.android.Constants.Theme.THEME_NIGHT_ID
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
@@ -71,34 +69,26 @@ class SettingFragment : Fragment() {
                 navTo(WalletPasswordFragment.newInstance(false), WalletPasswordFragment.TAG)
             }
         }
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            night_mode_desc_sw.isVisible = true
-            night_mode_desc_tv.isVisible = false
-            night_mode_tv.setText(R.string.setting_night)
-            night_mode_desc_sw.isChecked =
-                defaultSharedPreferences.getInt(
-                    THEME_CURRENT_ID,
-                    THEME_DEFAULT_ID
-                ) == THEME_NIGHT_ID
-            night_mode_desc_sw.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    defaultSharedPreferences.putInt(THEME_CURRENT_ID, THEME_NIGHT_ID)
-                } else {
-                    defaultSharedPreferences.putInt(THEME_CURRENT_ID, THEME_DEFAULT_ID)
-                }
-                MainActivity.reopen(requireContext())
+
+        night_mode_tv.setText(R.string.setting_theme)
+        val currentId = defaultSharedPreferences.getInt(
+            THEME_CURRENT_ID, if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                THEME_DEFAULT_ID
+            } else {
+                THEME_AUTO_ID
             }
-        } else {
-            night_mode_desc_sw.isVisible = false
-            night_mode_desc_tv.isVisible = true
-            night_mode_tv.setText(R.string.setting_theme)
-            val currentId = defaultSharedPreferences.getInt(THEME_CURRENT_ID, THEME_AUTO_ID)
-            night_mode_desc_tv.text = resources.getStringArray(R.array.setting_night_array)[currentId]
-            night_mode_rl.setOnClickListener {
-                singleChoice(resources.getString(R.string.setting_theme), R.array.setting_night_array, currentId) { _, index ->
-                    defaultSharedPreferences.putInt(THEME_CURRENT_ID, index)
-                    MainActivity.reopen(requireContext())
-                }
+        )
+        night_mode_desc_tv.text = resources.getStringArray(R.array.setting_night_array_oreo)[currentId]
+        night_mode_rl.setOnClickListener {
+            singleChoice(
+                resources.getString(R.string.setting_theme), if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    R.array.setting_night_array
+                } else {
+                    R.array.setting_night_array_oreo
+                }, currentId
+            ) { _, index ->
+                defaultSharedPreferences.putInt(THEME_CURRENT_ID, index)
+                MainActivity.reopen(requireContext())
             }
         }
         language_rl.setOnClickListener { showLanguageAlert() }
