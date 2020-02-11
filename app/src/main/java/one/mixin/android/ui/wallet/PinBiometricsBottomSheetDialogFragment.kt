@@ -44,7 +44,7 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
         return bottomViewModel.verifyPin(pin)
     }
 
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String) {
+    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
         response.data?.let {
             if (fromWalletSetting) {
                 val success = BiometricUtil.savePin(
@@ -56,6 +56,7 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                 callback?.onSuccess()
             }
         }
+        return true
     }
 
     override fun getBiometricInfo() = BiometricInfo(getString(R.string.verify_by_biometric),

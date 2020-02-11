@@ -485,8 +485,17 @@
     <string name="setting_notification_transfer_desc">当收到不少于%1$s的转账时显示通知。</string>
     <string name="setting_notification_transfer_amount">转账金额(%1$s)</string>
     <string name="contact_share_apps_no_app">没有应用</string>
-    <string name="setting_night">夜间模式</string>
+    <string name="setting_theme">外观</string>
     <string name="setting_transfer_large_summary">当转账金额大于或等于 %1$s 时显示确认弹窗</string>
+    <string-array name="setting_night_array">
+        <item>浅色</item>
+        <item>暗黑</item>
+    </string-array>
+    <string-array name="setting_night_array_oreo">
+        <item>浅色</item>
+        <item>暗黑</item>
+        <item>跟随系统</item>
+    </string-array>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>
@@ -556,6 +565,9 @@
     <string name="notification_node">消息节点</string>
     <string name="notification_reply">回复</string>
     <string name="notification_mark">标记为已读</string>
+    <string name="notification_settings">设置</string>
+    <string name="notification_title">打开通知</string>
+    <string name="notification_content">不再遗漏好友的消息。</string>
     <!--auth-->
     <string name="auth_request">需要访问你的</string>
     <string name="auth_public_profile">个人资料(必须)</string>

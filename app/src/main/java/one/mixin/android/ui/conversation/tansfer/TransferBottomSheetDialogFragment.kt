@@ -148,10 +148,12 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         }
     }
 
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String) {
+    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
         if (t is WithdrawBiometricItem) {
             updateFirstWithdrawalSet(t as WithdrawBiometricItem)
         }
+        showDone()
+        return false
     }
 
     private fun shouldShowTransferTip() =

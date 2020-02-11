@@ -6,6 +6,7 @@
         <item name="colorPrimary">?attr/color_primary</item>
         <item name="colorPrimaryDark">?attr/color_primary_dark</item>
         <item name="colorAccent">?attr/color_accent</item>
+        <item name="colorSurface">?attr/color_primary</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:fontFamily">@font/sf_pro_regular</item>
         <item name="android:windowBackground">@color/colorPrimary</item>
@@ -51,6 +52,7 @@
         <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
 
+        <item name="code_border">@color/codeBorder</item>
     </style>
 
 

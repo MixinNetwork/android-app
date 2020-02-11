@@ -815,7 +815,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 reply_view.messageItem?.let {
                     if (it.messageId == event.messageId) {
                         reply_view.fadeOut(isGone = true)
-                        chat_control.showOtherInput()
                         reply_view.messageItem = null
                     }
                 }
@@ -967,7 +966,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
             reply_view.visibility == VISIBLE -> {
                 reply_view.fadeOut(isGone = true)
-                chat_control.showOtherInput()
                 true
             }
             else -> false
@@ -983,7 +981,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         if (reply_view.isVisible) {
             reply_view.fadeOut(isGone = true)
-            chat_control.showOtherInput()
         }
     }
 
@@ -1109,7 +1106,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         reply_view.reply_close_iv.setOnClickListener {
             reply_view.fadeOut(isGone = true)
-            chat_control.showOtherInput()
         }
         tool_view.copy_iv.setOnClickListener {
             try {
@@ -1161,7 +1157,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
             if (!reply_view.isVisible) {
                 reply_view.fadeIn()
-                chat_control.hideOtherInput()
                 chat_control.reset()
                 if (chat_control.isRecording) {
                     OpusAudioRecorder.get().stopRecording(false)
@@ -1495,6 +1490,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (duration < 500) {
             file.deleteOnExit()
         } else {
+
             createConversation {
                 chatViewModel.sendAudioMessage(
                     conversationId,
@@ -1508,7 +1504,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (reply_view.messageItem != null) {
                     reply_view.fadeOut(isGone = true)
                     reply_view.messageItem = null
-                    chat_control.showOtherInput()
                 }
                 scrollToDown()
             }
@@ -1527,7 +1522,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             if (reply_view.messageItem != null) {
                 reply_view.fadeOut(isGone = true)
                 reply_view.messageItem = null
-                chat_control.showOtherInput()
             }
             chat_rv.postDelayed({
                 scrollToDown()
@@ -1562,8 +1556,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             if (reply_view.messageItem != null) {
                 reply_view.fadeOut(isGone = true)
                 reply_view.messageItem = null
-                chat_control.showOtherInput()
             }
+
             scrollToDown()
             markRead()
         }
@@ -1586,7 +1580,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             if (reply_view.messageItem != null) {
                 reply_view.fadeOut(isGone = true)
                 reply_view.messageItem = null
-                chat_control.showOtherInput()
             }
             scrollToDown()
             markRead()
@@ -1598,7 +1591,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chat_control.chat_et.setText("")
             createConversation {
                 chatViewModel.sendTextMessage(conversationId, sender, message, isPlainMessage())
-                chat_control.showOtherInput()
                 scrollToDown()
                 markRead()
             }
@@ -1628,7 +1620,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 )
                 reply_view.fadeOut(isGone = true)
                 reply_view.messageItem = null
-                chat_control.showOtherInput()
                 scrollToDown()
                 markRead()
             }

@@ -32,8 +32,9 @@ class PinEmergencyBottomSheetDialog : BiometricBottomSheetDialogFragment() {
         contentView.biometric_tv.setText(R.string.verify_by_biometric)
     }
 
-    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String) {
+    override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
         pinEmergencyCallback?.onSuccess(pin)
+        return true
     }
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {

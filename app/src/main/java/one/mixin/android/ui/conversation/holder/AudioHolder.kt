@@ -77,10 +77,13 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
         }
 
         messageItem.mediaDuration?.let {
-            (it.toLong()).let {
-                itemView.chat_layout.layoutParams.width =
-                    min((minWidth + (it / 1000f) * dp15).toInt(), maxWidth)
+            val duration = try {
+                it.toLong()
+            } catch (e: Exception) {
+                0L
             }
+            itemView.chat_layout.layoutParams.width =
+                min((minWidth + (duration / 1000f) * dp15).toInt(), maxWidth)
         }
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
             itemView.chat_flag.isVisible = statusIcon != null

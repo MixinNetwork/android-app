@@ -11,9 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.core.os.bundleOf
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.lifecycleScope
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
@@ -60,8 +59,6 @@ class ForwardFragment : BaseFragment() {
     private val adapter by lazy {
         ForwardAdapter()
     }
-    var conversations: List<ConversationItem>? = null
-    var friends: List<User>? = null
 
     private val messages: ArrayList<ForwardMessage>? by lazy {
         arguments!!.getParcelableArrayList<ForwardMessage>(ARGS_MESSAGES)
@@ -144,34 +141,29 @@ class ForwardFragment : BaseFragment() {
                 setForwardText()
             }
         })
-
-        chatViewModel.successConversationList().observe(viewLifecycleOwner, Observer {
-            it?.let { conversations ->
-                val set = ArraySet<String>()
-                this.conversations = conversations
-                adapter.sourceConversations = conversations
-                conversations.forEach { item ->
-                    if (item.isContact()) {
-                        set.add(item.ownerId)
-                    }
-                }
-
-                chatViewModel.viewModelScope.launch {
-                    val list = chatViewModel.getFriends()
-                    if (list.isNotEmpty()) {
-                        friends = list.filter { item ->
-                            !set.contains(item.userId)
-                        }
-                        adapter.sourceFriends = friends
-                    } else {
-                        friends = list
-                        adapter.sourceFriends = list
-                    }
-                    adapter.changeData()
-                }
-            }
-        })
         search_et.addTextChangedListener(mWatcher)
+
+        loadData()
+    }
+
+    private fun loadData() = lifecycleScope.launch {
+        val conversations = chatViewModel.successConversationList()
+        adapter.sourceConversations = conversations
+        val set = ArraySet<String>()
+        conversations.forEach { item ->
+            if (item.isContact()) {
+                set.add(item.ownerId)
+            }
+        }
+        val list = chatViewModel.getFriends()
+        if (list.isNotEmpty()) {
+            adapter.sourceFriends = list.filter { item ->
+                !set.contains(item.userId)
+            }
+        } else {
+            adapter.sourceFriends = list
+        }
+        adapter.changeData()
     }
 
     private fun sendMessages() {

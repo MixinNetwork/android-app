@@ -50,9 +50,11 @@
 
             <TextView
                 android:id="@+id/chat_time"
+                android:background="@drawable/bg_bubble_shadow"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
+                android:layout_marginBottom="4dp"
                 android:drawablePadding="3dp"
                 android:fontFamily="@font/sf_pro_light"
                 android:gravity="end|bottom"

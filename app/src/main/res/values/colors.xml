@@ -33,6 +33,7 @@
     <color name="bgConfirmation">@color/wallet_blue_light</color>
 
     <color name="bgBlock">#F6F7FA</color>
+    <color name="codeBorder">#EFEFEF</color>
 
     <color name="white">#ffffffff</color>
     <color name="white_45">#73ffffff</color>

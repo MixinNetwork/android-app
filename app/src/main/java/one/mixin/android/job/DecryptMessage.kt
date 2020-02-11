@@ -139,7 +139,7 @@ class DecryptMessage : Injector() {
     }
 
     private fun checkSession(data: BlazeMessageData) {
-        if (data.conversationId == SYSTEM_USER || data.conversationId == Session.getAccountId()) {
+        if (data.conversationId == SYSTEM_USER || data.conversationId == Session.getAccountId() || data.userId == SYSTEM_USER) {
             return
         }
         val p = participantSessionDao.getParticipantSession(data.conversationId, data.userId, data.sessionId)
@@ -336,10 +336,9 @@ class DecryptMessage : Injector() {
                     return
                 }
 
-                val mimeType = if (mediaData.mimeType.isEmpty()) mediaData.mineType else mediaData.mimeType
                 val message = generateMessage(data) { quoteMessageItem ->
                     createMediaMessage(
-                        data.messageId, data.conversationId, data.userId, data.category, mediaData.attachmentId, null, mimeType, mediaData.size,
+                        data.messageId, data.conversationId, data.userId, data.category, mediaData.attachmentId, null, mediaData.mimeType, mediaData.size,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED,
                         data.status, quoteMessageItem?.messageId, quoteMessageItem.toJson()
                     )
@@ -358,12 +357,11 @@ class DecryptMessage : Injector() {
                 if (mediaData.invalidData()) {
                     return
                 }
-                val mimeType = if (mediaData.mimeType.isEmpty()) mediaData.mineType else mediaData.mimeType
 
                 val message = generateMessage(data) { quoteMessageItem ->
                     createVideoMessage(data.messageId, data.conversationId, data.userId,
-                        data.category, mediaData.attachmentId, mediaData.name, null, mediaData.duration,
-                        mediaData.width, mediaData.height, mediaData.thumbnail, mimeType,
+                        data.category, mediaData.attachmentId, mediaData.name, mediaData.mimeType, mediaData.duration,
+                        mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.mimeType,
                         mediaData.size, data.createdAt, mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson())
                 }
@@ -377,11 +375,10 @@ class DecryptMessage : Injector() {
             data.category.endsWith("_DATA") -> {
                 val decoded = Base64.decode(plainText)
                 val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
-                val mimeType = if (mediaData.mimeType.isEmpty()) mediaData.mineType else mediaData.mimeType
                 val message = generateMessage(data) { quoteMessageItem ->
                     createAttachmentMessage(data.messageId, data.conversationId, data.userId,
                         data.category, mediaData.attachmentId, mediaData.name, null,
-                        mimeType, mediaData.size, data.createdAt,
+                        mediaData.mimeType, mediaData.size, data.createdAt,
                         mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson())
                 }
@@ -467,14 +464,8 @@ class DecryptMessage : Injector() {
             }
         } else if (systemSession.action == SystemSessionMessageAction.DESTROY.name) {
             Session.deleteExtensionSessionId()
-            signalProtocol.deleteSession(data.userId)
-            val conversations = conversationDao.getConversationsByUserId(systemSession.userId)
-            val ps = conversations.map {
-                ParticipantSession(it, systemSession.userId, systemSession.sessionId)
-            }
-            if (ps.isNotEmpty()) {
-                participantSessionDao.deleteList(ps)
-            }
+            signalProtocol.deleteSession(systemSession.userId)
+            participantSessionDao.deleteByUserIdAndSessionId(systemSession.userId, systemSession.sessionId)
         }
     }
 
@@ -572,6 +563,7 @@ class DecryptMessage : Injector() {
                     it.addToTab("Decrypt", "conversation", data.conversationId)
                     it.addToTab("Decrypt", "message_id", data.messageId)
                     it.addToTab("Decrypt", "user", data.userId)
+                    it.addToTab("Decrypt", "session", data.sessionId)
                     it.addToTab("Decrypt", "data", data.data)
                     it.addToTab("Decrypt", "category", data.category)
                     it.addToTab("Decrypt", "created_at", data.createdAt)
@@ -626,8 +618,7 @@ class DecryptMessage : Injector() {
             val decoded = Base64.decode(plainText)
             val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
             val duration = if (mediaData.duration == null) null else mediaData.duration.toString()
-            val mimeType = if (mediaData.mimeType.isEmpty()) mediaData.mineType else mediaData.mimeType
-            messageDao.updateAttachmentMessage(messageId, mediaData.attachmentId, mimeType, mediaData.size,
+            messageDao.updateAttachmentMessage(messageId, mediaData.attachmentId, mediaData.mimeType, mediaData.size,
                 mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name, mediaData.waveform, duration,
                 mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, data.status)
             if (data.category == MessageCategory.SIGNAL_IMAGE.name || data.category == MessageCategory.SIGNAL_AUDIO.name) {

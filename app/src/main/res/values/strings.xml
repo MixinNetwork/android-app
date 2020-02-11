@@ -497,8 +497,17 @@
     <string name="setting_notification_transfer">Transfer Notifications</string>
     <string name="setting_notification_transfer_desc">Show notifications when receiving a transfer greater than or equal to %1$s.</string>
     <string name="setting_notification_transfer_amount">Transfer Amount(%1$s)</string>
-    <string name="setting_night">Night mode</string>
+    <string name="setting_theme">Appearance</string>
     <string name="setting_transfer_large_summary">Show confirmation dialog when transfer greater than or equal to %1$s</string>
+    <string-array name="setting_night_array">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+    <string-array name="setting_night_array_oreo">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>Follow system</item>
+    </string-array>
     <!--about-->
     <string name="about_follow_twitter">Follow us on Twitter</string>
     <string name="about_follow_facebook">Follow us on Facebook</string>
@@ -567,6 +576,9 @@
     <string name="notification_node">Messaging Node</string>
     <string name="notification_reply">Reply</string>
     <string name="notification_mark">Mark as read</string>
+    <string name="notification_settings">Settings</string>
+    <string name="notification_title">Turn On Notifications</string>
+    <string name="notification_content">Don\'t miss message from your friends.</string>
     <!--auth-->
     <string name="auth_request">Requests access to your</string>
     <string name="auth_public_profile">Public profile (required)</string>

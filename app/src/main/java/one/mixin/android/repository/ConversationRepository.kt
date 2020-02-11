@@ -68,8 +68,7 @@ internal constructor(
 
     fun conversation(): LiveData<List<ConversationItem>> = readConversationDao.conversationList()
 
-    fun successConversationList(): LiveData<List<ConversationItem>> =
-        readConversationDao.successConversationList()
+    suspend fun successConversationList(): List<ConversationItem> = readConversationDao.successConversationList()
 
     suspend fun insertConversation(conversation: Conversation, participants: List<Participant>) =
         withContext(SINGLE_DB_THREAD) {

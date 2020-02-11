@@ -48,7 +48,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.RecaptchaView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-import org.jetbrains.anko.yesButton
 
 class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     companion object {
@@ -161,12 +160,12 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
                         Session.storeAccount(a)
                     }
                     uiThread {
-                        alert(getString(R.string.change_phone_success)) {
-                            yesButton { dialog ->
+                        alert(getString(R.string.change_phone_success))
+                            .setPositiveButton(android.R.string.yes) { dialog, _ ->
                                 dialog.dismiss()
                                 activity?.finish()
                             }
-                        }.show()
+                            .show()
                     }
                 }
             }, { t: Throwable ->
