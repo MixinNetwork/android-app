@@ -51,7 +51,7 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query(PREFIX_CONVERSATION_ITEM +
         "WHERE c.category IS NOT NULL AND c.status = 2 " +
         "ORDER BY c.pin_time DESC, m.created_at DESC")
-    fun successConversationList(): LiveData<List<ConversationItem>>
+    suspend fun successConversationList(): List<ConversationItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("""

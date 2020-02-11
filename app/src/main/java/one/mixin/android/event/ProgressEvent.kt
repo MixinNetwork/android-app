@@ -4,7 +4,7 @@ import one.mixin.android.widget.CircleProgress
 
 data class ProgressEvent(val id: String, var progress: Float, val status: Int) {
     init {
-        if (progress.isNaN()){
+        if (progress.isNaN()) {
             progress = 0f
         }
     }

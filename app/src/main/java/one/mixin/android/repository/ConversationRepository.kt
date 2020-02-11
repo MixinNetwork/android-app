@@ -11,7 +11,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
@@ -66,8 +65,7 @@ internal constructor(
 
     fun conversation(): LiveData<List<ConversationItem>> = readConversationDao.conversationList()
 
-    fun successConversationList(): LiveData<List<ConversationItem>> =
-        readConversationDao.successConversationList()
+    suspend fun successConversationList(): List<ConversationItem> = readConversationDao.successConversationList()
 
     suspend fun insertConversation(conversation: Conversation, participants: List<Participant>) =
         withContext(SINGLE_DB_THREAD) {

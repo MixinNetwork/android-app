@@ -706,7 +706,7 @@ internal constructor(
 
     fun findFriendsNotBot() = userRepository.findFriendsNotBot()
 
-    fun successConversationList() = conversationRepository.successConversationList()
+    suspend fun successConversationList() = conversationRepository.successConversationList()
 
     fun findContactUsers() = userRepository.findContactUsers()
 
