@@ -46,9 +46,6 @@ import com.google.android.exoplayer2.util.MimeTypes
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.io.File
-import javax.inject.Inject
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
@@ -180,6 +177,9 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.File
+import javax.inject.Inject
+import kotlin.math.abs
 
 @SuppressLint("InvalidWakeLockTag")
 class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
@@ -486,11 +486,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onMentionClick(messageId: String, name: String?) {
                 chatViewModel.viewModelScope.launch {
-                    val user = chatViewModel.suspendFindUserFromMentionMessageByMessageId(messageId, name)
-                    if (user != null) {
-                        UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
-                    }
+                    // if (user != null) {
+                    //     UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                    //         .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    // }
                 }
             }
 
@@ -1329,6 +1328,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun bindData() {
         lifecycleScope.launch {
             if (!isAdded) return@launch
+
+            if (isGroup) {
+                chatAdapter.mentionRenderContext = chatViewModel.getMentionRenderContext(conversationId) { url ->
+                    Timber.d(url)
+                }
+            }
 
             unreadCount = if (!messageId.isNullOrEmpty()) {
                 chatViewModel.findMessageIndex(conversationId, messageId!!)

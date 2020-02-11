@@ -4,14 +4,14 @@ import android.graphics.Color;
 import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 
-abstract class TouchableSpan extends ClickableSpan {
+public abstract class TouchableSpan extends ClickableSpan {
 
     private boolean isPressed;
     private int normalTextColor;
     private int pressedTextColor;
     private boolean isUnderLineEnabled;
 
-    TouchableSpan(int normalTextColor, int pressedTextColor, boolean isUnderLineEnabled) {
+    protected TouchableSpan(int normalTextColor, int pressedTextColor, boolean isUnderLineEnabled) {
         this.normalTextColor = normalTextColor;
         this.pressedTextColor = pressedTextColor;
         this.isUnderLineEnabled = isUnderLineEnabled;

@@ -13,8 +13,6 @@ import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.PublishSubject
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.item_chat_unread.view.*
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.R
@@ -53,6 +51,7 @@ import one.mixin.android.ui.conversation.holder.VideoHolder
 import one.mixin.android.ui.conversation.holder.VideoQuoteHolder
 import one.mixin.android.ui.conversation.holder.WaitingHolder
 import one.mixin.android.util.markdown.MarkwonUtil
+import one.mixin.android.util.mention.MentionRenderContext
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
@@ -62,6 +61,8 @@ import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isRecall
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 class ConversationAdapter(
     private val context: Context,
@@ -78,6 +79,7 @@ class ConversationAdapter(
     val miniMarkwon by lazy {
         MarkwonUtil.getMiniMarkwon(context)
     }
+    var mentionRenderContext: MentionRenderContext? = null
     var hasBottomView = false
         set(value) {
             if (field != value) {
@@ -155,7 +157,8 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
-                        onItemListener
+                        onItemListener,
+                        mentionRenderContext
                     )
                 }
                 TEXT_QUOTE_TYPE -> {

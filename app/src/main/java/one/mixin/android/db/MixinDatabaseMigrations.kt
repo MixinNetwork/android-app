@@ -153,12 +153,5 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_27_28: Migration = object : Migration(27, 28) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("""
-                    CREATE TABLE IF NOT EXISTS `mention_message` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `user_id` TEXT, `full_name` TEXT, `has_read` INTEGER NOT NULL, `rid` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, FOREIGN KEY(`message_id`) REFERENCES `messages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )
-                """)
-            }
-        }
     }
 }

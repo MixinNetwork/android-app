@@ -1,68 +1,9 @@
 package one.mixin.android.util.mention
 
-import java.util.regex.Pattern
-import one.mixin.android.db.MentionMessageDao
-import one.mixin.android.db.UserDao
-import one.mixin.android.vo.MentionMessage
+import com.discord.simpleast.core.node.Node
+import com.discord.simpleast.core.parser.Parser
 import one.mixin.android.vo.User
-import org.jetbrains.anko.collections.forEachReversedByIndex
-import timber.log.Timber
-
-fun parseMention(
-    text: String?,
-    messageId: String,
-    conversationId: String,
-    userDao: UserDao,
-    mentionMessageDao: MentionMessageDao
-): String? {
-    var result = text ?: return null
-    val matcher = mentionPattern.matcher(text)
-    val mentions = mutableListOf<MentionItem>()
-    while (matcher.find()) {
-        val name = matcher.group().replace(" ", "").replace("\b", " ").replace("@", "")
-        Timber.d(name)
-        val user = userDao.findUSerByFullName(name)
-        user?.let { u ->
-            mentions.add(MentionItem(matcher.start(), matcher.end(), " @${u.identityNumber} "))
-        }
-        mentionMessageDao.insert(MentionMessage(messageId, conversationId, user?.userId, user?.fullName, true))
-    }
-
-    mentions.forEachReversedByIndex { item ->
-        result = result.replaceRange(item.start, item.end, item.content)
-    }
-    return result
-}
-
-fun processMentionMessageMention(
-    text: String,
-    messageId: String,
-    conversationId: String,
-    userDao: UserDao,
-    mentionMessageDao: MentionMessageDao,
-    handlerMessage: (String) -> Unit
-) {
-    var result = text
-    val matcher = mentionNumberPattern.matcher(text)
-    val users = mutableListOf<User?>()
-    val mentions = mutableListOf<MentionItem>()
-    while (matcher.find()) {
-        val identityNumber = matcher.group().replace("@", "").replace(" ", "")
-        val user = userDao.findUSerByIdentityNumber(identityNumber)
-        user?.let { u ->
-            mentions.add(MentionItem(matcher.start(), matcher.end(), " @${u.fullName?.replace(" ", "\b")} "))
-        }
-        users.add(user)
-    }
-
-    mentions.forEachReversedByIndex { item ->
-        result = result.replaceRange(item.start, item.end, item.content)
-    }
-    handlerMessage(result)
-    users.forEach { u ->
-        mentionMessageDao.insert(MentionMessage(messageId, conversationId, u?.userId, u?.fullName))
-    }
-}
+import java.util.regex.Pattern
 
 fun mentionDisplay(string: CharSequence): Boolean {
     val matcher = mentionEndPattern.matcher(string)
@@ -79,28 +20,22 @@ fun mentionEnd(string: String): String? {
 }
 
 fun mentionReplace(source: String, user: User): String {
-    val index = source.lastIndexOf("@")
-    return if (index == -1 || user.fullName == null) {
-        source
-    } else if (index == 0 && user.appId!=null) {
-        "@${user.identityNumber} "
-    } else if (index == 0){
-        "@${user.fullName.replace(" ", "\b")} "
-    } else {
-        "${source.substring(0, index)} @${user.fullName.replace(" ", "\b")} "
+    return when (val index = source.lastIndexOf("@")) {
+        -1 -> {
+            source
+        }
+        0 -> {
+            "@${user.identityNumber} "
+        }
+        else -> {
+            "${source.substring(0, index)} @${user.identityNumber} "
+        }
     }
-}
-
-class MentionItem(val start: Int, val end: Int, val content: String)
-
-private val mentionPattern by lazy {
-    Pattern.compile("@(\\S|\\b)+(?:\\s|\$)")
-}
-
-private val mentionNumberPattern by lazy {
-    Pattern.compile("@[0-9]+(?:\\s|\$)")
 }
 
 private val mentionEndPattern by lazy {
     Pattern.compile("(?:\\s|^)@.*\$")
 }
+
+val mentionParser = Parser<MentionRenderContext, Node<MentionRenderContext>>()
+    .addRule(UserRule())

@@ -83,6 +83,7 @@ buildscript {
         ext.biometricpromptVersion = '1.0.6'
         ext.webrtcVersion = '1.0.30039'
         ext.bitcoinPaymentURI = '1.0.3'
+        ext.simpleastVersion = '1.1.1'
     }
 
     repositories {

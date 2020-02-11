@@ -271,7 +271,7 @@ dependencies {
     implementation "io.noties.markwon:syntax-highlight:${markwonVersion}"
     implementation "org.webrtc:google-webrtc:${webrtcVersion}"
     implementation "com.github.SandroMachado:BitcoinPaymentURI:${bitcoinPaymentURI}"
-
+    implementation "com.discord:simpleast:${simpleastVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

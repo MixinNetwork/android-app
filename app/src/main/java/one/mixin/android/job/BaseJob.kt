@@ -6,9 +6,6 @@ import com.birbit.android.jobqueue.Params
 import com.birbit.android.jobqueue.RetryConstraint
 import com.bugsnag.android.Bugsnag
 import com.bugsnag.android.MetaData
-import java.io.IOException
-import java.net.SocketTimeoutException
-import javax.inject.Inject
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.LocalJobException
 import one.mixin.android.api.NetworkException
@@ -30,7 +27,6 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FavoriteAppDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.JobDao
-import one.mixin.android.db.MentionMessageDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MixinDatabase
@@ -51,6 +47,9 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
+import java.io.IOException
+import java.net.SocketTimeoutException
+import javax.inject.Inject
 
 abstract class BaseJob(params: Params) : Job(params), Injectable {
 
@@ -156,9 +155,6 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
     @Transient
     @Inject
     lateinit var linkState: LinkState
-    @Inject
-    @Transient
-    lateinit var mentionMessageDao: MentionMessageDao
 
     open fun shouldRetry(throwable: Throwable): Boolean {
         if (throwable is SocketTimeoutException) {

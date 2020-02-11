@@ -24,6 +24,7 @@ import android.view.animation.Interpolator
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
+import android.widget.TextView
 import androidx.annotation.LayoutRes
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
@@ -32,14 +33,18 @@ import androidx.core.view.ViewPropertyAnimatorListener
 import androidx.core.view.updateLayoutParams
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
+import com.discord.simpleast.core.simple.SimpleRenderer
 import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
-import java.io.FileNotFoundException
-import java.io.IOException
+import one.mixin.android.util.mention.MentionRenderContext
+import one.mixin.android.util.mention.mentionParser
 import org.jetbrains.anko.dip
 import timber.log.Timber
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.util.regex.Pattern
 
 const val ANIMATION_DURATION_SHORTEST = 260L
 
@@ -252,8 +257,10 @@ fun View.capture(context: Context) {
     draw(c)
     b.save(outFile)
     try {
-        MediaStore.Images.Media.insertImage(context.contentResolver,
-            outFile.absolutePath, outFile.name, null)
+        MediaStore.Images.Media.insertImage(
+            context.contentResolver,
+            outFile.absolutePath, outFile.name, null
+        )
     } catch (e: FileNotFoundException) {
         e.printStackTrace()
     }
@@ -296,4 +303,20 @@ fun View.isActivityNotDestroyed(): Boolean {
         }
     }
     return true
+}
+
+fun TextView.render(text: CharSequence?, mentionRenderContext: MentionRenderContext?) {
+    if (text == null || mentionRenderContext == null) {
+        this.text = text
+        return
+    }
+    if (!Pattern.compile("^@\\d+").matcher(text).find()) {
+        this.text = text
+        return
+    }
+    this.text = SimpleRenderer.render(
+        source = text,
+        parser = mentionParser,
+        renderContext = mentionRenderContext
+    )
 }

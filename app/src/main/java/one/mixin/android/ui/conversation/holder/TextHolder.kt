@@ -13,8 +13,10 @@ import kotlinx.android.synthetic.main.item_chat_text.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.render
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.util.mention.MentionRenderContext
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
@@ -24,7 +26,6 @@ class TextHolder constructor(containerView: View) : BaseViewHolder(containerView
 
     init {
         itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_MENTION)
         itemView.chat_tv.setUrlModeColor(LINK_COLOR)
         itemView.chat_tv.setMentionModeColor(LINK_COLOR)
         itemView.chat_layout.setMaxWidth(itemView.context.maxItemWidth())
@@ -75,7 +76,8 @@ class TextHolder constructor(containerView: View) : BaseViewHolder(containerView
         isFirst: Boolean = false,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+        onItemListener: ConversationAdapter.OnItemListener,
+        mentionRenderContext: MentionRenderContext?
     ) {
         this.onItemListener = onItemListener
         if (hasSelect && isSelect) {
@@ -136,13 +138,14 @@ class TextHolder constructor(containerView: View) : BaseViewHolder(containerView
                         BackgroundColorSpan(HIGHLIGHTED), start,
                         start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
-                    itemView.chat_tv.text = sp
+                    // Todo
+                    // itemView.chat_tv.text.render(sp, mentionRenderContext))
                 } else {
-                    itemView.chat_tv.text = messageItem.content
+                    itemView.chat_tv.render(messageItem.content, mentionRenderContext)
                 }
             }
         }, {
-            itemView.chat_tv.text = messageItem.content
+            itemView.chat_tv.render(messageItem.content, mentionRenderContext)
         })
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {

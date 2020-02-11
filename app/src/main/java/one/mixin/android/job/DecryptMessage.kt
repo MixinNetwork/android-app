@@ -7,8 +7,6 @@ import androidx.collection.arrayMapOf
 import androidx.collection.arraySetOf
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
-import java.io.File
-import java.util.UUID
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.SignalKeyCount
@@ -29,7 +27,6 @@ import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
-import one.mixin.android.util.mention.processMentionMessageMention
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
@@ -86,6 +83,8 @@ import org.whispersystems.libsignal.DuplicateMessageException
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
+import java.io.File
+import java.util.UUID
 
 class DecryptMessage : Injector() {
 
@@ -307,20 +306,18 @@ class DecryptMessage : Injector() {
         when {
             data.category.endsWith("_TEXT") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_TEXT.name) String(Base64.decode(plainText)) else plainText
-                processMentionMessageMention(plain, data.messageId, data.conversationId, userDao, mentionMessageDao) { content ->
-                    val message = generateMessage(data) { quoteMessageItem ->
-                        if (quoteMessageItem == null) {
-                            createMessage(data.messageId, data.conversationId, data.userId, data.category, content, data.createdAt, data.status).apply {
-                                this.content?.findLastUrl()?.let { jobManager.addJobInBackground(ParseHyperlinkJob(it, data.messageId)) }
-                            }
-                        } else {
-                            createReplyTextMessage(data.messageId, data.conversationId, data.userId, data.category, content, data.createdAt, data.status,
-                                quoteMessageItem.messageId, quoteMessageItem.toJson())
+                val message = generateMessage(data) { quoteMessageItem ->
+                    if (quoteMessageItem == null) {
+                        createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status).apply {
+                            this.content?.findLastUrl()?.let { jobManager.addJobInBackground(ParseHyperlinkJob(it, data.messageId)) }
                         }
+                    } else {
+                        createReplyTextMessage(data.messageId, data.conversationId, data.userId, data.category,
+                            plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
                     }
-                    messageDao.insert(message)
-                    sendNotificationJob(message, data.source)
                 }
+                messageDao.insert(message)
+                sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_POST") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
