@@ -109,18 +109,8 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_night"
+                    android:text="@string/setting_theme"
                     tools:ignore="RelativeOverlap" />
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/night_mode_desc_sw"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:textColor="?attr/text_minor"
-                    android:visibility="gone" />
 
                 <TextView
                     android:id="@+id/night_mode_desc_tv"
@@ -129,8 +119,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:textColor="?attr/text_minor"
-                    android:visibility="gone" />
+                    android:textColor="?attr/text_minor" />
 
             </RelativeLayout>
 
