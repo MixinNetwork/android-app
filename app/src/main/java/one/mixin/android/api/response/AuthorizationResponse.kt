@@ -13,6 +13,11 @@ class AuthorizationResponse(
     val authorizationId: String,
     val authorization_code: String,
     val scopes: List<String>,
-    val code_id: String,
-    val app: App
+    @SerializedName("code_id")
+    val codeId: String,
+    val app: App,
+    @SerializedName("created_at")
+    val createAt: String,
+    @SerializedName("accessed_at")
+    val accessedAt: String
 ) : Parcelable

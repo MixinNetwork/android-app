@@ -14,6 +14,7 @@ import one.mixin.android.ui.setting.FriendsNoBotFragment
 import one.mixin.android.ui.setting.MobileContactFragment
 import one.mixin.android.ui.setting.NotificationsFragment
 import one.mixin.android.ui.setting.OldPasswordFragment
+import one.mixin.android.ui.setting.PermissionListFragment
 import one.mixin.android.ui.setting.PinEmergencyBottomSheetDialog
 import one.mixin.android.ui.setting.PinLogsFragment
 import one.mixin.android.ui.setting.PrivacyFragment
@@ -96,4 +97,7 @@ abstract class SettingActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeCurrencyBottomSheetDialogFragment(): CurrencyBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributePermissionListFragment(): PermissionListFragment
 }

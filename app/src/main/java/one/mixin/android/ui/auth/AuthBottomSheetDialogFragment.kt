@@ -13,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import kotlinx.android.parcel.Parcelize
@@ -232,7 +233,15 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     @SuppressLint("ParcelCreator")
     @Parcelize
-    data class Scope(val name: String, val desc: String) : Parcelable
+    data class Scope(val name: String, val desc: String) : Parcelable {
+        companion object {
+            val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Scope>() {
+                override fun areItemsTheSame(oldItem: Scope, newItem: Scope) = oldItem == newItem
+
+                override fun areContentsTheSame(oldItem: Scope, newItem: Scope) = oldItem == newItem
+            }
+        }
+    }
 
     interface OnScopeListener {
         fun onScope(itemView: View, position: Int)
