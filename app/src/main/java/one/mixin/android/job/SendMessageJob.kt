@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
-import java.io.File
 import one.mixin.android.RxBus
 import one.mixin.android.crypto.Base64
 import one.mixin.android.event.RecallEvent
@@ -11,6 +10,7 @@ import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
+import one.mixin.android.util.mention.getMentionData
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.isCall
@@ -22,6 +22,7 @@ import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.ResendData
 import one.mixin.android.websocket.createCallMessage
 import one.mixin.android.websocket.createParamBlazeMessage
+import java.io.File
 
 open class SendMessageJob(
     val message: Message,
@@ -54,6 +55,13 @@ open class SendMessageJob(
         }
         if (alreadyExistMessage) {
             return
+        }
+        if (message.isText()){
+            message.content?.let {content->
+                getMentionData(content,userDao)?.let {quote
+                    message.quoteContent = u
+                }
+            }
         }
         val conversation = conversationDao.findConversationById(message.conversationId)
         if (conversation != null) {

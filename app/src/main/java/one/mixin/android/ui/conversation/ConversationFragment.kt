@@ -1350,7 +1350,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             if (isGroup) {
                 chatAdapter.mentionRenderContext = chatViewModel.getMentionRenderContext(conversationId) { url ->
-                    Timber.d(url)
+                    chatViewModel.viewModelScope.launch {
+
+                    }
                 }
             }
 

@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
+import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.User
 
 @Dao
@@ -108,5 +109,8 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT * FROM users WHERE identity_number =:identityNumber")
     fun findUSerByIdentityNumber(identityNumber: String): User?
+
+    @Query("SELECT u.* FROM participants p, users u WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id")
+    suspend fun suspendGetGroupParticipants(conversationId: String): List<MentionUser>
 
 }

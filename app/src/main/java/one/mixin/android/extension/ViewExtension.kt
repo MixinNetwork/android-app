@@ -39,12 +39,13 @@ import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
 import one.mixin.android.util.mention.MentionRenderContext
+import one.mixin.android.util.mention.core.simple.SimpleRenderer
+import one.mixin.android.util.mention.mentionNumberPattern
 import one.mixin.android.util.mention.mentionParser
 import org.jetbrains.anko.dip
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.util.regex.Pattern
 
 const val ANIMATION_DURATION_SHORTEST = 260L
 
@@ -310,13 +311,17 @@ fun TextView.render(text: CharSequence?, mentionRenderContext: MentionRenderCont
         this.text = text
         return
     }
-    if (!Pattern.compile("^@\\d+").matcher(text).find()) {
+    if (!mentionNumberPattern.matcher(text).find()) {
         this.text = text
         return
     }
-    this.text = SimpleRenderer.render(
-        source = text,
-        parser = mentionParser,
-        renderContext = mentionRenderContext
-    )
+    this.text = try {
+        SimpleRenderer.render(
+            text,
+            parser = mentionParser,
+            renderContext = mentionRenderContext
+        )
+    } catch (e: Exception) {
+        text
+    }
 }

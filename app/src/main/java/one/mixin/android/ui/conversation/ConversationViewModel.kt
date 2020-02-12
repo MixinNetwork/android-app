@@ -6,7 +6,6 @@ import android.content.ContentResolver.SCHEME_CONTENT
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.net.Uri
-import android.util.ArrayMap
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -1096,7 +1095,8 @@ internal constructor(
         }
     }
 
-    fun getMentionRenderContext(conversationId: String, action: (String) -> Unit): MentionRenderContext {
-        return MentionRenderContext(ArrayMap(), action)
+    suspend fun getMentionRenderContext(conversationId: String, action: (String) -> Unit): MentionRenderContext {
+        val map = userRepository.getMentionUsersMap(conversationId)
+        return MentionRenderContext(map, action)
     }
 }
