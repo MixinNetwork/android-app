@@ -578,7 +578,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onPostClick(view: View, messageItem: MessageItem) {
-                MarkdownActivity.show(requireActivity(), messageItem.content!!)
+                MarkdownActivity.show(requireActivity(), messageItem.content!!, conversationId)
             }
 
             override fun onSayHi() {

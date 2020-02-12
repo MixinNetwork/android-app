@@ -32,6 +32,7 @@ class MarkwonUtil {
     companion object {
         fun getMarkwon(
             context: Context,
+            mixinLinkResolver: (String) -> Unit,
             linkResolver: (String) -> Unit
         ): Markwon {
             val requestManager = Glide.with(context)
@@ -80,9 +81,9 @@ class MarkwonUtil {
                         builder.linkResolver(object : LinkResolverDef() {
                             override fun resolve(view: View, link: String) {
                                 if (isMixinUrl(link)) {
-                                    linkResolver.invoke(link)
+                                    mixinLinkResolver.invoke(link)
                                 } else {
-                                    super.resolve(view, link)
+                                    linkResolver.invoke(link)
                                 }
                             }
                         })
