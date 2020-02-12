@@ -14,6 +14,7 @@ import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.ForwardCategory
@@ -57,10 +58,13 @@ class MarkdownActivity : BaseActivity() {
         recycler_view.layoutManager = LinearLayoutManager(this)
         recycler_view.setHasFixedSize(true)
         recycler_view.adapter = adapter
-        val markwon = MarkwonUtil.getMarkwon(this) { link ->
+        val markwon = MarkwonUtil.getMarkwon(this, { link ->
             LinkBottomSheetDialogFragment.newInstance(link)
                 .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-        }
+        }, {link->
+            WebBottomSheetDialogFragment.newInstance(link, intent.getStringExtra(CONVERSATION_ID))
+                .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+        })
         val markdown = intent.getStringExtra(CONTENT) ?: return
         adapter.setMarkdown(markwon, markdown)
         adapter.notifyDataSetChanged()
@@ -85,9 +89,11 @@ class MarkdownActivity : BaseActivity() {
 
     companion object {
         private const val CONTENT = "content"
-        fun show(context: Context, content: String) {
+        private const val CONVERSATION_ID = "conversation_id"
+        fun show(context: Context, content: String, conversationId: String? = null) {
             context.startActivity(Intent(context, MarkdownActivity::class.java).apply {
                 putExtra(CONTENT, content)
+                putExtra(CONVERSATION_ID, conversationId)
             })
         }
     }

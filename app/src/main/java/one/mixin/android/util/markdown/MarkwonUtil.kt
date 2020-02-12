@@ -32,11 +32,15 @@ class MarkwonUtil {
     companion object {
         fun getMarkwon(
             context: Context,
+            mixinLinkResolver: (String) -> Unit,
             linkResolver: (String) -> Unit
         ): Markwon {
             val requestManager = Glide.with(context)
+            val isNightMode = context.isNightMode()
             val prism4j = Prism4j(LanguageGrammerLocator())
-            val prism4jTheme = Prism4jThemeDefault.create()
+            val prism4jTheme = if (isNightMode) {
+                Prism4jThemeDarkula.create()
+            } else Prism4jThemeDefault.create()
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
                 .usePlugin(StrikethroughPlugin.create())
@@ -56,6 +60,7 @@ class MarkwonUtil {
                 .usePlugin(object : AbstractMarkwonPlugin() {
                     override fun configureTheme(builder: MarkwonTheme.Builder) {
                         builder.headingBreakHeight(0)
+                            .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
                     }
 
                     override fun configureVisitor(builder: MarkwonVisitor.Builder) {
@@ -76,9 +81,9 @@ class MarkwonUtil {
                         builder.linkResolver(object : LinkResolverDef() {
                             override fun resolve(view: View, link: String) {
                                 if (isMixinUrl(link)) {
-                                    linkResolver.invoke(link)
+                                    mixinLinkResolver.invoke(link)
                                 } else {
-                                    super.resolve(view, link)
+                                    linkResolver.invoke(link)
                                 }
                             }
                         })
@@ -115,16 +120,7 @@ class MarkwonUtil {
                         builder.headingBreakHeight(0)
                             .codeBlockBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
                             .codeBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
-                            .headingTextSizeMultipliers(
-                                floatArrayOf(
-                                    1.3F,
-                                    1.2F,
-                                    1.1F,
-                                    .9F,
-                                    .8F,
-                                    .7F
-                                )
-                            )
+                            .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
                     }
 
                     override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
