@@ -81,7 +81,6 @@ import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
-import one.mixin.android.ui.setting.SettingFragment.Companion.ARGS_RECREATE
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.RootUtil
@@ -347,10 +346,6 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     override fun onNewIntent(intent: Intent) {
-        if (intent.getBooleanExtra(ARGS_RECREATE, false)) {
-            recreate()
-            return
-        }
         super.onNewIntent(intent)
         handlerCode(intent)
     }
@@ -605,14 +600,12 @@ class MainActivity : BlazeBaseActivity() {
         fun getSingleIntent(context: Context): Intent {
             return Intent(context, MainActivity::class.java).apply {
                 addCategory(Intent.CATEGORY_LAUNCHER)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             }
         }
 
         fun reopen(context: Context) {
-            return Intent(context, MainActivity::class.java).apply {
-                putExtra(ARGS_RECREATE, true)
-            }.run {
+            return getSingleIntent(context).run {
                 context.startActivity(this)
             }
         }

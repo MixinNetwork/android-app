@@ -95,6 +95,11 @@
                     tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/setting_divider"
+                android:background="?attr/bg_window" />
+
             <RelativeLayout
                 android:id="@+id/night_mode_rl"
                 android:layout_width="match_parent"
@@ -122,11 +127,6 @@
                     android:textColor="?attr/text_minor" />
 
             </RelativeLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/setting_divider"
-                android:background="?attr/bg_window" />
 
             <RelativeLayout
                 android:id="@+id/language_rl"
