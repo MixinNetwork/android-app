@@ -124,12 +124,17 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
             }
         }
 
-        if (!messageItem.thumbImage.isNullOrEmpty()) {
-            miniMarkwon.setMarkdown(itemView.chat_tv, messageItem.thumbImage)
-        } else if (!messageItem.content.isNullOrEmpty()) {
-            miniMarkwon.setMarkdown(itemView.chat_tv, messageItem.content.split("\n").take(20).joinToString("\n"))
-        } else {
-            itemView.chat_tv.text = null
+        if (itemView.chat_tv.tag != messageItem.content.hashCode()) {
+            if (!messageItem.thumbImage.isNullOrEmpty()) {
+                miniMarkwon.setMarkdown(itemView.chat_tv, messageItem.thumbImage)
+                itemView.chat_tv.tag = messageItem.content.hashCode()
+            } else if (!messageItem.content.isNullOrEmpty()) {
+                miniMarkwon.setMarkdown(itemView.chat_tv, messageItem.content.split("\n").take(20).joinToString("\n"))
+                itemView.chat_tv.tag = messageItem.content.hashCode()
+            } else {
+                itemView.chat_tv.text = null
+                itemView.chat_tv.tag = null
+            }
         }
 
         itemView.setOnLongClickListener {
