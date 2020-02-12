@@ -30,8 +30,6 @@ class SettingFragment : Fragment() {
     companion object {
         const val TAG = "SettingFragment"
 
-        const val ARGS_RECREATE = "args_recreate"
-
         fun newInstance() = SettingFragment()
     }
 

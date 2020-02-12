@@ -24,6 +24,7 @@ class CaptureActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        overridePendingTransition(R.anim.slide_in_bottom, 0)
         checkCameraCanUse()
         setContentView(R.layout.activity_contact)
         captureFragment = when {
@@ -72,7 +73,6 @@ class CaptureActivity : BlazeBaseActivity() {
             actionWithIntent: ((intent: Intent) -> Unit)? = null
         ) {
             Intent(activity, CaptureActivity::class.java).apply {
-                activity.overridePendingTransition(R.anim.slide_in_bottom, 0)
                 if (actionWithIntent == null) {
                     activity.startActivity(this)
                 } else {
