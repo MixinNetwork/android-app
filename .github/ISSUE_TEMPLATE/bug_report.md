@@ -1,38 +1,33 @@
----
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
+### Step 1: Are you in the right place?
 
----
+  * For issues or feature requests related to the code **in this repository** file a Github issue.
+  * For general technical questions, post a question on [StackOverflow](http://stackoverflow.com/) tagged appropriately.
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+### Step 2: Describe your environment
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+  * Device: _____
+  * OS version: _____
+  * App version: _____
+  * Mixin ID: ____
+  
+### Step 3: Describe the problem:
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+#### Steps to reproduce:
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+  1. _____
+  2. _____
+  3. _____
+  
+#### Observed Results:
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+  * What happened?  This could be a description, log output, etc.
+  
+#### Expected Results:
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+  * What did you expect to happen?
+  
+#### Relevant Code:
 
-**Additional context**
-Add any other context about the problem here.
+  ```
+  // TODO(you): code here to reproduce the problem
+  ```
