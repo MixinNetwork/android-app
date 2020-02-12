@@ -38,7 +38,7 @@ class MarkdownActivity : BaseActivity() {
             }
         }
         val adapter = MarkwonAdapter.builder(
-            R.layout.adapter_default_entry,
+            R.layout.layout_markdown_item,
             R.id.text
         ).include(
             FencedCodeBlock::class.java,
