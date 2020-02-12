@@ -93,12 +93,19 @@ class ConversationAdapter(
     }
 
     private val publisher = PublishSubject.create<PagedList<MessageItem>>()
+    private var pagingList: PagedList<MessageItem>? = null
+
+    fun loadAround(index: Int) {
+        pagingList?.loadAround(index)
+    }
+
     override fun submitList(pagedList: PagedList<MessageItem>?) {
         if (pagedList == null) {
             super.submitList(null)
         } else {
             publisher.onNext(pagedList)
         }
+        this.pagingList = pagedList
     }
 
     fun listen(scopeProvider: ScopeProvider) {

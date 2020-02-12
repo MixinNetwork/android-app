@@ -559,6 +559,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         if (index == 0) {
                             toast(R.string.error_not_found_message)
                         } else {
+                            chatAdapter.loadAround(index)
                             if (index == chatAdapter.itemCount - 1) {
                                 scrollTo(index, 0, action = {
                                     requireContext().mainThreadDelayed({
