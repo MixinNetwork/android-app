@@ -14,9 +14,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.CameraX
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.TorchState
@@ -75,6 +75,8 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
     private var displayId: Int = -1
     private lateinit var displayManager: DisplayManager
 
+    private var imageCaptureFile: File? = null
+
     private var alreadyDetected = false
 
     private val forScan by lazy {
@@ -88,8 +90,8 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
         override fun onDisplayRemoved(displayId: Int) = Unit
         override fun onDisplayChanged(displayId: Int) = view?.let { view ->
             if (displayId == this@CameraXCaptureFragment.displayId) {
-                imageCapture?.setTargetRotation(view.display.rotation)
-                imageAnalysis?.setTargetRotation(view.display.rotation)
+                imageCapture?.targetRotation = view.display.rotation
+                imageAnalysis?.targetRotation = view.display.rotation
             }
         } ?: Unit
     }
@@ -137,10 +139,10 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
         lensFacing = if (CameraSelector.LENS_FACING_FRONT == lensFacing) {
             CameraSelector.LENS_FACING_BACK
         } else {
+            flash.setImageResource(R.drawable.ic_flash_off)
             CameraSelector.LENS_FACING_FRONT
         }
         try {
-            CameraX.getCameraWithLensFacing(lensFacing)
             bindCameraUseCase()
         } catch (e: Exception) {
             Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Switch lens and rebind use cases failure, $e")
@@ -151,11 +153,15 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
 
     @SuppressLint("RestrictedApi")
     override fun onTakePicture() {
-        val outFile = requireContext().getImageCachePath().createImageTemp()
+        imageCaptureFile = requireContext().getImageCachePath().createImageTemp()
         val metadata = ImageCapture.Metadata().apply {
             isReversedHorizontal = lensFacing == CameraSelector.LENS_FACING_FRONT
         }
-        imageCapture?.takePicture(outFile, metadata, mainExecutor, imageSavedListener)
+        val outputFileOptions =
+            ImageCapture.OutputFileOptions.Builder(imageCaptureFile!!)
+                .setMetadata(metadata)
+                .build()
+        imageCapture?.takePicture(outputFileOptions, mainExecutor, imageSavedListener)
     }
 
     @SuppressLint("RestrictedApi")
@@ -173,7 +179,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
                 .setTargetAspectRatioCustom(screenAspectRatio)
                 .setTargetRotation(rotation)
                 .build()
-            preview?.previewSurfaceProvider = view_finder.previewSurfaceProvider
+            preview?.setSurfaceProvider(view_finder.previewSurfaceProvider)
 
             imageCapture = ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
@@ -207,13 +213,15 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
     }
 
     private val imageSavedListener = object : ImageCapture.OnImageSavedCallback {
-        override fun onImageSaved(file: File) {
-            openEdit(file.absolutePath, false)
+        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+            imageCaptureFile?.let { uri ->
+                openEdit(uri.toString(), false)
+            }
         }
 
-        override fun onError(imageCaptureError: Int, message: String, cause: Throwable?) {
-            context?.toast("Photo capture failed: $message")
-            Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Photo capture failed: $message")
+        override fun onError(exception: ImageCaptureException) {
+            context?.toast("Photo capture failed: ${exception.message}")
+            Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Photo capture failed: ${exception.message}")
         }
     }
 
