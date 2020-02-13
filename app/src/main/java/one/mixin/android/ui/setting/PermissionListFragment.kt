@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.getScopes
-import one.mixin.android.extension.dayTimeDash
+import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment.Companion.ARGS_AUTHORIZATION
 import one.mixin.android.ui.common.BaseViewModelFragment
@@ -66,7 +66,7 @@ class PermissionListFragment : BaseViewModelFragment<SettingViewModel>() {
         permission_rv.layoutManager = LinearLayoutManager(requireContext())
         val foot = layoutInflater.inflate(R.layout.layout_permission_list_foot, permission_rv, false)
         foot.deauthorize_rl.setOnClickListener { showDialog(app) }
-        foot.time_tv.text = getString(R.string.setting_auth_access, auth.createAt.dayTimeDash(), auth.accessedAt.dayTimeDash())
+        foot.time_tv.text = getString(R.string.setting_auth_access, auth.createAt.fullDate(), auth.accessedAt.fullDate())
         val adapter = PermissionListAdapter()
         permission_rv.adapter = adapter
         adapter.footerView = foot

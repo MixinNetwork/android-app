@@ -11,7 +11,6 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.Scope.Companion.SCOPES
-import org.jetbrains.anko.collections.forEachWithIndex
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -64,8 +63,8 @@ fun AuthorizationResponse.getScopes(
                 )
             SCOPES[4] -> {
                 val sb = StringBuilder()
-                assets.forEachWithIndex { i, a ->
-                    if (i > 1) return@forEachWithIndex
+                assets.forEachIndexed { i, a ->
+                    if (i > 1) return@forEachIndexed
 
                     sb.append("${a.balance} ${a.symbol}")
                     if (i != assets.size - 1 && i < 1) {

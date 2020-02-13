@@ -176,11 +176,6 @@ fun String.dayTime(): String {
     return date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd").withZone(LocaleZone)) as String
 }
 
-fun String.dayTimeDash(): String {
-    val date = ZonedDateTime.parse(this).toOffsetDateTime()
-    return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(LocaleZone)) as String
-}
-
 fun String.createAtToLong(): Long {
     val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)
     return date.toInstant().toEpochMilli()
