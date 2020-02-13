@@ -15,8 +15,8 @@ import one.mixin.android.vo.ForwardMessage
 
 class ForwardActivity : BlazeBaseActivity() {
     companion object {
-        var ARGS_MESSAGES = "args_messages"
-        var ARGS_SHARE = "args_share"
+        const val ARGS_MESSAGES = "args_messages"
+        const val ARGS_SHARE = "args_share"
 
         fun show(context: Context, messages: ArrayList<ForwardMessage>, isShare: Boolean = false) {
             val intent = Intent(context, ForwardActivity::class.java).apply {

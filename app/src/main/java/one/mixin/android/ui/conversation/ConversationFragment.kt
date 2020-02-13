@@ -28,7 +28,9 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.core.view.children
@@ -43,6 +45,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.util.MimeTypes
+import com.google.android.material.snackbar.Snackbar
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -69,6 +72,7 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.event.ExitEvent
+import one.mixin.android.event.ForwardEvent
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.REQUEST_CAMERA
@@ -736,6 +740,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (it.conversationId == conversationId) {
                     activity?.finish()
                 }
+            }
+        RxBus.listen(ForwardEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { event ->
+                Snackbar.make(chat_rv, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
+                    .setAction(R.string.chat_go_check) {
+                        ConversationActivity.show(requireContext(), event.conversationId, event.userId)
+                    }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                        view.setBackgroundResource(R.color.call_btn_icon_checked)
+                        (view.findViewById(R.id.snackbar_text) as TextView)
+                            .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                    }.show()
             }
     }
 
