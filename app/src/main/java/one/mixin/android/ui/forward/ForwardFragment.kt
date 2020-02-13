@@ -22,9 +22,10 @@ import kotlinx.android.synthetic.main.fragment_forward.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.ForwardEvent
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_SHARE
@@ -110,17 +111,7 @@ class ForwardFragment : BaseFragment() {
         forward_rv.adapter = adapter
         forward_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         forward_bn.setOnClickListener {
-            if (adapter.selectItem.size == 1) {
-                adapter.selectItem[0].let {
-                    if (it is User) {
-                        sendSingleMessage(null, it.userId)
-                    } else if (it is ConversationItem) {
-                        sendSingleMessage(it.conversationId, null)
-                    }
-                }
-            } else {
-                sendMessages()
-            }
+            sendMessages(adapter.selectItem.size == 1)
         }
         adapter.setForwardListener(object : ForwardAdapter.ForwardListener {
             override fun onConversationItemClick(item: ConversationItem) {
@@ -166,7 +157,7 @@ class ForwardFragment : BaseFragment() {
         adapter.changeData()
     }
 
-    private fun sendMessages() {
+    private fun sendMessages(single: Boolean) {
         if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name || it.type == ForwardCategory.DATA.name } != null) {
             RxPermissions(requireActivity())
                 .request(
@@ -175,9 +166,7 @@ class ForwardFragment : BaseFragment() {
                 .autoDispose(stopScope)
                 .subscribe({ granted ->
                     if (granted) {
-                        chatViewModel.sendForwardMessages(adapter.selectItem, messages)
-                        requireActivity().finish()
-                        sharePreOperation()
+                        sharePreOperation(single)
                     } else {
                         requireContext().openPermissionSetting()
                     }
@@ -185,36 +174,22 @@ class ForwardFragment : BaseFragment() {
                     Bugsnag.notify(it)
                 })
         } else {
-            chatViewModel.sendForwardMessages(adapter.selectItem, messages)
-            sharePreOperation()
+            sharePreOperation(single)
         }
     }
 
-    private fun sendSingleMessage(conversationId: String?, userId: String?) {
-        if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name || it.type == ForwardCategory.DATA.name } != null) {
-            RxPermissions(requireActivity())
-                .request(
-                    WRITE_EXTERNAL_STORAGE,
-                    READ_EXTERNAL_STORAGE)
-                .autoDispose(stopScope)
-                .subscribe({ granted ->
-                    if (granted) {
-                        sharePreOperation()
-                        ConversationActivity.show(requireContext(), conversationId, userId, messages = messages)
-                        activity?.finish()
-                    } else {
-                        requireContext().openPermissionSetting()
-                    }
-                }, {
-                    Bugsnag.notify(it)
-                })
-        } else {
-            sharePreOperation()
-            ConversationActivity.show(requireContext(), conversationId, userId, messages = messages)
+    private fun sharePreOperation(single: Boolean) {
+        chatViewModel.sendForwardMessages(adapter.selectItem, messages)
+        if (single) {
+            adapter.selectItem[0].let {
+                val forwardEvent = if (it is User) {
+                    ForwardEvent(null, it.userId)
+                } else {
+                    ForwardEvent((it as ConversationItem).conversationId, null)
+                }
+                RxBus.publish(forwardEvent)
+            }
         }
-    }
-
-    private fun sharePreOperation() {
         if (isShare) {
             startActivity(Intent(context, MainActivity::class.java))
             activity?.finish()
