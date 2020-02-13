@@ -19,15 +19,17 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
-import one.mixin.android.extension.dayTime
+import one.mixin.android.api.response.getScopes
+import one.mixin.android.extension.dayTimeDash
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment.Companion.ARGS_AUTHORIZATION
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.common.recyclerview.FooterListAdapter
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.App
+import one.mixin.android.vo.Scope
+import one.mixin.android.vo.convertName
 
 class PermissionListFragment : BaseViewModelFragment<SettingViewModel>() {
     companion object {
@@ -64,7 +66,7 @@ class PermissionListFragment : BaseViewModelFragment<SettingViewModel>() {
         permission_rv.layoutManager = LinearLayoutManager(requireContext())
         val foot = layoutInflater.inflate(R.layout.layout_permission_list_foot, permission_rv, false)
         foot.deauthorize_rl.setOnClickListener { showDialog(app) }
-        foot.time_tv.text = getString(R.string.setting_auth_access, auth.createAt.dayTime(), auth.accessedAt.dayTime())
+        foot.time_tv.text = getString(R.string.setting_auth_access, auth.createAt.dayTimeDash(), auth.accessedAt.dayTimeDash())
         val adapter = PermissionListAdapter()
         permission_rv.adapter = adapter
         adapter.footerView = foot
@@ -73,7 +75,7 @@ class PermissionListFragment : BaseViewModelFragment<SettingViewModel>() {
 
     private fun loadData(adapter: PermissionListAdapter) = lifecycleScope.launch {
         val assets = viewModel.simpleAssetsWithBalance()
-        val scopes = AuthBottomSheetDialogFragment.handleAuthorization(requireContext(), auth, assets)
+        val scopes = auth.getScopes(requireContext(), assets)
         adapter.submitList(scopes)
     }
 
@@ -98,8 +100,7 @@ class PermissionListFragment : BaseViewModelFragment<SettingViewModel>() {
             }.show()
     }
 
-    class PermissionListAdapter : FooterListAdapter<AuthBottomSheetDialogFragment.Scope, RecyclerView.ViewHolder>(
-        AuthBottomSheetDialogFragment.Scope.DIFF_CALLBACK) {
+    class PermissionListAdapter : FooterListAdapter<Scope, RecyclerView.ViewHolder>(Scope.DIFF_CALLBACK) {
         override fun getNormalViewHolder(context: Context, parent: ViewGroup) =
             ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_permission_list, parent, false))
 
@@ -109,8 +110,8 @@ class PermissionListFragment : BaseViewModelFragment<SettingViewModel>() {
     }
 
     class ItemHolder(itemView: View) : NormalHolder(itemView) {
-        fun bindTo(scope: AuthBottomSheetDialogFragment.Scope) {
-            itemView.name_tv.text = scope.name
+        fun bindTo(scope: Scope) {
+            itemView.name_tv.text = scope.convertName(itemView.context)
             itemView.number_tv.text = scope.desc
         }
     }

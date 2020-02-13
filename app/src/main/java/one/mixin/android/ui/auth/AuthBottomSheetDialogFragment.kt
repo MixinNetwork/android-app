@@ -2,21 +2,17 @@ package one.mixin.android.ui.auth
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
-import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_auth.view.*
 import kotlinx.android.synthetic.main.item_third_login_scope.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
@@ -27,12 +23,11 @@ import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.qr.CaptureActivity.Companion.SCOPES
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.Session
-import one.mixin.android.vo.Asset
+import one.mixin.android.vo.Scope
+import one.mixin.android.vo.Scope.Companion.SCOPES
+import one.mixin.android.vo.convertName
 import one.mixin.android.widget.BottomSheet
-import org.jetbrains.anko.collections.forEachWithIndex
 
 class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
@@ -50,51 +45,6 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 putParcelableArrayList(ARGS_SCOPES, scopes)
                 putParcelable(ARGS_AUTHORIZATION, auth)
             }
-
-        fun handleAuthorization(
-            ctx: Context,
-            authorization: AuthorizationResponse,
-            assets: List<Asset>
-        ): ArrayList<Scope> {
-            val scopes = arrayListOf<Scope>()
-            val user = Session.getAccount() ?: return scopes
-            for (s in authorization.scopes) {
-                when (s) {
-                    SCOPES[0] ->
-                        scopes.add(Scope(s, ctx.getString(R.string.auth_profile_content,
-                            user.full_name, user.identity_number)))
-                    SCOPES[1] ->
-                        scopes.add(Scope(s, user.phone))
-                    SCOPES[2] ->
-                        scopes.add(Scope(s, ctx.getString(R.string.auth_messages_represent_description)))
-                    SCOPES[3] ->
-                        scopes.add(Scope(s, ctx.getString(R.string.auth_permission_contacts_read_description)))
-                    SCOPES[4] -> {
-                        val sb = StringBuilder()
-                        assets.forEachWithIndex { i, a ->
-                            if (i > 1) return@forEachWithIndex
-
-                            sb.append("${a.balance} ${a.symbol}")
-                            if (i != assets.size - 1 && i < 1) {
-                                sb.append(", ")
-                            }
-                        }
-                        if (assets.size > 2) {
-                            scopes.add(Scope(s, ctx.getString(R.string.auth_assets_more, sb.toString())))
-                        } else {
-                            scopes.add(Scope(s, sb.toString()))
-                        }
-                    }
-                    SCOPES[5] ->
-                        scopes.add(Scope(s, ctx.getString(R.string.auth_snapshot_read_description)))
-                    SCOPES[6] ->
-                        scopes.add(Scope(s, ctx.getString(R.string.auth_apps_read_description)))
-                    SCOPES[7] ->
-                        scopes.add(Scope(s, ctx.getString(R.string.auth_apps_write_description)))
-                }
-            }
-            return scopes
-        }
     }
 
     private val scopes: List<Scope> by lazy {
@@ -199,7 +149,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         override fun onBindViewHolder(holder: ScopeViewHolder, position: Int) {
             val scope = scopes[position]
-            holder.itemView.title.text = x(holder.itemView.context, scope.name)
+            holder.itemView.title.text = scope.convertName(holder.itemView.context)
             holder.itemView.desc.text = scope.desc
             holder.itemView.cb.isChecked = checkedScopes.contains(scope.name)
             if (scope.name == SCOPES[0]) {
@@ -212,36 +162,9 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScopeViewHolder =
             ScopeViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_third_login_scope, parent, false))
-
-        private fun x(ctx: Context, scope: String): String {
-            val id = when (scope) {
-                SCOPES[0] -> R.string.auth_public_profile
-                SCOPES[1] -> R.string.auth_phone_number
-                SCOPES[2] -> R.string.auth_messages_represent
-                SCOPES[3] -> R.string.auth_permission_contacts_read
-                SCOPES[4] -> R.string.auth_assets
-                SCOPES[5] -> R.string.auth_snapshot_read
-                SCOPES[6] -> R.string.auth_app_read
-                SCOPES[7] -> R.string.auth_apps_write
-                else -> R.string.auth_public_profile
-            }
-            return ctx.getString(id)
-        }
     }
 
     class ScopeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
-
-    @SuppressLint("ParcelCreator")
-    @Parcelize
-    data class Scope(val name: String, val desc: String) : Parcelable {
-        companion object {
-            val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Scope>() {
-                override fun areItemsTheSame(oldItem: Scope, newItem: Scope) = oldItem == newItem
-
-                override fun areContentsTheSame(oldItem: Scope, newItem: Scope) = oldItem == newItem
-            }
-        }
-    }
 
     interface OnScopeListener {
         fun onScope(itemView: View, position: Int)

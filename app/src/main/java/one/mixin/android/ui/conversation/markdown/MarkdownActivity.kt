@@ -61,7 +61,7 @@ class MarkdownActivity : BaseActivity() {
         val markwon = MarkwonUtil.getMarkwon(this, { link ->
             LinkBottomSheetDialogFragment.newInstance(link)
                 .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-        }, {link->
+        }, { link ->
             WebBottomSheetDialogFragment.newInstance(link, intent.getStringExtra(CONVERSATION_ID))
                 .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
         })

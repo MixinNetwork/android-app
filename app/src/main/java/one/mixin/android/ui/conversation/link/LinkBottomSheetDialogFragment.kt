@@ -38,6 +38,7 @@ import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.api.response.PaymentCodeResponse
+import one.mixin.android.api.response.getScopes
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.booleanFromAttribute
@@ -270,7 +271,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                 linkViewModel.simpleAssetsWithBalance()
                             }
                             activity?.let {
-                                val scopes = AuthBottomSheetDialogFragment.handleAuthorization(it, authorization, assets)
+                                val scopes = authorization.getScopes(it, assets)
                                 AuthBottomSheetDialogFragment.newInstance(scopes, authorization)
                                     .showNow(parentFragmentManager, AuthBottomSheetDialogFragment.TAG)
                                 authOrPay = true
