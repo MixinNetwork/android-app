@@ -27,6 +27,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.url.isMixinUrl
 import org.commonmark.node.FencedCodeBlock
+import org.commonmark.node.SoftLineBreak
 import org.jetbrains.anko.dip
 
 class MarkwonUtil {
@@ -62,9 +63,7 @@ class MarkwonUtil {
                     }
 
                     override fun configureVisitor(builder: MarkwonVisitor.Builder) {
-                        builder.on(
-                            FencedCodeBlock::class.java
-                        ) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
+                        builder.on(FencedCodeBlock::class.java) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
                             val code = visitor.configuration()
                                 .syntaxHighlight()
                                 .highlight(
@@ -72,6 +71,9 @@ class MarkwonUtil {
                                     fencedCodeBlock.literal.trim { it <= ' ' }
                                 )
                             visitor.builder().append(code)
+                        }
+                        builder.on(SoftLineBreak::class.java) { visitor: MarkwonVisitor, _: SoftLineBreak ->
+                            visitor.forceNewLine()
                         }
                     }
 
@@ -113,6 +115,20 @@ class MarkwonUtil {
 
                     override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
                         builder.linkResolver { _, _ -> }
+                    }
+                    override fun configureVisitor(builder: MarkwonVisitor.Builder) {
+                        builder.on(FencedCodeBlock::class.java) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
+                            val code = visitor.configuration()
+                                .syntaxHighlight()
+                                .highlight(
+                                    fencedCodeBlock.info,
+                                    fencedCodeBlock.literal.trim { it <= ' ' }
+                                )
+                            visitor.builder().append(code)
+                        }
+                        builder.on(SoftLineBreak::class.java) { visitor: MarkwonVisitor, _: SoftLineBreak ->
+                            visitor.forceNewLine()
+                        }
                     }
                 })
                 .build()
