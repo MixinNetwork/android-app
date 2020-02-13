@@ -88,7 +88,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         if (state == PaymentStatus.paid.name) {
             contentView.error_btn.visibility = GONE
             showErrorInfo(getString(R.string.pay_paid))
-        } else if (state == PaymentStatus.pending.name && shouldShowTransferTip()) {
+        } else if (state == PaymentStatus.pending.name && shouldShowTransferTip() && t is TransferBiometricItem) {
             (t as TransferBiometricItem).let {
                 val fiatAmount =
                     (BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()
