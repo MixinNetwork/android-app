@@ -612,7 +612,10 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         fun reopen(context: Context) {
-            return getSingleIntent(context).run {
+            Intent(context, MainActivity::class.java).apply {
+                addCategory(Intent.CATEGORY_LAUNCHER)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+            }.run {
                 context.startActivity(this)
             }
         }
