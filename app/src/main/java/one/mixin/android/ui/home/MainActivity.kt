@@ -604,6 +604,13 @@ class MainActivity : BlazeBaseActivity() {
             }
         }
 
+        fun getWakeUpIntent(context: Context): Intent {
+            return Intent(context, MainActivity::class.java).apply {
+                addCategory(Intent.CATEGORY_LAUNCHER)
+                action = Intent.ACTION_MAIN
+            }
+        }
+
         fun reopen(context: Context) {
             return getSingleIntent(context).run {
                 context.startActivity(this)
