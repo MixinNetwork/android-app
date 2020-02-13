@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ForwardEvent
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
@@ -107,10 +108,14 @@ class ForwardFragment : BaseFragment() {
         if (isShare) {
             title_view.title_tv.text = getString(R.string.share)
         }
-        title_view.setOnClickListener { activity?.onBackPressed() }
+        title_view.setOnClickListener {
+            search_et?.hideKeyboard()
+            activity?.onBackPressed()
+        }
         forward_rv.adapter = adapter
         forward_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         forward_bn.setOnClickListener {
+            search_et?.hideKeyboard()
             sendMessages(adapter.selectItem.size == 1)
         }
         adapter.setForwardListener(object : ForwardAdapter.ForwardListener {
