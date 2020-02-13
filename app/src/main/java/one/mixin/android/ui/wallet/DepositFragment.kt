@@ -17,7 +17,7 @@ abstract class DepositFragment : Fragment() {
     }
 
     protected fun showTip() {
-        title.postDelayed(showTipRunnable, 2000)
+        title.post(showTipRunnable)
     }
 
     private val showTipRunnable = Runnable {
