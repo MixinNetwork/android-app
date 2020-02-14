@@ -13,7 +13,6 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.google.i18n.phonenumbers.NumberParseException
@@ -22,6 +21,7 @@ import com.google.i18n.phonenumbers.Phonenumber
 import com.mukesh.countrypicker.Country
 import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDispose
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_mobile.*
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
@@ -30,7 +30,7 @@ import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.getAlertDialogTheme
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.vibrate
@@ -40,7 +40,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.RecaptchaView
-import javax.inject.Inject
 
 class MobileFragment : BaseFragment() {
 
@@ -126,7 +125,7 @@ class MobileFragment : BaseFragment() {
     }
 
     private fun showDialog() {
-        AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
+        alertDialogBuilder()
             .setMessage(getString(R.string.landing_invitation_dialog_content,
                 mCountry.dialCode + " " + mobile_et.text.toString()))
             .setNegativeButton(R.string.change) { dialog, _ -> dialog.dismiss() }

@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import java.util.Locale
 import kotlinx.android.synthetic.main.fragment_setting.*
@@ -16,8 +15,8 @@ import one.mixin.android.Constants.Theme.THEME_AUTO_ID
 import one.mixin.android.Constants.Theme.THEME_CURRENT_ID
 import one.mixin.android.Constants.Theme.THEME_DEFAULT_ID
 import one.mixin.android.R
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getAlertDialogTheme
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
@@ -115,7 +114,7 @@ class SettingFragment : Fragment() {
             }
         }
         var newSelectItem = selectItem
-        AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
+        alertDialogBuilder()
             .setTitle(R.string.language)
             .setSingleChoiceItems(choice, selectItem) { _, which ->
                 newSelectItem = which

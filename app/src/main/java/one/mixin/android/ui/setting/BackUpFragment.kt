@@ -11,12 +11,13 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.annotation.RequiresPermission
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import java.util.Date
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_backup.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -24,9 +25,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.R
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
-import one.mixin.android.extension.getAlertDialogTheme
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
@@ -36,8 +37,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.delete
 import one.mixin.android.util.backup.findBackup
-import java.util.Date
-import javax.inject.Inject
 
 class BackUpFragment : BaseFragment() {
     companion object {
@@ -100,7 +99,7 @@ class BackUpFragment : BaseFragment() {
                 when {
                     BackupJob.backupLiveData.result == Result.SUCCESS -> findBackUp()
                     BackupJob.backupLiveData.result == Result.NO_AVAILABLE_MEMORY ->
-                        AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
+                        alertDialogBuilder()
                             .setMessage(R.string.backup_no_available_memory)
                             .setNegativeButton(R.string.group_ok) { dialog, _ -> dialog.dismiss() }
                             .show()
@@ -115,7 +114,7 @@ class BackUpFragment : BaseFragment() {
     }
 
     private fun showBackupDialog() {
-        val builder = AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
+        val builder = alertDialogBuilder()
         builder.setTitle(R.string.backup_dialog_title)
 
         val checkedItem = defaultSharedPreferences.getInt(BACKUP_PERIOD, 0)

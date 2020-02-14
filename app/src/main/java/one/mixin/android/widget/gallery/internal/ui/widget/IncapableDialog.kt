@@ -4,15 +4,14 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.TextUtils
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
-import one.mixin.android.extension.getAlertDialogTheme
+import one.mixin.android.extension.alertDialogBuilder
 
 class IncapableDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val title = arguments!!.getString(EXTRA_TITLE)
         val message = arguments!!.getString(EXTRA_MESSAGE)
-        val builder = AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
+        val builder = alertDialogBuilder()
         if (!TextUtils.isEmpty(title)) {
             builder.setTitle(title)
         }

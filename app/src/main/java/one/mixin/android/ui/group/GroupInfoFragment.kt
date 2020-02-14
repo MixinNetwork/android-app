@@ -10,7 +10,6 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.collection.ArrayMap
 import androidx.lifecycle.Observer
@@ -18,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_group_info.*
 import kotlinx.android.synthetic.main.view_group_info_header.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -27,7 +27,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ConversationEvent
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.getAlertDialogTheme
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
@@ -47,7 +47,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroup
-import javax.inject.Inject
 
 class GroupInfoFragment : BaseFragment() {
     companion object {
@@ -124,7 +123,7 @@ class GroupInfoFragment : BaseFragment() {
                         choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
                     }
                 }
-                AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
+                alertDialogBuilder()
                     .setItems(choices.toTypedArray()) { _, which ->
                         when (which) {
                             0 -> {
@@ -296,7 +295,7 @@ class GroupInfoFragment : BaseFragment() {
     }
 
     private fun showConfirmDialog(message: String, type: Int, user: User? = null) {
-        AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
+        alertDialogBuilder()
             .setMessage(message)
             .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
             .setPositiveButton(R.string.confirm) { dialog, _ ->

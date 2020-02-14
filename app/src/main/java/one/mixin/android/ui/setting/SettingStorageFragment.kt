@@ -24,8 +24,8 @@ import kotlinx.android.synthetic.main.item_contact_storage.view.*
 import kotlinx.android.synthetic.main.item_storage_check.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fileSize
-import one.mixin.android.extension.getAlertDialogTheme
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
@@ -145,7 +145,7 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
     }
 
     private val menuDialog: AlertDialog by lazy {
-        AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
+        alertDialogBuilder()
             .setView(menuView)
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
@@ -170,7 +170,7 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
     }
 
     private val confirmDialog: AlertDialog by lazy {
-        AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
+        alertDialogBuilder()
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
             }
