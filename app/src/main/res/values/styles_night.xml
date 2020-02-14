@@ -2,7 +2,6 @@
 <resources>
 
     <style name="AppTheme.Night" parent="AppTheme">
-        <item name="android:windowBackground">@color/colorPrimaryNight</item>
         <item name="color_primary">@color/colorPrimaryDarkNight</item>
         <item name="color_primary_dark">@color/colorPrimaryNight</item>
         <item name="color_accent">@color/colorAccentNight</item>
@@ -78,7 +77,7 @@
         <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
     </style>
 
-    <style name="MixinAlertDialogNightTheme" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+    <style name="MixinAlertDialogNightTheme" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
         <item name="colorAccent">@color/colorDarkBlue</item>
         <item name="android:textColorPrimary">?attr/text_primary</item>
         <item name="android:background">?attr/bg_white</item>

@@ -9,7 +9,7 @@
         <item name="colorSurface">?attr/color_primary</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:fontFamily">@font/sf_pro_regular</item>
-        <item name="android:windowBackground">@color/colorPrimary</item>
+        <item name="android:windowBackground">?attr/colorPrimary</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:textColorHighlight">@color/blue_highlight</item>
         <item name="android:textViewStyle">@style/NoneHFTextViewStyle</item>
@@ -102,7 +102,7 @@
         <item name="android:windowLightStatusBar">false</item>
     </style>
 
-    <style name="MixinAlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
+    <style name="MixinAlertDialogTheme" parent="Theme.MaterialComponents.Light.Dialog.Alert">
         <item name="colorAccent">@color/colorDarkBlue</item>
         <item name="android:textColorPrimary">?attr/text_primary</item>
         <item name="android:background">?attr/bg_white</item>
