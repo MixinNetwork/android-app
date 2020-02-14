@@ -836,7 +836,11 @@ internal constructor(
         }
     }
 
-    fun sendForwardMessages(selectItem: List<Any>, messages: List<ForwardMessage>?) {
+    fun sendForwardMessages(
+        selectItem: List<Any>,
+        messages: List<ForwardMessage>?,
+        showSuccess: Boolean
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             var conversationId: String? = null
             for (item in selectItem) {
@@ -854,8 +858,10 @@ internal constructor(
                     sendForwardMessages(item.conversationId, messages, item.isBot())
                 }
 
-                withContext(Dispatchers.Main) {
-                    MixinApplication.get().toast(R.string.forward_success)
+                if (showSuccess) {
+                    withContext(Dispatchers.Main) {
+                        MixinApplication.get().toast(R.string.forward_success)
+                    }
                 }
                 findUnreadMessagesSync(conversationId!!)?.let { list ->
                     if (list.isNotEmpty()) {

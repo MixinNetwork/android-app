@@ -323,8 +323,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                     ForwardCategory.CONTACT.name,
                                     sharedUserId = u.userId
                                 )
-                            ),
-                            true
+                            )
                         )
                         dismiss()
                     }

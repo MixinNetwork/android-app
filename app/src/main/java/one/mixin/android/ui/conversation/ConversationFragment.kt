@@ -1104,7 +1104,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         tool_view.forward_iv.setOnClickListener {
             lifecycleScope.launch {
                 val list = chatViewModel.getSortMessagesByIds(chatAdapter.selectSet)
-                ForwardActivity.show(requireContext(), list)
+                ForwardActivity.show(requireContext(), list, fromConversation = true)
                 closeTool()
             }
         }
