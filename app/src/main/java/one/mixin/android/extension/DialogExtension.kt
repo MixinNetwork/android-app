@@ -22,7 +22,7 @@ fun Context.singleChoice(
     checkedItem: Int,
     onClick: (DialogInterface, Int) -> Unit
 ) {
-    MaterialAlertDialogBuilder(this, getAlertDialogTheme()).apply {
+    MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
         setTitle(title)
         setSingleChoiceItems(itemsId, checkedItem, onClick)
         setPositiveButton(android.R.string.cancel) { dialog, _ ->
@@ -40,19 +40,11 @@ fun Context.alert(
     message: CharSequence,
     title: CharSequence? = null
 ): MaterialAlertDialogBuilder {
-    return MaterialAlertDialogBuilder(this, getAlertDialogTheme()).apply {
+    return MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
         if (title != null) {
             setTitle(title)
         }
         setMessage(message)
-    }
-}
-
-fun Context.getAlertDialogTheme(): Int {
-    return if (booleanFromAttribute(R.attr.flag_night)) {
-        R.style.MixinAlertDialogNightTheme
-    } else {
-        R.style.MixinAlertDialogTheme
     }
 }
 
@@ -61,7 +53,7 @@ fun Fragment.alertDialogBuilder(): AlertDialog.Builder {
 }
 
 fun Context.alertDialogBuilder(): AlertDialog.Builder {
-    return AlertDialog.Builder(this, getAlertDialogTheme())
+    return AlertDialog.Builder(this, R.style.MixinAlertDialogTheme)
 }
 
 fun Fragment.indeterminateProgressDialog(message: String? = null, title: String? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {
@@ -85,7 +77,7 @@ private fun Context.progressDialog(
     message: CharSequence? = null,
     title: CharSequence? = null,
     init: (ProgressDialog.() -> Unit)? = null
-) = ProgressDialog(this, getAlertDialogTheme()).apply {
+) = ProgressDialog(this, R.style.MixinAlertDialogTheme).apply {
     isIndeterminate = indeterminate
     if (!indeterminate) setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
     if (message != null) setMessage(message)
