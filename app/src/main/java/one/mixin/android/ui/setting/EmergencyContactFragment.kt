@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_emergency_contact.*
@@ -14,6 +13,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
@@ -62,7 +62,7 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
             }
         }
         delete_rl.setOnClickListener {
-            AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+            alertDialogBuilder()
                 .setMessage(getString(R.string.setting_emergency_remove_tip))
                 .setNegativeButton(R.string.cancel) { dialog, _ ->
                     dialog.dismiss()

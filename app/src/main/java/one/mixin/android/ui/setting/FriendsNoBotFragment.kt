@@ -1,6 +1,5 @@
 package one.mixin.android.ui.setting
 
-import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_friends.*
 import kotlinx.coroutines.Dispatchers
@@ -10,6 +9,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.response.VerificationResponse
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navTo
@@ -46,7 +46,7 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, Emergen
     override suspend fun getFriends() = viewModel.getFriendsNotBot()
 
     override fun onItemClick(user: User) {
-        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        alertDialogBuilder()
             .setTitle(getString(R.string.setting_emergency_set))
             .setMessage(getString(R.string.setting_emergency_set_message, user.identityNumber))
             .setNegativeButton(R.string.change) { dialog, _ ->

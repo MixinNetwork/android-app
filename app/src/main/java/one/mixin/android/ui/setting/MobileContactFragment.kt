@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -20,6 +19,7 @@ import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.createContactsRequests
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
@@ -74,7 +74,7 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
         op_tv.setText(R.string.setting_mobile_contact_delete)
         op_tv.textColorResource = R.color.colorRed
         op_rl.setOnClickListener {
-            AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+            alertDialogBuilder()
                 .setMessage(R.string.setting_mobile_contact_warning)
                 .setPositiveButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
                 .setNegativeButton(R.string.conversation_delete) { dialog, _ ->

@@ -36,7 +36,6 @@ import android.view.ViewConfiguration
 import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.IdRes
-import androidx.appcompat.app.AlertDialog
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -638,7 +637,7 @@ fun Context.showConfirmDialog(
     message: String,
     action: () -> Unit
 ) {
-    AlertDialog.Builder(this, R.style.MixinAlertDialogTheme)
+    alertDialogBuilder()
         .setMessage(message)
         .setNegativeButton(R.string.cancel) { dialog, _ ->
             dialog.dismiss()
@@ -674,3 +673,7 @@ fun Context.isNightMode(): Boolean {
 fun Context.isLandscape() = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
 fun Context.isAutoRotate() = Settings.System.getInt(contentResolver, Settings.System.ACCELEROMETER_ROTATION, 0) == 1
+
+fun Fragment.toast(textResource: Int) = requireActivity().toast(textResource)
+
+fun Fragment.toast(text: CharSequence) = requireActivity().toast(text)

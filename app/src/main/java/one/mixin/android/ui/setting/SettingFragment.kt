@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import java.util.Locale
 import kotlinx.android.synthetic.main.fragment_setting.*
@@ -15,7 +15,9 @@ import one.mixin.android.Constants.Account.PREF_SET_LANGUAGE
 import one.mixin.android.Constants.Theme.THEME_AUTO_ID
 import one.mixin.android.Constants.Theme.THEME_CURRENT_ID
 import one.mixin.android.Constants.Theme.THEME_DEFAULT_ID
+import one.mixin.android.Constants.Theme.THEME_NIGHT_ID
 import one.mixin.android.R
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
@@ -85,8 +87,19 @@ class SettingFragment : Fragment() {
                     R.array.setting_night_array_oreo
                 }, currentId
             ) { _, index ->
+                val changed = index != currentId
                 defaultSharedPreferences.putInt(THEME_CURRENT_ID, index)
-                MainActivity.reopen(requireContext())
+                AppCompatDelegate.setDefaultNightMode(
+                    when (index) {
+                        THEME_DEFAULT_ID -> AppCompatDelegate.MODE_NIGHT_NO
+                        THEME_NIGHT_ID -> AppCompatDelegate.MODE_NIGHT_YES
+                        THEME_AUTO_ID -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                        else -> AppCompatDelegate.MODE_NIGHT_NO
+                    }
+                )
+                if (changed) {
+                    requireActivity().recreate()
+                }
             }
         }
         language_rl.setOnClickListener { showLanguageAlert() }
@@ -114,7 +127,7 @@ class SettingFragment : Fragment() {
             }
         }
         var newSelectItem = selectItem
-        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        alertDialogBuilder()
             .setTitle(R.string.language)
             .setSingleChoiceItems(choice, selectItem) { _, which ->
                 newSelectItem = which
