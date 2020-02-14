@@ -9,12 +9,14 @@ import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.LinkResolverDef
 import io.noties.markwon.Markwon
 import io.noties.markwon.MarkwonConfiguration
+import io.noties.markwon.MarkwonSpansFactory
 import io.noties.markwon.MarkwonVisitor
 import io.noties.markwon.core.CorePlugin
 import io.noties.markwon.core.MarkwonTheme
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.ext.tables.TableTheme
+import io.noties.markwon.ext.tasklist.TaskListPlugin
 import io.noties.markwon.image.ImagesPlugin
 import io.noties.markwon.recycler.table.TableEntryPlugin
 import io.noties.markwon.syntax.Prism4jThemeDarkula
@@ -27,6 +29,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.url.isMixinUrl
 import org.commonmark.node.FencedCodeBlock
+import org.commonmark.node.Link
 import org.commonmark.node.SoftLineBreak
 import org.jetbrains.anko.dip
 
@@ -52,6 +55,7 @@ class MarkwonUtil {
             } else Prism4jThemeDefault.create()
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
+                .usePlugin(TaskListPlugin.create(context))
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(TableEntryPlugin.create(context))
@@ -60,6 +64,15 @@ class MarkwonUtil {
                     override fun configureTheme(builder: MarkwonTheme.Builder) {
                         builder.headingBreakHeight(0)
                             .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
+                    }
+
+                    override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {
+                        val spansFactory = builder.getFactory(Link::class.java)
+                        if (spansFactory != null) {
+                            builder.setFactory(Link::class.java) { configuration, props ->
+                                arrayOf(RemoveUnderlineSpan(), spansFactory.getSpans(configuration, props))
+                            }
+                        }
                     }
 
                     override fun configureVisitor(builder: MarkwonVisitor.Builder) {
@@ -101,6 +114,7 @@ class MarkwonUtil {
             } else Prism4jThemeDefault.create()
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
+                .usePlugin(TaskListPlugin.create(context))
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(TablePlugin.create(getTheme()))
@@ -116,6 +130,16 @@ class MarkwonUtil {
                     override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
                         builder.linkResolver { _, _ -> }
                     }
+
+                    override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {
+                        val spansFactory = builder.getFactory(Link::class.java)
+                        if (spansFactory != null) {
+                            builder.setFactory(Link::class.java) { configuration, props ->
+                                arrayOf(RemoveUnderlineSpan(), spansFactory.getSpans(configuration, props))
+                            }
+                        }
+                    }
+
                     override fun configureVisitor(builder: MarkwonVisitor.Builder) {
                         builder.on(FencedCodeBlock::class.java) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
                             val code = visitor.configuration()
