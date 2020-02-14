@@ -84,6 +84,7 @@
         <item name="android:background">?attr/bg_white</item>
         <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
         <item name="textColorAlertDialogListItem">?attr/text_primary</item>
+        <item name="android:colorControlNormal">?attr/text_primary</item>
     </style>
 
 </resources>
