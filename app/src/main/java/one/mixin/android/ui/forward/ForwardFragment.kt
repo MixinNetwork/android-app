@@ -27,7 +27,9 @@ import one.mixin.android.event.ForwardEvent
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.ConversationViewModel
+import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_FROM_CONVERSATION
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_SHARE
 import one.mixin.android.ui.home.MainActivity
@@ -40,11 +42,16 @@ class ForwardFragment : BaseFragment() {
     companion object {
         const val TAG = "ForwardFragment"
 
-        fun newInstance(messages: ArrayList<ForwardMessage>, isShare: Boolean = false): ForwardFragment {
+        fun newInstance(
+            messages: ArrayList<ForwardMessage>,
+            isShare: Boolean = false,
+            fromConversation: Boolean = false
+        ): ForwardFragment {
             val fragment = ForwardFragment()
             val b = bundleOf(
                 ARGS_MESSAGES to messages,
-                ARGS_SHARE to isShare
+                ARGS_SHARE to isShare,
+                ARGS_FROM_CONVERSATION to fromConversation
             )
             fragment.arguments = b
             return fragment
@@ -65,9 +72,11 @@ class ForwardFragment : BaseFragment() {
     private val messages: ArrayList<ForwardMessage>? by lazy {
         arguments!!.getParcelableArrayList<ForwardMessage>(ARGS_MESSAGES)
     }
-
     private val isShare: Boolean by lazy {
         arguments!!.getBoolean(ARGS_SHARE)
+    }
+    private val fromConversation: Boolean by lazy {
+        arguments!!.getBoolean(ARGS_FROM_CONVERSATION)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -184,15 +193,13 @@ class ForwardFragment : BaseFragment() {
     }
 
     private fun sharePreOperation(single: Boolean) {
-        chatViewModel.sendForwardMessages(adapter.selectItem, messages)
-        if (single) {
-            adapter.selectItem[0].let {
-                val forwardEvent = if (it is User) {
-                    ForwardEvent(null, it.userId)
-                } else {
-                    ForwardEvent((it as ConversationItem).conversationId, null)
-                }
-                RxBus.publish(forwardEvent)
+        chatViewModel.sendForwardMessages(adapter.selectItem, messages, !isShare && !fromConversation)
+        val forwardEvent = adapter.selectItem[0].let {
+             if (it is User) {
+                ForwardEvent(null, it.userId)
+            } else {
+                it as ConversationItem
+                ForwardEvent(it.conversationId, null)
             }
         }
         if (isShare) {
@@ -200,6 +207,13 @@ class ForwardFragment : BaseFragment() {
             activity?.finish()
         } else {
             activity?.finish()
+        }
+        if (fromConversation) {
+            if (single) {
+                RxBus.publish(forwardEvent)
+            }
+        } else {
+            ConversationActivity.show(requireContext(), forwardEvent.conversationId, forwardEvent.userId)
         }
     }
 
