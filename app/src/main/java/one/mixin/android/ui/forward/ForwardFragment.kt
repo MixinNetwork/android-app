@@ -2,7 +2,6 @@ package one.mixin.android.ui.forward
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -203,17 +202,14 @@ class ForwardFragment : BaseFragment() {
             }
         }
         if (isShare) {
-            startActivity(Intent(context, MainActivity::class.java))
+            MainActivity.reopen(requireContext())
             activity?.finish()
+            ConversationActivity.show(requireContext(), forwardEvent.conversationId, forwardEvent.userId)
         } else {
             activity?.finish()
-        }
-        if (fromConversation) {
-            if (single) {
+            if (fromConversation && single) {
                 RxBus.publish(forwardEvent)
             }
-        } else {
-            ConversationActivity.show(requireContext(), forwardEvent.conversationId, forwardEvent.userId)
         }
     }
 
