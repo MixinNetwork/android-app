@@ -57,6 +57,7 @@ class BottomSheet(
     private var startAnimationRunnable: Runnable? = null
     private var curSheetAnimation: AnimatorSet? = null
     private var isDismissed = false
+    private var isShown = false
     var lastInsets: WindowInsets? = null
 
     private val container: ContainerView by lazy { ContainerView(context) }
@@ -217,6 +218,7 @@ class BottomSheet(
         cancelSheetAnimation()
         sheetContainer.measure(View.MeasureSpec.makeMeasureSpec(context.displayMetrics.widthPixels, AT_MOST),
             View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, AT_MOST))
+        if (isShown) return
         backDrawable.alpha = 0
         sheetContainer.translationY = sheetContainer.measuredHeight.toFloat()
         startAnimationRunnable = object : Runnable {
@@ -252,6 +254,7 @@ class BottomSheet(
                     curSheetAnimation = null
                     bottomSheetListener?.onOpenAnimationEnd()
                     container.setLayerType(View.LAYER_TYPE_NONE, null)
+                    isShown = true
                 }
             }
 
@@ -270,6 +273,7 @@ class BottomSheet(
             return
         }
         isDismissed = true
+        isShown = false
         fakeDismiss(false)
     }
 
