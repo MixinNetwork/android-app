@@ -53,7 +53,7 @@ fun Fragment.alertDialogBuilder(): AlertDialog.Builder {
 }
 
 fun Context.alertDialogBuilder(): AlertDialog.Builder {
-    return AlertDialog.Builder(this, R.style.MixinAlertDialogTheme)
+    return MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme)
 }
 
 fun Fragment.indeterminateProgressDialog(message: String? = null, title: String? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {

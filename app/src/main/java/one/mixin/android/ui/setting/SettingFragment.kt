@@ -87,6 +87,7 @@ class SettingFragment : Fragment() {
                     R.array.setting_night_array_oreo
                 }, currentId
             ) { _, index ->
+                val changed = index != currentId
                 defaultSharedPreferences.putInt(THEME_CURRENT_ID, index)
                 AppCompatDelegate.setDefaultNightMode(
                     when (index) {
@@ -96,6 +97,9 @@ class SettingFragment : Fragment() {
                         else -> AppCompatDelegate.MODE_NIGHT_NO
                     }
                 )
+                if (changed) {
+                    requireActivity().recreate()
+                }
             }
         }
         language_rl.setOnClickListener { showLanguageAlert() }
