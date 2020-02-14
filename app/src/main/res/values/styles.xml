@@ -102,7 +102,7 @@
         <item name="android:windowLightStatusBar">false</item>
     </style>
 
-    <style name="MixinAlertDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
+    <style name="MixinAlertDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
         <item name="colorAccent">@color/colorDarkBlue</item>
         <item name="android:textColorPrimary">?attr/text_primary</item>
         <item name="android:background">?attr/bg_white</item>
