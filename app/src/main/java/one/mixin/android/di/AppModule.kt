@@ -24,6 +24,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.URL
+import one.mixin.android.Constants.DELAY_SECOND
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
@@ -58,6 +59,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
 import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.Session
+import one.mixin.android.util.Session.Companion.requestDelay
 import one.mixin.android.vo.CallState
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
@@ -115,6 +117,14 @@ internal class AppModule {
                         if (this is SocketTimeoutException || this is UnknownHostException || this is ConnectException) {
                             HostSelectionInterceptor.get().switch()
                         }
+                    }
+                }
+
+                val authorization = response.request().header("Authorization")
+                if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
+                    val jwt = authorization.substring(7)
+                    if (requestDelay(Session.getAccount(), jwt, DELAY_SECOND)) {
+                        throw ServerErrorException(500)
                     }
                 }
 
