@@ -15,6 +15,7 @@ import io.noties.markwon.core.MarkwonTheme
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.ext.tables.TableTheme
+import io.noties.markwon.ext.tasklist.TaskListPlugin
 import io.noties.markwon.image.ImagesPlugin
 import io.noties.markwon.recycler.table.TableEntryPlugin
 import io.noties.markwon.syntax.Prism4jThemeDarkula
@@ -52,6 +53,7 @@ class MarkwonUtil {
             } else Prism4jThemeDefault.create()
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
+                .usePlugin(TaskListPlugin.create(context))
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(TableEntryPlugin.create(context))
@@ -101,6 +103,7 @@ class MarkwonUtil {
             } else Prism4jThemeDefault.create()
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
+                .usePlugin(TaskListPlugin.create(context))
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(TablePlugin.create(getTheme()))
