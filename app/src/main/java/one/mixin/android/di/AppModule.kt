@@ -19,9 +19,6 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import kotlin.math.abs
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.SessionProvider
-import okhttp3.internal.http2.Header
 import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.API.FOURSQUARE_URL
@@ -99,20 +96,14 @@ internal class AppModule {
         builder.readTimeout(10, TimeUnit.SECONDS)
         builder.pingInterval(15, TimeUnit.SECONDS)
         builder.retryOnConnectionFailure(false)
-        builder.sessionProvider(object : SessionProvider {
-            override fun getSession(request: Request): String {
-                return "Authorization: Bearer ${Session.signToken(Session.getAccount(), request)}"
-            }
 
-            override fun getSessionHeader(request: Request): Header {
-                return Header("Authorization", "Bearer ${Session.signToken(Session.getAccount(), request)}")
-            }
-        })
         builder.addInterceptor { chain ->
-            val request = chain.request().newBuilder()
+            val sourceRequest = chain.request()
+            val request = sourceRequest.newBuilder()
                 .addHeader("User-Agent", API_UA)
                 .addHeader("Accept-Language", Locale.getDefault().language)
                 .addHeader("Mixin-Device-Id", getDeviceId(resolver))
+                .addHeader("Authorization", "Bearer ${Session.signToken(Session.getAccount(), sourceRequest)}")
                 .build()
             if (MixinApplication.appContext.networkConnected()) {
                 val response = try {

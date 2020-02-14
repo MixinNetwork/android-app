@@ -184,7 +184,7 @@ dependencies {
     implementation "org.jsoup:jsoup:${jsoupVersion}"
 
     // retrofit
-    implementation "com.github.seniorzhai.okhttp:okhttp:${okhttpVersion}"
+    implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
     implementation("com.squareup.retrofit2:retrofit:${retrofitVersion}") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
