@@ -65,7 +65,6 @@
         <item name="android:navigationBarColor">?attr/text_primary</item>
     </style>
 
-
     <style name="AppTheme.Night.Call" parent="AppTheme.Night.NoActionBar">
         <item name="android:windowBackground">@color/call_gray</item>
         <item name="android:windowIsTranslucent">false</item>
@@ -77,6 +76,14 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
+    </style>
+
+    <style name="MixinAlertDialogNightTheme" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+        <item name="colorAccent">@color/colorDarkBlue</item>
+        <item name="android:textColorPrimary">?attr/text_primary</item>
+        <item name="android:background">?attr/bg_white</item>
+        <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
+        <item name="textColorAlertDialogListItem">?attr/text_primary</item>
     </style>
 
 </resources>

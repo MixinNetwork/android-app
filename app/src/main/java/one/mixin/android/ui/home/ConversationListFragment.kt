@@ -27,9 +27,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.io.File
-import javax.inject.Inject
-import kotlin.math.min
 import kotlinx.android.synthetic.main.fragment_conversation_list.*
 import kotlinx.android.synthetic.main.item_list_conversation.view.*
 import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
@@ -41,6 +38,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.getAlertDialogTheme
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
@@ -71,6 +69,9 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
+import java.io.File
+import javax.inject.Inject
+import kotlin.math.min
 
 class ConversationListFragment : LinkFragment() {
 
@@ -267,7 +268,7 @@ class ConversationListFragment : LinkFragment() {
             bottomSheet.dismiss()
         }
         view.delete_tv.setOnClickListener {
-            AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+            AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
                 .setMessage(getString(R.string.conversation_delete_tip))
                 .setNegativeButton(R.string.cancel) { dialog, _ ->
                     dialog.dismiss()
@@ -694,7 +695,7 @@ class ConversationListFragment : LinkFragment() {
             getString(R.string.contact_mute_1year))
         var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
         var whichItem = 0
-        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()

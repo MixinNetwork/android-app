@@ -12,9 +12,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.io.File
-import java.util.Date
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_restore.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,6 +20,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
+import one.mixin.android.extension.getAlertDialogTheme
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.MixinJobManager
@@ -30,6 +28,9 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.restore
+import java.io.File
+import java.util.Date
+import javax.inject.Inject
 
 class RestoreActivity : BaseActivity() {
 
@@ -40,7 +41,7 @@ class RestoreActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, true)
-        AlertDialog.Builder(this, R.style.MixinAlertDialogTheme)
+        AlertDialog.Builder(this, getAlertDialogTheme())
             .setMessage(R.string.restore_message)
             .setNegativeButton(R.string.restore_skip) { dialog, _ ->
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
@@ -83,7 +84,7 @@ class RestoreActivity : BaseActivity() {
 
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     private fun showErrorAlert(error: Result) {
-        AlertDialog.Builder(this, R.style.MixinAlertDialogTheme)
+        AlertDialog.Builder(this, getAlertDialogTheme())
             .setMessage(when (error) {
                 Result.FAILURE -> {
                     R.string.restore_failure

@@ -29,6 +29,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.getAlertDialogTheme
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.screenHeight
@@ -367,7 +368,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         )
         var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
         var whichItem = 0
-        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()

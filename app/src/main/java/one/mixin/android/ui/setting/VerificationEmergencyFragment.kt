@@ -21,6 +21,7 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateRSAKeyPair
 import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getAlertDialogTheme
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.PinCodeFragment
@@ -105,7 +106,7 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
                     (it as? EmergencyContactFragment)?.setEmergencySet()
                 }
 
-                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
                     .setMessage(getString(
                         if (Session.hasEmergencyContact())
                             R.string.setting_emergency_change_success

@@ -21,6 +21,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.getScopes
 import one.mixin.android.extension.fullDate
+import one.mixin.android.extension.getAlertDialogTheme
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment.Companion.ARGS_AUTHORIZATION
 import one.mixin.android.ui.common.BaseViewModelFragment
@@ -80,7 +81,7 @@ class PermissionListFragment : BaseViewModelFragment<SettingViewModel>() {
     }
 
     private fun showDialog(app: App) {
-        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
             }

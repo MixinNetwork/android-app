@@ -638,7 +638,7 @@ fun Context.showConfirmDialog(
     message: String,
     action: () -> Unit
 ) {
-    AlertDialog.Builder(this, R.style.MixinAlertDialogTheme)
+    AlertDialog.Builder(this, getAlertDialogTheme())
         .setMessage(message)
         .setNegativeButton(R.string.cancel) { dialog, _ ->
             dialog.dismiss()

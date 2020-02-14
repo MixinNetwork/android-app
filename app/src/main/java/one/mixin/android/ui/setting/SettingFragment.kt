@@ -17,6 +17,7 @@ import one.mixin.android.Constants.Theme.THEME_CURRENT_ID
 import one.mixin.android.Constants.Theme.THEME_DEFAULT_ID
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getAlertDialogTheme
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
@@ -114,7 +115,7 @@ class SettingFragment : Fragment() {
             }
         }
         var newSelectItem = selectItem
-        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
             .setTitle(R.string.language)
             .setSingleChoiceItems(choice, selectItem) { _, which ->
                 newSelectItem = which

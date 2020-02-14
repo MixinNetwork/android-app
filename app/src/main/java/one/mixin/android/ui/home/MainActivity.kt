@@ -53,6 +53,7 @@ import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.extension.getAlertDialogTheme
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
@@ -228,7 +229,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun delayShowModifyMobile() = lifecycleScope.launch {
         delay(2000)
-        MaterialAlertDialogBuilder(this@MainActivity, R.style.MixinAlertDialogTheme)
+        MaterialAlertDialogBuilder(this@MainActivity, getAlertDialogTheme())
             .setTitle(getString(R.string.setting_emergency_change_mobile))
             .setPositiveButton(R.string.change) { dialog, _ ->
                 supportFragmentManager.inTransaction {

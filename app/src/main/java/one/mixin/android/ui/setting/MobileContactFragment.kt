@@ -74,7 +74,7 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
         op_tv.setText(R.string.setting_mobile_contact_delete)
         op_tv.textColorResource = R.color.colorRed
         op_rl.setOnClickListener {
-            AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+            AlertDialog.Builder(requireContext(), requireContext().getAlertDialogTheme())
                 .setMessage(R.string.setting_mobile_contact_warning)
                 .setPositiveButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
                 .setNegativeButton(R.string.conversation_delete) { dialog, _ ->

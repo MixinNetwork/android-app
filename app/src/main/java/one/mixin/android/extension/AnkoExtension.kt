@@ -25,7 +25,7 @@ fun Context.singleChoice(
     checkedItem: Int,
     onClick: (DialogInterface, Int) -> Unit
 ) {
-    MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
+    MaterialAlertDialogBuilder(this, getAlertDialogTheme()).apply {
         setTitle(title)
         setSingleChoiceItems(itemsId, checkedItem, onClick)
         setPositiveButton(android.R.string.cancel) { dialog, _ ->
@@ -43,11 +43,19 @@ fun Context.alert(
     message: CharSequence,
     title: CharSequence? = null
 ): MaterialAlertDialogBuilder {
-    return MaterialAlertDialogBuilder(this, R.style.MixinAlertDialogTheme).apply {
+    return MaterialAlertDialogBuilder(this, getAlertDialogTheme()).apply {
         if (title != null) {
             setTitle(title)
         }
         setMessage(message)
+    }
+}
+
+fun Context.getAlertDialogTheme(): Int {
+    return if (booleanFromAttribute(R.attr.flag_night)) {
+        R.style.MixinAlertDialogNightTheme
+    } else {
+        R.style.MixinAlertDialogTheme
     }
 }
 
@@ -72,7 +80,7 @@ private fun Context.progressDialog(
     message: CharSequence? = null,
     title: CharSequence? = null,
     init: (ProgressDialog.() -> Unit)? = null
-) = ProgressDialog(this, R.style.MixinAlertDialogTheme).apply {
+) = ProgressDialog(this, getAlertDialogTheme()).apply {
     isIndeterminate = indeterminate
     if (!indeterminate) setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
     if (message != null) setMessage(message)
