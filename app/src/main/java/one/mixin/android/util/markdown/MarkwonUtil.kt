@@ -1,8 +1,6 @@
 package one.mixin.android.util.markdown
 
 import android.content.Context
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.view.View
 import com.bumptech.glide.Glide
 import io.noties.markwon.AbstractMarkwonPlugin
@@ -17,13 +15,15 @@ import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.ext.tables.TableTheme
 import io.noties.markwon.ext.tasklist.TaskListPlugin
+import io.noties.markwon.html.HtmlPlugin
 import io.noties.markwon.image.ImagesPlugin
+import io.noties.markwon.image.glide.GlideImagesPlugin
+import io.noties.markwon.image.svg.SvgMediaDecoder
 import io.noties.markwon.recycler.table.TableEntryPlugin
 import io.noties.markwon.syntax.Prism4jThemeDarkula
 import io.noties.markwon.syntax.Prism4jThemeDefault
 import io.noties.markwon.syntax.SyntaxHighlightPlugin
 import io.noties.prism4j.Prism4j
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.isNightMode
@@ -31,16 +31,9 @@ import one.mixin.android.ui.url.isMixinUrl
 import org.commonmark.node.FencedCodeBlock
 import org.commonmark.node.Link
 import org.commonmark.node.SoftLineBreak
-import org.jetbrains.anko.dip
 
 class MarkwonUtil {
     companion object {
-
-        private val placeholder = ColorDrawable(Color.parseColor("#efefef"))
-            .apply {
-                val size = MixinApplication.appContext.dip(48)
-                setBounds(0, 0, size, size)
-            }
 
         fun getMarkwon(
             context: Context,
@@ -55,11 +48,15 @@ class MarkwonUtil {
             } else Prism4jThemeDefault.create()
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
+                .usePlugin(HtmlPlugin.create())
                 .usePlugin(TaskListPlugin.create(context))
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(TableEntryPlugin.create(context))
-                .usePlugin(ImagesPlugin.create().placeholderProvider { placeholder })
+                .usePlugin(GlideImagesPlugin.create(context))
+                .usePlugin(ImagesPlugin.create {
+                    it.addMediaDecoder(SvgMediaDecoder.create())
+                })
                 .usePlugin(object : AbstractMarkwonPlugin() {
                     override fun configureTheme(builder: MarkwonTheme.Builder) {
                         builder.headingBreakHeight(0)
@@ -114,11 +111,15 @@ class MarkwonUtil {
             } else Prism4jThemeDefault.create()
             return Markwon.builder(context)
                 .usePlugin(CorePlugin.create())
+                .usePlugin(HtmlPlugin.create())
                 .usePlugin(TaskListPlugin.create(context))
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(TablePlugin.create(getTheme()))
-                .usePlugin(ImagesPlugin.create().placeholderProvider { placeholder })
+                .usePlugin(GlideImagesPlugin.create(context))
+                .usePlugin(ImagesPlugin.create {
+                    it.addMediaDecoder(SvgMediaDecoder.create())
+                })
                 .usePlugin(object : AbstractMarkwonPlugin() {
                     override fun configureTheme(builder: MarkwonTheme.Builder) {
                         builder.headingBreakHeight(0)
