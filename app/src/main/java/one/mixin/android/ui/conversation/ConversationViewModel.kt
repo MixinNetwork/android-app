@@ -360,7 +360,9 @@ internal constructor(
         if (mimeType == null) {
             mimeType = getMimeType(uri)
             if (mimeType?.isImageSupport() != true) {
-                MixinApplication.get().toast(R.string.error_format)
+                viewModelScope.launch {
+                    MixinApplication.get().toast(R.string.error_format)
+                }
                 return null
             }
         }
