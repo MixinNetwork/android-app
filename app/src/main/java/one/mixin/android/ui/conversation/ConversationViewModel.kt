@@ -780,9 +780,9 @@ internal constructor(
         messages: List<ForwardMessage>?,
         isPlainMessage: Boolean
     ) {
-        messages?.let {
+        messages?.let { forwardMessages ->
             val sender = Session.getAccount()!!.toUser()
-            for (item in it) {
+            for (item in forwardMessages) {
                 if (item.id != null) {
                     sendFordMessage(conversationId, sender, item.id, isPlainMessage).subscribe({}, {
                         Timber.e("")
