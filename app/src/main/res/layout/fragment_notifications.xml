@@ -48,4 +48,22 @@
         android:text="@string/setting_notification_transfer_desc"
         android:textColor="?attr/text_minor"
         android:textSize="12sp"/>
+
+
+    <RelativeLayout
+        android:id="@+id/system_notification"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="?attr/bg_white"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/setting_notification_system" />
+
+    </RelativeLayout>
 </LinearLayout>
