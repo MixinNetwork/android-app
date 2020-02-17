@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimaryNight">#23272b</color>
-    <color name="colorPrimaryDarkNight">#23272b</color>
+    <color name="colorPrimaryNight">#2c3136</color>
+    <color name="colorPrimaryDarkNight">#2c3136</color>
     <color name="colorAccentNight">#4191FF</color>
 
     <color name="textPrimaryNight">#E6FFFFFF</color>

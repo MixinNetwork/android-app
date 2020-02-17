@@ -15,6 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.removeEnd
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.common.editDialog
@@ -43,6 +44,9 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
             showDialog(transfer_tv.text.toString().removeEnd(accountSymbol))
         }
         refreshUI(Session.getAccount()!!.transferNotificationThreshold)
+        system_notification.setOnClickListener {
+            context?.openNotificationSetting()
+        }
     }
 
     @SuppressLint("RestrictedApi")

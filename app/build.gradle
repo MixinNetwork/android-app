@@ -1,6 +1,6 @@
 def versionMajor = 0
-def versionMinor = 19
-def versionPatch = 4
+def versionMinor = 20
+def versionPatch = 0
 def versionBuild = 0
 
 apply plugin: 'com.android.application'
@@ -140,7 +140,7 @@ dependencies {
     implementation "androidx.camera:camera-camera2:${cameraxVersion}"
     implementation "androidx.camera:camera-view:${cameraxviewVersion}"
     implementation "androidx.camera:camera-extensions:${cameraxviewVersion}"
-    implementation "androidx.camera:camera-lifecycle:${cameraxlifecycleVersion}"
+    implementation "androidx.camera:camera-lifecycle:${cameraxVersion}"
 
     implementation "androidx.work:work-runtime-ktx:${workManagerVersion}"
     implementation "androidx.navigation:navigation-fragment-ktx:${navigationVersion}"
@@ -267,11 +267,15 @@ dependencies {
     implementation "io.noties.markwon:recycler:${markwonVersion}"
     implementation "io.noties.markwon:recycler-table:${markwonVersion}"
     implementation "io.noties.markwon:ext-strikethrough:${markwonVersion}"
+    implementation "io.noties.markwon:html:${markwonVersion}"
     implementation "io.noties:prism4j:${prism4jVersion}"
     implementation "io.noties.markwon:syntax-highlight:${markwonVersion}"
+    implementation "io.noties.markwon:ext-tasklist:${markwonVersion}"
     implementation "org.webrtc:google-webrtc:${webrtcVersion}"
     implementation "com.github.SandroMachado:BitcoinPaymentURI:${bitcoinPaymentURI}"
+<<<<<<< HEAD
     implementation "com.discord:simpleast:${simpleastVersion}"
+    implementation "com.caverock:androidsvg-aar:${svgVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

@@ -24,6 +24,7 @@ class CaptureActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        overridePendingTransition(R.anim.slide_in_bottom, 0)
         checkCameraCanUse()
         setContentView(R.layout.activity_contact)
         captureFragment = when {
@@ -62,8 +63,6 @@ class CaptureActivity : BlazeBaseActivity() {
         const val REQUEST_CODE = 0x0000c0ff
         const val RESULT_CODE = 0x0000c0df
 
-        val SCOPES = arrayListOf("PROFILE:READ", "PHONE:READ", "MESSAGES:REPRESENT", "CONTACTS:READ", "ASSETS:READ", "SNAPSHOTS:READ", "APPS:READ", "APPS:WRITE")
-
         const val MAX_DURATION = 15
         const val MIN_DURATION = 1
 
@@ -72,7 +71,6 @@ class CaptureActivity : BlazeBaseActivity() {
             actionWithIntent: ((intent: Intent) -> Unit)? = null
         ) {
             Intent(activity, CaptureActivity::class.java).apply {
-                activity.overridePendingTransition(R.anim.slide_in_bottom, 0)
                 if (actionWithIntent == null) {
                     activity.startActivity(this)
                 } else {

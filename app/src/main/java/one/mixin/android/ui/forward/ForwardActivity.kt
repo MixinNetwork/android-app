@@ -15,13 +15,20 @@ import one.mixin.android.vo.ForwardMessage
 
 class ForwardActivity : BlazeBaseActivity() {
     companion object {
-        var ARGS_MESSAGES = "args_messages"
-        var ARGS_SHARE = "args_share"
+        const val ARGS_MESSAGES = "args_messages"
+        const val ARGS_SHARE = "args_share"
+        const val ARGS_FROM_CONVERSATION = "args_from_conversation"
 
-        fun show(context: Context, messages: ArrayList<ForwardMessage>, isShare: Boolean = false) {
+        fun show(
+            context: Context,
+            messages: ArrayList<ForwardMessage>,
+            isShare: Boolean = false,
+            fromConversation: Boolean = false
+        ) {
             val intent = Intent(context, ForwardActivity::class.java).apply {
                 putParcelableArrayListExtra(ARGS_MESSAGES, messages)
                 putExtra(ARGS_SHARE, isShare)
+                putExtra(ARGS_FROM_CONVERSATION, fromConversation)
             }
             intent.flags = FLAG_ACTIVITY_NEW_TASK
             context.startActivity(intent)
@@ -43,7 +50,11 @@ class ForwardActivity : BlazeBaseActivity() {
         setContentView(R.layout.activity_contact)
         val list = intent.getParcelableArrayListExtra<ForwardMessage>(ARGS_MESSAGES)
         if (list != null && list.isNotEmpty()) {
-            val f = ForwardFragment.newInstance(list, intent.getBooleanExtra(ARGS_SHARE, false))
+            val f = ForwardFragment.newInstance(
+                list,
+                intent.getBooleanExtra(ARGS_SHARE, false),
+                intent.getBooleanExtra(ARGS_FROM_CONVERSATION, false)
+            )
             replaceFragment(f, R.id.container, ForwardFragment.TAG)
         } else {
             if (Session.getAccount() == null) {

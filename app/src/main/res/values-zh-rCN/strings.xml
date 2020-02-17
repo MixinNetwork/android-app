@@ -266,6 +266,7 @@
     <string name="chat_recall_delete">此消息已撤回</string>
     <string name="chat_recall_delete_alert">所有使用最新版本 Mixin Messenger 的设备都将删除被选中的消息</string>
     <string name="chat_recall_delete_more">了解更多</string>
+    <string name="chat_go_check">查看</string>
     <!--contact-->
     <string name="contact_other_send">发消息</string>
     <string name="contact_other_share">发送名片</string>
@@ -426,7 +427,9 @@
     <string name="conversation_status_sticker">贴纸</string>
     <string name="conversation_status_live">直播</string>
     <string name="setting_no_blocked">没有屏蔽任何人</string>
+    <string name="setting_no_auth_app">没有授权任何机器人</string>
     <string name="setting_authentications">授权</string>
+    <string name="setting_permissions">权限列表</string>
     <string name="setting_no_authentications">没有数据</string>
     <string name="setting_emergency">紧急联系人</string>
     <string name="setting_emergency_content">紧急联系人旨在帮助你在丢失且无法找回手机号的情况下登录你的账号。</string>
@@ -447,6 +450,7 @@
     <string name="setting_emergency_pin_tip">紧急联系人经支付密码加密保护</string>
     <string name="setting_emergency_enable">启用紧急联系人</string>
     <string name="setting_deauthorize">取消授权</string>
+    <string name="setting_auth_access">授权时间：%1$s, 上次访问：%2$s</string>
     <string name="setting_backup">备份</string>
     <string name="setting_clearing">正在清理…</string>
     <string name="setting_data_storage">数据与存储空间</string>
@@ -482,6 +486,7 @@
     <string name="setting_mobile_contact_upload">上传手机通讯录</string>
     <string name="setting_mobile_contact_empty">通讯录内容为空</string>
     <string name="setting_notification_transfer">转账通知</string>
+    <string name="setting_notification_system">管理通知</string>
     <string name="setting_notification_transfer_desc">当收到不少于%1$s的转账时显示通知。</string>
     <string name="setting_notification_transfer_amount">转账金额(%1$s)</string>
     <string name="contact_share_apps_no_app">没有应用</string>

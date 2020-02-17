@@ -279,6 +279,7 @@
     <string name="chat_recall_delete">This message was deleted</string>
     <string name="chat_recall_delete_alert">Messages you selected will be deleted for everyone on the latest version of Mixin in this chat.</string>
     <string name="chat_recall_delete_more">Learn More</string>
+    <string name="chat_go_check">View</string>
     <!--contact-->
     <string name="contact_other_send">Send Message</string>
     <string name="contact_other_share">Share Contact Card</string>
@@ -439,7 +440,9 @@
     <string name="conversation_status_sticker">Sticker</string>
     <string name="conversation_status_live">Live</string>
     <string name="setting_no_blocked">No blocked users</string>
+    <string name="setting_no_auth_app">No auth app</string>
     <string name="setting_authentications">Authentications</string>
+    <string name="setting_permissions">Permission list</string>
     <string name="setting_no_authentications">No RESULT</string>
     <string name="setting_emergency">Emergency Contact</string>
     <string name="setting_emergency_content">The emergency contact is designed to help you log in to your account if you are lost and can not retrieve your mobile number.</string>
@@ -460,6 +463,7 @@
     <string name="setting_emergency_pin_tip">Your emergency contact is protected by PIN</string>
     <string name="setting_emergency_enable">Enable Emergency Contact</string>
     <string name="setting_deauthorize">Deauthorize</string>
+    <string name="setting_auth_access">Approved: %1$s, Last Accessed: %2$s</string>
     <string name="setting_backup">Backup</string>
     <string name="setting_clearing">Clearing…</string>
     <string name="setting_data_storage">Data and storage usage</string>
@@ -495,6 +499,7 @@
     <string name="setting_mobile_contact_upload">Upload Mobile Contacts</string>
     <string name="setting_mobile_contact_empty">Empty address book</string>
     <string name="setting_notification_transfer">Transfer Notifications</string>
+    <string name="setting_notification_system">System options</string>
     <string name="setting_notification_transfer_desc">Show notifications when receiving a transfer greater than or equal to %1$s.</string>
     <string name="setting_notification_transfer_amount">Transfer Amount(%1$s)</string>
     <string name="setting_theme">Appearance</string>

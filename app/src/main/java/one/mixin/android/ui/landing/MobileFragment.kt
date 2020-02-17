@@ -13,7 +13,6 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.google.i18n.phonenumbers.NumberParseException
@@ -31,6 +30,7 @@ import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.vibrate
@@ -125,7 +125,7 @@ class MobileFragment : BaseFragment() {
     }
 
     private fun showDialog() {
-        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        alertDialogBuilder()
             .setMessage(getString(R.string.landing_invitation_dialog_content,
                 mCountry.dialCode + " " + mobile_et.text.toString()))
             .setNegativeButton(R.string.change) { dialog, _ -> dialog.dismiss() }

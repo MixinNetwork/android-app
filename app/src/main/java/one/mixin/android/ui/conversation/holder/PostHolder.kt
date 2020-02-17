@@ -30,16 +30,28 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
         MixinApplication.appContext.dpToPx(6f)
     }
 
+    private val dp14 by lazy {
+        MixinApplication.appContext.dpToPx(14f)
+    }
+
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp12
             (itemView.chat_post.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp12
+            (itemView.chat_tv.layoutParams as ViewGroup.MarginLayoutParams).apply {
+                marginStart = dp8
+                marginEnd = dp14
+            }
         } else {
             (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
             (itemView.chat_post.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
+            (itemView.chat_tv.layoutParams as ViewGroup.MarginLayoutParams).apply {
+                marginStart = dp14
+                marginEnd = dp8
+            }
         }
         val lp = (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
@@ -112,12 +124,17 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
             }
         }
 
-        if (!messageItem.thumbImage.isNullOrEmpty()) {
-            miniMarkwon.setMarkdown(itemView.chat_tv, messageItem.thumbImage)
-        } else if (!messageItem.content.isNullOrEmpty()) {
-            miniMarkwon.setMarkdown(itemView.chat_tv, messageItem.content.split("\n").take(20).joinToString("\n"))
-        } else {
-            itemView.chat_tv.text = null
+        if (itemView.chat_tv.tag != messageItem.content.hashCode()) {
+            if (!messageItem.thumbImage.isNullOrEmpty()) {
+                miniMarkwon.setMarkdown(itemView.chat_tv, messageItem.thumbImage)
+                itemView.chat_tv.tag = messageItem.content.hashCode()
+            } else if (!messageItem.content.isNullOrEmpty()) {
+                miniMarkwon.setMarkdown(itemView.chat_tv, messageItem.content.split("\n").take(20).joinToString("\n"))
+                itemView.chat_tv.tag = messageItem.content.hashCode()
+            } else {
+                itemView.chat_tv.text = null
+                itemView.chat_tv.tag = null
+            }
         }
 
         itemView.setOnLongClickListener {

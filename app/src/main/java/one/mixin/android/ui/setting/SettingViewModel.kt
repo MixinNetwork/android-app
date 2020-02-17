@@ -13,6 +13,7 @@ import one.mixin.android.api.request.DeauthorRequest
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.repository.AccountRepository
+import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.PINLogResponse
 import one.mixin.android.vo.UserRelationship
@@ -22,7 +23,8 @@ internal constructor(
     private val accountRepository: AccountRepository,
     private val authorizationService: AuthorizationService,
     private val userRepository: UserRepository,
-    private val contactService: ContactService
+    private val contactService: ContactService,
+    private val assetRepository: AssetRepository
 ) : ViewModel() {
 
     fun countBlockingUsers() =
@@ -50,4 +52,6 @@ internal constructor(
     }
 
     suspend fun preferences(request: AccountUpdateRequest) = accountRepository.preferences(request)
+
+    suspend fun simpleAssetsWithBalance() = assetRepository.simpleAssetsWithBalance()
 }

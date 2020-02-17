@@ -11,7 +11,6 @@ import android.view.View.VISIBLE
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.animation.BounceInterpolator
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.NotificationManagerCompat
@@ -38,6 +37,7 @@ import kotlinx.android.synthetic.main.view_empty.*
 import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.R
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
@@ -267,7 +267,7 @@ class ConversationListFragment : LinkFragment() {
             bottomSheet.dismiss()
         }
         view.delete_tv.setOnClickListener {
-            AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+            alertDialogBuilder()
                 .setMessage(getString(R.string.conversation_delete_tip))
                 .setNegativeButton(R.string.cancel) { dialog, _ ->
                     dialog.dismiss()
@@ -485,7 +485,7 @@ class ConversationListFragment : LinkFragment() {
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_file)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_POST.name ||
-                    conversationItem.contentType == MessageCategory.SIGNAL_POST.name -> {
+                    conversationItem.contentType == MessageCategory.PLAIN_POST.name -> {
                     setConversationName(conversationItem)
                     itemView.msg_tv.setText(R.string.conversation_status_post)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_file)
@@ -694,7 +694,7 @@ class ConversationListFragment : LinkFragment() {
             getString(R.string.contact_mute_1year))
         var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
         var whichItem = 0
-        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        alertDialogBuilder()
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()

@@ -135,10 +135,10 @@ class EditFragment : CaptureVisionFragment() {
         send_fl.setOnClickListener {
             if (isVideo) {
                 ForwardActivity.show(requireContext(), arrayListOf(ForwardMessage(
-                    ForwardCategory.VIDEO.name, mediaUrl = path)), true)
+                    ForwardCategory.VIDEO.name, mediaUrl = path)), isShare = true)
             } else {
                 ForwardActivity.show(requireContext(), arrayListOf(ForwardMessage(
-                    ForwardCategory.IMAGE.name, mediaUrl = path)), true)
+                    ForwardCategory.IMAGE.name, mediaUrl = path)), isShare = true)
             }
         }
         if (isVideo) {

@@ -19,6 +19,7 @@ import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_VIDEO
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_WIFI
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.autoDownloadDocument
 import one.mixin.android.extension.autoDownloadPhoto
 import one.mixin.android.extension.autoDownloadVideo
@@ -104,7 +105,7 @@ class SettingDataStorageFragment : BaseFragment() {
                 isChecked = autoDownloadDocument(value)
             }
         }
-        menuDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        menuDialog = alertDialogBuilder()
             .setTitle(titleId)
             .setView(menuView)
             .setNegativeButton(android.R.string.cancel) { dialog, _ ->

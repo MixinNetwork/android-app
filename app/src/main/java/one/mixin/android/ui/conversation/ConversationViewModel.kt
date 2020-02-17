@@ -401,7 +401,9 @@ internal constructor(
         if (mimeType == null) {
             mimeType = getMimeType(uri)
             if (mimeType?.isImageSupport() != true) {
-                MixinApplication.get().toast(R.string.error_format)
+                viewModelScope.launch {
+                    MixinApplication.get().toast(R.string.error_format)
+                }
                 return null
             }
         }
@@ -819,9 +821,9 @@ internal constructor(
         messages: List<ForwardMessage>?,
         isPlainMessage: Boolean
     ) {
-        messages?.let {
+        messages?.let { forwardMessages ->
             val sender = Session.getAccount()!!.toUser()
-            for (item in it) {
+            for (item in forwardMessages) {
                 if (item.id != null) {
                     sendFordMessage(conversationId, sender, item.id, isPlainMessage).subscribe({}, {
                         Timber.e("")
@@ -877,7 +879,11 @@ internal constructor(
         }
     }
 
-    fun sendForwardMessages(selectItem: List<Any>, messages: List<ForwardMessage>?) {
+    fun sendForwardMessages(
+        selectItem: List<Any>,
+        messages: List<ForwardMessage>?,
+        showSuccess: Boolean
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             var conversationId: String? = null
             for (item in selectItem) {
@@ -895,8 +901,10 @@ internal constructor(
                     sendForwardMessages(item.conversationId, messages, item.isBot())
                 }
 
-                withContext(Dispatchers.Main) {
-                    MixinApplication.get().toast(R.string.forward_success)
+                if (showSuccess) {
+                    withContext(Dispatchers.Main) {
+                        MixinApplication.get().toast(R.string.forward_success)
+                    }
                 }
                 findUnreadMessagesSync(conversationId!!)?.let { list ->
                     if (list.isNotEmpty()) {

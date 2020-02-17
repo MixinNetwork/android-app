@@ -28,7 +28,9 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.core.view.children
@@ -43,6 +45,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.util.MimeTypes
+import com.google.android.material.snackbar.Snackbar
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -67,12 +70,14 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.event.ExitEvent
+import one.mixin.android.event.ForwardEvent
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
@@ -591,6 +596,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         if (index == 0) {
                             toast(R.string.error_not_found_message)
                         } else {
+                            chatAdapter.loadAround(index)
                             if (index == chatAdapter.itemCount - 1) {
                                 scrollTo(index, 0, action = {
                                     requireContext().mainThreadDelayed({
@@ -610,7 +616,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onPostClick(view: View, messageItem: MessageItem) {
-                MarkdownActivity.show(requireActivity(), messageItem.content!!)
+                MarkdownActivity.show(requireActivity(), messageItem.content!!, conversationId)
             }
 
             override fun onSayHi() {
@@ -639,7 +645,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     if (recipient != null && callState.user?.userId == recipient?.userId) {
                         CallActivity.show(requireContext(), recipient)
                     } else {
-                        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                        alertDialogBuilder()
                             .setMessage(getString(R.string.chat_call_warning_call))
                             .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                                 dialog.dismiss()
@@ -769,6 +775,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (it.conversationId == conversationId) {
                     activity?.finish()
                 }
+            }
+        RxBus.listen(ForwardEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { event ->
+                Snackbar.make(chat_rv, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
+                    .setAction(R.string.chat_go_check) {
+                        ConversationActivity.show(requireContext(), event.conversationId, event.userId)
+                    }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                        view.setBackgroundResource(R.color.call_btn_icon_checked)
+                        (view.findViewById(R.id.snackbar_text) as TextView)
+                            .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                    }.show()
             }
     }
 
@@ -937,7 +956,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onBackPressed(): Boolean {
         return when {
             chat_control.isRecording -> {
-                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                alertDialogBuilder()
                     .setTitle(getString(R.string.chat_audio_discard_warning_title))
                     .setMessage(getString(R.string.chat_audio_discard_warning))
                     .setNeutralButton(getString(R.string.chat_audio_discard_cancel)) { dialog, _ ->
@@ -1119,7 +1138,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         tool_view.forward_iv.setOnClickListener {
             lifecycleScope.launch {
                 val list = chatViewModel.getSortMessagesByIds(chatAdapter.selectSet)
-                ForwardActivity.show(requireContext(), list)
+                ForwardActivity.show(requireContext(), list, fromConversation = true)
                 closeTool()
             }
         }
@@ -1225,7 +1244,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             item.userId == sender.userId && item.status != MessageStatus.SENDING.name && !item.createdAt.lateOneHours() && item.canRecall()
         }
         val deleteDialogLayout = generateDeleteDialogLayout()
-        deleteDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        deleteDialog = alertDialogBuilder()
             .setMessage(getString(R.string.chat_delete_message, messages.size))
             .setView(deleteDialogLayout)
             .create()
@@ -1263,7 +1282,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var deleteAlertDialog: AlertDialog? = null
     private fun deleteAlert(messages: List<MessageItem>) {
         deleteAlertDialog?.dismiss()
-        deleteDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        deleteDialog = alertDialogBuilder()
             .setMessage(getString(R.string.chat_recall_delete_alert))
             .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                 chatViewModel.sendRecallMessage(conversationId, sender, messages)
@@ -1885,7 +1904,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             if (recipient != null && callState.user?.userId == recipient?.userId) {
                                 CallActivity.show(requireContext(), recipient)
                             } else {
-                                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                                alertDialogBuilder()
                                     .setMessage(getString(R.string.chat_call_warning_call))
                                     .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                                         dialog.dismiss()
@@ -2017,7 +2036,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             val uri = data?.data ?: return
             val attachment = context?.getAttachment(uri)
             if (attachment != null) {
-                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                alertDialogBuilder()
                     .setMessage(
                         if (isGroup) {
                             requireContext().getString(
@@ -2100,7 +2119,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private val voiceAlert by lazy {
-        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        alertDialogBuilder()
             .setMessage(getString(R.string.chat_call_warning_voice))
             .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                 dialog.dismiss()
@@ -2244,7 +2263,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun showRecordingAlert() {
-        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        alertDialogBuilder()
             .setMessage(getString(R.string.chat_audio_warning))
             .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                 dialog.dismiss()

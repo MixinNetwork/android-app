@@ -10,7 +10,6 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.collection.ArrayMap
 import androidx.lifecycle.Observer
@@ -28,6 +27,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ConversationEvent
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
@@ -123,7 +123,7 @@ class GroupInfoFragment : BaseFragment() {
                         choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
                     }
                 }
-                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                alertDialogBuilder()
                     .setItems(choices.toTypedArray()) { _, which ->
                         when (which) {
                             0 -> {
@@ -295,7 +295,7 @@ class GroupInfoFragment : BaseFragment() {
     }
 
     private fun showConfirmDialog(message: String, type: Int, user: User? = null) {
-        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        alertDialogBuilder()
             .setMessage(message)
             .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
             .setPositiveButton(R.string.confirm) { dialog, _ ->

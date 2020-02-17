@@ -12,7 +12,6 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -38,6 +37,7 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.localTime
@@ -323,8 +323,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                     ForwardCategory.CONTACT.name,
                                     sharedUserId = u.userId
                                 )
-                            ),
-                            true
+                            )
                         )
                         dismiss()
                     }
@@ -505,7 +504,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             if (callState.user?.userId == user.userId) {
                 CallActivity.show(requireContext(), user)
             } else {
-                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                alertDialogBuilder()
                     .setMessage(getString(R.string.chat_call_warning_call))
                     .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                         dialog.dismiss()
@@ -539,7 +538,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     }
 
     private fun reportUser(userId: String) {
-        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        alertDialogBuilder()
             .setMessage(getString(R.string.contact_other_report_warning))
             .setNeutralButton(getString(android.R.string.cancel)) { dialog, _ ->
                 dialog.dismiss()
@@ -681,7 +680,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         )
         var duration = MUTE_8_HOURS
         var whichItem = 0
-        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        alertDialogBuilder()
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()

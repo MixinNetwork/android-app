@@ -11,7 +11,6 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.annotation.RequiresPermission
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -26,6 +25,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.R
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.openPermissionSetting
@@ -99,7 +99,7 @@ class BackUpFragment : BaseFragment() {
                 when {
                     BackupJob.backupLiveData.result == Result.SUCCESS -> findBackUp()
                     BackupJob.backupLiveData.result == Result.NO_AVAILABLE_MEMORY ->
-                        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                        alertDialogBuilder()
                             .setMessage(R.string.backup_no_available_memory)
                             .setNegativeButton(R.string.group_ok) { dialog, _ -> dialog.dismiss() }
                             .show()
@@ -114,7 +114,7 @@ class BackUpFragment : BaseFragment() {
     }
 
     private fun showBackupDialog() {
-        val builder = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        val builder = alertDialogBuilder()
         builder.setTitle(R.string.backup_dialog_title)
 
         val checkedItem = defaultSharedPreferences.getInt(BACKUP_PERIOD, 0)

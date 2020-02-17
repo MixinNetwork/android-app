@@ -621,7 +621,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             val dark = ColorUtils.calculateLuminance(c) < 0.5
             refreshByLuminance(dark, c)
         } catch (e: Exception) {
-            refreshByLuminance(requireContext().isNightMode(), requireContext().colorFromAttribute(R.attr.icon_white))
+            context?.let {
+                refreshByLuminance(it.isNightMode(), it.colorFromAttribute(R.attr.icon_white))
+            }
         }
     }
 
