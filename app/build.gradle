@@ -273,7 +273,6 @@ dependencies {
     implementation "io.noties.markwon:ext-tasklist:${markwonVersion}"
     implementation "org.webrtc:google-webrtc:${webrtcVersion}"
     implementation "com.github.SandroMachado:BitcoinPaymentURI:${bitcoinPaymentURI}"
-<<<<<<< HEAD
     implementation "com.discord:simpleast:${simpleastVersion}"
     implementation "com.caverock:androidsvg-aar:${svgVersion}"
 }

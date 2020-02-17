@@ -1,7 +1,5 @@
 package one.mixin.android.util.mention
 
-import com.discord.simpleast.core.node.Node
-import com.discord.simpleast.core.parser.Parser
 import one.mixin.android.db.UserDao
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.User
@@ -51,14 +49,9 @@ fun getMentionData(
 }
 
 private val mentionEndPattern by lazy {
-    Pattern.compile("(?:\\s|^)@\\S*\$")
+    Pattern.compile("(?:\\s|^)@\\d*\$")
 }
 
 val mentionNumberPattern: Pattern by lazy {
     Pattern.compile("@\\d+")
 }
-
-class ParseState
-
-val mentionParser = Parser<MentionRenderContext, Node<MentionRenderContext>>()
-    .addRule(MentionUserRule())

@@ -4,9 +4,9 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.view.View
+import com.discord.simpleast.core.node.Node
 import one.mixin.android.ui.conversation.holder.BaseViewHolder.Companion.HIGHLIGHTED
 import one.mixin.android.ui.conversation.holder.BaseViewHolder.Companion.LINK_COLOR
-import one.mixin.android.util.mention.core.node.Node
 import one.mixin.android.widget.linktext.TouchableSpan
 
 class MentionClickNode(val content: String) : Node<MentionRenderContext>() {
@@ -21,7 +21,7 @@ class MentionClickNode(val content: String) : Node<MentionRenderContext>() {
         val sp = SpannableString(name)
         val clickableSpan = object : TouchableSpan(LINK_COLOR, HIGHLIGHTED, false) {
             override fun onClick(widget: View) {
-                renderContext.action(data.userId)
+                // renderContext.action(data.userId)
             }
         }
 

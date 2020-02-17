@@ -56,10 +56,10 @@ open class SendMessageJob(
         if (alreadyExistMessage) {
             return
         }
-        if (message.isText()){
-            message.content?.let {content->
-                getMentionData(content,userDao)?.let {quote
-                    message.quoteContent = u
+        if (message.isText()) {
+            message.content?.let { content ->
+                getMentionData(content, userDao)?.let { mentionData ->
+                    message.quoteContent = mentionData
                 }
             }
         }

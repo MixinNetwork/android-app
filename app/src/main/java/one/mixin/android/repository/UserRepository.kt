@@ -12,8 +12,8 @@ import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
 import one.mixin.android.db.updateRelationship
 import one.mixin.android.util.Session
+import one.mixin.android.util.mention.MentionData
 import one.mixin.android.vo.App
-import one.mixin.android.vo.MentionData
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import javax.inject.Inject
