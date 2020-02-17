@@ -221,7 +221,7 @@ class ForwardFragment : BaseFragment() {
         }
 
         override fun afterTextChanged(s: Editable?) {
-            adapter.name = s
+            adapter.keyword = s
             adapter.changeData()
         }
     }

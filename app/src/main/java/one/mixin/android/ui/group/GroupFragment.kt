@@ -186,11 +186,9 @@ class GroupFragment : BaseFragment() {
     private fun filterAndSet(keyword: String, userList: List<User>?) {
         groupFriendAdapter.setData(
             userList?.filter {
-                it.fullName!!.contains(keyword, true) || it.identityNumber.contains(
-                    keyword,
-                    true
-                )
-            },
+                it.fullName!!.contains(keyword, true) ||
+                    it.identityNumber.contains(keyword, true)
+            }?.sortedByDescending { it.fullName == keyword || it.identityNumber == keyword },
             keyword.isEmpty()
         )
     }
