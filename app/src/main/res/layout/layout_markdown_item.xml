@@ -10,4 +10,5 @@
     android:paddingBottom="8dp"
     android:textAppearance="?android:attr/textAppearanceMedium"
     android:textColor="?attr/text_primary"
+    android:textIsSelectable="true"
     android:textSize="16sp" />

@@ -16,6 +16,7 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.util.markdown.DefaultEntry
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -39,8 +40,7 @@ class MarkdownActivity : BaseActivity() {
             }
         }
         val adapter = MarkwonAdapter.builder(
-            R.layout.layout_markdown_item,
-            R.id.text
+            DefaultEntry()
         ).include(
             FencedCodeBlock::class.java,
             SimpleEntry.create(
