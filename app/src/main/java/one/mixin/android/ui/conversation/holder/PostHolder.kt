@@ -12,6 +12,8 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
+import one.mixin.android.extension.postLengthOptimize
+import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -126,10 +128,10 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
 
         if (itemView.chat_tv.tag != messageItem.content.hashCode()) {
             if (!messageItem.thumbImage.isNullOrEmpty()) {
-                miniMarkwon.setMarkdown(itemView.chat_tv, messageItem.thumbImage)
+                miniMarkwon.setMarkdown(itemView.chat_tv, messageItem.thumbImage.postLengthOptimize())
                 itemView.chat_tv.tag = messageItem.content.hashCode()
             } else if (!messageItem.content.isNullOrEmpty()) {
-                miniMarkwon.setMarkdown(itemView.chat_tv, messageItem.content.split("\n").take(20).joinToString("\n"))
+                miniMarkwon.setMarkdown(itemView.chat_tv, messageItem.content.postOptimize())
                 itemView.chat_tv.tag = messageItem.content.hashCode()
             } else {
                 itemView.chat_tv.text = null
