@@ -79,6 +79,7 @@
             android:paddingEnd="5dp"
             android:paddingBottom="1.5dp"
             android:text="@string/post_tag"
+            android:textIsSelectable="true"
             android:textColor="@color/white"
             android:textSize="10sp"
             tools:ignore="HardcodedText" />
