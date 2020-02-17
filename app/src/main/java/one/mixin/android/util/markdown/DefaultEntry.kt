@@ -11,14 +11,8 @@ class DefaultEntry : SimpleEntry(
     R.layout.layout_markdown_item,
     R.id.text
 ) {
-    override fun onViewRecycled(holder: Holder) {
-        super.onViewRecycled(holder)
-
-    }
-
     override fun bindHolder(markwon: Markwon, holder: Holder, node: Node) {
-        val spanned = markwon.render(node)
         holder.itemView.text.movementMethod = LinkMovementMethod.getInstance()
-        markwon.setParsedMarkdown(holder.itemView.text, spanned)
+        super.bindHolder(markwon, holder, node)
     }
 }
