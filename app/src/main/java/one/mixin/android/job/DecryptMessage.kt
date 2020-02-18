@@ -23,6 +23,7 @@ import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.postOptimize
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
@@ -322,7 +323,7 @@ class DecryptMessage : Injector() {
             data.category.endsWith("_POST") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
                 val message = createPostMessage(data.messageId, data.conversationId, data.userId, data.category, plain,
-                    plain.split("\n").take(20).joinToString("\n"), data.createdAt, data.status)
+                    plain.postOptimize(), data.createdAt, data.status)
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
             }

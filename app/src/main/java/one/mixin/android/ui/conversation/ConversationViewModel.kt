@@ -43,6 +43,7 @@ import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
@@ -91,6 +92,7 @@ import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createLiveMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.createPostMessage
 import one.mixin.android.vo.createRecallMessage
 import one.mixin.android.vo.createReplyTextMessage
 import one.mixin.android.vo.createStickerMessage
@@ -173,9 +175,9 @@ internal constructor(
     fun sendPostMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
         val category =
             if (isPlain) MessageCategory.PLAIN_POST.name else MessageCategory.SIGNAL_POST.name
-        val message = createMessage(
+        val message = createPostMessage(
             UUID.randomUUID().toString(), conversationId,
-            sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING.name
+            sender.userId, category, content.trim(), content.postOptimize(), nowInUtc(), MessageStatus.SENDING.name
         )
         jobManager.addJobInBackground(SendMessageJob(message))
     }

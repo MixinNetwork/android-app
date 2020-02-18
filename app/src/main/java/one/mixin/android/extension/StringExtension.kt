@@ -369,3 +369,15 @@ inline fun String?.getDeviceId(): Int {
 }
 
 fun String.filterNonAscii() = replace("[^\\p{ASCII}]".toRegex(), "")
+
+fun String.postOptimize(): String {
+    return split("\n").take(20).joinToString("\n").postLengthOptimize()
+}
+
+fun String.postLengthOptimize(): String {
+    return if (length > 1024) {
+        substring(0, 1024)
+    } else {
+        this
+    }
+}

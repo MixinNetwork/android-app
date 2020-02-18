@@ -211,6 +211,19 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_contact_message))
                 }
             }
+            MessageCategory.SIGNAL_POST.name, MessageCategory.PLAIN_POST.name -> {
+                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+                    notificationBuilder.setTicker(
+                        context.getString(R.string.alert_key_group_post_message, user.fullName))
+                    notificationBuilder.setContentTitle(conversation.getConversationName())
+                    notificationBuilder.setContentText(
+                        context.getString(R.string.alert_key_group_post_message, user.fullName))
+                } else {
+                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_post_message))
+                    notificationBuilder.setContentTitle(user.fullName)
+                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_post_message))
+                }
+            }
             MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {
                 if (message.action == SnapshotType.transfer.name) {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_transfer_message))

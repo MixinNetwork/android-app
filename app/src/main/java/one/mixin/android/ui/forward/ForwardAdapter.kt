@@ -30,21 +30,29 @@ class ForwardAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     var sourceFriends: List<User>? = null
 
     var showHeader: Boolean = true
-    var name: CharSequence? = null
+    var keyword: CharSequence? = null
 
     fun changeData() {
-        if (!name.isNullOrBlank()) {
+        if (!keyword.isNullOrBlank()) {
             conversations = sourceConversations?.filter {
                 if (it.isGroup()) {
-                    it.groupName != null && (it.groupName.contains(name.toString(), ignoreCase = true))
+                    it.groupName != null && (it.groupName.contains(keyword.toString(), ignoreCase = true))
                 } else {
-                    it.name.contains(name.toString(), ignoreCase = true) ||
-                        it.ownerIdentityNumber.startsWith(name.toString(), ignoreCase = true)
+                    it.name.contains(keyword.toString(), ignoreCase = true) ||
+                        it.ownerIdentityNumber.startsWith(keyword.toString(), ignoreCase = true)
+                }
+            }?.sortedByDescending {
+                if (it.isGroup()) {
+                   it.groupName == keyword
+                } else {
+                    it.name == keyword || it.ownerIdentityNumber == keyword
                 }
             }
             friends = sourceFriends?.filter {
-                (it.fullName != null && it.fullName.contains(name.toString(), ignoreCase = true)) ||
-                    it.identityNumber.startsWith(name.toString(), ignoreCase = true)
+                (it.fullName != null && it.fullName.contains(keyword.toString(), ignoreCase = true)) ||
+                    it.identityNumber.startsWith(keyword.toString(), ignoreCase = true)
+            }?.sortedByDescending {
+                it.fullName == keyword || it.identityNumber == keyword
             }
             showHeader = false
         } else {
