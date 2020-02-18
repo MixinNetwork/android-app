@@ -34,7 +34,7 @@ class FlagLayout @JvmOverloads constructor(
     var mentionCount = 0
         set(value) {
             if (field != value) {
-                mention_flag.isVisible = value != 0
+                mention_flag_layout.isVisible = value != 0
                 field = value
                 mention_count.text = "$field"
                 update()

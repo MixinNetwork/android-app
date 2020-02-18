@@ -2413,7 +2413,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             val mention = mentionEnd(keyword)
             val users = chatViewModel.fuzzySearchUser(conversationId, mention)
             mentionAdapter.keyword = mention
-            Timber.d(mention)
             mentionAdapter.submitList(users)
             if (mention_rv.isGone) {
                 floating_layout.showMention()

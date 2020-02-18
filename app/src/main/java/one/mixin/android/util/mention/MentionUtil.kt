@@ -64,7 +64,7 @@ fun getMentionData(
 }
 
 private val mentionEndPattern by lazy {
-    Pattern.compile("(?:\\s|^)@\\s*\$")
+    Pattern.compile("(?:\\s|^)@\\S*\$")
 }
 
 val mentionNumberPattern: Pattern by lazy {
