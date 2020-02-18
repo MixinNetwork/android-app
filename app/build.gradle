@@ -47,6 +47,8 @@ android {
             jvmTarget = '1.8'
         }
 
+        resConfigs "en", "zh-rCN"
+
         vectorDrawables.useSupportLibrary = true
     }
 

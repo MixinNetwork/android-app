@@ -2,6 +2,7 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -21,6 +22,7 @@ import one.mixin.android.Constants.Theme.THEME_NIGHT_ID
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.wrap
 import one.mixin.android.util.SystemUIManager
 import org.jetbrains.anko.configuration
 
@@ -37,12 +39,9 @@ open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
     override fun attachBaseContext(context: Context) {
         val setLanguage = context.defaultSharedPreferences.getBoolean(PREF_SET_LANGUAGE, false)
         if (setLanguage) {
-            val conf = context.resources.configuration
             val defaultLang = Locale.getDefault().language
-            val language = context.defaultSharedPreferences.getString(PREF_LANGUAGE, defaultLang)
-                ?: defaultLang
-            conf.setLocale(Locale(language))
-            super.attachBaseContext(context.createConfigurationContext(conf))
+            val language = context.defaultSharedPreferences.getString(PREF_LANGUAGE, defaultLang) ?: defaultLang
+            super.attachBaseContext(ContextWrapper(context).wrap(language))
         } else {
             super.attachBaseContext(context)
         }

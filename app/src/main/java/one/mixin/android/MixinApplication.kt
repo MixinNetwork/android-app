@@ -2,6 +2,7 @@ package one.mixin.android
 
 import android.app.Application
 import android.content.Context
+import android.content.ContextWrapper
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import androidx.camera.camera2.Camera2Config
@@ -25,6 +26,7 @@ import one.mixin.android.extension.clear
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.wrap
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.landing.InitializeActivity
@@ -36,6 +38,7 @@ import org.jetbrains.anko.notificationManager
 import org.jetbrains.anko.uiThread
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
+import java.util.Locale
 
 class MixinApplication : Application(), HasAndroidInjector, Configuration.Provider, CameraXConfig.Provider {
     @Inject
@@ -66,6 +69,12 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
         AndroidThreeTen.init(this)
         appComponent = AppInjector.init(this)
         RxJavaPlugins.setErrorHandler {}
+    }
+
+    override fun attachBaseContext(base: Context) {
+        val defaultLang = Locale.getDefault().language
+        val language = base.defaultSharedPreferences.getString(Constants.Account.PREF_LANGUAGE, defaultLang) ?: defaultLang
+        super.attachBaseContext(ContextWrapper(base).wrap(language))
     }
 
     private fun init() {

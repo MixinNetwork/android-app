@@ -142,8 +142,7 @@ class SettingFragment : Fragment() {
                         }
                     )
                     defaultSharedPreferences.putBoolean(PREF_SET_LANGUAGE, true)
-
-                    MainActivity.reopen(requireContext())
+                    activity?.recreate()
                 }
                 dialog.dismiss()
             }
