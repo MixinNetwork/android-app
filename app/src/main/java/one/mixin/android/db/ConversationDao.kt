@@ -26,7 +26,7 @@ interface ConversationDao : BaseDao<Conversation> {
             m.user_id AS senderId, m.action AS actionName, m.status AS messageStatus,
             mu.full_name AS senderFullName, s.type AS SnapshotType,
             pu.full_name AS participantFullName, pu.user_id AS participantUserId,
-            (SELECT count(mm.*) FROM mm WHERE conversation_id = c.conversation_id AND has_read = 0) as mentionCount, 
+            (SELECT count(*) FROM mention_message me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) as mentionCount,  
             mm.mentions AS mentions 
             FROM conversations c
             INNER JOIN users ou ON ou.user_id = c.owner_id
