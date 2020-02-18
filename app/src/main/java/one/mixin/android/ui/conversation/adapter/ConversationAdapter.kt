@@ -13,6 +13,8 @@ import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.PublishSubject
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 import kotlinx.android.synthetic.main.item_chat_unread.view.*
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.R
@@ -60,8 +62,6 @@ import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isRecall
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 
 class ConversationAdapter(
     private val context: Context,
@@ -802,7 +802,7 @@ class ConversationAdapter(
 
         open fun onUserClick(userId: String) {}
 
-        open fun onMentionClick(messageId: String, name: String?) {}
+        open fun onMentionClick(identityNumber: String) {}
 
         open fun onBotClick(id: String) {}
 

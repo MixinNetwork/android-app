@@ -8,7 +8,7 @@ import one.mixin.android.util.mention.syntax.parser.ParseSpec
 import one.mixin.android.util.mention.syntax.parser.Parser
 import one.mixin.android.util.mention.syntax.parser.Rule
 
-class MentionRule :
+class MentionConversationRule :
     Rule<MentionRenderContext, Node<MentionRenderContext>>(Pattern.compile("^@\\d+")) {
 
     companion object {
@@ -20,6 +20,6 @@ class MentionRule :
         matcher: Matcher,
         parser: Parser<MentionRenderContext, in Node<MentionRenderContext>>
     ): ParseSpec<MentionRenderContext, Node<MentionRenderContext>> {
-        return ParseSpec.createTerminal(MentionNode(matcher.group(), LINK_COLOR, HIGHLIGHTED))
+        return ParseSpec.createTerminal(MentionConversationNode(matcher.group()))
     }
 }

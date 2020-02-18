@@ -1,9 +1,9 @@
 package one.mixin.android.util.mention.syntax.parser
 
 import android.util.Log
-import one.mixin.android.util.mention.syntax.node.Node
 import java.util.ArrayList
 import java.util.Stack
+import one.mixin.android.util.mention.syntax.node.Node
 
 open class Parser<R, T : Node<R>> @JvmOverloads constructor(private val enableDebugging: Boolean = false) {
 
@@ -14,7 +14,7 @@ open class Parser<R, T : Node<R>> @JvmOverloads constructor(private val enableDe
     return this
   }
 
-  fun <C: T> addRules(rules: Collection<Rule<R, C>>): Parser<R, T> {
+  fun <C : T> addRules(rules: Collection<Rule<R, C>>): Parser<R, T> {
     for (rule in rules) {
       addRule(rule)
     }
@@ -94,13 +94,13 @@ open class Parser<R, T : Node<R>> @JvmOverloads constructor(private val enableDe
     return topLevelNodes
   }
 
-  private fun <R, T: Node<R>> logMatch(rule: Rule<R, T>, source: CharSequence) {
+  private fun <R, T : Node<R>> logMatch(rule: Rule<R, T>, source: CharSequence) {
     if (enableDebugging) {
       Log.i(TAG, "MATCH: with rule with pattern: " + rule.matcher.pattern().toString() + " to source: " + source)
     }
   }
 
-  private fun <R, T: Node<R>> logMiss(rule: Rule<R, T>, source: CharSequence) {
+  private fun <R, T : Node<R>> logMiss(rule: Rule<R, T>, source: CharSequence) {
     if (enableDebugging) {
       Log.i(TAG, "MISS: with rule with pattern: " + rule.matcher.pattern().toString() + " to source: " + source)
     }
@@ -111,6 +111,6 @@ open class Parser<R, T : Node<R>> @JvmOverloads constructor(private val enableDe
     private const val TAG = "Parser"
   }
 
-  class ParseException(message: String, source: CharSequence?, cause: Throwable? = null)
-    : RuntimeException("Error while parsing: $message \n Source: $source", cause)
+  class ParseException(message: String, source: CharSequence?, cause: Throwable? = null) :
+    RuntimeException("Error while parsing: $message \n Source: $source", cause)
 }

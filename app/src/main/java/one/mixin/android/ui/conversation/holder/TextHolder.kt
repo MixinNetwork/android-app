@@ -13,7 +13,7 @@ import kotlinx.android.synthetic.main.item_chat_text.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.render
+import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.mention.MentionRenderCache
@@ -90,9 +90,6 @@ class TextHolder constructor(containerView: View) : BaseViewHolder(containerView
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlClick(matchedText)
                 }
-                AutoLinkMode.MODE_MENTION -> {
-                    onItemListener.onMentionClick(messageItem.messageId, matchedText.trim().substring(1).replace("\b", " "))
-                }
                 else -> {
                 }
             }
@@ -128,15 +125,13 @@ class TextHolder constructor(containerView: View) : BaseViewHolder(containerView
             }
         }
 
-
-
         if (messageItem.mentions?.isNotBlank() == true) {
             val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
                 messageItem.mentions
-            ) {
-
+            ) { identityNumber ->
+                onItemListener.onMentionClick(identityNumber)
             }
-            itemView.chat_tv.render(messageItem.content, mentionRenderContext)
+            itemView.chat_tv.renderMessage(messageItem.content, mentionRenderContext)
         } else {
             keyword.notNullWithElse({ k ->
                 messageItem.content?.let { str ->

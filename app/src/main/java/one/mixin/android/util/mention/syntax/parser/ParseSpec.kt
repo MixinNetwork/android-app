@@ -38,4 +38,3 @@ class ParseSpec<R, T : Node<R>> {
     }
   }
 }
-

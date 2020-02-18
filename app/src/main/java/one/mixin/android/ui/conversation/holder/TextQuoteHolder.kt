@@ -93,9 +93,6 @@ class TextQuoteHolder constructor(containerView: View) : BaseViewHolder(containe
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlClick(matchedText)
                 }
-                AutoLinkMode.MODE_MENTION -> {
-                    onItemListener.onMentionClick(messageItem.messageId, matchedText.trim().substring(1).replace("\b", " "))
-                }
                 else -> {
                 }
             }

@@ -6,6 +6,9 @@ import com.birbit.android.jobqueue.Params
 import com.birbit.android.jobqueue.RetryConstraint
 import com.bugsnag.android.Bugsnag
 import com.bugsnag.android.MetaData
+import java.io.IOException
+import java.net.SocketTimeoutException
+import javax.inject.Inject
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.LocalJobException
 import one.mixin.android.api.NetworkException
@@ -48,9 +51,6 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
-import java.io.IOException
-import java.net.SocketTimeoutException
-import javax.inject.Inject
 
 abstract class BaseJob(params: Params) : Job(params), Injectable {
 

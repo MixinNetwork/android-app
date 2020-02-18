@@ -1,6 +1,5 @@
 package one.mixin.android.util.mention.syntax.node
 
-
 import android.text.SpannableStringBuilder
 
 /**

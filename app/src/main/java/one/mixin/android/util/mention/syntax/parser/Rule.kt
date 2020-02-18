@@ -1,8 +1,8 @@
 package one.mixin.android.util.mention.syntax.parser
 
-import one.mixin.android.util.mention.syntax.node.Node
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import one.mixin.android.util.mention.syntax.node.Node
 
 abstract class Rule<R, T : Node<R>>(val matcher: Matcher) {
 
@@ -14,6 +14,4 @@ abstract class Rule<R, T : Node<R>>(val matcher: Matcher) {
   }
 
   abstract fun parse(matcher: Matcher, parser: Parser<R, in T>): ParseSpec<R, T>
-
 }
-

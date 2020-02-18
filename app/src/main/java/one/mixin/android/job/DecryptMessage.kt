@@ -7,6 +7,8 @@ import androidx.collection.arrayMapOf
 import androidx.collection.arraySetOf
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
+import java.io.File
+import java.util.UUID
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.SignalKeyCount
@@ -85,8 +87,6 @@ import org.whispersystems.libsignal.DuplicateMessageException
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
-import java.io.File
-import java.util.UUID
 
 class DecryptMessage : Injector() {
 
