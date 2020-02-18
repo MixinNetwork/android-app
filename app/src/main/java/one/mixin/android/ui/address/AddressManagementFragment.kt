@@ -126,9 +126,8 @@ class AddressManagementFragment : BaseFragment() {
         search_et.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {
                 adapter.addresses = addresses?.filter {
-                    val name = it.label
-                    name.contains(s.toString(), ignoreCase = true)
-                }?.toMutableList()
+                    it.label.contains(s.toString(), ignoreCase = true)
+                }?.sortedByDescending { it.label == s.toString() }?.toMutableList()
             }
 
             override fun onSearch() {

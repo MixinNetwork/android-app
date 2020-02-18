@@ -86,10 +86,10 @@ class SingleFriendSelectFragment : BaseFragment() {
             override fun afterTextChanged(s: Editable?) {
                 adapter.conversations = conversations?.filter {
                     (it.fullName != null && it.fullName.contains(s.toString(), ignoreCase = true)) || it.identityNumber.startsWith(s.toString())
-                }
+                }?.sortedByDescending { (it.fullName != null && it.fullName == s.toString()) || it.identityNumber == s.toString() }
                 adapter.friends = friends?.filter {
                     it.identityNumber.startsWith(s.toString()) || (it.fullName != null && it.fullName.contains(s.toString(), ignoreCase = true))
-                }
+                }?.sortedByDescending { it.identityNumber == s.toString() || (it.fullName != null && it.fullName == s.toString()) }
                 adapter.showHeader = s.isNullOrEmpty()
                 adapter.notifyDataSetChanged()
             }

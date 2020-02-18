@@ -130,7 +130,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         currencyAdapter.submitList(if (s.isNotBlank()) {
             currencies.filter {
                 it.name.contains(s, true)
-            }
+            }.sortedByDescending { it.name == s }
         } else currencies)
     }
 

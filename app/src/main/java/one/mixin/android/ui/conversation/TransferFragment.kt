@@ -359,7 +359,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     private fun filter(s: String) {
         val assetList = assets.filter {
             it.name.contains(s, true) || it.symbol.contains(s, true)
-        }
+        }.sortedByDescending { it.name == s || it.symbol == s }
         adapter.submitList(assetList)
     }
 

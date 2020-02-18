@@ -279,7 +279,7 @@ class GroupInfoFragment : BaseFragment() {
         adapter.data = if (keyword.isNotBlank()) {
             users.filter {
                 it.fullName?.contains(keyword, true) == true || it.identityNumber.contains(keyword, true)
-            }
+            }.sortedByDescending { it.fullName == keyword || it.identityNumber == keyword }
         } else {
             users
         }
