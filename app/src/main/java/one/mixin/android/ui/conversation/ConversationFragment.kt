@@ -55,6 +55,7 @@ import kotlin.math.abs
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
+import kotlinx.android.synthetic.main.view_flag.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
@@ -84,7 +85,6 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getAttachment
@@ -109,7 +109,6 @@ import one.mixin.android.extension.selectDocument
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.translationY
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
@@ -286,10 +285,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                     else -> {
                         if (unreadTipCount > 0) {
-                            down_unread.visibility = VISIBLE
-                            down_unread.text = "$unreadTipCount"
+                            flag_layout.bottomCountFlag = true
+                            flag_layout.down_unread.text = "$unreadTipCount"
                         } else {
-                            down_unread.visibility = GONE
+                            flag_layout.bottomCountFlag = false
                         }
                     }
                 }
@@ -1055,15 +1054,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (firstPosition > 0) {
                     if (isBottom) {
                         isBottom = false
-                        showAlert()
+                        flag_layout.bottomFlag = !isBottom
                     }
                 } else {
                     if (!isBottom) {
                         isBottom = true
-                        hideAlert()
+                        flag_layout.bottomFlag = !isBottom
                     }
                     unreadTipCount = 0
-                    down_unread.visibility = GONE
+                    flag_layout.bottomCountFlag = false
                 }
             }
         })
@@ -1089,7 +1088,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             renderUser(recipient!!)
         }
 
-        bg_quick_flag.setOnClickListener {
+        flag_layout.down_flag_layout.setOnClickListener {
             if (chat_rv.scrollState == RecyclerView.SCROLL_STATE_SETTLING) {
                 chat_rv.dispatchTouchEvent(
                     MotionEvent.obtain(
@@ -1100,7 +1099,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
             scrollTo(0)
             unreadTipCount = 0
-            down_unread.visibility = GONE
+            flag_layout.bottomCountFlag = false
         }
         chatViewModel.searchConversationById(conversationId)
             .autoDispose(stopScope).subscribe({
@@ -1315,7 +1314,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         chatAdapter.unreadMsgId = unreadMessageId
                         if (isBottom && unreadCount > 20) {
                             isBottom = false
-                            showAlert()
+                            flag_layout.bottomFlag = !isBottom
                         }
                     } else if (lastReadMessage != null) {
                         chatViewModel.viewModelScope.launch {
@@ -1363,8 +1362,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(viewLifecycleOwner, Observer { mentionMessages ->
-            mention_flag.isVisible = mentionMessages.isNotEmpty()
-            mention_flag.setOnClickListener {
+            flag_layout.mention_flag.isVisible = mentionMessages.isNotEmpty()
+            flag_layout.mention_flag.setOnClickListener {
                 lifecycleScope.launch {
                     if (!isAdded) return@launch
                     val messageId = mentionMessages.first().messageId
@@ -2102,33 +2101,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }, {
             })
-    }
-
-    private fun showAlert(duration: Long = 100) {
-        if (isGroup) {
-            if (!isBottom) {
-                down_flag.visibility = VISIBLE
-            } else {
-                down_flag.visibility = GONE
-            }
-            if (bg_quick_flag.translationY != 0f) {
-                bg_quick_flag.translationY(0f, duration)
-            }
-        } else {
-            if (bg_quick_flag.translationY != 0f) {
-                bg_quick_flag.translationY(0f, duration)
-            }
-        }
-    }
-
-    private fun hideAlert() {
-        if (isGroup) {
-            if (isBottom) {
-                bg_quick_flag.translationY(requireContext().dpToPx(130f).toFloat(), 100)
-            }
-        } else {
-            bg_quick_flag.translationY(requireContext().dpToPx(130f).toFloat(), 100)
-        }
     }
 
     private var previewDialogFragment: PreviewDialogFragment? = null
