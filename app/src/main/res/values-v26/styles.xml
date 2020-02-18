@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme.Capture" parent="AppTheme.FullScreen">
-        <item name="android:windowFullscreen">true</item>
-        <item name="android:immersive">true</item>
-        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
-    </style>
     <style name="AppTheme.Photo" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowIsTranslucent">false</item>
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:navigationBarColor">?attr/text_primary</item>
     </style>
