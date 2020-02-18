@@ -1370,7 +1370,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     val index = chatViewModel.findMessageIndex(conversationId, messageId)
                     chatViewModel.markMentionRead(messageId)
                     if (index == 0) {
-                        toast(R.string.error_not_found_message)
+                        scrollTo(0, chat_rv.measuredHeight * 3 / 4, action = {
+                            requireContext().mainThreadDelayed({
+                                RxBus.publish(BlinkEvent(messageId))
+                            }, 60)
+                        })
                     } else {
                         chatAdapter.loadAround(index)
                         if (index == chatAdapter.itemCount - 1) {
