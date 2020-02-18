@@ -230,7 +230,7 @@ dependencies {
     implementation("com.facebook.stetho:stetho-okhttp3:${stethoVersion}") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
-    implementation "com.github.jorgecastilloprz:fabprogresscircle:${fabprogresscircleVersion}"
+    implementation "com.github.tougee:FABProgressCircle:${fabprogresscircleVersion}"
     implementation "com.github.tougee:country-picker-android:${countryPickerVersion}"
     implementation "com.dmitrymalkovich.android:progress-fab:${fabVersion}"
     implementation "com.googlecode.libphonenumber:libphonenumber:${libphonenumberVersion}"
