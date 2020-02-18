@@ -136,6 +136,20 @@
                 android:contentDescription="@null"/>
 
         <TextView
+                android:id="@+id/mention_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_unread"
+                android:fontFamily="monospace"
+                android:text="\@"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:visibility="gone"
+                tools:ignore="HardcodedText" />
+
+        <TextView
                 android:id="@+id/unread_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

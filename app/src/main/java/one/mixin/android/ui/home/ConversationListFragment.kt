@@ -436,6 +436,7 @@ class ConversationListFragment : LinkFragment() {
                 itemView.name_tv.text = it
             }
             itemView.group_name_tv.visibility = GONE
+            itemView.mention_tv.isVisible = conversationItem.mentions?.isNotBlank() == true
             when {
                 conversationItem.messageStatus == MessageStatus.FAILED.name -> {
                     conversationItem.content?.let {

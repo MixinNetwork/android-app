@@ -1362,6 +1362,34 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             liveDataMessage(unreadCount, msgId)
         }
 
+        chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(viewLifecycleOwner, Observer { mentionMessages ->
+            mention_flag.isVisible = mentionMessages.isNotEmpty()
+            mention_flag.setOnClickListener {
+                lifecycleScope.launch {
+                    if (!isAdded) return@launch
+                    val messageId = mentionMessages.first().messageId
+                    val index = chatViewModel.findMessageIndex(conversationId, messageId)
+                    if (index == 0) {
+                        toast(R.string.error_not_found_message)
+                    } else {
+                        chatAdapter.loadAround(index)
+                        if (index == chatAdapter.itemCount - 1) {
+                            scrollTo(index, 0, action = {
+                                requireContext().mainThreadDelayed({
+                                    RxBus.publish(BlinkEvent(messageId))
+                                }, 60)
+                            })
+                        } else {
+                            scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = {
+                                requireContext().mainThreadDelayed({
+                                    RxBus.publish(BlinkEvent(messageId))
+                                }, 60)
+                            })
+                        }
+                    }
+                }
+            }
+        })
         if (isBot) {
             chatViewModel.updateRecentUsedBots(defaultSharedPreferences, recipient!!.userId)
             chat_control.showBot()
