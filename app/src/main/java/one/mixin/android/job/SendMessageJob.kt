@@ -56,19 +56,19 @@ open class SendMessageJob(
         if (alreadyExistMessage) {
             return
         }
-        if (message.isText()) {
-            message.content?.let { content ->
-                getMentionData(content, userDao)?.let { mentionData ->
-                    message.quoteContent = mentionData
-                }
-            }
-        }
         val conversation = conversationDao.findConversationById(message.conversationId)
         if (conversation != null) {
             if (message.isRecall()) {
                 recallMessage()
             } else {
                 messageDao.insert(message)
+                if (message.isText()) {
+                    message.content?.let { content ->
+                        getMentionData(content, message.id, message.conversationId, userDao, mentionMessageDao)?.let { mentionData ->
+                            // Todo send
+                        }
+                    }
+                }
                 parseHyperlink()
             }
         } else {

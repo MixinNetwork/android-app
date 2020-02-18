@@ -2,8 +2,6 @@ package one.mixin.android.job
 
 import android.os.SystemClock
 import com.google.gson.JsonElement
-import java.io.IOException
-import javax.inject.Inject
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.ConversationService
@@ -13,6 +11,7 @@ import one.mixin.android.crypto.db.RatchetSenderKeyDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
+import one.mixin.android.db.MentionMessageDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.ParticipantDao
@@ -36,6 +35,8 @@ import one.mixin.android.vo.createConversation
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
+import java.io.IOException
+import javax.inject.Inject
 
 open class Injector : Injectable {
     @Inject
@@ -64,6 +65,8 @@ open class Injector : Injectable {
     lateinit var chatWebSocket: ChatWebSocket
     @Inject
     lateinit var stickerDao: StickerDao
+    @Inject
+    lateinit var mentionMessageDao: MentionMessageDao
     @Inject
     lateinit var signalProtocol: SignalProtocol
     @Inject

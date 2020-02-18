@@ -27,6 +27,7 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FavoriteAppDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.JobDao
+import one.mixin.android.db.MentionMessageDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MixinDatabase
@@ -142,6 +143,9 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
     @Inject
     @Transient
     lateinit var favoriteAppDao: FavoriteAppDao
+    @Inject
+    @Transient
+    lateinit var mentionMessageDao: MentionMessageDao
     @Inject
     @Transient
     lateinit var appDao: AppDao

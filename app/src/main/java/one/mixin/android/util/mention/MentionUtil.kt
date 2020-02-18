@@ -1,7 +1,10 @@
 package one.mixin.android.util.mention
 
+import one.mixin.android.db.MentionMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.Session
+import one.mixin.android.vo.MentionMessage
 import one.mixin.android.vo.User
 import java.util.regex.Pattern
 
@@ -35,21 +38,30 @@ fun mentionReplace(source: String, user: User): String {
 
 fun getMentionData(
     text: String,
-    userDao: UserDao
+    messageId: String,
+    conversationId: String,
+    userDao: UserDao,
+    mentionMessageDao: MentionMessageDao
 ): String? {
     val matcher = mentionNumberPattern.matcher(text)
     val mentions = mutableListOf<MentionData>()
+    var hasRead = true
     while (matcher.find()) {
         val identityNumber = matcher.group().replace("@", "").replace(" ", "")
+        if (identityNumber.isNotBlank() && identityNumber == Session.getAccount()?.identity_number) {
+            hasRead = false
+        }
         val user = userDao.findUSerByIdentityNumber(identityNumber)
         mentions.add(MentionData(identityNumber, user?.fullName))
     }
     if (mentions.isEmpty()) return null
-    return GsonHelper.customGson.toJson(mentions)
+    val mentionData = GsonHelper.customGson.toJson(mentions)
+    mentionMessageDao.insert(MentionMessage(messageId, conversationId, mentionData, hasRead))
+    return mentionData
 }
 
 private val mentionEndPattern by lazy {
-    Pattern.compile("(?:\\s|^)@\\d*\$")
+    Pattern.compile("(?:\\s|^)@\\s*\$")
 }
 
 val mentionNumberPattern: Pattern by lazy {

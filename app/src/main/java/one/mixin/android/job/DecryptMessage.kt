@@ -28,6 +28,7 @@ import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
+import one.mixin.android.util.mention.getMentionData
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
@@ -318,6 +319,7 @@ class DecryptMessage : Injector() {
                     }
                 }
                 messageDao.insert(message)
+                getMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_POST") -> {
