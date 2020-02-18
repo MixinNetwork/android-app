@@ -16,7 +16,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.render
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.mention.MentionRenderContext
+import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
@@ -76,8 +76,7 @@ class TextHolder constructor(containerView: View) : BaseViewHolder(containerView
         isFirst: Boolean = false,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
-        mentionRenderContext: MentionRenderContext?
+        onItemListener: ConversationAdapter.OnItemListener
     ) {
         this.onItemListener = onItemListener
         if (hasSelect && isSelect) {
@@ -129,24 +128,35 @@ class TextHolder constructor(containerView: View) : BaseViewHolder(containerView
             }
         }
 
-        keyword.notNullWithElse({ k ->
-            messageItem.content?.let { str ->
-                val start = str.indexOf(k, 0, true)
-                if (start >= 0) {
-                    val sp = SpannableString(str)
-                    sp.setSpan(
-                        BackgroundColorSpan(HIGHLIGHTED), start,
-                        start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                    // Todo
-                    // itemView.chat_tv.text.render(sp, mentionRenderContext))
-                } else {
-                    itemView.chat_tv.render(messageItem.content, mentionRenderContext)
-                }
+
+
+        if (messageItem.mentions?.isNotBlank() == true) {
+            val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
+                messageItem.mentions
+            ) {
+
             }
-        }, {
             itemView.chat_tv.render(messageItem.content, mentionRenderContext)
-        })
+        } else {
+            keyword.notNullWithElse({ k ->
+                messageItem.content?.let { str ->
+                    val start = str.indexOf(k, 0, true)
+                    if (start >= 0) {
+                        val sp = SpannableString(str)
+                        sp.setSpan(
+                            BackgroundColorSpan(HIGHLIGHTED), start,
+                            start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        itemView.chat_tv.text = sp
+                    } else {
+                        itemView.chat_tv.text = str
+                    }
+                }
+            }, {
+                itemView.chat_tv.text = messageItem.content
+            })
+        }
+
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             itemView.chat_name.visibility = View.VISIBLE

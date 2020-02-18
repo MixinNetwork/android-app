@@ -38,6 +38,8 @@ import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
 import one.mixin.android.util.mention.MentionRenderContext
+import one.mixin.android.util.mention.mentionParser
+import one.mixin.android.util.mention.syntax.simple.SimpleRenderer
 import org.jetbrains.anko.dip
 import timber.log.Timber
 import java.io.FileNotFoundException
@@ -303,21 +305,13 @@ fun View.isActivityNotDestroyed(): Boolean {
 }
 
 fun TextView.render(text: CharSequence?, mentionRenderContext: MentionRenderContext?) {
-    // if (text == null || mentionRenderContext == null) {
+    if (text == null || mentionRenderContext == null) {
         this.text = text
-    //     return
-    // }
-    // if (!mentionNumberPattern.matcher(text).find()) {
-    //     this.text = text
-    //     return
-    // }
-    // this.text = try {
-    //     SimpleRenderer.render(
-    //         text,
-    //         parser = mentionParser,
-    //         renderContext = mentionRenderContext
-    //     )
-    // } catch (e: Exception) {
-    //     text
-    // }
+        return
+    }
+    this.text = SimpleRenderer.render(
+        text,
+        parser = mentionParser,
+        renderContext = mentionRenderContext
+    )
 }

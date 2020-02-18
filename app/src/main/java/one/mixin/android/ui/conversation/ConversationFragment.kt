@@ -1348,14 +1348,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         lifecycleScope.launch {
             if (!isAdded) return@launch
 
-            if (isGroup) {
-                chatAdapter.mentionRenderContext = chatViewModel.getMentionRenderContext(conversationId) { url ->
-                    chatViewModel.viewModelScope.launch {
-
-                    }
-                }
-            }
-
             unreadCount = if (!messageId.isNullOrEmpty()) {
                 chatViewModel.findMessageIndex(conversationId, messageId!!)
             } else {

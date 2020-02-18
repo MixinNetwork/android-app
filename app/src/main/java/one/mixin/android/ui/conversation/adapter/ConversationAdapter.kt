@@ -51,7 +51,6 @@ import one.mixin.android.ui.conversation.holder.VideoHolder
 import one.mixin.android.ui.conversation.holder.VideoQuoteHolder
 import one.mixin.android.ui.conversation.holder.WaitingHolder
 import one.mixin.android.util.markdown.MarkwonUtil
-import one.mixin.android.util.mention.MentionRenderContext
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
@@ -79,7 +78,6 @@ class ConversationAdapter(
     val miniMarkwon by lazy {
         MarkwonUtil.getMiniMarkwon(context)
     }
-    var mentionRenderContext: MentionRenderContext? = null
     var hasBottomView = false
         set(value) {
             if (field != value) {
@@ -164,8 +162,7 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
-                        onItemListener,
-                        mentionRenderContext
+                        onItemListener
                     )
                 }
                 TEXT_QUOTE_TYPE -> {

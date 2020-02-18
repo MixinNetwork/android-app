@@ -110,7 +110,4 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE identity_number =:identityNumber")
     fun findUSerByIdentityNumber(identityNumber: String): User?
 
-    @Query("SELECT u.* FROM participants p, users u WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id")
-    suspend fun suspendGetGroupParticipants(conversationId: String): List<MentionUser>
-
 }

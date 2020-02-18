@@ -4,6 +4,8 @@ import one.mixin.android.db.MentionMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
+import one.mixin.android.util.mention.syntax.node.Node
+import one.mixin.android.util.mention.syntax.parser.Parser
 import one.mixin.android.vo.MentionMessage
 import one.mixin.android.vo.User
 import java.util.regex.Pattern
@@ -67,3 +69,8 @@ private val mentionEndPattern by lazy {
 val mentionNumberPattern: Pattern by lazy {
     Pattern.compile("@\\d+")
 }
+
+val mentionParser = Parser<MentionRenderContext, Node<MentionRenderContext>>()
+    .addRule(MentionRule())
+    .addRule(NormalRule())
+

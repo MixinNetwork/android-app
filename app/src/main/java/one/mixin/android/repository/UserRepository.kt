@@ -1,6 +1,5 @@
 package one.mixin.android.repository
 
-import android.util.ArrayMap
 import androidx.lifecycle.LiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -12,7 +11,6 @@ import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
 import one.mixin.android.db.updateRelationship
 import one.mixin.android.util.Session
-import one.mixin.android.util.mention.MentionData
 import one.mixin.android.vo.App
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
@@ -88,11 +86,4 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     suspend fun fetchUser(ids: List<String>) = userService.fetchUsers(ids)
 
-    suspend fun getMentionUsersMap(conversationId: String): Map<String, MentionData> {
-        val map = ArrayMap<String, MentionData>()
-        userDao.suspendGetGroupParticipants(conversationId).asSequence().forEach { item ->
-            map[item.identityNumber] = MentionData(item.userId, item.fullName)
-        }
-        return map
-    }
 }
