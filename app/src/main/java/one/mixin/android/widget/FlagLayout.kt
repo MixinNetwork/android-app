@@ -18,7 +18,7 @@ class FlagLayout @JvmOverloads constructor(
     var bottomFlag = false
         set(value) {
             if (field != value) {
-                down_flag.isVisible = value
+                down_flag_layout.isVisible = value
                 field = value
                 update()
             }
@@ -26,22 +26,23 @@ class FlagLayout @JvmOverloads constructor(
     var bottomCountFlag = false
         set(value) {
             if (field != value) {
-                down_flag.isVisible = value
+                down_unread.isVisible = value
                 field = value
                 update()
             }
         }
-    var mentionFlag = false
+    var mentionCount = 0
         set(value) {
             if (field != value) {
-                down_flag.isVisible = value
+                mention_flag.isVisible = value != 0
                 field = value
+                mention_count.text = "$field"
                 update()
             }
         }
 
     private fun update() {
-        if (!bottomCountFlag && !bottomFlag && !mentionFlag) {
+        if (!bottomCountFlag && !bottomFlag && mentionCount == 0) {
             hide()
         } else {
             show(100)

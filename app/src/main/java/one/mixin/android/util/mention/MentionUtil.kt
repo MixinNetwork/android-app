@@ -43,14 +43,15 @@ fun getMentionData(
     messageId: String,
     conversationId: String,
     userDao: UserDao,
-    mentionMessageDao: MentionMessageDao
+    mentionMessageDao: MentionMessageDao,
+    send: Boolean = true
 ): String? {
     val matcher = mentionNumberPattern.matcher(text)
     val mentions = mutableListOf<MentionData>()
     var hasRead = true
     while (matcher.find()) {
         val identityNumber = matcher.group().replace("@", "").replace(" ", "")
-        if (identityNumber.isNotBlank() && identityNumber == Session.getAccount()?.identity_number) {
+        if (!send && identityNumber.isNotBlank() && identityNumber == Session.getAccount()?.identity_number) {
             hasRead = false
         }
         val user = userDao.findUSerByIdentityNumber(identityNumber)

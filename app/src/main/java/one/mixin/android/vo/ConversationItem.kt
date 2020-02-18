@@ -34,7 +34,8 @@ data class ConversationItem(
     val muteUntil: String?,
     val snapshotType: String?,
     val appId: String?,
-    val mentions: String?
+    val mentions: String?,
+    val mentionCount: Int = 0
 ) {
     fun isGroup() = category == ConversationCategory.GROUP.name
 

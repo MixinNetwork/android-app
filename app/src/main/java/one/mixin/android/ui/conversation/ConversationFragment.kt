@@ -1362,12 +1362,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(viewLifecycleOwner, Observer { mentionMessages ->
-            flag_layout.mention_flag.isVisible = mentionMessages.isNotEmpty()
-            flag_layout.mention_flag.setOnClickListener {
+            flag_layout.mentionCount = mentionMessages.size
+            flag_layout.mention_flag_layout.setOnClickListener {
                 lifecycleScope.launch {
                     if (!isAdded) return@launch
                     val messageId = mentionMessages.first().messageId
                     val index = chatViewModel.findMessageIndex(conversationId, messageId)
+                    chatViewModel.markMentionRead(messageId)
                     if (index == 0) {
                         toast(R.string.error_not_found_message)
                     } else {

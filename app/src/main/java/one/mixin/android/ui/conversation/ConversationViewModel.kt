@@ -1099,4 +1099,6 @@ internal constructor(
     suspend fun findUSerByIdentityNumberSuspend(identityNumber: String) = userRepository.findUSerByIdentityNumberSuspend(identityNumber)
 
     fun getUnreadMentionMessageByConversationId(conversationId: String) = conversationRepository.getUnreadMentionMessageByConversationId(conversationId)
+
+    suspend fun markMentionRead(messageId: String) = conversationRepository.markMentionRead(messageId)
 }
