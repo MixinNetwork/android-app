@@ -2,7 +2,6 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -11,10 +10,7 @@ import androidx.lifecycle.Lifecycle
 import com.uber.autodispose.android.lifecycle.scope
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
-import java.util.Locale
 import javax.inject.Inject
-import one.mixin.android.Constants.Account.PREF_LANGUAGE
-import one.mixin.android.Constants.Account.PREF_SET_LANGUAGE
 import one.mixin.android.Constants.Theme.THEME_AUTO_ID
 import one.mixin.android.Constants.Theme.THEME_CURRENT_ID
 import one.mixin.android.Constants.Theme.THEME_DEFAULT_ID
@@ -22,8 +18,8 @@ import one.mixin.android.Constants.Theme.THEME_NIGHT_ID
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.wrap
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.changeLanguage
 import org.jetbrains.anko.configuration
 
 @SuppressLint("Registered")
@@ -37,14 +33,7 @@ open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
     override fun androidInjector() = dispatchingAndroidInjector
 
     override fun attachBaseContext(context: Context) {
-        val setLanguage = context.defaultSharedPreferences.getBoolean(PREF_SET_LANGUAGE, false)
-        if (setLanguage) {
-            val defaultLang = Locale.getDefault().language
-            val language = context.defaultSharedPreferences.getString(PREF_LANGUAGE, defaultLang) ?: defaultLang
-            super.attachBaseContext(ContextWrapper(context).wrap(language))
-        } else {
-            super.attachBaseContext(context)
-        }
+        super.attachBaseContext(context.changeLanguage())
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

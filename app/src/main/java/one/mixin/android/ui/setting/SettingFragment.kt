@@ -25,7 +25,6 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.singleChoice
 import one.mixin.android.ui.device.DeviceFragment
-import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.Session
 
 class SettingFragment : Fragment() {
