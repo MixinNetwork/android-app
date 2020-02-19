@@ -141,6 +141,7 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.util.mention.deleteMentionEnd
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
@@ -2404,6 +2405,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 } else {
                     floating_layout.hideMention()
                 }
+            }
+        }
+
+        override fun onDelete() {
+            if (isGroup) {
+                deleteMentionEnd(chat_control.chat_et)
             }
         }
     }

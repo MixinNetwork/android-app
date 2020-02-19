@@ -1,5 +1,6 @@
 package one.mixin.android.util.mention
 
+import android.widget.EditText
 import java.util.regex.Pattern
 import one.mixin.android.db.MentionMessageDao
 import one.mixin.android.db.UserDao
@@ -21,6 +22,15 @@ fun mentionEnd(string: String): String? {
         matcher.group().replace(" ", "").replace("@", "")
     } else {
         null
+    }
+}
+
+fun deleteMentionEnd(editText: EditText) {
+    val text = editText.text
+    val matcher = mentionEndPattern.matcher(text)
+    if (matcher.find()) {
+        editText.setText(text.removeRange(matcher.start(), matcher.end()))
+        editText.setSelection(editText.text.length)
     }
 }
 

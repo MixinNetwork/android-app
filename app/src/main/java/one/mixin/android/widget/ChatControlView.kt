@@ -14,6 +14,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.text.style.MetricAffectingSpan
 import android.util.AttributeSet
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_CANCEL
@@ -23,6 +24,7 @@ import android.view.MotionEvent.ACTION_UP
 import android.view.VelocityTracker
 import android.view.View
 import android.view.View.OnClickListener
+import android.view.View.OnKeyListener
 import android.view.View.OnTouchListener
 import android.view.ViewConfiguration
 import android.view.animation.AccelerateInterpolator
@@ -122,6 +124,7 @@ class ChatControlView : FrameLayout {
         LayoutInflater.from(context).inflate(R.layout.view_chat_control, this, true)
 
         chat_et.addTextChangedListener(editTextWatcher)
+        chat_et.setOnKeyListener(keyListener)
         chat_et.setOnClickListener(onChatEtClickListener)
         chat_send_ib.setOnTouchListener(sendOnTouchListener)
         chat_menu_iv.setOnClickListener(onChatMenuClickListener)
@@ -542,6 +545,12 @@ class ChatControlView : FrameLayout {
         currentChecked = NONE
     }
 
+    private val keyListener = OnKeyListener { v, keyCode, event ->
+        if (keyCode == KeyEvent.KEYCODE_DEL) {
+            callback.onDelete()
+        }
+        false
+    }
     private val editTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
             setSend()
@@ -845,5 +854,6 @@ class ChatControlView : FrameLayout {
         fun onReleaseChatControl(fling: Int)
         fun onRecordLocked()
         fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int)
+        fun onDelete()
     }
 }
