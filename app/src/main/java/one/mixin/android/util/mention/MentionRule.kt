@@ -12,7 +12,7 @@ class MentionRule :
     Rule<MentionRenderContext, Node<MentionRenderContext>>(Pattern.compile("^@\\d+")) {
 
     companion object {
-        val HIGHLIGHTED = Color.parseColor("#CCEF8C")
+        val PRESS_COLOR = Color.parseColor("#0D94FC")
         val LINK_COLOR = Color.parseColor("#5FA7E4")
     }
 
@@ -20,6 +20,6 @@ class MentionRule :
         matcher: Matcher,
         parser: Parser<MentionRenderContext, in Node<MentionRenderContext>>
     ): ParseSpec<MentionRenderContext, Node<MentionRenderContext>> {
-        return ParseSpec.createTerminal(MentionNode(matcher.group(), LINK_COLOR, HIGHLIGHTED))
+        return ParseSpec.createTerminal(MentionNode(matcher.group(), LINK_COLOR, PRESS_COLOR))
     }
 }
