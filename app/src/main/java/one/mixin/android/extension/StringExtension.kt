@@ -381,3 +381,8 @@ fun String.postLengthOptimize(): String {
         this
     }
 }
+
+fun String.maxLimit(maxSize: Int = 1024 * 1024): String {
+    val bytes = toByteArray()
+    return String(bytes.take(maxSize).toByteArray())
+}
