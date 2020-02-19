@@ -131,7 +131,7 @@ class TextHolder constructor(containerView: View) : BaseViewHolder(containerView
             ) { identityNumber ->
                 onItemListener.onMentionClick(identityNumber)
             }
-            itemView.chat_tv.renderMessage(messageItem.content, mentionRenderContext)
+            itemView.chat_tv.renderMessage(messageItem.content, mentionRenderContext, keyword)
         } else {
             keyword.notNullWithElse({ k ->
                 messageItem.content?.let { str ->
