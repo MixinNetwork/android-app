@@ -40,7 +40,7 @@ open class SendMessageJob(
     }
 
     override fun cancel() {
-        isCancel = true
+        isCancel.lazySet(true)
         removeJob()
     }
 

@@ -33,7 +33,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
     private var disposable: Disposable? = null
 
     override fun cancel() {
-        isCancel = true
+        isCancel.lazySet(true)
         connection?.disconnect()
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
         disposable?.let {
@@ -68,13 +68,13 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
     }
 
     override fun onRun() {
-        if (isCancel) {
+        if (isCancel.get()) {
             removeJob()
             return
         }
         jobManager.saveJob(this)
         disposable = conversationApi.requestAttachment().map {
-            if (it.isSuccess && !isCancel) {
+            if (it.isSuccess && !isCancel.get()) {
                 val result = it.data!!
                 processAttachment(result)
             } else {
@@ -137,7 +137,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
             Crashlytics.logException(e)
             return false
         }
-        if (isCancel) {
+        if (isCancel.get()) {
             removeJob()
             return true
         }
