@@ -2422,7 +2422,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             mentionAdapter.keyword = mention
             mentionAdapter.submitList(users)
             if (mention_rv.isGone) {
-                floating_layout.showMention()
+                floating_layout.showMention(users.size)
             } else {
                 floating_layout.animate2RightHeight(users.size)
             }
