@@ -46,13 +46,13 @@
 
     <ViewAnimator
         android:id="@+id/confirm_anim"
-        style="@style/AppTheme.MaterialButton"
         android:minWidth="116dp"
         android:minHeight="40dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin20"
         android:layout_above="@id/bottom"
+        android:background="@drawable/bg_round_blue_btn_solid"
         android:layout_centerHorizontal="true">
 
         <TextView
