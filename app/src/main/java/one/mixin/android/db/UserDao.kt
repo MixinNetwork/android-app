@@ -84,4 +84,7 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT * FROM users WHERE user_id IN (:userIds)")
     suspend fun findMultiUsersByIds(userIds: Set<String>): List<User>
+
+    @Query("SELECT app_id FROM users WHERE app_id IS NOT NULL")
+    suspend fun findAllAppIds(): List<String>
 }

@@ -152,5 +152,11 @@ class MixinDatabaseMigrations private constructor() {
                 """)
             }
         }
+
+        val MIGRATION_27_28: Migration = object : Migration(27, 28) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE apps ADD COLUMN resource_patterns TEXT")
+            }
+        }
     }
 }

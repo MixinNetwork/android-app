@@ -38,6 +38,8 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     fun getUser(id: String) = userService.getUserById(id)
 
+    suspend fun getUserByIdSuspend(id: String) = userService.getUserByIdSuspend(id)
+
     fun findUserByConversationId(conversationId: String): LiveData<User> =
         userDao.findUserByConversationId(conversationId)
 

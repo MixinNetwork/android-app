@@ -27,6 +27,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.crypto.Base64
@@ -69,6 +70,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.util.image.Compressor
+import one.mixin.android.vo.App
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
@@ -87,6 +89,7 @@ import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createAckJob
+import one.mixin.android.vo.createAppCardMessage
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
@@ -176,6 +179,13 @@ internal constructor(
         val message = createPostMessage(
             UUID.randomUUID().toString(), conversationId,
             sender.userId, category, content.trim(), content.postOptimize(), nowInUtc(), MessageStatus.SENDING.name
+        )
+        jobManager.addJobInBackground(SendMessageJob(message))
+    }
+
+    fun sendAppCardMessage(conversationId: String, sender: User, content: String) {
+        val message = createAppCardMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
+            MessageCategory.APP_CARD.name, content, nowInUtc(), MessageStatus.SENDING.name
         )
         jobManager.addJobInBackground(SendMessageJob(message))
     }
@@ -633,6 +643,25 @@ internal constructor(
         Observable.just(userId).subscribeOn(Schedulers.io())
             .map { userRepository.getUserById(it) }.observeOn(AndroidSchedulers.mainThread())!!
 
+    fun getAppAndCheckUser(userId: String): App? {
+        viewModelScope.launch {
+            handleMixinResponse(
+                invokeNetwork = {
+                    userRepository.getUserByIdSuspend(userId)
+                },
+                successBlock = {
+                    it.data?.let { u ->
+                        withContext(Dispatchers.IO) {
+                            userRepository.upsert(u)
+                        }
+                        return@handleMixinResponse u.app
+                    }
+                }
+            )
+        }
+        return null
+    }
+
     fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
         jobManager.findJobById(id).notNullWithElse({ it.cancel() }, {
             conversationRepository.updateMediaStatus(MediaStatus.CANCELED.name, id)
@@ -834,6 +863,11 @@ internal constructor(
                                 sendPostMessage(conversationId, sender, it, isPlainMessage)
                             }
                         }
+                        ForwardCategory.APP_CARD.name -> {
+                            item.content?.let {
+                                sendAppCardMessage(conversationId, sender, it)
+                            }
+                        }
                     }
                 }
             }
@@ -1021,6 +1055,10 @@ internal constructor(
                     )
                     it.category.endsWith("_POST") -> ForwardMessage(
                         ForwardCategory.POST.name,
+                        content = it.content
+                    )
+                    it.category == MessageCategory.APP_CARD.name -> ForwardMessage(
+                        ForwardCategory.APP_CARD.name,
                         content = it.content
                     )
                     else -> ForwardMessage(ForwardCategory.TEXT.name)

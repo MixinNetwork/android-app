@@ -142,6 +142,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -526,6 +527,33 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             app?.capabilities
                         )
                     }
+                }
+            }
+
+            override fun onAppCardClick(appCard: AppCardData, userId: String) {
+                val action = appCard.action
+                if (appCard.appId != null) {
+                    lifecycleScope.launch {
+                        var app = chatViewModel.findAppById(appCard.appId)
+                        if (app == null) {
+                            app = chatViewModel.getAppAndCheckUser(appCard.appId)
+                        }
+                        val validUrl = "$action/"
+                        var shouldOpenAction = false
+                        app?.resourcePatterns?.forEach { p ->
+                            if (validUrl.startsWith(p)) {
+                                shouldOpenAction = true
+                                return@forEach
+                            }
+                        }
+                        if (shouldOpenAction) {
+                            openApp(app)
+                        } else {
+                            openAction(action, userId)
+                        }
+                    }
+                } else {
+                    openAction(action, userId)
                 }
             }
 
@@ -1751,6 +1779,46 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
+    private fun openAction(action: String, userId: String) = lifecycleScope.launch {
+        if (openInputAction(action)) return@launch
+
+        if (userId == app?.appId) {
+            openApp(app)
+        } else {
+            var app = chatViewModel.findAppById(userId)
+            if (app == null) {
+                app = chatViewModel.getAppAndCheckUser(userId)
+            }
+            openApp(app)
+        }
+    }
+
+    private fun openApp(app: App?) {
+        app?.let {
+            chat_control.chat_et.hideKeyboard()
+            botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(
+                it.homeUri,
+                conversationId,
+                it.appId,
+                it.name,
+                it.icon_url,
+                it.capabilities
+            )
+            botWebBottomSheet?.showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+        }
+    }
+
+    private fun openInputAction(action: String): Boolean {
+        if (action.startsWith("input:") && action.length > 6) {
+            val msg = action.substring(6).trim()
+            if (msg.isNotEmpty()) {
+                sendMessage(msg)
+            }
+            return true
+        }
+        return false
+    }
+
     private fun inMentionState(text: String?) =
         text != null && text.startsWith("@700") && !text.contains(' ')
 
@@ -2348,19 +2416,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         override fun onBotClick() {
             hideIfShowBottomSheet()
-            app?.let {
-                chat_control.chat_et.hideKeyboard()
-                recipient?.let { user -> chatViewModel.refreshUser(user.userId, true) }
-                botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(
-                    it.homeUri,
-                    conversationId,
-                    it.appId,
-                    it.name,
-                    it.icon_url,
-                    it.capabilities
-                )
-                botWebBottomSheet?.showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+            recipient?.userId?.let { id ->
+                chatViewModel.refreshUser(id, true)
             }
+            openApp(app)
         }
 
         override fun onGalleryClick() {

@@ -26,7 +26,8 @@ enum class ForwardCategory {
     STICKER,
     CONTACT,
     AUDIO,
-    LIVE
+    LIVE,
+    APP_CARD
 }
 
 fun ForwardMessage.addTo(list: MutableList<ForwardMessage>) {

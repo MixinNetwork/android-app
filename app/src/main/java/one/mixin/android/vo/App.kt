@@ -45,8 +45,10 @@ data class App(
     val capabilities: ArrayList<String>?,
     @SerializedName("creator_id")
     @ColumnInfo(name = "creator_id")
-    val creatorId: String
-
+    val creatorId: String,
+    @SerializedName("resource_patterns")
+    @ColumnInfo(name = "resource_patterns")
+    val resourcePatterns: ArrayList<String>?
 ) : Parcelable {
 
     companion object {
