@@ -6,6 +6,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.UserDao
@@ -38,7 +39,22 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     fun getUser(id: String) = userService.getUserById(id)
 
-    suspend fun getUserByIdSuspend(id: String) = userService.getUserByIdSuspend(id)
+    suspend fun getAppAndCheckUser(id: String): App? {
+        handleMixinResponse(
+            invokeNetwork = {
+                userService.getUserByIdSuspend(id)
+            },
+            successBlock = {
+                it.data?.let { u ->
+                    withContext(Dispatchers.IO) {
+                        upsert(u)
+                    }
+                    return@handleMixinResponse u.app
+                }
+            }
+        )
+        return null
+    }
 
     fun findUserByConversationId(conversationId: String): LiveData<User> =
         userDao.findUserByConversationId(conversationId)

@@ -27,7 +27,6 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.extension.base64Encode
@@ -70,7 +69,6 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.util.image.Compressor
-import one.mixin.android.vo.App
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
@@ -641,24 +639,7 @@ internal constructor(
         Observable.just(userId).subscribeOn(Schedulers.io())
             .map { userRepository.getUserById(it) }.observeOn(AndroidSchedulers.mainThread())!!
 
-    fun getAppAndCheckUser(userId: String): App? {
-        viewModelScope.launch {
-            handleMixinResponse(
-                invokeNetwork = {
-                    userRepository.getUserByIdSuspend(userId)
-                },
-                successBlock = {
-                    it.data?.let { u ->
-                        withContext(Dispatchers.IO) {
-                            userRepository.upsert(u)
-                        }
-                        return@handleMixinResponse u.app
-                    }
-                }
-            )
-        }
-        return null
-    }
+    suspend fun getAppAndCheckUser(userId: String) = userRepository.getAppAndCheckUser(userId)
 
     fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
         jobManager.findJobById(id).notNullWithElse({ it.cancel() }, {

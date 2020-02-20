@@ -539,17 +539,27 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             app = chatViewModel.getAppAndCheckUser(appCard.appId)
                         }
                         val validUrl = "$action/"
-                        var shouldOpenAction = false
+                        var shouldOpenApp = false
                         app?.resourcePatterns?.forEach { p ->
                             if (validUrl.startsWith(p)) {
-                                shouldOpenAction = true
+                                shouldOpenApp = true
                                 return@forEach
                             }
                         }
-                        if (shouldOpenAction) {
-                            openApp(app)
+                        if (shouldOpenApp) {
+                            app?.let { openApp(it, action) }
                         } else {
-                            openAction(action, userId)
+                            alertDialogBuilder()
+                                .setTitle(getString(R.string.chat_audio_discard_warning_title))
+                                .setMessage(getString(R.string.chat_audio_discard_warning))
+                                .setNeutralButton(getString(R.string.chat_audio_discard_cancel)) { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                .setNegativeButton(getString(R.string.chat_audio_discard_ok)) { dialog, _ ->
+                                    app?.let { openApp(it, action) }
+                                    dialog.dismiss()
+                                }
+                                .show()
                         }
                     }
                 } else {
@@ -1783,29 +1793,27 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (openInputAction(action)) return@launch
 
         if (userId == app?.appId) {
-            openApp(app)
+            app?.let { openApp(it, action) }
         } else {
             var app = chatViewModel.findAppById(userId)
             if (app == null) {
                 app = chatViewModel.getAppAndCheckUser(userId)
             }
-            openApp(app)
+            app?.let { openApp(it, action) }
         }
     }
 
-    private fun openApp(app: App?) {
-        app?.let {
-            chat_control.chat_et.hideKeyboard()
-            botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(
-                it.homeUri,
-                conversationId,
-                it.appId,
-                it.name,
-                it.icon_url,
-                it.capabilities
-            )
-            botWebBottomSheet?.showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
-        }
+    private fun openApp(app: App, url: String) {
+        chat_control.chat_et.hideKeyboard()
+        botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(
+            url,
+            conversationId,
+            app.appId,
+            app.name,
+            app.icon_url,
+            app.capabilities
+        )
+        botWebBottomSheet?.showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
     }
 
     private fun openInputAction(action: String): Boolean {
@@ -2419,7 +2427,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             recipient?.userId?.let { id ->
                 chatViewModel.refreshUser(id, true)
             }
-            openApp(app)
+            app?.let {
+                openApp(it, it.homeUri)
+            }
         }
 
         override fun onGalleryClick() {
