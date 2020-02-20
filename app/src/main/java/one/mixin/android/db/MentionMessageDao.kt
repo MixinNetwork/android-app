@@ -12,4 +12,10 @@ interface MentionMessageDao : BaseDao<MentionMessage> {
 
     @Query("UPDATE mention_message SET has_read = 1 WHERE message_id = :messageId")
     suspend fun markMentionRead(messageId: String)
+
+    @Query("DELETE FROM mention_message WHERE message_id = :id")
+    fun deleteMessage(id: String)
+
+    @Query("DELETE FROM mention_message WHERE conversation_id = :conversationId")
+    suspend fun deleteMessageByConversationId(conversationId: String)
 }

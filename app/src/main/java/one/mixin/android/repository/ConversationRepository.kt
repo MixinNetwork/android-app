@@ -172,7 +172,10 @@ internal constructor(
     suspend fun updateMediaStatus(status: String, messageId: String) =
         messageDao.updateMediaStatusSuspend(status, messageId)
 
-    fun deleteMessage(id: String) = messageDao.deleteMessage(id)
+    fun deleteMessage(id: String) {
+        messageDao.deleteMessage(id)
+        mentionMessageDao.deleteMessage(id)
+    }
 
     suspend fun deleteConversationById(conversationId: String) =
         conversationDao.deleteConversationById(conversationId)
@@ -184,6 +187,7 @@ internal constructor(
 
     suspend fun deleteMessageByConversationId(conversationId: String) = coroutineScope {
         messageDao.deleteMessageByConversationId(conversationId)
+        mentionMessageDao.deleteMessageByConversationId(conversationId)
     }
 
     suspend fun getRealParticipants(conversationId: String) =

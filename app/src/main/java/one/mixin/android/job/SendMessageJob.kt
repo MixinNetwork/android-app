@@ -61,7 +61,6 @@ open class SendMessageJob(
             if (message.isRecall()) {
                 recallMessage()
             } else {
-                messageDao.insert(message)
                 if (message.isText()) {
                     message.content?.let { content ->
                         getMentionData(content, message.id, message.conversationId, userDao, mentionMessageDao)?.let { mentionData ->
@@ -69,6 +68,7 @@ open class SendMessageJob(
                         }
                     }
                 }
+                messageDao.insert(message)
                 parseHyperlink()
             }
         } else {

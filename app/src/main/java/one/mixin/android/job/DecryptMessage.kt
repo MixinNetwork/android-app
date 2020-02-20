@@ -318,8 +318,8 @@ class DecryptMessage : Injector() {
                             plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
                     }
                 }
-                messageDao.insert(message)
                 getMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, false)
+                messageDao.insert(message)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_POST") -> {
