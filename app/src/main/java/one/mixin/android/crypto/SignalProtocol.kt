@@ -176,7 +176,7 @@ class SignalProtocol(ctx: Context) {
         }
     }
 
-    fun encryptSessionMessage(message: Message, recipientId: String, resendMessageId: String? = null, sessionId: String? = null): BlazeMessage {
+    fun encryptSessionMessage(message: Message, recipientId: String, resendMessageId: String? = null, sessionId: String? = null, mentionData: String? = null): BlazeMessage {
         val cipher = encryptSession(message.content!!.toByteArray(), recipientId, sessionId.getDeviceId())
         val data = encodeMessageData(ComposeMessageData(cipher.type, cipher.serialize(), resendMessageId))
         val blazeParam = BlazeMessageParam(
@@ -186,11 +186,12 @@ class SignalProtocol(ctx: Context) {
             message.category,
             data,
             quote_message_id = message.quoteMessageId,
-            session_id = sessionId)
+            session_id = sessionId,
+            mentions = mentionData)
         return createParamBlazeMessage(blazeParam)
     }
 
-    fun encryptGroupMessage(message: Message): BlazeMessage {
+    fun encryptGroupMessage(message: Message, mentionData: String?): BlazeMessage {
         val address = SignalProtocolAddress(message.userId, DEFAULT_DEVICE_ID)
         val senderKeyName = SenderKeyName(message.conversationId, address)
         val groupCipher = GroupCipher(senderKeyStore, senderKeyName)
@@ -208,7 +209,8 @@ class SignalProtocol(ctx: Context) {
             message.id,
             message.category,
             data,
-            quote_message_id = message.quoteMessageId)
+            quote_message_id = message.quoteMessageId,
+            mentions = mentionData)
         return createParamBlazeMessage(blazeParam)
     }
 

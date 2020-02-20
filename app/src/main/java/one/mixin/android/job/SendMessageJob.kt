@@ -11,6 +11,7 @@ import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
+import one.mixin.android.util.mention.MentionData
 import one.mixin.android.util.mention.getMentionData
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
@@ -63,9 +64,7 @@ open class SendMessageJob(
             } else {
                 if (message.isText()) {
                     message.content?.let { content ->
-                        getMentionData(content, message.id, message.conversationId, userDao, mentionMessageDao)?.let { mentionData ->
-                            // Todo send
-                        }
+                        getMentionData(content, message.id, message.conversationId, userDao, mentionMessageDao)
                     }
                 }
                 messageDao.insert(message)
@@ -147,7 +146,8 @@ open class SendMessageJob(
             message.id,
             message.category,
             content,
-            quote_message_id = message.quoteMessageId
+            quote_message_id = message.quoteMessageId,
+            mentions = getMentionData(message.id)
         )
         val blazeMessage = if (message.isCall()) {
             createCallMessage(blazeParam)
@@ -177,10 +177,21 @@ open class SendMessageJob(
                 message,
                 resendData.userId,
                 resendData.messageId,
-                resendData.sessionId
+                resendData.sessionId,
+                getMentionData(message.id)
             )
         } else {
-            signalProtocol.encryptGroupMessage(message)
+            signalProtocol.encryptGroupMessage(message, getMentionData(message.id))
+        }
+    }
+
+    private fun getMentionData(messageId: String): String? {
+        return mentionMessageDao.getMentionData(messageId)?.run {
+            GsonHelper.customGson.fromJson(this, Array<MentionData>::class.java).map {
+                it.identityNumber
+            }.run {
+                GsonHelper.customGson.toJson(this)
+            }
         }
     }
 }

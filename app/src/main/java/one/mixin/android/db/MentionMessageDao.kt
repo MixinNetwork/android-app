@@ -18,4 +18,7 @@ interface MentionMessageDao : BaseDao<MentionMessage> {
 
     @Query("DELETE FROM mention_message WHERE conversation_id = :conversationId")
     suspend fun deleteMessageByConversationId(conversationId: String)
+
+    @Query("SELECT mentions FROM mention_message WHERE message_id = :messageId")
+    fun getMentionData(messageId: String): String?
 }
