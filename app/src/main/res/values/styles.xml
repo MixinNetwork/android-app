@@ -108,6 +108,7 @@
         <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
         <item name="textColorAlertDialogListItem">?attr/text_primary</item>
         <item name="android:colorControlNormal">?attr/text_primary</item>
+        <item name="android:background">?attr/bg_white</item>
     </style>
 
     <style name="PositiveButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
