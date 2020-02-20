@@ -21,11 +21,12 @@ import kotlin.math.abs
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.URL
-import one.mixin.android.Constants.DELAY_SECOND
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.service.AccountService
@@ -57,9 +58,9 @@ import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.Session
-import one.mixin.android.util.Session.Companion.requestDelay
 import one.mixin.android.vo.CallState
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
@@ -120,11 +121,15 @@ internal class AppModule {
                     }
                 }
 
-                val authorization = response.request().header("Authorization")
-                if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
-                    val jwt = authorization.substring(7)
-                    if (requestDelay(Session.getAccount(), jwt, DELAY_SECOND)) {
-                        throw ServerErrorException(500)
+                response.body()?.bytes()?.run {
+                    val mixinResponse = GsonHelper.customGson.fromJson(String(this), MixinResponse::class.java)
+                    if (mixinResponse.errorCode != 401) return@run
+                    val authorization = response.request().header("Authorization")
+                    if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
+                        val jwt = authorization.substring(7)
+                        if (Session.requestDelay(Session.getAccount(), jwt, Constants.DELAY_SECOND)) {
+                            throw ServerErrorException(500)
+                        }
                     }
                 }
 
