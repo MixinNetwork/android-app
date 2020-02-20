@@ -7,8 +7,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clipChildren="false"
-        android:visibility="gone"
-        android:clipToPadding="false">
+        android:clipToPadding="false"
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/mention_flag"
@@ -38,7 +38,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clipChildren="false"
-        android:clipToPadding="false">
+        android:clipToPadding="false"
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/down_flag"
@@ -49,7 +50,6 @@
             android:padding="8dp"
             android:src="@drawable/ic_scroll_down"
             android:translationZ="1dp"
-            android:visibility="gone"
             tools:ignore="ContentDescription" />
 
         <TextView
