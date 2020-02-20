@@ -24,12 +24,12 @@ import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
-import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.CryptoPreference
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateRSAKeyPair
 import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.extension.alert
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
@@ -179,7 +179,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
         SignalProtocol.initSignal(requireContext().applicationContext)
         val registrationId = CryptoPreference.getLocalRegistrationId(requireContext())
         val sessionKey = generateRSAKeyPair()
-        val sessionSecret = Base64.encodeBytes(sessionKey.getPublicKey())
+        val sessionSecret = sessionKey.getPublicKey().base64Encode()
         val accountRequest = AccountRequest(pin_verification_view.code(),
             registration_id = registrationId,
             purpose = VerificationPurpose.SESSION.name,

@@ -11,11 +11,11 @@ import javax.net.ssl.HttpsURLConnection
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.AttachmentResponse
-import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.Util
 import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
 import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
@@ -153,7 +153,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
         val transferMediaData = AttachmentMessagePayload(key, digest, attachmentId,
             mimeType, size, name, width, height, thumbnail, duration, waveform)
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
-        val encoded = Base64.encodeBytes(plainText.toByteArray())
+        val encoded = plainText.base64Encode()
         message.content = encoded
         messageDao.updateMessageContent(encoded, message.id)
         jobManager.addJobInBackground(SendMessageJob(message, null, true))

@@ -21,6 +21,7 @@ import one.mixin.android.extension.autoDownload
 import one.mixin.android.extension.autoDownloadDocument
 import one.mixin.android.extension.autoDownloadPhoto
 import one.mixin.android.extension.autoDownloadVideo
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.getFilePath
@@ -655,7 +656,7 @@ class DecryptMessage : Injector() {
             action = PlainDataAction.RESEND_KEY.name,
             messageId = messageId
         ))
-        val encoded = Base64.encodeBytes(plainText.toByteArray())
+        val encoded = plainText.toByteArray().base64Encode()
         val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, recipientId, encoded, sessionId))
         jobManager.addJobInBackground(SendPlaintextJob(bm))
 
@@ -670,7 +671,7 @@ class DecryptMessage : Injector() {
             return
         }
         val plainText = gson.toJson(PlainJsonMessagePayload(PlainDataAction.RESEND_MESSAGES.name, messages.reversed()))
-        val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, userId, Base64.encodeBytes(plainText.toByteArray()), sessionId))
+        val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, userId, plainText.base64Encode(), sessionId))
         jobManager.addJobInBackground(SendPlaintextJob(bm))
         ratchetSenderKeyDao.delete(conversationId, SignalProtocolAddress(userId, sessionId.getDeviceId()).toString())
     }

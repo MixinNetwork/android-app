@@ -18,8 +18,8 @@ import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.UserSession
-import one.mixin.android.crypto.Base64
 import one.mixin.android.event.GroupEvent
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.networkConnected
@@ -275,7 +275,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
 
     protected fun sendNoKeyMessage(conversationId: String, recipientId: String) {
         val plainText = Gson().toJson(PlainJsonMessagePayload(PlainDataAction.NO_KEY.name))
-        val encoded = Base64.encodeBytes(plainText.toByteArray())
+        val encoded = plainText.base64Encode()
         val params = BlazeMessageParam(
             conversationId, recipientId, UUID.randomUUID().toString(),
             MessageCategory.PLAIN_JSON.name, encoded, MessageStatus.SENDING.name

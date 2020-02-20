@@ -4,8 +4,8 @@ import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
 import java.io.File
 import one.mixin.android.RxBus
-import one.mixin.android.crypto.Base64
 import one.mixin.android.event.RecallEvent
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
@@ -133,7 +133,7 @@ open class SendMessageJob(
             message.isCall() ||
             message.category == MessageCategory.APP_CARD.name) {
             if (message.content != null) {
-                content = Base64.encodeBytes(message.content!!.toByteArray())
+                content = message.content!!.base64Encode()
             }
         }
         val blazeParam = BlazeMessageParam(

@@ -30,7 +30,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
-import one.mixin.android.crypto.Base64
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
 import one.mixin.android.extension.copyFromInputStream
@@ -246,8 +246,7 @@ internal constructor(
     ) {
         val category =
             if (isPlain) MessageCategory.PLAIN_STICKER.name else MessageCategory.SIGNAL_STICKER.name
-        val encoded =
-            Base64.encodeBytes(GsonHelper.customGson.toJson(transferStickerData).toByteArray())
+        val encoded = GsonHelper.customGson.toJson(transferStickerData).base64Encode()
         transferStickerData.stickerId?.let {
             val message = createStickerMessage(
                 UUID.randomUUID().toString(),
@@ -268,7 +267,7 @@ internal constructor(
     fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, isPlain: Boolean, replyMessage: MessageItem? = null) {
         val category = if (isPlain) MessageCategory.PLAIN_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
         val transferContactData = ContactMessagePayload(shareUserId)
-        val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferContactData).toByteArray())
+        val encoded = GsonHelper.customGson.toJson(transferContactData).base64Encode()
         val message = createContactMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
             category, encoded, shareUserId, MessageStatus.SENDING.name, nowInUtc(), replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
         jobManager.addJobInBackground(SendMessageJob(message))
@@ -300,8 +299,7 @@ internal constructor(
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
         list.forEach { messageItem ->
             val transferRecallData = RecallMessagePayload(messageItem.messageId)
-            val encoded =
-                Base64.encodeBytes(GsonHelper.customGson.toJson(transferRecallData).toByteArray())
+            val encoded = GsonHelper.customGson.toJson(transferRecallData).base64Encode()
             val message = createRecallMessage(
                 UUID.randomUUID().toString(), conversationId, sender.userId,
                 MessageCategory.MESSAGE_RECALL.name, encoded, MessageStatus.SENDING.name, nowInUtc()
@@ -324,7 +322,7 @@ internal constructor(
         val category =
             if (isPlain) MessageCategory.PLAIN_LIVE.name else MessageCategory.SIGNAL_LIVE.name
         val encoded =
-            Base64.encodeBytes(GsonHelper.customGson.toJson(transferLiveData).toByteArray())
+            GsonHelper.customGson.toJson(transferLiveData).base64Encode()
         val message = createLiveMessage(
             UUID.randomUUID().toString(),
             conversationId,
