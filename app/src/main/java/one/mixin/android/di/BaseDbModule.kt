@@ -31,8 +31,7 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideSessionParticipantDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) =
-        db.participantSessionDao()
+    fun provideSessionParticipantDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.participantSessionDao()
 
     @Singleton
     @Provides
@@ -66,8 +65,7 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideMessageHistoryDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) =
-        db.messageHistoryDao()
+    fun provideMessageHistoryDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.messageHistoryDao()
 
     @Singleton
     @Provides
@@ -99,13 +97,11 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
-    fun providesResendSessionMessageDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) =
-        db.resendSessionMessageDao()
+    fun providesResendSessionMessageDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.resendSessionMessageDao()
 
     @Singleton
     @Provides
-    fun providesStickerRelationshipDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) =
-        db.stickerRelationshipDao()
+    fun providesStickerRelationshipDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.stickerRelationshipDao()
 
     @Singleton
     @Provides

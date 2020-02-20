@@ -1199,8 +1199,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             group_desc.expand()
         }
         group_close.setOnClickListener {
-            requireActivity().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                .putBoolean(conversationId, false)
+            requireActivity().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(conversationId, false)
             group_flag.isVisible = false
         }
         callState.observe(viewLifecycleOwner, Observer { info ->
@@ -1305,10 +1304,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                     chatViewModel.viewModelScope.launch {
                         chatAdapter.hasBottomView = ((isBot && list.isEmpty()) ||
-                            (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(
-                                conversationId,
-                                sender.userId
-                            ))) &&
+                            (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(conversationId, sender.userId))) &&
                             recipient?.relationship == UserRelationship.STRANGER.name
                     }
                     if (isFirstLoad && messageId == null && unreadCount > 0) {

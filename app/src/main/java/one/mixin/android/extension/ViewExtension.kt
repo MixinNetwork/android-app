@@ -260,10 +260,8 @@ fun View.capture(context: Context) {
     draw(c)
     b.save(outFile)
     try {
-        MediaStore.Images.Media.insertImage(
-            context.contentResolver,
-            outFile.absolutePath, outFile.name, null
-        )
+        MediaStore.Images.Media.insertImage(context.contentResolver,
+            outFile.absolutePath, outFile.name, null)
     } catch (e: FileNotFoundException) {
         e.printStackTrace()
     }
