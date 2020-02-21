@@ -547,16 +547,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             }
                         }
                         if (shouldOpenApp) {
-                            app?.let { openApp(it, action) }
+                            app?.let { open(it, action) }
                         } else {
                             alertDialogBuilder()
-                                .setTitle(getString(R.string.chat_audio_discard_warning_title))
-                                .setMessage(getString(R.string.chat_audio_discard_warning))
-                                .setNeutralButton(getString(R.string.chat_audio_discard_cancel)) { dialog, _ ->
+                                .setTitle(getString(R.string.chat_app_card_suspicious_link))
+                                .setMessage(getString(R.string.chat_app_card_suspicious_link_tips))
+                                .setNeutralButton(getString(R.string.cancel)) { dialog, _ ->
                                     dialog.dismiss()
                                 }
-                                .setNegativeButton(getString(R.string.chat_audio_discard_ok)) { dialog, _ ->
-                                    app?.let { openApp(it, action) }
+                                .setNegativeButton(getString(R.string.open)) { dialog, _ ->
+                                    openAction(action, userId)
                                     dialog.dismiss()
                                 }
                                 .show()
@@ -1793,26 +1793,30 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (openInputAction(action)) return@launch
 
         if (userId == app?.appId) {
-            app?.let { openApp(it, action) }
+            open(app, action)
         } else {
             var app = chatViewModel.findAppById(userId)
             if (app == null) {
                 app = chatViewModel.getAppAndCheckUser(userId)
             }
-            app?.let { openApp(it, action) }
+            open(app, action)
         }
     }
 
-    private fun openApp(app: App, url: String) {
+    private fun open(app: App?, url: String) {
         chat_control.chat_et.hideKeyboard()
-        botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(
-            url,
-            conversationId,
-            app.appId,
-            app.name,
-            app.icon_url,
-            app.capabilities
-        )
+        botWebBottomSheet = if (app == null) {
+            WebBottomSheetDialogFragment.newInstance(url, conversationId)
+        } else {
+            WebBottomSheetDialogFragment.newInstance(
+                url,
+                conversationId,
+                app.appId,
+                app.name,
+                app.icon_url,
+                app.capabilities
+            )
+        }
         botWebBottomSheet?.showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
     }
 
@@ -2428,7 +2432,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chatViewModel.refreshUser(id, true)
             }
             app?.let {
-                openApp(it, it.homeUri)
+                open(it, it.homeUri)
             }
         }
 

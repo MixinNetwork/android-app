@@ -50,9 +50,7 @@ import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
-import kotlinx.android.synthetic.main.fragment_web.*
 import kotlinx.android.synthetic.main.fragment_web.view.*
-import kotlinx.android.synthetic.main.fragment_web.view.chat_web_view
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
@@ -526,7 +524,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         }
                     }
                     if (shouldOpenApp && app != null) {
-                        val webTitle = contentView.chat_web_view.title
+                        val webTitle = contentView.chat_web_view.title ?: app.name
                         val appCardData = AppCardData(app.appId, app.icon_url, webTitle, app.name, currentUrl)
                         ForwardActivity.show(requireContext(),
                             arrayListOf(ForwardMessage(ForwardCategory.APP_CARD.name, content = Gson().toJson(appCardData))))
