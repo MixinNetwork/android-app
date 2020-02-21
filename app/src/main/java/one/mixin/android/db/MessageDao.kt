@@ -225,6 +225,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("DELETE FROM messages WHERE conversation_id = :conversationId")
     suspend fun deleteMessageByConversationId(conversationId: String)
 
+    @Query("SELECT m.media_url FROM messages m WHERE m.conversation_id = :conversationId AND m.media_url IS NOT NULL")
+    suspend fun findAllMediaPathByConversationId(conversationId: String): List<String>
+
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
 
@@ -346,7 +349,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         "SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE conversation_id = :conversationId " +
-            "AND category = :category ORDER BY created_at ASC"
+            "AND category = :category AND media_url != NULL ORDER BY created_at ASC"
     )
     fun getMediaByConversationIdAndCategory(
         conversationId: String,

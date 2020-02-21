@@ -22,6 +22,8 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
+import one.mixin.android.job.AttachmentDeleteJob
+import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
@@ -56,7 +58,8 @@ internal constructor(
     private val participantDao: ParticipantDao,
     private val participantSessionDao: ParticipantSessionDao,
     private val jobDao: JobDao,
-    private val conversationService: ConversationService
+    private val conversationService: ConversationService,
+    private val jobManager: MixinJobManager
 ) {
 
     @SuppressLint("RestrictedApi")
@@ -170,10 +173,21 @@ internal constructor(
     suspend fun updateMediaStatus(status: String, messageId: String) =
         messageDao.updateMediaStatusSuspend(status, messageId)
 
-    fun deleteMessage(id: String) = messageDao.deleteMessage(id)
+    fun deleteMessage(id: String, mediaUrl: String? = null) {
+        if (mediaUrl != null) {
+            jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
+        }
+        messageDao.deleteMessage(id)
+    }
 
-    suspend fun deleteConversationById(conversationId: String) =
+    suspend fun deleteConversationById(conversationId: String) {
+        messageDao.findAllMediaPathByConversationId(conversationId).let { list ->
+            if (list.isNotEmpty()) {
+                jobManager.addJobInBackground(AttachmentDeleteJob(* list.toTypedArray()))
+            }
+        }
         conversationDao.deleteConversationById(conversationId)
+    }
 
     suspend fun updateConversationPinTimeById(conversationId: String, pinTime: String?) =
         withContext(SINGLE_DB_THREAD) {
@@ -181,6 +195,11 @@ internal constructor(
         }
 
     suspend fun deleteMessageByConversationId(conversationId: String) = coroutineScope {
+        messageDao.findAllMediaPathByConversationId(conversationId).let { list ->
+            if (list.isNotEmpty()) {
+                jobManager.addJobInBackground(AttachmentDeleteJob(* list.toTypedArray()))
+            }
+        }
         messageDao.deleteMessageByConversationId(conversationId)
     }
 
@@ -215,8 +234,7 @@ internal constructor(
     fun getConversationStorageUsage() = readConversationDao.getConversationStorageUsage()
 
     fun getMediaByConversationIdAndCategory(conversationId: String, category: String) =
-        readMessageDao
-            .getMediaByConversationIdAndCategory(conversationId, category)
+        readMessageDao.getMediaByConversationIdAndCategory(conversationId, category)
 
     suspend fun findMessageIndex(conversationId: String, messageId: String) =
         readMessageDao.findMessageIndex(conversationId, messageId)
