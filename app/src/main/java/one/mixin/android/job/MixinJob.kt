@@ -6,6 +6,7 @@ import com.birbit.android.jobqueue.Params
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
@@ -56,7 +57,7 @@ import timber.log.Timber
 
 abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
 
-    protected var isCancel = false
+    protected var isCancel = AtomicBoolean(false)
 
     companion object {
         private const val serialVersionUID = 1L
@@ -71,7 +72,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     override fun shouldRetry(throwable: Throwable): Boolean {
-        return if (isCancel) {
+        return if (isCancel.get()) {
             Timber.d("cancel")
             false
         } else {
@@ -298,7 +299,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             category = conversation.category, participants = arrayListOf(ParticipantRequest(conversation.ownerId!!, ""))
         )
         val response = conversationApi.create(request).execute().body()
-        if (response != null && response.isSuccess && response.data != null && !isCancel) {
+        if (response != null && response.isSuccess && response.data != null && !isCancel.get()) {
             conversationDao.updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
 
             val sessionParticipants = response.data!!.participantSessions.let { resp ->

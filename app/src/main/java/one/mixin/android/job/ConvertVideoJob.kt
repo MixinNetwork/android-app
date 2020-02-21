@@ -68,7 +68,7 @@ class ConvertVideoJob(
         val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp("mp4")
         val result = MediaController.getInstance().convertVideo(video.originalPath, video.bitrate, video.resultWidth, video.resultHeight,
             video.originalWidth, video.originalHeight, videoFile, video.needChange)
-        if (isCancel) {
+        if (isCancel.get()) {
             removeJob()
             return
         }
@@ -87,7 +87,7 @@ class ConvertVideoJob(
     }
 
     override fun cancel() {
-        isCancel = true
+        isCancel.lazySet(true)
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, messageId)
     }
 }
