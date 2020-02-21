@@ -49,4 +49,7 @@ interface UserService {
 
     @POST("apps/{app_id}/unfavorite")
     suspend fun removeFavoriteApp(@Path("app_id") appId: String): MixinResponse<Void>
+
+    @GET("users/{id}")
+    suspend fun getUserByIdSuspend(@Path("id") id: String): MixinResponse<User>
 }

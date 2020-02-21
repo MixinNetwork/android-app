@@ -1,7 +1,9 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
+import android.view.Gravity
 import android.view.View
+import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.item_chat_action_card.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadRoundImage
@@ -19,11 +21,13 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
     fun bind(
         messageItem: MessageItem,
         isFirst: Boolean,
+        isLast: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         val isMe = meId == messageItem.userId
+        chatLayout(isMe, isLast)
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
@@ -59,13 +63,43 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
             } else {
-                onItemListener.onActionClick(actionCard.action, messageItem.userId)
+                onItemListener.onAppCardClick(actionCard, messageItem.userId)
             }
         }
-        setItemBackgroundResource(
-            itemView.chat_layout,
-            R.drawable.chat_bubble_other,
-            R.drawable.chat_bubble_other_night
-        )
+    }
+
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
+        if (isMe) {
+            if (isLast) {
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.bill_bubble_me_last,
+                    R.drawable.bill_bubble_me_last_night
+                )
+            } else {
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.bill_bubble_me,
+                    R.drawable.bill_bubble_me_night
+                )
+            }
+            (itemView.chat_layout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.END
+        } else {
+            (itemView.chat_layout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.START
+            if (isLast) {
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_other_last,
+                    R.drawable.chat_bubble_other_last_night
+                )
+            } else {
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_other,
+                    R.drawable.chat_bubble_other_night
+                )
+            }
+        }
     }
 }

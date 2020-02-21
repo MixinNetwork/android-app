@@ -9,6 +9,7 @@ import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
 import java.lang.reflect.Type
 import one.mixin.android.crypto.Base64
+import one.mixin.android.extension.base64Encode
 
 object GsonHelper {
     val customGson = GsonBuilder().registerTypeHierarchyAdapter(ByteArray::class.java, ByteArrayToBase64TypeAdapter()).create()
@@ -19,7 +20,7 @@ object GsonHelper {
         }
 
         override fun serialize(src: ByteArray, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
-            return JsonPrimitive(Base64.encodeBytes(src))
+            return JsonPrimitive(src.base64Encode())
         }
     }
 }

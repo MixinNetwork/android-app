@@ -267,6 +267,17 @@ fun createPostMessage(
     .setThumbImage(thumbImage)
     .build()
 
+fun createAppCardMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    content: String,
+    createdAt: String,
+    status: String
+) = MessageBuilder(messageId, conversationId, userId, MessageCategory.APP_CARD.name, status, createdAt)
+    .setContent(content)
+    .build()
+
 fun createCallMessage(
     messageId: String,
     conversationId: String,

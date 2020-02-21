@@ -4,8 +4,8 @@ import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
 import java.io.File
 import one.mixin.android.RxBus
-import one.mixin.android.crypto.Base64
 import one.mixin.android.event.RecallEvent
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
@@ -116,7 +116,7 @@ open class SendMessageJob(
                 }
             }
         }
-        if (message.isPlain() || message.isCall() || message.isRecall()) {
+        if (message.isPlain() || message.isCall() || message.isRecall() || message.category == MessageCategory.APP_CARD.name) {
             sendPlainMessage()
         } else {
             sendSignalMessage()
@@ -128,9 +128,12 @@ open class SendMessageJob(
         val conversation = conversationDao.getConversation(message.conversationId) ?: return
         checkConversationExist(conversation)
         var content = message.content
-        if (message.category == MessageCategory.PLAIN_TEXT.name || message.category == MessageCategory.PLAIN_POST.name || message.isCall()) {
+        if (message.category == MessageCategory.PLAIN_TEXT.name ||
+            message.category == MessageCategory.PLAIN_POST.name ||
+            message.isCall() ||
+            message.category == MessageCategory.APP_CARD.name) {
             if (message.content != null) {
-                content = Base64.encodeBytes(message.content!!.toByteArray())
+                content = message.content!!.base64Encode()
             }
         }
         val blazeParam = BlazeMessageParam(
