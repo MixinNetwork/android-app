@@ -271,11 +271,10 @@ fun createAppCardMessage(
     messageId: String,
     conversationId: String,
     userId: String,
-    category: String,
     content: String,
     createdAt: String,
     status: String
-) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
+) = MessageBuilder(messageId, conversationId, userId, MessageCategory.APP_CARD.name, status, createdAt)
     .setContent(content)
     .build()
 

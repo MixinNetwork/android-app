@@ -512,10 +512,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (appId == null) return@setOnClickListener
 
                 lifecycleScope.launch {
-                    var app = bottomViewModel.findAppById(appId!!)
-                    if (app == null) {
-                        app = bottomViewModel.getAppAndCheckUser(appId!!)
-                    }
+                    val app = bottomViewModel.getAppAndCheckUser(appId!!)
                     if (app.matchResourcePattern(currentUrl) && app != null) {
                         val webTitle = contentView.chat_web_view.title ?: app.name
                         val appCardData = AppCardData(app.appId, app.icon_url, webTitle, app.name, currentUrl)
@@ -560,9 +557,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (isBot()) {
             view.open.isVisible = false
             view.share.text = getString(R.string.about)
-        } else {
         }
-        view.forward.text = getString(R.string.forward)
 
         bottomSheet.show()
     }

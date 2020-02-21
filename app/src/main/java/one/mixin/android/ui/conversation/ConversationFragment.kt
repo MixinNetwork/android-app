@@ -535,10 +535,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 val action = appCard.action
                 if (appCard.appId != null) {
                     lifecycleScope.launch {
-                        var app = chatViewModel.findAppById(appCard.appId)
-                        if (app == null) {
-                            app = chatViewModel.getAppAndCheckUser(appCard.appId)
-                        }
+                        val app = chatViewModel.getAppAndCheckUser(appCard.appId)
                         if (app.matchResourcePattern(action)) {
                             app?.let { open(it, action) }
                         } else {
@@ -1788,10 +1785,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (userId == app?.appId) {
             open(app, action)
         } else {
-            var app = chatViewModel.findAppById(userId)
-            if (app == null) {
-                app = chatViewModel.getAppAndCheckUser(userId)
-            }
+            val app = chatViewModel.getAppAndCheckUser(userId)
             open(app, action)
         }
     }

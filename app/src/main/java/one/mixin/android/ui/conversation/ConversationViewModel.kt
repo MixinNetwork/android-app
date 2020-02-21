@@ -182,8 +182,8 @@ internal constructor(
     }
 
     fun sendAppCardMessage(conversationId: String, sender: User, content: String) {
-        val message = createAppCardMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
-            MessageCategory.APP_CARD.name, content, nowInUtc(), MessageStatus.SENDING.name
+        val message = createAppCardMessage(UUID.randomUUID().toString(), conversationId,
+            sender.userId, content, nowInUtc(), MessageStatus.SENDING.name
         )
         jobManager.addJobInBackground(SendMessageJob(message))
     }

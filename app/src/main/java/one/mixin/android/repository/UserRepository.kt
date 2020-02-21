@@ -40,6 +40,9 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
     fun getUser(id: String) = userService.getUserById(id)
 
     suspend fun getAppAndCheckUser(id: String): App? {
+        val app = findAppById(id)
+        if (app != null) return app
+
         handleMixinResponse(
             invokeNetwork = {
                 userService.getUserByIdSuspend(id)
