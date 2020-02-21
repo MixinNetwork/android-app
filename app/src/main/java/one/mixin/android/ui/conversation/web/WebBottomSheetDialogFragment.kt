@@ -513,7 +513,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                 lifecycleScope.launch {
                     val app = bottomViewModel.getAppAndCheckUser(appId!!)
-                    if (app.matchResourcePattern(currentUrl) && app != null) {
+                    if (app.matchResourcePattern(currentUrl)) {
                         val webTitle = contentView.chat_web_view.title ?: app.name
                         val appCardData = AppCardData(app.appId, app.icon_url, webTitle, app.name, currentUrl)
                         ForwardActivity.show(requireContext(),

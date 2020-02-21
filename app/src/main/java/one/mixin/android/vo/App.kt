@@ -8,6 +8,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
+import kotlin.contracts.contract
 import kotlinx.android.parcel.Parcelize
 
 @SuppressLint("ParcelCreator")
@@ -66,5 +67,9 @@ data class App(
 
 enum class AppCap { GROUP, CONTACT, IMMERSIVE }
 
-fun App?.matchResourcePattern(url: String) =
-    this?.resourcePatterns?.find { "$url/".startsWith(it, ignoreCase = true) } != null
+fun App?.matchResourcePattern(url: String): Boolean {
+    contract {
+        returns(true) implies (this@matchResourcePattern != null)
+    }
+    return this?.resourcePatterns?.find { "$url/".startsWith(it, ignoreCase = true) } != null
+}

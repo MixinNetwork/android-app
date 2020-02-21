@@ -537,7 +537,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     lifecycleScope.launch {
                         val app = chatViewModel.getAppAndCheckUser(appCard.appId)
                         if (app.matchResourcePattern(action)) {
-                            app?.let { open(it, action) }
+                            open(app, action)
                         } else {
                             alertDialogBuilder()
                                 .setTitle(getString(R.string.chat_app_card_suspicious_link))
