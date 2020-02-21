@@ -66,14 +66,5 @@ data class App(
 
 enum class AppCap { GROUP, CONTACT, IMMERSIVE }
 
-fun App?.matchResourcePattern(url: String): Boolean {
-    val validUrl = "$url/"
-    var isMatchResourcePattern = false
-    this?.resourcePatterns?.forEach { p ->
-        if (validUrl.startsWith(p)) {
-            isMatchResourcePattern = true
-            return@forEach
-        }
-    }
-    return isMatchResourcePattern
-}
+fun App?.matchResourcePattern(url: String) =
+    this?.resourcePatterns?.find { "$url/".startsWith(it, ignoreCase = true) } != null
