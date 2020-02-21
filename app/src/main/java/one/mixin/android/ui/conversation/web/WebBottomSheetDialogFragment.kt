@@ -86,6 +86,7 @@ import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.matchResourcePattern
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.WebControlView
 import org.jetbrains.anko.doAsync
@@ -515,15 +516,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     if (app == null) {
                         app = bottomViewModel.getAppAndCheckUser(appId!!)
                     }
-                    val validUrl = "${contentView.chat_web_view.url}/"
-                    var shouldOpenApp = false
-                    app?.resourcePatterns?.forEach { p ->
-                        if (validUrl.startsWith(p)) {
-                            shouldOpenApp = true
-                            return@forEach
-                        }
-                    }
-                    if (shouldOpenApp && app != null) {
+                    if (app.matchResourcePattern(currentUrl) && app != null) {
                         val webTitle = contentView.chat_web_view.title ?: app.name
                         val appCardData = AppCardData(app.appId, app.icon_url, webTitle, app.name, currentUrl)
                         ForwardActivity.show(requireContext(),

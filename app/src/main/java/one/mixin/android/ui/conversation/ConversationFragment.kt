@@ -159,6 +159,7 @@ import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isLive
+import one.mixin.android.vo.matchResourcePattern
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
@@ -538,15 +539,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         if (app == null) {
                             app = chatViewModel.getAppAndCheckUser(appCard.appId)
                         }
-                        val validUrl = "$action/"
-                        var shouldOpenApp = false
-                        app?.resourcePatterns?.forEach { p ->
-                            if (validUrl.startsWith(p)) {
-                                shouldOpenApp = true
-                                return@forEach
-                            }
-                        }
-                        if (shouldOpenApp) {
+                        if (app.matchResourcePattern(action)) {
                             app?.let { open(it, action) }
                         } else {
                             alertDialogBuilder()
