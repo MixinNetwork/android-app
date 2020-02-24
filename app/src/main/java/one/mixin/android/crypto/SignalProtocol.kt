@@ -177,7 +177,7 @@ class SignalProtocol(ctx: Context) {
         }
     }
 
-    fun encryptSessionMessage(message: Message, recipientId: String, resendMessageId: String? = null, sessionId: String? = null, mentionData: String? = null): BlazeMessage {
+    fun encryptSessionMessage(message: Message, recipientId: String, resendMessageId: String? = null, sessionId: String? = null, mentionData: List<String>? = null): BlazeMessage {
         val cipher = encryptSession(message.content!!.toByteArray(), recipientId, sessionId.getDeviceId())
         val data = encodeMessageData(ComposeMessageData(cipher.type, cipher.serialize(), resendMessageId))
         val blazeParam = BlazeMessageParam(
@@ -192,7 +192,7 @@ class SignalProtocol(ctx: Context) {
         return createParamBlazeMessage(blazeParam)
     }
 
-    fun encryptGroupMessage(message: Message, mentionData: String?): BlazeMessage {
+    fun encryptGroupMessage(message: Message, mentionData: List<String>?): BlazeMessage {
         val address = SignalProtocolAddress(message.userId, DEFAULT_DEVICE_ID)
         val senderKeyName = SenderKeyName(message.conversationId, address)
         val groupCipher = GroupCipher(senderKeyStore, senderKeyName)

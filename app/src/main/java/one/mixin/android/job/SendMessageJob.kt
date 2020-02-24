@@ -188,13 +188,11 @@ open class SendMessageJob(
         }
     }
 
-    private fun getMentionData(messageId: String): String? {
+    private fun getMentionData(messageId: String): List<String>? {
         return mentionMessageDao.getMentionData(messageId)?.run {
             GsonHelper.customGson.fromJson(this, Array<MentionData>::class.java).map {
                 it.identityNumber
-            }.run {
-                GsonHelper.customGson.toJson(this)
-            }
+            }.toList()
         }
     }
 }
