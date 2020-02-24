@@ -41,7 +41,8 @@ data class QuoteMessageItem(
     val sharedUserId: String? = null,
     val sharedUserFullName: String? = null,
     val sharedUserIdentityNumber: String? = null,
-    val sharedUserAvatarUrl: String? = null
+    val sharedUserAvatarUrl: String? = null,
+    val mentions: String? = null
 ) : Parcelable {
     constructor(messageItem: MessageItem) : this(
         messageItem.messageId,
@@ -73,7 +74,8 @@ data class QuoteMessageItem(
         messageItem.sharedUserId,
         messageItem.sharedUserFullName,
         messageItem.sharedUserIdentityNumber,
-        messageItem.sharedUserAvatarUrl
+        messageItem.sharedUserAvatarUrl,
+        messageItem.mentions
     )
 }
 
