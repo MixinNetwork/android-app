@@ -66,21 +66,14 @@
             android:textSize="@dimen/chat_date_size"
             tools:text="7:48AM" />
 
-        <TextView
+        <ImageView
             android:id="@+id/chat_post"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
             android:layout_marginTop="6dp"
             android:layout_marginEnd="8dp"
-            android:background="@drawable/chat_post_shadow"
-            android:paddingStart="5dp"
-            android:paddingTop="1.5dp"
-            android:paddingEnd="5dp"
-            android:paddingBottom="1.5dp"
-            android:text="@string/post_tag"
-            android:textColor="@color/white"
-            android:textSize="10sp"
+            android:src="@drawable/ic_post"
             tools:ignore="HardcodedText" />
     </one.mixin.android.widget.ShadowLayout>
 
