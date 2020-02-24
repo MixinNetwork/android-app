@@ -14,8 +14,10 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.renderConversation
 import one.mixin.android.extension.round
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.QuoteMessageItem
 import org.jetbrains.anko.dip
@@ -35,7 +37,11 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
         start_view.setBackgroundColor(BaseViewHolder.getColorById(quoteMessageItem.userId))
         when {
             quoteMessageItem.type.endsWith("_TEXT") -> {
-                reply_content_tv.text = quoteMessageItem.content
+                if (quoteMessageItem.mentions != null) {
+                    reply_content_tv.renderConversation(quoteMessageItem.content, MentionRenderCache.singleton.getMentionRenderContext(quoteMessageItem.mentions) {})
+                } else {
+                    reply_content_tv.text = quoteMessageItem.content
+                }
                 reply_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE
                 (reply_content_tv.layoutParams as LayoutParams).marginEnd =

@@ -107,10 +107,9 @@ class FloatingLayout @JvmOverloads constructor(
         }
     }
 
-    fun showMention() {
+    fun showMention(itemCount: Int) {
         mode = Mode.MIN
         val child = getChildAt(POS_RECYCLER_VIEW) as RecyclerView
-        val itemCount = child.adapter?.itemCount ?: 0
         if (itemCount > 2) {
             child.animateHeight(0, minHeight)
         } else {

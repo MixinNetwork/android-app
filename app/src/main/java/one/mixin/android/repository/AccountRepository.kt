@@ -251,4 +251,6 @@ constructor(
             }
         }
     }
+
+    suspend fun findUserByIdentityNumber(identityNumber: String) = userDao.suspendFindUserByIdentityNumber(identityNumber)
 }

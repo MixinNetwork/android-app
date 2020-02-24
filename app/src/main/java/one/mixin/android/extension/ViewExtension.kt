@@ -11,6 +11,8 @@ import android.graphics.Outline
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.Spanned
+import android.text.style.BackgroundColorSpan
 import android.util.Property
 import android.view.LayoutInflater
 import android.view.View
@@ -24,6 +26,7 @@ import android.view.animation.Interpolator
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
+import android.widget.TextView
 import androidx.annotation.LayoutRes
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
@@ -38,6 +41,11 @@ import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
 import java.io.FileNotFoundException
 import java.io.IOException
+import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.util.mention.MentionRenderContext
+import one.mixin.android.util.mention.mentionConversationParser
+import one.mixin.android.util.mention.mentionMessageParser
+import one.mixin.android.util.mention.syntax.simple.SimpleRenderer
 import org.jetbrains.anko.dip
 import timber.log.Timber
 
@@ -296,4 +304,38 @@ fun View.isActivityNotDestroyed(): Boolean {
         }
     }
     return true
+}
+
+fun TextView.renderConversation(text: CharSequence?, mentionRenderContext: MentionRenderContext?) {
+    if (text == null || mentionRenderContext == null) {
+        this.text = text
+        return
+    }
+    this.text = SimpleRenderer.render(
+        text,
+        parser = mentionConversationParser,
+        renderContext = mentionRenderContext
+    )
+}
+
+fun TextView.renderMessage(text: CharSequence?, mentionRenderContext: MentionRenderContext?, keyWord: String?) {
+    if (text == null || mentionRenderContext == null) {
+        this.text = text
+        return
+    }
+    val sp = SimpleRenderer.render(
+        text,
+        parser = mentionMessageParser,
+        renderContext = mentionRenderContext
+    )
+    if (keyWord != null) {
+        val start = sp.indexOf(keyWord, 0, true)
+        if (start >= 0) {
+            sp.setSpan(
+                BackgroundColorSpan(BaseViewHolder.HIGHLIGHTED), start,
+                start + keyWord.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+    }
+    this.text = sp
 }

@@ -135,6 +135,17 @@
                 android:visibility="gone"
                 android:contentDescription="@null"/>
 
+        <ImageView
+                android:id="@+id/mention_flag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_mention_flag"
+                android:visibility="gone"
+                tools:ignore="HardcodedText"
+                android:contentDescription="@null" />
+
         <TextView
                 android:id="@+id/unread_tv"
                 android:layout_width="wrap_content"

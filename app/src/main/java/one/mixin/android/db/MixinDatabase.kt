@@ -33,6 +33,7 @@ import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts
 import one.mixin.android.vo.MessageHistory
+import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
@@ -70,8 +71,10 @@ import one.mixin.android.vo.User
     (TopAsset::class),
     (FavoriteApp::class),
     (Job::class),
-    (MessageFts::class)],
-    version = CURRENT_VERSION)
+    (MessageFts::class),
+    (MessageMention::class)],
+    version = CURRENT_VERSION
+)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao
@@ -94,6 +97,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun stickerRelationshipDao(): StickerRelationshipDao
     abstract fun topAssetDao(): TopAssetDao
     abstract fun favoriteAppDao(): FavoriteAppDao
+    abstract fun mentionMessageDao(): MentionMessageDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null

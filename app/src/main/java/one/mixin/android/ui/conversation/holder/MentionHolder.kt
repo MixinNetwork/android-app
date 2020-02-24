@@ -13,12 +13,15 @@ class MentionHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
     @SuppressLint("SetTextI18n")
     fun bind(user: User, keyword: String?, listener: MentionAdapter.OnUserClickListener) {
         itemView.name.text = user.fullName
+        itemView.name.highLight(keyword)
         itemView.id_tv.text = "@${user.identityNumber}"
-        itemView.id_tv.highLight(keyword)
+        if (!keyword.isNullOrEmpty()) {
+            itemView.id_tv.highLight("@$keyword")
+        }
         itemView.icon_iv.setInfo(user.fullName, user.avatarUrl, user.userId)
         user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
         itemView.setOnClickListener {
-            listener.onUserClick(user.identityNumber)
+            listener.onUserClick(user)
         }
     }
 }

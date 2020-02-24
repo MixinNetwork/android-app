@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <FrameLayout
+        android:id="@+id/mention_flag_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/mention_flag"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_quick_flag"
+            android:padding="12dp"
+            android:src="@drawable/ic_mention"
+            android:translationZ="1dp"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/mention_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/bg_unread_small"
+            android:fontFamily="monospace"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:translationZ="1dp" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/down_flag_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/down_flag"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_quick_flag"
+            android:padding="8dp"
+            android:src="@drawable/ic_scroll_down"
+            android:translationZ="1dp"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/down_unread"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/bg_unread_small"
+            android:fontFamily="monospace"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:translationZ="1dp"
+            android:visibility="gone" />
+    </FrameLayout>
+</merge>
+

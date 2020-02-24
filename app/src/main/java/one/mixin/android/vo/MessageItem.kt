@@ -88,7 +88,8 @@ data class MessageItem(
     val mediaWaveform: ByteArray? = null,
     val quoteId: String? = null,
     val quoteContent: String? = null,
-    val groupName: String? = null
+    val groupName: String? = null,
+    val mentions: String? = null
 ) : Parcelable {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MessageItem>() {

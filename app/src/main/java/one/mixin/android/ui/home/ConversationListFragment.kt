@@ -48,6 +48,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.renderConversation
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.vibrate
@@ -59,6 +60,7 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.util.Session
+import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ConversationItem
@@ -434,6 +436,7 @@ class ConversationListFragment : LinkFragment() {
                 itemView.name_tv.text = it
             }
             itemView.group_name_tv.visibility = GONE
+            itemView.mention_flag.isVisible = conversationItem.mentionCount != null && conversationItem.mentionCount > 0
             when {
                 conversationItem.messageStatus == MessageStatus.FAILED.name -> {
                     conversationItem.content?.let {
@@ -446,7 +449,11 @@ class ConversationListFragment : LinkFragment() {
                     conversationItem.contentType == MessageCategory.PLAIN_TEXT.name -> {
                     conversationItem.content?.let {
                         setConversationName(conversationItem)
-                        itemView.msg_tv.text = it
+                        if (conversationItem.mentions != null) {
+                            itemView.msg_tv.renderConversation(it, MentionRenderCache.singleton.getMentionRenderContext(conversationItem.mentions) {})
+                        } else {
+                            itemView.msg_tv.text = it
+                        }
                     }
                     null
                 }

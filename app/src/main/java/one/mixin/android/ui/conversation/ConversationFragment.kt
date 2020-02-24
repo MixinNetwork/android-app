@@ -55,6 +55,7 @@ import kotlin.math.abs
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
+import kotlinx.android.synthetic.main.view_flag.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
@@ -83,7 +84,6 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getAttachment
@@ -107,7 +107,6 @@ import one.mixin.android.extension.selectDocument
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.translationY
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
@@ -140,6 +139,9 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.util.mention.mentionDisplay
+import one.mixin.android.util.mention.mentionEnd
+import one.mixin.android.util.mention.mentionReplace
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
@@ -283,10 +285,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                     else -> {
                         if (unreadTipCount > 0) {
-                            down_unread.visibility = VISIBLE
-                            down_unread.text = "$unreadTipCount"
+                            flag_layout.bottomCountFlag = true
+                            flag_layout.down_unread.text = "$unreadTipCount"
                         } else {
-                            down_unread.visibility = GONE
+                            flag_layout.bottomCountFlag = false
                         }
                     }
                 }
@@ -486,7 +488,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
             }
 
-            override fun onMentionClick(name: String) {
+            override fun onMentionClick(identityNumber: String) {
+                chatViewModel.viewModelScope.launch {
+                    chatViewModel.findUSerByIdentityNumberSuspend(identityNumber)?.let { user ->
+                        UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    }
+                }
             }
 
             override fun onAddClick() {
@@ -672,10 +680,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private val mentionAdapter: MentionAdapter by lazy {
         MentionAdapter(object : OnUserClickListener {
             @SuppressLint("SetTextI18n")
-            override fun onUserClick(appNumber: String) {
-                chat_control.chat_et.setText("@$appNumber ")
+            override fun onUserClick(user: User) {
+                val text = chat_control.chat_et.text ?: return
+                chat_control.chat_et.setText(mentionReplace(text.toString(), user))
                 chat_control.chat_et.setSelection(chat_control.chat_et.text!!.length)
                 mentionAdapter.submitList(null)
+                floating_layout.hideMention()
             }
         })
     }
@@ -1049,15 +1059,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (firstPosition > 0) {
                     if (isBottom) {
                         isBottom = false
-                        showAlert()
+                        flag_layout.bottomFlag = !isBottom
                     }
                 } else {
                     if (!isBottom) {
                         isBottom = true
-                        hideAlert()
+                        flag_layout.bottomFlag = !isBottom
                     }
                     unreadTipCount = 0
-                    down_unread.visibility = GONE
+                    flag_layout.bottomCountFlag = false
                 }
             }
         })
@@ -1083,7 +1093,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             renderUser(recipient!!)
         }
 
-        bg_quick_flag.setOnClickListener {
+        flag_layout.down_flag_layout.setOnClickListener {
             if (chat_rv.scrollState == RecyclerView.SCROLL_STATE_SETTLING) {
                 chat_rv.dispatchTouchEvent(
                     MotionEvent.obtain(
@@ -1094,7 +1104,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
             scrollTo(0)
             unreadTipCount = 0
-            down_unread.visibility = GONE
+            flag_layout.bottomCountFlag = false
         }
         chatViewModel.searchConversationById(conversationId)
             .autoDispose(stopScope).subscribe({
@@ -1305,7 +1315,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         chatAdapter.unreadMsgId = unreadMessageId
                         if (isBottom && unreadCount > 20) {
                             isBottom = false
-                            showAlert()
+                            flag_layout.bottomFlag = !isBottom
                         }
                     } else if (lastReadMessage != null) {
                         chatViewModel.viewModelScope.launch {
@@ -1352,6 +1362,39 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             liveDataMessage(unreadCount, msgId)
         }
 
+        chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(viewLifecycleOwner, Observer { mentionMessages ->
+            flag_layout.mentionCount = mentionMessages.size
+            flag_layout.mention_flag_layout.setOnClickListener {
+                lifecycleScope.launch {
+                    if (!isAdded) return@launch
+                    val messageId = mentionMessages.first().messageId
+                    val index = chatViewModel.findMessageIndex(conversationId, messageId)
+                    chatViewModel.markMentionRead(messageId)
+                    if (index == 0) {
+                        scrollTo(0, chat_rv.measuredHeight * 3 / 4, action = {
+                            requireContext().mainThreadDelayed({
+                                RxBus.publish(BlinkEvent(messageId))
+                            }, 60)
+                        })
+                    } else {
+                        chatAdapter.loadAround(index)
+                        if (index == chatAdapter.itemCount - 1) {
+                            scrollTo(index, 0, action = {
+                                requireContext().mainThreadDelayed({
+                                    RxBus.publish(BlinkEvent(messageId))
+                                }, 60)
+                            })
+                        } else {
+                            scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = {
+                                requireContext().mainThreadDelayed({
+                                    RxBus.publish(BlinkEvent(messageId))
+                                }, 60)
+                            })
+                        }
+                    }
+                }
+            }
+        })
         if (isBot) {
             chatViewModel.updateRecentUsedBots(defaultSharedPreferences, recipient!!.userId)
             chat_control.showBot()
@@ -1673,27 +1716,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                 }
             })
-        chatViewModel.getGroupBotsLiveData(conversationId)
-            .observe(viewLifecycleOwner, Observer { users ->
-                if (mention_rv.adapter == null) {
-                    mention_rv.adapter = mentionAdapter
-                    mention_rv.layoutManager = LinearLayoutManager(context)
-                }
-                mentionAdapter.list = users
-                val text = chat_control.chat_et.text
-                if (mention_rv.isGone && inMentionState(text.toString())) {
-                    submitMentionList(text.toString())
-                    floating_layout.showMention()
-                }
-            })
-    }
-
-    private fun submitMentionList(s: String?): List<User>? {
-        val targetList = mentionAdapter.list?.filter {
-            it.identityNumber.startsWith(s!!.substring(1, s.length))
-        }
-        mentionAdapter.submitList(targetList)
-        return targetList
+        mention_rv.adapter = mentionAdapter
+        mention_rv.layoutManager = LinearLayoutManager(context)
     }
 
     private fun showGroupBottomSheet(expand: Boolean) {
@@ -2127,33 +2151,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             })
     }
 
-    private fun showAlert(duration: Long = 100) {
-        if (isGroup) {
-            if (!isBottom) {
-                down_flag.visibility = VISIBLE
-            } else {
-                down_flag.visibility = GONE
-            }
-            if (bg_quick_flag.translationY != 0f) {
-                bg_quick_flag.translationY(0f, duration)
-            }
-        } else {
-            if (bg_quick_flag.translationY != 0f) {
-                bg_quick_flag.translationY(0f, duration)
-            }
-        }
-    }
-
-    private fun hideAlert() {
-        if (isGroup) {
-            if (isBottom) {
-                bg_quick_flag.translationY(requireContext().dpToPx(130f).toFloat(), 100)
-            }
-        } else {
-            bg_quick_flag.translationY(requireContext().dpToPx(130f).toFloat(), 100)
-        }
-    }
-
     private var previewDialogFragment: PreviewDialogFragment? = null
 
     private fun showPreview(uri: Uri, action: (Uri) -> Unit) {
@@ -2437,20 +2434,28 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             if (isGroup) {
-                mentionAdapter.keyword = s?.toString()
-                if (mention_rv.adapter != null && inMentionState(s.toString())) {
-                    val targetList = submitMentionList(s.toString())
-                    if (mention_rv.isGone) {
-                        floating_layout.showMention()
-                    } else {
-                        floating_layout.animate2RightHeight(targetList?.size ?: 0)
-                    }
+                if (mention_rv.adapter != null && !s.isNullOrEmpty() && mentionDisplay(s)) {
+                    searchMentionUser(s.toString())
                     mention_rv.layoutManager?.smoothScrollToPosition(mention_rv, null, 0)
                 } else {
-                    if (mention_rv.isVisible) {
-                        floating_layout.hideMention()
-                    }
+                    floating_layout.hideMention()
                 }
+            }
+        }
+
+        override fun onDelete() {}
+    }
+
+    private fun searchMentionUser(keyword: String) {
+        chatViewModel.viewModelScope.launch {
+            val mention = mentionEnd(keyword)
+            val users = chatViewModel.fuzzySearchUser(conversationId, mention)
+            mentionAdapter.keyword = mention
+            mentionAdapter.submitList(users)
+            if (mention_rv.isGone) {
+                floating_layout.showMention(users.size)
+            } else {
+                floating_layout.animate2RightHeight(users.size)
             }
         }
     }

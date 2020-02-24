@@ -804,7 +804,7 @@ class ConversationAdapter(
 
         open fun onUserClick(userId: String) {}
 
-        open fun onMentionClick(name: String) {}
+        open fun onMentionClick(identityNumber: String) {}
 
         open fun onUrlClick(url: String) {}
 

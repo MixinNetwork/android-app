@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 28,
-    "identityHash": "0a75078a43ea6982445b6ee4fd25717f",
+    "identityHash": "34f3a61864674580fb526b7d1769fa67",
     "entities": [
       {
         "tableName": "users",
@@ -1593,12 +1593,59 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "message_mentions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `mentions` TEXT NOT NULL, `has_read` INTEGER NOT NULL, PRIMARY KEY(`message_id`))",
+        "fields": [
+          {
+            "fieldPath": "messageId",
+            "columnName": "message_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "conversationId",
+            "columnName": "conversation_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mentions",
+            "columnName": "mentions",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hasRead",
+            "columnName": "has_read",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "message_id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [
+          {
+            "name": "index_message_mentions_conversation_id",
+            "unique": false,
+            "columnNames": [
+              "conversation_id"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_message_mentions_conversation_id` ON `${TABLE_NAME}` (`conversation_id`)"
+          }
+        ],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0a75078a43ea6982445b6ee4fd25717f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '34f3a61864674580fb526b7d1769fa67')"
     ]
   }
 }

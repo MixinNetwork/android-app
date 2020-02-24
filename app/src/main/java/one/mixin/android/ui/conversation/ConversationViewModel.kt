@@ -65,6 +65,7 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
+import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
@@ -550,22 +551,9 @@ internal constructor(
                             }
                         jobManager.addJobInBackground(
                             SendAttachmentMessageJob(
-                                createAttachmentMessage(
-                                    UUID.randomUUID().toString(),
-                                    conversationId,
-                                    sender.userId,
-                                    category,
-                                    null,
-                                    message.name,
-                                    uri,
-                                    message.mediaMimeType!!,
-                                    message.mediaSize!!,
-                                    nowInUtc(),
-                                    null,
-                                    null,
-                                    MediaStatus.PENDING,
-                                    MessageStatus.SENDING.name
-                                )
+                                createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category, null,
+                                    message.name, uri, message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null, null,
+                                    MediaStatus.PENDING, MessageStatus.SENDING.name)
                             )
                         )
                     }
@@ -618,9 +606,6 @@ internal constructor(
 
     fun getGroupParticipantsLiveData(conversationId: String) =
         conversationRepository.getGroupParticipantsLiveData(conversationId)
-
-    fun getGroupBotsLiveData(conversationId: String) =
-        conversationRepository.getGroupBotsLiveData(conversationId)
 
     fun initConversation(conversationId: String, recipient: User, sender: User) {
         val createdAt = nowInUtc()
@@ -1054,4 +1039,24 @@ internal constructor(
     }
 
     suspend fun getAnnouncementByConversationId(conversationId: String) = conversationRepository.getAnnouncementByConversationId(conversationId)
+
+    private val searchControlledRunner = ControlledRunner<List<User>>()
+
+    suspend fun fuzzySearchUser(conversationId: String, keyword: String?): List<User> {
+        return withContext(Dispatchers.IO) {
+            searchControlledRunner.cancelPreviousThenRun {
+                if (keyword.isNullOrEmpty()) {
+                    userRepository.suspendGetGroupParticipants(conversationId)
+                } else {
+                    userRepository.fuzzySearchGroupUser(conversationId, keyword)
+                }
+            }
+        }
+    }
+
+    suspend fun findUSerByIdentityNumberSuspend(identityNumber: String) = userRepository.findUSerByIdentityNumberSuspend(identityNumber)
+
+    fun getUnreadMentionMessageByConversationId(conversationId: String) = conversationRepository.getUnreadMentionMessageByConversationId(conversationId)
+
+    suspend fun markMentionRead(messageId: String) = conversationRepository.markMentionRead(messageId)
 }

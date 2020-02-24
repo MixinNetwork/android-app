@@ -53,6 +53,18 @@ interface UserDao : BaseDao<User> {
         """)
     suspend fun fuzzySearchUser(username: String, identityNumber: String, id: String): List<User>
 
+    @Query("""
+        SELECT u.* FROM participants p, users u
+        WHERE u.user_id != :id 
+        AND p.conversation_id = :conversationId AND p.user_id = u.user_id
+        AND (u.full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR u.identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
+        ORDER BY u.full_name = :username COLLATE NOCASE OR u.identity_number = :identityNumber COLLATE NOCASE DESC
+        """)
+    suspend fun fuzzySearchGroupUser(conversationId: String, username: String, identityNumber: String, id: String): List<User>
+
+    @Query("SELECT u.* FROM participants p, users u WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id AND u.user_id != :id")
+    suspend fun suspendGetGroupParticipants(conversationId: String, id: String): List<User>
+
     @Query("UPDATE users SET relationship = :relationship WHERE user_id = :id")
     fun updateUserRelationship(id: String, relationship: String)
 
@@ -84,4 +96,16 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT * FROM users WHERE user_id IN (:userIds)")
     suspend fun findMultiUsersByIds(userIds: Set<String>): List<User>
+
+    @Query("SELECT user_id FROM users WHERE identity_number IN (:identityNumbers)")
+    fun findMultiUserIdsByIdentityNumbers(identityNumbers: Set<String>): List<String>
+
+    @Query("SELECT * FROM users WHERE identity_number =:identityNumber LIMIT 1")
+    suspend fun suspendFindUserByIdentityNumber(identityNumber: String): User?
+
+    @Query("SELECT * FROM users WHERE full_name =:fullName")
+    fun findUserByFullName(fullName: String): User?
+
+    @Query("SELECT * FROM users WHERE identity_number IN (:numbers)")
+    fun findUserByIdentityNumbers(numbers: Set<String>): List<User>
 }

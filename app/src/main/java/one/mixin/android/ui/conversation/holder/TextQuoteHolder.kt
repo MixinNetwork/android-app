@@ -14,9 +14,11 @@ import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isSignal
@@ -32,18 +34,6 @@ class TextQuoteHolder constructor(containerView: View) : BaseViewHolder(containe
         itemView.chat_tv.setUrlModeColor(LINK_COLOR)
         itemView.chat_name.maxWidth = itemView.context.maxItemWidth() - dp16
         itemView.chat_msg_content.setMaxWidth(itemView.context.maxItemWidth() - dp16)
-        itemView.chat_tv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
-            when (autoLinkMode) {
-                AutoLinkMode.MODE_URL -> {
-                    onItemListener?.onUrlClick(matchedText)
-                }
-                AutoLinkMode.MODE_MENTION -> {
-                    onItemListener?.onMentionClick(matchedText)
-                }
-                else -> {
-                }
-            }
-        }
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
@@ -100,6 +90,16 @@ class TextQuoteHolder constructor(containerView: View) : BaseViewHolder(containe
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
 
+        itemView.chat_tv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
+            when (autoLinkMode) {
+                AutoLinkMode.MODE_URL -> {
+                    onItemListener.onUrlClick(matchedText)
+                }
+                else -> {
+                }
+            }
+        }
+
         itemView.chat_tv.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, adapterPosition)
@@ -140,23 +140,32 @@ class TextQuoteHolder constructor(containerView: View) : BaseViewHolder(containe
         }
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        keyword.notNullWithElse({ k ->
-            messageItem.content?.let { str ->
-                val start = str.indexOf(k, 0, true)
-                if (start >= 0) {
-                    val sp = SpannableString(str)
-                    sp.setSpan(
-                        BackgroundColorSpan(HIGHLIGHTED), start,
-                        start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
-                    itemView.chat_tv.text = sp
-                } else {
-                    itemView.chat_tv.text = messageItem.content
-                }
+        if (messageItem.mentions?.isNotBlank() == true) {
+            val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(
+                messageItem.mentions
+            ) { identityNumber ->
+                onItemListener.onMentionClick(identityNumber)
             }
-        }, {
-            itemView.chat_tv.text = messageItem.content
-        })
+            itemView.chat_tv.renderMessage(messageItem.content, mentionRenderContext, keyword)
+        } else {
+            keyword.notNullWithElse({ k ->
+                messageItem.content?.let { str ->
+                    val start = str.indexOf(k, 0, true)
+                    if (start >= 0) {
+                        val sp = SpannableString(str)
+                        sp.setSpan(
+                            BackgroundColorSpan(HIGHLIGHTED), start,
+                            start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        itemView.chat_tv.text = sp
+                    } else {
+                        itemView.chat_tv.text = str
+                    }
+                }
+            }, {
+                itemView.chat_tv.text = messageItem.content
+            })
+        }
 
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {

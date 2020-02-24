@@ -58,8 +58,8 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tools:ignore="MissingConstraints" />
 
-            <LinearLayout
-                android:id="@+id/bg_quick_flag"
+            <one.mixin.android.widget.FlagLayout
+                android:id="@+id/flag_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
@@ -68,66 +68,34 @@
                 android:clipToPadding="false"
                 android:orientation="vertical"
                 android:padding="8dp"
-                android:translationY="130dp"
+                android:transformPivotY="130dp"
                 app:layout_constraintBottom_toBottomOf="@id/chat_rv"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="1"
-                app:layout_constraintStart_toStartOf="parent">
-
-                <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:clipChildren="false"
-                    android:clipToPadding="false">
-
-                    <ImageView
-                        android:id="@+id/down_flag"
-                        android:layout_width="42dp"
-                        android:layout_height="42dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/bg_quick_flag"
-                        android:padding="8dp"
-                        android:src="@drawable/ic_scroll_down"
-                        android:translationZ="1dp"
-                        android:visibility="visible"
-                        tools:ignore="ContentDescription" />
-
-                    <TextView
-                        android:id="@+id/down_unread"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:background="@drawable/bg_unread_small"
-                        android:fontFamily="monospace"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
-                        android:translationZ="1dp"
-                        android:visibility="gone" />
-                </FrameLayout>
-            </LinearLayout>
+                app:layout_constraintStart_toStartOf="parent" />
 
             <one.mixin.android.widget.FloatingLayout
                 android:id="@+id/floating_layout"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 app:layout_constraintBottom_toTopOf="@id/chat_control"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                app:layout_constraintTop_toTopOf="parent">
 
                 <RelativeLayout
                     android:id="@+id/group_flag"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_above="@id/mention_rv"
                     android:layout_alignWithParentIfMissing="true"
+                    android:layout_above="@id/mention_rv"
                     android:layout_margin="8dp"
                     android:background="@drawable/bg_notice"
                     android:clipChildren="false"
                     android:clipToPadding="false"
-                    android:visibility="gone"
                     android:padding="12dp"
-                    android:translationZ="1dp">
+                    android:translationZ="1dp"
+                    android:visibility="gone">
 
                     <ImageView
                         android:id="@+id/group_icon"
@@ -154,11 +122,11 @@
                         android:id="@+id/group_desc"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="8dp"
                         android:layout_toStartOf="@id/group_close"
                         android:layout_toEndOf="@id/group_icon"
                         android:maxLength="1024"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginEnd="8dp"
                         android:scrollbars="none"
                         android:textColor="?attr/text_primary"
                         android:textIsSelectable="true" />
@@ -168,17 +136,17 @@
                     android:id="@+id/mention_rv"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:visibility="gone"
                     android:layout_alignWithParentIfMissing="true"
                     android:layout_above="@id/reply_view"
-                    android:background="?attr/bg_white" />
+                    android:background="?attr/bg_white"
+                    android:visibility="gone" />
 
                 <one.mixin.android.widget.ReplyView
                     android:id="@+id/reply_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:visibility="gone"
                     android:layout_alignParentBottom="true"
+                    android:visibility="gone"
                     tools:ignore="MissingConstraints" />
             </one.mixin.android.widget.FloatingLayout>
 

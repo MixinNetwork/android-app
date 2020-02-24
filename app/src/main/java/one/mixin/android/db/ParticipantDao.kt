@@ -21,9 +21,6 @@ interface ParticipantDao : BaseDao<Participant> {
         "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at DESC")
     fun getGroupParticipantsLiveData(conversationId: String): LiveData<List<User>>
 
-    @Query("SELECT u.* FROM participants p, users u, apps a WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id AND u.app_id == a.app_id")
-    fun getGroupBotsLiveData(conversationId: String): LiveData<List<User>>
-
     @Query("UPDATE participants SET role = :role where conversation_id = :conversationId AND user_id = :userId")
     fun updateParticipantRole(conversationId: String, userId: String, role: String)
 

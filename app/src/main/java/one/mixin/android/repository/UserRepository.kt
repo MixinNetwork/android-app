@@ -29,6 +29,12 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     suspend fun fuzzySearchUser(query: String): List<User> = userDao.fuzzySearchUser(query, query, Session.getAccountId() ?: "")
 
+    suspend fun fuzzySearchGroupUser(conversationId: String, query: String): List<User> =
+        userDao.fuzzySearchGroupUser(conversationId, query, query, Session.getAccountId() ?: "")
+
+    suspend fun suspendGetGroupParticipants(conversationId: String): List<User> =
+        userDao.suspendGetGroupParticipants(conversationId, Session.getAccountId() ?: "")
+
     fun findUserById(query: String): LiveData<User> = userDao.findUserById(query)
 
     suspend fun suspendFindUserById(query: String) = userDao.suspendFindUserById(query)
@@ -100,4 +106,6 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
     suspend fun findMultiUsersByIds(ids: Set<String>) = userDao.findMultiUsersByIds(ids)
 
     suspend fun fetchUser(ids: List<String>) = userService.fetchUsers(ids)
+
+    suspend fun findUSerByIdentityNumberSuspend(identityNumber: String) = userDao.suspendFindUserByIdentityNumber(identityNumber)
 }
