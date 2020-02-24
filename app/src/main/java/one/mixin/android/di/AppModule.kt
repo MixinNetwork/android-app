@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import kotlin.math.abs
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
@@ -109,7 +110,7 @@ internal class AppModule {
                 .addHeader("Authorization", "Bearer ${Session.signToken(Session.getAccount(), sourceRequest)}")
                 .build()
             if (MixinApplication.appContext.networkConnected()) {
-                val response = try {
+                var response = try {
                     chain.proceed(request)
                 } catch (e: Exception) {
                     if (e.message?.contains("502") == true) {
@@ -121,8 +122,13 @@ internal class AppModule {
                     }
                 }
 
-                response.body()?.bytes()?.run {
-                    val mixinResponse = GsonHelper.customGson.fromJson(String(this), MixinResponse::class.java)
+                response.body()?.run {
+                    val bytes = this.bytes()
+                    val contentType = this.contentType()
+                    val body = ResponseBody.create(contentType, bytes)
+                    response = response.newBuilder().body(body).build()
+                    if (bytes.isEmpty()) return@run
+                    val mixinResponse = GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)
                     if (mixinResponse.errorCode != 401) return@run
                     val authorization = response.request().header("Authorization")
                     if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
