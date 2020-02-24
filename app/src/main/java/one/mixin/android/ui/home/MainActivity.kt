@@ -258,11 +258,7 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun sendSafetyNetRequest() {
-        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
-                applicationContext,
-                13000000
-            ) != ConnectionResult.SUCCESS
-        ) {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(applicationContext, 13000000) != ConnectionResult.SUCCESS) {
             return
         }
         runIntervalTask(SAFETY_NET_INTERVAL_KEY, INTERVAL_24_HOURS) {

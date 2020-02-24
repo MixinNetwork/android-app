@@ -151,7 +151,7 @@ class Message(
 
     @SerializedName("quote_content")
     @ColumnInfo(name = "quote_content")
-    var quoteContent: String? = null
+    val quoteContent: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L

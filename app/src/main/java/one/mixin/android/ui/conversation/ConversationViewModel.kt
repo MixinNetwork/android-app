@@ -214,8 +214,8 @@ internal constructor(
 
     fun sendAttachmentMessage(conversationId: String, sender: User, attachment: Attachment, isPlain: Boolean, replyMessage: MessageItem? = null) {
         val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
-        val message = createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category, null,
-            attachment.filename, attachment.uri.toString(),
+        val message = createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
+            null, attachment.filename, attachment.uri.toString(),
             attachment.mimeType, attachment.fileSize, nowInUtc(), null,
             null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
@@ -606,9 +606,6 @@ internal constructor(
 
     fun getGroupParticipantsLiveData(conversationId: String) =
         conversationRepository.getGroupParticipantsLiveData(conversationId)
-
-    fun getGroupUsersLiveData(conversationId: String) =
-        conversationRepository.getGroupUsersLiveData(conversationId)
 
     fun initConversation(conversationId: String, recipient: User, sender: User) {
         val createdAt = nowInUtc()

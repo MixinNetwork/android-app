@@ -275,6 +275,7 @@ dependencies {
     implementation "org.webrtc:google-webrtc:${webrtcVersion}"
     implementation "com.github.SandroMachado:BitcoinPaymentURI:${bitcoinPaymentURI}"
     implementation "com.caverock:androidsvg-aar:${svgVersion}"
+
 }
 
 task ktlint(type: JavaExec, group: "verification") {

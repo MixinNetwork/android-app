@@ -169,9 +169,6 @@ internal constructor(
     fun getGroupParticipantsLiveData(conversationId: String) =
         participantDao.getGroupParticipantsLiveData(conversationId)
 
-    fun getGroupUsersLiveData(conversationId: String) =
-        participantDao.getGroupUsersLiveData(conversationId)
-
     suspend fun updateMediaStatus(status: String, messageId: String) =
         messageDao.updateMediaStatusSuspend(status, messageId)
 
