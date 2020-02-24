@@ -1,6 +1,7 @@
 package one.mixin.android.util.mention
 
 import android.widget.EditText
+import androidx.collection.arraySetOf
 import java.util.regex.Pattern
 import one.mixin.android.db.MentionMessageDao
 import one.mixin.android.db.UserDao
@@ -57,15 +58,17 @@ fun getMentionData(
     send: Boolean = true
 ): String? {
     val matcher = mentionNumberPattern.matcher(text)
-    val mentions = mutableListOf<MentionData>()
+    val numbers = arraySetOf<String>()
     var hasRead = true
     while (matcher.find()) {
         val identityNumber = matcher.group().replace("@", "").replace(" ", "")
         if (!send && identityNumber.isNotBlank() && identityNumber == Session.getAccount()?.identity_number) {
             hasRead = false
         }
-        val user = userDao.findUserByIdentityNumber(identityNumber)
-        mentions.add(MentionData(identityNumber, user?.fullName))
+        numbers.add(identityNumber)
+    }
+    val mentions = userDao.findUserByIdentityNumbers(numbers).map { user ->
+        MentionData(user.identityNumber, user.fullName)
     }
     if (mentions.isEmpty()) return null
     val mentionData = GsonHelper.customGson.toJson(mentions)

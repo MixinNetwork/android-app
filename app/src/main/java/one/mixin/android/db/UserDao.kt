@@ -97,12 +97,15 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE user_id IN (:userIds)")
     suspend fun findMultiUsersByIds(userIds: Set<String>): List<User>
 
+    @Query("SELECT user_id FROM users WHERE identity_number IN (:identityNumbers)")
+    fun findMultiUserIdsByIdentityNumbers(identityNumbers: Set<String>): List<String>
+
     @Query("SELECT * FROM users WHERE identity_number =:identityNumber LIMIT 1")
     suspend fun suspendFindUserByIdentityNumber(identityNumber: String): User?
 
     @Query("SELECT * FROM users WHERE full_name =:fullName")
     fun findUserByFullName(fullName: String): User?
 
-    @Query("SELECT * FROM users WHERE identity_number =:identityNumber LIMIT 1")
-    fun findUserByIdentityNumber(identityNumber: String): User?
+    @Query("SELECT * FROM users WHERE identity_number IN (:numbers)")
+    fun findUserByIdentityNumbers(numbers: Set<String>): List<User>
 }

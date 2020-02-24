@@ -192,7 +192,9 @@ open class SendMessageJob(
         return mentionMessageDao.getMentionData(messageId)?.run {
             GsonHelper.customGson.fromJson(this, Array<MentionData>::class.java).map {
                 it.identityNumber
-            }.toList()
+            }.toSet()
+        }?.run {
+            userDao.findMultiUserIdsByIdentityNumbers(this)
         }
     }
 }
