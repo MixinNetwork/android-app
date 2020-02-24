@@ -5,5 +5,5 @@ import androidx.room.Entity
 @Entity
 data class MediaMessageMinimal(
     val messageId: String,
-    val mediaUrl: String?
+    val mediaUrl: String
 )

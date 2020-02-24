@@ -158,6 +158,7 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("""
                     CREATE TABLE IF NOT EXISTS `mention_message` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `mentions` TEXT NOT NULL, `has_read` INTEGER NOT NULL, PRIMARY KEY(`message_id`))
                 """)
+                database.execSQL("ALTER TABLE apps ADD COLUMN resource_patterns TEXT")
             }
         }
     }

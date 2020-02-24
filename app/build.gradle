@@ -45,6 +45,7 @@ android {
 
         kotlinOptions {
             jvmTarget = '1.8'
+            freeCompilerArgs += ['-Xuse-experimental=kotlin.contracts.ExperimentalContracts']
         }
 
         vectorDrawables.useSupportLibrary = true
@@ -116,7 +117,7 @@ android {
     }
 
     configurations.all {
-        resolutionStrategy.force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta08"
+        resolutionStrategy.force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta09"
     }
 }
 
@@ -230,7 +231,7 @@ dependencies {
     implementation("com.facebook.stetho:stetho-okhttp3:${stethoVersion}") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
-    implementation "com.github.jorgecastilloprz:fabprogresscircle:${fabprogresscircleVersion}"
+    implementation "com.github.tougee:FABProgressCircle:${fabprogresscircleVersion}"
     implementation "com.github.tougee:country-picker-android:${countryPickerVersion}"
     implementation "com.dmitrymalkovich.android:progress-fab:${fabVersion}"
     implementation "com.googlecode.libphonenumber:libphonenumber:${libphonenumberVersion}"

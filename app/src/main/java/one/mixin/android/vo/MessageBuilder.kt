@@ -1,5 +1,6 @@
 package one.mixin.android.vo
 
+import one.mixin.android.extension.maxLimit
 import kotlin.math.abs
 
 class MessageBuilder(
@@ -36,7 +37,7 @@ class MessageBuilder(
     private var quoteContent: String? = null
 
     fun setContent(content: String?): MessageBuilder {
-        this.content = content
+        this.content = content?.maxLimit()
         return this
     }
 

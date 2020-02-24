@@ -29,7 +29,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
-import one.mixin.android.crypto.Base64
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
 import one.mixin.android.extension.copyFromInputStream
@@ -88,6 +88,7 @@ import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createAckJob
+import one.mixin.android.vo.createAppCardMessage
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
@@ -181,6 +182,13 @@ internal constructor(
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
+    fun sendAppCardMessage(conversationId: String, sender: User, content: String) {
+        val message = createAppCardMessage(UUID.randomUUID().toString(), conversationId,
+            sender.userId, content, nowInUtc(), MessageStatus.SENDING.name
+        )
+        jobManager.addJobInBackground(SendMessageJob(message))
+    }
+
     fun sendReplyMessage(
         conversationId: String,
         sender: User,
@@ -237,8 +245,7 @@ internal constructor(
     ) {
         val category =
             if (isPlain) MessageCategory.PLAIN_STICKER.name else MessageCategory.SIGNAL_STICKER.name
-        val encoded =
-            Base64.encodeBytes(GsonHelper.customGson.toJson(transferStickerData).toByteArray())
+        val encoded = GsonHelper.customGson.toJson(transferStickerData).base64Encode()
         transferStickerData.stickerId?.let {
             val message = createStickerMessage(
                 UUID.randomUUID().toString(),
@@ -259,9 +266,9 @@ internal constructor(
     fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, isPlain: Boolean, replyMessage: MessageItem? = null) {
         val category = if (isPlain) MessageCategory.PLAIN_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
         val transferContactData = ContactMessagePayload(shareUserId)
-        val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferContactData).toByteArray())
-        val message = createContactMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
-            encoded, shareUserId, MessageStatus.SENDING.name, nowInUtc(), replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
+        val encoded = GsonHelper.customGson.toJson(transferContactData).base64Encode()
+        val message = createContactMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
+            category, encoded, shareUserId, MessageStatus.SENDING.name, nowInUtc(), replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
@@ -291,8 +298,7 @@ internal constructor(
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
         list.forEach { messageItem ->
             val transferRecallData = RecallMessagePayload(messageItem.messageId)
-            val encoded =
-                Base64.encodeBytes(GsonHelper.customGson.toJson(transferRecallData).toByteArray())
+            val encoded = GsonHelper.customGson.toJson(transferRecallData).base64Encode()
             val message = createRecallMessage(
                 UUID.randomUUID().toString(), conversationId, sender.userId,
                 MessageCategory.MESSAGE_RECALL.name, encoded, MessageStatus.SENDING.name, nowInUtc()
@@ -315,7 +321,7 @@ internal constructor(
         val category =
             if (isPlain) MessageCategory.PLAIN_LIVE.name else MessageCategory.SIGNAL_LIVE.name
         val encoded =
-            Base64.encodeBytes(GsonHelper.customGson.toJson(transferLiveData).toByteArray())
+            GsonHelper.customGson.toJson(transferLiveData).base64Encode()
         val message = createLiveMessage(
             UUID.randomUUID().toString(),
             conversationId,
@@ -621,6 +627,8 @@ internal constructor(
         Observable.just(userId).subscribeOn(Schedulers.io())
             .map { userRepository.getUserById(it) }.observeOn(AndroidSchedulers.mainThread())!!
 
+    suspend fun getAppAndCheckUser(userId: String) = userRepository.getAppAndCheckUser(userId)
+
     fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
         jobManager.findJobById(id).notNullWithElse({ it.cancel() }, {
             conversationRepository.updateMediaStatus(MediaStatus.CANCELED.name, id)
@@ -709,7 +717,13 @@ internal constructor(
     fun deleteMessages(list: List<MessageItem>) {
         viewModelScope.launch(SINGLE_DB_THREAD) {
             list.forEach { item ->
-                conversationRepository.deleteMessage(item.messageId)
+                conversationRepository.deleteMessage(
+                    item.messageId, if (item.mediaUrl != null) {
+                        item.mediaUrl
+                    } else {
+                        null
+                    }
+                )
                 jobManager.cancelJobById(item.messageId)
                 notificationManager.cancel(item.userId.hashCode())
             }
@@ -820,6 +834,11 @@ internal constructor(
                         ForwardCategory.POST.name -> {
                             item.content?.let {
                                 sendPostMessage(conversationId, sender, it, isPlainMessage)
+                            }
+                        }
+                        ForwardCategory.APP_CARD.name -> {
+                            item.content?.let {
+                                sendAppCardMessage(conversationId, sender, it)
                             }
                         }
                     }
@@ -1009,6 +1028,10 @@ internal constructor(
                     )
                     it.category.endsWith("_POST") -> ForwardMessage(
                         ForwardCategory.POST.name,
+                        content = it.content
+                    )
+                    it.category == MessageCategory.APP_CARD.name -> ForwardMessage(
+                        ForwardCategory.APP_CARD.name,
                         content = it.content
                     )
                     else -> ForwardMessage(ForwardCategory.TEXT.name)

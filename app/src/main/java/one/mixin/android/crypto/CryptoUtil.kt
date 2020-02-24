@@ -15,6 +15,7 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.OAEPParameterSpec
 import javax.crypto.spec.PSource
 import javax.crypto.spec.SecretKeySpec
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toLeByteArray
 import org.spongycastle.asn1.pkcs.PrivateKeyInfo
 import org.spongycastle.util.io.pem.PemObject
@@ -53,14 +54,14 @@ fun aesEncrypt(key: String, iterator: Long, code: String): String? {
     val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
     cipher.init(Cipher.ENCRYPT_MODE, keySpec, IvParameterSpec(iv))
     val result = cipher.doFinal(pinByte)
-    return Base64.encodeBytes(iv.plus(result))
+    return iv.plus(result).base64Encode()
 }
 
 fun rsaDecrypt(privateKey: PrivateKey, iv: String, pinToken: String): String {
     val deCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
     deCipher.init(Cipher.DECRYPT_MODE, privateKey, OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256,
         PSource.PSpecified(iv.toByteArray())))
-    return Base64.encodeBytes(deCipher.doFinal(Base64.decode(pinToken)))
+    return deCipher.doFinal(Base64.decode(pinToken)).base64Encode()
 }
 
 fun getRSAPrivateKeyFromString(privateKeyPEM: String): PrivateKey {

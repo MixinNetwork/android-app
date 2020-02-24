@@ -57,7 +57,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
     private var attachmentCall: retrofit2.Call<MixinResponse<AttachmentResponse>>? = null
 
     override fun cancel() {
-        isCancel = true
+        isCancel.lazySet(true)
         call?.let {
             if (!it.isCanceled) {
                 it.cancel()
@@ -77,13 +77,13 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
     }
 
     override fun onRun() {
-        if (isCancel) {
+        if (isCancel.get()) {
             return
         }
         jobManager.saveJob(this)
         attachmentCall = conversationApi.getAttachment(attachmentId ?: message.content!!)
         val body = attachmentCall!!.execute().body()
-        if (body != null && (body.isSuccess || !isCancel) && body.data != null) {
+        if (body != null && (body.isSuccess || !isCancel.get()) && body.data != null) {
             body.data!!.view_url?.let {
                 decryptAttachment(it)
             }
@@ -142,7 +142,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
         if (response.code() == 404) {
             messageDao.updateMediaStatus(MediaStatus.EXPIRED.name, message.id)
             return true
-        } else if (response.isSuccessful && !isCancel && response.body() != null) {
+        } else if (response.isSuccessful && !isCancel.get() && response.body() != null) {
             val sink = Okio.buffer(Okio.sink(destination))
             sink.writeAll(response.body()!!.source())
             sink.close()

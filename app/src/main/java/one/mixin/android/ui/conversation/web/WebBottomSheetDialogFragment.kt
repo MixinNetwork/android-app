@@ -83,6 +83,10 @@ import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.ui.url.openUrl
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
+import one.mixin.android.vo.AppCardData
+import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.matchResourcePattern
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.WebControlView
 import org.jetbrains.anko.doAsync
@@ -503,23 +507,41 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.forward.setOnClickListener {
+            val currentUrl = contentView.chat_web_view.url
             if (isBot()) {
-                openBot()
+                if (appId == null) return@setOnClickListener
+
+                lifecycleScope.launch {
+                    val app = bottomViewModel.getAppAndCheckUser(appId!!)
+                    if (app.matchResourcePattern(currentUrl)) {
+                        val webTitle = contentView.chat_web_view.title ?: app.name
+                        val appCardData = AppCardData(app.appId, app.icon_url, webTitle, app.name, currentUrl)
+                        ForwardActivity.show(requireContext(),
+                            arrayListOf(ForwardMessage(ForwardCategory.APP_CARD.name, content = Gson().toJson(appCardData))))
+                    } else {
+                        ForwardActivity.show(requireContext(), currentUrl)
+                    }
+                }
             } else {
-                ForwardActivity.show(requireContext(), contentView.chat_web_view.url)
+                ForwardActivity.show(requireContext(), currentUrl)
             }
             bottomSheet.dismiss()
         }
         view.share.setOnClickListener {
-            activity?.let {
-                ShareCompat.IntentBuilder
-                    .from(it)
-                    .setType("text/plain")
-                    .setChooserTitle(contentView.chat_web_view.title)
-                    .setText(contentView.chat_web_view.url)
-                    .startChooser()
-                bottomSheet.dismiss()
+            if (isBot()) {
+                openBot()
+            } else {
+                activity?.let {
+                    ShareCompat.IntentBuilder
+                        .from(it)
+                        .setType("text/plain")
+                        .setChooserTitle(contentView.chat_web_view.title)
+                        .setText(contentView.chat_web_view.url)
+                        .startChooser()
+                    bottomSheet.dismiss()
+                }
             }
+            bottomSheet.dismiss()
         }
         view.refresh.setOnClickListener {
             contentView.chat_web_view.clearCache(true)
@@ -534,10 +556,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         if (isBot()) {
             view.open.isVisible = false
-            view.share.isVisible = false
-            view.forward.text = getString(R.string.about)
-        } else {
-            view.forward.text = getString(R.string.forward)
+            view.share.text = getString(R.string.about)
         }
 
         bottomSheet.show()

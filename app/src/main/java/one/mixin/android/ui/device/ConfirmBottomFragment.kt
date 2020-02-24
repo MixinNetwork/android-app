@@ -24,6 +24,7 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.IdentityKeyUtil
 import one.mixin.android.crypto.ProvisionMessage
 import one.mixin.android.crypto.ProvisioningCipher
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.AvatarActivity
@@ -169,7 +170,7 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
             verificationCode
         )
         val cipherText = cipher.encrypt(message)
-        val encoded = Base64.encodeBytes(cipherText)
+        val encoded = cipherText.base64Encode()
         val response =
             provisioningService.updateProvisioningAsync(ephemeralId, ProvisioningRequest(encoded))
                 .await()

@@ -6,6 +6,7 @@ import com.birbit.android.jobqueue.Params
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
@@ -18,8 +19,8 @@ import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.UserSession
-import one.mixin.android.crypto.Base64
 import one.mixin.android.event.GroupEvent
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.networkConnected
@@ -56,7 +57,7 @@ import timber.log.Timber
 
 abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
 
-    protected var isCancel = false
+    protected var isCancel = AtomicBoolean(false)
 
     companion object {
         private const val serialVersionUID = 1L
@@ -71,7 +72,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     override fun shouldRetry(throwable: Throwable): Boolean {
-        return if (isCancel) {
+        return if (isCancel.get()) {
             Timber.d("cancel")
             false
         } else {
@@ -275,7 +276,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
 
     protected fun sendNoKeyMessage(conversationId: String, recipientId: String) {
         val plainText = Gson().toJson(PlainJsonMessagePayload(PlainDataAction.NO_KEY.name))
-        val encoded = Base64.encodeBytes(plainText.toByteArray())
+        val encoded = plainText.base64Encode()
         val params = BlazeMessageParam(
             conversationId, recipientId, UUID.randomUUID().toString(),
             MessageCategory.PLAIN_JSON.name, encoded, MessageStatus.SENDING.name
@@ -298,7 +299,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             category = conversation.category, participants = arrayListOf(ParticipantRequest(conversation.ownerId!!, ""))
         )
         val response = conversationApi.create(request).execute().body()
-        if (response != null && response.isSuccess && response.data != null && !isCancel) {
+        if (response != null && response.isSuccess && response.data != null && !isCancel.get()) {
             conversationDao.updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
 
             val sessionParticipants = response.data!!.participantSessions.let { resp ->

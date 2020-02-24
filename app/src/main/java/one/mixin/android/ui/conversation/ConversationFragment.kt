@@ -147,6 +147,7 @@ import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -163,6 +164,7 @@ import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isLive
+import one.mixin.android.vo.matchResourcePattern
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
@@ -558,6 +560,32 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             app?.capabilities
                         )
                     }
+                }
+            }
+
+            override fun onAppCardClick(appCard: AppCardData, userId: String) {
+                val action = appCard.action
+                if (appCard.appId != null) {
+                    lifecycleScope.launch {
+                        val app = chatViewModel.getAppAndCheckUser(appCard.appId)
+                        if (app.matchResourcePattern(action)) {
+                            open(app, action)
+                        } else {
+                            alertDialogBuilder()
+                                .setTitle(getString(R.string.chat_app_card_suspicious_link))
+                                .setMessage(getString(R.string.chat_app_card_suspicious_link_tips))
+                                .setNeutralButton(getString(R.string.cancel)) { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                .setNegativeButton(getString(R.string.open)) { dialog, _ ->
+                                    openAction(action, userId)
+                                    dialog.dismiss()
+                                }
+                                .show()
+                        }
+                    }
+                } else {
+                    openAction(action, userId)
                 }
             }
 
@@ -1799,6 +1827,48 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
+    private fun openAction(action: String, userId: String) = lifecycleScope.launch {
+        if (openInputAction(action)) return@launch
+
+        if (userId == app?.appId) {
+            open(app, action)
+        } else {
+            val app = chatViewModel.getAppAndCheckUser(userId)
+            open(app, action)
+        }
+    }
+
+    private fun open(app: App?, url: String) {
+        chat_control.chat_et.hideKeyboard()
+        botWebBottomSheet = if (app == null) {
+            WebBottomSheetDialogFragment.newInstance(url, conversationId)
+        } else {
+            WebBottomSheetDialogFragment.newInstance(
+                url,
+                conversationId,
+                app.appId,
+                app.name,
+                app.icon_url,
+                app.capabilities
+            )
+        }
+        botWebBottomSheet?.showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+    }
+
+    private fun openInputAction(action: String): Boolean {
+        if (action.startsWith("input:") && action.length > 6) {
+            val msg = action.substring(6).trim()
+            if (msg.isNotEmpty()) {
+                sendMessage(msg)
+            }
+            return true
+        }
+        return false
+    }
+
+    private fun inMentionState(text: String?) =
+        text != null && text.startsWith("@700") && !text.contains(' ')
+
     private fun clickSticker() {
         val stickerAlbumFragment = parentFragmentManager.findFragmentByTag(StickerAlbumFragment.TAG)
         if (stickerAlbumFragment == null) {
@@ -2366,18 +2436,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         override fun onBotClick() {
             hideIfShowBottomSheet()
+            recipient?.userId?.let { id ->
+                chatViewModel.refreshUser(id, true)
+            }
             app?.let {
-                chat_control.chat_et.hideKeyboard()
-                recipient?.let { user -> chatViewModel.refreshUser(user.userId, true) }
-                botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(
-                    it.homeUri,
-                    conversationId,
-                    it.appId,
-                    it.name,
-                    it.icon_url,
-                    it.capabilities
-                )
-                botWebBottomSheet?.showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                open(it, it.homeUri)
             }
         }
 

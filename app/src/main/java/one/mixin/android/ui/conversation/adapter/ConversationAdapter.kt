@@ -53,6 +53,7 @@ import one.mixin.android.ui.conversation.holder.VideoHolder
 import one.mixin.android.ui.conversation.holder.VideoQuoteHolder
 import one.mixin.android.ui.conversation.holder.WaitingHolder
 import one.mixin.android.util.markdown.MarkwonUtil
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
@@ -305,6 +306,7 @@ class ConversationAdapter(
                     (holder as ActionCardHolder).bind(
                         it,
                         isFirst(position),
+                        isLast(position),
                         selectSet.size > 0,
                         isSelect(position),
                         onItemListener
@@ -813,6 +815,8 @@ class ConversationAdapter(
         open fun onBlockClick() {}
 
         open fun onActionClick(action: String, userId: String) {}
+
+        open fun onAppCardClick(appCard: AppCardData, userId: String) {}
 
         open fun onAudioClick(messageItem: MessageItem) {}
 

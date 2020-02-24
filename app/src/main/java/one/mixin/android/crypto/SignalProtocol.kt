@@ -7,6 +7,7 @@ import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.storage.MixinSenderKeyStore
 import one.mixin.android.crypto.storage.SignalProtocolStoreImpl
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Message
@@ -55,12 +56,12 @@ class SignalProtocol(ctx: Context) {
             return if (data.resendMessageId == null) {
                 val header = byteArrayOf(CURRENT_VERSION.toByte(), data.keyType.toByte(), 0, 0, 0, 0, 0, 0)
                 val cipherText = header + data.cipher
-                Base64.encodeBytes(cipherText)
+                cipherText.base64Encode()
             } else {
                 val header = byteArrayOf(CURRENT_VERSION.toByte(), data.keyType.toByte(), 1, 0, 0, 0, 0, 0)
                 val messageId = data.resendMessageId.toByteArray()
                 val cipherText = header + messageId + data.cipher
-                Base64.encodeBytes(cipherText)
+                cipherText.base64Encode()
             }
         }
 

@@ -2,18 +2,18 @@
 buildscript {
 
     ext {
-        ext.fragmentVersion = '1.2.1'
+        ext.fragmentVersion = '1.2.2'
         ext.lifecycleVersion = '2.2.0'
         ext.appcompatVersion = '1.2.0-alpha02'
         ext.pagingVersion = '2.1.1'
         ext.collectionx = '1.1.0'
-        ext.roomVersion = '2.2.3'
+        ext.roomVersion = '2.2.4'
         ext.navigationVersion = '2.2.1'
-        ext.workManagerVersion = '2.3.1'
+        ext.workManagerVersion = '2.3.2'
         ext.constraintLayoutVersion = '1.1.3'
         ext.supportLibVersion = '1.0.0'
         ext.recyclerViewVersion = '1.1.0'
-        ext.mdcVersion = '1.2.0-alpha04'
+        ext.mdcVersion = '1.2.0-alpha05'
         ext.exifinterfaceVersion = '1.1.0'
         ext.preference_version = '1.1.0'
         ext.daggerVersion = '2.26'
@@ -27,7 +27,7 @@ buildscript {
         ext.webpdecoderVesion = '1.6.4.10.0'
         ext.timberVersion = '4.7.1'
         ext.okhttpVersion = '3.13.1'
-        ext.rxJavaVersion = '2.2.17'
+        ext.rxJavaVersion = '2.2.18'
         ext.rxAndroidVersion = '2.1.1'
         ext.rxbindingVersion = '3.1.0'
         ext.retrofitVersion = '2.7.1'
@@ -47,7 +47,7 @@ buildscript {
         ext.rxpermissionsVersion = '0.10.3'
         ext.ucropVersion = '2.2.4'
         ext.countryPickerVersion = '1.0.12'
-        ext.fabprogresscircleVersion = '1.01@aar'
+        ext.fabprogresscircleVersion = '1.1'
         ext.rxContactsVersion = '1.1'
         ext.glideTransformationsVersion = '3.2.0'
         ext.jobqueueVersion = '3.0.0'
@@ -60,7 +60,7 @@ buildscript {
         ext.svgVersion = '1.4'
         ext.reboundVersion = '0.3.8'
         ext.ktlintVersion = '0.36.0'
-        ext.exoplayerVersion = '2.11.2'
+        ext.exoplayerVersion = '2.11.3'
         ext.perfVersion = '19.0.5'
         ext.markwonVersion = '4.2.1'
         ext.prism4jVersion = '2.0.0'
@@ -93,7 +93,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.3'
-        classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta08'
+        classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta09'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
         classpath 'com.google.gms:google-services:4.3.3'
         classpath 'io.fabric.tools:gradle:1.31.2'
