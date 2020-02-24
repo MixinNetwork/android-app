@@ -7,7 +7,12 @@ data class AppCardData(
     val appId: String?,
     @SerializedName("icon_url")
     val iconUrl: String,
-    val title: String,
-    val description: String,
+    var title: String,
+    var description: String,
     val action: String
-)
+) {
+    init {
+        title = title.take(36)
+        description = description.take(128)
+    }
+}
