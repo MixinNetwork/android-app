@@ -1,5 +1,5 @@
 def versionMajor = 0
-def versionMinor = 20
+def versionMinor = 21
 def versionPatch = 0
 def versionBuild = 0
 
