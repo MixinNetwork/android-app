@@ -6,7 +6,7 @@ import one.mixin.android.util.mention.syntax.node.Node
 class MentionConversationNode(val content: String) : Node<MentionRenderContext>() {
     override fun render(builder: SpannableStringBuilder, renderContext: MentionRenderContext) {
         val number = content.substring(1)
-        val name = renderContext.userMap[number] ?: return
+        val name = renderContext.userMap[number] ?: number
         builder.append("@$name")
     }
 

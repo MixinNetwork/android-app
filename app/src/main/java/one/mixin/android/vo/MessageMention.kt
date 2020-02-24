@@ -2,12 +2,14 @@ package one.mixin.android.vo
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "mention_message"
+    tableName = "message_mentions",
+    indices = [Index(value = arrayOf("conversation_id"))]
 )
-class MentionMessage(
+class MessageMention(
     @PrimaryKey
     @ColumnInfo(name = "message_id")
     var messageId: String,

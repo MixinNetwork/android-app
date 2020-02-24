@@ -35,7 +35,7 @@ class MessageProvider {
                         LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink
                         LEFT JOIN users su ON m.shared_user_id = su.user_id
                         LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
-                        LEFT JOIN mention_message mm ON m.id = mm.message_id
+                        LEFT JOIN message_mentions mm ON m.id = mm.message_id
                         WHERE m.conversation_id = ? 
                         ORDER BY m.created_at DESC 
                     """

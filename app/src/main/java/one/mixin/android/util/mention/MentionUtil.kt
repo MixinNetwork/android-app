@@ -8,7 +8,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.util.mention.syntax.node.Node
 import one.mixin.android.util.mention.syntax.parser.Parser
-import one.mixin.android.vo.MentionMessage
+import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.User
 
 fun mentionDisplay(string: CharSequence): Boolean {
@@ -69,7 +69,7 @@ fun getMentionData(
     }
     if (mentions.isEmpty()) return null
     val mentionData = GsonHelper.customGson.toJson(mentions)
-    mentionMessageDao.insert(MentionMessage(messageId, conversationId, mentionData, hasRead))
+    mentionMessageDao.insert(MessageMention(messageId, conversationId, mentionData, hasRead))
     return mentionData
 }
 

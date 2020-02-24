@@ -1,7 +1,7 @@
 package one.mixin.android.vo
 
-import one.mixin.android.extension.maxLimit
 import kotlin.math.abs
+import one.mixin.android.extension.maxLimit
 
 class MessageBuilder(
     val id: String,

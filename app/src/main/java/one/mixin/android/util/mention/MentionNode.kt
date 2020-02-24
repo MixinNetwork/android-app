@@ -10,7 +10,11 @@ import one.mixin.android.widget.linktext.TouchableSpan
 class MentionNode(val content: String, val normalTextColor: Int, val pressedTextColor: Int) : Node<MentionRenderContext>() {
         override fun render(builder: SpannableStringBuilder, renderContext: MentionRenderContext) {
             val number = content.substring(1)
-            var name = renderContext.userMap[number] ?: return
+            var name = renderContext.userMap[number]
+            if (name == null) {
+                builder.append("@$number")
+                return
+            }
             name = "@$name"
             val sp = SpannableString(name)
             val clickableSpan = object : TouchableSpan(normalTextColor, pressedTextColor, false) {

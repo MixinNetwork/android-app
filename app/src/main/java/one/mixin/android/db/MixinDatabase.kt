@@ -30,10 +30,10 @@ import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Hyperlink
 import one.mixin.android.vo.Job
-import one.mixin.android.vo.MentionMessage
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts
 import one.mixin.android.vo.MessageHistory
+import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
@@ -72,7 +72,7 @@ import one.mixin.android.vo.User
     (FavoriteApp::class),
     (Job::class),
     (MessageFts::class),
-    (MentionMessage::class)],
+    (MessageMention::class)],
     version = CURRENT_VERSION
 )
 abstract class MixinDatabase : RoomDatabase() {

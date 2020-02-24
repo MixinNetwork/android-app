@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 28,
-    "identityHash": "1fc7b45498ed548b957dcfc4d680b1de",
+    "identityHash": "34f3a61864674580fb526b7d1769fa67",
     "entities": [
       {
         "tableName": "users",
@@ -1595,7 +1595,7 @@
         "foreignKeys": []
       },
       {
-        "tableName": "mention_message",
+        "tableName": "message_mentions",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `mentions` TEXT NOT NULL, `has_read` INTEGER NOT NULL, PRIMARY KEY(`message_id`))",
         "fields": [
           {
@@ -1629,14 +1629,23 @@
           ],
           "autoGenerate": false
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_message_mentions_conversation_id",
+            "unique": false,
+            "columnNames": [
+              "conversation_id"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_message_mentions_conversation_id` ON `${TABLE_NAME}` (`conversation_id`)"
+          }
+        ],
         "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1fc7b45498ed548b957dcfc4d680b1de')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '34f3a61864674580fb526b7d1769fa67')"
     ]
   }
 }
