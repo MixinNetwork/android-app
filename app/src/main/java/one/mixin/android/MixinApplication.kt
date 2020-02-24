@@ -30,6 +30,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.util.Session
+import one.mixin.android.util.language.Lingver
 import one.mixin.android.webrtc.CallService
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.notificationManager
@@ -64,6 +65,7 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
         AndroidThreeTen.init(this)
+        Lingver.init(this)
         appComponent = AppInjector.init(this)
         RxJavaPlugins.setErrorHandler {}
     }

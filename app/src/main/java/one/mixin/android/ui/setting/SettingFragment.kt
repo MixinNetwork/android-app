@@ -10,8 +10,6 @@ import androidx.fragment.app.Fragment
 import java.util.Locale
 import kotlinx.android.synthetic.main.fragment_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import one.mixin.android.Constants.Account.PREF_LANGUAGE
-import one.mixin.android.Constants.Account.PREF_SET_LANGUAGE
 import one.mixin.android.Constants.Theme.THEME_AUTO_ID
 import one.mixin.android.Constants.Theme.THEME_CURRENT_ID
 import one.mixin.android.Constants.Theme.THEME_DEFAULT_ID
@@ -20,13 +18,11 @@ import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
-import one.mixin.android.extension.putString
 import one.mixin.android.extension.singleChoice
 import one.mixin.android.ui.device.DeviceFragment
-import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.Session
+import one.mixin.android.util.language.Lingver
 
 class SettingFragment : Fragment() {
     companion object {
@@ -110,22 +106,12 @@ class SettingFragment : Fragment() {
 
     private fun showLanguageAlert() {
         val choice = resources.getStringArray(R.array.language_names)
-        val setLanguage = defaultSharedPreferences.getBoolean(PREF_SET_LANGUAGE, false)
-        val selectItem = if (setLanguage) {
-            val language =
-                defaultSharedPreferences.getString(PREF_LANGUAGE, Locale.ENGLISH.language)
-            if (language == Locale.SIMPLIFIED_CHINESE.language) {
+        val language = Lingver.getInstance().getLanguage()
+        val selectItem = if (language == Locale.SIMPLIFIED_CHINESE.language) {
                 1
             } else {
                 0
             }
-        } else {
-            if (Locale.getDefault().language == Locale.SIMPLIFIED_CHINESE.language) {
-                1
-            } else {
-                0
-            }
-        }
         var newSelectItem = selectItem
         alertDialogBuilder()
             .setTitle(R.string.language)
@@ -134,16 +120,12 @@ class SettingFragment : Fragment() {
             }
             .setPositiveButton(R.string.group_ok) { dialog, _ ->
                 if (newSelectItem != selectItem) {
-                    defaultSharedPreferences.putString(
-                        PREF_LANGUAGE,
-                        when (newSelectItem) {
-                            0 -> Locale.ENGLISH.language
-                            else -> Locale.CHINA.language
-                        }
-                    )
-                    defaultSharedPreferences.putBoolean(PREF_SET_LANGUAGE, true)
-
-                    MainActivity.reopen(requireContext())
+                    val selected = when (newSelectItem) {
+                        0 -> Locale.ENGLISH.language
+                        else -> Locale.CHINA.language
+                    }
+                    Lingver.getInstance().setLocale(requireContext(), selected)
+                    activity?.recreate()
                 }
                 dialog.dismiss()
             }
