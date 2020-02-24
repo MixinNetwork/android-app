@@ -65,7 +65,7 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
         AndroidThreeTen.init(this)
-        Lingver.init(this, "en")
+        Lingver.init(this)
         appComponent = AppInjector.init(this)
         RxJavaPlugins.setErrorHandler {}
     }
