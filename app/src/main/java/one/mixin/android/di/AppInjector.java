@@ -3,6 +3,7 @@ package one.mixin.android.di;
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -10,7 +11,6 @@ import dagger.android.AndroidInjection;
 import dagger.android.HasAndroidInjector;
 import dagger.android.support.AndroidSupportInjection;
 import one.mixin.android.MixinApplication;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Helper class to automatically inject fragments if they implement {@link Injectable}.
@@ -26,32 +26,32 @@ public class AppInjector{
         AppComponent component = inject(mixinApp);
         mixinApp.registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
                     @Override
-                    public void onActivityCreated(@NotNull Activity activity, Bundle savedInstanceState) {
+                    public void onActivityCreated(@NonNull Activity activity, Bundle savedInstanceState) {
                         handleActivity(activity);
                     }
 
                     @Override
-                    public void onActivityStarted(@NotNull Activity activity) {
+                    public void onActivityStarted(@NonNull Activity activity) {
                     }
 
                     @Override
-                    public void onActivityResumed(@NotNull Activity activity) {
+                    public void onActivityResumed(@NonNull Activity activity) {
                     }
 
                     @Override
-                    public void onActivityPaused(@NotNull Activity activity) {
+                    public void onActivityPaused(@NonNull Activity activity) {
                     }
 
                     @Override
-                    public void onActivityStopped(@NotNull Activity activity) {
+                    public void onActivityStopped(@NonNull Activity activity) {
                     }
 
                     @Override
-                    public void onActivitySaveInstanceState(@NotNull Activity activity, @NotNull Bundle outState) {
+                    public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle outState) {
                     }
 
                     @Override
-                    public void onActivityDestroyed(@NotNull Activity activity) {
+                    public void onActivityDestroyed(@NonNull Activity activity) {
                     }
                 });
         return component;
@@ -71,8 +71,8 @@ public class AppInjector{
                             new FragmentManager.FragmentLifecycleCallbacks() {
                                 @Override
                                 public void onFragmentCreated(
-                                    @NotNull FragmentManager fm,
-                                    @NotNull Fragment f,
+                                    @NonNull FragmentManager fm,
+                                    @NonNull Fragment f,
                                     Bundle savedInstanceState
                                 ) {
                                     if (f instanceof Injectable) {
