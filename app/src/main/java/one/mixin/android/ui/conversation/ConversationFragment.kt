@@ -60,7 +60,6 @@ import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -97,7 +96,6 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
@@ -141,7 +139,6 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
-import one.mixin.android.util.mention.deleteMentionEnd
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
@@ -497,27 +494,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         UserBottomSheetDialogFragment.newInstance(user, conversationId)
                             .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                     }
-                }
-            }
-
-            private var userJob: Job? = null
-            override fun onBotClick(id: String) {
-                if (userJob?.isActive == true) return
-                userJob = chatViewModel.viewModelScope.launch {
-                    val user = try {
-                        chatViewModel.searchUserById(id)
-                    } catch (e: Exception) {
-                        ErrorHandler.handleError(e)
-                        return@launch
-                    }
-                    user.notNullWithElse({ user ->
-                        UserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(
-                            parentFragmentManager,
-                            UserBottomSheetDialogFragment.TAG
-                        )
-                    }, {
-                        toast(R.string.error_user_not_found)
-                    })
                 }
             }
 
@@ -2467,11 +2443,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         }
 
-        override fun onDelete() {
-            if (isGroup) {
-                deleteMentionEnd(chat_control.chat_et)
-            }
-        }
+        override fun onDelete() {}
     }
 
     private fun searchMentionUser(keyword: String) {

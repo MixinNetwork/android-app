@@ -155,8 +155,8 @@ class MixinDatabaseMigrations private constructor() {
 
         val MIGRATION_27_28: Migration = object : Migration(27, 28) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL(" CREATE TABLE IF NOT EXISTS `message_mentions` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `mentions` TEXT NOT NULL, `has_read` INTEGER NOT NULL, PRIMARY KEY(`message_id`))")
-                database.execSQL(" CREATE INDEX IF NOT EXISTS `index_message_mentions_conversation_id` ON `message_mentions` (`conversation_id`)")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `message_mentions` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `mentions` TEXT NOT NULL, `has_read` INTEGER NOT NULL, PRIMARY KEY(`message_id`))")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_message_mentions_conversation_id` ON `message_mentions` (`conversation_id`)")
                 database.execSQL("ALTER TABLE apps ADD COLUMN resource_patterns TEXT")
             }
         }

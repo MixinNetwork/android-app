@@ -23,9 +23,6 @@ interface UserService {
     @GET("search/{query}")
     fun search(@Path("query") query: String): Observable<MixinResponse<User>>
 
-    @GET("search/{query}")
-    suspend fun searchUserByIdentityNumber(@Path("query") identityNumber: String): MixinResponse<User>
-
     @POST("relationships")
     suspend fun relationship(@Body request: RelationshipRequest): MixinResponse<User>
 

@@ -64,7 +64,7 @@ fun getMentionData(
         if (!send && identityNumber.isNotBlank() && identityNumber == Session.getAccount()?.identity_number) {
             hasRead = false
         }
-        val user = userDao.findUSerByIdentityNumber(identityNumber)
+        val user = userDao.findUserByIdentityNumber(identityNumber)
         mentions.add(MentionData(identityNumber, user?.fullName))
     }
     if (mentions.isEmpty()) return null

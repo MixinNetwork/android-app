@@ -1040,16 +1040,6 @@ internal constructor(
 
     suspend fun getAnnouncementByConversationId(conversationId: String) = conversationRepository.getAnnouncementByConversationId(conversationId)
 
-    suspend fun searchUserById(identityNumber: String): User? {
-        val user: User? = accountRepository.findUserByIdentityNumber(identityNumber)
-        if (user != null) return user
-        val response = accountRepository.searchUserByIdentityNumber(identityNumber)
-        if (response.isSuccess && response.data != null) {
-            return response.data
-        }
-        return null
-    }
-
     private val searchControlledRunner = ControlledRunner<List<User>>()
 
     suspend fun fuzzySearchUser(conversationId: String, keyword: String?): List<User> {

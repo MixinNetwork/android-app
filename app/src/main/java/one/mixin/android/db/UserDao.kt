@@ -58,14 +58,11 @@ interface UserDao : BaseDao<User> {
         WHERE u.user_id != :id 
         AND p.conversation_id = :conversationId AND p.user_id = u.user_id
         AND (u.full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR u.identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
-        ORDER BY 
-            u.full_name = :username COLLATE NOCASE OR u.identity_number = :identityNumber COLLATE NOCASE DESC
+        ORDER BY u.full_name = :username COLLATE NOCASE OR u.identity_number = :identityNumber COLLATE NOCASE DESC
         """)
     suspend fun fuzzySearchGroupUser(conversationId: String, username: String, identityNumber: String, id: String): List<User>
 
-    @Query("""
-        SELECT u.* FROM participants p, users u WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id AND u.user_id != :id 
-        """)
+    @Query("SELECT u.* FROM participants p, users u WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id AND u.user_id != :id")
     suspend fun suspendGetGroupParticipants(conversationId: String, id: String): List<User>
 
     @Query("UPDATE users SET relationship = :relationship WHERE user_id = :id")
@@ -101,14 +98,11 @@ interface UserDao : BaseDao<User> {
     suspend fun findMultiUsersByIds(userIds: Set<String>): List<User>
 
     @Query("SELECT * FROM users WHERE identity_number =:identityNumber LIMIT 1")
-    suspend fun findUserByIdentityNumber(identityNumber: String): User?
+    suspend fun suspendFindUserByIdentityNumber(identityNumber: String): User?
 
     @Query("SELECT * FROM users WHERE full_name =:fullName")
-    fun findUSerByFullName(fullName: String): User?
+    fun findUserByFullName(fullName: String): User?
 
-    @Query("SELECT * FROM users WHERE identity_number =:identityNumber")
-    fun findUSerByIdentityNumber(identityNumber: String): User?
-
-    @Query("SELECT * FROM users WHERE identity_number =:identityNumber")
-    suspend fun findUSerByIdentityNumberSuspend(identityNumber: String): User?
+    @Query("SELECT * FROM users WHERE identity_number =:identityNumber LIMIT 1")
+    fun findUserByIdentityNumber(identityNumber: String): User?
 }
