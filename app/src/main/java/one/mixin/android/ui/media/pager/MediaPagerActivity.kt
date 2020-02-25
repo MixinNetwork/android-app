@@ -614,7 +614,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     }
 
     private fun downloadMedia(position: Int): Boolean {
-        val currMessageItem = adapter.currentList?.get(position) ?: return false
+        val currMessageItem = getMessageItemByPosition(position) ?: return false
         if (currMessageItem.mediaStatus == MediaStatus.CANCELED.name) return false
         if (currMessageItem.isMedia() && currMessageItem.mediaUrl == null) {
             viewModel.downloadByMessageId(currMessageItem.messageId)
@@ -623,12 +623,19 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         return false
     }
 
+    private fun getMessageItemByPosition(position: Int): MessageItem? =
+        try {
+            adapter.currentList?.get(position)
+        } catch (e: IndexOutOfBoundsException) {
+            null
+        }
+
     private inline fun findViewPagerChildByTag(
         pos: Int = view_pager.currentItem,
         crossinline action: (v: ViewGroup) -> Unit
     ) {
         if (isFinishing) return
-        val id = adapter.currentList?.get(pos)?.messageId ?: return
+        val id = getMessageItemByPosition(pos)?.messageId ?: return
         val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX$id")
         if (v != null) {
             action(v as ViewGroup)
@@ -690,7 +697,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
             if (downloadMedia(position)) return
 
-            val messageItem = adapter.currentList?.get(position) ?: return
+            val messageItem = getMessageItemByPosition(position) ?: return
             if (VideoPlayer.player().mId != messageItem.messageId && !pipVideoView.shown) {
                 VideoPlayer.player().stop()
                 VideoPlayer.player().pause()
@@ -708,7 +715,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     override fun onDismissProgress(progress: Float) {
         if (progress > 0 && !inDismissState) {
             inDismissState = true
-            val messageItem = adapter.currentList?.get(view_pager.currentItem) ?: return
+            val messageItem = getMessageItemByPosition(view_pager.currentItem) ?: return
             if (messageItem.isLive() || messageItem.isVideo()) {
                 findViewPagerChildByTag {
                     val playerView = it.player_view
@@ -730,7 +737,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     override fun onCancel() {
         if (inDismissState) {
             inDismissState = false
-            val messageItem = adapter.currentList?.get(view_pager.currentItem) ?: return
+            val messageItem = getMessageItemByPosition(view_pager.currentItem) ?: return
             if (messageItem.isLive() || messageItem.isVideo()) {
                 findViewPagerChildByTag {
                     val playerView = it.player_view
