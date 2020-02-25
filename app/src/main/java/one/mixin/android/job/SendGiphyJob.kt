@@ -6,10 +6,9 @@ import com.bumptech.glide.Glide
 import java.io.FileInputStream
 import java.util.concurrent.TimeUnit
 import one.mixin.android.MixinApplication
-import one.mixin.android.extension.bitmap2String
-import one.mixin.android.extension.blurThumbnail
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
+import one.mixin.android.extension.encodeBlurHash
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
 import one.mixin.android.vo.MediaStatus
@@ -47,7 +46,7 @@ class SendGiphyJob(
         val file = ctx.getImagePath().createGifTemp()
         file.copyFromInputStream(FileInputStream(f))
         val size = getImageSize(file)
-        val thumbnail = file.blurThumbnail(size)?.bitmap2String()
+        val thumbnail = file.encodeBlurHash()
         val message = createMediaMessage(messageId, conversationId, senderId, category, null, Uri.fromFile(file).toString(),
             MimeType.GIF.toString(), file.length(), width, height, thumbnail, null, null,
             time, MediaStatus.PENDING, MessageStatus.SENDING.name)

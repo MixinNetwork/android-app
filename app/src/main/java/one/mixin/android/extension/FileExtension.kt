@@ -31,6 +31,9 @@ import java.util.Date
 import java.util.Locale
 import one.mixin.android.MixinApplication
 import one.mixin.android.util.Session
+import one.mixin.android.util.blurhash.Base83
+import one.mixin.android.util.blurhash.BlurHashDecoder
+import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.widget.gallery.MimeType
 
 private fun isAvailable(): Boolean {
@@ -396,16 +399,12 @@ fun File.copy(destFile: File) {
     dest.closeSilently()
 }
 
-fun File.blurThumbnail(size: Size): Bitmap? {
-    var scale = 1
-    do {
-        if (maxOf(size.width, size.height) / scale > 64) {
-            scale++
-        } else {
-            break
-        }
-    } while (true)
-    return blurThumbnail(size.width / scale, size.height / scale)
+fun File.encodeBlurHash(): String? {
+    return BlurHashEncoder.encode(inputStream())
+}
+
+fun String.decodeBlurHash(width: Int, height: Int): Bitmap? {
+    return BlurHashDecoder.decode(this, width, height)
 }
 
 fun File.moveChileFileToDir(dir: File, eachCallback: ((newFile: File, oldFile: File) -> Unit)? = null) {
@@ -470,7 +469,13 @@ fun ByteArray.encodeBitmap(): Bitmap? {
 
 fun Bitmap.toDrawable(): Drawable = BitmapDrawable(MixinApplication.appContext.resources, this)
 
-fun String.toDrawable() = this.decodeBase64().encodeBitmap()?.toDrawable()
+fun String.toDrawable(): Drawable? {
+    return if (!Base83.isValid(this)) {
+        this.decodeBase64().encodeBitmap()?.toDrawable()
+    } else {
+        BlurHashDecoder.decode(this, 100, 100)?.toDrawable()
+    }
+}
 
 fun String.getFileNameNoEx(): String {
     val dot = this.lastIndexOf('.')
