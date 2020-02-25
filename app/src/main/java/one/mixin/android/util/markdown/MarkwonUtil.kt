@@ -115,7 +115,7 @@ class MarkwonUtil {
                 .usePlugin(TaskListPlugin.create(context))
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
-                .usePlugin(TablePlugin.create(getTheme()))
+                .usePlugin(TablePlugin.create(context))
                 .usePlugin(GlideImagesPlugin.create(context))
                 .usePlugin(ImagesPlugin.create {
                     it.addMediaDecoder(SvgMediaDecoder.create())
@@ -156,13 +156,6 @@ class MarkwonUtil {
                         }
                     }
                 })
-                .build()
-        }
-
-        private fun getTheme(): TableTheme {
-            return TableTheme.Builder()
-                .tableBorderWidth(1)
-                .tableCellPadding(1)
                 .build()
         }
     }

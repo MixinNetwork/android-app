@@ -4,18 +4,13 @@
     android:layout_height="wrap_content"
     android:clipChildren="false"
     android:clipToPadding="false"
-    android:paddingLeft="16dip"
-    android:paddingTop="8dip"
-    android:paddingRight="16dip"
-    android:paddingBottom="8dip"
+    android:padding="6dp"
     android:scrollbarStyle="outsideInset">
 
     <TableLayout
         android:id="@+id/table_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         android:stretchColumns="*" />
 
 </HorizontalScrollView>
