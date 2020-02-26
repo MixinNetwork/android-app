@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -45,6 +46,7 @@ class PinCheckDialogFragment : DialogFragment() {
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
+        dialog.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         dialog.setContentView(binding.root)
 
         binding.apply {
@@ -64,6 +66,11 @@ class PinCheckDialogFragment : DialogFragment() {
                 animate().translationY(0f).start()
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
     private fun verify(pinCode: String) = lifecycleScope.launch {
