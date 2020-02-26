@@ -42,8 +42,8 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.createAckJob
-import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
+import one.mixin.android.websocket.CREATE_MESSAGE
 
 @Singleton
 class ConversationRepository
@@ -329,10 +329,10 @@ internal constructor(
 
     fun getUnreadMentionMessageByConversationId(conversationId: String) = mentionMessageDao.getUnreadMentionMessageByConversationId(conversationId)
 
-    suspend fun markMentionRead(messageId: String) {
+    suspend fun markMentionRead(messageId: String, conversationId: String) {
         mentionMessageDao.suspendMarkMentionRead(messageId)
         withContext(Dispatchers.IO) {
-            jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, MessageMentionStatus.MENTION_READ.name)))
+            jobDao.insert(createAckJob(CREATE_MESSAGE, BlazeAckMessage(messageId, MessageMentionStatus.MENTION_READ.name), conversationId))
         }
     }
 }

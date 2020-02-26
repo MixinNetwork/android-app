@@ -1369,7 +1369,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     if (!isAdded) return@launch
                     val messageId = mentionMessages.first().messageId
                     val index = chatViewModel.findMessageIndex(conversationId, messageId)
-                    chatViewModel.markMentionRead(messageId)
+                    chatViewModel.markMentionRead(messageId, conversationId)
                     if (index == 0) {
                         scrollTo(0, chat_rv.measuredHeight * 3 / 4, action = {
                             requireContext().mainThreadDelayed({
