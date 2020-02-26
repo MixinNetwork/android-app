@@ -24,9 +24,9 @@ import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.deleteMessage
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
+import one.mixin.android.extension.joinStar
 import one.mixin.android.job.AttachmentDeleteJob
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.extension.joinStar
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session

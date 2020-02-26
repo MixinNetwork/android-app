@@ -406,7 +406,9 @@ fun String.joinWithCharacter(char: Char): String {
         }
         val isSameType = if (c.isAlphabet() && lookAhead.isAlphabet()) {
             true
-        } else c.isDigit() && lookAhead.isDigit()
+        } else {
+            c.isDigit() && lookAhead.isDigit()
+        }
 
         val needWhiteSpace = !isSameType && !c.isWhitespace()
         result.append(c)
