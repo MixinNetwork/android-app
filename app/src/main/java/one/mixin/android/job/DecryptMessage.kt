@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.NotificationManager
 import android.util.Log
 import androidx.collection.arrayMapOf
-import androidx.collection.arraySetOf
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
 import one.mixin.android.MixinApplication
@@ -257,26 +256,21 @@ class DecryptMessage : Injector() {
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
                 val accountId = Session.getAccountId()!!
                 plainData.ackMessages?.let {
-                    val updateConversationList = arraySetOf<String>()
                     val updateMessageList = arrayListOf<String>()
                     for (m in it) {
-                        if (m.status != MessageStatus.READ.name || m.status != MessageMentionStatus.MENTION_READ.name) {
-                            continue
-                        }
-                        val message = messageDao.findSimpleMessageById(m.message_id)
-                        if (message != null && MessageStatus.valueOf(m.status) > MessageStatus.valueOf(message.status)) {
+                        if (m.status == MessageStatus.READ.name) {
                             updateMessageList.add(m.message_id)
-                            updateConversationList.add(message.conversationId)
-                        } else {
+                        } else if (m.status != MessageMentionStatus.MENTION_READ.name) {
                             mentionMessageDao.markMentionRead(m.message_id)
                         }
                     }
                     if (updateMessageList.isNotEmpty()) {
                         messageDao.markMessageRead(updateMessageList)
-                    }
-                    updateConversationList.forEach { cId ->
-                        messageDao.takeUnseen(accountId, cId)
-                        notificationManager.cancel(cId.hashCode())
+                        val updateConversationList = messageDao.findConversationsByMessages(updateMessageList)
+                        updateConversationList.forEach { cId ->
+                            messageDao.takeUnseen(accountId, cId)
+                            notificationManager.cancel(cId.hashCode())
+                        }
                     }
                 }
             }

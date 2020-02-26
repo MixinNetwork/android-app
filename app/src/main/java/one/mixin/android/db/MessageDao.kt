@@ -233,7 +233,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
 
-    @Query("UPDATE messages SET status = 'READ' WHERE id IN (:messages)")
+    @Query("UPDATE messages SET status = 'READ' WHERE id IN (:messages) AND status != 'FAILED'")
     fun markMessageRead(messages: List<String>)
 
     @Query("UPDATE messages SET status = 'SENT' WHERE id = :id AND status = 'FAILED'")
@@ -335,6 +335,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT id, conversation_id, user_id, status, created_at FROM messages WHERE id = :messageId")
     fun findSimpleMessageById(messageId: String): MessageMinimal?
+
+    @Query("SELECT DISTINCT conversation_id FROM messages WHERE id IN (:messages)")
+    fun findConversationsByMessages(messages: List<String>): List<String>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
