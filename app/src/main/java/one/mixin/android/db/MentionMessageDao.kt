@@ -11,7 +11,10 @@ interface MentionMessageDao : BaseDao<MessageMention> {
     fun getUnreadMentionMessageByConversationId(conversationId: String): LiveData<List<MessageMention>>
 
     @Query("UPDATE message_mentions SET has_read = 1 WHERE message_id = :messageId")
-    suspend fun markMentionRead(messageId: String)
+    suspend fun suspendMarkMentionRead(messageId: String)
+
+    @Query("UPDATE message_mentions SET has_read = 1 WHERE message_id = :messageId")
+    fun markMentionRead(messageId: String)
 
     @Query("DELETE FROM message_mentions WHERE message_id = :id")
     fun deleteMessage(id: String)

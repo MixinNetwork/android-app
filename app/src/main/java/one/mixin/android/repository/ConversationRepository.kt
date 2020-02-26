@@ -324,5 +324,5 @@ internal constructor(
 
     fun getUnreadMentionMessageByConversationId(conversationId: String) = mentionMessageDao.getUnreadMentionMessageByConversationId(conversationId)
 
-    suspend fun markMentionRead(messageId: String) = mentionMessageDao.markMentionRead(messageId)
+    suspend fun markMentionRead(messageId: String) = mentionMessageDao.suspendMarkMentionRead(messageId)
 }

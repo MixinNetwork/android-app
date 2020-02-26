@@ -38,6 +38,7 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageHistory
+import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
@@ -258,13 +259,17 @@ class DecryptMessage : Injector() {
                 plainData.ackMessages?.let {
                     val updateList = arraySetOf<String>()
                     for (m in it) {
-                        if (m.status != MessageStatus.READ.name) {
+                        if (m.status != MessageStatus.READ.name || m.status != MessageMentionStatus.MENTION_READ.name) {
                             continue
                         }
-                        val message = messageDao.findSimpleMessageById(m.message_id)
-                        if (message != null && MessageStatus.valueOf(m.status) > MessageStatus.valueOf(message.status)) {
-                            messageDao.updateMessageStatus(m.status, m.message_id)
-                            updateList.add(message.conversationId)
+                        if (m.status == MessageStatus.READ.name) {
+                            val message = messageDao.findSimpleMessageById(m.message_id)
+                            if (message != null && MessageStatus.valueOf(m.status) > MessageStatus.valueOf(message.status)) {
+                                messageDao.updateMessageStatus(m.status, m.message_id)
+                                updateList.add(message.conversationId)
+                            }
+                        } else {
+                            mentionMessageDao.markMentionRead(m.message_id)
                         }
                     }
                     updateList.forEach { cId ->

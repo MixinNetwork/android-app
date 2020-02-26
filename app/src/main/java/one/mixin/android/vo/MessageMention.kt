@@ -20,3 +20,5 @@ class MessageMention(
     @ColumnInfo(name = "has_read")
     val hasRead: Boolean
 )
+
+enum class MessageMentionStatus { MENTION_READ }
