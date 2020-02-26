@@ -490,7 +490,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onMentionClick(identityNumber: String) {
                 chatViewModel.viewModelScope.launch {
-                    chatViewModel.findUSerByIdentityNumberSuspend(identityNumber)?.let { user ->
+                    chatViewModel.findUserByIdentityNumberSuspend(identityNumber)?.let { user ->
                         UserBottomSheetDialogFragment.newInstance(user, conversationId)
                             .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                     }

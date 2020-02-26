@@ -107,5 +107,5 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     suspend fun fetchUser(ids: List<String>) = userService.fetchUsers(ids)
 
-    suspend fun findUSerByIdentityNumberSuspend(identityNumber: String) = userDao.suspendFindUserByIdentityNumber(identityNumber)
+    suspend fun findUserByIdentityNumberSuspend(identityNumber: String) = userDao.suspendFindUserByIdentityNumber(identityNumber)
 }
