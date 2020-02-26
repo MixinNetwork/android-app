@@ -40,14 +40,15 @@ import one.mixin.android.widget.gallery.MimeType
 import org.whispersystems.libsignal.logging.Log
 import org.whispersystems.libsignal.util.guava.Optional
 
-class AttachmentDownloadJob(private val message: Message, private val attachmentId: String? = null) :
-    MixinJob(Params(PRIORITY_RECEIVE_MESSAGE).addTags(GROUP)
+class AttachmentDownloadJob(
+    private val message: Message,
+    private val attachmentId: String? = null
+) : MixinJob(Params(PRIORITY_RECEIVE_MESSAGE)
         .groupBy("attachment_download").requireNetwork().persist(), message.id) {
 
     private val TAG = AttachmentDownloadJob::class.java.simpleName
 
     companion object {
-        const val GROUP = "AttachmentDownloadJob"
         private const val serialVersionUID = 1L
     }
 
@@ -57,7 +58,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
     private var attachmentCall: retrofit2.Call<MixinResponse<AttachmentResponse>>? = null
 
     override fun cancel() {
-        isCancel.lazySet(true)
+        isCancelled = true
         call?.let {
             if (!it.isCanceled) {
                 it.cancel()
@@ -77,13 +78,14 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
     }
 
     override fun onRun() {
-        if (isCancel.get()) {
+        if (isCancelled) {
+            removeJob()
             return
         }
         jobManager.saveJob(this)
         attachmentCall = conversationApi.getAttachment(attachmentId ?: message.content!!)
         val body = attachmentCall!!.execute().body()
-        if (body != null && (body.isSuccess || !isCancel.get()) && body.data != null) {
+        if (body != null && (body.isSuccess || !isCancelled) && body.data != null) {
             body.data!!.view_url?.let {
                 decryptAttachment(it)
             }
@@ -142,7 +144,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
         if (response.code() == 404) {
             messageDao.updateMediaStatus(MediaStatus.EXPIRED.name, message.id)
             return true
-        } else if (response.isSuccessful && !isCancel.get() && response.body() != null) {
+        } else if (response.isSuccessful && !isCancelled && response.body() != null) {
             val sink = Okio.buffer(Okio.sink(destination))
             sink.writeAll(response.body()!!.source())
             sink.close()

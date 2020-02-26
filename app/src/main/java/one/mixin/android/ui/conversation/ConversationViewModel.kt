@@ -627,7 +627,7 @@ internal constructor(
     suspend fun getAppAndCheckUser(userId: String) = userRepository.getAppAndCheckUser(userId)
 
     fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
-        jobManager.findJobById(id).notNullWithElse({ it.cancel() }, {
+        jobManager.findJobByMixinJobId(id).notNullWithElse({ it.cancel() }, {
             conversationRepository.updateMediaStatus(MediaStatus.CANCELED.name, id)
         })
     }
@@ -721,7 +721,7 @@ internal constructor(
                         null
                     }
                 )
-                jobManager.cancelJobById(item.messageId)
+                jobManager.cancelJobByMixinJobId(item.messageId)
                 notificationManager.cancel(item.userId.hashCode())
             }
         }

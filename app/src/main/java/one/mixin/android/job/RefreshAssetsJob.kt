@@ -5,17 +5,14 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Fiats
 
-class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PRIORITY_UI_HIGH)
-    .addTags(GROUP).singleInstanceBy(assetId ?: "all-assets").persist().requireNetwork(), assetId
-    ?: "all-assets") {
+class RefreshAssetsJob(
+    private val assetId: String? = null
+) : MixinJob(Params(PRIORITY_UI_HIGH)
+    .singleInstanceBy(assetId ?: "all-assets").persist().requireNetwork(), assetId ?: "all-assets") {
 
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshAssetsJob"
-    }
-
-    override fun onAdded() {
-        jobManager.saveJob(this)
     }
 
     override fun onRun() = runBlocking {
@@ -41,7 +38,6 @@ class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PR
             }
             refreshFiats()
         }
-        removeJob()
     }
 
     private fun refreshFiats() = runBlocking {
