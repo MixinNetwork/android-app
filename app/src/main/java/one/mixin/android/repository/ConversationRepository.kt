@@ -9,6 +9,7 @@ import io.reactivex.Observable
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.service.ConversationService
@@ -35,10 +36,14 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SearchMessageItem
+import one.mixin.android.vo.createAckJob
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
+import one.mixin.android.websocket.BlazeAckMessage
 
 @Singleton
 class ConversationRepository
@@ -324,5 +329,10 @@ internal constructor(
 
     fun getUnreadMentionMessageByConversationId(conversationId: String) = mentionMessageDao.getUnreadMentionMessageByConversationId(conversationId)
 
-    suspend fun markMentionRead(messageId: String) = mentionMessageDao.suspendMarkMentionRead(messageId)
+    suspend fun markMentionRead(messageId: String) {
+        mentionMessageDao.suspendMarkMentionRead(messageId)
+        withContext(Dispatchers.IO) {
+            jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, MessageMentionStatus.MENTION_READ.name)))
+        }
+    }
 }

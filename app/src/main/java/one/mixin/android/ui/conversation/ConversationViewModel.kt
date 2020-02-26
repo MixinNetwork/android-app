@@ -81,7 +81,6 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
@@ -1061,9 +1060,5 @@ internal constructor(
 
     suspend fun markMentionRead(messageId: String) {
         conversationRepository.markMentionRead(messageId)
-        createAckJob(
-            ACKNOWLEDGE_MESSAGE_RECEIPTS,
-            BlazeAckMessage(messageId, MessageMentionStatus.MENTION_READ.name)
-        )
     }
 }
