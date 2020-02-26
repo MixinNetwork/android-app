@@ -256,24 +256,20 @@ class DecryptMessage : Injector() {
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
                 val accountId = Session.getAccountId()!!
                 plainData.ackMessages?.let {
-                    val updateConversationList = arraySetOf<String>()
                     val updateMessageList = arrayListOf<String>()
                     for (m in it) {
                         if (m.status != MessageStatus.READ.name) {
                             continue
                         }
-                        val message = messageDao.findSimpleMessageById(m.message_id)
-                        if (message != null && MessageStatus.valueOf(m.status) > MessageStatus.valueOf(message.status)) {
-                            updateMessageList.add(m.message_id)
-                            updateConversationList.add(message.conversationId)
-                        }
+                        updateMessageList.add(m.message_id)
                     }
                     if (updateMessageList.isNotEmpty()) {
                         messageDao.markMessageRead(updateMessageList)
-                    }
-                    updateConversationList.forEach { cId ->
-                        messageDao.takeUnseen(accountId, cId)
-                        notificationManager.cancel(cId.hashCode())
+                        val updateConversationList = messageDao.findConversationsByMessages(updateMessageList)
+                        updateConversationList.forEach { cId ->
+                            messageDao.takeUnseen(accountId, cId)
+                            notificationManager.cancel(cId.hashCode())
+                        }
                     }
                 }
             }
