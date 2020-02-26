@@ -3,6 +3,7 @@ package one.mixin.android.ui.setting
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
+import android.view.WindowManager
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -37,6 +38,7 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding.apply {
             titleView.leftIb.setOnClickListener { activity?.onBackPressed() }
             titleView.rightAnimator.setOnClickListener { verify(binding.pin.code()) }
@@ -47,6 +49,11 @@ class OldPasswordFragment : BaseFragment(R.layout.fragment_old_password), PinVie
             keyboard.setOnClickKeyboardListener(keyboardListener)
             keyboard.animate().translationY(0f).start()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
     override fun onUpdate(index: Int) {

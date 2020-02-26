@@ -3,6 +3,7 @@ package one.mixin.android.ui.setting
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
+import android.view.WindowManager
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
@@ -72,6 +73,7 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         binding.apply {
             if (change) {
                 titleView.setSubTitle(getString(R.string.wallet_password_set_new_pin), "2/5")
@@ -94,6 +96,11 @@ class WalletPasswordFragment : BaseFragment(R.layout.fragment_wallet_password), 
             keyboard.setOnClickKeyboardListener(keyboardListener)
             keyboard.animate().translationY(0f).start()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
     override fun onUpdate(index: Int) {
