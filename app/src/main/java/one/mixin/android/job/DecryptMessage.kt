@@ -7,8 +7,6 @@ import androidx.collection.arrayMapOf
 import androidx.collection.arraySetOf
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
-import java.io.File
-import java.util.UUID
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.SignalKeyCount
@@ -89,6 +87,8 @@ import org.whispersystems.libsignal.DuplicateMessageException
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
+import java.io.File
+import java.util.UUID
 
 class DecryptMessage : Injector() {
 
@@ -257,22 +257,24 @@ class DecryptMessage : Injector() {
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
                 val accountId = Session.getAccountId()!!
                 plainData.ackMessages?.let {
-                    val updateList = arraySetOf<String>()
+                    val updateConversationList = arraySetOf<String>()
+                    val updateMessageList = arrayListOf<String>()
                     for (m in it) {
                         if (m.status != MessageStatus.READ.name || m.status != MessageMentionStatus.MENTION_READ.name) {
                             continue
                         }
-                        if (m.status == MessageStatus.READ.name) {
-                            val message = messageDao.findSimpleMessageById(m.message_id)
-                            if (message != null && MessageStatus.valueOf(m.status) > MessageStatus.valueOf(message.status)) {
-                                messageDao.updateMessageStatus(m.status, m.message_id)
-                                updateList.add(message.conversationId)
-                            }
+                        val message = messageDao.findSimpleMessageById(m.message_id)
+                        if (message != null && MessageStatus.valueOf(m.status) > MessageStatus.valueOf(message.status)) {
+                            updateMessageList.add(m.message_id)
+                            updateConversationList.add(message.conversationId)
                         } else {
                             mentionMessageDao.markMentionRead(m.message_id)
                         }
                     }
-                    updateList.forEach { cId ->
+                    if (updateMessageList.isNotEmpty()) {
+                        messageDao.markMessageRead(updateMessageList)
+                    }
+                    updateConversationList.forEach { cId ->
                         messageDao.takeUnseen(accountId, cId)
                         notificationManager.cancel(cId.hashCode())
                     }

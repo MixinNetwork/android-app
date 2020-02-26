@@ -8,9 +8,8 @@ import androidx.core.widget.TextViewCompat
 import io.noties.markwon.Markwon
 import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
 import kotlinx.android.synthetic.main.item_chat_post.view.*
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.postLengthOptimize
 import one.mixin.android.extension.postOptimize
@@ -25,34 +24,26 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
     init {
         itemView.chat_tv.layoutParams.width = itemView.context.maxItemWidth()
         itemView.chat_tv.maxHeight = itemView.context.maxItemWidth() * 10 / 16
-        itemView.chat_tv.round(dp3)
-    }
-
-    private val dp6 by lazy {
-        MixinApplication.appContext.dpToPx(6f)
-    }
-
-    private val dp14 by lazy {
-        MixinApplication.appContext.dpToPx(14f)
+        itemView.chat_tv.round(3.dp)
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
-            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp12
-            (itemView.chat_post.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp12
+            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 12.dp
+            (itemView.chat_post.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 12.dp
             (itemView.chat_tv.layoutParams as ViewGroup.MarginLayoutParams).apply {
-                marginStart = dp8
-                marginEnd = dp14
+                marginStart = 8.dp
+                marginEnd = 14.dp
             }
         } else {
             (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
-            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
-            (itemView.chat_post.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
+            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 6.dp
+            (itemView.chat_post.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 6.dp
             (itemView.chat_tv.layoutParams as ViewGroup.MarginLayoutParams).apply {
-                marginStart = dp14
-                marginEnd = dp8
+                marginStart = 14.dp
+                marginEnd = 8.dp
             }
         }
         val lp = (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams)
@@ -178,8 +169,8 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), true) { statusIcon, secretIcon ->
-            statusIcon?.setBounds(0, 0, dp12, dp12)
-            secretIcon?.setBounds(0, 0, dp8, dp8)
+            statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
+            secretIcon?.setBounds(0, 0, 8.dp, 8.dp)
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
         }
         chatLayout(isMe, isLast)
