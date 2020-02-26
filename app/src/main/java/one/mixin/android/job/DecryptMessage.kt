@@ -342,6 +342,7 @@ class DecryptMessage : Injector() {
                 val message = createPostMessage(data.messageId, data.conversationId, data.userId, data.category, plain,
                     plain.postOptimize(), data.createdAt, data.status)
                 messageDao.insert(message)
+                MessageFts4Helper.insertOrReplaceMessageFts4(MixinApplication.appContext, message)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_IMAGE") -> {

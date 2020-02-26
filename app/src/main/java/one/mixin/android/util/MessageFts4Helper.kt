@@ -7,6 +7,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts4
+import one.mixin.android.vo.isFtsMessage
 
 data class QueryMessage(
     @ColumnInfo(name = "message_id")
@@ -43,6 +44,8 @@ object MessageFts4Helper {
 
     @WorkerThread
     fun insertOrReplaceMessageFts4(context: Context, message: Message) {
+        if (!message.isFtsMessage()) return
+
         val messageFts4Dao = MixinDatabase.getDatabase(context).messageFts4Dao()
         val name = message.name.joinWhiteSpace()
         val content = message.content.joinWhiteSpace()
