@@ -2,10 +2,13 @@ package one.mixin.android.job
 
 import android.app.Activity
 import android.app.NotificationManager
+import android.util.ArrayMap
 import android.util.Log
 import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
+import java.io.File
+import java.util.UUID
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.SignalKeyCount
@@ -28,7 +31,7 @@ import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
-import one.mixin.android.util.mention.getMentionData
+import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
@@ -86,8 +89,6 @@ import org.whispersystems.libsignal.DuplicateMessageException
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
-import java.io.File
-import java.util.UUID
 
 class DecryptMessage : Injector() {
 
@@ -320,9 +321,17 @@ class DecryptMessage : Injector() {
                             plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
                     }
                 }
-                getMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, false)
+                val mentions = parseMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, false)
                 messageDao.insert(message)
-                sendNotificationJob(message, data.source)
+                if (!mentions.isNullOrEmpty()) {
+                    val userMap = ArrayMap<String, String>()
+                    mentions.forEach { mention ->
+                        userMap[mention.identityNumber] = mention.fullName
+                    }
+                    sendNotificationJob(message, data.source, userMap)
+                } else {
+                    sendNotificationJob(message, data.source)
+                }
             }
             data.category.endsWith("_POST") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
@@ -707,7 +716,7 @@ class DecryptMessage : Injector() {
         }
     }
 
-    private fun sendNotificationJob(message: Message, source: String) {
+    private fun sendNotificationJob(message: Message, source: String, userMap: Map<String, String>? = null) {
         if (source == LIST_PENDING_MESSAGES) {
             return
         }
@@ -717,6 +726,6 @@ class DecryptMessage : Injector() {
         if (message.userId == Session.getAccountId()) {
             return
         }
-        jobManager.addJobInBackground(NotificationJob(message))
+        jobManager.addJobInBackground(NotificationJob(message, userMap))
     }
 }
