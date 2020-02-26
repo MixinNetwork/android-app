@@ -141,12 +141,10 @@ fun Context.dpToPx(dp: Float): Int {
     return if (dp == 0f) {
         0
     } else {
-        Math.ceil((this.resources.displayMetrics.density * dp).toDouble()).toInt()
+        val scale = resources.displayMetrics.density
+        (dp * scale + 0.5f).toInt()
     }
 }
-
-fun Context.spToPX(sp: Float): Int =
-    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, this.resources.displayMetrics).toInt()
 
 fun Context.getPixelsInCM(cm: Float, isX: Boolean): Float =
     cm / 2.54f * if (isX) displayMetrics.xdpi else displayMetrics.ydpi
@@ -278,7 +276,7 @@ const val REQUEST_AUDIO = 0x05
 fun Fragment.openImage(output: Uri) {
     val cameraIntents = ArrayList<Intent>()
     val captureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-    val packageManager = this.activity!!.packageManager
+    val packageManager = this.requireActivity().packageManager
     val listCam = packageManager.queryIntentActivities(captureIntent, 0)
     for (res in listCam) {
         val packageName = res.activityInfo.packageName
