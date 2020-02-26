@@ -186,6 +186,9 @@ fun Message.isAudio() =
 fun Message.isImage() =
     category == MessageCategory.PLAIN_IMAGE.name || category == MessageCategory.SIGNAL_IMAGE.name
 
+fun Message.isFtsMessage() =
+    category.endsWith("_TEXT") || category.endsWith("_DATA")
+
 enum class MessageCategory {
     SIGNAL_KEY,
     SIGNAL_TEXT,
