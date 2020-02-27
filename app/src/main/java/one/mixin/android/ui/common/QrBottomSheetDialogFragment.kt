@@ -138,7 +138,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         lifecycleScope.launch(Dispatchers.IO) {
                             if (!isAdded) return@launch
                             val path = contentView.bottom_ll.capture(requireContext()) ?: return@launch
-                            withContext(Dispatchers.Main){
+                            withContext(Dispatchers.Main) {
                                 context?.toast(getString(R.string.save_to, path))
                             }
                         }

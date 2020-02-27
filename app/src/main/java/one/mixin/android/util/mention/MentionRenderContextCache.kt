@@ -11,10 +11,11 @@ class MentionRenderCache private constructor(maxSize: Int) : LruCache<Int, Map<S
     }
 
     private fun getMentionData(content: String): Map<String, String>? {
-        return try {
+        try {
             val result = get(content.hashCode())
-            return if (result != null) result
-            else {
+            return if (result != null) {
+                result
+            } else {
                 val mentionMap = ArrayMap<String, String>()
                 GsonHelper.customGson.fromJson(content, Array<MentionUser>::class.java).asSequence()
                     .forEach { data ->
