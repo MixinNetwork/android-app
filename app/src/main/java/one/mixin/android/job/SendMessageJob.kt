@@ -11,8 +11,8 @@ import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
-import one.mixin.android.util.mention.MentionData
 import one.mixin.android.util.mention.getMentionData
+import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.isCall
@@ -190,7 +190,7 @@ open class SendMessageJob(
 
     private fun getMentionData(messageId: String): List<String>? {
         return mentionMessageDao.getMentionData(messageId)?.run {
-            GsonHelper.customGson.fromJson(this, Array<MentionData>::class.java).map {
+            GsonHelper.customGson.fromJson(this, Array<MentionUser>::class.java).map {
                 it.identityNumber
             }.toSet()
         }?.run {
