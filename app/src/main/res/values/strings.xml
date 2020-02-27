@@ -255,6 +255,7 @@
     <string name="photo">Photo</string>
     <string name="title_participants">%1$d participants</string>
     <string name="save_success">Save success</string>
+    <string name="save_to">Save to %1$s</string>
     <string name="save_failure">Save failure</string>
     <string name="hold_to_record_audio">Hold to record, release to send</string>
     <string name="chat_call_duration">Duration: %1$s</string>

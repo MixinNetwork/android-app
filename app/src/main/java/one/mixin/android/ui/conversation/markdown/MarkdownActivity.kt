@@ -1,17 +1,31 @@
 package one.mixin.android.ui.conversation.markdown
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.tbruyelle.rxpermissions2.RxPermissions
 import io.noties.markwon.recycler.MarkwonAdapter
 import io.noties.markwon.recycler.SimpleEntry
 import io.noties.markwon.recycler.table.TableEntry
+import java.io.FileOutputStream
+import java.io.OutputStreamWriter
 import kotlinx.android.synthetic.main.activity_markdown.*
-import kotlinx.android.synthetic.main.view_web_bottom.view.*
+import kotlinx.android.synthetic.main.view_markdown.view.*
+import kotlinx.android.synthetic.main.view_web_bottom.view.forward
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.extension.createPostTemp
+import one.mixin.android.extension.getPublicDocumentPath
+import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
@@ -70,6 +84,7 @@ class MarkdownActivity : BaseActivity() {
         adapter.notifyDataSetChanged()
     }
 
+    @SuppressLint("AutoDispose")
     private fun showBottomSheet() {
         val builder = BottomSheet.Builder(this)
         val view = View.inflate(
@@ -84,7 +99,42 @@ class MarkdownActivity : BaseActivity() {
             ForwardActivity.show(this, arrayListOf(ForwardMessage(ForwardCategory.POST.name, content = markdown)))
             bottomSheet.dismiss()
         }
+        view.save.setOnClickListener {
+            RxPermissions(this)
+                .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+                .subscribe({ granted ->
+                    if (granted) {
+                        savePost {
+                            bottomSheet.dismiss()
+                        }
+                    } else {
+                        openPermissionSetting()
+                    }
+                }, {
+                })
+        }
         bottomSheet.show()
+    }
+
+    private fun savePost(dismissAction: () -> Unit) {
+        lifecycleScope.launch {
+            val markdown = intent.getStringExtra(CONTENT) ?: return@launch
+            try {
+                withContext(Dispatchers.IO) {
+                    val path = getPublicDocumentPath()
+                    val file = path.createPostTemp()
+                    val outputStreamWriter = OutputStreamWriter(FileOutputStream(file))
+                    outputStreamWriter.write(markdown)
+                    outputStreamWriter.close()
+                    withContext(Dispatchers.Main) {
+                        toast(getString(R.string.save_to, file.absolutePath))
+                    }
+                }
+            } catch (e: Exception) {
+                toast(R.string.save_failure)
+            }
+            dismissAction()
+        }
     }
 
     companion object {
