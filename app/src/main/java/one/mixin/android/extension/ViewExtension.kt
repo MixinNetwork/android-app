@@ -253,19 +253,21 @@ fun View.navigate(
 }
 
 @Throws(IOException::class)
-fun View.capture(context: Context) {
+fun View.capture(context: Context): String? {
     val outFile = context.getPublicPicturePath().createImageTemp(noMedia = false)
     val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
     val c = Canvas(b)
     draw(c)
     b.save(outFile)
-    try {
-        MediaStore.Images.Media.insertImage(context.contentResolver,
-            outFile.absolutePath, outFile.name, null)
+    return try {
+        MediaStore.Images.Media.insertImage(context.contentResolver, outFile.absolutePath,
+            outFile.name, null)
+        context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+        outFile.absolutePath
     } catch (e: FileNotFoundException) {
         e.printStackTrace()
+        null
     }
-    context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
 }
 
 private val springSystem = SpringSystem.create()

@@ -352,7 +352,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                                     Uri.fromFile(outFile)
                                 )
                             )
-                            uiThread { toast(R.string.save_success) }
+                            uiThread { toast(getString(R.string.save_to, outFile.absolutePath)) }
                         }
                     } else {
                         openPermissionSetting()
