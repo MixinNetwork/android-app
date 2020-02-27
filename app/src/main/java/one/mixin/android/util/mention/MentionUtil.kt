@@ -67,9 +67,7 @@ fun getMentionData(
         }
         numbers.add(identityNumber)
     }
-    val mentions = userDao.findUserByIdentityNumbers(numbers).map { user ->
-        MentionData(user.identityNumber, user.fullName)
-    }
+    val mentions = userDao.findUserByIdentityNumbers(numbers)
     if (mentions.isEmpty()) return null
     val mentionData = GsonHelper.customGson.toJson(mentions)
     mentionMessageDao.insert(MessageMention(messageId, conversationId, mentionData, hasRead))

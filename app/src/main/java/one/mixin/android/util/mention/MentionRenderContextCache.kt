@@ -3,6 +3,7 @@ package one.mixin.android.util.mention
 import androidx.collection.ArrayMap
 import androidx.collection.LruCache
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.MentionUser
 
 class MentionRenderCache private constructor(maxSize: Int) : LruCache<Int, Map<String, String>>(maxSize) {
     companion object {
@@ -15,7 +16,7 @@ class MentionRenderCache private constructor(maxSize: Int) : LruCache<Int, Map<S
             return if (result != null) result
             else {
                 val mentionMap = ArrayMap<String, String>()
-                GsonHelper.customGson.fromJson(content, Array<MentionData>::class.java).asSequence()
+                GsonHelper.customGson.fromJson(content, Array<MentionUser>::class.java).asSequence()
                     .forEach { data ->
                         mentionMap[data.identityNumber] = data.fullName
                     }
