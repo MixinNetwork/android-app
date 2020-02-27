@@ -30,7 +30,7 @@ import one.mixin.android.util.ChannelManager
 import one.mixin.android.util.ChannelManager.Companion.CHANNEL_MESSAGE
 import one.mixin.android.util.ChannelManager.Companion.CHANNEL_VERSION
 import one.mixin.android.util.ChannelManager.Companion.getChannelId
-import one.mixin.android.util.markdown.MarkwonUtil.Companion.parseContent
+import one.mixin.android.util.mention.rendMentionContent
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SnapshotType
@@ -39,7 +39,7 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.isRepresentativeMessage
 import org.jetbrains.anko.notificationManager
 
-class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).requireNetwork().groupBy("notification_group")) {
+class NotificationJob(val message: Message, val userMap: Map<String, String>? = null) : BaseJob(Params(PRIORITY_UI_HIGH).requireNetwork().groupBy("notification_group")) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -114,11 +114,11 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                     notificationBuilder.setContentTitle(conversation.getConversationName())
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_text_message, user.fullName))
-                    notificationBuilder.setContentText("${user.fullName} : ${message.content}")
+                    notificationBuilder.setContentText("${user.fullName} : ${rendMentionContent(message.content, userMap)}")
                 } else {
                     notificationBuilder.setContentTitle(user.fullName)
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_text_message))
-                    notificationBuilder.setContentText(message.content)
+                    notificationBuilder.setContentText(rendMentionContent(message.content, userMap))
                 }
             }
             MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name -> {
@@ -217,11 +217,11 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_post_message, user.fullName))
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText("${user.fullName}: ${parseContent(message.content)}")
+                    notificationBuilder.setContentText("${user.fullName}: ${rendMentionContent(message.content, userMap)}")
                 } else {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_post_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText("${user.fullName}: ${parseContent(message.content)}")
+                    notificationBuilder.setContentText("${user.fullName}: ${rendMentionContent(message.content, userMap)}")
                 }
             }
             MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {

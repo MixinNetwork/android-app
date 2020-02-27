@@ -11,7 +11,7 @@ import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
-import one.mixin.android.util.mention.getMentionData
+import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
@@ -64,7 +64,7 @@ open class SendMessageJob(
             } else {
                 if (message.isText()) {
                     message.content?.let { content ->
-                        getMentionData(content, message.id, message.conversationId, userDao, mentionMessageDao)
+                        parseMentionData(content, message.id, message.conversationId, userDao, mentionMessageDao)
                     }
                 }
                 messageDao.insert(message)

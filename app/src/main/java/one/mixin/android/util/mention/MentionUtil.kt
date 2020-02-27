@@ -2,6 +2,7 @@ package one.mixin.android.util.mention
 
 import android.widget.EditText
 import androidx.collection.arraySetOf
+import java.util.Stack
 import java.util.regex.Pattern
 import one.mixin.android.db.MentionMessageDao
 import one.mixin.android.db.UserDao
@@ -9,6 +10,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.util.mention.syntax.node.Node
 import one.mixin.android.util.mention.syntax.parser.Parser
+import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.User
 
@@ -49,14 +51,14 @@ fun mentionReplace(source: String, user: User): String {
     }
 }
 
-fun getMentionData(
+fun parseMentionData(
     text: String,
     messageId: String,
     conversationId: String,
     userDao: UserDao,
     mentionMessageDao: MentionMessageDao,
     send: Boolean = true
-): String? {
+): List<MentionUser>? {
     val matcher = mentionNumberPattern.matcher(text)
     val numbers = arraySetOf<String>()
     var hasRead = true
@@ -71,8 +73,30 @@ fun getMentionData(
     if (mentions.isEmpty()) return null
     val mentionData = GsonHelper.customGson.toJson(mentions)
     mentionMessageDao.insert(MessageMention(messageId, conversationId, mentionData, hasRead))
-    return mentionData
+    return mentions
 }
+
+fun rendMentionContent(
+    text: String?,
+    userMap: Map<String, String>?
+): String? {
+    if (text == null || userMap == null) return text
+    val matcher = mentionNumberPattern.matcher(text)
+    val textStack = Stack<ReplaceData>()
+    while (matcher.find()) {
+        val number = matcher.group().substring(1)
+        val name = userMap[number] ?: continue
+        textStack.push(ReplaceData(matcher.start(), matcher.end(), "@$name"))
+    }
+    var result = text
+    while (!textStack.empty()) {
+        val replaceData = textStack.pop()
+        result = result?.replaceRange(replaceData.start, replaceData.end, replaceData.replace)
+    }
+    return result
+}
+
+class ReplaceData(val start: Int, val end: Int, val replace: String)
 
 private val mentionEndPattern by lazy {
     Pattern.compile("(?:\\s|^)@\\S*\$")

@@ -30,13 +30,14 @@ import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
-import one.mixin.android.util.mention.getMentionData
+import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageHistory
+import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
@@ -257,10 +258,14 @@ class DecryptMessage : Injector() {
                 plainData.ackMessages?.let {
                     val updateMessageList = arrayListOf<String>()
                     for (m in it) {
-                        if (m.status != MessageStatus.READ.name) {
+                        if (m.status != MessageStatus.READ.name && m.status != MessageMentionStatus.MENTION_READ.name) {
                             continue
                         }
-                        updateMessageList.add(m.message_id)
+                        if (m.status == MessageStatus.READ.name) {
+                            updateMessageList.add(m.message_id)
+                        } else if (m.status == MessageMentionStatus.MENTION_READ.name) {
+                            mentionMessageDao.markMentionRead(m.message_id)
+                        }
                     }
                     if (updateMessageList.isNotEmpty()) {
                         messageDao.markMessageRead(updateMessageList)
@@ -318,9 +323,14 @@ class DecryptMessage : Injector() {
                             plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
                     }
                 }
-                getMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, false)
+                val mentions = parseMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, false)
                 messageDao.insert(message)
-                sendNotificationJob(message, data.source)
+                if (!mentions.isNullOrEmpty()) {
+                    val userMap = mentions.map { it.identityNumber to it.fullName }.toMap()
+                    sendNotificationJob(message, data.source, userMap)
+                } else {
+                    sendNotificationJob(message, data.source)
+                }
             }
             data.category.endsWith("_POST") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
@@ -705,7 +715,7 @@ class DecryptMessage : Injector() {
         }
     }
 
-    private fun sendNotificationJob(message: Message, source: String) {
+    private fun sendNotificationJob(message: Message, source: String, userMap: Map<String, String>? = null) {
         if (source == LIST_PENDING_MESSAGES) {
             return
         }
@@ -715,6 +725,6 @@ class DecryptMessage : Injector() {
         if (message.userId == Session.getAccountId()) {
             return
         }
-        jobManager.addJobInBackground(NotificationJob(message))
+        jobManager.addJobInBackground(NotificationJob(message, userMap))
     }
 }
