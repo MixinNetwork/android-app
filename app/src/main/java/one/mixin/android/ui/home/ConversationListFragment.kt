@@ -60,6 +60,7 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.util.Session
+import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
@@ -494,7 +495,7 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.contentType == MessageCategory.SIGNAL_POST.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_POST.name -> {
                     setConversationName(conversationItem)
-                    itemView.msg_tv.setText(R.string.conversation_status_post)
+                    itemView.msg_tv.text = MarkwonUtil.parseContent(conversationItem.content)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_file)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_AUDIO.name ||

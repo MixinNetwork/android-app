@@ -23,9 +23,11 @@ import io.noties.markwon.syntax.Prism4jThemeDarkula
 import io.noties.markwon.syntax.Prism4jThemeDefault
 import io.noties.markwon.syntax.SyntaxHighlightPlugin
 import io.noties.prism4j.Prism4j
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.postOptimize
 import one.mixin.android.ui.url.isMixinUrl
 import org.commonmark.node.FencedCodeBlock
 import org.commonmark.node.Link
@@ -156,6 +158,15 @@ class MarkwonUtil {
                     }
                 })
                 .build()
+        }
+
+        private val markwon by lazy {
+            Markwon.create(MixinApplication.appContext)
+        }
+
+        fun parseContent(content: String?): String {
+            content ?: return ""
+            return markwon.toMarkdown(content.postOptimize()).toString()
         }
     }
 }

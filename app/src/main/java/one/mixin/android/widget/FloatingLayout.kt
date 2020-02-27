@@ -26,7 +26,7 @@ class FloatingLayout @JvmOverloads constructor(
         set(value) {
             field = value
             val rv = (getChildAt(POS_RECYCLER_VIEW) as RecyclerView)
-            rv.isLayoutFrozen = value == Mode.PART
+            rv.suppressLayout(value == Mode.PART)
         }
 
     private var lastY = 0f
@@ -51,6 +51,7 @@ class FloatingLayout @JvmOverloads constructor(
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         val child = getChildAt(POS_RECYCLER_VIEW) as RecyclerView
         val itemCount = child.adapter?.itemCount ?: 0
+        val recyclerViewMaxHeight = itemCount * itemHeight
         when (ev.action) {
             MotionEvent.ACTION_DOWN -> {
                 lastY = ev.y
@@ -71,6 +72,10 @@ class FloatingLayout @JvmOverloads constructor(
                 if (mode == Mode.PART) {
                     child.updateLayoutParams<ViewGroup.LayoutParams> {
                         height = (height - moveY).toInt()
+                        if (height > recyclerViewMaxHeight) {
+                            height = recyclerViewMaxHeight
+                            return super.onInterceptTouchEvent(ev)
+                        }
                         val otherViewHeight = getOtherViewHeight()
                         val maxHeight = this@FloatingLayout.height - otherViewHeight
                         if (height >= maxHeight) {

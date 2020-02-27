@@ -217,12 +217,11 @@ class NotificationJob(val message: Message, val userMap: Map<String, String>? = 
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_post_message, user.fullName))
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText(
-                        context.getString(R.string.alert_key_group_post_message, user.fullName))
+                    notificationBuilder.setContentText("${user.fullName}: ${rendMentionContent(message.content, userMap)}")
                 } else {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_post_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_post_message))
+                    notificationBuilder.setContentText("${user.fullName}: ${rendMentionContent(message.content, userMap)}")
                 }
             }
             MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {

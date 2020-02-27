@@ -202,7 +202,7 @@ class EditFragment : CaptureVisionFragment() {
             File(path).copy(outFile)
         }
         requireContext().sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
-        requireContext().toast(R.string.save_success)
+        requireContext().toast(getString(R.string.save_to, outFile.absolutePath))
     }
 
     private val videoListener = object : MixinPlayer.VideoPlayerListenerWrapper() {

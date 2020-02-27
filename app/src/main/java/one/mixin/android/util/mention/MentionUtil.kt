@@ -10,6 +10,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.util.mention.syntax.node.Node
 import one.mixin.android.util.mention.syntax.parser.Parser
+import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.User
 
@@ -57,7 +58,7 @@ fun parseMentionData(
     userDao: UserDao,
     mentionMessageDao: MentionMessageDao,
     send: Boolean = true
-): List<MentionData>? {
+): List<MentionUser>? {
     val matcher = mentionNumberPattern.matcher(text)
     val numbers = arraySetOf<String>()
     var hasRead = true
@@ -68,9 +69,7 @@ fun parseMentionData(
         }
         numbers.add(identityNumber)
     }
-    val mentions = userDao.findUserByIdentityNumbers(numbers).map { user ->
-        MentionData(user.identityNumber, user.fullName)
-    }
+    val mentions = userDao.findUserByIdentityNumbers(numbers)
     if (mentions.isEmpty()) return null
     val mentionData = GsonHelper.customGson.toJson(mentions)
     mentionMessageDao.insert(MessageMention(messageId, conversationId, mentionData, hasRead))

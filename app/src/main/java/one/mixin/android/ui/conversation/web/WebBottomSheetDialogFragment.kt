@@ -622,7 +622,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                     Uri.fromFile(outFile)
                                 )
                             )
-                            uiThread { if (isAdded) toast(R.string.save_success) }
+                            uiThread { if (isAdded) toast(getString(R.string.save_to, outFile.absolutePath)) }
                         } catch (e: Exception) {
                             uiThread { if (isAdded) toast(R.string.save_failure) }
                         }

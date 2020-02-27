@@ -21,6 +21,7 @@ import kotlinx.android.synthetic.main.view_qr_bottom.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.Constants.MY_QR
@@ -136,10 +137,11 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     if (granted) {
                         lifecycleScope.launch(Dispatchers.IO) {
                             if (!isAdded) return@launch
-
-                            contentView.bottom_ll.capture(requireContext())
+                            val path = contentView.bottom_ll.capture(requireContext()) ?: return@launch
+                            withContext(Dispatchers.Main) {
+                                context?.toast(getString(R.string.save_to, path))
+                            }
                         }
-                        context?.toast(R.string.save_success)
                     } else {
                         requireContext().openPermissionSetting()
                     }
