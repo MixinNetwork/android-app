@@ -42,7 +42,7 @@ abstract class CaptureVisionFragment : BaseFragment() {
     private val pseudoViewCallback = object : PseudoNotificationView.Callback {
         override fun onClick(content: String) {
             if (!isMixinUrl(content)) {
-                MainActivity.showScan(requireContext(), content)
+                MainActivity.showFromScan(requireActivity(), scanText = content)
             } else if (content.startsWith(Constants.Scheme.TRANSFER, true) ||
                 content.startsWith(Constants.Scheme.HTTPS_TRANSFER, true)
             ) {
@@ -52,9 +52,9 @@ abstract class CaptureVisionFragment : BaseFragment() {
                 } else {
                     segments[0]
                 }
-                MainActivity.showTransfer(requireContext(), userId)
+                MainActivity.showFromScan(requireActivity(), userId = userId)
             } else {
-                MainActivity.showUrl(requireContext(), content)
+                MainActivity.showFromScan(requireActivity(), url = content)
             }
         }
     }
