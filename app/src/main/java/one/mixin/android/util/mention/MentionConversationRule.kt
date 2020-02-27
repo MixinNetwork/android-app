@@ -9,7 +9,7 @@ import one.mixin.android.util.mention.syntax.parser.Parser
 import one.mixin.android.util.mention.syntax.parser.Rule
 
 class MentionConversationRule :
-    Rule<MentionRenderContext, Node<MentionRenderContext>>(Pattern.compile("^@\\d+")) {
+    Rule<MentionRenderContext, Node<MentionRenderContext>>(Pattern.compile("^@[\\d]{4,}")) {
 
     companion object {
         val HIGHLIGHTED = Color.parseColor("#CCEF8C")
