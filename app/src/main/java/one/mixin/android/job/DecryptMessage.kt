@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import android.app.Activity
 import android.app.NotificationManager
-import android.util.ArrayMap
 import android.util.Log
 import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
@@ -327,10 +326,7 @@ class DecryptMessage : Injector() {
                 val mentions = parseMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, false)
                 messageDao.insert(message)
                 if (!mentions.isNullOrEmpty()) {
-                    val userMap = ArrayMap<String, String>()
-                    mentions.forEach { mention ->
-                        userMap[mention.identityNumber] = mention.fullName
-                    }
+                    val userMap = mentions.map { it.identityNumber to it.fullName }.toMap()
                     sendNotificationJob(message, data.source, userMap)
                 } else {
                     sendNotificationJob(message, data.source)
