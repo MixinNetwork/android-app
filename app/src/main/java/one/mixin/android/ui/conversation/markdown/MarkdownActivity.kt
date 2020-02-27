@@ -13,8 +13,6 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import io.noties.markwon.recycler.MarkwonAdapter
 import io.noties.markwon.recycler.SimpleEntry
 import io.noties.markwon.recycler.table.TableEntry
-import java.io.FileOutputStream
-import java.io.OutputStreamWriter
 import kotlinx.android.synthetic.main.activity_markdown.*
 import kotlinx.android.synthetic.main.view_markdown.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.forward
@@ -123,9 +121,9 @@ class MarkdownActivity : BaseActivity() {
                 withContext(Dispatchers.IO) {
                     val path = getPublicDocumentPath()
                     val file = path.createPostTemp()
-                    val outputStreamWriter = OutputStreamWriter(FileOutputStream(file))
-                    outputStreamWriter.write(markdown)
-                    outputStreamWriter.close()
+                    file.outputStream().writer().use { writer ->
+                        writer.write(markdown)
+                    }
                     withContext(Dispatchers.Main) {
                         toast(getString(R.string.save_to, file.absolutePath))
                     }
