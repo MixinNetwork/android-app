@@ -217,11 +217,11 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_post_message, user.fullName))
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText("${user.fullName} : ${parseContent(message.content)}")
+                    notificationBuilder.setContentText("${user.fullName}: ${parseContent(message.content)}")
                 } else {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_post_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText("${user.fullName} : ${parseContent(message.content)}")
+                    notificationBuilder.setContentText("${user.fullName}: ${parseContent(message.content)}")
                 }
             }
             MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {

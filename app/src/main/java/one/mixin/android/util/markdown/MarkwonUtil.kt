@@ -164,8 +164,8 @@ class MarkwonUtil {
             Markwon.create(MixinApplication.appContext)
         }
 
-        fun parseContent(content: String?): String? {
-            content ?: return null
+        fun parseContent(content: String?): String {
+            content ?: return ""
             return markwon.toMarkdown(content.postOptimize()).toString()
         }
     }
