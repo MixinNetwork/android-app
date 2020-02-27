@@ -179,6 +179,9 @@ fun Context.getPublicPicturePath(): File {
     return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Mixin")
 }
 
+fun Context.getPublicDocumentPath(): File {
+    return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "Mixin")
+}
 fun Context.getImageCachePath(): File {
     val root = getBestAvailableCacheRoot()
     return File("$root${File.separator}Images")
@@ -221,6 +224,15 @@ fun File.createImageTemp(prefix: String? = null, type: String? = null, noMedia: 
         newTempFile("${prefix}_IMAGE_$time", type ?: ".jpg", noMedia)
     } else {
         newTempFile("IMAGE_$time", type ?: ".jpg", noMedia)
+    }
+}
+
+fun File.createPostTemp(prefix: String? = null, type: String? = null): File {
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    return if (prefix != null) {
+        newTempFile("${prefix}_POST_$time", type ?: ".md", false)
+    } else {
+        newTempFile("POST_$time", type ?: ".md", false)
     }
 }
 
