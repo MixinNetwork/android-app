@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home
 
+import android.app.Activity
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
@@ -555,24 +556,6 @@ class MainActivity : BlazeBaseActivity() {
         private const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
 
-        fun showUrl(context: Context, url: String) {
-            Intent(context, MainActivity::class.java).apply {
-                putExtra(URL, url)
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            }.run {
-                context.startActivity(this)
-            }
-        }
-
-        fun showTransfer(context: Context, userId: String) {
-            Intent(context, MainActivity::class.java).apply {
-                putExtra(TRANSFER, userId)
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            }.run {
-                context.startActivity(this)
-            }
-        }
-
         fun showWallet(context: Context) {
             Intent(context, MainActivity::class.java).apply {
                 putExtra(WALLET, true)
@@ -582,11 +565,26 @@ class MainActivity : BlazeBaseActivity() {
             }
         }
 
-        fun showScan(context: Context, text: String) {
-            Intent(context, MainActivity::class.java).apply {
-                putExtra(SCAN, text)
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            }.run { context.startActivity(this) }
+        fun showFromScan(
+            activity: Activity,
+            scanText: String? = null,
+            userId: String? = null,
+            url: String? = null
+        ) {
+            Intent(activity, MainActivity::class.java).apply {
+                scanText?.let {
+                    putExtra(SCAN, it)
+                }
+                userId?.let {
+                    putExtra(TRANSFER, userId)
+                }
+                url?.let {
+                    putExtra(URL, it)
+                }
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+            }.run {
+                activity.startActivity(this)
+            }
         }
 
         fun show(context: Context) {
