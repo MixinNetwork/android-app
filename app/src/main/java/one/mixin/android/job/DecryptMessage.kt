@@ -259,9 +259,12 @@ class DecryptMessage : Injector() {
                 plainData.ackMessages?.let {
                     val updateMessageList = arrayListOf<String>()
                     for (m in it) {
+                        if (m.status != MessageStatus.READ.name && m.status != MessageMentionStatus.MENTION_READ.name) {
+                            continue
+                        }
                         if (m.status == MessageStatus.READ.name) {
                             updateMessageList.add(m.message_id)
-                        } else if (m.status != MessageMentionStatus.MENTION_READ.name) {
+                        } else if (m.status == MessageMentionStatus.MENTION_READ.name) {
                             mentionMessageDao.markMentionRead(m.message_id)
                         }
                     }
