@@ -26,7 +26,7 @@ class FloatingLayout @JvmOverloads constructor(
         set(value) {
             field = value
             val rv = (getChildAt(POS_RECYCLER_VIEW) as RecyclerView)
-            rv.isLayoutFrozen = value == Mode.PART
+            rv.suppressLayout(value == Mode.PART)
         }
 
     private var lastY = 0f
