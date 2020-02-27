@@ -30,6 +30,7 @@ import one.mixin.android.util.ChannelManager
 import one.mixin.android.util.ChannelManager.Companion.CHANNEL_MESSAGE
 import one.mixin.android.util.ChannelManager.Companion.CHANNEL_VERSION
 import one.mixin.android.util.ChannelManager.Companion.getChannelId
+import one.mixin.android.util.markdown.MarkwonUtil.Companion.parseContent
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SnapshotType
@@ -216,12 +217,11 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_post_message, user.fullName))
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText(
-                        context.getString(R.string.alert_key_group_post_message, user.fullName))
+                    notificationBuilder.setContentText("${user.fullName} : ${parseContent(message.content)}")
                 } else {
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_post_message))
                     notificationBuilder.setContentTitle(user.fullName)
-                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_post_message))
+                    notificationBuilder.setContentText("${user.fullName} : ${parseContent(message.content)}")
                 }
             }
             MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {
