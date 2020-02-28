@@ -103,7 +103,7 @@ private val mentionEndPattern by lazy {
 }
 
 val mentionNumberPattern: Pattern by lazy {
-    Pattern.compile("@\\d+")
+    Pattern.compile("@[\\d]{4,}")
 }
 
 val mentionMessageParser = Parser<MentionRenderContext, Node<MentionRenderContext>>()
