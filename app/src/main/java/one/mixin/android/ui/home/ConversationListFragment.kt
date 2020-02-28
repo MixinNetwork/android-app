@@ -35,7 +35,7 @@ import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
 import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
-import one.mixin.android.Constants.INTERVAL_24_HOURS
+import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
@@ -309,7 +309,7 @@ class ConversationListFragment : LinkFragment() {
     override fun onResume() {
         super.onResume()
         val notificationTime = requireContext().defaultSharedPreferences.getLong(PREF_NOTIFICATION_ON, 0)
-        if (System.currentTimeMillis() - notificationTime > INTERVAL_24_HOURS) {
+        if (System.currentTimeMillis() - notificationTime > INTERVAL_48_HOURS) {
             messageAdapter.showHeader = !NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()
         } else {
             messageAdapter.showHeader = false
