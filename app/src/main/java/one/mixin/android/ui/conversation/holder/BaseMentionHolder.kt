@@ -3,5 +3,10 @@ package one.mixin.android.ui.conversation.holder
 import android.view.View
 
 abstract class BaseMentionHolder constructor(containerView: View) : BaseViewHolder(containerView) {
-    abstract fun onViewAttachedToWindow()
+    protected var attachAction: (() -> Unit)? = null
+
+    private fun onViewAttachedToWindow() {
+        attachAction?.invoke()
+        attachAction = null
+    }
 }

@@ -194,10 +194,4 @@ class TextHolder constructor(containerView: View) : BaseMentionHolder(containerV
         }
     }
 
-    private var attachAction: (() -> Unit)? = null
-
-    override fun onViewAttachedToWindow() {
-        attachAction?.invoke()
-        attachAction = null
-    }
 }
