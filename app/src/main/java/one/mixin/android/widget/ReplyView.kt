@@ -14,8 +14,10 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImageCenterCrop
+import one.mixin.android.extension.renderMessage
 import one.mixin.android.extension.round
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import org.jetbrains.anko.dip
@@ -109,7 +111,12 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 reply_avatar.visibility = View.GONE
             }
             messageItem.type.endsWith("_TEXT") -> {
-                reply_view_tv.text = messageItem.content
+                if (messageItem.mentions?.isNotBlank() == true) {
+                    val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(messageItem.mentions) { _ -> }
+                    reply_view_tv.renderMessage(messageItem.content, mentionRenderContext)
+                } else {
+                    reply_view_tv.text = messageItem.content
+                }
                 TextViewCompat.setCompoundDrawablesRelative(reply_view_tv, null, null, null, null)
                 (reply_view_tv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 reply_view_iv.visibility = View.GONE

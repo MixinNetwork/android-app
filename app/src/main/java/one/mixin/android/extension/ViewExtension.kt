@@ -320,7 +320,7 @@ fun TextView.renderConversation(text: CharSequence?, mentionRenderContext: Menti
     )
 }
 
-fun TextView.renderMessage(text: CharSequence?, mentionRenderContext: MentionRenderContext?, keyWord: String?) {
+fun TextView.renderMessage(text: CharSequence?, mentionRenderContext: MentionRenderContext?, keyWord: String? = null) {
     if (text == null || mentionRenderContext == null) {
         this.text = text
         return
