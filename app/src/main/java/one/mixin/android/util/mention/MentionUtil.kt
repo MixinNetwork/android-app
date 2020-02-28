@@ -57,14 +57,14 @@ fun parseMentionData(
     conversationId: String,
     userDao: UserDao,
     mentionMessageDao: MentionMessageDao,
-    send: Boolean = true
+    ignore: Boolean = true
 ): List<MentionUser>? {
     val matcher = mentionNumberPattern.matcher(text)
     val numbers = arraySetOf<String>()
     var hasRead = true
     while (matcher.find()) {
         val identityNumber = matcher.group().replace("@", "").replace(" ", "")
-        if (!send && identityNumber.isNotBlank() && identityNumber == Session.getAccount()?.identity_number) {
+        if (!ignore && identityNumber.isNotBlank() && identityNumber == Session.getAccount()?.identity_number) {
             hasRead = false
         }
         numbers.add(identityNumber)

@@ -323,7 +323,7 @@ class DecryptMessage : Injector() {
                             plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
                     }
                 }
-                val mentions = parseMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, false)
+                val mentions = parseMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, data.userId == Session.getAccountId())
                 messageDao.insert(message)
                 if (!mentions.isNullOrEmpty()) {
                     val userMap = mentions.map { it.identityNumber to it.fullName }.toMap()
@@ -620,6 +620,9 @@ class DecryptMessage : Injector() {
 
     private fun processRedecryptMessage(data: BlazeMessageData, messageId: String, plainText: String) {
         if (data.category == MessageCategory.SIGNAL_TEXT.name) {
+            parseMentionData(plainText, messageId, data.conversationId, userDao, mentionMessageDao, data.userId == Session.getAccountId())
+            messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
+        } else if (data.category == MessageCategory.SIGNAL_POST.name) {
             messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_IMAGE.name ||
             data.category == MessageCategory.SIGNAL_VIDEO.name ||
