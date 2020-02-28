@@ -27,6 +27,7 @@ import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
 import one.mixin.android.ui.conversation.holder.AudioQuoteHolder
+import one.mixin.android.ui.conversation.holder.BaseMentionHolder
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.BillHolder
 import one.mixin.android.ui.conversation.holder.CallHolder
@@ -651,6 +652,9 @@ class ConversationAdapter(
     override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
         getItem(holder.layoutPosition)?.let {
             (holder as BaseViewHolder).listen(it.messageId)
+            if (holder is BaseMentionHolder) {
+                holder.onViewAttachedToWindow()
+            }
         }
     }
 

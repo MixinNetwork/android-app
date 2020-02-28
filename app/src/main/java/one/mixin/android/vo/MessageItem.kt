@@ -89,7 +89,8 @@ data class MessageItem(
     val quoteId: String? = null,
     val quoteContent: String? = null,
     val groupName: String? = null,
-    val mentions: String? = null
+    val mentions: String? = null,
+    val mentionRead: Boolean? = null
 ) : Parcelable {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MessageItem>() {

@@ -75,6 +75,7 @@ import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.event.ForwardEvent
 import one.mixin.android.event.GroupEvent
+import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
@@ -792,6 +793,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         (view.findViewById(R.id.snackbar_text) as TextView)
                             .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
                     }.show()
+            }
+
+        RxBus.listen(MentionReadEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { event ->
+                chatViewModel.viewModelScope.launch {
+                    chatViewModel.markMentionRead(event.messageId, event.conversationId)
+                }
             }
     }
 
