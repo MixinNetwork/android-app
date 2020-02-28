@@ -6,7 +6,6 @@ import com.birbit.android.jobqueue.Params
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import java.util.UUID
-import java.util.concurrent.atomic.AtomicBoolean
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
@@ -53,12 +52,11 @@ import one.mixin.android.websocket.createConsumeSessionSignalKeys
 import one.mixin.android.websocket.createConsumeSignalKeysParam
 import one.mixin.android.websocket.createSignalKeyMessage
 import one.mixin.android.websocket.createSignalKeyMessageParam
-import timber.log.Timber
 
-abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
-
-    protected var isCancel = AtomicBoolean(false)
-
+abstract class MixinJob(
+    params: Params,
+    val mixinJobId: String
+) : BaseJob(params.addTags(mixinJobId)) {
     companion object {
         private const val serialVersionUID = 1L
         val TAG = MixinJob::class.java.simpleName
@@ -68,15 +66,16 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun removeJob() {
-        jobManager.removeJob(jobId)
+        try {
+            jobManager.removeJobByMixinJobId(mixinJobId)
+        } catch (ignored: Exception) {
+        }
     }
 
     override fun shouldRetry(throwable: Throwable): Boolean {
-        return if (isCancel.get()) {
-            Timber.d("cancel")
+        return if (isCancelled) {
             false
         } else {
-            Timber.d("no cancel")
             super.shouldRetry(throwable)
         }
     }
@@ -299,7 +298,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             category = conversation.category, participants = arrayListOf(ParticipantRequest(conversation.ownerId!!, ""))
         )
         val response = conversationApi.create(request).execute().body()
-        if (response != null && response.isSuccess && response.data != null && !isCancel.get()) {
+        if (response != null && response.isSuccess && response.data != null && !isCancelled) {
             conversationDao.updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
 
             val sessionParticipants = response.data!!.participantSessions.let { resp ->

@@ -22,8 +22,9 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.AttachmentMessagePayload
 
-class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE)
-    .addTags(message.id).groupBy("send_media_job").requireNetwork().persist(), message.id) {
+class SendAttachmentMessageJob(
+    val message: Message
+) : MixinJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE).groupBy("send_media_job").requireNetwork().persist(), message.id) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -33,7 +34,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
     private var disposable: Disposable? = null
 
     override fun cancel() {
-        isCancel.lazySet(true)
+        isCancelled = true
         connection?.disconnect()
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
         disposable?.let {
@@ -68,13 +69,13 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
     }
 
     override fun onRun() {
-        if (isCancel.get()) {
+        if (isCancelled) {
             removeJob()
             return
         }
         jobManager.saveJob(this)
         disposable = conversationApi.requestAttachment().map {
-            if (it.isSuccess && !isCancel.get()) {
+            if (it.isSuccess && !isCancelled) {
                 val result = it.data!!
                 processAttachment(result)
             } else {
@@ -137,7 +138,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
             Crashlytics.logException(e)
             return false
         }
-        if (isCancel.get()) {
+        if (isCancelled) {
             removeJob()
             return true
         }

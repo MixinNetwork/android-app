@@ -217,7 +217,7 @@ class DecryptMessage : Injector() {
                     messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.id, gson.toJson(quoteMsg))
                 }
 
-                jobManager.cancelJobById(msg.id)
+                jobManager.cancelJobByMixinJobId(msg.id)
                 notificationManager.cancel(msg.userId.hashCode())
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)

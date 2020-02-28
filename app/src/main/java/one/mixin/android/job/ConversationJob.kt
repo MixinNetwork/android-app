@@ -28,7 +28,7 @@ class ConversationJob(
     private val participantRequests: List<ParticipantRequest>? = null,
     private val type: Int,
     private val recipientId: String? = null
-) : MixinJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).groupBy(GROUP), UUID.randomUUID().toString()) {
+) : MixinJob(Params(PRIORITY_UI_HIGH).groupBy(GROUP), UUID.randomUUID().toString()) {
 
     companion object {
         const val GROUP = "ConversationJob"

@@ -28,11 +28,10 @@ class ConvertVideoJob(
     private val messageId: String,
     createdAt: String? = null,
     private val replyMessage: MessageItem? = null
-) : MixinJob(Params(PRIORITY_BACKGROUND).addTags(TAG).groupBy(GROUP_ID), messageId) {
+) : MixinJob(Params(PRIORITY_BACKGROUND).groupBy(GROUP_ID), messageId) {
 
     companion object {
         private const val serialVersionUID = 1L
-        const val TAG = "ConvertVideoJob"
         const val GROUP_ID = "convert_video_group"
     }
 
@@ -61,6 +60,10 @@ class ConvertVideoJob(
     }
 
     override fun onRun() {
+        if (isCancelled) {
+            removeJob()
+            return
+        }
         if (video == null) {
             return
         }
@@ -68,7 +71,7 @@ class ConvertVideoJob(
         val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp("mp4")
         val result = MediaController.getInstance().convertVideo(video.originalPath, video.bitrate, video.resultWidth, video.resultHeight,
             video.originalWidth, video.originalHeight, videoFile, video.needChange)
-        if (isCancel.get()) {
+        if (isCancelled) {
             removeJob()
             return
         }
@@ -87,7 +90,8 @@ class ConvertVideoJob(
     }
 
     override fun cancel() {
-        isCancel.lazySet(true)
+        isCancelled = true
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, messageId)
+        removeJob()
     }
 }

@@ -33,7 +33,7 @@ open class SendMessageJob(
     private val recallMessageId: String? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(
-    Params(messagePriority).addTags(message.id).groupBy("send_message_group")
+    Params(messagePriority).groupBy("send_message_group")
         .requireWebSocketConnected().persist(), message.id
 ) {
 
@@ -42,7 +42,7 @@ open class SendMessageJob(
     }
 
     override fun cancel() {
-        isCancel.lazySet(true)
+        isCancelled = true
         removeJob()
     }
 
@@ -95,7 +95,7 @@ open class SendMessageJob(
                     GsonHelper.customGson.toJson(quoteMsg)
                 )
             }
-            jobManager.cancelJobById(msg.id)
+            jobManager.cancelJobByMixinJobId(msg.id)
         }
     }
 
@@ -113,6 +113,10 @@ open class SendMessageJob(
     }
 
     override fun onRun() {
+        if (isCancelled) {
+            removeJob()
+            return
+        }
         jobManager.saveJob(this)
         if (message.isText()) {
             val botNumber = message.content?.getBotNumber()
