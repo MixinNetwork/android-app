@@ -5,7 +5,7 @@ import android.view.View
 abstract class BaseMentionHolder constructor(containerView: View) : BaseViewHolder(containerView) {
     protected var attachAction: (() -> Unit)? = null
 
-    private fun onViewAttachedToWindow() {
+    fun onViewAttachedToWindow() {
         attachAction?.invoke()
         attachAction = null
     }
