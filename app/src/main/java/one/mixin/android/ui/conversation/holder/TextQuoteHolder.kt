@@ -224,5 +224,4 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
             null
         }
     }
-
 }

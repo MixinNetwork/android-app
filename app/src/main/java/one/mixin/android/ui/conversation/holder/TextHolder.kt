@@ -193,5 +193,4 @@ class TextHolder constructor(containerView: View) : BaseMentionHolder(containerV
             null
         }
     }
-
 }
