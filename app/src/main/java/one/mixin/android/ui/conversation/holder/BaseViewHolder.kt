@@ -105,7 +105,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
         disposable = null
     }
 
-    private fun blink() {
+    protected fun blink() {
         if (!blinkAnim.isRunning) {
             blinkAnim.start()
         }

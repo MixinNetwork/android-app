@@ -24,7 +24,7 @@ class MessageProvider {
                         a.icon_url AS assetIcon, st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.sticker_id AS stickerId,
                         st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
                         h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
-                        su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, 
+                        su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead, 
                         c.name AS groupName
                         FROM messages m
                         INNER JOIN users u ON m.user_id = u.user_id
@@ -46,7 +46,7 @@ class MessageProvider {
                     val countSql = "SELECT COUNT(*) FROM messages WHERE conversation_id = ?"
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 1)
                     countStatement.bindString(argIndex, conversationId)
-                    return object : MixinLimitOffsetDataSource<MessageItem>(database, statement, countStatement, false, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations") {
+                    return object : MixinLimitOffsetDataSource<MessageItem>(database, statement, countStatement, false, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
                         override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
                             cursor ?: return ArrayList()
                             val cursorIndexOfMessageId = cursor.getColumnIndexOrThrow("messageId")
@@ -99,6 +99,7 @@ class MessageProvider {
                             val cursorIndexOfSharedUserAppId = cursor.getColumnIndexOrThrow("sharedUserAppId")
                             val cursorIndexOfGroupName = cursor.getColumnIndexOrThrow("groupName")
                             val cursorIndexOfMentions = cursor.getColumnIndexOrThrow("mentions")
+                            val cursorIndexOfMentionRead = cursor.getColumnIndexOrThrow("mentionRead")
                             val res = ArrayList<MessageItem>(cursor.count)
                             while (cursor.moveToNext()) {
                                 val item: MessageItem
@@ -178,9 +179,19 @@ class MessageProvider {
                                 val tmpSharedUserAppId: String? = cursor.getString(cursorIndexOfSharedUserAppId)
                                 val tmpGroupName: String? = cursor.getString(cursorIndexOfGroupName)
                                 val tmpMentions: String? = cursor.getString(cursorIndexOfMentions)
+                                val tmp_1 = if (cursor.isNull(cursorIndexOfMentionRead)) {
+                                null
+                                } else {
+                                   cursor.getInt(cursorIndexOfMentionRead)
+                                }
+                                val tmpMentionRead = if (tmp_1 == null) null else tmp_1 != 0
                                 item = MessageItem(tmpMessageId, tmpConversationId, tmpUserId, tmpUserFullName, tmpUserIdentityNumber, tmpType, tmpContent,
                                     tmpCreatedAt, tmpStatus, tmpMediaStatus, null, tmpMediaName, tmpMediaMimeType, tmpMediaSize, tmpThumbUrl, tmpMediaWidth,
-                                    tmpMediaHeight, tmpThumbImage, tmpMediaUrl, tmpMediaDuration, tmpParticipantFullName, tmpParticipantUserId, tmpActionName, tmpSnapshotId, tmpSnapshotType, tmpSnapshotAmount, tmpAssetId, tmpAssetType, tmpAssetSymbol, tmpAssetIcon, tmpAssetUrl, tmpAssetHeight, tmpAssetWidth, null, tmpStickerId, tmpAssetName, tmpAppId, tmpSiteName, tmpSiteTitle, tmpSiteDescription, tmpSiteImage, tmpSharedUserId, tmpSharedUserFullName, tmpSharedUserIdentityNumber, tmpSharedUserAvatarUrl, tmpSharedUserIsVerified, tmpSharedUserAppId, tmpMediaWaveform, tmpQuoteId, tmpQuoteContent, tmpGroupName, tmpMentions)
+                                    tmpMediaHeight, tmpThumbImage, tmpMediaUrl, tmpMediaDuration, tmpParticipantFullName, tmpParticipantUserId, tmpActionName, tmpSnapshotId,
+                                    tmpSnapshotType, tmpSnapshotAmount, tmpAssetId, tmpAssetType, tmpAssetSymbol, tmpAssetIcon, tmpAssetUrl, tmpAssetHeight, tmpAssetWidth,
+                                    null, tmpStickerId, tmpAssetName, tmpAppId, tmpSiteName, tmpSiteTitle, tmpSiteDescription, tmpSiteImage, tmpSharedUserId,
+                                    tmpSharedUserFullName, tmpSharedUserIdentityNumber, tmpSharedUserAvatarUrl, tmpSharedUserIsVerified, tmpSharedUserAppId,
+                                    tmpMediaWaveform, tmpQuoteId, tmpQuoteContent, tmpGroupName, tmpMentions, tmpMentionRead)
                                 res.add(item)
                             }
                             return res

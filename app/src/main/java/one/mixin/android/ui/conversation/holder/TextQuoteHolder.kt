@@ -11,6 +11,8 @@ import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_text_quote.view.*
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.notNullWithElse
@@ -25,7 +27,7 @@ import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
-class TextQuoteHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(containerView) {
     private val dp16 = itemView.context.dpToPx(16f)
     private val dp6 = itemView.context.dpToPx(6f)
 
@@ -213,5 +215,13 @@ class TextQuoteHolder constructor(containerView: View) : BaseViewHolder(containe
             }
         }
         chatLayout(isMe, isLast)
+        attachAction = if (messageItem.mentionRead == false) {
+            {
+                blink()
+                RxBus.publish(MentionReadEvent(messageItem.conversationId, messageItem.messageId))
+            }
+        } else {
+            null
+        }
     }
 }

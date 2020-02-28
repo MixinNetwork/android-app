@@ -11,6 +11,8 @@ import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
 import kotlinx.android.synthetic.main.item_chat_text.view.*
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.renderMessage
@@ -22,7 +24,7 @@ import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
-class TextHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class TextHolder constructor(containerView: View) : BaseMentionHolder(containerView) {
 
     init {
         itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
@@ -181,5 +183,14 @@ class TextHolder constructor(containerView: View) : BaseViewHolder(containerView
             itemView.chat_secret.isVisible = secretIcon != null
         }
         chatLayout(isMe, isLast)
+
+        attachAction = if (messageItem.mentionRead == false) {
+            {
+                blink()
+                RxBus.publish(MentionReadEvent(messageItem.conversationId, messageItem.messageId))
+            }
+        } else {
+            null
+        }
     }
 }
