@@ -62,10 +62,11 @@ interface MessageDao : BaseDao<Message> {
         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
         m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
-        FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE m.conversation_id = :conversationId
+        FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+        WHERE m.conversation_id = :conversationId
         AND (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO'
         OR m.category = 'SIGNAL_LIVE' OR m.category = 'PLAIN_LIVE') 
-        ORDER BY m.created_at ASC
+        ORDER BY m.created_at ASC, m.rowid ASC
         """
     )
     fun getMediaMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
@@ -87,10 +88,10 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """SELECT count(*) FROM messages WHERE conversation_id = :conversationId
-        AND rowid < (SELECT rowid FROM messages WHERE id = :messageId)
+        AND created_at < (SELECT created_at FROM messages WHERE id = :messageId)
         AND (category = 'SIGNAL_IMAGE' OR category = 'PLAIN_IMAGE' OR category = 'SIGNAL_VIDEO' OR category = 'PLAIN_VIDEO'
         OR category = 'SIGNAL_LIVE' OR category = 'PLAIN_LIVE')
-        ORDER BY created_at ASC
+        ORDER BY created_at ASC, rowid ASC
         """
     )
     suspend fun indexMediaMessages(conversationId: String, messageId: String): Int
@@ -106,16 +107,16 @@ interface MessageDao : BaseDao<Message> {
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
         AND (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO')
-        ORDER BY m.created_at DESC
+        ORDER BY m.created_at DESC, m.rowid ASC
         """
     )
     fun getMediaMessagesExcludeLive(conversationId: String): DataSource.Factory<Int, MessageItem>
 
     @Query(
         """SELECT count(*) FROM messages WHERE conversation_id = :conversationId 
-        AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)
+        AND created_at > (SELECT created_at FROM messages WHERE id = :messageId)
         AND (category = 'SIGNAL_IMAGE' OR category = 'PLAIN_IMAGE' OR category = 'SIGNAL_VIDEO' OR category = 'PLAIN_VIDEO')
-        ORDER BY created_at DESC
+        ORDER BY created_at DESC, rowid ASC
         """
     )
     suspend fun indexMediaMessagesExcludeLive(conversationId: String, messageId: String): Int
