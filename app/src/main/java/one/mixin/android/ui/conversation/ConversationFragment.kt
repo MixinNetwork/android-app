@@ -694,7 +694,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun createImageUri() = Uri.fromFile(context?.getImagePath()?.createImageTemp())
 
     private val conversationId: String by lazy<String> {
-        var cid = arguments!!.getString(CONVERSATION_ID)
+        var cid = requireArguments().getString(CONVERSATION_ID)
         if (cid.isNullOrBlank()) {
             isFirstMessage = true
             cid = generateConversationId(sender.userId, recipient!!.userId)
@@ -713,11 +713,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private val messageId: String? by lazy {
-        arguments!!.getString(MESSAGE_ID, null)
+        requireArguments().getString(MESSAGE_ID, null)
     }
 
     private val keyword: String? by lazy {
-        arguments!!.getString(KEY_WORD, null)
+        requireArguments().getString(KEY_WORD, null)
     }
 
     private val sender: User by lazy { Session.getAccount()!!.toUser() }
@@ -754,7 +754,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         registerHeadsetPlugReceiver()
-        recipient = arguments!!.getParcelable<User?>(RECIPIENT)
+        recipient = requireArguments().getParcelable<User?>(RECIPIENT)
     }
 
     override fun onCreateView(
@@ -765,7 +765,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        val messages = arguments!!.getParcelableArrayList<ForwardMessage>(MESSAGES)
+        val messages = requireArguments().getParcelableArrayList<ForwardMessage>(MESSAGES)
         if (messages != null) {
             sendForwardMessages(messages)
         } else {
@@ -1054,8 +1054,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chat_rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                firstPosition =
-                    (chat_rv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                firstPosition = (chat_rv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
                 if (firstPosition > 0) {
                     if (isBottom) {
                         isBottom = false
@@ -1353,12 +1352,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             } else {
                 chatViewModel.indexUnread(conversationId)
             }
-            val msgId = messageId
-                ?: if (unreadCount <= 0) {
-                    null
-                } else {
-                    chatViewModel.findFirstUnreadMessageId(conversationId, unreadCount - 1)
-                }
+            val msgId = messageId ?: if (unreadCount <= 0) {
+                null
+            } else {
+                chatViewModel.findFirstUnreadMessageId(conversationId, unreadCount - 1)
+            }
             liveDataMessage(unreadCount, msgId)
         }
 
@@ -1366,7 +1364,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             flag_layout.mentionCount = mentionMessages.size
             flag_layout.mention_flag_layout.setOnClickListener {
                 lifecycleScope.launch {
-                    if (!isAdded) return@launch
                     val messageId = mentionMessages.first().messageId
                     val index = chatViewModel.findMessageIndex(conversationId, messageId)
                     chatViewModel.markMentionRead(messageId, conversationId)
@@ -1395,6 +1392,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
         })
+
         if (isBot) {
             chatViewModel.updateRecentUsedBots(defaultSharedPreferences, recipient!!.userId)
             chat_control.showBot()
