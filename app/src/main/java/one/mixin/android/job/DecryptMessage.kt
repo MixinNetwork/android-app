@@ -619,7 +619,10 @@ class DecryptMessage : Injector() {
     }
 
     private fun processRedecryptMessage(data: BlazeMessageData, messageId: String, plainText: String) {
-        if (data.category == MessageCategory.SIGNAL_TEXT.name) {
+        if (data.category == MessageCategory.SIGNAL_TEXT.name || data.category == MessageCategory.SIGNAL_POST.name) {
+            if (data.category == MessageCategory.SIGNAL_TEXT.name) {
+                parseMentionData(plainText, data.messageId, data.conversationId, userDao, mentionMessageDao, data.userId == Session.getAccountId())
+            }
             messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_IMAGE.name ||
             data.category == MessageCategory.SIGNAL_VIDEO.name ||
