@@ -198,5 +198,6 @@ class TextHolder constructor(containerView: View) : BaseMentionHolder(containerV
 
     override fun onViewAttachedToWindow() {
         attachAction?.invoke()
+        attachAction = null
     }
 }

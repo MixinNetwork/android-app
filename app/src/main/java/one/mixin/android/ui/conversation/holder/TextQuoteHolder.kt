@@ -229,5 +229,6 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
 
     override fun onViewAttachedToWindow() {
         attachAction?.invoke()
+        attachAction = null
     }
 }

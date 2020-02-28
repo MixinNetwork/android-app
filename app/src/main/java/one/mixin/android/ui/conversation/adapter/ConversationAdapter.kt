@@ -783,7 +783,8 @@ class ConversationAdapter(
                     oldItem.quoteContent == newItem.quoteContent &&
                     oldItem.assetSymbol == newItem.assetSymbol &&
                     oldItem.assetUrl == newItem.assetUrl &&
-                    oldItem.assetIcon == newItem.assetIcon
+                    oldItem.assetIcon == newItem.assetIcon &&
+                    oldItem.mentionRead == newItem.mentionRead
             }
         }
     }
