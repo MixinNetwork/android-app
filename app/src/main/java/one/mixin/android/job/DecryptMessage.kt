@@ -323,7 +323,7 @@ class DecryptMessage : Injector() {
                             plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
                     }
                 }
-                val mentions = parseMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, false)
+                val mentions = parseMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, data.userId == Session.getAccountId())
                 messageDao.insert(message)
                 if (!mentions.isNullOrEmpty()) {
                     val userMap = mentions.map { it.identityNumber to it.fullName }.toMap()
