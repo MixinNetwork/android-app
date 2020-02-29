@@ -1,8 +1,10 @@
 package one.mixin.android.util.mention
 
+import android.graphics.Color
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import android.text.TextPaint
 import android.view.View
 import one.mixin.android.util.mention.syntax.node.Node
 import one.mixin.android.widget.linktext.TouchableSpan
@@ -20,6 +22,14 @@ class MentionNode(val content: String, val normalTextColor: Int, val pressedText
             val clickableSpan = object : TouchableSpan(normalTextColor, pressedTextColor, false) {
                 override fun onClick(widget: View) {
                     renderContext.action(number)
+                }
+
+                override fun updateDrawState(textPaint: TextPaint) {
+                    super.updateDrawState(textPaint)
+                    val textColor = normalTextColor
+                    textPaint.color = textColor
+                    textPaint.bgColor = if (isPressed) pressedTextColor else Color.TRANSPARENT
+                    textPaint.isUnderlineText = isUnderLineEnabled
                 }
             }
 

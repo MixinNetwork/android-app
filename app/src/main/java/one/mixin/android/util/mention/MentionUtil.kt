@@ -1,5 +1,6 @@
 package one.mixin.android.util.mention
 
+import android.graphics.Color
 import android.widget.EditText
 import androidx.collection.arraySetOf
 import java.util.Stack
@@ -46,7 +47,7 @@ fun mentionReplace(source: String, user: User): String {
             "@${user.identityNumber} "
         }
         else -> {
-            "${source.substring(0, index)} @${user.identityNumber} "
+            "${source.substring(0, index)}@${user.identityNumber} "
         }
     }
 }
@@ -113,3 +114,6 @@ val mentionMessageParser = Parser<MentionRenderContext, Node<MentionRenderContex
 val mentionConversationParser = Parser<MentionRenderContext, Node<MentionRenderContext>>()
     .addRule(MentionConversationRule())
     .addRule(NormalRule())
+
+val MENTION_PRESS_COLOR by lazy { Color.parseColor("#665FA7E4") }
+val MENTION_COLOR by lazy { Color.parseColor("#5FA7E4") }

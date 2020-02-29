@@ -1309,11 +1309,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
+        var oldCount: Int = -1
         chatViewModel.getMessages(conversationId, unreadCount)
             .observe(viewLifecycleOwner, Observer { data ->
                 data?.let { list ->
-                    if (!isFirstLoad && !isBottom && list.size > chatAdapter.getRealItemCount()) {
-                        unreadTipCount += (list.size - chatAdapter.getRealItemCount())
+                    if (oldCount == -1) {
+                        oldCount = list.size
+                    } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
+                        unreadTipCount += (list.size - oldCount)
+                        oldCount = list.size
                     }
                     chatViewModel.viewModelScope.launch {
                         chatAdapter.hasBottomView = ((isBot && list.isEmpty()) ||
