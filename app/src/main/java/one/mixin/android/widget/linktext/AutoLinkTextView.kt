@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.TextPaint
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.View
@@ -57,6 +58,14 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
                     autoLinkOnClickListener?.let {
                         it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText)
                     }
+                }
+
+                override fun updateDrawState(textPaint: TextPaint) {
+                    super.updateDrawState(textPaint)
+                    val textColor = if (isPressed) pressedTextColor else normalTextColor
+                    textPaint.color = textColor
+                    textPaint.bgColor = Color.TRANSPARENT
+                    textPaint.isUnderlineText = isUnderLineEnabled
                 }
             }
 

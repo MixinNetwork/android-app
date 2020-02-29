@@ -115,5 +115,5 @@ val mentionConversationParser = Parser<MentionRenderContext, Node<MentionRenderC
     .addRule(MentionConversationRule())
     .addRule(NormalRule())
 
-val MENTION_PRESS_COLOR by lazy { Color.parseColor("#0D94FC") }
+val MENTION_PRESS_COLOR by lazy { Color.parseColor("#665FA7E4") }
 val MENTION_COLOR by lazy { Color.parseColor("#5FA7E4") }
