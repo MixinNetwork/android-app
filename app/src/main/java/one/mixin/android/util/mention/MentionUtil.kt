@@ -1,5 +1,6 @@
 package one.mixin.android.util.mention
 
+import android.graphics.Color
 import android.widget.EditText
 import androidx.collection.arraySetOf
 import java.util.Stack
@@ -113,3 +114,6 @@ val mentionMessageParser = Parser<MentionRenderContext, Node<MentionRenderContex
 val mentionConversationParser = Parser<MentionRenderContext, Node<MentionRenderContext>>()
     .addRule(MentionConversationRule())
     .addRule(NormalRule())
+
+val MENTION_PRESS_COLOR by lazy { Color.parseColor("#0D94FC") }
+val MENTION_COLOR by lazy { Color.parseColor("#5FA7E4") }
