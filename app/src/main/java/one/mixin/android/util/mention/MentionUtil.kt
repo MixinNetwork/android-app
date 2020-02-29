@@ -47,7 +47,7 @@ fun mentionReplace(source: String, user: User): String {
             "@${user.identityNumber} "
         }
         else -> {
-            "${source.substring(0, index)} @${user.identityNumber} "
+            "${source.substring(0, index)}@${user.identityNumber} "
         }
     }
 }
