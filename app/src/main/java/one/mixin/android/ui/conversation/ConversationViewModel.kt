@@ -45,7 +45,6 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isUUID
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
@@ -627,9 +626,11 @@ internal constructor(
     suspend fun getAppAndCheckUser(userId: String) = userRepository.getAppAndCheckUser(userId)
 
     fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
-        jobManager.findJobByMixinJobId(id).notNullWithElse({ it.cancel() }, {
-            conversationRepository.updateMediaStatus(MediaStatus.CANCELED.name, id)
-        })
+        jobManager.cancelJobByMixinJobId(id) {
+            viewModelScope.launch {
+                conversationRepository.updateMediaStatus(MediaStatus.CANCELED.name, id)
+            }
+        }
     }
 
     fun retryUpload(id: String, onError: () -> Unit) {
@@ -715,11 +716,7 @@ internal constructor(
         viewModelScope.launch(SINGLE_DB_THREAD) {
             list.forEach { item ->
                 conversationRepository.deleteMessage(
-                    item.messageId, if (item.mediaUrl != null) {
-                        item.mediaUrl
-                    } else {
-                        null
-                    }
+                    item.messageId, item.mediaUrl
                 )
                 jobManager.cancelJobByMixinJobId(item.messageId)
                 notificationManager.cancel(item.userId.hashCode())
