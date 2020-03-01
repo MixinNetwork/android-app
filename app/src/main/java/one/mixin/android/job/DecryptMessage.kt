@@ -205,6 +205,7 @@ class DecryptMessage : Injector() {
                 RxBus.publish(RecallEvent(msg.id))
                 messageDao.recallFailedMessage(msg.id)
                 messageDao.recallMessage(msg.id)
+                mentionMessageDao.deleteMessage(msg.id)
                 messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     File(msg.mediaUrl.getFilePath()).let { file ->
