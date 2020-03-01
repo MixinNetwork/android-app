@@ -63,8 +63,9 @@ fun parseMentionData(
     userDao: UserDao,
     mentionMessageDao: MentionMessageDao,
     ignore: Boolean = true,
-    queueMe: Boolean = false
-): List<MentionUser>? {
+    queueMe: Boolean = false,
+    callback: ((List<MentionUser>?, Boolean) -> Unit)? = null
+) {
     val matcher = mentionNumberPattern.matcher(text)
     val numbers = arraySetOf<String>()
     var hasRead = true
@@ -80,13 +81,17 @@ fun parseMentionData(
         hasRead = false
         if (mentions.isEmpty()) {
             mentionMessageDao.insert(MessageMention(messageId, conversationId, "", hasRead))
-            return null
+            callback?.invoke(null, hasRead)
+            return
         }
     }
-    if (mentions.isEmpty()) return null
+    if (mentions.isEmpty()) {
+        callback?.invoke(null, hasRead)
+        return
+    }
     val mentionData = GsonHelper.customGson.toJson(mentions)
     mentionMessageDao.insert(MessageMention(messageId, conversationId, mentionData, hasRead))
-    return mentions
+    callback?.invoke(null, hasRead)
 }
 
 fun rendMentionContent(

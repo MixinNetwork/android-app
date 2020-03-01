@@ -328,13 +328,14 @@ class DecryptMessage : Injector() {
                             plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
                     }
                 }
-                val mentions = parseMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, data.userId == Session.getAccountId(), quoteMe)
-                messageDao.insert(message)
-                if (!mentions.isNullOrEmpty()) {
-                    val userMap = mentions.map { it.identityNumber to it.fullName }.toMap()
-                    sendNotificationJob(message, data.source, userMap)
-                } else {
-                    sendNotificationJob(message, data.source)
+                parseMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, data.userId == Session.getAccountId(), quoteMe) { mentions, force ->
+                    messageDao.insert(message)
+                    if (!mentions.isNullOrEmpty()) {
+                        val userMap = mentions.map { it.identityNumber to it.fullName }.toMap()
+                        sendNotificationJob(message, data.source, userMap, force)
+                    } else {
+                        sendNotificationJob(message, data.source, force = force)
+                    }
                 }
             }
             data.category.endsWith("_POST") -> {
@@ -723,7 +724,7 @@ class DecryptMessage : Injector() {
         }
     }
 
-    private fun sendNotificationJob(message: Message, source: String, userMap: Map<String, String>? = null) {
+    private fun sendNotificationJob(message: Message, source: String, userMap: Map<String, String>? = null, force: Boolean = false) {
         if (source == LIST_PENDING_MESSAGES) {
             return
         }
@@ -733,6 +734,6 @@ class DecryptMessage : Injector() {
         if (message.userId == Session.getAccountId()) {
             return
         }
-        jobManager.addJobInBackground(NotificationJob(message, userMap))
+        jobManager.addJobInBackground(NotificationJob(message, userMap, force))
     }
 }
