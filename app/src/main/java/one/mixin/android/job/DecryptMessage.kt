@@ -37,6 +37,7 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageHistory
+import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
@@ -319,6 +320,9 @@ class DecryptMessage : Injector() {
                             this.content?.findLastUrl()?.let { jobManager.addJobInBackground(ParseHyperlinkJob(it, data.messageId)) }
                         }
                     } else {
+                        if (quoteMessageItem.userId == Session.getAccountId() && data.userId != Session.getAccountId()) {
+                            mentionMessageDao.insert(MessageMention(data.messageId, data.conversationId, "", false))
+                        }
                         createReplyTextMessage(data.messageId, data.conversationId, data.userId, data.category,
                             plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
                     }
