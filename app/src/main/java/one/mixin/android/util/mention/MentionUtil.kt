@@ -1,6 +1,9 @@
 package one.mixin.android.util.mention
 
 import android.graphics.Color
+import android.text.Editable
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.widget.EditText
 import androidx.collection.arraySetOf
 import java.util.Stack
@@ -38,16 +41,17 @@ fun deleteMentionEnd(editText: EditText) {
     }
 }
 
-fun mentionReplace(source: String, user: User): String {
+fun mentionReplace(source: Editable, user: User): CharSequence {
+
     return when (val index = source.lastIndexOf("@")) {
         -1 -> {
             source
         }
-        0 -> {
-            "@${user.identityNumber} "
-        }
         else -> {
-            "${source.substring(0, index)}@${user.identityNumber} "
+            source.apply {
+                source.replace(index, length, "@${user.identityNumber} ")
+                setSpan(ForegroundColorSpan(MENTION_COLOR), index, length - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
         }
     }
 }
@@ -58,8 +62,10 @@ fun parseMentionData(
     conversationId: String,
     userDao: UserDao,
     mentionMessageDao: MentionMessageDao,
-    ignore: Boolean = true
-): List<MentionUser>? {
+    ignore: Boolean = true,
+    quoteMe: Boolean = false,
+    callback: ((List<MentionUser>?, Boolean) -> Unit)? = null
+) {
     val matcher = mentionNumberPattern.matcher(text)
     val numbers = arraySetOf<String>()
     var hasRead = true
@@ -71,10 +77,21 @@ fun parseMentionData(
         numbers.add(identityNumber)
     }
     val mentions = userDao.findUserByIdentityNumbers(numbers)
-    if (mentions.isEmpty()) return null
+    if (quoteMe && hasRead) {
+        hasRead = false
+        if (mentions.isEmpty()) {
+            mentionMessageDao.insert(MessageMention(messageId, conversationId, "", hasRead))
+            callback?.invoke(null, hasRead)
+            return
+        }
+    }
+    if (mentions.isEmpty()) {
+        callback?.invoke(null, hasRead)
+        return
+    }
     val mentionData = GsonHelper.customGson.toJson(mentions)
     mentionMessageDao.insert(MessageMention(messageId, conversationId, mentionData, hasRead))
-    return mentions
+    callback?.invoke(null, hasRead)
 }
 
 fun rendMentionContent(

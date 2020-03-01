@@ -39,7 +39,7 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.isRepresentativeMessage
 import org.jetbrains.anko.notificationManager
 
-class NotificationJob(val message: Message, val userMap: Map<String, String>? = null) : BaseJob(Params(PRIORITY_UI_HIGH).requireNetwork().groupBy("notification_group")) {
+class NotificationJob(val message: Message, val userMap: Map<String, String>? = null, val force: Boolean = false) : BaseJob(Params(PRIORITY_UI_HIGH).requireNetwork().groupBy("notification_group")) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -67,7 +67,10 @@ class NotificationJob(val message: Message, val userMap: Map<String, String>? = 
             return
         }
         val conversation = conversationDao.getConversationItem(message.conversationId) ?: return
-        if (conversation.isMute() || conversation.category == null) {
+        if (conversation.category == null) {
+            return
+        }
+        if (!force && conversation.isMute()) {
             return
         }
         val mainIntent = MainActivity.getSingleIntent(context)
