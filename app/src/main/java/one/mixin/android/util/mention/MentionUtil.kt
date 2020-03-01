@@ -63,7 +63,7 @@ fun parseMentionData(
     userDao: UserDao,
     mentionMessageDao: MentionMessageDao,
     ignore: Boolean = true,
-    queueMe: Boolean = false,
+    quoteMe: Boolean = false,
     callback: ((List<MentionUser>?, Boolean) -> Unit)? = null
 ) {
     val matcher = mentionNumberPattern.matcher(text)
@@ -77,7 +77,7 @@ fun parseMentionData(
         numbers.add(identityNumber)
     }
     val mentions = userDao.findUserByIdentityNumbers(numbers)
-    if (queueMe && hasRead) {
+    if (quoteMe && hasRead) {
         hasRead = false
         if (mentions.isEmpty()) {
             mentionMessageDao.insert(MessageMention(messageId, conversationId, "", hasRead))
