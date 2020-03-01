@@ -37,7 +37,6 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageHistory
-import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
@@ -314,6 +313,7 @@ class DecryptMessage : Injector() {
         when {
             data.category.endsWith("_TEXT") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_TEXT.name) String(Base64.decode(plainText)) else plainText
+                var quoteMe = false
                 val message = generateMessage(data) { quoteMessageItem ->
                     if (quoteMessageItem == null) {
                         createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status).apply {
@@ -321,13 +321,13 @@ class DecryptMessage : Injector() {
                         }
                     } else {
                         if (quoteMessageItem.userId == Session.getAccountId() && data.userId != Session.getAccountId()) {
-                            mentionMessageDao.insert(MessageMention(data.messageId, data.conversationId, "", false))
+                            quoteMe = true
                         }
                         createReplyTextMessage(data.messageId, data.conversationId, data.userId, data.category,
                             plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
                     }
                 }
-                val mentions = parseMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, data.userId == Session.getAccountId())
+                val mentions = parseMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, data.userId == Session.getAccountId(), quoteMe)
                 messageDao.insert(message)
                 if (!mentions.isNullOrEmpty()) {
                     val userMap = mentions.map { it.identityNumber to it.fullName }.toMap()
