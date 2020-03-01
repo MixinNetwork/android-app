@@ -11,10 +11,7 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.text.Editable
-import android.text.SpannableString
-import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 import android.text.TextWatcher
-import android.text.style.ForegroundColorSpan
 import android.text.style.MetricAffectingSpan
 import android.util.AttributeSet
 import android.view.KeyEvent
@@ -50,8 +47,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.util.mention.MENTION_COLOR
-import one.mixin.android.util.mention.mentionNumberPattern
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
@@ -557,8 +552,6 @@ class ChatControlView : FrameLayout {
         false
     }
     private val editTextWatcher = object : TextWatcher {
-        private var oldLength = 0
-        private var location = 0
         override fun afterTextChanged(s: Editable?) {
             setSend()
             s?.let { ed ->
@@ -572,26 +565,9 @@ class ChatControlView : FrameLayout {
                     chat_et.setSelection(curString.length)
                 }
             }
-            if (oldLength < s.toString().length) {
-                val input = s.toString()
-                val sp = SpannableString(input)
-                val matcher = mentionNumberPattern.matcher(input)
-                var change = false
-                while (matcher.find()) {
-                    change = true
-                    sp.setSpan(ForegroundColorSpan(MENTION_COLOR), matcher.start(), matcher.end(), SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-                if (change) {
-                    chat_et.setText(sp)
-                    chat_et.setSelection(location)
-                }
-            }
         }
 
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            oldLength = s?.length ?: 0
-            location = chat_et.selectionStart
-        }
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             callback.onTextChanged(s, start, before, count)

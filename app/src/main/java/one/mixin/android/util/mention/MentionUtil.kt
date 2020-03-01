@@ -1,6 +1,9 @@
 package one.mixin.android.util.mention
 
 import android.graphics.Color
+import android.text.Editable
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.widget.EditText
 import androidx.collection.arraySetOf
 import java.util.Stack
@@ -38,16 +41,17 @@ fun deleteMentionEnd(editText: EditText) {
     }
 }
 
-fun mentionReplace(source: String, user: User): String {
+fun mentionReplace(source: Editable, user: User): CharSequence {
+
     return when (val index = source.lastIndexOf("@")) {
         -1 -> {
             source
         }
-        0 -> {
-            "@${user.identityNumber} "
-        }
         else -> {
-            "${source.substring(0, index)}@${user.identityNumber} "
+            source.apply {
+                source.replace(index, length, "@${user.identityNumber} ")
+                setSpan(ForegroundColorSpan(MENTION_COLOR), index, length - 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
         }
     }
 }
