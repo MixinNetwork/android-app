@@ -37,6 +37,7 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageHistory
+import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
@@ -323,20 +324,16 @@ class DecryptMessage : Injector() {
                     } else {
                         if (quoteMessageItem.userId == Session.getAccountId() && data.userId != Session.getAccountId()) {
                             quoteMe = true
+                            mentionMessageDao.insert(MessageMention(data.messageId, data.conversationId, "", false))
                         }
                         createReplyTextMessage(data.messageId, data.conversationId, data.userId, data.category,
                             plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
                     }
                 }
-                parseMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, data.userId == Session.getAccountId(), quoteMe) { mentions, force ->
-                    messageDao.insert(message)
-                    if (!mentions.isNullOrEmpty()) {
-                        val userMap = mentions.map { it.identityNumber to it.fullName }.toMap()
-                        sendNotificationJob(message, data.source, userMap, force)
-                    } else {
-                        sendNotificationJob(message, data.source, force = force)
-                    }
-                }
+                val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, data.userId)
+                messageDao.insert(message)
+                val userMap = mentions.map { it.identityNumber to it.fullName }.toMap()
+                sendNotificationJob(message, data.source, userMap, quoteMe || mentionMe)
             }
             data.category.endsWith("_POST") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
@@ -626,7 +623,7 @@ class DecryptMessage : Injector() {
 
     private fun processRedecryptMessage(data: BlazeMessageData, messageId: String, plainText: String) {
         if (data.category == MessageCategory.SIGNAL_TEXT.name) {
-            parseMentionData(plainText, messageId, data.conversationId, userDao, mentionMessageDao, data.userId == Session.getAccountId())
+            parseMentionData(plainText, messageId, data.conversationId, userDao, mentionMessageDao, data.userId)
             messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_POST.name) {
             messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)

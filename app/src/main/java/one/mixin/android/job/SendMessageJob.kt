@@ -64,11 +64,11 @@ open class SendMessageJob(
             } else {
                 if (message.isText()) {
                     message.content?.let { content ->
-                        parseMentionData(content, message.id, message.conversationId, userDao, mentionMessageDao)
+                        parseMentionData(content, message.id, message.conversationId, userDao, mentionMessageDao, message.userId)
                     }
+                    parseHyperlink()
                 }
                 messageDao.insert(message)
-                parseHyperlink()
             }
         } else {
             Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
@@ -101,10 +101,8 @@ open class SendMessageJob(
     }
 
     private fun parseHyperlink() {
-        if (message.category.endsWith("_TEXT")) {
-            message.content?.findLastUrl()?.let {
-                jobManager.addJobInBackground(ParseHyperlinkJob(it, message.id))
-            }
+        message.content?.findLastUrl()?.let {
+            jobManager.addJobInBackground(ParseHyperlinkJob(it, message.id))
         }
     }
 

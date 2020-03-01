@@ -62,36 +62,26 @@ fun parseMentionData(
     conversationId: String,
     userDao: UserDao,
     mentionMessageDao: MentionMessageDao,
-    ignore: Boolean = true,
-    quoteMe: Boolean = false,
-    callback: ((List<MentionUser>?, Boolean) -> Unit)? = null
-) {
+    userId: String
+): Pair<List<MentionUser>, Boolean> {
     val matcher = mentionNumberPattern.matcher(text)
     val numbers = arraySetOf<String>()
-    var hasRead = true
     while (matcher.find()) {
         val identityNumber = matcher.group().replace("@", "").replace(" ", "")
-        if (!ignore && identityNumber.isNotBlank() && identityNumber == Session.getAccount()?.identity_number) {
-            hasRead = false
-        }
         numbers.add(identityNumber)
     }
+    val account = Session.getAccount()
     val mentions = userDao.findUserByIdentityNumbers(numbers)
-    if (quoteMe && hasRead) {
-        hasRead = false
-        if (mentions.isEmpty()) {
-            mentionMessageDao.insert(MessageMention(messageId, conversationId, "", hasRead))
-            callback?.invoke(null, hasRead)
-            return
-        }
-    }
     if (mentions.isEmpty()) {
-        callback?.invoke(null, hasRead)
-        return
+        return Pair(mentions, false)
     }
     val mentionData = GsonHelper.customGson.toJson(mentions)
-    mentionMessageDao.insert(MessageMention(messageId, conversationId, mentionData, hasRead))
-    callback?.invoke(null, hasRead)
+    if (userId != account?.userId && numbers.contains(account?.identity_number)) {
+        mentionMessageDao.insert(MessageMention(messageId, conversationId, mentionData, false))
+        return Pair(mentions, true)
+    }
+    mentionMessageDao.insert(MessageMention(messageId, conversationId, mentionData, true))
+    return Pair(mentions, false)
 }
 
 fun rendMentionContent(
