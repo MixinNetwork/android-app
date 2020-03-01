@@ -11,7 +11,6 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.text.Editable
-import android.text.Selection
 import android.text.SpannableString
 import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 import android.text.TextWatcher
@@ -577,11 +576,15 @@ class ChatControlView : FrameLayout {
                 val input = s.toString()
                 val sp = SpannableString(input)
                 val matcher = mentionNumberPattern.matcher(input)
+                var change = false
                 while (matcher.find()) {
+                    change = true
                     sp.setSpan(ForegroundColorSpan(MENTION_COLOR), matcher.start(), matcher.end(), SPAN_EXCLUSIVE_EXCLUSIVE)
                 }
-                chat_et.setText(sp)
-                Selection.setSelection(chat_et.text, location)
+                if (change) {
+                    chat_et.setText(sp)
+                    chat_et.setSelection(location)
+                }
             }
         }
 
