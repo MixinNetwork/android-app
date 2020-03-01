@@ -187,7 +187,7 @@ class DecryptMessage : Injector() {
         } else if (data.category == MessageCategory.SYSTEM_SESSION.name) {
             val json = Base64.decode(data.data)
             val systemSession = gson.fromJson(String(json), SystemSessionMessagePayload::class.java)
-            processSystemSessionMessage(data, systemSession)
+            processSystemSessionMessage(systemSession)
         }
 
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
@@ -467,7 +467,7 @@ class DecryptMessage : Injector() {
         }
     }
 
-    private fun processSystemSessionMessage(data: BlazeMessageData, systemSession: SystemSessionMessagePayload) {
+    private fun processSystemSessionMessage(systemSession: SystemSessionMessagePayload) {
         if (systemSession.action == SystemSessionMessageAction.PROVISION.name) {
             Session.storeExtensionSessionId(systemSession.sessionId)
             signalProtocol.deleteSession(systemSession.userId)
