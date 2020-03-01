@@ -10,7 +10,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.PAGE_SIZE
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
 import one.mixin.android.job.MixinJobManager
@@ -143,9 +142,11 @@ class SharedMediaViewModel @Inject constructor(
     }
 
     fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
-        jobManager.findJobByMixinJobId(id).notNullWithElse({ it.cancel() }, {
-            conversationRepository.updateMediaStatus(MediaStatus.CANCELED.name, id)
-        })
+        jobManager.cancelJobByMixinJobId(id) {
+            viewModelScope.launch {
+                conversationRepository.updateMediaStatus(MediaStatus.CANCELED.name, id)
+            }
+        }
     }
 
     suspend fun indexMediaMessages(

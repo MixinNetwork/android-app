@@ -1,6 +1,5 @@
 package one.mixin.android.job
 
-import com.birbit.android.jobqueue.CancelResult
 import com.birbit.android.jobqueue.Job
 import com.birbit.android.jobqueue.JobManager
 import com.birbit.android.jobqueue.TagConstraint
@@ -21,20 +20,18 @@ class MixinJobManager(configuration: Configuration) : JobManager(configuration) 
         map.remove(mixinJobId)
     }
 
-    fun cancelJobByMixinJobId(mixinJobId: String) {
+    fun cancelJobByMixinJobId(mixinJobId: String, notFoundAction: (() -> Unit)? = null) {
         val mixinJob = findJobByMixinJobId(mixinJobId)
         if (mixinJob == null) {
-            cancelJobsInBackground(CancelResult.AsyncCancelCallback { result ->
-                val job = result.cancelledJobs.find { it.tags?.contains(mixinJobId) == true }
-                (job as? MixinJob)?.cancel()
-            }, TagConstraint.ANY, mixinJobId)
+            notFoundAction?.invoke()
+            cancelJobsInBackground(null, TagConstraint.ANY, mixinJobId)
         } else {
             mixinJob.cancel()
             cancelJobsInBackground(null, TagConstraint.ANY, mixinJobId)
         }
     }
 
-    fun findJobByMixinJobId(mixinJobId: String): MixinJob? = map[mixinJobId]
+    private fun findJobByMixinJobId(mixinJobId: String): MixinJob? = map[mixinJobId]
 
     fun cancelAllJob() {
         for (job in map.values) {
