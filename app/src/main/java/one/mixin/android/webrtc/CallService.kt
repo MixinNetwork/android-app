@@ -499,12 +499,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         val conversation = conversationRepo.getConversation(message.conversationId)
         if (conversation != null) return true
 
-        return try {
-            conversationRepo.refreshConversation(message.conversationId)
-            true
-        } catch (e: Exception) {
-            false
-        }
+        return conversationRepo.refreshConversation(message.conversationId)
     }
 
     private fun getTurnServer(action: (List<PeerConnection.IceServer>) -> Unit) {

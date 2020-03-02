@@ -6,7 +6,6 @@ import androidx.lifecycle.map
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import io.reactivex.Observable
-import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -256,7 +255,7 @@ internal constructor(
         jobDao.insertList(it)
     }
 
-    fun refreshConversation(conversationId: String) {
+    fun refreshConversation(conversationId: String): Boolean {
         try {
             val call = conversationService.getConversation(conversationId).execute()
             val response = call.body()
@@ -283,9 +282,12 @@ internal constructor(
                         conversationData.createdAt,
                         status
                     )
+                    return true
                 }
             }
-        } catch (e: IOException) {
+            return false
+        } catch (e: Exception) {
+            return false
         }
     }
 
