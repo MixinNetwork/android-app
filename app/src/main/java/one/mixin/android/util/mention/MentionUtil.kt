@@ -63,7 +63,7 @@ fun parseMentionData(
     userDao: UserDao,
     messageMentionDao: MessageMentionDao,
     userId: String
-): Pair<List<MentionUser>, Boolean> {
+): Pair<List<MentionUser>?, Boolean> {
     val matcher = mentionNumberPattern.matcher(text)
     val numbers = arraySetOf<String>()
     while (matcher.find()) {
@@ -73,15 +73,12 @@ fun parseMentionData(
     val account = Session.getAccount()
     val mentions = userDao.findUserByIdentityNumbers(numbers)
     if (mentions.isEmpty()) {
-        return Pair(mentions, false)
+        return Pair(null, false)
     }
     val mentionData = GsonHelper.customGson.toJson(mentions)
-    if (userId != account?.userId && numbers.contains(account?.identity_number)) {
-        messageMentionDao.insert(MessageMention(messageId, conversationId, mentionData, false))
-        return Pair(mentions, true)
-    }
-    messageMentionDao.insert(MessageMention(messageId, conversationId, mentionData, true))
-    return Pair(mentions, false)
+    val mentionMe = userId != account?.userId && numbers.contains(account?.identity_number)
+    messageMentionDao.insert(MessageMention(messageId, conversationId, mentionData, !mentionMe))
+    return Pair(mentions, mentionMe)
 }
 
 fun rendMentionContent(

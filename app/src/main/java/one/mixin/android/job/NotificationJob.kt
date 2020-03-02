@@ -39,7 +39,7 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.isRepresentativeMessage
 import org.jetbrains.anko.notificationManager
 
-class NotificationJob(val message: Message, private val userMap: Map<String, String>? = null, val force: Boolean = false) : BaseJob(Params(PRIORITY_UI_HIGH).requireNetwork().groupBy("notification_group")) {
+class NotificationJob(val message: Message, private val userMap: Map<String, String>? = null, private val force: Boolean = false) : BaseJob(Params(PRIORITY_UI_HIGH).requireNetwork().groupBy("notification_group")) {
 
     companion object {
         private const val serialVersionUID = 1L

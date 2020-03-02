@@ -332,7 +332,7 @@ class DecryptMessage : Injector() {
                 }
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
                 messageDao.insert(message)
-                val userMap = mentions.map { it.identityNumber to it.fullName }.toMap()
+                val userMap = mentions?.map { it.identityNumber to it.fullName }?.toMap()
                 sendNotificationJob(message, data.source, userMap, quoteMe || mentionMe)
             }
             data.category.endsWith("_POST") -> {
