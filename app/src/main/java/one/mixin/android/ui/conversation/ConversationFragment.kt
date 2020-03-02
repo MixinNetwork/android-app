@@ -1136,6 +1136,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             closeTool()
         }
         reply_view.reply_close_iv.setOnClickListener {
+            reply_view.messageItem = null
             reply_view.fadeOut(isGone = true)
         }
         tool_view.copy_iv.setOnClickListener {
@@ -1509,15 +1510,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 uri,
                 isPlainMessage(),
                 mimeType,
-                reply_view.messageItem
+                getRelyMessage()
             )
                 ?.autoDispose(stopScope)?.subscribe({
                     when (it) {
                         0 -> {
-                            if (reply_view.messageItem != null) {
-                                reply_view.fadeOut(isGone = true)
-                                reply_view.messageItem = null
-                            }
                             scrollToDown()
                             markRead()
                         }
@@ -1562,12 +1559,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     duration,
                     waveForm,
                     isPlainMessage(),
-                    reply_view.messageItem
+                    getRelyMessage()
                 )
-                if (reply_view.messageItem != null) {
-                    reply_view.fadeOut(isGone = true)
-                    reply_view.messageItem = null
-                }
                 scrollToDown()
             }
         }
@@ -1580,12 +1573,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 sender.userId,
                 uri,
                 isPlainMessage(),
-                replyMessage = reply_view.messageItem
+                replyMessage = getRelyMessage()
             )
-            if (reply_view.messageItem != null) {
-                reply_view.fadeOut(isGone = true)
-                reply_view.messageItem = null
-            }
             chat_rv.postDelayed({
                 scrollToDown()
             }, 1000)
@@ -1614,12 +1603,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 sender,
                 attachment,
                 isPlainMessage(),
-                reply_view.messageItem
+                getRelyMessage()
             )
-            if (reply_view.messageItem != null) {
-                reply_view.fadeOut(isGone = true)
-                reply_view.messageItem = null
-            }
 
             scrollToDown()
             markRead()
@@ -1639,14 +1624,22 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun sendContactMessage(userId: String) {
         createConversation {
-            chatViewModel.sendContactMessage(conversationId, sender, userId, isPlainMessage(), reply_view.messageItem)
-            if (reply_view.messageItem != null) {
-                reply_view.fadeOut(isGone = true)
-                reply_view.messageItem = null
-            }
+            chatViewModel.sendContactMessage(conversationId, sender, userId, isPlainMessage(), getRelyMessage())
             scrollToDown()
             markRead()
         }
+    }
+
+    private fun getRelyMessage(): MessageItem? {
+        if (isAdded) {
+            val messageItem = reply_view.messageItem
+            if (reply_view.isVisible) {
+                reply_view.fadeOut(isGone = true)
+                reply_view.messageItem = null
+            }
+            return messageItem
+        }
+        return null
     }
 
     private fun sendMessage(message: String) {

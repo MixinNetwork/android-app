@@ -49,7 +49,8 @@
                     android:id="@+id/chat_image"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="@null" />
+                    android:contentDescription="@null"
+                    android:scaleType="centerCrop" />
 
                 <one.mixin.android.widget.CircleProgress
                     android:id="@+id/progress"
