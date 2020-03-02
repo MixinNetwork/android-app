@@ -13,9 +13,9 @@ import one.mixin.android.crypto.db.RatchetSenderKeyDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
-import one.mixin.android.db.MentionMessageDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
+import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.ResendSessionMessageDao
@@ -66,7 +66,7 @@ open class Injector : Injectable {
     @Inject
     lateinit var stickerDao: StickerDao
     @Inject
-    lateinit var mentionMessageDao: MentionMessageDao
+    lateinit var messageMentionDao: MessageMentionDao
     @Inject
     lateinit var signalProtocol: SignalProtocol
     @Inject

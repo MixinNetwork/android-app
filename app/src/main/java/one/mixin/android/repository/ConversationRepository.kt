@@ -15,8 +15,8 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
-import one.mixin.android.db.MentionMessageDao
 import one.mixin.android.db.MessageDao
+import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.MessageProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
@@ -62,7 +62,7 @@ internal constructor(
     @DatabaseCategory(DatabaseCategoryEnum.READ)
     private val readConversationDao: ConversationDao,
     private val participantDao: ParticipantDao,
-    private val mentionMessageDao: MentionMessageDao,
+    private val messageMentionDao: MessageMentionDao,
     private val participantSessionDao: ParticipantSessionDao,
     private val jobDao: JobDao,
     private val conversationService: ConversationService,
@@ -178,11 +178,11 @@ internal constructor(
         messageDao.updateMediaStatusSuspend(status, messageId)
 
     fun deleteMessage(id: String, mediaUrl: String? = null) {
-        if (mediaUrl != null) {
+        if (!mediaUrl.isNullOrBlank()) {
             jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
         }
         messageDao.deleteMessage(id)
-        mentionMessageDao.deleteMessage(id)
+        messageMentionDao.deleteMessage(id)
     }
 
     suspend fun deleteConversationById(conversationId: String) {
@@ -206,7 +206,7 @@ internal constructor(
             }
         }
         messageDao.deleteMessageByConversationId(conversationId)
-        mentionMessageDao.deleteMessageByConversationId(conversationId)
+        messageMentionDao.deleteMessageByConversationId(conversationId)
     }
 
     suspend fun getRealParticipants(conversationId: String) =
@@ -327,10 +327,10 @@ internal constructor(
 
     suspend fun getAnnouncementByConversationId(conversationId: String) = conversationDao.getAnnouncementByConversationId(conversationId)
 
-    fun getUnreadMentionMessageByConversationId(conversationId: String) = mentionMessageDao.getUnreadMentionMessageByConversationId(conversationId)
+    fun getUnreadMentionMessageByConversationId(conversationId: String) = messageMentionDao.getUnreadMentionMessageByConversationId(conversationId)
 
     suspend fun markMentionRead(messageId: String, conversationId: String) {
-        mentionMessageDao.suspendMarkMentionRead(messageId)
+        messageMentionDao.suspendMarkMentionRead(messageId)
         withContext(Dispatchers.IO) {
             jobDao.insert(createAckJob(CREATE_MESSAGE, BlazeAckMessage(messageId, MessageMentionStatus.MENTION_READ.name), conversationId))
         }

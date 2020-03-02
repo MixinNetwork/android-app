@@ -10,6 +10,7 @@ import java.util.UUID
 import javax.inject.Inject
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
+import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
@@ -32,6 +33,8 @@ class SendService : IntentService("SendService") {
     @Inject
     @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var messageDao: MessageDao
+    @Inject
+    lateinit var messageMentionDao: MessageMentionDao
     @Inject
     lateinit var jobDao: JobDao
 
@@ -59,6 +62,7 @@ class SendService : IntentService("SendService") {
         }
         val manager = getSystemService<NotificationManager>()
         manager?.cancel(conversationId.hashCode())
+        messageMentionDao.markMentionReadByConversationId(conversationId)
         messageDao.findUnreadMessagesSync(conversationId)?.let { list ->
             if (list.isNotEmpty()) {
                 messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().createdAt)

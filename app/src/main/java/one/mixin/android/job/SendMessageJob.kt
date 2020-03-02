@@ -64,7 +64,7 @@ open class SendMessageJob(
             } else {
                 if (message.isText()) {
                     message.content?.let { content ->
-                        parseMentionData(content, message.id, message.conversationId, userDao, mentionMessageDao, message.userId)
+                        parseMentionData(content, message.id, message.conversationId, userDao, messageMentionDao, message.userId)
                     }
                     parseHyperlink()
                 }
@@ -77,7 +77,7 @@ open class SendMessageJob(
 
     private fun recallMessage() {
         messageDao.recallMessage(recallMessageId!!)
-        mentionMessageDao.deleteMessage(recallMessageId)
+        messageMentionDao.deleteMessage(recallMessageId)
         messageDao.findMessageById(recallMessageId)?.let { msg ->
             RxBus.publish(RecallEvent(msg.id))
             messageDao.recallFailedMessage(msg.id)
@@ -192,7 +192,7 @@ open class SendMessageJob(
     }
 
     private fun getMentionData(messageId: String): List<String>? {
-        return mentionMessageDao.getMentionData(messageId)?.run {
+        return messageMentionDao.getMentionData(messageId)?.run {
             GsonHelper.customGson.fromJson(this, Array<MentionUser>::class.java).map {
                 it.identityNumber
             }.toSet()

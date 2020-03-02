@@ -8,7 +8,7 @@ import android.widget.EditText
 import androidx.collection.arraySetOf
 import java.util.Stack
 import java.util.regex.Pattern
-import one.mixin.android.db.MentionMessageDao
+import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
@@ -61,9 +61,9 @@ fun parseMentionData(
     messageId: String,
     conversationId: String,
     userDao: UserDao,
-    mentionMessageDao: MentionMessageDao,
+    messageMentionDao: MessageMentionDao,
     userId: String
-): Pair<List<MentionUser>, Boolean> {
+): Pair<List<MentionUser>?, Boolean> {
     val matcher = mentionNumberPattern.matcher(text)
     val numbers = arraySetOf<String>()
     while (matcher.find()) {
@@ -73,15 +73,12 @@ fun parseMentionData(
     val account = Session.getAccount()
     val mentions = userDao.findUserByIdentityNumbers(numbers)
     if (mentions.isEmpty()) {
-        return Pair(mentions, false)
+        return Pair(null, false)
     }
     val mentionData = GsonHelper.customGson.toJson(mentions)
-    if (userId != account?.userId && numbers.contains(account?.identity_number)) {
-        mentionMessageDao.insert(MessageMention(messageId, conversationId, mentionData, false))
-        return Pair(mentions, true)
-    }
-    mentionMessageDao.insert(MessageMention(messageId, conversationId, mentionData, true))
-    return Pair(mentions, false)
+    val mentionMe = userId != account?.userId && numbers.contains(account?.identity_number)
+    messageMentionDao.insert(MessageMention(messageId, conversationId, mentionData, !mentionMe))
+    return Pair(mentions, mentionMe)
 }
 
 fun rendMentionContent(

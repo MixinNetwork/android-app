@@ -358,7 +358,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         "SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE conversation_id = :conversationId " +
-            "AND category = :category AND media_url != NULL ORDER BY created_at ASC"
+            "AND category = :category ORDER BY created_at ASC"
     )
     fun getMediaByConversationIdAndCategory(
         conversationId: String,
