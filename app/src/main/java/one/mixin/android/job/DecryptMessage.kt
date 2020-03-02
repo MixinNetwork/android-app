@@ -878,9 +878,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         ) {
             val decoded = String(Base64.decode(plainText))
             val mediaData = gson.fromJson(decoded, AttachmentMessagePayload::class.java)
-            val duration = if (mediaData.duration == null) null else mediaData.duration.toString()
+            val duration = mediaData.duration?.toString()
+            val attachmentContent = gson.toJson(mediaData.toAttachmentContent(data.messageId))
             messageDao.updateAttachmentMessage(
-                messageId, decoded, mediaData.mimeType, mediaData.size,
+                messageId, attachmentContent, mediaData.mimeType, mediaData.size,
                 mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name, mediaData.waveform, duration,
                 mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, data.status
             )

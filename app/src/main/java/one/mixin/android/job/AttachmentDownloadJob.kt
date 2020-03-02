@@ -90,12 +90,14 @@ class AttachmentDownloadJob(
         }
         jobManager.saveJob(this)
         val aid: String = attachmentId
-            ?: try {
-                val attachmentContent = message.content?.toAttachmentContent()
-                attachmentContent?.attachmentId ?: ""
-            } catch (e: Exception) {
-                message.content!!
-            }
+            ?: requireNotNull(
+                try {
+                    val attachmentContent = message.content?.toAttachmentContent()
+                    attachmentContent?.attachmentId
+                } catch (e: Exception) {
+                    message.content
+                }
+            )
         attachmentCall = conversationApi.getAttachment(aid)
         val body = attachmentCall!!.execute().body()
         if (body != null && (body.isSuccess || !isCancelled) && body.data != null) {

@@ -178,11 +178,7 @@ open class SendMessageJob(
     }
 
     private fun checkAttachment() {
-        if (message.isData() ||
-            message.isAudio() ||
-            message.isImage() ||
-            message.isVideo()
-        ) {
+        if (message.isAttachment()) {
             attachmentContent?.let { messageDao.updateMessageContent(it, message.id) }
         }
     }
