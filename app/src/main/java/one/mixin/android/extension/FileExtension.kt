@@ -306,6 +306,11 @@ fun File.createDocumentFile(noMedia: Boolean = true, name: String? = null): Pair
     return Pair(f, f.exists())
 }
 
+fun File.createVideoTemp(conversationId: String, messageId: String, type: String, noMedia: Boolean = true): File {
+    val path = generateConversationPath(conversationId)
+    return path.newTempFile(messageId, ".$type", noMedia)
+}
+
 fun File.createVideoTemp(type: String, noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
     return newTempFile("VIDEO_$time", ".$type", noMedia)

@@ -199,7 +199,7 @@ class AttachmentDownloadJob(
                     it ?: "mp4"
                 }
                 val videoFile = MixinApplication.get().getVideoPath()
-                    .createVideoTemp(extensionName)
+                    .createVideoTemp(message.conversationId, message.id, extensionName)
                 videoFile.copyFromInputStream(attachmentCipherInputStream)
                 messageDao.updateMediaMessageUrl(Uri.fromFile(videoFile).toString(), message.id)
                 messageDao.updateMediaSize(videoFile.length(), message.id)
