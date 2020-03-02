@@ -33,6 +33,7 @@ import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.supportsOreo
+import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.GsonHelper
@@ -234,7 +235,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             )
             val encoded = plainText.toByteArray().base64Encode()
             val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId), accountId, encoded, sessionId))
-            jobManager.addJobInBackground(SendPlaintextJob(bm))
+            jobManager.addJobInBackground(SendPlaintextJob(bm, PRIORITY_ACK_MESSAGE))
             jobDao.deleteList(jobs)
         }
     }
