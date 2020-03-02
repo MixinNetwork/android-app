@@ -178,7 +178,7 @@ internal constructor(
         messageDao.updateMediaStatusSuspend(status, messageId)
 
     fun deleteMessage(id: String, mediaUrl: String? = null) {
-        if (mediaUrl != null) {
+        if (!mediaUrl.isNullOrBlank()) {
             jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
         }
         messageDao.deleteMessage(id)
