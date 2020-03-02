@@ -6,7 +6,7 @@ import androidx.room.Query
 import one.mixin.android.vo.MessageMention
 
 @Dao
-interface MentionMessageDao : BaseDao<MessageMention> {
+interface MessageMentionDao : BaseDao<MessageMention> {
     @Query("SELECT * FROM message_mentions WHERE conversation_id = :conversationId AND has_read = 0")
     fun getUnreadMentionMessageByConversationId(conversationId: String): LiveData<List<MessageMention>>
 
@@ -15,6 +15,9 @@ interface MentionMessageDao : BaseDao<MessageMention> {
 
     @Query("UPDATE message_mentions SET has_read = 1 WHERE message_id = :messageId")
     fun markMentionRead(messageId: String)
+
+    @Query("UPDATE message_mentions SET has_read = 1 WHERE conversation_id = :conversationId")
+    fun markMentionReadByConversationId(conversationId: String)
 
     @Query("DELETE FROM message_mentions WHERE message_id = :id")
     fun deleteMessage(id: String)

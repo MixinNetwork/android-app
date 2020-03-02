@@ -206,7 +206,7 @@ class DecryptMessage : Injector() {
                 RxBus.publish(RecallEvent(msg.id))
                 messageDao.recallFailedMessage(msg.id)
                 messageDao.recallMessage(msg.id)
-                mentionMessageDao.deleteMessage(msg.id)
+                messageMentionDao.deleteMessage(msg.id)
                 messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     File(msg.mediaUrl.getFilePath()).let { file ->
@@ -266,7 +266,7 @@ class DecryptMessage : Injector() {
                         if (m.status == MessageStatus.READ.name) {
                             updateMessageList.add(m.message_id)
                         } else if (m.status == MessageMentionStatus.MENTION_READ.name) {
-                            mentionMessageDao.markMentionRead(m.message_id)
+                            messageMentionDao.markMentionRead(m.message_id)
                         }
                     }
                     if (updateMessageList.isNotEmpty()) {
@@ -324,13 +324,13 @@ class DecryptMessage : Injector() {
                     } else {
                         if (quoteMessageItem.userId == Session.getAccountId() && data.userId != Session.getAccountId()) {
                             quoteMe = true
-                            mentionMessageDao.insert(MessageMention(data.messageId, data.conversationId, "", false))
+                            messageMentionDao.insert(MessageMention(data.messageId, data.conversationId, "", false))
                         }
                         createReplyTextMessage(data.messageId, data.conversationId, data.userId, data.category,
                             plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
                     }
                 }
-                val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, mentionMessageDao, data.userId)
+                val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
                 messageDao.insert(message)
                 val userMap = mentions.map { it.identityNumber to it.fullName }.toMap()
                 sendNotificationJob(message, data.source, userMap, quoteMe || mentionMe)
@@ -623,7 +623,7 @@ class DecryptMessage : Injector() {
 
     private fun processRedecryptMessage(data: BlazeMessageData, messageId: String, plainText: String) {
         if (data.category == MessageCategory.SIGNAL_TEXT.name) {
-            parseMentionData(plainText, messageId, data.conversationId, userDao, mentionMessageDao, data.userId)
+            parseMentionData(plainText, messageId, data.conversationId, userDao, messageMentionDao, data.userId)
             messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_POST.name) {
             messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)

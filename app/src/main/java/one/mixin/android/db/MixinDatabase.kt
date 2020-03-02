@@ -97,7 +97,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun stickerRelationshipDao(): StickerRelationshipDao
     abstract fun topAssetDao(): TopAssetDao
     abstract fun favoriteAppDao(): FavoriteAppDao
-    abstract fun mentionMessageDao(): MentionMessageDao
+    abstract fun mentionMessageDao(): MessageMentionDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null
