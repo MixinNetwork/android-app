@@ -214,11 +214,8 @@ interface MessageDao : BaseDao<Message> {
         """
             SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
             m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
-            FROM messages_fts4 mf4 
-            INNER JOIN users u ON m.user_id = u.user_id 
-            INNER JOIN messages m ON m.id = mf4.message_id
-            WHERE mf4.content MATCH :query
-            AND m.status != 'FAILED' 
+            FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+            WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) AND m.status != 'FAILED' 
             AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST') 
             AND m.conversation_id = :conversationId
             ORDER BY m.created_at DESC
@@ -433,8 +430,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("""
         SELECT id as message_id, content, name FROM messages 
-        WHERE category IN ('PLAIN_TEXT', 'SIGNAL_TEXT', 'PLAIN_DATA', 'SIGNAL_DATA') 
+        WHERE category IN ('SIGNAL_TEXT', 'SIGNAL_DATA', 'SIGNAL_POST')
+        AND created_at > :after
         LIMIT :limit OFFSET :offset
         """)
-    suspend fun batchQueryMessages(limit: Int, offset: Int): List<QueryMessage>
+    suspend fun batchQueryMessages(limit: Int, offset: Int, after: Long): List<QueryMessage>
 }

@@ -6,8 +6,6 @@ import androidx.lifecycle.map
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import io.reactivex.Observable
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -45,6 +43,8 @@ import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ConversationRepository
@@ -325,8 +325,6 @@ internal constructor(
 
     suspend fun insertParticipantSession(ps: List<ParticipantSession>) =
         participantSessionDao.insertListSuspend(ps)
-
-    suspend fun batchQueryMessages(limit: Int, offset: Int) = messageDao.batchQueryMessages(limit, offset)
 
     suspend fun getAnnouncementByConversationId(conversationId: String) = conversationDao.getAnnouncementByConversationId(conversationId)
 

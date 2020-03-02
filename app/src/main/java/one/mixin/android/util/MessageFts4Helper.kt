@@ -8,6 +8,9 @@ import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts4
 import one.mixin.android.vo.isFtsMessage
+import org.threeten.bp.Instant
+import org.threeten.bp.temporal.ChronoUnit
+import timber.log.Timber
 
 data class QueryMessage(
     @ColumnInfo(name = "message_id")
@@ -24,10 +27,13 @@ object MessageFts4Helper {
         val messageDao = MixinDatabase.getDatabase(context).messageDao()
         val messageFts4Dao = MixinDatabase.getDatabase(context).messageFts4Dao()
 
-        // TODO read last read offset form SP
         var offset = 0
+        var start: Long
+        val totalStart = System.currentTimeMillis()
+        val sixMonthsAgo = Instant.now().minus(6 * 30, ChronoUnit.DAYS).toEpochMilli()
         while (true) {
-            val queryMessageList = messageDao.batchQueryMessages(SYNC_FTS4_LIMIT, offset)
+            start = System.currentTimeMillis()
+            val queryMessageList = messageDao.batchQueryMessages(SYNC_FTS4_LIMIT, offset, sixMonthsAgo)
             val messageFts4List = arrayListOf<MessageFts4>()
             queryMessageList.forEach { item ->
                 val name = item.name.joinWhiteSpace()
@@ -36,10 +42,12 @@ object MessageFts4Helper {
             }
             messageFts4Dao.insertListSuspend(messageFts4List)
             offset += queryMessageList.size
+            Timber.d("@@@ handle 100 messages cost ${System.currentTimeMillis() - start}, offset: $offset")
             if (queryMessageList.size < SYNC_FTS4_LIMIT) {
                 break
             }
         }
+        Timber.d("@@@ handle $offset messages cost: ${System.currentTimeMillis() - totalStart}")
     }
 
     @WorkerThread
