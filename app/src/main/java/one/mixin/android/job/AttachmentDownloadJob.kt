@@ -160,16 +160,16 @@ class AttachmentDownloadJob(
                         MixinApplication.get().getImagePath().createEmptyTemp(true)
                     }
                     message.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
-                        MixinApplication.get().getImagePath().createImageTemp("REC", ".png")
+                        MixinApplication.get().getImagePath().createImageTemp(message.conversationId, message.id, ".png")
                     }
                     message.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
-                        MixinApplication.get().getImagePath().createGifTemp()
+                        MixinApplication.get().getImagePath().createGifTemp(message.conversationId, message.id)
                     }
                     message.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
                         MixinApplication.get().getImagePath().createWebpTemp()
                     }
                     else -> {
-                        MixinApplication.get().getImagePath().createImageTemp("REC", ".jpg")
+                        MixinApplication.get().getImagePath().createImageTemp(message.conversationId, message.id, ".jpg")
                     }
                 }
                 imageFile.copyFromInputStream(attachmentCipherInputStream)

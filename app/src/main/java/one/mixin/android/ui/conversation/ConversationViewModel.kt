@@ -412,16 +412,17 @@ internal constructor(
                 return null
             }
         }
+        val messageId = UUID.randomUUID().toString()
         if (mimeType == MimeType.GIF.toString()) {
             return Flowable.just(uri).map {
-                val gifFile = MixinApplication.get().getImagePath().createGifTemp()
+                val gifFile = MixinApplication.get().getImagePath().createGifTemp(conversationId, messageId)
                 val path = uri.getFilePath(MixinApplication.get()) ?: return@map -1
                 gifFile.copyFromInputStream(FileInputStream(path))
                 val size = getImageSize(gifFile)
                 val thumbnail = gifFile.blurThumbnail(size)?.bitmap2String(mimeType)
 
                 val message = createMediaMessage(
-                    UUID.randomUUID().toString(),
+                    messageId,
                     conversationId,
                     sender.userId,
                     category,
@@ -445,7 +446,7 @@ internal constructor(
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
         }
 
-        val temp = MixinApplication.get().getImagePath().createImageTemp(type = ".jpg")
+        val temp = MixinApplication.get().getImagePath().createImageTemp(conversationId, messageId, type = ".jpg")
 
         return Compressor()
             .setCompressFormat(Bitmap.CompressFormat.JPEG)
@@ -462,7 +463,7 @@ internal constructor(
                 val size = getImageSize(imageFile)
                 val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mimeType)
                 val message = createMediaMessage(
-                    UUID.randomUUID().toString(),
+                    messageId,
                     conversationId,
                     sender.userId,
                     category,

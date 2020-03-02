@@ -44,7 +44,7 @@ class SendGiphyJob(
     override fun onRun() {
         val ctx = MixinApplication.appContext
         val f = Glide.with(ctx).downloadOnly().load(url).submit().get(10, TimeUnit.SECONDS)
-        val file = ctx.getImagePath().createGifTemp()
+        val file = ctx.getImagePath().createGifTemp(conversationId, messageId)
         file.copyFromInputStream(FileInputStream(f))
         val size = getImageSize(file)
         val thumbnail = file.blurThumbnail(size)?.bitmap2String()

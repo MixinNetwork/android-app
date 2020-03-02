@@ -172,6 +172,10 @@ private fun Context.getBestAvailableCacheRoot(): File {
     return this.cacheDir
 }
 
+fun File.generateConversationPath(conversationId: String): File {
+    return File("$this${File.separator}$conversationId")
+}
+
 fun Context.getImagePath(): File {
     val root = getMediaPath()
     return File("$root${File.separator}Images")
@@ -236,13 +240,14 @@ fun File.createNoMediaDir() {
     }
 }
 
-fun File.createImageTemp(prefix: String? = null, type: String? = null, noMedia: Boolean = true): File {
+fun File.createImageTemp(conversationId: String, messageId: String, type: String? = null, noMedia: Boolean = true): File {
+    val conversationPath = generateConversationPath(conversationId)
+    return conversationPath.newTempFile(messageId, type ?: ".jpg", noMedia)
+}
+
+fun File.createImageTemp(noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return if (prefix != null) {
-        newTempFile("${prefix}_IMAGE_$time", type ?: ".jpg", noMedia)
-    } else {
-        newTempFile("IMAGE_$time", type ?: ".jpg", noMedia)
-    }
+    return newTempFile("IMAGE_$time", ".jpg", noMedia)
 }
 
 fun File.createPostTemp(prefix: String? = null, type: String? = null): File {
@@ -254,9 +259,14 @@ fun File.createPostTemp(prefix: String? = null, type: String? = null): File {
     }
 }
 
+fun File.createGifTemp(conversationId: String, messageId: String, noMedia: Boolean = true): File {
+    val path = generateConversationPath(conversationId)
+    return path.newTempFile(messageId, ".gif", noMedia)
+}
+
 fun File.createGifTemp(noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return newTempFile("IMAGE_$time", ".gif", noMedia)
+    return newTempFile(time, ".gif", noMedia)
 }
 
 fun File.createPngTemp(noMedia: Boolean = true): File {

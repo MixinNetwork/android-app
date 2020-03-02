@@ -668,6 +668,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private var imageUri: Uri? = null
+    // Todo
     private fun createImageUri() = Uri.fromFile(context?.getImagePath()?.createImageTemp())
 
     private val conversationId: String by lazy<String> {
