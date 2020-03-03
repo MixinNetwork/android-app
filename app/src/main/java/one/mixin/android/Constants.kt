@@ -30,7 +30,7 @@ object Constants {
         const val PREF_LAST_USER_ID = "pref_last_user_id"
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_WRONG_TIME = "pref_wrong_time"
-        const val PREF_FTS_UPGRADE = "pref_fts_upgrade"
+        const val PREF_FTS4_UPGRADE = "pref_fts4_upgrade"
         const val PREF_RESTORE = "pref_restore"
         const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
         const val PREF_RECALL_SHOW = "pref_recall_show"

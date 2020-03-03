@@ -164,7 +164,7 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         MixinApplication.get().onlining.set(true)
-        if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_FTS_UPGRADE, false)) {
+        if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_FTS4_UPGRADE, false)) {
             InitializeActivity.showFts(this)
             finish()
             return

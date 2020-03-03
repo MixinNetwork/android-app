@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.Account.PREF_FTS_UPGRADE
+import one.mixin.android.Constants.Account.PREF_FTS4_UPGRADE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -35,7 +35,7 @@ class UpgradeFragment : BaseFragment() {
         MixinApplication.get().onlining.set(true)
         lifecycleScope.launch {
             MessageFts4Helper.syncMessageFts4(requireContext())
-            defaultSharedPreferences.putBoolean(PREF_FTS_UPGRADE, true)
+            defaultSharedPreferences.putBoolean(PREF_FTS4_UPGRADE, true)
             MainActivity.show(requireContext())
             activity?.finish()
         }
