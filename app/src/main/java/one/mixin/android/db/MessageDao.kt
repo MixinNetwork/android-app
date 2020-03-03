@@ -424,7 +424,8 @@ interface MessageDao : BaseDao<Message> {
         messageId: String
     ): Message?
 
-    @Query("""
+    @Query(
+        """
         SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY created_at DESC, rowid DESC LIMIT 1 OFFSET :offset
         """
     )
@@ -456,4 +457,7 @@ interface MessageDao : BaseDao<Message> {
         LIMIT :limit OFFSET :offset
         """)
     suspend fun batchQueryMessages(limit: Int, offset: Int, after: Long): List<QueryMessage>
+
+    @Query("INSERT INTO `messages_fts` (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages WHERE category IN ('PLAIN_TEXT', 'SIGNAL_TEXT', 'PLAIN_DATA', 'SIGNAL_DATA')")
+    suspend fun upgradeFtsMessage()
 }

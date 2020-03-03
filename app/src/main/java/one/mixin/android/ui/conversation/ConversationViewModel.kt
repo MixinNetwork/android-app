@@ -239,6 +239,7 @@ internal constructor(
 
     fun sendAudioMessage(
         conversationId: String,
+        messageId: String,
         sender: User,
         file: File,
         duration: Long,
@@ -247,8 +248,7 @@ internal constructor(
         replyMessage: MessageItem? = null
     ) {
         val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
-        val message = createAudioMessage(
-            UUID.randomUUID().toString(), conversationId, sender.userId, null, category,
+        val message = createAudioMessage(messageId, conversationId, sender.userId, null, category,
             file.length(), Uri.fromFile(file).toString(), duration.toString(), nowInUtc(), waveForm, null, null,
             MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
         )

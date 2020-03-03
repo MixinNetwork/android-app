@@ -45,8 +45,10 @@ private fun isAvailable(): Boolean {
 }
 
 fun hasWritePermission(): Boolean {
-    return ContextCompat.checkSelfPermission(MixinApplication.appContext,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+    return ContextCompat.checkSelfPermission(
+        MixinApplication.appContext,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    ) == PackageManager.PERMISSION_GRANTED
 }
 
 private fun Context.getAppPath(): File {
@@ -154,8 +156,10 @@ fun String.fileExists(): Boolean {
 private fun getOrientationFromExif(imagePath: String): Int {
     var orientation = -1
     val exif = ExifInterface(imagePath)
-    val exifOrientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-        ExifInterface.ORIENTATION_NORMAL)
+    val exifOrientation = exif.getAttributeInt(
+        ExifInterface.TAG_ORIENTATION,
+        ExifInterface.ORIENTATION_NORMAL
+    )
     when (exifOrientation) {
         ExifInterface.ORIENTATION_ROTATE_270 -> orientation = 270
         ExifInterface.ORIENTATION_ROTATE_180 -> orientation = 180
@@ -286,11 +290,13 @@ fun File.createEmptyTemp(noMedia: Boolean = true): File {
 
 fun File.createDocumentTemp(type: String?, noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return newTempFile("FILE_$time", if (type == null) {
-        ""
-    } else {
-        ".$type"
-    }, noMedia)
+    return newTempFile(
+        "FILE_$time", if (type == null) {
+            ""
+        } else {
+            ".$type"
+        }, noMedia
+    )
 }
 
 fun File.createDocumentFile(noMedia: Boolean = true, name: String? = null): Pair<File, Boolean> {
@@ -316,9 +322,9 @@ fun File.createVideoTemp(type: String, noMedia: Boolean = true): File {
     return newTempFile("VIDEO_$time", ".$type", noMedia)
 }
 
-fun File.createAudioTemp(type: String, noMedia: Boolean = true): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return newTempFile("Audio_$time", ".$type", noMedia)
+fun File.createAudioTemp(conversationId: String, messageId: String, type: String, noMedia: Boolean = true): File {
+    val path = generateConversationPath(conversationId)
+    return path.newTempFile(messageId, ".$type", noMedia)
 }
 
 private fun File.newTempFile(name: String, type: String, noMedia: Boolean): File {
@@ -464,8 +470,10 @@ fun Bitmap.zoomOut(): Bitmap? {
 
 private fun File.blurThumbnail(width: Int, height: Int): Bitmap? {
     try {
-        return ThumbnailUtils.extractThumbnail(BitmapFactory.decodeFile(this.absolutePath),
-            width, height).fastBlur(1f, 10)
+        return ThumbnailUtils.extractThumbnail(
+            BitmapFactory.decodeFile(this.absolutePath),
+            width, height
+        ).fastBlur(1f, 10)
     } catch (e: Exception) {
     }
     return null

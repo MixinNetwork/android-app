@@ -9,6 +9,7 @@ import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import androidx.core.content.getSystemService
 import java.io.File
+import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -39,11 +40,12 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
         private var INSTANCE: OpusAudioRecorder? = null
 
         @Synchronized
-        fun get(): OpusAudioRecorder {
+        fun get(conversationId: String): OpusAudioRecorder {
             if (INSTANCE == null) {
                 INSTANCE = OpusAudioRecorder(MixinApplication.appContext)
                 state = STATE_IDLE
             }
+            INSTANCE?.initConversation(conversationId)
             return INSTANCE as OpusAudioRecorder
         }
     }
@@ -51,11 +53,19 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
     private var audioRecord: AudioRecord? = null
     private var recordBufferSize: Int
     private var recordingAudioFile: File? = null
+    private var messageId: String? = null
+    private var conversationId: String? = null
     private val recordSamples = ShortArray(1024)
     private var samplesCount = 0L
     private var recordTimeCount = 0L
     private var sendAfterDone = false
     private var callStop = false
+
+    private fun initConversation(conversationId: String) {
+        if (this.conversationId != conversationId) {
+            this.conversationId = conversationId
+        }
+    }
 
     private val recordQueue: DispatchQueue by lazy {
         DispatchQueue("recordQueue").apply {
@@ -148,15 +158,19 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
             return@Runnable
         }
 
-        recordingAudioFile = ctx.getAudioPath().createAudioTemp("ogg")
+        messageId = UUID.randomUUID().toString()
+        if (conversationId == null) throw IllegalArgumentException("Conversation id is NULL!!!")
+        recordingAudioFile = ctx.getAudioPath().createAudioTemp(conversationId!!, messageId!!, "ogg")
 
         try {
             if (startRecord(recordingAudioFile!!.absolutePath) != 0) {
                 return@Runnable
             }
 
-            audioRecord = AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT, recordBufferSize * BUFFER_SIZE_FACTOR)
+            audioRecord = AudioRecord(
+                MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_16BIT, recordBufferSize * BUFFER_SIZE_FACTOR
+            )
 
             if (audioRecord == null || audioRecord!!.state != AudioRecord.STATE_INITIALIZED) {
                 return@Runnable
@@ -228,7 +242,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                 val waveForm = getWaveform2(recordSamples, recordSamples.size)
                 GlobalScope.launch(Dispatchers.Main) {
                     if (recordingAudioFile != null) {
-                        callback?.sendAudio(recordingAudioFile!!, duration, waveForm)
+                        callback?.sendAudio(messageId!!, recordingAudioFile!!, duration, waveForm)
                     }
                     callback = null
                     recordingAudioFile = null
@@ -250,6 +264,6 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
 
     interface Callback {
         fun onCancel()
-        fun sendAudio(file: File, duration: Long, waveForm: ByteArray)
+        fun sendAudio(messageId: String, file: File, duration: Long, waveForm: ByteArray)
     }
 }

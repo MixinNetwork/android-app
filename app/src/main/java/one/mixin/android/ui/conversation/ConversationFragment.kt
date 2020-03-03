@@ -904,7 +904,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chatViewModel.saveDraft(conversationId, draftText.toString())
         }
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
-            OpusAudioRecorder.get().stop()
+            OpusAudioRecorder.get(conversationId).stop()
         }
         if (chat_control?.isRecording == true) {
             chat_control?.cancelExternal()
@@ -976,7 +976,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 true
             }
             chat_control.isRecording -> {
-                OpusAudioRecorder.get().stopRecording(false)
+                OpusAudioRecorder.get(conversationId).stopRecording(false)
                 chat_control.cancelExternal()
                 true
             }
@@ -1181,7 +1181,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 reply_view.fadeIn()
                 chat_control.reset()
                 if (chat_control.isRecording) {
-                    OpusAudioRecorder.get().stopRecording(false)
+                    OpusAudioRecorder.get(conversationId).stopRecording(false)
                     chat_control.cancelExternal()
                 }
                 chat_control.chat_et.showKeyboard()
@@ -1507,14 +1507,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chat_control?.cancelExternal()
     }
 
-    override fun sendAudio(file: File, duration: Long, waveForm: ByteArray) {
+    override fun sendAudio(messageId: String, file: File, duration: Long, waveForm: ByteArray) {
         if (duration < 500) {
             file.deleteOnExit()
         } else {
-
             createConversation {
                 chatViewModel.sendAudioMessage(
                     conversationId,
+                    messageId,
                     sender,
                     file,
                     duration,
@@ -2393,7 +2393,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         override fun onRecordStart(audio: Boolean) {
             AudioPlayer.get().pause()
-            OpusAudioRecorder.get().startRecording(this@ConversationFragment)
+            OpusAudioRecorder.get(conversationId).startRecording(this@ConversationFragment)
             if (!isCling) {
                 if (!aodWakeLock.isHeld) {
                     aodWakeLock.acquire()
@@ -2406,14 +2406,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         override fun onRecordEnd() {
-            OpusAudioRecorder.get().stopRecording(true)
+            OpusAudioRecorder.get(conversationId).stopRecording(true)
             if (!isCling && aodWakeLock.isHeld) {
                 aodWakeLock.release()
             }
         }
 
         override fun onRecordCancel() {
-            OpusAudioRecorder.get().stopRecording(false)
+            OpusAudioRecorder.get(conversationId).stopRecording(false)
             if (!isCling && aodWakeLock.isHeld) {
                 aodWakeLock.release()
             }

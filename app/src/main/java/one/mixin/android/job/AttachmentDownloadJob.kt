@@ -211,7 +211,7 @@ class AttachmentDownloadJob(
                     FileInputStream(destination)
                 }
                 val audioFile = MixinApplication.get().getAudioPath()
-                    .createAudioTemp("ogg")
+                    .createAudioTemp(message.conversationId, message.id, "ogg")
                 audioFile.copyFromInputStream(attachmentCipherInputStream)
                 messageDao.updateMediaMessageUrl(Uri.fromFile(audioFile).toString(), message.id)
                 messageDao.updateMediaSize(audioFile.length(), message.id)
