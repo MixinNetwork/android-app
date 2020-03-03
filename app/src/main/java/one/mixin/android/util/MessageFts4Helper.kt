@@ -3,7 +3,6 @@ package one.mixin.android.util
 import android.os.SystemClock
 import androidx.annotation.WorkerThread
 import androidx.room.ColumnInfo
-import kotlin.math.min
 import one.mixin.android.Constants.Account.PREF_SYNC_FTS4_OFFSET
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
@@ -45,8 +44,7 @@ object MessageFts4Helper {
         var start: Long
         val totalStart = System.currentTimeMillis()
         val sixMonthsAgo = Instant.now().minus(6 * 30, ChronoUnit.DAYS).toEpochMilli()
-        Timber.d("@@@ sixMonthsAgo: $sixMonthsAgo, is preProcess: $preProcess")
-        val totalCount = min(PRE_PROCESS_COUNT, messageDao.countMessages(sixMonthsAgo))
+        Timber.d("syncMessageFts4 preProcess: $preProcess， start offset: $offset")
         while (true) {
             start = System.currentTimeMillis()
             val queryMessageList = messageDao.batchQueryMessages(SYNC_FTS4_LIMIT, offset, sixMonthsAgo)
@@ -60,8 +58,8 @@ object MessageFts4Helper {
             offset += queryMessageList.size
             handleCount += queryMessageList.size
             ctx.defaultSharedPreferences.putInt(PREF_SYNC_FTS4_OFFSET, offset)
-            onProgressChanged?.invoke((offset.toFloat() / totalCount * 100).toInt())
-            Timber.d("@@@ handle 100 messages cost ${System.currentTimeMillis() - start}, offset: $offset")
+            onProgressChanged?.invoke((offset.toFloat() / PRE_PROCESS_COUNT * 100).toInt())
+            Timber.d("syncMessageFts4 handle 100 messages cost ${System.currentTimeMillis() - start}, offset: $offset")
 
             if (queryMessageList.size < SYNC_FTS4_LIMIT) {
                 done = true
@@ -77,7 +75,7 @@ object MessageFts4Helper {
                 SystemClock.sleep(waitMillis)
             }
         }
-        Timber.d("@@@ handle $offset messages cost: ${System.currentTimeMillis() - totalStart}")
+        Timber.d("syncMessageFts4 handle $offset messages cost: ${System.currentTimeMillis() - totalStart}")
         return done
     }
 

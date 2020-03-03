@@ -433,11 +433,4 @@ interface MessageDao : BaseDao<Message> {
         LIMIT :limit OFFSET :offset
         """)
     suspend fun batchQueryMessages(limit: Int, offset: Int, after: Long): List<QueryMessage>
-
-    @Query("""
-        SELECT count(*) FROM messages 
-        WHERE category IN ('SIGNAL_TEXT', 'SIGNAL_DATA', 'SIGNAL_POST')
-        AND created_at > :after
-        """)
-    suspend fun countMessages(after: Long): Int
 }
