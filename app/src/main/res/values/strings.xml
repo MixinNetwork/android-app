@@ -619,6 +619,7 @@
     <string name="document">File</string>
     <string name="voice">Voice</string>
     <string name="contact">Contact</string>
+    <string name="location">Location</string>
     <string name="sticker">Sticker</string>
     <string name="video">Video</string>
     <string name="audio">Audio</string>

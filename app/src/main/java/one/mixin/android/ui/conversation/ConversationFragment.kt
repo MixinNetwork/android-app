@@ -127,6 +127,7 @@ import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListe
 import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuType
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.ui.conversation.location.LocationBottomDialogFragment
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
@@ -1909,6 +1910,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 }, {
                                 })
                         }
+                    }
+                    MenuType.Location -> {
+                        LocationBottomDialogFragment.newInstance().show(parentFragmentManager, LocationBottomDialogFragment.TAG)
                     }
                     MenuType.App -> {
                         menu.app?.let { app ->
