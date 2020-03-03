@@ -196,12 +196,10 @@ interface MessageDao : BaseDao<Message> {
             SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
             c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
             u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
-            FROM messages_fts4 mf4 
-            INNER JOIN users u ON c.owner_id = u.user_id
+            FROM messages m INNER JOIN users u ON c.owner_id = u.user_id
             INNER JOIN conversations c ON c.conversation_id = m.conversation_id
-            INNER JOIN messages m ON m.id = mf4.message_id
-            WHERE mf4.content MATCH :query
-            AND m.status != 'FAILED' 
+            WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) 
+            AND m.status != 'FAILED'
             AND m.category IN('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST') 
             GROUP BY m.conversation_id
             ORDER BY m.created_at DESC
@@ -435,4 +433,11 @@ interface MessageDao : BaseDao<Message> {
         LIMIT :limit OFFSET :offset
         """)
     suspend fun batchQueryMessages(limit: Int, offset: Int, after: Long): List<QueryMessage>
+
+    @Query("""
+        SELECT count(*) FROM messages 
+        WHERE category IN ('SIGNAL_TEXT', 'SIGNAL_DATA', 'SIGNAL_POST')
+        AND created_at > :after
+        """)
+    suspend fun countMessages(after: Long): Int
 }

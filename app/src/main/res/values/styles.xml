@@ -150,7 +150,7 @@
 
     <style name="AppTheme.GrayProgress">
         <item name="android:indeterminateTint">?attr/icon_gray</item>
-        <item name="android:indeterminate">true</item>
+        <item name="android:indeterminate">false</item>
         <item name="android:indeterminateTintMode">src_atop</item>
     </style>
 

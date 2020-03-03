@@ -23,7 +23,7 @@ object MessageFts4Helper {
 
     private const val SYNC_FTS4_LIMIT = 100
 
-    suspend fun syncMessageFts4(context: Context) {
+    suspend fun syncMessageFts4(context: Context, onProgressChanged: (Int) -> Unit) {
         val messageDao = MixinDatabase.getDatabase(context).messageDao()
         val messageFts4Dao = MixinDatabase.getDatabase(context).messageFts4Dao()
 
@@ -31,6 +31,7 @@ object MessageFts4Helper {
         var start: Long
         val totalStart = System.currentTimeMillis()
         val sixMonthsAgo = Instant.now().minus(6 * 30, ChronoUnit.DAYS).toEpochMilli()
+        val totalCount = messageDao.countMessages(sixMonthsAgo)
         while (true) {
             start = System.currentTimeMillis()
             val queryMessageList = messageDao.batchQueryMessages(SYNC_FTS4_LIMIT, offset, sixMonthsAgo)
@@ -42,6 +43,7 @@ object MessageFts4Helper {
             }
             messageFts4Dao.insertListSuspend(messageFts4List)
             offset += queryMessageList.size
+            onProgressChanged.invoke((offset.toFloat() / totalCount * 100).toInt())
             Timber.d("@@@ handle 100 messages cost ${System.currentTimeMillis() - start}, offset: $offset")
             if (queryMessageList.size < SYNC_FTS4_LIMIT) {
                 break

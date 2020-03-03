@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
+import java.io.File
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
@@ -25,7 +26,6 @@ import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.ResendData
 import one.mixin.android.websocket.createCallMessage
 import one.mixin.android.websocket.createParamBlazeMessage
-import java.io.File
 
 open class SendMessageJob(
     val message: Message,
