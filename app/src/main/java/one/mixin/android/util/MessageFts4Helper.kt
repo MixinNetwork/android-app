@@ -1,8 +1,10 @@
 package one.mixin.android.util
 
 import android.content.Context
+import android.os.SystemClock
 import androidx.annotation.WorkerThread
 import androidx.room.ColumnInfo
+import kotlin.math.min
 import one.mixin.android.Constants.Account.PREF_SYNC_FTS4_OFFSET
 import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
@@ -27,6 +29,7 @@ object MessageFts4Helper {
 
     private const val SYNC_FTS4_LIMIT = 100
     private const val PRE_PROCESS_COUNT = 20000
+    private const val PER_JOB_HANDLE_COUNT = 1000
 
     suspend fun syncMessageFts4(
         preProcess: Boolean,
@@ -39,11 +42,12 @@ object MessageFts4Helper {
 
         var done = false
         var offset = ctx.defaultSharedPreferences.getInt(PREF_SYNC_FTS4_OFFSET, 0)
+        var handleCount = 0
         var start: Long
         val totalStart = System.currentTimeMillis()
         val sixMonthsAgo = Instant.now().minus(6 * 30, ChronoUnit.DAYS).toEpochMilli()
         Timber.d("@@@ sixMonthsAgo: $sixMonthsAgo, is preProcess: $preProcess")
-        val totalCount = if (preProcess) PRE_PROCESS_COUNT else messageDao.countMessages(sixMonthsAgo)
+        val totalCount = min(PRE_PROCESS_COUNT, messageDao.countMessages(sixMonthsAgo))
         while (true) {
             start = System.currentTimeMillis()
             val queryMessageList = messageDao.batchQueryMessages(SYNC_FTS4_LIMIT, offset, sixMonthsAgo)
@@ -55,6 +59,7 @@ object MessageFts4Helper {
             }
             messageFts4Dao.insertListSuspend(messageFts4List)
             offset += queryMessageList.size
+            handleCount += queryMessageList.size
             ctx.defaultSharedPreferences.putInt(PREF_SYNC_FTS4_OFFSET, offset)
             onProgressChanged?.invoke((offset.toFloat() / totalCount * 100).toInt())
             Timber.d("@@@ handle 100 messages cost ${System.currentTimeMillis() - start}, offset: $offset")
@@ -66,8 +71,11 @@ object MessageFts4Helper {
             if (preProcess && offset >= PRE_PROCESS_COUNT) {
                 break
             }
+            if (!preProcess && handleCount >= PER_JOB_HANDLE_COUNT) {
+                break
+            }
             if (waitMillis != null) {
-                Thread.sleep(waitMillis)
+                SystemClock.sleep(waitMillis)
             }
         }
         Timber.d("@@@ handle $offset messages cost: ${System.currentTimeMillis() - totalStart}")
