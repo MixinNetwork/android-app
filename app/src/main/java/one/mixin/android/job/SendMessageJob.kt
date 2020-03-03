@@ -3,7 +3,6 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
 import java.io.File
-import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode

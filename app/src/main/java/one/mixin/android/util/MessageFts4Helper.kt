@@ -1,6 +1,5 @@
 package one.mixin.android.util
 
-import android.content.Context
 import android.os.SystemClock
 import androidx.annotation.WorkerThread
 import androidx.room.ColumnInfo
