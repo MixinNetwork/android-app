@@ -184,7 +184,7 @@ class AttachmentDownloadJob(
                 }
                 val extensionName = message.name?.getExtensionName()
                 val dataFile = MixinApplication.get().getDocumentPath()
-                    .createDocumentTemp(extensionName)
+                    .createDocumentTemp(message.conversationId, message.id, extensionName)
                 dataFile.copyFromInputStream(attachmentCipherInputStream)
                 messageDao.updateMediaMessageUrl(MixinApplication.appContext.getUriForFile(dataFile).toString(), message.id)
                 messageDao.updateMediaSize(dataFile.length(), message.id)

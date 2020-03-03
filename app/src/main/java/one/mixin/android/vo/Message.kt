@@ -189,6 +189,9 @@ fun Message.isImage() =
 fun Message.isFtsMessage() =
     category.endsWith("_TEXT") || category.endsWith("_DATA") || category.endsWith("_POST")
 
+fun Message.isData() =
+    category == MessageCategory.PLAIN_DATA.name || category == MessageCategory.SIGNAL_DATA.name
+
 enum class MessageCategory {
     SIGNAL_KEY,
     SIGNAL_TEXT,

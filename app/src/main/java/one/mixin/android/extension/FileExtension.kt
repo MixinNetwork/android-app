@@ -288,10 +288,10 @@ fun File.createEmptyTemp(noMedia: Boolean = true): File {
     return newTempFile("IMAGE_$time", "", noMedia)
 }
 
-fun File.createDocumentTemp(type: String?, noMedia: Boolean = true): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return newTempFile(
-        "FILE_$time", if (type == null) {
+fun File.createDocumentTemp(conversationId: String, messageId: String, type: String?, noMedia: Boolean = true): File {
+    val path = generateConversationPath(conversationId)
+    return path.newTempFile(
+        messageId, if (type == null) {
             ""
         } else {
             ".$type"

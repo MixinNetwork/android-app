@@ -50,6 +50,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
+import one.mixin.android.job.ConvertDataJobJob
 import one.mixin.android.job.ConvertVideoJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -232,9 +233,8 @@ internal constructor(
             UUID.randomUUID().toString(), conversationId, sender.userId, category,
             null, attachment.filename, attachment.uri.toString(),
             attachment.mimeType, attachment.fileSize, nowInUtc(), null,
-            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
-        )
-        jobManager.addJobInBackground(SendAttachmentMessageJob(message))
+            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
+        jobManager.addJobInBackground(ConvertDataJobJob(message))
     }
 
     fun sendAudioMessage(
@@ -302,17 +302,7 @@ internal constructor(
         replyMessage: MessageItem? = null
     ) {
         val mid = messageId ?: UUID.randomUUID().toString()
-        jobManager.addJobInBackground(
-            ConvertVideoJob(
-                conversationId,
-                senderId,
-                uri,
-                isPlain,
-                mid,
-                createdAt,
-                replyMessage
-            )
-        )
+        jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, isPlain, mid, createdAt, replyMessage))
     }
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
