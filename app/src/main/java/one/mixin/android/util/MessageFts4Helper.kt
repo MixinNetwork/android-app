@@ -3,8 +3,12 @@ package one.mixin.android.util
 import android.content.Context
 import androidx.annotation.WorkerThread
 import androidx.room.ColumnInfo
+import one.mixin.android.Constants.Account.PREF_SYNC_FTS4_OFFSET
+import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.joinWhiteSpace
+import one.mixin.android.extension.putInt
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts4
 import one.mixin.android.vo.isFtsMessage
@@ -22,16 +26,24 @@ data class QueryMessage(
 object MessageFts4Helper {
 
     private const val SYNC_FTS4_LIMIT = 100
+    private const val PRE_PROCESS_COUNT = 20000
 
-    suspend fun syncMessageFts4(context: Context, onProgressChanged: (Int) -> Unit) {
-        val messageDao = MixinDatabase.getDatabase(context).messageDao()
-        val messageFts4Dao = MixinDatabase.getDatabase(context).messageFts4Dao()
+    suspend fun syncMessageFts4(
+        preProcess: Boolean,
+        waitMillis: Long? = null,
+        onProgressChanged: ((Int) -> Unit)? = null
+    ): Boolean {
+        val ctx = MixinApplication.appContext
+        val messageDao = MixinDatabase.getDatabase(ctx).messageDao()
+        val messageFts4Dao = MixinDatabase.getDatabase(ctx).messageFts4Dao()
 
-        var offset = 0
+        var done = false
+        var offset = ctx.defaultSharedPreferences.getInt(PREF_SYNC_FTS4_OFFSET, 0)
         var start: Long
         val totalStart = System.currentTimeMillis()
         val sixMonthsAgo = Instant.now().minus(6 * 30, ChronoUnit.DAYS).toEpochMilli()
-        val totalCount = messageDao.countMessages(sixMonthsAgo)
+        Timber.d("@@@ sixMonthsAgo: $sixMonthsAgo, is preProcess: $preProcess")
+        val totalCount = if (preProcess) PRE_PROCESS_COUNT else messageDao.countMessages(sixMonthsAgo)
         while (true) {
             start = System.currentTimeMillis()
             val queryMessageList = messageDao.batchQueryMessages(SYNC_FTS4_LIMIT, offset, sixMonthsAgo)
@@ -43,13 +55,23 @@ object MessageFts4Helper {
             }
             messageFts4Dao.insertListSuspend(messageFts4List)
             offset += queryMessageList.size
-            onProgressChanged.invoke((offset.toFloat() / totalCount * 100).toInt())
+            ctx.defaultSharedPreferences.putInt(PREF_SYNC_FTS4_OFFSET, offset)
+            onProgressChanged?.invoke((offset.toFloat() / totalCount * 100).toInt())
             Timber.d("@@@ handle 100 messages cost ${System.currentTimeMillis() - start}, offset: $offset")
+
             if (queryMessageList.size < SYNC_FTS4_LIMIT) {
+                done = true
                 break
+            }
+            if (preProcess && offset >= PRE_PROCESS_COUNT) {
+                break
+            }
+            if (waitMillis != null) {
+                Thread.sleep(waitMillis)
             }
         }
         Timber.d("@@@ handle $offset messages cost: ${System.currentTimeMillis() - totalStart}")
+        return done
     }
 
     @WorkerThread

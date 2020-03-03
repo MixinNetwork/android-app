@@ -5,7 +5,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_upgrade.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_FTS4_UPGRADE
@@ -25,6 +28,10 @@ class UpgradeFragment : BaseFragment() {
         fun newInstance() = UpgradeFragment()
     }
 
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+    private val viewModel: MobileViewModel by viewModels { viewModelFactory }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -37,9 +44,12 @@ class UpgradeFragment : BaseFragment() {
         super.onActivityCreated(savedInstanceState)
         MixinApplication.get().onlining.set(true)
         lifecycleScope.launch {
-            MessageFts4Helper.syncMessageFts4(requireContext()) { progress ->
+            val done = MessageFts4Helper.syncMessageFts4(preProcess = true) { progress ->
                 pb.progress = progress
                 progress_tv.text = "$progress%"
+            }
+            if (!done) {
+                viewModel.startSyncFts4Job()
             }
             defaultSharedPreferences.putBoolean(PREF_FTS4_UPGRADE, true)
             MainActivity.show(requireContext())
