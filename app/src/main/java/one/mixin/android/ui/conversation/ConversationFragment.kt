@@ -60,6 +60,7 @@ import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -252,6 +253,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 when {
                     isFirstLoad -> {
                         isFirstLoad = false
+                        chatViewModel.viewModelScope.launch {
+                            delay(100)
+                            messageId?.let { id ->
+                                RxBus.publish(BlinkEvent(id))
+                            }
+                        }
                         if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
                                 ?.getBoolean(conversationId, false) == true
                         ) {
