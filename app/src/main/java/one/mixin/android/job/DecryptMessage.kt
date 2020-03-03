@@ -333,7 +333,7 @@ class DecryptMessage : Injector() {
                 }
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
                 messageDao.insert(message)
-                MessageFts4Helper.insertOrReplaceMessageFts4(MixinApplication.appContext, message)
+                MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 val userMap = mentions?.map { it.identityNumber to it.fullName }?.toMap()
                 sendNotificationJob(message, data.source, userMap, quoteMe || mentionMe)
             }
@@ -342,7 +342,7 @@ class DecryptMessage : Injector() {
                 val message = createPostMessage(data.messageId, data.conversationId, data.userId, data.category, plain,
                     plain.postOptimize(), data.createdAt, data.status)
                 messageDao.insert(message)
-                MessageFts4Helper.insertOrReplaceMessageFts4(MixinApplication.appContext, message)
+                MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_IMAGE") -> {
@@ -400,7 +400,7 @@ class DecryptMessage : Injector() {
                 }
 
                 messageDao.insert(message)
-                MessageFts4Helper.insertOrReplaceMessageFts4(MixinApplication.appContext, message)
+                MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 MixinApplication.appContext.autoDownload(autoDownloadDocument) {
                     jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 }

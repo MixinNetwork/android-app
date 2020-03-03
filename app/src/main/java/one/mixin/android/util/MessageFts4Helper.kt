@@ -83,10 +83,10 @@ object MessageFts4Helper {
     }
 
     @WorkerThread
-    fun insertOrReplaceMessageFts4(context: Context, message: Message) {
+    fun insertOrReplaceMessageFts4(message: Message) {
         if (!message.isFtsMessage()) return
 
-        val messageFts4Dao = MixinDatabase.getDatabase(context).messageFts4Dao()
+        val messageFts4Dao = MixinDatabase.getDatabase(MixinApplication.appContext).messageFts4Dao()
         val name = message.name.joinWhiteSpace()
         val content = message.content.joinWhiteSpace()
         messageFts4Dao.insert(MessageFts4(message.id, name + content))

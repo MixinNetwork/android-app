@@ -169,6 +169,7 @@ class MainActivity : BlazeBaseActivity() {
             finish()
             return
         }
+
         if (!defaultSharedPreferences.getBoolean(IS_LOADED, false) ||
             !defaultSharedPreferences.getBoolean(IS_SYNC_SESSION, false)
         ) {

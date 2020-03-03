@@ -71,7 +71,7 @@ open class SendMessageJob(
                     parseHyperlink()
                 }
                 messageDao.insert(message)
-                MessageFts4Helper.insertOrReplaceMessageFts4(MixinApplication.appContext, message)
+                MessageFts4Helper.insertOrReplaceMessageFts4(message)
             }
         } else {
             Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
