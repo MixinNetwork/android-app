@@ -4,6 +4,7 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import one.mixin.android.util.QueryMessage
 import one.mixin.android.util.Session
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaMessageMinimal
@@ -197,12 +198,13 @@ interface MessageDao : BaseDao<Message> {
             u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
             FROM messages m INNER JOIN users u ON c.owner_id = u.user_id
             INNER JOIN conversations c ON c.conversation_id = m.conversation_id
-            WHERE m.rowid in (SELECT rowid FROM messages_fts WHERE messages_fts MATCH :query) AND m.status != 'FAILED' 
+            WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) 
+            AND m.status != 'FAILED'
             AND m.category IN('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST') 
             GROUP BY m.conversation_id
             ORDER BY m.created_at DESC
             LIMIT :limit
-            """
+        """
     )
     suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem>
 
@@ -211,11 +213,11 @@ interface MessageDao : BaseDao<Message> {
             SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
             m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
             FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
-            WHERE m.rowid in (SELECT rowid FROM messages_fts WHERE messages_fts MATCH :query) AND m.status != 'FAILED' 
+            WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) AND m.status != 'FAILED' 
             AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST') 
             AND m.conversation_id = :conversationId
             ORDER BY m.created_at DESC
-            """
+        """
     )
     fun fuzzySearchMessageByConversationId(
         query: String,
@@ -424,6 +426,11 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT * FROM messages WHERE id IN (:messageIds) ORDER BY created_at, rowid")
     suspend fun getSortMessagesByIds(messageIds: List<String>): List<Message>
 
-    @Query("INSERT INTO `messages_fts` (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages WHERE category IN ('PLAIN_TEXT', 'SIGNAL_TEXT', 'PLAIN_DATA', 'SIGNAL_DATA')")
-    suspend fun upgradeFtsMessage()
+    @Query("""
+        SELECT id as message_id, content, name FROM messages 
+        WHERE category IN ('SIGNAL_TEXT', 'SIGNAL_DATA', 'SIGNAL_POST')
+        AND created_at > :after
+        LIMIT :limit OFFSET :offset
+        """)
+    suspend fun batchQueryMessages(limit: Int, offset: Int, after: Long): List<QueryMessage>
 }

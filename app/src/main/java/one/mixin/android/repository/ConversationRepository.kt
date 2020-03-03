@@ -21,8 +21,10 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.batchMarkReadAndTake
+import one.mixin.android.db.deleteMessage
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
+import one.mixin.android.extension.joinStar
 import one.mixin.android.job.AttachmentDeleteJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.media.pager.MediaPagerActivity
@@ -113,10 +115,10 @@ internal constructor(
         readConversationDao.getConversation(conversationId)
 
     suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem> =
-        readMessageDao.fuzzySearchMessage("$query*", limit)
+        readMessageDao.fuzzySearchMessage(query.joinStar(), limit)
 
     fun fuzzySearchMessageDetail(query: String, conversationId: String) =
-        readMessageDao.fuzzySearchMessageByConversationId("$query*", conversationId)
+        readMessageDao.fuzzySearchMessageByConversationId(query.joinStar(), conversationId)
 
     suspend fun fuzzySearchChat(query: String): List<ChatMinimal> =
         readConversationDao.fuzzySearchChat(query)
@@ -180,8 +182,7 @@ internal constructor(
         if (!mediaUrl.isNullOrBlank()) {
             jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
         }
-        messageDao.deleteMessage(id)
-        messageMentionDao.deleteMessage(id)
+        appDatabase.deleteMessage(id)
     }
 
     suspend fun deleteConversationById(conversationId: String) {
@@ -324,8 +325,6 @@ internal constructor(
 
     suspend fun insertParticipantSession(ps: List<ParticipantSession>) =
         participantSessionDao.insertListSuspend(ps)
-
-    suspend fun upgradeFtsMessage() = messageDao.upgradeFtsMessage()
 
     suspend fun getAnnouncementByConversationId(conversationId: String) = conversationDao.getAnnouncementByConversationId(conversationId)
 

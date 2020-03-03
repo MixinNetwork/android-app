@@ -14,6 +14,8 @@ import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SyncFts4Job
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Session
@@ -24,7 +26,8 @@ import one.mixin.android.vo.User
 class MobileViewModel @Inject internal
 constructor(
     private val accountRepository: AccountRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val jobManager: MixinJobManager
 ) : ViewModel() {
 
     fun loginVerification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
@@ -47,4 +50,8 @@ constructor(
     }
 
     fun updatePhone(id: String, phone: String) = userRepository.updatePhone(id, phone)
+
+    fun startSyncFts4Job() {
+        jobManager.addJobInBackground(SyncFts4Job())
+    }
 }

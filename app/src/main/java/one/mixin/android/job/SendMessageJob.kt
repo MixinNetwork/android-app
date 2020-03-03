@@ -10,6 +10,7 @@ import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.Session
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.MentionUser
@@ -69,6 +70,7 @@ open class SendMessageJob(
                     parseHyperlink()
                 }
                 messageDao.insert(message)
+                MessageFts4Helper.insertOrReplaceMessageFts4(message)
             }
         } else {
             Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))

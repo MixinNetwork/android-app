@@ -101,4 +101,24 @@ class StringExtensionTest {
         assertEquals(result.toByteArray().size, 100)
         assertEquals("abc".maxLimit(), "abc")
     }
+
+    @Test
+    fun testJoinWhiteSpace() {
+        val s1 = "hello520你好"
+        val s2 = "a1b2c3哈4de哈*# ~6f"
+        val s3: String? = null
+
+        assertEquals("hello 520 你 好", s1.joinWhiteSpace())
+        assertEquals("a 1 b 2 c 3 哈 4 de 哈 * #  ~ 6 f", s2.joinWhiteSpace())
+        assertEquals("", s3.joinWhiteSpace())
+    }
+
+    @Test
+    fun testJoinStar() {
+        val s1 = "hello520你好"
+        val s2 = "a1b2c3哈4de哈*# ~6f"
+
+        assertEquals("hello*520*你*好*", s1.joinStar())
+        assertEquals("a*1*b*2*c*3*哈*4*de*哈***#* ~*6*f*", s2.joinStar())
+    }
 }

@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 28,
-    "identityHash": "34f3a61864674580fb526b7d1769fa67",
+    "version": 29,
+    "identityHash": "b9117cb851fce159fa80f79713e69353",
     "entities": [
       {
         "tableName": "users",
@@ -1554,47 +1554,6 @@
         "foreignKeys": []
       },
       {
-        "ftsVersion": "FTS4",
-        "ftsOptions": {
-          "tokenizer": "unicode61",
-          "tokenizerArgs": [],
-          "contentTable": "messages",
-          "languageIdColumnName": "",
-          "matchInfo": "FTS4",
-          "notIndexedColumns": [],
-          "prefixSizes": [],
-          "preferredOrder": "ASC"
-        },
-        "contentSyncTriggers": [
-          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_messages_fts_BEFORE_UPDATE BEFORE UPDATE ON `messages` BEGIN DELETE FROM `messages_fts` WHERE `docid`=OLD.`rowid`; END",
-          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_messages_fts_BEFORE_DELETE BEFORE DELETE ON `messages` BEGIN DELETE FROM `messages_fts` WHERE `docid`=OLD.`rowid`; END",
-          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_messages_fts_AFTER_UPDATE AFTER UPDATE ON `messages` BEGIN INSERT INTO `messages_fts`(`docid`, `content`, `name`) VALUES (NEW.`rowid`, NEW.`content`, NEW.`name`); END",
-          "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_messages_fts_AFTER_INSERT AFTER INSERT ON `messages` BEGIN INSERT INTO `messages_fts`(`docid`, `content`, `name`) VALUES (NEW.`rowid`, NEW.`content`, NEW.`name`); END"
-        ],
-        "tableName": "messages_fts",
-        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`content` TEXT, `name` TEXT, tokenize=unicode61, content=`messages`)",
-        "fields": [
-          {
-            "fieldPath": "content",
-            "columnName": "content",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": false
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [],
-          "autoGenerate": false
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
         "tableName": "message_mentions",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `mentions` TEXT NOT NULL, `has_read` INTEGER NOT NULL, PRIMARY KEY(`message_id`))",
         "fields": [
@@ -1640,12 +1599,50 @@
           }
         ],
         "foreignKeys": []
+      },
+      {
+        "ftsVersion": "FTS4",
+        "ftsOptions": {
+          "tokenizer": "unicode61",
+          "tokenizerArgs": [],
+          "contentTable": "",
+          "languageIdColumnName": "",
+          "matchInfo": "FTS4",
+          "notIndexedColumns": [
+            "message_id"
+          ],
+          "prefixSizes": [],
+          "preferredOrder": "ASC"
+        },
+        "contentSyncTriggers": [],
+        "tableName": "messages_fts4",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`message_id` TEXT NOT NULL, `content` TEXT, tokenize=unicode61, notindexed=`message_id`)",
+        "fields": [
+          {
+            "fieldPath": "messageId",
+            "columnName": "message_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "content",
+            "columnName": "content",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '34f3a61864674580fb526b7d1769fa67')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b9117cb851fce159fa80f79713e69353')"
     ]
   }
-}  
+}

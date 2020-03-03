@@ -160,5 +160,14 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("ALTER TABLE apps ADD COLUMN resource_patterns TEXT")
             }
         }
+
+        val MIGRATION_28_29: Migration = object : Migration(28, 29) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DROP TABLE IF EXISTS messages_fts")
+                database.execSQL("""
+                    CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts4` USING FTS4(`message_id` TEXT NOT NULL, `content` TEXT, tokenize=unicode61, notindexed=`message_id`)
+                """)
+            }
+        }
     }
 }

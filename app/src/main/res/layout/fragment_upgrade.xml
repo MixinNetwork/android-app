@@ -19,17 +19,18 @@
         app:layout_constraintTop_toBottomOf="@id/imageView" />
 
     <TextView
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="32dp"
-        android:gravity="center_horizontal"
-        android:text="@string/database_upgrade_tips"
-        android:textColor="?attr/text_minor"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/loading_title" />
+            android:id="@+id/textView2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="32dp"
+            android:gravity="center_horizontal"
+            android:text="@string/database_upgrade_tips"
+            android:textColor="?attr/text_minor"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/loading_title" />
 
     <ImageView
         android:id="@+id/imageView"
@@ -45,17 +46,30 @@
         tools:ignore="ContentDescription" />
 
     <ProgressBar
-        android:id="@+id/everybody_pb"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
+        android:id="@+id/pb"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="60dp"
+        android:layout_marginEnd="60dp"
         android:layout_marginBottom="96dp"
+        android:indeterminateOnly="false"
+        android:max="100"
         android:theme="@style/AppTheme.GrayProgress"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+
+    <TextView
+        android:id="@+id/progress_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/colorBlue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/pb" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -63,8 +77,9 @@
         android:layout_marginTop="8dp"
         android:text="@string/database_upgrade"
         android:textColor="?attr/text_minor"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/everybody_pb" />
+        app:layout_constraintTop_toBottomOf="@id/pb" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

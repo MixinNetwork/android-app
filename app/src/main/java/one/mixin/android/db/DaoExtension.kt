@@ -88,3 +88,11 @@ fun MessageDao.batchMarkReadAndTake(
         takeUnseen(userId, conversationId)
     }
 }
+
+fun MixinDatabase.deleteMessage(id: String) {
+    runInTransaction {
+        messageDao().deleteMessage(id)
+        mentionMessageDao().deleteMessage(id)
+        messageFts4Dao().deleteByMessageId(id)
+    }
+}
