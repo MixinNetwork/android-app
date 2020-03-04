@@ -75,7 +75,7 @@ internal constructor(
     fun getMessages(conversationId: String) =
         MessageProvider.getMessages(conversationId, readAppDatabase)
 
-    fun conversations(): DataSource.Factory<Int, ConversationItem> = readConversationDao.conversationList()
+    fun conversations(): DataSource.Factory<Int, ConversationItem> = conversationDao.conversationList()
 
     suspend fun successConversationList(): List<ConversationItem> = readConversationDao.successConversationList()
 
