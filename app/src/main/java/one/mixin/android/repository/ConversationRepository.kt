@@ -103,7 +103,7 @@ internal constructor(
         }
 
     fun searchConversationById(conversationId: String) =
-        readConversationDao.searchConversationById(conversationId)
+        conversationDao.searchConversationById(conversationId)
 
     fun findMessageById(messageId: String) = messageDao.findMessageById(messageId)
 
