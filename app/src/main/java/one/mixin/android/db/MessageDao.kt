@@ -65,8 +65,7 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO'
-        OR m.category = 'SIGNAL_LIVE' OR m.category = 'PLAIN_LIVE') 
+        AND m.category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE') 
         ORDER BY m.created_at ASC, m.rowid ASC
         """
     )
@@ -81,18 +80,17 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
         FROM messages m 
         INNER JOIN users u ON m.user_id = u.user_id 
-        WHERE m.conversation_id = :conversationId
-        AND m.id = :messageId
+        WHERE m.id = :messageId AND m.conversation_id = :conversationId
         """
     )
     suspend fun getMediaMessage(conversationId: String, messageId: String): MessageItem
 
     @Query(
-        """SELECT count(*) FROM messages WHERE conversation_id = :conversationId
-        AND created_at < (SELECT created_at FROM messages WHERE id = :messageId)
-        AND (category = 'SIGNAL_IMAGE' OR category = 'PLAIN_IMAGE' OR category = 'SIGNAL_VIDEO' OR category = 'PLAIN_VIDEO'
-        OR category = 'SIGNAL_LIVE' OR category = 'PLAIN_LIVE')
-        ORDER BY created_at ASC, rowid ASC
+        """
+            SELECT count(*) FROM messages WHERE conversation_id = :conversationId
+            AND created_at < (SELECT created_at FROM messages WHERE id = :messageId)
+            AND category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_LIVE', 'PLAIN_LIVE') 
+            ORDER BY created_at ASC, rowid ASC
         """
     )
     suspend fun indexMediaMessages(conversationId: String, messageId: String): Int
@@ -107,7 +105,7 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
-        AND (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO')
+        AND m.category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO')
         ORDER BY m.created_at DESC, m.rowid ASC
         """
     )
@@ -116,7 +114,7 @@ interface MessageDao : BaseDao<Message> {
     @Query(
         """SELECT count(*) FROM messages WHERE conversation_id = :conversationId 
         AND created_at > (SELECT created_at FROM messages WHERE id = :messageId)
-        AND (category = 'SIGNAL_IMAGE' OR category = 'PLAIN_IMAGE' OR category = 'SIGNAL_VIDEO' OR category = 'PLAIN_VIDEO')
+        AND category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO')
         ORDER BY created_at DESC, rowid ASC
         """
     )
@@ -132,7 +130,7 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration,  m.media_waveform AS mediaWaveform
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND (m.category = 'SIGNAL_AUDIO' OR m.category = 'PLAIN_AUDIO')
+        AND m.category IN ('SIGNAL_AUDIO', 'PLAIN_AUDIO')
         ORDER BY m.created_at DESC
         """
     )
@@ -144,7 +142,7 @@ interface MessageDao : BaseDao<Message> {
             h.site_name AS siteName, h.site_title AS siteTitle, m.created_at AS createdAt
             FROM hyperlinks h INNER JOIN messages m ON h.hyperlink = m.hyperlink
             WHERE m.conversation_id = :conversationId
-            AND (m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT')
+            AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT')
             ORDER BY m.created_at DESC
         """
     )
@@ -159,7 +157,7 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND (m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA')
+        AND m.category IN ('SIGNAL_DATA', 'PLAIN_DATA')
         ORDER BY m.created_at DESC
         """
     )
@@ -199,8 +197,8 @@ interface MessageDao : BaseDao<Message> {
             FROM messages m INNER JOIN users u ON c.owner_id = u.user_id
             INNER JOIN conversations c ON c.conversation_id = m.conversation_id
             WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) 
-            AND m.status != 'FAILED'
             AND m.category IN('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST') 
+            AND m.status != 'FAILED'
             GROUP BY m.conversation_id
             ORDER BY m.created_at DESC
             LIMIT :limit
@@ -213,9 +211,10 @@ interface MessageDao : BaseDao<Message> {
             SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
             m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
             FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
-            WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) AND m.status != 'FAILED' 
+            WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) 
             AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST') 
             AND m.conversation_id = :conversationId
+            AND m.status != 'FAILED'
             ORDER BY m.created_at DESC
         """
     )
