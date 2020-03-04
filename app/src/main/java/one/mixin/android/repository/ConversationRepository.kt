@@ -3,6 +3,7 @@ package one.mixin.android.repository
 import android.annotation.SuppressLint
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
+import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import io.reactivex.Observable
@@ -74,7 +75,7 @@ internal constructor(
     fun getMessages(conversationId: String) =
         MessageProvider.getMessages(conversationId, readAppDatabase)
 
-    fun conversation(): LiveData<List<ConversationItem>> = readConversationDao.conversationList()
+    fun conversations(): DataSource.Factory<Int, ConversationItem> = conversationDao.conversationList()
 
     suspend fun successConversationList(): List<ConversationItem> = readConversationDao.successConversationList()
 
@@ -102,7 +103,7 @@ internal constructor(
         }
 
     fun searchConversationById(conversationId: String) =
-        readConversationDao.searchConversationById(conversationId)
+        conversationDao.searchConversationById(conversationId)
 
     fun findMessageById(messageId: String) = messageDao.findMessageById(messageId)
 

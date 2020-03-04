@@ -106,6 +106,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
         adapter.listener = this
         adapter.headerView = headerView
+        adapter.setShowHeader(true, transactions_rv)
         transactions_rv.itemAnimator = null
         transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         transactions_rv.adapter = adapter

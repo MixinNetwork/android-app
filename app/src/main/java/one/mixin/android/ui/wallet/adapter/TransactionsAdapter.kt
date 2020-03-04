@@ -10,7 +10,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
-import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapterDataObserver
 import one.mixin.android.vo.SnapshotItem
 
 class TransactionsAdapter :
@@ -42,10 +41,6 @@ class TransactionsAdapter :
                 holder.bind(it, listener)
             }
         }
-    }
-
-    override fun registerAdapterDataObserver(observer: RecyclerView.AdapterDataObserver) {
-        super.registerAdapterDataObserver(PagedHeaderAdapterDataObserver(observer, 1))
     }
 
     override fun getNormalViewHolder(context: Context, parent: ViewGroup) =

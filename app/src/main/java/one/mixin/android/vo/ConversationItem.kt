@@ -2,6 +2,7 @@ package one.mixin.android.vo
 
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
 import org.threeten.bp.Instant
 
@@ -37,6 +38,16 @@ data class ConversationItem(
     val mentions: String?,
     val mentionCount: Int?
 ) {
+    companion object {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<ConversationItem>() {
+            override fun areItemsTheSame(oldItem: ConversationItem, newItem: ConversationItem) =
+                oldItem.conversationId == newItem.conversationId
+
+            override fun areContentsTheSame(oldItem: ConversationItem, newItem: ConversationItem) =
+                oldItem == newItem
+        }
+    }
+
     fun isGroup() = category == ConversationCategory.GROUP.name
 
     fun isContact() = category == ConversationCategory.CONTACT.name
