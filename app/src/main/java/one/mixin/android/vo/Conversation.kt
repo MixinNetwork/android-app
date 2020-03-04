@@ -7,9 +7,7 @@ import androidx.room.PrimaryKey
 import java.util.UUID
 import one.mixin.android.extension.nowInUtc
 
-@Entity(tableName = "conversations", indices = [
-    Index(value = ["conversation_id"], unique = true),
-    Index(value = ["created_at"])])
+@Entity(tableName = "conversations")
 open class Conversation(
     @PrimaryKey
     @ColumnInfo(name = "conversation_id")
