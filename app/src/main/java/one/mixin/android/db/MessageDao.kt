@@ -303,9 +303,10 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET shared_user_id = :sharedUserId, status = :status WHERE id = :messageId AND category != 'MESSAGE_RECALL'")
     fun updateContactMessage(sharedUserId: String, status: String, messageId: String)
 
-    @Query(
-        "UPDATE messages SET media_width = :width, media_height = :height, media_url=:url, thumb_url = :thumbUrl, status = :status " +
-            "WHERE id = :messageId AND category != 'SIGNAL_LIVE'"
+    @Query("""
+        UPDATE messages SET media_width = :width, media_height = :height, media_url=:url, thumb_url = :thumbUrl, status = :status 
+        WHERE id = :messageId AND category != 'SIGNAL_LIVE'
+        """
     )
     fun updateLiveMessage(
         width: Int,
@@ -342,9 +343,10 @@ interface MessageDao : BaseDao<Message> {
     fun findConversationsByMessages(messages: List<String>): List<String>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query(
-        "SELECT id, conversation_id, user_id, status, created_at FROM messages WHERE conversation_id = :conversationId " +
-            "AND user_id != :userId AND status IN ('SENT', 'DELIVERED') ORDER BY created_at ASC"
+    @Query("""
+            SELECT id, conversation_id, user_id, status, created_at FROM messages WHERE conversation_id = :conversationId 
+            AND user_id != :userId AND status IN ('SENT', 'DELIVERED') ORDER BY created_at ASC
+        """
     )
     fun findUnreadMessagesSync(
         conversationId: String,
