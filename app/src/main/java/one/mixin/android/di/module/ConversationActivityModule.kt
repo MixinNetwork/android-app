@@ -8,7 +8,6 @@ import one.mixin.android.ui.conversation.GiphyFragment
 import one.mixin.android.ui.conversation.MenuFragment
 import one.mixin.android.ui.conversation.StickerAlbumFragment
 import one.mixin.android.ui.conversation.StickerFragment
-import one.mixin.android.ui.conversation.location.LocationBottomDialogFragment
 import one.mixin.android.ui.group.GroupInfoFragment
 import one.mixin.android.ui.sticker.StickerAddFragment
 import one.mixin.android.ui.sticker.StickerManagementFragment
@@ -41,7 +40,4 @@ abstract class ConversationActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeMenuFragment(): MenuFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeLocationBottomDialogFragment(): LocationBottomDialogFragment
 }
