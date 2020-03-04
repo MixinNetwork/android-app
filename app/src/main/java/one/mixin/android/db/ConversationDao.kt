@@ -1,6 +1,7 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
+import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
@@ -48,7 +49,7 @@ interface ConversationDao : BaseDao<Conversation> {
             END 
             DESC
         """)
-    fun conversationList(): LiveData<List<ConversationItem>>
+    fun conversationList(): DataSource.Factory<Int, ConversationItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(PREFIX_CONVERSATION_ITEM +

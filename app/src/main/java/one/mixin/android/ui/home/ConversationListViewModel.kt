@@ -1,9 +1,13 @@
 package one.mixin.android.ui.home
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.LivePagedListBuilder
+import androidx.paging.PagedList
 import javax.inject.Inject
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.CONVERSATION_PAGE_SIZE
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.extension.nowInUtc
@@ -14,6 +18,7 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
+import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.generateConversationId
@@ -23,7 +28,16 @@ internal constructor(
     private val messageRepository: ConversationRepository,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
-    var conversations = messageRepository.conversation()
+
+    fun observeConversations(): LiveData<PagedList<ConversationItem>> {
+        return LivePagedListBuilder(
+            messageRepository.conversations(), PagedList.Config.Builder()
+            .setPrefetchDistance(CONVERSATION_PAGE_SIZE * 2)
+            .setPageSize(CONVERSATION_PAGE_SIZE)
+            .setEnablePlaceholders(true)
+            .build()
+        ).build()
+    }
 
     fun createGroupConversation(conversationId: String) {
         val c = messageRepository.getConversation(conversationId)
