@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 29,
-    "identityHash": "1e856785c0fcc0b8b9cee3822320f127",
+    "identityHash": "625e345760a708ccd13ac7c2a311627d",
     "entities": [
       {
         "tableName": "users",
@@ -997,7 +997,7 @@
       },
       {
         "tableName": "apps",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`app_id` TEXT NOT NULL, `app_number` TEXT NOT NULL, `home_uri` TEXT NOT NULL, `redirect_uri` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `description` TEXT NOT NULL, `app_secret` TEXT NOT NULL, `capabilities` TEXT, `creator_id` TEXT NOT NULL, `resource_patterns` TEXT, PRIMARY KEY(`app_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`app_id` TEXT NOT NULL, `app_number` TEXT NOT NULL, `home_uri` TEXT NOT NULL, `redirect_uri` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `description` TEXT NOT NULL, `app_secret` TEXT NOT NULL, `capabilities` TEXT, `creator_id` TEXT NOT NULL, `resource_patterns` TEXT, `updated_at` TEXT, PRIMARY KEY(`app_id`))",
         "fields": [
           {
             "fieldPath": "appId",
@@ -1062,6 +1062,12 @@
           {
             "fieldPath": "resourcePatterns",
             "columnName": "resource_patterns",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -1625,7 +1631,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1e856785c0fcc0b8b9cee3822320f127')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '625e345760a708ccd13ac7c2a311627d')"
     ]
   }
 }

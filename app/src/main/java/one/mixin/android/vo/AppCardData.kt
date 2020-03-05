@@ -9,7 +9,9 @@ data class AppCardData(
     val iconUrl: String,
     var title: String,
     var description: String,
-    val action: String
+    val action: String,
+    @SerializedName("updated_at")
+    val updatedAt: String?
 ) {
     init {
         title = title.take(36)

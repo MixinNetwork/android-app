@@ -512,10 +512,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (appId == null) return@setOnClickListener
 
                 lifecycleScope.launch {
-                    val app = bottomViewModel.getAppAndCheckUser(appId!!)
+                    val app = bottomViewModel.getAppAndCheckUser(appId!!, app?.updatedAt)
                     if (app.matchResourcePattern(currentUrl)) {
                         val webTitle = contentView.chat_web_view.title ?: app.name
-                        val appCardData = AppCardData(app.appId, app.icon_url, webTitle, app.name, currentUrl)
+                        val appCardData = AppCardData(app.appId, app.icon_url, webTitle, app.name, currentUrl, app.updatedAt)
                         ForwardActivity.show(requireContext(),
                             arrayListOf(ForwardMessage(ForwardCategory.APP_CARD.name, content = Gson().toJson(appCardData))))
                     } else {

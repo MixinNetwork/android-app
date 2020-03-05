@@ -49,7 +49,9 @@ data class App(
     val creatorId: String,
     @SerializedName("resource_patterns")
     @ColumnInfo(name = "resource_patterns")
-    val resourcePatterns: ArrayList<String>?
+    val resourcePatterns: ArrayList<String>?,
+    @ColumnInfo(name = "updated_at")
+    val updatedAt: String?
 ) : Parcelable {
 
     companion object {
