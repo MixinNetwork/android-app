@@ -106,7 +106,7 @@ interface MessageDao : BaseDao<Message> {
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
         AND m.category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO')
-        ORDER BY m.created_at DESC, m.rowid ASC
+        ORDER BY m.created_at DESC, m.rowid DESC
         """
     )
     fun getMediaMessagesExcludeLive(conversationId: String): DataSource.Factory<Int, MessageItem>
@@ -115,7 +115,7 @@ interface MessageDao : BaseDao<Message> {
         """SELECT count(*) FROM messages WHERE conversation_id = :conversationId 
         AND created_at > (SELECT created_at FROM messages WHERE id = :messageId)
         AND category IN ('SIGNAL_IMAGE', 'PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO')
-        ORDER BY created_at DESC, rowid ASC
+        ORDER BY created_at DESC, rowid DESC
         """
     )
     suspend fun indexMediaMessagesExcludeLive(conversationId: String, messageId: String): Int
@@ -194,7 +194,8 @@ interface MessageDao : BaseDao<Message> {
             SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
             c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
             u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
-            FROM messages m INNER JOIN users u ON c.owner_id = u.user_id
+            FROM messages m
+			INNER JOIN users u ON c.owner_id = u.user_id
             INNER JOIN conversations c ON c.conversation_id = m.conversation_id
             WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH :query) 
             AND m.category IN('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST') 
