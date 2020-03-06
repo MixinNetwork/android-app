@@ -176,28 +176,32 @@ class DecryptMessage : Injector() {
     private fun processAppCard(data: BlazeMessageData) {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
             String(Base64.decode(data.data)), data.createdAt, data.status)
-        try {
-            val appCardData = gson.fromJson(message.content, AppCardData::class.java)
-            appCardData.appId?.let { id ->
-                runBlocking {
-                    val app = appDao.findAppById(id)
-                    if (app?.updatedAt != appCardData.updatedAt) {
-                        handleMixinResponse(
-                            invokeNetwork = {
-                                userApi.getUserByIdSuspend(id)
-                            },
-                            successBlock = {
-                                it.data?.let { u ->
-                                    userDao.insertUpdate(u, appDao)
-                                }
-                            }
-                        )
-                    }
-                }
-            }
+        val appCardData = try {
+            gson.fromJson(message.content, AppCardData::class.java)
         } catch (e: Exception) {
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             return
+        }
+        appCardData.appId?.let { id ->
+            runBlocking {
+                var app = appDao.findAppById(id)
+                if (app?.updatedAt != appCardData.updatedAt) {
+                    app = handleMixinResponse(
+                        invokeNetwork = {
+                            userApi.getUserByIdSuspend(id)
+                        },
+                        successBlock = {
+                            it.data?.let { u ->
+                                userDao.insertUpdate(u, appDao)
+                                return@handleMixinResponse u.app
+                            }
+                        }
+                    )
+                    if (app == null) {
+                        jobManager.addJobInBackground(RefreshUserJob(listOf(id)))
+                    }
+                }
+            }
         }
         messageDao.insert(message)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)

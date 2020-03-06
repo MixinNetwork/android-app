@@ -15,6 +15,17 @@
         android:src="@drawable/ic_close_black"
         tools:ignore="ContentDescription" />
 
+    <TextView
+        android:id="@+id/count_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/close_iv"
+        android:layout_marginStart="16dp"
+        android:layout_centerVertical="true"
+        android:textColor="?text_primary"
+        android:textStyle="bold"
+        android:textSize="20sp" />
+
     <ImageView
         android:id="@+id/delete_iv"
         android:layout_width="wrap_content"

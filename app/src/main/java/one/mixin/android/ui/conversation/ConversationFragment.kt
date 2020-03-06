@@ -324,6 +324,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 } else {
                     chatAdapter.removeSelect(messageItem)
                 }
+                tool_view.count_tv.text = chatAdapter.selectSet.size.toString()
                 when {
                     chatAdapter.selectSet.isEmpty() -> tool_view.fadeOut()
                     chatAdapter.selectSet.size == 1 -> {
@@ -366,6 +367,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onLongClick(messageItem: MessageItem, position: Int): Boolean {
                 val b = chatAdapter.addSelect(messageItem)
+                tool_view.count_tv.text = chatAdapter.selectSet.size.toString()
                 if (b) {
                     if (messageItem.type == MessageCategory.SIGNAL_TEXT.name ||
                         messageItem.type == MessageCategory.PLAIN_TEXT.name
