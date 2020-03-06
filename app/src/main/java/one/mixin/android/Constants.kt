@@ -10,6 +10,7 @@ object Constants {
         const val Mixin_WS_URL = "wss://blaze.mixin.one"
 
         const val GIPHY_URL = "http://api.giphy.com/v1/"
+        const val FOURSQUARE_URL = "https://api.foursquare.com/v2/"
     }
 
     object HelpLink {

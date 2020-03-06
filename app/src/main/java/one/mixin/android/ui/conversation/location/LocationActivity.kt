@@ -72,8 +72,8 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         googleMap ?: return
 
         if (isNightMode()) {
-            val style = MapStyleOptions.loadRawResourceStyle(applicationContext, R.raw.mapstyle_night);
-            googleMap.setMapStyle(style);
+            val style = MapStyleOptions.loadRawResourceStyle(applicationContext, R.raw.mapstyle_night)
+            googleMap.setMapStyle(style)
         }
         mapInit(googleMap)
 
@@ -89,7 +89,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     fun mapInit(googleMap: GoogleMap) {
         try {
-            googleMap.isMyLocationEnabled = true;
+            googleMap.isMyLocationEnabled = true
         } catch (e: Exception) {
             Timber.e(e)
         }
