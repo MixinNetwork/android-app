@@ -29,12 +29,16 @@ class StringExtensionTest {
         val s3 = "0.103"
         val s4 = "0.108"
         val s5 = "0.0000000023"
+        val s6 = "1e-7"
+        val s7 = "1e+8"
 
         assertEquals("12,345", s1.numberFormat2())
         assertEquals("0.12", s2.numberFormat2())
         assertEquals("0.1", s3.numberFormat2())
         assertEquals("0.11", s4.numberFormat2())
         assertEquals("0.00", s5.numberFormat2())
+        assertEquals("0.00", s6.numberFormat2())
+        assertEquals("100,000,000", s7.numberFormat2())
     }
 
     @Test
@@ -52,6 +56,8 @@ class StringExtensionTest {
         val s11 = "-0.00000001"
         val s12 = "-0.000000001"
         val s13 = "0.0000000001"
+        val s14 = "1e-7"
+        val s15 = "1e+8"
 
         assertEquals("12,345,678,901", s1.numberFormat8())
         assertEquals("123,456,789", s2.numberFormat8())
@@ -66,6 +72,8 @@ class StringExtensionTest {
         assertEquals("-0.00000001", s11.numberFormat8())
         assertEquals("-0", s12.numberFormat8())
         assertEquals("0.00000000", s13.numberFormat8())
+        assertEquals("0.0000001", s14.numberFormat8())
+        assertEquals("100,000,000", s15.numberFormat8())
     }
 
     @Test
@@ -75,12 +83,16 @@ class StringExtensionTest {
         val s3 = "12345.0600"
         val s4 = "0.000112312000827543897052"
         val s5 = "1234567.0010123049580234598807834658927346001234"
+        val s6 = "1e-7"
+        val s7 = "1e+8"
 
         assertEquals("12,345,678,901", s1.numberFormat())
         assertEquals("123,456,789.1234567", s2.numberFormat())
         assertEquals("12,345.06", s3.numberFormat())
         assertEquals("0.000112312000827543897052", s4.numberFormat())
-        assertEquals("1,234,567.0010123049580234598807834658927346001234", s5.numberFormat())
+        assertEquals("1,234,567.0010123049580234598807835", s5.numberFormat())
+        assertEquals("0.0000001", s6.numberFormat())
+        assertEquals("100,000,000", s7.numberFormat())
     }
 
     @Test
