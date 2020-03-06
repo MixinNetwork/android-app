@@ -1,8 +1,11 @@
 package one.mixin.android.ui.conversation.location
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -10,17 +13,17 @@ import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
-import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_location.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.dp
 import one.mixin.android.ui.common.BaseActivity
 import timber.log.Timber
 
 class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
-    // todo delete
-    private val SYDNEY = LatLng(39.937795, 116.387224)
+    // todo delete test position
+    private val SYDNEY = LatLng(39.9967, 116.4805)
     private val ZOOM_LEVEL = 13f
 
     private var mapsInitialized = false
@@ -76,7 +79,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
         with(googleMap) {
             moveCamera(CameraUpdateFactory.newLatLngZoom(SYDNEY, ZOOM_LEVEL))
-            addMarker(MarkerOptions().position(SYDNEY))
+            // addMarker(MarkerOptions().position(SYDNEY))
         }
         mapsInitialized = true
         if (onResumeCalled) {
@@ -94,12 +97,39 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         googleMap.uiSettings?.isZoomControlsEnabled = false
         googleMap.uiSettings?.isCompassEnabled = false
         googleMap.setOnCameraMoveStartedListener { reason ->
+            Timber.d("started")
             if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
                 val cameraPosition = googleMap.cameraPosition
                 forceUpdate = CameraUpdateFactory.newLatLngZoom(cameraPosition.target, cameraPosition.zoom)
             }
+            markerAnimatorSet?.cancel()
+            markerAnimatorSet = AnimatorSet()
+            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(marker, View.TRANSLATION_Y, -8.dp.toFloat()))
+            markerAnimatorSet?.duration = 200
+            markerAnimatorSet?.start()
+        }
+        googleMap.setOnCameraMoveListener {
+            Timber.d("OnCameraMove")
+        }
+
+        googleMap.setOnCameraIdleListener {
+            markerAnimatorSet?.cancel()
+            markerAnimatorSet = AnimatorSet()
+            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(marker, View.TRANSLATION_Y, 0f))
+            markerAnimatorSet?.duration = 200
+            markerAnimatorSet?.start()
+            googleMap.cameraPosition.target.let { lastLang ->
+                Timber.d("${lastLang.latitude}")
+                Timber.d("${lastLang.longitude}")
+            }
+        }
+
+        googleMap.setOnCameraMoveCanceledListener {
+            Timber.d("cancel")
         }
     }
+
+    private var markerAnimatorSet: AnimatorSet? = null
 
     companion object {
         fun show(context: Context) {
