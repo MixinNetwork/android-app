@@ -15,7 +15,11 @@ class AppItem(
     val appSecret: String,
     val capabilities: ArrayList<String>?,
     val creatorId: String,
-    val resourcePatterns: String?,
+    val resourcePatterns: ArrayList<String>?,
+    val updatedAt: String? = null,
     val userId: String? = null,
     val avatarUrl: String? = null
 )
+
+fun AppItem.toApp() = App(appId, appNumber, homeUri, redirectUri, name, iconUrl, description,
+    appSecret, capabilities, creatorId, resourcePatterns, updatedAt)

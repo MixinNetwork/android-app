@@ -34,7 +34,7 @@ data class App(
     val name: String,
     @SerializedName("icon_url")
     @ColumnInfo(name = "icon_url")
-    val icon_url: String,
+    val iconUrl: String,
     @SerializedName("description")
     @ColumnInfo(name = "description")
     val description: String,

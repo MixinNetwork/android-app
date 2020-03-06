@@ -163,9 +163,9 @@ import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isLive
-import one.mixin.android.vo.matchResourcePattern
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.supportSticker
+import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.websocket.StickerMessagePayload
@@ -528,49 +528,18 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onActionClick(action: String, userId: String) {
-                if (action.startsWith("input:")) {
-                    val msg = action.substring(6).trim()
-                    if (msg.isNotEmpty()) {
-                        sendMessage(msg)
-                    }
-                } else {
-                    lifecycleScope.launch {
-                        val app = chatViewModel.findAppById(userId)
-                        openUrlWithExtraWeb(
-                            action, conversationId, parentFragmentManager,
-                            app?.appId,
-                            app?.name,
-                            app?.icon_url,
-                            app?.capabilities
-                        )
-                    }
+                if (openInputAction(action)) return
+
+                lifecycleScope.launch {
+                    val app = chatViewModel.findAppById(userId)
+                    openUrlWithExtraWeb(action, conversationId, parentFragmentManager, app)
                 }
             }
 
             override fun onAppCardClick(appCard: AppCardData, userId: String) {
-                val action = appCard.action
-                if (appCard.appId != null) {
-                    lifecycleScope.launch {
-                        val app = chatViewModel.getAppAndCheckUser(appCard.appId, appCard.updatedAt)
-                        if (app.matchResourcePattern(action)) {
-                            open(app, action)
-                        } else {
-                            alertDialogBuilder()
-                                .setTitle(getString(R.string.chat_app_card_suspicious_link))
-                                .setMessage(getString(R.string.chat_app_card_suspicious_link_tips))
-                                .setNeutralButton(getString(R.string.cancel)) { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                                .setNegativeButton(getString(R.string.open)) { dialog, _ ->
-                                    openAction(action, userId)
-                                    dialog.dismiss()
-                                }
-                                .show()
-                        }
-                    }
-                } else {
-                    openAction(action, userId)
-                }
+                if (openInputAction(appCard.action)) return
+
+                open(appCard.action, null, appCard)
             }
 
             override fun onBillClick(messageItem: MessageItem) {
@@ -636,20 +605,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onOpenHomePage() {
-                hideIfShowBottomSheet()
-                app?.let {
-                    chat_control.chat_et.hideKeyboard()
-                    recipient?.let { user -> chatViewModel.refreshUser(user.userId, true) }
-                    botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(
-                        it.homeUri,
-                        conversationId,
-                        it.appId,
-                        it.name,
-                        it.icon_url,
-                        it.capabilities
-                    )
-                    botWebBottomSheet?.showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
-                }
+                openBotHome()
             }
 
             override fun onCallClick(messageItem: MessageItem) {
@@ -1815,31 +1771,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun openAction(action: String, userId: String) = lifecycleScope.launch {
-        if (openInputAction(action)) return@launch
-
-        if (userId == app?.appId) {
-            open(app, action)
-        } else {
-            val app = chatViewModel.getAppAndCheckUser(userId, null)
-            open(app, action)
-        }
-    }
-
-    private fun open(app: App?, url: String) {
+    private fun open(url: String, app: App?, appCard: AppCardData? = null) {
         chat_control.chat_et.hideKeyboard()
-        botWebBottomSheet = if (app == null) {
-            WebBottomSheetDialogFragment.newInstance(url, conversationId)
-        } else {
-            WebBottomSheetDialogFragment.newInstance(
-                url,
-                conversationId,
-                app.appId,
-                app.name,
-                app.icon_url,
-                app.capabilities
-            )
-        }
+        botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(url, conversationId, app, appCard)
         botWebBottomSheet?.showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
     }
 
@@ -1853,9 +1787,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         return false
     }
-
-    private fun inMentionState(text: String?) =
-        text != null && text.startsWith("@700") && !text.contains(' ')
 
     private fun clickSticker() {
         val stickerAlbumFragment = parentFragmentManager.findFragmentByTag(StickerAlbumFragment.TAG)
@@ -2011,10 +1942,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             openWebBottomSheet(
                                 app.homeUri,
                                 conversationId,
-                                app.appId,
-                                app.name,
-                                app.iconUrl,
-                                app.capabilities,
+                                app.toApp(),
                                 parentFragmentManager
                             )
                         }
@@ -2369,6 +2297,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
+    private fun openBotHome() {
+        hideIfShowBottomSheet()
+        recipient?.userId?.let { id ->
+            chatViewModel.refreshUser(id, true)
+        }
+        app?.let {
+            open(it.homeUri, it, null)
+        }
+    }
+
     private val chatControlCallback = object : ChatControlView.Callback {
         override fun onStickerClick() {
             clickSticker()
@@ -2423,13 +2361,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         override fun onBotClick() {
-            hideIfShowBottomSheet()
-            recipient?.userId?.let { id ->
-                chatViewModel.refreshUser(id, true)
-            }
-            app?.let {
-                open(it, it.homeUri)
-            }
+            openBotHome()
         }
 
         override fun onGalleryClick() {

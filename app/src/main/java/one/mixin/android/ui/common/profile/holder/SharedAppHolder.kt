@@ -6,7 +6,7 @@ import one.mixin.android.vo.App
 
 class SharedAppHolder(itemView: View) : ItemViewHolder(itemView) {
     override fun bind(app: App, appAction: (app: App) -> Unit) {
-        itemView.avatar.setInfo(app.name, app.icon_url, app.appId)
+        itemView.avatar.setInfo(app.name, app.iconUrl, app.appId)
         itemView.name.text = app.name
         itemView.icon.setOnClickListener {
             appAction(app)

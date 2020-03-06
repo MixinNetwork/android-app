@@ -54,22 +54,22 @@ class AvatarGroup @JvmOverloads constructor(
                 avatar1.isVisible = true
                 avatar2.isVisible = true
                 avatar3.isVisible = true
-                avatar1.loadImage(apps[0].icon_url)
-                avatar2.loadImage(apps[1].icon_url)
-                avatar3.loadImage(apps[2].icon_url)
+                avatar1.loadImage(apps[0].iconUrl)
+                avatar2.loadImage(apps[1].iconUrl)
+                avatar3.loadImage(apps[2].iconUrl)
             }
             apps.size == 2 -> {
                 avatar1.isVisible = true
                 avatar2.isVisible = true
                 avatar3.isVisible = false
-                avatar1.loadImage(apps[0].icon_url)
-                avatar2.loadImage(apps[1].icon_url)
+                avatar1.loadImage(apps[0].iconUrl)
+                avatar2.loadImage(apps[1].iconUrl)
             }
             apps.size == 1 -> {
                 avatar1.isVisible = true
                 avatar2.isVisible = false
                 avatar3.isVisible = false
-                avatar1.loadImage(apps[0].icon_url)
+                avatar1.loadImage(apps[0].iconUrl)
             }
             else -> {
                 avatar1.isVisible = false

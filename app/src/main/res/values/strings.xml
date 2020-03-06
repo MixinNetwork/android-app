@@ -283,6 +283,8 @@
     <string name="chat_go_check">View</string>
     <string name="chat_app_card_suspicious_link">Suspicious Link</string>
     <string name="chat_app_card_suspicious_link_tips">The link is not in the corresponding resource patterns.</string>
+    <string name="chat_app_card_back_to_chat">Back To Chat</string>
+    <string name="chat_app_card_continue_open_url">Continue Open URL</string>
     <!--contact-->
     <string name="contact_other_send">Send Message</string>
     <string name="contact_other_share">Share Contact Card</string>

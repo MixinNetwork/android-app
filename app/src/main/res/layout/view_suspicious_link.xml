@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?bg_white"
+        android:orientation="vertical">
+
+    <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/suspicious_tv"
+            android:layout_marginBottom="@dimen/margin20"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/ic_suspicious" />
+
+    <TextView
+            android:id="@+id/suspicious_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/tips_tv"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/margin12"
+            android:text="@string/chat_app_card_suspicious_link"
+            android:textStyle="bold"
+            android:textColor="?text_primary"
+            android:textSize="20sp" />
+
+    <TextView
+            android:id="@+id/tips_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="@dimen/margin12"
+            android:layout_marginEnd="40dp"
+            android:gravity="center"
+            android:text="@string/chat_app_card_suspicious_link_tips"
+            android:textColor="?text_minor" />
+
+    <TextView
+            android:id="@+id/back_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/continue_tv"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="@dimen/margin10"
+            android:background="@drawable/bg_round_blue_btn_solid"
+            android:gravity="center"
+            android:minWidth="146dp"
+            android:minHeight="40dp"
+            android:paddingStart="@dimen/margin12"
+            android:paddingEnd="@dimen/margin12"
+            android:text="@string/chat_app_card_back_to_chat"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+    <TextView
+            android:id="@+id/continue_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="40dp"
+            android:gravity="center"
+            android:minWidth="146dp"
+            android:minHeight="40dp"
+            android:paddingStart="@dimen/margin12"
+            android:paddingEnd="@dimen/margin12"
+            android:text="@string/chat_app_card_continue_open_url"
+            android:textColor="?text_blue"
+            android:textSize="16sp" />
+</RelativeLayout>

@@ -51,7 +51,7 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
             return app
         }
 
-        handleMixinResponse(
+        return handleMixinResponse(
             invokeNetwork = {
                 userService.getUserByIdSuspend(id)
             },
@@ -64,7 +64,6 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
                 }
             }
         )
-        return null
     }
 
     fun findUserByConversationId(conversationId: String): LiveData<User> =

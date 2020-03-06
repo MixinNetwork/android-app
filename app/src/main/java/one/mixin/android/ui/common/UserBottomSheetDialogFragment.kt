@@ -589,14 +589,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     .autoDispose(stopScope).subscribe {
                         dismiss()
                         WebBottomSheetDialogFragment
-                            .newInstance(
-                                app.homeUri,
-                                conversationId,
-                                app.appId,
-                                app.name,
-                                app.icon_url,
-                                app.capabilities
-                            )
+                            .newInstance(app.homeUri, conversationId, app)
                             .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
                     }
                 bottomViewModel.findUserById(app.creatorId)

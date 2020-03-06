@@ -22,6 +22,8 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         private const val ARGS_PERMISSION = "args_permission"
         private const val ARGS_TITLE = "args_title"
+        private const val ARGS_NAME = "args_name"
+        private const val ARGS_AVATAR = "args_avatar"
 
         private const val PERMISSION_CAMERA = 0
         private const val PERMISSION_VIDEO = 1
@@ -29,8 +31,8 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             PermissionBottomSheetDialogFragment().withArgs {
                 putInt(ARGS_SCOPES, permission)
                 putString(ARGS_TITLE, title)
-                putString(WebBottomSheetDialogFragment.APP_NAME, appName)
-                putString(WebBottomSheetDialogFragment.APP_AVATAR, appAvatar)
+                putString(ARGS_NAME, appName)
+                putString(ARGS_AVATAR, appAvatar)
             }
 
         fun requestCamera(title: String, appName: String? = null, appAvatar: String? = null): PermissionBottomSheetDialogFragment {
@@ -51,10 +53,10 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val appName: String? by lazy {
-        arguments!!.getString(WebBottomSheetDialogFragment.APP_NAME)
+        arguments!!.getString(ARGS_NAME)
     }
     private val appAvatar: String? by lazy {
-        arguments!!.getString(WebBottomSheetDialogFragment.APP_AVATAR)
+        arguments!!.getString(ARGS_AVATAR)
     }
 
     private val miniHeight by lazy {
