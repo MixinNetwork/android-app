@@ -5,7 +5,11 @@ import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -14,13 +18,23 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import kotlinx.android.synthetic.main.activity_location.*
+import kotlinx.android.synthetic.main.item_location.view.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.service.FoursquareService
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.vo.foursquare.Venues
 import timber.log.Timber
+import javax.inject.Inject
 
 class LocationActivity : BaseActivity(), OnMapReadyCallback {
+
+    @Inject
+    lateinit var foursquareService: FoursquareService
 
     // todo delete test position
     private val SYDNEY = LatLng(39.9967, 116.4805)
@@ -30,12 +44,17 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     private var onResumeCalled = false
     private var forceUpdate: CameraUpdate? = null
 
+    private val adapter by lazy {
+        LocationAdapter()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_location)
         map_view.onCreate(savedInstanceState)
         MapsInitializer.initialize(MixinApplication.appContext)
         map_view.getMapAsync(this)
+        recycler_view.adapter = adapter
     }
 
     override fun onResume() {
@@ -121,6 +140,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             googleMap.cameraPosition.target.let { lastLang ->
                 Timber.d("${lastLang.latitude}")
                 Timber.d("${lastLang.longitude}")
+                search(lastLang)
             }
         }
 
@@ -128,6 +148,43 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             Timber.d("cancel")
         }
     }
+
+    private var lastSearchJob: Job? = null
+    fun search(latlng: LatLng) {
+        if (lastSearchJob != null && lastSearchJob?.isActive == true) {
+            lastSearchJob?.cancel()
+        }
+        lastSearchJob = lifecycleScope.launch {
+            val result = foursquareService.searchVenues("${latlng.latitude},${latlng.longitude}")
+            if (result.isSuccess()) {
+                result.response?.venues.let {
+                    adapter.venues = it
+                }
+            }
+        }
+    }
+
+    class LocationAdapter : RecyclerView.Adapter<LocationHolder>() {
+        var venues: List<Venues>? = null
+            set(value) {
+                field = value
+                notifyDataSetChanged()
+            }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LocationHolder {
+            return LayoutInflater.from(parent.context).inflate(R.layout.item_location, parent, false).run {
+                LocationHolder(this)
+            }
+        }
+
+        override fun getItemCount(): Int = venues.notNullWithElse({ it.size }, 0)
+
+        override fun onBindViewHolder(holder: LocationHolder, position: Int) {
+            holder.itemView.title.text = venues?.get(position)?.name
+        }
+    }
+
+    class LocationHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     private var markerAnimatorSet: AnimatorSet? = null
 
