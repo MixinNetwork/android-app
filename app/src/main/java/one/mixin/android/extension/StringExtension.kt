@@ -159,7 +159,8 @@ fun String.numberFormat(): String {
     if (this.isEmpty()) return this
 
     return try {
-        DecimalFormat(getPattern(32)).format(BigDecimal(this))
+        val big = BigDecimal(this)
+        DecimalFormat(big.toPlainString().getPattern(32)).format(big)
     } catch (e: NumberFormatException) {
         this
     } catch (e: IllegalArgumentException) {
@@ -171,7 +172,8 @@ fun String.numberFormat8(): String {
     if (this.isEmpty()) return this
 
     return try {
-        DecimalFormat(getPattern()).format(BigDecimal(this))
+        val big = BigDecimal(this)
+        DecimalFormat(big.toPlainString().getPattern()).format(big)
     } catch (e: NumberFormatException) {
         this
     } catch (e: IllegalArgumentException) {
@@ -183,21 +185,12 @@ fun String.numberFormat2(): String {
     if (this.isEmpty()) return this
 
     return try {
-        DecimalFormat(",###.##").format(BigDecimal(this))
+        val big = BigDecimal(this)
+        DecimalFormat(",###.##").format(big)
     } catch (e: NumberFormatException) {
         this
     } catch (e: IllegalArgumentException) {
         this
-    }
-}
-
-fun BigDecimal.numberFormat(): String {
-    return try {
-        DecimalFormat(this.toPlainString().getPattern(32)).format(this)
-    } catch (e: NumberFormatException) {
-        this.toPlainString()
-    } catch (e: IllegalArgumentException) {
-        this.toPlainString()
     }
 }
 
