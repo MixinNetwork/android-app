@@ -198,7 +198,8 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun findAppById(id: String) = userRepository.findAppById(id)
 
-    suspend fun getAppAndCheckUser(userId: String) = userRepository.getAppAndCheckUser(userId)
+    suspend fun getAppAndCheckUser(userId: String, updatedAt: String?) =
+        userRepository.getAppAndCheckUser(userId, updatedAt)
 
     fun getUserById(id: String) = userRepository.getUserById(id)
 

@@ -264,7 +264,7 @@ class SearchFragment : BaseFragment() {
 
     internal class AppHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(app: App, listener: AppListener?) {
-            itemView.icon_iv.setInfo(app.name, app.icon_url, app.appId)
+            itemView.icon_iv.setInfo(app.name, app.iconUrl, app.appId)
             itemView.name_tv.text = app.name
             itemView.setOnClickListener {
                 listener?.onItemClick(app)

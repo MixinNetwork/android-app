@@ -270,6 +270,8 @@
     <string name="chat_go_check">查看</string>
     <string name="chat_app_card_suspicious_link">可疑链接</string>
     <string name="chat_app_card_suspicious_link_tips">该链接不在对应的机器人域名白名单内。</string>
+    <string name="chat_app_card_back_to_chat">返回聊天</string>
+    <string name="chat_app_card_continue_open_url">继续访问</string>
     <!--contact-->
     <string name="contact_other_send">发消息</string>
     <string name="contact_other_share">发送名片</string>

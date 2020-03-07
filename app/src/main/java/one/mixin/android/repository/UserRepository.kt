@@ -45,11 +45,13 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     fun getUser(id: String) = userService.getUserById(id)
 
-    suspend fun getAppAndCheckUser(id: String): App? {
+    suspend fun getAppAndCheckUser(id: String, updatedAt: String?): App? {
         val app = findAppById(id)
-        if (app != null) return app
+        if (app?.updatedAt != null && app.updatedAt == updatedAt) {
+            return app
+        }
 
-        handleMixinResponse(
+        return handleMixinResponse(
             invokeNetwork = {
                 userService.getUserByIdSuspend(id)
             },
@@ -62,7 +64,6 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
                 }
             }
         )
-        return null
     }
 
     fun findUserByConversationId(conversationId: String): LiveData<User> =

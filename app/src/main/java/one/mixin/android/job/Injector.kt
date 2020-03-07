@@ -10,6 +10,7 @@ import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.RatchetSenderKeyDao
+import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
@@ -48,6 +49,8 @@ open class Injector : Injectable {
     lateinit var messageHistoryDao: MessageHistoryDao
     @Inject
     lateinit var userDao: UserDao
+    @Inject
+    lateinit var appDao: AppDao
     @Inject
     lateinit var jobDao: JobDao
     @Inject

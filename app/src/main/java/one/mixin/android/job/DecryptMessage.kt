@@ -8,13 +8,16 @@ import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
 import java.io.File
 import java.util.UUID
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.SignalKeyCount
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
+import one.mixin.android.db.insertUpdate
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.autoDownload
 import one.mixin.android.extension.autoDownloadDocument
@@ -33,6 +36,7 @@ import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.Session
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.AppButtonData
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
@@ -172,6 +176,33 @@ class DecryptMessage : Injector() {
     private fun processAppCard(data: BlazeMessageData) {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
             String(Base64.decode(data.data)), data.createdAt, data.status)
+        val appCardData = try {
+            gson.fromJson(message.content, AppCardData::class.java)
+        } catch (e: Exception) {
+            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            return
+        }
+        appCardData.appId?.let { id ->
+            runBlocking {
+                var app = appDao.findAppById(id)
+                if (app?.updatedAt != appCardData.updatedAt) {
+                    app = handleMixinResponse(
+                        invokeNetwork = {
+                            userApi.getUserByIdSuspend(id)
+                        },
+                        successBlock = {
+                            it.data?.let { u ->
+                                userDao.insertUpdate(u, appDao)
+                                return@handleMixinResponse u.app
+                            }
+                        }
+                    )
+                    if (app == null) {
+                        jobManager.addJobInBackground(RefreshUserJob(listOf(id)))
+                    }
+                }
+            }
+        }
         messageDao.insert(message)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
         sendNotificationJob(message, data.source)

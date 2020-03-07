@@ -92,6 +92,6 @@ class AppHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     fun bind(app: App) {
         itemView.name_tv.text = app.name
         itemView.desc_tv.text = app.description
-        itemView.avatar.loadImage(app.icon_url)
+        itemView.avatar.loadImage(app.iconUrl)
     }
 }

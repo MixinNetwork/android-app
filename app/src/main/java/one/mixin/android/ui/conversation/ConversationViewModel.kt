@@ -623,8 +623,6 @@ internal constructor(
         Observable.just(userId).subscribeOn(Schedulers.io())
             .map { userRepository.getUserById(it) }.observeOn(AndroidSchedulers.mainThread())!!
 
-    suspend fun getAppAndCheckUser(userId: String) = userRepository.getAppAndCheckUser(userId)
-
     fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
         jobManager.cancelJobByMixinJobId(id) {
             viewModelScope.launch {

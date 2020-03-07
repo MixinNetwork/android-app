@@ -72,7 +72,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         contentView.title_view.right_iv.setOnClickListener { dismiss() }
-        contentView.avatar.loadCircleImage(auth.app.icon_url, R.mipmap.ic_launcher_round)
+        contentView.avatar.loadCircleImage(auth.app.iconUrl, R.mipmap.ic_launcher_round)
         contentView.scope_rv.adapter = scopeAdapter
         scopeAdapter.onScopeListener = object : OnScopeListener {
             override fun onScope(itemView: View, position: Int) {

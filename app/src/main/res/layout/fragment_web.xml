@@ -11,43 +11,62 @@
         android:background="?attr/bg_white" />
 
     <LinearLayout
-        android:id="@+id/title_ll"
-        android:layout_width="match_parent"
-        android:layout_height="44dp"
-        android:layout_below="@id/ph"
-        android:orientation="horizontal"
-        android:background="?attr/bg_white"
-        tools:ignore="UseCompoundDrawables">
-
-        <ImageView
-            android:id="@+id/icon_iv"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="20dp"
-            android:visibility="gone"
-            tools:ignore="ContentDescription" />
-
-        <TextView
-            android:id="@+id/title_tv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="100dp"
-            android:ellipsize="end"
-            android:maxHeight="50dp"
-            android:maxLines="1"
-            android:textSize="18sp"
-            android:textColor="?attr/text_primary" />
-    </LinearLayout>
-
-    <WebView
-        android:id="@+id/chat_web_view"
+        android:id="@+id/web_ll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white"
-        android:layout_below="@id/title_ll" />
+        android:layout_below="@id/ph"
+        android:orientation="vertical">
+        <LinearLayout
+            android:id="@+id/title_ll"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            android:background="?attr/bg_white"
+            tools:ignore="UseCompoundDrawables">
+
+            <ImageView
+                android:id="@+id/icon_iv"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="20dp"
+                android:visibility="gone"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/title_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="100dp"
+                android:ellipsize="end"
+                android:maxHeight="50dp"
+                android:maxLines="1"
+                android:textSize="18sp"
+                android:textColor="?attr/text_primary" />
+        </LinearLayout>
+
+        <WebView
+            android:id="@+id/chat_web_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/white"/>
+    </LinearLayout>
+
+    <one.mixin.android.widget.SuspiciousLinkView
+        android:id="@+id/suspicious_link_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:layout_below="@id/ph"/>
+
+    <ProgressBar
+        android:id="@+id/pb"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_centerInParent="true"/>
 
     <one.mixin.android.widget.WebControlView
         android:id="@+id/web_control"

@@ -164,14 +164,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                             lifecycleScope.launch {
                                 val app = linkViewModel.findAppById(u.appId!!)
                                 if (app != null) {
-                                    WebBottomSheetDialogFragment.newInstance(
-                                        app.homeUri,
-                                        null,
-                                        app.appId,
-                                        app.name,
-                                        app.icon_url,
-                                        app.capabilities
-                                    ).showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                                    WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app)
+                                        .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
                                 } else {
                                     UserBottomSheetDialogFragment.newInstance(u)
                                         .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)

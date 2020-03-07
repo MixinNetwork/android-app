@@ -21,6 +21,7 @@ import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.Session
+import one.mixin.android.vo.App
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 
@@ -128,14 +129,8 @@ class UrlInterpreterActivity : BaseActivity() {
                 if (isOpenApp && user.appId != null) {
                     val app = urlViewModel.findAppById(user.appId!!)
                     if (app != null) {
-                        WebBottomSheetDialogFragment.newInstance(
-                            app.homeUri,
-                            null,
-                            app.appId,
-                            app.name,
-                            app.icon_url,
-                            app.capabilities
-                        ).showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+                        WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app)
+                            .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
                         return@launch
                     }
                 }
@@ -223,21 +218,11 @@ inline fun openUrl(url: String, supportFragmentManager: FragmentManager, extraAc
 fun openWebBottomSheet(
     url: String,
     conversationId: String?,
-    appId: String? = null,
-    appName: String? = null,
-    appAvatar: String? = null,
-    appCapabilities: ArrayList<String>? = null,
+    app: App? = null,
     supportFragmentManager: FragmentManager,
     onDismiss: (() -> Unit)? = null
 ) {
-    val dialog = WebBottomSheetDialogFragment.newInstance(
-        url,
-        conversationId,
-        appId,
-        appName,
-        appAvatar,
-        appCapabilities
-    )
+    val dialog = WebBottomSheetDialogFragment.newInstance(url, conversationId, app)
     onDismiss?.let { dismiss ->
         dialog.dialog?.setOnDismissListener {
             dismiss.invoke()
@@ -250,16 +235,13 @@ fun openUrlWithExtraWeb(
     url: String,
     conversationId: String?,
     supportFragmentManager: FragmentManager,
-    appId: String? = null,
-    appName: String? = null,
-    appAvatar: String? = null,
-    appCapabilities: ArrayList<String>? = null,
+    app: App? = null,
     onDismiss: (() -> Unit)? = null
 ) = openUrl(url, supportFragmentManager) {
     openWebBottomSheet(
         url,
         conversationId,
-        appId, appName, appAvatar, appCapabilities,
+        app,
         supportFragmentManager = supportFragmentManager,
         onDismiss = onDismiss
     )
