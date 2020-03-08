@@ -18,6 +18,11 @@ abstract class ValuableBiometricBottomSheetDialogFragment<T : BiometricItem> : B
         checkState(t.state)
     }
 
+    override fun onResume() {
+        super.onResume()
+        contentView.asset_balance.parent.requestLayout()
+    }
+
     protected fun getDescription(): String {
         val t = getBiometricItem()
         val pre = "${t.amount} ${t.asset.symbol}"
