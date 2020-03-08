@@ -38,6 +38,7 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.fileExists
 import one.mixin.android.extension.getAttachment
+import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
@@ -168,7 +169,17 @@ internal constructor(
             UUID.randomUUID().toString(), conversationId,
             sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING.name
         )
-        jobManager.addJobInBackground(SendMessageJob(message))
+        viewModelScope.launch {
+            val botNumber = message.content?.getBotNumber()
+            var recipientId: String? = null
+            if (botNumber != null && botNumber.isNotBlank()) {
+                recipientId = userRepository.findUserIdByAppNumber(message.conversationId, botNumber)
+                recipientId?.let {
+                    message.category = MessageCategory.PLAIN_TEXT.name
+                }
+            }
+            jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
+        }
     }
 
     fun sendPostMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
@@ -963,8 +974,7 @@ internal constructor(
         conversationId: String,
         userId: String,
         messageId: String
-    ) =
-        conversationRepository.findUnreadMessageByMessageId(conversationId, userId, messageId)
+    ) = conversationRepository.findUnreadMessageByMessageId(conversationId, userId, messageId)
 
     suspend fun isSilence(conversationId: String, userId: String) =
         conversationRepository.isSilence(conversationId, userId) == 0

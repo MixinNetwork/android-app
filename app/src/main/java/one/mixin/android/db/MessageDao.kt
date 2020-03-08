@@ -269,8 +269,13 @@ interface MessageDao : BaseDao<Message> {
     fun updateHyperlink(hyperlink: String, id: String)
 
     @Query(
-        "SELECT id, conversation_id, user_id, status, created_at FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
-            "AND status IN ('SENT', 'DELIVERED') ORDER BY created_at ASC"
+        """
+            SELECT id, conversation_id, user_id, status, created_at FROM messages 
+            WHERE conversation_id = :conversationId 
+            AND status IN ('SENT', 'DELIVERED') 
+            AND user_id != :userId 
+            ORDER BY created_at ASC
+            """
     )
     fun getUnreadMessage(conversationId: String, userId: String): List<MessageMinimal>
 
@@ -412,10 +417,10 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY created_at DESC LIMIT 1")
     suspend fun findLastMessage(conversationId: String): String?
 
-    @Query(
-        "SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND messages.rowid > " +
-            "(SELECT rowid FROM messages WHERE id = :messageId) ORDER BY rowid ASC LIMIT 1"
-    )
+    @Query("""
+        SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND messages.rowid > 
+        (SELECT rowid FROM messages WHERE id = :messageId) ORDER BY rowid ASC LIMIT 1
+        """)
     suspend fun findUnreadMessageByMessageId(
         conversationId: String,
         userId: String,

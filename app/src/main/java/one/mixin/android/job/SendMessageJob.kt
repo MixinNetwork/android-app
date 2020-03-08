@@ -7,7 +7,6 @@ import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.findLastUrl
-import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
@@ -33,10 +32,7 @@ open class SendMessageJob(
     private var recipientId: String? = null,
     private val recallMessageId: String? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
-) : MixinJob(
-    Params(messagePriority).groupBy("send_message_group")
-        .requireWebSocketConnected().persist(), message.id
-) {
+) : MixinJob(Params(messagePriority).groupBy("send_message_group").requireWebSocketConnected().persist(), message.id) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -69,6 +65,7 @@ open class SendMessageJob(
                     }
                     parseHyperlink()
                 }
+
                 messageDao.insert(message)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
             }
@@ -119,15 +116,6 @@ open class SendMessageJob(
             return
         }
         jobManager.saveJob(this)
-        if (message.isText()) {
-            val botNumber = message.content?.getBotNumber()
-            if (botNumber != null && botNumber.isNotBlank()) {
-                recipientId = userDao.findUserIdByAppNumber(message.conversationId, botNumber)
-                recipientId?.let {
-                    message.category = MessageCategory.PLAIN_TEXT.name
-                }
-            }
-        }
         if (message.isPlain() || message.isCall() || message.isRecall() || message.category == MessageCategory.APP_CARD.name) {
             sendPlainMessage()
         } else {
