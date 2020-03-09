@@ -430,6 +430,7 @@
     <string name="conversation_status_voice">语音电话</string>
     <string name="conversation_status_transfer">转账</string>
     <string name="conversation_status_sticker">贴纸</string>
+    <string name="conversation_status_location">位置</string>
     <string name="conversation_status_live">直播</string>
     <string name="setting_no_blocked">没有屏蔽任何人</string>
     <string name="setting_no_auth_app">没有授权任何机器人</string>

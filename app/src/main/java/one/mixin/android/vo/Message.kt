@@ -200,6 +200,7 @@ enum class MessageCategory {
     SIGNAL_AUDIO,
     SIGNAL_LIVE,
     SIGNAL_POST,
+    SIGNAL_LOCATION,
     PLAIN_TEXT,
     PLAIN_IMAGE,
     PLAIN_VIDEO,
@@ -210,6 +211,7 @@ enum class MessageCategory {
     PLAIN_LIVE,
     PLAIN_POST,
     PLAIN_JSON,
+    PLAIN_LOCATION,
     MESSAGE_RECALL,
     STRANGER,
     SECRET,
@@ -461,6 +463,18 @@ fun createLiveMessage(
     .setMediaHeight(height)
     .setMediaUrl(url)
     .setThumbUrl(thumbUrl)
+    .build()
+
+fun createLocationMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    category: String,
+    content: String?,
+    status: String,
+    createdAt: String
+) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
+    .setContent(content)
     .build()
 
 fun createContactMessage(

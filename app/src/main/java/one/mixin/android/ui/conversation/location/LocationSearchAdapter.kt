@@ -6,9 +6,10 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_search_location.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.vo.Location
 import one.mixin.android.vo.foursquare.Venues
 
-class LocationSearchAdapter : RecyclerView.Adapter<LocationHolder>() {
+class LocationSearchAdapter(val callback: (Location) -> Unit) : RecyclerView.Adapter<LocationHolder>() {
     var venues: List<Venues>? = null
         set(value) {
             field = value
@@ -24,6 +25,11 @@ class LocationSearchAdapter : RecyclerView.Adapter<LocationHolder>() {
     override fun getItemCount(): Int = venues.notNullWithElse({ it.size }, 0)
 
     override fun onBindViewHolder(holder: LocationHolder, position: Int) {
-        holder.itemView.title.text = venues?.get(position)?.name
+        val venue = venues?.get(position)
+        holder.itemView.title.text = venue?.name
+        holder.itemView.setOnClickListener {
+            venue ?: return@setOnClickListener
+            callback(Location(venue.location.lat, venue.location.lng))
+        }
     }
 }

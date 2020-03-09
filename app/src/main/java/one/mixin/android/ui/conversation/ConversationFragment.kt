@@ -81,6 +81,7 @@ import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
+import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
@@ -1916,7 +1917,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             .request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
                             .subscribe { granted ->
                                 if (granted) {
-                                    LocationActivity.show(requireContext())
+                                    LocationActivity.show(this@ConversationFragment)
                                 } else {
                                     context?.openPermissionSetting()
                                 }
@@ -2096,6 +2097,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             } else {
                 toast(R.string.error_file_exists)
             }
+        } else if (requestCode == REQUEST_LOCATION && resultCode == Activity.RESULT_OK) {
+            val intent = data ?: return
+            val location = LocationActivity.getResult(intent) ?: return
+            chatViewModel.sendLocationMessage(conversationId, location, sender.userId, isPlainMessage())
         } else {
             super.onActivityResult(requestCode, resultCode, data)
         }

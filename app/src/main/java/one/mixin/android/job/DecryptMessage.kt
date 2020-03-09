@@ -57,6 +57,7 @@ import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createLiveMessage
+import one.mixin.android.vo.createLocationMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.createPostMessage
@@ -322,7 +323,8 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.PLAIN_STICKER.name ||
             data.category == MessageCategory.PLAIN_CONTACT.name ||
             data.category == MessageCategory.PLAIN_LIVE.name ||
-            data.category == MessageCategory.PLAIN_POST.name) {
+            data.category == MessageCategory.PLAIN_POST.name ||
+            data.category == MessageCategory.PLAIN_LOCATION.name) {
             if (!data.representativeId.isNullOrBlank()) {
                 data.userId = data.representativeId
             }
@@ -372,6 +374,14 @@ class DecryptMessage : Injector() {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
                 val message = createPostMessage(data.messageId, data.conversationId, data.userId, data.category, plain,
                     plain.postOptimize(), data.createdAt, data.status)
+                messageDao.insert(message)
+                MessageFts4Helper.insertOrReplaceMessageFts4(message)
+                sendNotificationJob(message, data.source)
+            }
+            data.category.endsWith("_LOCATION") -> {
+                val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
+                // todo check content
+                val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status)
                 messageDao.insert(message)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 sendNotificationJob(message, data.source)
@@ -661,6 +671,9 @@ class DecryptMessage : Injector() {
             parseMentionData(plainText, messageId, data.conversationId, userDao, messageMentionDao, data.userId)
             messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_POST.name) {
+            messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
+        } else if (data.category == MessageCategory.SIGNAL_LOCATION.name) {
+            // todo check
             messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_IMAGE.name ||
             data.category == MessageCategory.SIGNAL_VIDEO.name ||

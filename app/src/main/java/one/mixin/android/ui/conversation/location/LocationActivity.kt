@@ -2,13 +2,14 @@ package one.mixin.android.ui.conversation.location
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
-import android.content.Context
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -24,10 +25,12 @@ import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.FoursquareService
+import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.vo.Location
 import timber.log.Timber
 
 class LocationActivity : BaseActivity(), OnMapReadyCallback {
@@ -44,11 +47,15 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     private var forceUpdate: CameraUpdate? = null
 
     private val adapter by lazy {
-        LocationAdapter()
+        LocationAdapter {
+            setResult(it)
+        }
     }
 
     private val locationSearchAdapter by lazy {
-        LocationSearchAdapter()
+        LocationSearchAdapter {
+            setResult(it)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -125,6 +132,11 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         if (onResumeCalled) {
             map_view.onResume()
         }
+    }
+
+    private fun setResult(location: Location) {
+        setResult(Activity.RESULT_OK, Intent().putExtra(LOCATION_NAME, location))
+        finish()
     }
 
     fun mapInit(googleMap: GoogleMap) {
@@ -209,9 +221,16 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     }
 
     companion object {
-        fun show(context: Context) {
-            Intent(context, LocationActivity::class.java).run {
-                context.startActivity(this)
+
+        private val LOCATION_NAME = "location"
+
+        fun getResult(intent: Intent): Location? {
+            return intent.getParcelableExtra(LOCATION_NAME)
+        }
+
+        fun show(fragment: Fragment) {
+            Intent(fragment.requireContext(), LocationActivity::class.java).run {
+                fragment.startActivityForResult(this, REQUEST_LOCATION)
             }
         }
     }
