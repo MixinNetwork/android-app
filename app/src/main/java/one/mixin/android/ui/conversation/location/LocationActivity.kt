@@ -5,11 +5,11 @@ import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
-import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.maps.CameraUpdate
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -19,16 +19,15 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_location.*
-import kotlinx.android.synthetic.main.item_location.view.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.FoursquareService
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.vo.foursquare.Venues
 import timber.log.Timber
 
 class LocationActivity : BaseActivity(), OnMapReadyCallback {
@@ -37,8 +36,8 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     lateinit var foursquareService: FoursquareService
 
     // todo delete test position
-    private val SYDNEY = LatLng(39.9967, 116.4805)
     private val ZOOM_LEVEL = 13f
+    private var currentPosition = LatLng(39.9967, 116.4805)
 
     private var mapsInitialized = false
     private var onResumeCalled = false
@@ -48,20 +47,36 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         LocationAdapter()
     }
 
+    private val locationSearchAdapter by lazy {
+        LocationSearchAdapter()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_location)
         map_view.onCreate(savedInstanceState)
         ic_back.setOnClickListener {
-            finish()
+            if (search_va.displayedChild == 1) {
+                search_va.showPrevious()
+                search_et.hideKeyboard()
+            } else {
+                finish()
+            }
         }
         ic_search.setOnClickListener {
-            supportFragmentManager.beginTransaction().replace(R.id.container, LocationFragment.newInstance(), LocationFragment.TAG)
-                .commitNowAllowingStateLoss()
+            search_va.showNext()
+            search_et.requestFocus()
+            search_et.showKeyboard()
         }
+        ic_close.setOnClickListener {
+            search_va.showPrevious()
+            search_et.hideKeyboard()
+        }
+        search_et.addTextChangedListener(textWatcher)
         MapsInitializer.initialize(MixinApplication.appContext)
         map_view.getMapAsync(this)
         recycler_view.adapter = adapter
+        search_recycler.adapter = locationSearchAdapter
     }
 
     override fun onResume() {
@@ -104,8 +119,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         mapInit(googleMap)
 
         with(googleMap) {
-            moveCamera(CameraUpdateFactory.newLatLngZoom(SYDNEY, ZOOM_LEVEL))
-            // addMarker(MarkerOptions().position(SYDNEY))
+            moveCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, ZOOM_LEVEL))
         }
         mapsInitialized = true
         if (onResumeCalled) {
@@ -147,6 +161,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             googleMap.cameraPosition.target.let { lastLang ->
                 Timber.d("${lastLang.latitude}")
                 Timber.d("${lastLang.longitude}")
+                currentPosition = lastLang
                 search(lastLang)
             }
         }
@@ -171,29 +186,27 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         }
     }
 
-    class LocationAdapter : RecyclerView.Adapter<LocationHolder>() {
-        var venues: List<Venues>? = null
-            set(value) {
-                field = value
-                notifyDataSetChanged()
-            }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LocationHolder {
-            return LayoutInflater.from(parent.context).inflate(R.layout.item_location, parent, false).run {
-                LocationHolder(this)
-            }
-        }
-
-        override fun getItemCount(): Int = venues.notNullWithElse({ it.size }, 0)
-
-        override fun onBindViewHolder(holder: LocationHolder, position: Int) {
-            holder.itemView.title.text = venues?.get(position)?.name
+    fun search(query: String) {
+        lifecycleScope.launch {
+            val result = foursquareService.searchVenues("${currentPosition.latitude},${currentPosition.longitude}", query)
+            locationSearchAdapter.venues = result.response?.venues
         }
     }
 
-    class LocationHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
-
     private var markerAnimatorSet: AnimatorSet? = null
+
+    private val textWatcher = object : TextWatcher {
+        override fun afterTextChanged(s: Editable?) {
+            search_recycler.isVisible = s?.isNotEmpty() == true
+            s?.let {
+                search(it.toString())
+            }
+        }
+
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+    }
 
     companion object {
         fun show(context: Context) {

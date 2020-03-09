@@ -27,27 +27,73 @@
                 app:srcCompat="@drawable/ic_back"
                 tools:ignore="ContentDescription" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_toEndOf="@id/ic_back"
-                android:text="@string/location"
-                android:textColor="?attr/text_primary"
-                android:textSize="18sp" />
+            <ViewAnimator
+                android:id="@+id/search_va"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_toEndOf="@id/ic_back">
 
-            <ImageButton
-                android:id="@+id/ic_search"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/mixin_ripple"
-                android:padding="8dp"
-                app:srcCompat="@drawable/ic_search_black"
-                tools:ignore="ContentDescription" />
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:text="@string/location"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="18sp" />
+
+                    <ImageButton
+                        android:id="@+id/ic_search"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/mixin_ripple"
+                        android:padding="8dp"
+                        app:srcCompat="@drawable/ic_search_black"
+                        tools:ignore="ContentDescription" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <EditText
+                        android:id="@+id/search_et"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_toStartOf="@id/ic_close"
+                        android:background="@null"
+                        android:hint="@string/search"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:singleLine="true"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="18sp" />
+
+                    <ImageButton
+                        android:id="@+id/ic_close"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:background="@drawable/mixin_ripple"
+                        android:padding="8dp"
+                        app:srcCompat="@drawable/ic_close_black"
+                        tools:ignore="ContentDescription" />
+                </RelativeLayout>
+            </ViewAnimator>
+
         </RelativeLayout>
 
         <FrameLayout
@@ -76,8 +122,12 @@
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
     </LinearLayout>
 
-    <FrameLayout
-        android:id="@+id/container"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/search_recycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_marginTop="?actionBarSize"
+        android:background="?attr/bg_white"
+        android:visibility="gone"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 </FrameLayout>

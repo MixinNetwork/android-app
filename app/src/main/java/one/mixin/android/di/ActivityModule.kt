@@ -11,7 +11,6 @@ import one.mixin.android.di.module.GroupActivityModule
 import one.mixin.android.di.module.InitializeActivityModule
 import one.mixin.android.di.module.InviteActivityModule
 import one.mixin.android.di.module.LandingActivityModule
-import one.mixin.android.di.module.LocationActivityModule
 import one.mixin.android.di.module.MainActivityModule
 import one.mixin.android.di.module.SettingActivityModule
 import one.mixin.android.di.module.SharedMediaActivityModule
@@ -87,7 +86,7 @@ abstract class ActivityModule {
     @ContributesAndroidInjector(modules = [(CommonModule::class)])
     internal abstract fun contributeMarkdown(): MarkdownActivity
 
-    @ContributesAndroidInjector(modules = [(CommonModule::class), (LocationActivityModule::class)])
+    @ContributesAndroidInjector(modules = [(CommonModule::class)])
     internal abstract fun contributeLocation(): LocationActivity
 
     @ContributesAndroidInjector(modules = [(CommonModule::class), (SharedMediaActivityModule::class)])
