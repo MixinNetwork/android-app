@@ -189,7 +189,12 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             lastSearchJob?.cancel()
         }
         lastSearchJob = lifecycleScope.launch {
-            val result = foursquareService.searchVenues("${latlng.latitude},${latlng.longitude}")
+            val result = try {
+                foursquareService.searchVenues("${latlng.latitude},${latlng.longitude}")
+            } catch (e: Exception) {
+                Timber.e(e)
+                return@launch
+            }
             if (result.isSuccess()) {
                 result.response?.venues.let {
                     adapter.venues = it
@@ -200,7 +205,12 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     fun search(query: String) {
         lifecycleScope.launch {
-            val result = foursquareService.searchVenues("${currentPosition.latitude},${currentPosition.longitude}", query)
+            val result = try {
+                foursquareService.searchVenues("${currentPosition.latitude},${currentPosition.longitude}", query)
+            } catch (e: Exception) {
+                Timber.e(e)
+                return@launch
+            }
             locationSearchAdapter.venues = result.response?.venues
         }
     }
