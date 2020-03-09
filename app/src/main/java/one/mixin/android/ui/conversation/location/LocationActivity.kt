@@ -17,6 +17,7 @@ import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_location.*
 import kotlinx.android.synthetic.main.item_location.view.*
 import kotlinx.coroutines.Job
@@ -29,7 +30,6 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.vo.foursquare.Venues
 import timber.log.Timber
-import javax.inject.Inject
 
 class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
@@ -52,6 +52,13 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_location)
         map_view.onCreate(savedInstanceState)
+        ic_back.setOnClickListener {
+            finish()
+        }
+        ic_search.setOnClickListener {
+            supportFragmentManager.beginTransaction().replace(R.id.container, LocationFragment.newInstance(), LocationFragment.TAG)
+                .commitNowAllowingStateLoss()
+        }
         MapsInitializer.initialize(MixinApplication.appContext)
         map_view.getMapAsync(this)
         recycler_view.adapter = adapter
