@@ -34,23 +34,45 @@
             android:layout_marginEnd="4dp">
 
             <LinearLayout
-                android:orientation="vertical"
                 android:id="@+id/chat_msg_content"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-                <View
-                    android:layout_width="100dp"
-                    android:layout_height="40dp"
-                    android:background="@color/call_red" />
+                <ViewAnimator
+                    android:id="@+id/location_va"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
 
-                <include layout="@layout/date_wrapper" />
+                    <ImageView
+                        android:id="@+id/location_holder"
+                        android:layout_width="260dp"
+                        android:layout_height="180dp"
+                        android:src="@drawable/image_holder" />
 
-                <one.mixin.android.widget.QuoteView
-                    android:id="@+id/chat_quote"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    <com.google.android.gms.maps.MapView
+                        android:id="@+id/location_map"
+                        android:layout_width="260dp"
+                        android:layout_height="180dp" />
+
+                </ViewAnimator>
+
+                <TextView
+                    android:id="@+id/location_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/text_primary" />
+
+                <TextView
+                    android:id="@+id/location_sub_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="?attr/text_minor"
+                    android:textSize="12sp" />
+
             </LinearLayout>
+
+            <include layout="@layout/date_wrapper" />
         </FrameLayout>
     </LinearLayout>
 </FrameLayout>
