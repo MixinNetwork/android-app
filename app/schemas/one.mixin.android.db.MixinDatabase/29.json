@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 29,
-    "identityHash": "625e345760a708ccd13ac7c2a311627d",
+    "identityHash": "7e3b481b55d89f367a2d6761c2456e7d",
     "entities": [
       {
         "tableName": "users",
@@ -797,7 +797,16 @@
           ],
           "autoGenerate": false
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_snapshots_asset_id",
+            "unique": false,
+            "columnNames": [
+              "asset_id"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_snapshots_asset_id` ON `${TABLE_NAME}` (`asset_id`)"
+          }
+        ],
         "foreignKeys": []
       },
       {
@@ -1030,7 +1039,7 @@
             "notNull": true
           },
           {
-            "fieldPath": "icon_url",
+            "fieldPath": "iconUrl",
             "columnName": "icon_url",
             "affinity": "TEXT",
             "notNull": true
@@ -1631,7 +1640,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '625e345760a708ccd13ac7c2a311627d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7e3b481b55d89f367a2d6761c2456e7d')"
     ]
   }
 }

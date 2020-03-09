@@ -54,10 +54,10 @@ class TransactionFragment : BaseFragment() {
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val walletViewModel: WalletViewModel by viewModels { viewModelFactory }
 
-    private val snapshot: SnapshotItem? by lazy { arguments!!.getParcelable<SnapshotItem>(ARGS_SNAPSHOT) }
-    private val asset: AssetItem? by lazy { arguments!!.getParcelable<AssetItem>(ARGS_ASSET) }
-    private val assetId: String? by lazy { arguments!!.getString(ARGS_ASSET_ID) }
-    private val snapshotId: String? by lazy { arguments!!.getString(ARGS_SNAPSHOT_ID) }
+    private val snapshot: SnapshotItem? by lazy { requireArguments().getParcelable<SnapshotItem>(ARGS_SNAPSHOT) }
+    private val asset: AssetItem? by lazy { requireArguments().getParcelable<AssetItem>(ARGS_ASSET) }
+    private val assetId: String? by lazy { requireArguments().getString(ARGS_ASSET_ID) }
+    private val snapshotId: String? by lazy { requireArguments().getString(ARGS_SNAPSHOT_ID) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_transaction, container, false).apply {

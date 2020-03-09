@@ -24,10 +24,10 @@ interface SnapshotDao : BaseDao<Snapshot> {
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.amount * a.price_usd DESC, s.snapshot_id DESC")
     fun snapshotsOrderByAmount(assetId: String): DataSource.Factory<Int, SnapshotItem>
 
-    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND (s.type = :type OR s.type =:otherType) ORDER BY s.created_at DESC, s.snapshot_id DESC")
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshotsByType(assetId: String, type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
 
-    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND (s.type = :type OR s.type =:otherType) ORDER BY s.amount * a.price_usd DESC, s.snapshot_id DESC")
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY s.amount * a.price_usd DESC, s.snapshot_id DESC")
     fun snapshotsByTypeOrderByAmount(assetId: String, type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId and snapshot_id = :snapshotId")
@@ -45,16 +45,16 @@ interface SnapshotDao : BaseDao<Snapshot> {
     @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY s.amount * a.price_usd DESC")
     fun allSnapshotsOrderByAmount(): DataSource.Factory<Int, SnapshotItem>
 
-    @Query("$SNAPSHOT_ITEM_PREFIX WHERE (s.type = :type OR s.type =:otherType) ORDER BY s.created_at DESC")
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.type IN (:type, :otherType) ORDER BY s.created_at DESC")
     fun allSnapshotsByType(type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
 
-    @Query("$SNAPSHOT_ITEM_PREFIX WHERE (s.type = :type OR s.type =:otherType) ORDER BY s.amount * a.price_usd DESC")
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.type IN (:type, :otherType) ORDER BY s.amount * a.price_usd DESC")
     fun allSnapshotsByTypeOrderByAmount(type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
 
-    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.type != 'pending' AND s.opponent_id = :opponentId ORDER BY s.created_at DESC, s.snapshot_id DESC")
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.opponent_id = :opponentId AND s.type != 'pending' ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshotsByUserId(opponentId: String): LiveData<List<SnapshotItem>>
 
-    @Query("DELETE FROM snapshots WHERE type = 'pending' AND asset_id = :assetId")
+    @Query("DELETE FROM snapshots WHERE asset_id = :assetId AND type = 'pending'")
     suspend fun clearPendingDepositsByAssetId(assetId: String)
 
     @Query("DELETE FROM snapshots WHERE type = 'pending' AND transaction_hash = :transactionHash")

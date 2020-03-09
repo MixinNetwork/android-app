@@ -165,6 +165,7 @@ class MixinDatabaseMigrations private constructor() {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("DROP INDEX IF EXISTS index_conversations_created_at")
                 database.execSQL("DROP INDEX IF EXISTS index_conversations_conversation_id")
+                database.execSQL("CREATE INDEX IF NOT EXISTS `index_snapshots_asset_id` ON `snapshots` (`asset_id`)")
                 database.execSQL("ALTER TABLE apps ADD COLUMN updated_at TEXT")
                 database.execSQL("DROP TABLE IF EXISTS messages_fts")
                 database.execSQL("""
