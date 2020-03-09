@@ -1134,7 +1134,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     val url = m.mediaUrl
                     url?.let {
                         val uri = url.toUri()
-                        val mimeType = getMimeType(uri)
+                        val mimeType = getMimeType(uri, true)
                         if (mimeType?.isImageSupport() == true) {
                             StickerActivity.show(requireContext(), url = it, showAdd = true)
                         } else {
