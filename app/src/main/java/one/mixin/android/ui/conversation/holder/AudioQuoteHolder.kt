@@ -215,7 +215,7 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
         itemView.chat_quote.bind(quoteMessage)
         itemView.chat_quote.setOnClickListener {
             if (!hasSelect) {
-                onItemListener.onMessageClick(messageItem.quoteId)
+                onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
             } else {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
             }

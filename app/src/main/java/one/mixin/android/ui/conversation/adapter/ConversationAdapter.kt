@@ -829,7 +829,7 @@ class ConversationAdapter(
 
         open fun onTransferClick(userId: String) {}
 
-        open fun onMessageClick(messageId: String?) {}
+        open fun onQuoteMessageClick(messageId: String, quoteMessageId: String?) {}
 
         open fun onCallClick(messageItem: MessageItem) {}
 

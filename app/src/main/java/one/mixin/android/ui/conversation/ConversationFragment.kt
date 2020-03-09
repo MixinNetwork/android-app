@@ -570,29 +570,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 })
             }
 
-            override fun onMessageClick(messageId: String?) {
-                messageId?.let {
-                    lifecycleScope.launch {
-                        if (!isAdded) return@launch
-
-                        val index = chatViewModel.findMessageIndex(conversationId, it)
-                        if (index == 0) {
-                            toast(R.string.error_not_found_message)
-                        } else {
-                            chatAdapter.loadAround(index)
-                            if (index == chatAdapter.itemCount - 1) {
-                                scrollTo(index, 0, action = {
-                                    requireContext().mainThreadDelayed({
-                                        RxBus.publish(BlinkEvent(messageId))
-                                    }, 60)
-                                })
-                            } else {
-                                scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = {
-                                    requireContext().mainThreadDelayed({
-                                        RxBus.publish(BlinkEvent(messageId))
-                                    }, 60)
-                                })
-                            }
+            override fun onQuoteMessageClick(messageId: String, quoteMessageId: String?) {
+                quoteMessageId?.let { quoteMsg ->
+                    scrollToMessage(quoteMsg) { index ->
+                        positionBeforeClickQuote = messageId
+                        val firstPosition = (chat_rv.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition()
+                        if (firstPosition + 1 < index && chat_rv.canScrollVertically(-1)) {
+                            flag_layout.bottomFlag = true
                         }
                     }
                 }
@@ -692,6 +676,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var isFirstMessage = false
     private var isFirstLoad = true
     private var isBottom = true
+    private var positionBeforeClickQuote: String? = null
 
     private var botWebBottomSheet: WebBottomSheetDialogFragment? = null
 
@@ -1076,9 +1061,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     )
                 )
             }
-            scrollTo(0)
-            unreadTipCount = 0
-            flag_layout.bottomCountFlag = false
+            if (positionBeforeClickQuote != null) {
+                scrollToMessage(positionBeforeClickQuote!!) {
+                    positionBeforeClickQuote = null
+                }
+            } else {
+                scrollTo(0)
+                unreadTipCount = 0
+                flag_layout.bottomCountFlag = false
+            }
         }
         chatViewModel.searchConversationById(conversationId)
             .autoDispose(stopScope).subscribe({
@@ -2028,6 +2019,34 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
         }, delay)
+    }
+
+    private fun scrollToMessage(
+        messageId: String,
+        findMessageAction: ((index: Int) -> Unit)? = null
+    ) = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
+        val index = chatViewModel.findMessageIndex(conversationId, messageId)
+        if (index == 0) {
+            toast(R.string.error_not_found_message)
+        } else {
+            findMessageAction?.invoke(index)
+            chatAdapter.loadAround(index)
+            if (index == chatAdapter.itemCount - 1) {
+                scrollTo(index, 0, action = {
+                    requireContext().mainThreadDelayed({
+                        RxBus.publish(BlinkEvent(messageId))
+                    }, 60)
+                })
+            } else {
+                scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = {
+                    requireContext().mainThreadDelayed({
+                        RxBus.publish(BlinkEvent(messageId))
+                    }, 60)
+                })
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

@@ -133,7 +133,7 @@ class ContactCardQuoteHolder constructor(containerView: View) : MediaHolder(cont
         val quoteMessage = GsonHelper.customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
         itemView.chat_quote.setOnClickListener {
             if (!hasSelect) {
-                onItemListener.onMessageClick(messageItem.quoteId)
+                onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
             } else {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
             }

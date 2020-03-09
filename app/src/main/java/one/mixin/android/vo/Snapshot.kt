@@ -6,7 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
-@Entity(tableName = "snapshots",  indices = [Index(value = arrayOf("asset_id"))])
+@Entity(tableName = "snapshots", indices = [Index(value = arrayOf("asset_id"))])
 data class Snapshot(
     @PrimaryKey
     @SerializedName("snapshot_id")
