@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import android.database.Cursor
 import androidx.paging.DataSource
 import androidx.room.RoomSQLiteQuery
+import androidx.room.util.CursorUtil
 import one.mixin.android.util.chat.MixinLimitOffsetDataSource
+import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.MessageItem
 
 @SuppressLint("RestrictedApi")
@@ -180,9 +182,9 @@ class MessageProvider {
                                 val tmpGroupName: String? = cursor.getString(cursorIndexOfGroupName)
                                 val tmpMentions: String? = cursor.getString(cursorIndexOfMentions)
                                 val tmp_1 = if (cursor.isNull(cursorIndexOfMentionRead)) {
-                                null
+                                    null
                                 } else {
-                                   cursor.getInt(cursorIndexOfMentionRead)
+                                    cursor.getInt(cursorIndexOfMentionRead)
                                 }
                                 val tmpMentionRead = if (tmp_1 == null) null else tmp_1 != 0
                                 item = MessageItem(tmpMessageId, tmpConversationId, tmpUserId, tmpUserFullName, tmpUserIdentityNumber, tmpType, tmpContent,
@@ -192,6 +194,126 @@ class MessageProvider {
                                     null, tmpStickerId, tmpAssetName, tmpAppId, tmpSiteName, tmpSiteTitle, tmpSiteDescription, tmpSiteImage, tmpSharedUserId,
                                     tmpSharedUserFullName, tmpSharedUserIdentityNumber, tmpSharedUserAvatarUrl, tmpSharedUserIsVerified, tmpSharedUserAppId,
                                     tmpMediaWaveform, tmpQuoteId, tmpQuoteContent, tmpGroupName, tmpMentions, tmpMentionRead)
+                                res.add(item)
+                            }
+                            return res
+                        }
+                    }
+                }
+            }
+
+        fun getConversations(database: MixinDatabase) =
+            object : DataSource.Factory<Int, ConversationItem>() {
+                override fun create(): DataSource<Int, ConversationItem> {
+                    val sql = """
+                    SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
+                    c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId,
+                    c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, c.pin_time AS pinTime, c.mute_until AS muteUntil,
+                    ou.avatar_url AS avatarUrl, ou.full_name AS name, ou.is_verified AS ownerVerified,
+                    ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil, ou.app_id AS appId,
+                    m.content AS content, m.category AS contentType, m.created_at AS createdAt, m.media_url AS mediaUrl,
+                    m.user_id AS senderId, m.action AS actionName, m.status AS messageStatus,
+                    mu.full_name AS senderFullName, s.type AS SnapshotType,
+                    pu.full_name AS participantFullName, pu.user_id AS participantUserId,
+                    (SELECT count(*) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) as mentionCount,  
+                    mm.mentions AS mentions 
+                    FROM conversations c
+                    INNER JOIN users ou ON ou.user_id = c.owner_id
+                    LEFT JOIN messages m ON c.last_message_id = m.id
+                    LEFT JOIN message_mentions mm ON mm.message_id = m.id
+                    LEFT JOIN users mu ON mu.user_id = m.user_id
+                    LEFT JOIN snapshots s ON s.snapshot_id = m.snapshot_id
+                    LEFT JOIN users pu ON pu.user_id = m.participant_id 
+                    WHERE c.category IS NOT NULL 
+                    ORDER BY c.pin_time DESC, 
+                    CASE 
+                        WHEN m.created_at is NULL THEN c.created_at
+                        ELSE m.created_at 
+                    END 
+                    DESC
+                """
+                    val statement = RoomSQLiteQuery.acquire(sql, 0)
+                    val countSql = "SELECT COUNT(*) FROM conversations WHERE category IS NOT NULL"
+                    val countStatement = RoomSQLiteQuery.acquire(countSql, 0)
+                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, statement, countStatement, false, "message_mentions", "conversations", "users", "messages", "snapshots") {
+                        override fun convertRows(cursor: Cursor): List<ConversationItem> {
+                            val cursorIndexOfConversationId = CursorUtil.getColumnIndexOrThrow(cursor, "conversationId")
+                            val cursorIndexOfGroupIconUrl = CursorUtil.getColumnIndexOrThrow(cursor, "groupIconUrl")
+                            val cursorIndexOfCategory = CursorUtil.getColumnIndexOrThrow(cursor, "category")
+                            val cursorIndexOfGroupName = CursorUtil.getColumnIndexOrThrow(cursor, "groupName")
+                            val cursorIndexOfStatus = CursorUtil.getColumnIndexOrThrow(cursor, "status")
+                            val cursorIndexOfLastReadMessageId = CursorUtil.getColumnIndexOrThrow(cursor, "lastReadMessageId")
+                            val cursorIndexOfUnseenMessageCount = CursorUtil.getColumnIndexOrThrow(cursor, "unseenMessageCount")
+                            val cursorIndexOfOwnerId = CursorUtil.getColumnIndexOrThrow(cursor, "ownerId")
+                            val cursorIndexOfPinTime = CursorUtil.getColumnIndexOrThrow(cursor, "pinTime")
+                            val cursorIndexOfMuteUntil = CursorUtil.getColumnIndexOrThrow(cursor, "muteUntil")
+                            val cursorIndexOfAvatarUrl = CursorUtil.getColumnIndexOrThrow(cursor, "avatarUrl")
+                            val cursorIndexOfName = CursorUtil.getColumnIndexOrThrow(cursor, "name")
+                            val cursorIndexOfOwnerVerified = CursorUtil.getColumnIndexOrThrow(cursor, "ownerVerified")
+                            val cursorIndexOfOwnerIdentityNumber = CursorUtil.getColumnIndexOrThrow(cursor, "ownerIdentityNumber")
+                            val cursorIndexOfOwnerMuteUntil = CursorUtil.getColumnIndexOrThrow(cursor, "ownerMuteUntil")
+                            val cursorIndexOfAppId = CursorUtil.getColumnIndexOrThrow(cursor, "appId")
+                            val cursorIndexOfContent = CursorUtil.getColumnIndexOrThrow(cursor, "content")
+                            val cursorIndexOfContentType = CursorUtil.getColumnIndexOrThrow(cursor, "contentType")
+                            val cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(cursor, "createdAt")
+                            val cursorIndexOfMediaUrl = CursorUtil.getColumnIndexOrThrow(cursor, "mediaUrl")
+                            val cursorIndexOfSenderId = CursorUtil.getColumnIndexOrThrow(cursor, "senderId")
+                            val cursorIndexOfActionName = CursorUtil.getColumnIndexOrThrow(cursor, "actionName")
+                            val cursorIndexOfMessageStatus = CursorUtil.getColumnIndexOrThrow(cursor, "messageStatus")
+                            val cursorIndexOfSenderFullName = CursorUtil.getColumnIndexOrThrow(cursor, "senderFullName")
+                            val cursorIndexOfParticipantFullName = CursorUtil.getColumnIndexOrThrow(cursor, "participantFullName")
+                            val cursorIndexOfParticipantUserId = CursorUtil.getColumnIndexOrThrow(cursor, "participantUserId")
+                            val cursorIndexOfMentionCount = CursorUtil.getColumnIndexOrThrow(cursor, "mentionCount")
+                            val cursorIndexOfMentions = CursorUtil.getColumnIndexOrThrow(cursor, "mentions")
+                            val res = java.util.ArrayList<ConversationItem>(cursor.count)
+                            while (cursor.moveToNext()) {
+                                val item: ConversationItem
+                                val tmpConversationId = cursor.getString(cursorIndexOfConversationId)
+                                val tmpGroupIconUrl = cursor.getString(cursorIndexOfGroupIconUrl)
+                                val tmpCategory = cursor.getString(cursorIndexOfCategory)
+                                val tmpGroupName = cursor.getString(cursorIndexOfGroupName)
+                                val tmpStatus = cursor.getInt(cursorIndexOfStatus)
+                                val tmpLastReadMessageId = cursor.getString(cursorIndexOfLastReadMessageId)
+                                val tmpUnseenMessageCount: Int?
+                                if (cursor.isNull(cursorIndexOfUnseenMessageCount)) {
+                                    tmpUnseenMessageCount = null
+                                } else {
+                                    tmpUnseenMessageCount = cursor.getInt(cursorIndexOfUnseenMessageCount)
+                                }
+                                val tmpOwnerId = cursor.getString(cursorIndexOfOwnerId)
+                                val tmpPinTime = cursor.getString(cursorIndexOfPinTime)
+                                val tmpMuteUntil = cursor.getString(cursorIndexOfMuteUntil)
+                                val tmpAvatarUrl = cursor.getString(cursorIndexOfAvatarUrl)
+                                val tmpName = cursor.getString(cursorIndexOfName)
+                                val tmpOwnerVerified: Boolean?
+                                val tmp: Int?
+                                if (cursor.isNull(cursorIndexOfOwnerVerified)) {
+                                    tmp = null
+                                } else {
+                                    tmp = cursor.getInt(cursorIndexOfOwnerVerified)
+                                }
+                                tmpOwnerVerified = if (tmp == null) null else tmp != 0
+                                val tmpOwnerIdentityNumber = cursor.getString(cursorIndexOfOwnerIdentityNumber)
+                                val tmpOwnerMuteUntil = cursor.getString(cursorIndexOfOwnerMuteUntil)
+                                val tmpAppId = cursor.getString(cursorIndexOfAppId)
+                                val tmpContent = cursor.getString(cursorIndexOfContent)
+                                val tmpContentType = cursor.getString(cursorIndexOfContentType)
+                                val tmpCreatedAt = cursor.getString(cursorIndexOfCreatedAt)
+                                val tmpMediaUrl = cursor.getString(cursorIndexOfMediaUrl)
+                                val tmpSenderId = cursor.getString(cursorIndexOfSenderId)
+                                val tmpActionName = cursor.getString(cursorIndexOfActionName)
+                                val tmpMessageStatus = cursor.getString(cursorIndexOfMessageStatus)
+                                val tmpSenderFullName = cursor.getString(cursorIndexOfSenderFullName)
+                                val tmpParticipantFullName = cursor.getString(cursorIndexOfParticipantFullName)
+                                val tmpParticipantUserId = cursor.getString(cursorIndexOfParticipantUserId)
+                                val tmpMentionCount: Int?
+                                if (cursor.isNull(cursorIndexOfMentionCount)) {
+                                    tmpMentionCount = null
+                                } else {
+                                    tmpMentionCount = cursor.getInt(cursorIndexOfMentionCount)
+                                }
+                                val tmpMentions = cursor.getString(cursorIndexOfMentions)
+                                item = ConversationItem(tmpConversationId, tmpAvatarUrl, tmpGroupIconUrl, tmpCategory, tmpGroupName, tmpName, tmpOwnerId, tmpOwnerIdentityNumber, tmpStatus, tmpLastReadMessageId, tmpUnseenMessageCount, tmpContent, tmpContentType, tmpMediaUrl, tmpCreatedAt, tmpPinTime, tmpSenderId, tmpSenderFullName, tmpMessageStatus, tmpActionName, tmpParticipantFullName, tmpParticipantUserId, tmpOwnerMuteUntil, tmpOwnerVerified, tmpMuteUntil, null, tmpAppId, tmpMentions, tmpMentionCount)
                                 res.add(item)
                             }
                             return res

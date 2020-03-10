@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.paging.PagedList
-import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.ScopeProvider
@@ -23,6 +22,7 @@ import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
@@ -72,7 +72,7 @@ class ConversationAdapter(
     private val isGroup: Boolean,
     private val isSecret: Boolean = true,
     private val isBot: Boolean = false
-) : PagedListAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback),
+) : SafePagedListAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback),
     MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     var selectSet: ArraySet<MessageItem> = ArraySet()
     var unreadMsgId: String? = null
