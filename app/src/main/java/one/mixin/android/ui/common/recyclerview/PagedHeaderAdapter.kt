@@ -3,12 +3,11 @@ package one.mixin.android.ui.common.recyclerview
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
-import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 
 abstract class PagedHeaderAdapter<T>(diffCallback: DiffUtil.ItemCallback<T>) :
-    PagedListAdapter<T, RecyclerView.ViewHolder>(diffCallback) {
+    SafePagedListAdapter<T, RecyclerView.ViewHolder>(diffCallback) {
     companion object {
         const val TYPE_HEADER = 0
         const val TYPE_NORMAL = 1
