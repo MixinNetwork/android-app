@@ -377,7 +377,7 @@ internal constructor(
             if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
         var mimeType = mime
         if (mimeType == null) {
-            mimeType = getMimeType(uri)
+            mimeType = getMimeType(uri, true)
             if (mimeType?.isImageSupport() != true) {
                 viewModelScope.launch {
                     MixinApplication.get().toast(R.string.error_format)

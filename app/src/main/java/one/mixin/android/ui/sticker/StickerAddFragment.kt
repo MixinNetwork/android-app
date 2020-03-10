@@ -20,9 +20,6 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import java.io.File
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_add_sticker.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +47,9 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.textColor
+import java.io.File
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 class StickerAddFragment : BaseFragment() {
     companion object {
@@ -141,7 +141,7 @@ class StickerAddFragment : BaseFragment() {
 
         val request = try {
             val uri = url.toUri()
-            val mimeType = getMimeType(uri)
+            val mimeType = getMimeType(uri, true)
             if (mimeType?.isStickerSupport() != true) {
                 handleBack(R.string.sticker_add_invalid_format)
                 return@launch

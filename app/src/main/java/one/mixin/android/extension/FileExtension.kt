@@ -85,18 +85,34 @@ fun Context.getCacheMediaPath(): File {
     return File("${getBestAvailableCacheRoot().absolutePath}${File.separator}Media${File.separator}")
 }
 
-fun getMimeType(uri: Uri): String? {
+fun getMimeType(
+    uri: Uri,
+    isImage: Boolean = false
+): String? {
     var type: String? = null
     if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
         type = MixinApplication.get().contentResolver.getType(uri)
     } else {
+        val path = uri.getFilePath()
         val extension = try {
-            MimeTypeMap.getFileExtensionFromUrl(uri.getFilePath())
+            MimeTypeMap.getFileExtensionFromUrl(path)
         } catch (e: Exception) {
             null
         }
         if (extension != null) {
             type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+        }
+        if (isImage && type == null && path != null) {
+            type = try {
+                val options = BitmapFactory.Options()
+                options.inJustDecodeBounds = true
+                FileInputStream(path).use {
+                    BitmapFactory.decodeStream(it, null, options)
+                }
+                options.outMimeType
+            } catch (e: Exception) {
+                null
+            }
         }
     }
     return type
