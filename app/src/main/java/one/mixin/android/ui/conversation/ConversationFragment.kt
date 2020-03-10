@@ -574,8 +574,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 quoteMessageId?.let { quoteMsg ->
                     scrollToMessage(quoteMsg) { index ->
                         positionBeforeClickQuote = messageId
-                        val firstPosition = (chat_rv.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition()
-                        if (firstPosition + 1 < index && chat_rv.canScrollVertically(-1)) {
+                        val lastPosition = (chat_rv.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()
+                        if (index > lastPosition) {
                             flag_layout.bottomFlag = true
                         }
                     }
@@ -2025,11 +2025,20 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }, 60)
                 })
             } else {
-                scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = {
+                val lm = (chat_rv.layoutManager as LinearLayoutManager)
+                val lastPosition = lm.findLastCompletelyVisibleItemPosition()
+                val firstPosition = lm.findFirstVisibleItemPosition()
+                if (index in firstPosition..lastPosition) {
                     requireContext().mainThreadDelayed({
                         RxBus.publish(BlinkEvent(messageId))
                     }, 60)
-                })
+                } else {
+                    scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = {
+                        requireContext().mainThreadDelayed({
+                            RxBus.publish(BlinkEvent(messageId))
+                        }, 60)
+                    })
+                }
             }
         }
     }
