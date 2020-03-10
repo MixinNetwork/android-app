@@ -99,7 +99,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1">
+            android:layout_weight="5">
 
             <com.google.android.gms.maps.MapView
                 android:id="@+id/map_view"
@@ -111,15 +111,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:src="@drawable/map_pin" />
+                android:layout_marginBottom="33dp"
+                android:src="@drawable/ic_map_pin" />
         </FrameLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="2"
+            android:layout_height="match_parent"
+            android:layout_weight="4"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

@@ -424,8 +424,7 @@ class ConversationListFragment : LinkFragment() {
                     conversationItem.contentType == MessageCategory.PLAIN_LOCATION.name -> {
                     setConversationName(conversationItem)
                     itemView.msg_tv.setText(R.string.conversation_status_location)
-                    // todo icon
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_stiker)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_location)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_AUDIO.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_AUDIO.name -> {

@@ -3,13 +3,15 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.date_wrapper.view.*
+import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.item_chat_location.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
+import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.GsonHelper
@@ -23,6 +25,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
 
     init {
         itemView.chat_name.maxWidth = itemView.context.maxItemWidth() - dp16
+        itemView.location_layout.round(6.dp)
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
@@ -43,6 +46,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
                     R.drawable.chat_bubble_reply_me_night
                 )
             }
+            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp10
         } else {
             lp.gravity = Gravity.START
             if (isLast) {
@@ -58,6 +62,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
                     R.drawable.chat_bubble_reply_other_night
                 )
             }
+            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp3
         }
     }
 
@@ -103,10 +108,25 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         itemView.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+            } else {
+                onItemListener.onLocationClick(messageItem)
+            }
+        }
+
+        itemView.location_layout.setOnClickListener {
+            if (hasSelect) {
+                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+            } else {
+                onItemListener.onLocationClick(messageItem)
             }
         }
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), true) { statusIcon, secretIcon ->
+            statusIcon?.setBounds(0, 0, dp12, dp12)
+            secretIcon?.setBounds(0, 0, dp8, dp8)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
+        }
 
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
@@ -130,12 +150,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         } else {
             itemView.chat_name.setCompoundDrawables(null, null, null, null)
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
-            itemView.chat_flag.isVisible = statusIcon != null
-            itemView.chat_flag.setImageDrawable(statusIcon)
-            itemView.chat_secret.isVisible = secretIcon != null
-        }
-        itemView.chat_secret.isVisible = messageItem.isSignal()
+
         itemView.chat_layout.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onMessageClick(messageItem.quoteId)

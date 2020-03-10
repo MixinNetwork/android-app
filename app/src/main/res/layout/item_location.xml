@@ -1,11 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/title"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/bg_white"
-    android:padding="16dp"
-    android:textColor="?attr/text_primary"
-    android:textSize="14sp">
+    android:padding="16dp">
 
-</TextView>
+    <ImageView
+        android:id="@+id/location_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_toEndOf="@id/location_icon"
+        android:textColor="?attr/text_primary"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/sub_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/location_icon"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_toEndOf="@id/location_icon"
+        android:textColor="?attr/text_primary"
+        android:textSize="14sp" />
+</RelativeLayout>

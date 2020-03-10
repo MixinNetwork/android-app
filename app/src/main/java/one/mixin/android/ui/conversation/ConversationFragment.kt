@@ -96,6 +96,7 @@ import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
@@ -142,6 +143,7 @@ import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
@@ -153,6 +155,7 @@ import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
+import one.mixin.android.vo.Location
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
@@ -594,6 +597,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onOpenHomePage() {
                 openBotHome()
+            }
+
+            override fun onLocationClick(messageItem: MessageItem) {
+                val location = GsonHelper.customGson.fromJson(messageItem.content, Location::class.java)
+                if (requireContext().isGooglePlayServicesAvailable()) {
+                    LocationActivity.show(requireContext(), location)
+                } else {
+                    requireActivity().startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}"))
+                    )
+                }
             }
 
             override fun onCallClick(messageItem: MessageItem) {

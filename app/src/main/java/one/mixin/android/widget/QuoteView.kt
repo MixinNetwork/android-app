@@ -128,8 +128,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             }
             quoteMessageItem.type.endsWith("_LOCATION") -> {
                 reply_content_tv.setText(R.string.location)
-                // Todo icon
-                setIcon(R.drawable.ic_status_file)
+                setIcon(R.drawable.ic_status_location)
                 reply_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE
                 (reply_content_tv.layoutParams as LayoutParams).marginEnd =

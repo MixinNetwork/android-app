@@ -853,6 +853,8 @@ class ConversationAdapter(
         open fun onOpenHomePage() {}
 
         open fun onSayHi() {}
+
+        open fun onLocationClick(messageItem: MessageItem) {}
     }
 
     fun addSelect(messageItem: MessageItem): Boolean {

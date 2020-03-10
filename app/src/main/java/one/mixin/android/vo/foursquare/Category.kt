@@ -1,7 +1,5 @@
 package one.mixin.android.vo.foursquare
-
-class Venues(
-    val id: String,
+class Category(
     val name: String,
-    val location: Location
+    val icon: Icon
 )

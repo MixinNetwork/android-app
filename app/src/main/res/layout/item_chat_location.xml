@@ -34,9 +34,11 @@
             android:layout_marginEnd="4dp">
 
             <LinearLayout
-                android:id="@+id/chat_msg_content"
+                android:id="@+id/location_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:clipChildren="true"
+                android:clipToPadding="true"
                 android:orientation="vertical">
 
                 <ViewAnimator
@@ -61,18 +63,34 @@
                     android:id="@+id/location_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:padding="8dp"
                     android:textColor="?attr/text_primary" />
 
                 <TextView
                     android:id="@+id/location_sub_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="8dp"
                     android:textColor="?attr/text_minor"
                     android:textSize="12sp" />
 
             </LinearLayout>
 
-            <include layout="@layout/date_wrapper" />
+            <TextView
+                android:id="@+id/chat_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_marginBottom="8dp"
+                android:drawablePadding="3dp"
+                android:fontFamily="@font/sf_pro_light"
+                android:gravity="end|bottom"
+                android:textColor="@color/white"
+                android:textSize="@dimen/chat_date_size"
+                tools:text="7:48AM" />
+
         </FrameLayout>
     </LinearLayout>
 </FrameLayout>

@@ -5,31 +5,44 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_location.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.Location
 import one.mixin.android.vo.foursquare.Venues
+import one.mixin.android.vo.foursquare.getImageUrl
+import timber.log.Timber
 
-class LocationAdapter(val callback: (Location) -> Unit) : RecyclerView.Adapter<LocationHolder>() {
+class LocationAdapter(val currentCallback: () -> Unit, val callback: (Location) -> Unit) : RecyclerView.Adapter<VenueHolder>() {
     var venues: List<Venues>? = null
         set(value) {
             field = value
             notifyDataSetChanged()
         }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LocationHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VenueHolder {
         return LayoutInflater.from(parent.context).inflate(R.layout.item_location, parent, false).run {
-            LocationHolder(this)
+            VenueHolder(this)
         }
     }
 
-    override fun getItemCount(): Int = venues.notNullWithElse({ it.size }, 0)
+    override fun getItemCount(): Int = venues.notNullWithElse({ it.size + 1 }, 1)
 
-    override fun onBindViewHolder(holder: LocationHolder, position: Int) {
-        val venue = venues?.get(position)
-        holder.itemView.title.text = venue?.name
-        holder.itemView.setOnClickListener {
-            venue ?: return@setOnClickListener
-            callback(Location(venue.location.lat, venue.location.lng))
+    override fun onBindViewHolder(holder: VenueHolder, position: Int) {
+        if (position == 0) {
+            holder.itemView.title.setText(R.string.location_send_current_location)
+            holder.itemView.setOnClickListener {
+                currentCallback()
+            }
+        } else {
+            val venue = venues?.get(position - 1)
+            holder.itemView.title.text = venue?.name
+            Timber.d(venue?.getImageUrl())
+            holder.itemView.location_icon.loadImage(venue?.getImageUrl())
+            holder.itemView.sub_title.text = venue?.location?.address ?: venue?.location?.formattedAddress?.toString()
+            holder.itemView.setOnClickListener {
+                venue ?: return@setOnClickListener
+                callback(Location(venue.location.lat, venue.location.lng))
+            }
         }
     }
 }
