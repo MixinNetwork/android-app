@@ -59,7 +59,8 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private val adapter by lazy {
         LocationAdapter({
-            setResult(Location(currentPosition.latitude, currentPosition.longitude))
+            // todo
+            setResult(Location(currentPosition.latitude, currentPosition.longitude, "", ""))
         }, {
             setResult(it)
         })
@@ -104,6 +105,8 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         }
         marker.isVisible = location == null
         ic_search.isVisible = location == null
+        pb.isVisible = location == null
+        location_go.isVisible = location != null
         ic_search.setOnClickListener {
             search_va.showNext()
             search_et.requestFocus()
@@ -229,6 +232,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private var lastSearchJob: Job? = null
     fun search(latlng: LatLng) {
+        pb.isVisible = adapter.venues == null
         if (lastSearchJob != null && lastSearchJob?.isActive == true) {
             lastSearchJob?.cancel()
         }
@@ -243,12 +247,17 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 adapter.venues = it?.filter { item ->
                     item.location.address != null
                 }
+                pb.isVisible = adapter.venues == null
             }
         }
     }
 
+    private var lastSearchQueryJob: Job? = null
     fun search(query: String) {
-        lifecycleScope.launch {
+        if (lastSearchQueryJob != null && lastSearchQueryJob?.isActive == true) {
+            lastSearchQueryJob?.cancel()
+        }
+        lastSearchQueryJob = lifecycleScope.launch {
             val result = try {
                 foursquareService.searchVenues("${currentPosition.latitude},${currentPosition.longitude}", query)
             } catch (e: Exception) {

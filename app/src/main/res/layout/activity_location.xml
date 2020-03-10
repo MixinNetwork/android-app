@@ -115,12 +115,42 @@
                 android:src="@drawable/ic_map_pin" />
         </FrameLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="4"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            android:visibility="gone">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+            <FrameLayout
+                android:id="@+id/pb"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="66dp"
+                android:background="?attr/bg_white"
+                android:visibility="gone">
+
+                <ProgressBar
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:layout_gravity="center"
+                    android:theme="@style/AppTheme.BlueAccent" />
+            </FrameLayout>
+        </FrameLayout>
+
+        <Button
+            android:id="@+id/location_go"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/selector_bn"
+            android:text="@string/location_go"
+            android:textColor="@color/white"
+            android:visibility="gone" />
 
     </LinearLayout>
 

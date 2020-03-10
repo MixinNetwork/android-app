@@ -10,7 +10,6 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.Location
 import one.mixin.android.vo.foursquare.Venues
 import one.mixin.android.vo.foursquare.getImageUrl
-import timber.log.Timber
 
 class LocationAdapter(val currentCallback: () -> Unit, val callback: (Location) -> Unit) : RecyclerView.Adapter<VenueHolder>() {
     var venues: List<Venues>? = null
@@ -30,18 +29,18 @@ class LocationAdapter(val currentCallback: () -> Unit, val callback: (Location) 
     override fun onBindViewHolder(holder: VenueHolder, position: Int) {
         if (position == 0) {
             holder.itemView.title.setText(R.string.location_send_current_location)
+            holder.itemView.location_icon.setImageResource(R.drawable.ic_current_location)
             holder.itemView.setOnClickListener {
                 currentCallback()
             }
         } else {
             val venue = venues?.get(position - 1)
             holder.itemView.title.text = venue?.name
-            Timber.d(venue?.getImageUrl())
             holder.itemView.location_icon.loadImage(venue?.getImageUrl())
             holder.itemView.sub_title.text = venue?.location?.address ?: venue?.location?.formattedAddress?.toString()
             holder.itemView.setOnClickListener {
                 venue ?: return@setOnClickListener
-                callback(Location(venue.location.lat, venue.location.lng))
+                callback(Location(venue.location.lat, venue.location.lng, venue.name, venue.location.address ?: venue.location.formattedAddress?.toString()))
             }
         }
     }

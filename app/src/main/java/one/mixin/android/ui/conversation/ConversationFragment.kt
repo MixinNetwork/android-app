@@ -1927,15 +1927,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }
                     }
                     MenuType.Location -> {
-                        RxPermissions(requireActivity())
-                            .request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
-                            .subscribe { granted ->
-                                if (granted) {
-                                    LocationActivity.show(this@ConversationFragment)
-                                } else {
-                                    context?.openPermissionSetting()
+                        if (requireContext().isGooglePlayServicesAvailable()) {
+                            RxPermissions(requireActivity())
+                                .request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+                                .subscribe { granted ->
+                                    if (granted) {
+                                        LocationActivity.show(this@ConversationFragment)
+                                    } else {
+                                        context?.openPermissionSetting()
+                                    }
                                 }
-                            }
+                        } else {
+                            toast(R.string.location_google_error)
+                        }
                     }
                     MenuType.App -> {
                         menu.app?.let { app ->

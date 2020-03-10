@@ -763,4 +763,6 @@
     <string name="desktop_upgrade">请升级 Mixin Messenger 桌面端至最新版！</string>
     <!-- location -->
     <string name="location_send_current_location">发送您当前的位置</string>
+    <string name="location_google_error">没有安装Google service</string>
+    <string name="location_go">导航</string>
 </resources>

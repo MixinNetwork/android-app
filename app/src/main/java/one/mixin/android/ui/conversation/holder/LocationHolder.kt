@@ -6,10 +6,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.widget.TextViewCompat
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapsInitializer
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.item_chat_location.view.*
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
@@ -20,12 +28,45 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 
-class LocationHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class LocationHolder constructor(containerView: View) : BaseViewHolder(containerView), OnMapReadyCallback {
     private val dp16 = itemView.context.dpToPx(16f)
+
+    private var map: GoogleMap? = null
+
+    companion object {
+        val isGooglePlayServicesAvailable by lazy { MixinApplication.appContext.isGooglePlayServicesAvailable() }
+    }
 
     init {
         itemView.chat_name.maxWidth = itemView.context.maxItemWidth() - dp16
         itemView.location_layout.round(6.dp)
+        itemView.location_map.onCreate(null)
+        itemView.location_map.getMapAsync(this)
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        MapsInitializer.initialize(MixinApplication.appContext)
+        map = googleMap
+        with(googleMap) {
+            uiSettings.isZoomGesturesEnabled = false
+            uiSettings.isScrollGesturesEnabled = false
+            uiSettings.isScrollGesturesEnabledDuringRotateOrZoom = false
+        }
+        setMapLocation()
+    }
+
+    private fun setMapLocation() {
+        location?.let { data ->
+            if (itemView.location_map.tag == location) return
+            val position = LatLng(data.longitude, data.latitude)
+            with(map) {
+                this ?: return
+                moveCamera(CameraUpdateFactory.newLatLngZoom(position, 13f))
+                addMarker(MarkerOptions().position(position))
+                mapType = GoogleMap.MAP_TYPE_NORMAL
+                itemView.location_map.tag = location
+            }
+        }
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
@@ -68,6 +109,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
 
     private var onItemListener: ConversationAdapter.OnItemListener? = null
 
+    private var location: Location? = null
     fun bind(
         messageItem: MessageItem,
         isLast: Boolean,
@@ -78,9 +120,15 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
     ) {
         this.onItemListener = onItemListener
 
-        val location = GsonHelper.customGson.fromJson(messageItem.content!!, Location::class.java)
-        itemView.location_title.text = "${location.latitude}"
-        itemView.location_sub_title.text = "${location.latitude}"
+        location = GsonHelper.customGson.fromJson(messageItem.content!!, Location::class.java)
+        itemView.location_title.text = location?.name
+        itemView.location_sub_title.text = location?.address
+        if (isGooglePlayServicesAvailable) {
+            itemView.location_va.showNext()
+            setMapLocation()
+        } else {
+            itemView.location_va.showPrevious()
+        }
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
@@ -122,7 +170,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         }
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), true) { statusIcon, secretIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), false) { statusIcon, secretIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)

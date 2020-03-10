@@ -10,7 +10,6 @@ import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.ChecksumException
-import one.mixin.android.api.NetworkException
 import one.mixin.android.api.SignalKey
 import one.mixin.android.api.WebSocketException
 import one.mixin.android.api.createPreKeyBundle
@@ -240,7 +239,7 @@ abstract class MixinJob(
                 return true
             } else {
                 SystemClock.sleep(SLEEP_MILLIS)
-                throw NetworkException()
+                // throw NetworkException()
             }
         }
         return true
