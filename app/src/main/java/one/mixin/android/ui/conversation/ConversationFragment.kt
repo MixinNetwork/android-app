@@ -574,8 +574,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 quoteMessageId?.let { quoteMsg ->
                     scrollToMessage(quoteMsg) { index ->
                         positionBeforeClickQuote = messageId
-                        val firstPosition = (chat_rv.layoutManager as LinearLayoutManager).findFirstCompletelyVisibleItemPosition()
-                        if (firstPosition + 1 < index && chat_rv.canScrollVertically(-1)) {
+                        val lastPosition = (chat_rv.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()
+                        if (index > lastPosition) {
                             flag_layout.bottomFlag = true
                         }
                     }
@@ -1336,28 +1336,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             flag_layout.mention_flag_layout.setOnClickListener {
                 lifecycleScope.launch {
                     val messageId = mentionMessages.first().messageId
-                    val index = chatViewModel.findMessageIndex(conversationId, messageId)
-                    chatViewModel.markMentionRead(messageId, conversationId)
-                    if (index == 0) {
-                        scrollTo(0, chat_rv.measuredHeight * 3 / 4, action = {
-                            requireContext().mainThreadDelayed({
-                                RxBus.publish(BlinkEvent(messageId))
-                            }, 60)
-                        })
-                    } else {
-                        chatAdapter.loadAround(index)
-                        if (index == chatAdapter.itemCount - 1) {
-                            scrollTo(index, 0, action = {
-                                requireContext().mainThreadDelayed({
-                                    RxBus.publish(BlinkEvent(messageId))
-                                }, 60)
-                            })
-                        } else {
-                            scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = {
-                                requireContext().mainThreadDelayed({
-                                    RxBus.publish(BlinkEvent(messageId))
-                                }, 60)
-                            })
+                    scrollToMessage(messageId) {
+                        lifecycleScope.launch {
+                            chatViewModel.markMentionRead(messageId, conversationId)
                         }
                     }
                 }
@@ -2028,10 +2009,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (!isAdded) return@launch
 
         val index = chatViewModel.findMessageIndex(conversationId, messageId)
+        findMessageAction?.invoke(index)
         if (index == 0) {
-            toast(R.string.error_not_found_message)
+            scrollTo(0, chat_rv.measuredHeight * 3 / 4, action = {
+                requireContext().mainThreadDelayed({
+                    RxBus.publish(BlinkEvent(messageId))
+                }, 60)
+            })
         } else {
-            findMessageAction?.invoke(index)
             chatAdapter.loadAround(index)
             if (index == chatAdapter.itemCount - 1) {
                 scrollTo(index, 0, action = {
@@ -2040,11 +2025,20 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }, 60)
                 })
             } else {
-                scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = {
+                val lm = (chat_rv.layoutManager as LinearLayoutManager)
+                val lastPosition = lm.findLastCompletelyVisibleItemPosition()
+                val firstPosition = lm.findFirstVisibleItemPosition()
+                if (index in firstPosition..lastPosition) {
                     requireContext().mainThreadDelayed({
                         RxBus.publish(BlinkEvent(messageId))
                     }, 60)
-                })
+                } else {
+                    scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = {
+                        requireContext().mainThreadDelayed({
+                            RxBus.publish(BlinkEvent(messageId))
+                        }, 60)
+                    })
+                }
             }
         }
     }
