@@ -52,7 +52,7 @@ class LocationAdapter(val currentCallback: () -> Unit, val callback: (Location) 
             holder.itemView.sub_title.text = venue?.location?.address ?: venue?.location?.formattedAddress?.toString()
             holder.itemView.setOnClickListener {
                 venue ?: return@setOnClickListener
-                callback(Location(venue.location.lat, venue.location.lng, venue.name, venue.location.address ?: venue.location.formattedAddress?.toString()))
+                callback(Location(venue.location.lat, venue.location.lng, venue.name, venue.location.address ?: venue.location.formattedAddress?.toString(), venue.getImageUrl()))
             }
         }
     }

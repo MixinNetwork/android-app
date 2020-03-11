@@ -1,165 +1,211 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="?attr/bg_white">
+
+        <ImageButton
+            android:id="@+id/ic_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_back"
+            tools:ignore="ContentDescription" />
+
+        <ViewAnimator
+            android:id="@+id/search_va"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_toEndOf="@id/ic_back">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:text="@string/location"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="18sp" />
+
+                <ImageButton
+                    android:id="@+id/ic_search"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/mixin_ripple"
+                    android:padding="8dp"
+                    app:srcCompat="@drawable/ic_search_black"
+                    tools:ignore="ContentDescription" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <EditText
+                    android:id="@+id/search_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@id/ic_close"
+                    android:background="@null"
+                    android:hint="@string/search"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:singleLine="true"
+                    android:textColor="?attr/text_primary"
+                    android:textSize="18sp" />
+
+                <ImageButton
+                    android:id="@+id/ic_close"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/mixin_ripple"
+                    android:padding="8dp"
+                    app:srcCompat="@drawable/ic_close_black"
+                    tools:ignore="ContentDescription" />
+            </RelativeLayout>
+        </ViewAnimator>
+
+    </RelativeLayout>
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_weight="5">
 
-        <RelativeLayout
+        <com.google.android.gms.maps.MapView
+            android:id="@+id/map_view"
             android:layout_width="match_parent"
-            android:layout_height="?actionBarSize"
-            android:background="?attr/bg_white">
+            android:layout_height="match_parent" />
 
-            <ImageButton
-                android:id="@+id/ic_back"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/mixin_ripple"
-                android:padding="8dp"
-                app:srcCompat="@drawable/ic_back"
-                tools:ignore="ContentDescription" />
+        <ImageView
+            android:id="@+id/marker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="23dp"
+            android:src="@drawable/ic_map_pin" />
+    </FrameLayout>
 
-            <ViewAnimator
-                android:id="@+id/search_va"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_toEndOf="@id/ic_back">
+    <FrameLayout
+        android:id="@+id/location_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="4"
+        tools:visibility="gone">
 
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:text="@string/location"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="18sp" />
-
-                    <ImageButton
-                        android:id="@+id/ic_search"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        android:layout_marginStart="4dp"
-                        android:layout_marginEnd="4dp"
-                        android:background="@drawable/mixin_ripple"
-                        android:padding="8dp"
-                        app:srcCompat="@drawable/ic_search_black"
-                        tools:ignore="ContentDescription" />
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <EditText
-                        android:id="@+id/search_et"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:layout_toStartOf="@id/ic_close"
-                        android:background="@null"
-                        android:hint="@string/search"
-                        android:imeOptions="actionSearch"
-                        android:inputType="text"
-                        android:paddingTop="8dp"
-                        android:paddingBottom="8dp"
-                        android:singleLine="true"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="18sp" />
-
-                    <ImageButton
-                        android:id="@+id/ic_close"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        android:layout_marginStart="4dp"
-                        android:layout_marginEnd="4dp"
-                        android:background="@drawable/mixin_ripple"
-                        android:padding="8dp"
-                        app:srcCompat="@drawable/ic_close_black"
-                        tools:ignore="ContentDescription" />
-                </RelativeLayout>
-            </ViewAnimator>
-
-        </RelativeLayout>
-
-        <FrameLayout
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/location_recycler"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="5">
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-            <com.google.android.gms.maps.MapView
-                android:id="@+id/map_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/search_recycler"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-            <ImageView
-                android:id="@+id/marker"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+        <FrameLayout
+            android:id="@+id/pb"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="66dp"
+            android:background="?attr/bg_white"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:layout_width="64dp"
+                android:layout_height="64dp"
                 android:layout_gravity="center"
-                android:layout_marginBottom="23dp"
-                android:src="@drawable/ic_map_pin" />
+                android:theme="@style/AppTheme.BlueAccent" />
         </FrameLayout>
+    </FrameLayout>
 
-        <FrameLayout
-            android:id="@+id/location_bottom"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="4">
+    <RelativeLayout
+        android:id="@+id/location_go"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_upper_round"
+        android:padding="16dp"
+        android:text="@string/location_go"
+        android:textColor="@color/white"
+        android:visibility="gone"
+        tools:visibility="visible">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_view"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+        <ImageView
+            android:id="@+id/location_icon"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:background="@drawable/bg_menu"
+            android:padding="4dp"
+            app:tint="?attr/icon_default" />
 
-            <FrameLayout
-                android:id="@+id/pb"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="66dp"
-                android:background="?attr/bg_white"
-                android:visibility="gone">
+        <!-- todo icon -->
+        <ImageView
+            android:id="@+id/location_go_iv"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_alignParentEnd="true"
+            android:background="@drawable/bg_circle_blue"
+            android:padding="4dp"
+            app:tint="?attr/icon_default" />
 
-                <ProgressBar
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:layout_gravity="center"
-                    android:theme="@style/AppTheme.BlueAccent" />
-            </FrameLayout>
-        </FrameLayout>
-
-        <Button
-            android:id="@+id/location_go"
+        <TextView
+            android:id="@+id/location_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/selector_bn"
-            android:text="@string/location_go"
-            android:textColor="@color/white"
-            android:visibility="gone" />
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="16dp"
+            android:layout_toStartOf="@id/location_go_iv"
+            android:layout_toEndOf="@id/location_icon"
+            android:singleLine="true"
+            android:textColor="?attr/text_primary"
+            android:textSize="14sp" />
 
-    </LinearLayout>
+        <TextView
+            android:id="@+id/location_sub_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/location_icon"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="2dp"
+            android:layout_toStartOf="@id/location_go_iv"
+            android:layout_toEndOf="@id/location_icon"
+            android:singleLine="true"
+            android:textColor="?attr/text_minor"
+            android:textSize="12sp" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/search_recycler"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="?actionBarSize"
-        android:background="?attr/bg_white"
-        android:visibility="gone"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-</FrameLayout>
+    </RelativeLayout>
+
+</LinearLayout>
+
+

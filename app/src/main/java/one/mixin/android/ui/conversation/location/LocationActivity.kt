@@ -6,8 +6,10 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.location.LocationListener
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -25,6 +27,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_location.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -32,13 +35,15 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.FoursquareService
 import one.mixin.android.extension.REQUEST_LOCATION
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.vo.Location
 import timber.log.Timber
-import javax.inject.Inject
 
 class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
@@ -46,7 +51,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     lateinit var foursquareService: FoursquareService
 
     private val ZOOM_LEVEL = 13f
-    private var currentPosition = LatLng(39.9967, 116.4805)
+    private var currentPosition: LatLng? = null
 
     private var mapsInitialized = false
     private var onResumeCalled = false
@@ -56,9 +61,11 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         intent.getParcelableExtra<Location>(LOCATION)
     }
 
-    private val adapter by lazy {
+    private val locationAdapter by lazy {
         LocationAdapter({
-            setResult(Location(currentPosition.latitude, currentPosition.longitude, null, null))
+            currentPosition?.let { currentPosition ->
+                setResult(Location(currentPosition.latitude, currentPosition.longitude, null, null))
+            }
         }, {
             setResult(it)
         })
@@ -74,12 +81,14 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         override fun onLocationChanged(location: android.location.Location) {
             currentPosition = LatLng(location.latitude, location.longitude)
             if (this@LocationActivity.location == null) {
-                moveCamera(currentPosition)
+                currentPosition?.let { currentPosition ->
+                    moveCamera(currentPosition)
+                }
             }
         }
 
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
-            adapter.accurate = when (provider) {
+            locationAdapter.accurate = when (provider) {
                 LocationManager.GPS_PROVIDER -> {
                     getString(R.string.location_accurate, 100)
                 }
@@ -90,7 +99,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     getString(R.string.location_accurate, 1000)
                 }
                 else -> {
-                    getString(R.string.location_unknown)
+                    getString(R.string.location_unnamed)
                 }
             }
         }
@@ -110,6 +119,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         ic_back.setOnClickListener {
             if (search_va.displayedChild == 1) {
                 search_va.showPrevious()
+                search_et.text = null
                 search_et.hideKeyboard()
             } else {
                 finish()
@@ -120,6 +130,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         pb.isVisible = location == null
         location_go.isVisible = location != null
         location_bottom.isVisible = location == null
+        location_recycler.isVisible = location == null
         ic_search.setOnClickListener {
             search_va.showNext()
             search_et.requestFocus()
@@ -127,16 +138,30 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         }
         ic_close.setOnClickListener {
             search_va.showPrevious()
+            search_et.text = null
             search_et.hideKeyboard()
         }
         search_et.addTextChangedListener(textWatcher)
         MapsInitializer.initialize(MixinApplication.appContext)
         map_view.getMapAsync(this)
-        recycler_view.isVisible = location == null
-        if (location == null) {
-            recycler_view.adapter = adapter
+
+        location.notNullWithElse({ location ->
+            location_title.text = location.name ?: getString(R.string.location_unnamed)
+            location_sub_title.text = location.address
+            location.iconUrl.notNullWithElse({
+                location_icon.imageTintList = ColorStateList.valueOf(baseContext.colorFromAttribute(R.attr.icon_default))
+                location_icon.loadImage(it)
+            }, {
+                location_icon.setBackgroundResource(R.drawable.ic_current_location)
+                location_icon.setImageDrawable(null)
+            })
+            location_go_iv.setOnClickListener {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")))
+            }
+        }, {
+            location_recycler.adapter = locationAdapter
             search_recycler.adapter = locationSearchAdapter
-        }
+        })
     }
 
     override fun onResume() {
@@ -186,15 +211,12 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
         with(googleMap) {
             if (location != null) {
-
                 addMarker(
                     MarkerOptions().position(
                         LatLng(location!!.latitude, location!!.longitude)
                     ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_marker))
                 )
                 moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location!!.latitude, location!!.longitude), ZOOM_LEVEL))
-            } else {
-                moveCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, ZOOM_LEVEL))
             }
         }
         mapsInitialized = true
@@ -251,7 +273,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private var lastSearchJob: Job? = null
     fun search(latlng: LatLng) {
-        pb.isVisible = adapter.venues == null
+        pb.isVisible = locationAdapter.venues == null
         if (lastSearchJob != null && lastSearchJob?.isActive == true) {
             lastSearchJob?.cancel()
         }
@@ -263,16 +285,18 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 return@launch
             }
             result.response?.venues.let {
-                adapter.venues = it?.filter { item ->
+                locationAdapter.venues = it?.filter { item ->
                     item.location.address != null
                 }
-                pb.isVisible = adapter.venues == null
+                pb.isVisible = locationAdapter.venues == null
             }
         }
     }
 
     private var lastSearchQueryJob: Job? = null
     fun search(query: String) {
+        pb.isVisible = locationSearchAdapter.venues == null
+        val currentPosition = this.currentPosition ?: return
         if (lastSearchQueryJob != null && lastSearchQueryJob?.isActive == true) {
             lastSearchQueryJob?.cancel()
         }
@@ -286,6 +310,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             locationSearchAdapter.venues = result.response?.venues?.filter { item ->
                 item.location.address != null
             }
+            pb.isVisible = locationSearchAdapter.venues == null
         }
     }
 
@@ -293,10 +318,18 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private val textWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
-            search_recycler.isVisible = s?.isNotEmpty() == true
-            s?.let {
-                search(it.toString())
-            }
+            s.notNullWithElse({ s ->
+                search_recycler.isVisible = true
+                location_recycler.isVisible = false
+                val content = s.toString()
+                locationSearchAdapter.keyword = content
+                search(content)
+            }, {
+                search_recycler.isVisible = false
+                location_recycler.isVisible = true
+                locationSearchAdapter.keyword = null
+                locationSearchAdapter.venues = null
+            })
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}

@@ -1930,6 +1930,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         if (requireContext().isGooglePlayServicesAvailable()) {
                             RxPermissions(requireActivity())
                                 .request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+                                .autoDispose(stopScope)
                                 .subscribe { granted ->
                                     if (granted) {
                                         LocationActivity.show(this@ConversationFragment)

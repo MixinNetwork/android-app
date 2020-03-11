@@ -11,11 +11,14 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.item_chat_location.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isGooglePlayServicesAvailable
@@ -36,6 +39,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
 
     companion object {
         val isGooglePlayServicesAvailable by lazy { MixinApplication.appContext.isGooglePlayServicesAvailable() }
+        val isDark = MixinApplication.appContext.booleanFromAttribute(R.attr.flag_night)
     }
 
     init {
@@ -48,6 +52,10 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
     override fun onMapReady(googleMap: GoogleMap) {
         MapsInitializer.initialize(MixinApplication.appContext)
         map = googleMap
+        if (isDark) {
+            val style = MapStyleOptions.loadRawResourceStyle(MixinApplication.appContext, R.raw.mapstyle_night)
+            googleMap.setMapStyle(style)
+        }
         with(googleMap) {
             uiSettings.isZoomGesturesEnabled = false
             uiSettings.isScrollGesturesEnabled = false
@@ -63,7 +71,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
             with(map) {
                 this ?: return
                 moveCamera(CameraUpdateFactory.newLatLngZoom(position, 13f))
-                addMarker(MarkerOptions().position(position))
+                addMarker(MarkerOptions().position(position).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_marker)))
                 mapType = GoogleMap.MAP_TYPE_NORMAL
                 itemView.location_map.tag = location
             }
@@ -123,11 +131,11 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
 
         location = GsonHelper.customGson.fromJson(messageItem.content!!, Location::class.java)
         if (location?.name == null) {
-            itemView.location_title.isVisible = false
-            itemView.location_sub_title.visibility = View.INVISIBLE
+            itemView.location_sub_title.isVisible = false
+            itemView.location_title.visibility = View.INVISIBLE
         } else {
-            itemView.location_title.isVisible = true
-            itemView.location_sub_title.visibility = View.VISIBLE
+            itemView.location_sub_title.isVisible = true
+            itemView.location_title.visibility = View.VISIBLE
             itemView.location_title.text = location?.name
             itemView.location_sub_title.text = location?.address
         }
@@ -170,6 +178,13 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         }
 
         itemView.location_layout.setOnClickListener {
+            if (hasSelect) {
+                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+            } else {
+                onItemListener.onLocationClick(messageItem)
+            }
+        }
+        itemView.location_map.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
             } else {
