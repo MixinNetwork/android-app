@@ -779,5 +779,7 @@
     <string name="location_send_current_location">Send your Current Location</string>
     <string name="location_google_error">Google service is not installed</string>
     <string name="location_go">Go</string>
+    <string name="location_accurate">Accurate to %1$d meters</string>
+    <string name="location_unknown">Unknown location</string>
 </resources>
 

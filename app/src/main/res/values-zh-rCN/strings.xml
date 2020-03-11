@@ -765,4 +765,6 @@
     <string name="location_send_current_location">发送您当前的位置</string>
     <string name="location_google_error">没有安装Google service</string>
     <string name="location_go">导航</string>
+    <string name="location_accurate">精确到 %1$d 米</string>
+    <string name="location_unknown">未知位置</string>
 </resources>

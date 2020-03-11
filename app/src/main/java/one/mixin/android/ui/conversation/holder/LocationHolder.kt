@@ -5,6 +5,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -121,8 +122,15 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         this.onItemListener = onItemListener
 
         location = GsonHelper.customGson.fromJson(messageItem.content!!, Location::class.java)
-        itemView.location_title.text = location?.name
-        itemView.location_sub_title.text = location?.address
+        if (location?.name == null) {
+            itemView.location_title.isVisible = false
+            itemView.location_sub_title.visibility = View.INVISIBLE
+        } else {
+            itemView.location_title.isVisible = true
+            itemView.location_sub_title.visibility = View.VISIBLE
+            itemView.location_title.text = location?.name
+            itemView.location_sub_title.text = location?.address
+        }
         if (isGooglePlayServicesAvailable) {
             itemView.location_va.showNext()
             setMapLocation()

@@ -25,7 +25,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_location.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -39,6 +38,7 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.vo.Location
 import timber.log.Timber
+import javax.inject.Inject
 
 class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
@@ -58,8 +58,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private val adapter by lazy {
         LocationAdapter({
-            // todo
-            setResult(Location(currentPosition.latitude, currentPosition.longitude, "", ""))
+            setResult(Location(currentPosition.latitude, currentPosition.longitude, null, null))
         }, {
             setResult(it)
         })
@@ -80,13 +79,25 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         }
 
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
+            adapter.accurate = when (provider) {
+                LocationManager.GPS_PROVIDER -> {
+                    getString(R.string.location_accurate, 100)
+                }
+                LocationManager.NETWORK_PROVIDER -> {
+                    getString(R.string.location_accurate, 500)
+                }
+                LocationManager.PASSIVE_PROVIDER -> {
+                    getString(R.string.location_accurate, 1000)
+                }
+                else -> {
+                    getString(R.string.location_unknown)
+                }
+            }
         }
 
-        override fun onProviderEnabled(provider: String) {
-        }
+        override fun onProviderEnabled(provider: String) {}
 
-        override fun onProviderDisabled(provider: String) {
-        }
+        override fun onProviderDisabled(provider: String) {}
     }
 
     @SuppressLint("MissingPermission")
@@ -179,7 +190,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 addMarker(
                     MarkerOptions().position(
                         LatLng(location!!.latitude, location!!.longitude)
-                    ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_pin))
+                    ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_marker))
                 )
                 moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location!!.latitude, location!!.longitude), ZOOM_LEVEL))
             } else {
