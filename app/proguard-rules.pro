@@ -13,3 +13,7 @@
 -dontwarn org.webrtc.NetworkMonitorAutoDetect
 -dontwarn android.net.Network
 -keep class org.webrtc.** { *; }
+
+# androidx paging
+-keep class androidx.paging.PagedListAdapter.** { *; }
+-keep class androidx.paging.AsyncPagedListDiffer.** { *; }
