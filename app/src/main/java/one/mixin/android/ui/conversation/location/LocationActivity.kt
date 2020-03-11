@@ -45,7 +45,6 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     @Inject
     lateinit var foursquareService: FoursquareService
 
-    // todo delete test position
     private val ZOOM_LEVEL = 13f
     private var currentPosition = LatLng(39.9967, 116.4805)
 
@@ -74,8 +73,10 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private val mLocationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: android.location.Location) {
-            Timber.d("${location.latitude} ${location.longitude}")
             currentPosition = LatLng(location.latitude, location.longitude)
+            if (this@LocationActivity.location == null) {
+                moveCamera(currentPosition)
+            }
         }
 
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
@@ -107,6 +108,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         ic_search.isVisible = location == null
         pb.isVisible = location == null
         location_go.isVisible = location != null
+        location_bottom.isVisible = location == null
         ic_search.setOnClickListener {
             search_va.showNext()
             search_et.requestFocus()
@@ -156,9 +158,15 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         }
     }
 
+    private var googleMap: GoogleMap? = null
+
+    private fun moveCamera(latlng: LatLng) {
+        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, ZOOM_LEVEL))
+    }
+
     override fun onMapReady(googleMap: GoogleMap?) {
         googleMap ?: return
-
+        this.googleMap = googleMap
         if (isNightMode()) {
             val style = MapStyleOptions.loadRawResourceStyle(applicationContext, R.raw.mapstyle_night)
             googleMap.setMapStyle(style)
