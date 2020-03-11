@@ -120,7 +120,7 @@ internal constructor(
         readMessageDao.fuzzySearchMessage(query.joinStar(), limit)
 
     fun fuzzySearchMessageDetail(query: String, conversationId: String) =
-        readMessageDao.fuzzySearchMessageByConversationId(query.joinStar(), conversationId)
+        MessageProvider.fuzzySearchMessageDetail(query.joinStar(), conversationId, readAppDatabase)
 
     suspend fun fuzzySearchChat(query: String): List<ChatMinimal> =
         readConversationDao.fuzzySearchChat(query)

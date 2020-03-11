@@ -84,8 +84,10 @@ class MenuAdapter(
         } else {
             view.app_icon.visibility = VISIBLE
             view.app_icon.bg.loadImage(menu.app?.iconUrl, R.drawable.ic_avatar_place_holder)
-            menu.app?.avatarUrl?.let {
-                view.app_icon.badge.loadImage(it, R.drawable.ic_avatar_place_holder)
+            if (!isGroup && !isBot) {
+                menu.app?.avatarUrl?.let {
+                    view.app_icon.badge.loadImage(it, R.drawable.ic_avatar_place_holder)
+                }
             }
             view.menu_icon.visibility = GONE
             view.menu_title.text = menu.app?.name
