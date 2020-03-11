@@ -777,6 +777,7 @@
     <string name="desktop_upgrade">Please upgrade Mixin Messenger Desktop to the latest version.</string>
     <!-- location -->
     <string name="location_send_current_location">Send your Current Location</string>
+    <string name="location_send_this_location">Send This Location</string>
     <string name="location_google_error">Google service is not installed</string>
     <string name="location_go">Go</string>
     <string name="location_accurate">Accurate to %1$d meters</string>

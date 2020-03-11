@@ -13,7 +13,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.KeyEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.widget.TextView
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -83,6 +86,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             if (this@LocationActivity.location == null) {
                 currentPosition?.let { currentPosition ->
                     moveCamera(currentPosition)
+                    isInit = false
                 }
             }
         }
@@ -125,7 +129,6 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 finish()
             }
         }
-        marker.isVisible = location == null
         ic_search.isVisible = location == null
         pb.isVisible = location == null
         location_go.isVisible = location != null
@@ -142,6 +145,15 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             search_et.hideKeyboard()
         }
         search_et.addTextChangedListener(textWatcher)
+        search_et.setOnEditorActionListener(object : TextView.OnEditorActionListener {
+            override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    search_et.hideKeyboard()
+                    return true
+                }
+                return false
+            }
+        })
         MapsInitializer.initialize(MixinApplication.appContext)
         map_view.getMapAsync(this)
 
@@ -156,7 +168,12 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 location_icon.setImageDrawable(null)
             })
             location_go_iv.setOnClickListener {
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")))
+                startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")
+                    )
+                )
             }
         }, {
             location_recycler.adapter = locationAdapter
@@ -230,6 +247,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         finish()
     }
 
+    private var isInit = true
     fun mapInit(googleMap: GoogleMap) {
         try {
             googleMap.isMyLocationEnabled = true
@@ -239,10 +257,16 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         googleMap.uiSettings?.isMyLocationButtonEnabled = false
         googleMap.uiSettings?.isZoomControlsEnabled = false
         googleMap.uiSettings?.isCompassEnabled = false
+        googleMap.uiSettings?.isIndoorLevelPickerEnabled = false
+        googleMap.uiSettings?.isRotateGesturesEnabled = false
         googleMap.setOnCameraMoveStartedListener { reason ->
             if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
                 val cameraPosition = googleMap.cameraPosition
                 forceUpdate = CameraUpdateFactory.newLatLngZoom(cameraPosition.target, cameraPosition.zoom)
+                if (!marker.isVisible && !isInit) {
+                    marker.isVisible = true
+                    locationSearchAdapter.setMark()
+                }
             }
             markerAnimatorSet?.cancel()
             markerAnimatorSet = AnimatorSet()
@@ -251,6 +275,10 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             markerAnimatorSet?.start()
         }
         googleMap.setOnCameraMoveListener {}
+        googleMap.setOnMarkerClickListener { marker ->
+            locationSearchAdapter.setMark(marker.zIndex)
+            false
+        }
 
         googleMap.setOnCameraIdleListener {
             markerAnimatorSet?.cancel()
@@ -266,9 +294,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             }
         }
 
-        googleMap.setOnCameraMoveCanceledListener {
-            Timber.d("cancel")
-        }
+        googleMap.setOnCameraMoveCanceledListener {}
     }
 
     private var lastSearchJob: Job? = null
@@ -284,11 +310,13 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 Timber.e(e)
                 return@launch
             }
-            result.response?.venues.let {
-                locationAdapter.venues = it?.filter { item ->
+            result.response?.venues.let { list ->
+                list?.filter { item ->
                     item.location.address != null
+                }.let { data ->
+                    locationAdapter.venues = data
+                    pb.isVisible = data == null
                 }
-                pb.isVisible = locationAdapter.venues == null
             }
         }
     }
@@ -307,10 +335,23 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 Timber.e(e)
                 return@launch
             }
-            locationSearchAdapter.venues = result.response?.venues?.filter { item ->
+            result.response?.venues?.filter { item ->
                 item.location.address != null
+            }.let { data ->
+                locationSearchAdapter.venues = data
+                pb.isVisible = data == null
+                googleMap?.clear()
+                data?.forEachIndexed { index, item ->
+                    googleMap?.addMarker(
+                        MarkerOptions().zIndex(index.toFloat()).position(
+                            LatLng(
+                                item.location.lat,
+                                item.location.lng
+                            )
+                        ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_search_maker))
+                    )
+                }
             }
-            pb.isVisible = locationSearchAdapter.venues == null
         }
     }
 
@@ -329,6 +370,8 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 location_recycler.isVisible = true
                 locationSearchAdapter.keyword = null
                 locationSearchAdapter.venues = null
+                locationSearchAdapter.setMark()
+                googleMap?.clear()
             })
         }
 

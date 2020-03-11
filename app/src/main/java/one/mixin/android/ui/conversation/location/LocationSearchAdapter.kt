@@ -25,16 +25,88 @@ class LocationSearchAdapter(val callback: (Location) -> Unit) : RecyclerView.Ada
             notifyDataSetChanged()
         }
 
+    fun setMark(index: Float = -1f) {
+        if (index < 0) {
+            currentVenues = null
+            return
+        }
+        index.toInt().let { index ->
+            if (index < venues?.size!!) {
+                currentVenues = venues!![index]
+            }
+        }
+    }
+
+    private var currentVenues: Venues? = null
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VenueHolder {
         return LayoutInflater.from(parent.context).inflate(R.layout.item_location, parent, false).run {
             VenueHolder(this)
         }
     }
 
-    override fun getItemCount(): Int = venues.notNullWithElse({ it.size }, 0)
+    override fun getItemCount(): Int = venues.notNullWithElse(
+        {
+            it.size + if (currentVenues == null) {
+                0
+            } else {
+                1
+            }
+        }, if (currentVenues == null) {
+            0
+        } else {
+            1
+        }
+    )
+
+    override fun getItemViewType(position: Int): Int {
+        if (currentVenues == null) {
+            return 0
+        } else if (position == 0) {
+            return 1
+        } else {
+            return 0
+        }
+    }
+
+    private fun getItem(position: Int): Venues? {
+        return when {
+            currentVenues == null -> {
+                venues?.get(position)
+            }
+            position == 0 -> {
+                currentVenues
+            }
+            else -> {
+                venues?.get(position - 1)
+            }
+        }
+    }
 
     override fun onBindViewHolder(holder: VenueHolder, position: Int) {
-        val venue = venues?.get(position)
+        val venue = getItem(position)
+        if (getItemViewType(position) == 1) {
+            holder.itemView.title.setText(R.string.location_send_current_location)
+            holder.itemView.sub_title.text = venue?.name
+            holder.itemView.location_icon.setBackgroundResource(R.drawable.ic_current_location)
+            holder.itemView.location_icon.setImageDrawable(null)
+            holder.itemView.location_icon.imageTintList = null
+            holder.itemView.setOnClickListener {
+                venue ?: return@setOnClickListener
+                Location(
+                    venue.location.lat,
+                    venue.location.lng,
+                    venue.name,
+                    venue.location.address ?: venue.location.formattedAddress?.toString(),
+                    venue.getImageUrl()
+                )
+            }
+            return
+        }
         holder.itemView.title.text = venue?.name
         if (keyword != null) {
             holder.itemView.title.highLight(keyword)
@@ -43,7 +115,15 @@ class LocationSearchAdapter(val callback: (Location) -> Unit) : RecyclerView.Ada
         holder.itemView.location_icon.loadImage(venue?.getImageUrl())
         holder.itemView.setOnClickListener {
             venue ?: return@setOnClickListener
-            callback(Location(venue.location.lat, venue.location.lng, venue.name, venue.location.address ?: venue.location.formattedAddress?.toString(), venue.getImageUrl()))
+            callback(
+                Location(
+                    venue.location.lat,
+                    venue.location.lng,
+                    venue.name,
+                    venue.location.address ?: venue.location.formattedAddress?.toString(),
+                    venue.getImageUrl()
+                )
+            )
         }
     }
 }

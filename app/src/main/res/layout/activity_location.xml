@@ -108,8 +108,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginBottom="23dp"
-            android:src="@drawable/ic_map_pin" />
+            android:layout_marginBottom="20dp"
+            android:src="@drawable/ic_map_pin"
+            android:visibility="gone" />
     </FrameLayout>
 
     <FrameLayout
