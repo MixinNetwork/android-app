@@ -230,7 +230,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
 
         itemView.chat_layout.setOnClickListener {
             if (!hasSelect) {
-                onItemListener.onMessageClick(messageItem.quoteId)
+                onItemListener.onLocationClick(messageItem)
             } else {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
             }
