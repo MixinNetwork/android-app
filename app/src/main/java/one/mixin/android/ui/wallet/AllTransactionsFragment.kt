@@ -63,6 +63,11 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             } else {
                 showEmpty(true)
             }
+
+            if (!refreshedSnapshots) {
+                walletViewModel.refreshSnapshots()
+                refreshedSnapshots = true
+            }
         }
         bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey, orderByAmount = currentOrder == R.id.sort_amount))
     }
