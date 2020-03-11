@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.db.SignalDatabase
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.AppComponent
 import one.mixin.android.di.AppInjector
 import one.mixin.android.extension.clear
@@ -105,6 +106,7 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
     fun closeAndClear() {
         if (onlining.compareAndSet(true, false)) {
             val accountId = Session.getAccountId()
+            val sessionId = Session.getSessionId()
             BlazeMessageService.stopService(this)
             CallService.disconnect(this)
             notificationManager.cancelAll()
@@ -114,7 +116,7 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
             CookieManager.getInstance().flush()
             WebStorage.getInstance().deleteAllData()
             doAsync {
-                clearData()
+                clearData(sessionId)
 
                 uiThread {
                     inject()
@@ -125,9 +127,10 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
         }
     }
 
-    private fun clearData() {
+    private fun clearData(sessionId: String?) {
         jobManager.cancelAllJob()
         jobManager.clear()
+        MixinDatabase.getDatabase(this).participantSessionDao().clearKey(sessionId)
         SignalDatabase.getDatabase(this).clearAllTables()
     }
 }
