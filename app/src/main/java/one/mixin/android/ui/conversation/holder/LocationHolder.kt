@@ -66,14 +66,12 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
 
     private fun setMapLocation() {
         location?.let { data ->
-            if (itemView.location_map.tag == location) return
             val position = LatLng(data.longitude, data.latitude)
             with(map) {
                 this ?: return
                 moveCamera(CameraUpdateFactory.newLatLngZoom(position, 13f))
                 addMarker(MarkerOptions().position(position).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_marker)))
                 mapType = GoogleMap.MAP_TYPE_NORMAL
-                itemView.location_map.tag = location
             }
         }
     }
@@ -189,6 +187,14 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
             } else {
                 onItemListener.onLocationClick(messageItem)
+            }
+        }
+        itemView.location_map.setOnLongClickListener {
+            if (!hasSelect) {
+                onItemListener.onLongClick(messageItem, adapterPosition)
+            } else {
+                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                true
             }
         }
 

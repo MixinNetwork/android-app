@@ -167,15 +167,12 @@
             android:padding="4dp"
             app:tint="?attr/icon_default" />
 
-        <!-- todo icon -->
         <ImageView
             android:id="@+id/location_go_iv"
             android:layout_width="42dp"
             android:layout_height="42dp"
             android:layout_alignParentEnd="true"
-            android:background="@drawable/bg_circle_blue"
-            android:padding="4dp"
-            app:tint="?attr/icon_default" />
+            android:src="@drawable/ic_location_go" />
 
         <TextView
             android:id="@+id/location_title"
