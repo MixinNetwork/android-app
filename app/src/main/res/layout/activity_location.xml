@@ -111,6 +111,17 @@
             android:layout_marginBottom="20dp"
             android:src="@drawable/ic_map_pin"
             android:visibility="gone" />
+
+        <!--    Todo replace icon    -->
+        <ImageView
+            android:id="@+id/my_location"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:layout_margin="16dp"
+            android:src="@drawable/ic_location_go"
+            android:visibility="visible" />
+
     </FrameLayout>
 
     <FrameLayout

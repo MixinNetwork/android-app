@@ -55,6 +55,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private val ZOOM_LEVEL = 13f
     private var currentPosition: LatLng? = null
+    private var selfPosition: LatLng? = null
 
     private var mapsInitialized = false
     private var onResumeCalled = false
@@ -83,30 +84,17 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     private val mLocationListener: LocationListener = object : LocationListener {
         override fun onLocationChanged(location: android.location.Location) {
             currentPosition = LatLng(location.latitude, location.longitude)
+            selfPosition = LatLng(location.latitude, location.longitude)
             if (this@LocationActivity.location == null) {
                 currentPosition?.let { currentPosition ->
                     moveCamera(currentPosition)
                     isInit = false
                 }
+                locationAdapter.accurate = getString(R.string.location_accurate, location.accuracy.toInt())
             }
         }
 
-        override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
-            locationAdapter.accurate = when (provider) {
-                LocationManager.GPS_PROVIDER -> {
-                    getString(R.string.location_accurate, 100)
-                }
-                LocationManager.NETWORK_PROVIDER -> {
-                    getString(R.string.location_accurate, 500)
-                }
-                LocationManager.PASSIVE_PROVIDER -> {
-                    getString(R.string.location_accurate, 1000)
-                }
-                else -> {
-                    getString(R.string.location_unnamed)
-                }
-            }
-        }
+        override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {}
 
         override fun onProviderEnabled(provider: String) {}
 
@@ -138,6 +126,11 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             search_va.showNext()
             search_et.requestFocus()
             search_et.showKeyboard()
+        }
+        my_location.setOnClickListener {
+            selfPosition?.let { selfPosition ->
+                moveCamera(selfPosition)
+            }
         }
         ic_close.setOnClickListener {
             search_va.showPrevious()
