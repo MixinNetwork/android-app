@@ -106,6 +106,6 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     }
 
     companion object {
-        const val LIMIT = 50
+        const val LIMIT = 30
     }
 }
