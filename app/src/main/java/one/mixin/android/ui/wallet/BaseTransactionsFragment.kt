@@ -38,6 +38,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     protected var initialLoadKey: Int? = null
 
     protected lateinit var dataObserver: Observer<C>
+    protected var refreshedSnapshots: Boolean = false
 
     protected fun showFiltersSheet() {
         filtersView.sort_flow.setCheckedById(currentOrder)
@@ -105,6 +106,6 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     }
 
     companion object {
-        const val LIMIT = 50
+        const val LIMIT = 30
     }
 }

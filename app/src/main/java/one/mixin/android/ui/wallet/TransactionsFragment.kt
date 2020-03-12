@@ -142,6 +142,11 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 }
             }
             adapter.submitList(pagedList)
+
+            if (!refreshedSnapshots) {
+                walletViewModel.refreshSnapshots(asset.assetId)
+                refreshedSnapshots = true
+            }
         }
         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = currentOrder == R.id.sort_amount))
         walletViewModel.assetItem(asset.assetId).observe(viewLifecycleOwner, Observer { assetItem ->
