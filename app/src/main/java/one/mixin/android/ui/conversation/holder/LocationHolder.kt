@@ -35,7 +35,7 @@ import org.jetbrains.anko.dip
 class LocationHolder constructor(containerView: View) : BaseViewHolder(containerView), OnMapReadyCallback {
     private val dp16 = itemView.context.dpToPx(16f)
 
-    private var map: GoogleMap? = null
+    private lateinit var map: GoogleMap
 
     companion object {
         val isGooglePlayServicesAvailable by lazy { MixinApplication.appContext.isGooglePlayServicesAvailable() }
@@ -65,13 +65,13 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
     }
 
     private fun setMapLocation() {
+        if (!::map.isInitialized) return
         location?.let { data ->
-            val position = LatLng(data.longitude, data.latitude)
+            val position = LatLng(data.latitude, data.longitude)
             with(map) {
-                this ?: return
-                moveCamera(CameraUpdateFactory.newLatLngZoom(position, 13f))
-                addMarker(MarkerOptions().position(position).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_marker)))
                 mapType = GoogleMap.MAP_TYPE_NORMAL
+                addMarker(MarkerOptions().position(position).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_marker)))
+                moveCamera(CameraUpdateFactory.newLatLngZoom(position, 13f))
             }
         }
     }
@@ -228,5 +228,13 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         }
 
         chatLayout(isMe, isLast)
+    }
+
+    fun clearView() {
+        if (!::map.isInitialized) return
+        with(map) {
+            clear()
+            mapType = GoogleMap.MAP_TYPE_NONE
+        }
     }
 }

@@ -105,9 +105,28 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_location)
-        val locationManager = getSystemService<LocationManager>()
-        locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 100f, mLocationListener)
         map_view.onCreate(savedInstanceState)
+        MapsInitializer.initialize(MixinApplication.appContext)
+        map_view.getMapAsync(this)
+
+        val locationManager = getSystemService<LocationManager>()
+        locationManager?.getProviders(true)?.let { providers ->
+            for (provider in providers) {
+                val l = locationManager.getLastKnownLocation(provider)
+                if (l != null) {
+                    currentPosition = LatLng(l.latitude, l.longitude)
+                    selfPosition = LatLng(l.latitude, l.longitude)
+                    if (this@LocationActivity.location == null) {
+                        currentPosition?.let { currentPosition ->
+                            moveCamera(currentPosition)
+                            isInit = false
+                        }
+                        locationAdapter.accurate = getString(R.string.location_accurate, l.accuracy.toInt())
+                    }
+                }
+            }
+        }
+        locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 100f, mLocationListener)
         ic_back.setOnClickListener {
             if (search_va.displayedChild == 1) {
                 search_va.showPrevious()
@@ -147,8 +166,6 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 return false
             }
         })
-        MapsInitializer.initialize(MixinApplication.appContext)
-        map_view.getMapAsync(this)
 
         location.notNullWithElse({ location ->
             location_title.text = location.name ?: getString(R.string.location_unnamed)
@@ -227,6 +244,8 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_map_marker))
                 )
                 moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(location!!.latitude, location!!.longitude), ZOOM_LEVEL))
+            } else if (selfPosition != null) {
+                moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(selfPosition!!.latitude, selfPosition!!.longitude), ZOOM_LEVEL))
             }
         }
         mapsInitialized = true
