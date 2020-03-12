@@ -54,6 +54,19 @@
                     android:padding="8dp"
                     app:srcCompat="@drawable/ic_search_black"
                     tools:ignore="ContentDescription" />
+
+                <ImageButton
+                    android:id="@+id/ic_location_shared"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/mixin_ripple"
+                    android:padding="8dp"
+                    app:srcCompat="@drawable/ic_location_shared"
+                    tools:ignore="ContentDescription" />
             </RelativeLayout>
 
             <RelativeLayout
@@ -112,13 +125,13 @@
             android:src="@drawable/ic_map_pin"
             android:visibility="gone" />
 
-        <!--    Todo replace icon    -->
         <ImageView
             android:id="@+id/my_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"
             android:src="@drawable/ic_my_location"
+            android:layout_margin="6dp"
             android:visibility="visible" />
 
     </FrameLayout>
@@ -134,13 +147,6 @@
             android:id="@+id/location_recycler"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/search_recycler"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="gone"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
         <FrameLayout
@@ -164,9 +170,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_upper_round"
+        android:layout_marginTop="-8dp"
         android:padding="16dp"
-        android:text="@string/location_go"
-        android:textColor="@color/white"
         android:visibility="gone"
         tools:visibility="visible">
 

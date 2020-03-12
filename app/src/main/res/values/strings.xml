@@ -784,5 +784,8 @@
     <string name="location_go">Go</string>
     <string name="location_accurate">Accurate to %1$d meters</string>
     <string name="location_unnamed">Unnamed location</string>
+    <string name="location_distance">%1$s %2$s away</string>
+    <string name="location_kilometre">km</string>
+    <string name="location_metre">m</string>
 </resources>
 

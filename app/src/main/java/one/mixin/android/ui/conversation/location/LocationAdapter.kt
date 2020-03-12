@@ -10,11 +10,12 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.Location
-import one.mixin.android.vo.foursquare.Venues
+import one.mixin.android.vo.foursquare.Venue
 import one.mixin.android.vo.foursquare.getImageUrl
+import one.mixin.android.vo.foursquare.getVenueType
 
 class LocationAdapter(val currentCallback: () -> Unit, val callback: (Location) -> Unit) : RecyclerView.Adapter<VenueHolder>() {
-    var venues: List<Venues>? = null
+    var venues: List<Venue>? = null
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -48,11 +49,12 @@ class LocationAdapter(val currentCallback: () -> Unit, val callback: (Location) 
             val venue = venues?.get(position - 1)
             holder.itemView.title.text = venue?.name
             holder.itemView.location_icon.loadImage(venue?.getImageUrl())
+            holder.itemView.location_icon.setBackgroundResource(R.drawable.bg_menu)
             holder.itemView.location_icon.imageTintList = ColorStateList.valueOf(holder.itemView.context.colorFromAttribute(R.attr.icon_default))
-            holder.itemView.sub_title.text = venue?.location?.address ?: venue?.location?.formattedAddress?.toString()
+            holder.itemView.sub_title.text = venue?.location?.address
             holder.itemView.setOnClickListener {
                 venue ?: return@setOnClickListener
-                callback(Location(venue.location.lat, venue.location.lng, venue.name, venue.location.address ?: venue.location.formattedAddress?.toString(), venue.getImageUrl()))
+                callback(Location(venue.location.lat, venue.location.lng, venue.name, venue.location.address, venue.getImageUrl(), venue.getVenueType()))
             }
         }
     }

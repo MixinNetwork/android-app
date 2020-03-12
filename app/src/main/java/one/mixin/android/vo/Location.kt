@@ -14,7 +14,9 @@ data class Location(
     val name: String?,
     val address: String?,
     @SerializedName("icon_url")
-    val iconUrl: String? = null
+    val iconUrl: String? = null,
+    @SerializedName("venue_type")
+    val venueType: String? = null
 ) : Parcelable
 
 fun checkLocationData(content: String): Boolean {

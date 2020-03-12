@@ -6,7 +6,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Uri
@@ -30,7 +29,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_location.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -38,15 +36,17 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.FoursquareService
 import one.mixin.android.extension.REQUEST_LOCATION
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.util.calculationByDistance
+import one.mixin.android.util.distanceFormat
 import one.mixin.android.vo.Location
 import timber.log.Timber
+import javax.inject.Inject
 
 class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
@@ -56,6 +56,17 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     private val ZOOM_LEVEL = 13f
     private var currentPosition: LatLng? = null
     private var selfPosition: LatLng? = null
+        set(value) {
+            if (value != null) {
+                location?.let { location ->
+                    calculationByDistance(value, LatLng(location.latitude, location.longitude)).distanceFormat()
+                }?.let {
+                    if (location_sub_title.text == null)
+                        location_sub_title.text = getString(R.string.location_distance, it.first, getString(it.second))
+                }
+            }
+            field = value
+        }
 
     private var mapsInitialized = false
     private var onResumeCalled = false
@@ -137,6 +148,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             }
         }
         ic_search.isVisible = location == null
+        ic_location_shared.isVisible = location != null
         pb.isVisible = location == null
         location_go.isVisible = location != null
         location_bottom.isVisible = location == null
@@ -169,15 +181,15 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
         location.notNullWithElse({ location ->
             location_title.text = location.name ?: getString(R.string.location_unnamed)
-            location_sub_title.text = location.address
+            location.address?.let { address ->
+                location_sub_title.text = address
+            }
             location.iconUrl.notNullWithElse({
-                location_icon.imageTintList = ColorStateList.valueOf(baseContext.colorFromAttribute(R.attr.icon_default))
                 location_icon.loadImage(it)
             }, {
                 location_icon.setBackgroundResource(R.drawable.ic_current_location)
-                location_icon.setImageDrawable(null)
             })
-            location_go_iv.setOnClickListener {
+            ic_location_shared.setOnClickListener {
                 startActivity(
                     Intent(
                         Intent.ACTION_VIEW,
@@ -185,9 +197,18 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                     )
                 )
             }
+            location_go_iv.setOnClickListener {
+                selfPosition?.let { selfPosition ->
+                    startActivity(
+                        Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("http://maps.google.com/maps?saddr=${selfPosition.latitude},${selfPosition.longitude}&daddr=${location.latitude},${location.longitude}")
+                        )
+                    )
+                }
+            }
         }, {
             location_recycler.adapter = locationAdapter
-            search_recycler.adapter = locationSearchAdapter
         })
     }
 
@@ -323,9 +344,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 return@launch
             }
             result.response?.venues.let { list ->
-                list?.filter { item ->
-                    item.location.address != null
-                }.let { data ->
+                list.let { data ->
                     locationAdapter.venues = data
                     pb.isVisible = data == null
                 }
@@ -347,9 +366,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 Timber.e(e)
                 return@launch
             }
-            result.response?.venues?.filter { item ->
-                item.location.address != null
-            }.let { data ->
+            result.response?.venues.let { data ->
                 locationSearchAdapter.venues = data
                 pb.isVisible = data == null
                 googleMap?.clear()
@@ -372,14 +389,15 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     private val textWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
             s.notNullWithElse({ s ->
-                search_recycler.isVisible = true
-                location_recycler.isVisible = false
+                location_recycler.adapter = locationSearchAdapter
                 val content = s.toString()
                 locationSearchAdapter.keyword = content
                 search(content)
             }, {
-                search_recycler.isVisible = false
-                location_recycler.isVisible = true
+                location_recycler.adapter = locationAdapter
+                if (lastSearchQueryJob?.isActive == true) {
+                    lastSearchQueryJob?.cancel()
+                }
                 locationSearchAdapter.keyword = null
                 locationSearchAdapter.venues = null
                 locationSearchAdapter.setMark()

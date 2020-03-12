@@ -10,8 +10,9 @@ import java.lang.Math.sin
 import java.lang.Math.sqrt
 import java.lang.Math.toRadians
 import java.text.DecimalFormat
+import one.mixin.android.R
 
-fun CalculationByDistance(StartP: LatLng, EndP: LatLng): Double {
+fun calculationByDistance(StartP: LatLng, EndP: LatLng): Double {
     val Radius = 6371 // radius of earth in Km
     val lat1 = StartP.latitude
     val lat2 = EndP.latitude
@@ -21,8 +22,8 @@ fun CalculationByDistance(StartP: LatLng, EndP: LatLng): Double {
     val dLon = toRadians(lon2 - lon1)
     val a = (sin(dLat / 2) * sin(dLat / 2) +
         (cos(toRadians(lat1)) *
-        cos(toRadians(lat2)) * sin(dLon / 2) *
-        sin(dLon / 2)))
+            cos(toRadians(lat2)) * sin(dLon / 2) *
+            sin(dLon / 2)))
     val c = 2 * asin(sqrt(a))
     val valueResult = Radius * c
     val km = valueResult / 1
@@ -32,6 +33,14 @@ fun CalculationByDistance(StartP: LatLng, EndP: LatLng): Double {
     val meterInDec: Int = Integer.valueOf(newFormat.format(meter))
 
     return Radius * c
+}
+
+fun Double.distanceFormat(): Pair<String, Int> {
+    return if (this < 1) {
+        Pair(String.format("%d", (this * 1000).toInt()), R.string.location_metre)
+    } else {
+        Pair(String.format("%.2f", this), R.string.location_kilometre)
+    }
 }
 
 object JZLocationConverter {

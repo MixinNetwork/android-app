@@ -9,11 +9,12 @@ import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.Location
-import one.mixin.android.vo.foursquare.Venues
+import one.mixin.android.vo.foursquare.Venue
 import one.mixin.android.vo.foursquare.getImageUrl
+import one.mixin.android.vo.foursquare.getVenueType
 
 class LocationSearchAdapter(val callback: (Location) -> Unit) : RecyclerView.Adapter<VenueHolder>() {
-    var venues: List<Venues>? = null
+    var venues: List<Venue>? = null
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -37,7 +38,7 @@ class LocationSearchAdapter(val callback: (Location) -> Unit) : RecyclerView.Ada
         }
     }
 
-    private var currentVenues: Venues? = null
+    private var currentVenues: Venue? = null
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -73,7 +74,7 @@ class LocationSearchAdapter(val callback: (Location) -> Unit) : RecyclerView.Ada
         }
     }
 
-    private fun getItem(position: Int): Venues? {
+    private fun getItem(position: Int): Venue? {
         return when {
             currentVenues == null -> {
                 venues?.get(position)
@@ -101,8 +102,9 @@ class LocationSearchAdapter(val callback: (Location) -> Unit) : RecyclerView.Ada
                     venue.location.lat,
                     venue.location.lng,
                     venue.name,
-                    venue.location.address ?: venue.location.formattedAddress?.toString(),
-                    venue.getImageUrl()
+                    venue.location.address,
+                    venue.getImageUrl(),
+                    venue.getVenueType()
                 )
             }
             return
@@ -113,6 +115,7 @@ class LocationSearchAdapter(val callback: (Location) -> Unit) : RecyclerView.Ada
         }
         holder.itemView.sub_title.text = venue?.location?.address
         holder.itemView.location_icon.loadImage(venue?.getImageUrl())
+        holder.itemView.location_icon.setBackgroundResource(R.drawable.bg_menu)
         holder.itemView.setOnClickListener {
             venue ?: return@setOnClickListener
             callback(
@@ -120,8 +123,9 @@ class LocationSearchAdapter(val callback: (Location) -> Unit) : RecyclerView.Ada
                     venue.location.lat,
                     venue.location.lng,
                     venue.name,
-                    venue.location.address ?: venue.location.formattedAddress?.toString(),
-                    venue.getImageUrl()
+                    venue.location.address,
+                    venue.getImageUrl(),
+                    venue.getVenueType()
                 )
             )
         }

@@ -49,6 +49,9 @@ import com.google.android.material.snackbar.Snackbar
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
+import java.io.File
+import javax.inject.Inject
+import kotlin.math.abs
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
@@ -190,9 +193,6 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
-import java.io.File
-import javax.inject.Inject
-import kotlin.math.abs
 
 @SuppressLint("InvalidWakeLockTag")
 class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
@@ -1001,8 +1001,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (chat_rv.adapter == null) {
             chat_rv.adapter = chatAdapter
             chatAdapter.listen(destroyScope)
-            chat_rv.setRecyclerListener {holder->
-               if (holder is LocationHolder){
+            chat_rv.setRecyclerListener { holder ->
+               if (holder is LocationHolder) {
                    holder.clearView()
                }
             }
