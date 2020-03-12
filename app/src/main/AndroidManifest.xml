@@ -51,7 +51,7 @@
         <activity
             android:name=".ui.url.UrlInterpreterActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:launchMode="singleTask"
+            android:launchMode="singleInstance"
             android:noHistory="true"
             android:theme="@style/AppTheme.Transparent">
             <intent-filter>
