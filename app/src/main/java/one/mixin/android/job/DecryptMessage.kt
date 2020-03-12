@@ -52,6 +52,7 @@ import one.mixin.android.vo.ResendSessionMessage
 import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotType
+import one.mixin.android.vo.checkLocationData
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
@@ -324,7 +325,8 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.PLAIN_CONTACT.name ||
             data.category == MessageCategory.PLAIN_LIVE.name ||
             data.category == MessageCategory.PLAIN_POST.name ||
-            data.category == MessageCategory.PLAIN_LOCATION.name) {
+            data.category == MessageCategory.PLAIN_LOCATION.name
+        ) {
             if (!data.representativeId.isNullOrBlank()) {
                 data.userId = data.representativeId
             }
@@ -380,11 +382,11 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_LOCATION") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
-                // todo check content
-                val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status)
-                messageDao.insert(message)
-                MessageFts4Helper.insertOrReplaceMessageFts4(message)
-                sendNotificationJob(message, data.source)
+                if (checkLocationData(plain)) {
+                    val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status)
+                    messageDao.insert(message)
+                    sendNotificationJob(message, data.source)
+                }
             }
             data.category.endsWith("_IMAGE") -> {
                 val decoded = Base64.decode(plainText)
@@ -673,8 +675,9 @@ class DecryptMessage : Injector() {
         } else if (data.category == MessageCategory.SIGNAL_POST.name) {
             messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_LOCATION.name) {
-            // todo check
-            messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
+            if (checkLocationData(plainText)) {
+                messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
+            }
         } else if (data.category == MessageCategory.SIGNAL_IMAGE.name ||
             data.category == MessageCategory.SIGNAL_VIDEO.name ||
             data.category == MessageCategory.SIGNAL_AUDIO.name ||

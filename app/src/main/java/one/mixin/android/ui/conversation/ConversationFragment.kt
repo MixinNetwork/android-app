@@ -171,6 +171,7 @@ import one.mixin.android.vo.isLive
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
+import one.mixin.android.vo.toLocationData
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.websocket.StickerMessagePayload
@@ -1422,6 +1423,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             ForwardCategory.POST.name -> {
                                 item.content?.let { content -> sendPost(content) }
                             }
+                            ForwardCategory.LOCATION.name -> {
+                                item.content?.let { content ->
+                                    toLocationData(content)?.let { location ->
+                                        sendLocation(location)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1613,6 +1621,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 scrollToDown()
                 markRead()
             }
+        }
+    }
+
+    private fun sendLocation(location: Location) {
+        createConversation {
+            chatViewModel.sendLocationMessage(conversationId, sender.userId, location, isPlainMessage())
+            scrollToDown()
+            markRead()
         }
     }
 
@@ -2119,7 +2135,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         } else if (requestCode == REQUEST_LOCATION && resultCode == Activity.RESULT_OK) {
             val intent = data ?: return
             val location = LocationActivity.getResult(intent) ?: return
-            chatViewModel.sendLocationMessage(conversationId, location, sender.userId, isPlainMessage())
+            sendLocation(location)
         } else {
             super.onActivityResult(requestCode, resultCode, data)
         }

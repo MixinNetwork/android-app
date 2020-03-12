@@ -33,7 +33,7 @@
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp">
 
-            <LinearLayout
+            <one.mixin.android.widget.InterceptLinearLayout
                 android:id="@+id/location_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -41,8 +41,7 @@
                 android:clipToPadding="true"
                 android:orientation="vertical">
 
-                <ViewAnimator
-                    android:id="@+id/location_va"
+                <FrameLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
 
@@ -57,7 +56,7 @@
                         android:layout_width="260dp"
                         android:layout_height="180dp" />
 
-                </ViewAnimator>
+                </FrameLayout>
 
                 <TextView
                     android:id="@+id/location_title"
@@ -78,7 +77,7 @@
                     android:textColor="?attr/text_minor"
                     android:textSize="12sp" />
 
-            </LinearLayout>
+            </one.mixin.android.widget.InterceptLinearLayout>
 
             <TextView
                 android:id="@+id/chat_time"

@@ -138,24 +138,17 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
             itemView.location_sub_title.text = location?.address
         }
         if (isGooglePlayServicesAvailable) {
-            itemView.location_va.showNext()
+            itemView.location_holder.isVisible = false
+            itemView.location_map.isVisible = true
             setMapLocation()
         } else {
-            itemView.location_va.showPrevious()
+            itemView.location_holder.isVisible = true
+            itemView.location_map.isVisible = false
         }
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
-        }
-
-        itemView.chat_layout.setOnLongClickListener {
-            if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
-            } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
-                true
-            }
         }
 
         itemView.setOnLongClickListener {
@@ -166,7 +159,6 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
                 true
             }
         }
-
         itemView.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
@@ -174,7 +166,6 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
                 onItemListener.onLocationClick(messageItem)
             }
         }
-
         itemView.location_layout.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
@@ -182,14 +173,22 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
                 onItemListener.onLocationClick(messageItem)
             }
         }
-        itemView.location_map.setOnClickListener {
+        itemView.chat_layout.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
             } else {
                 onItemListener.onLocationClick(messageItem)
             }
         }
-        itemView.location_map.setOnLongClickListener {
+        itemView.location_layout.setOnLongClickListener {
+            if (!hasSelect) {
+                onItemListener.onLongClick(messageItem, adapterPosition)
+            } else {
+                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                true
+            }
+        }
+        itemView.chat_layout.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, adapterPosition)
             } else {
@@ -226,14 +225,6 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
             itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
         } else {
             itemView.chat_name.setCompoundDrawables(null, null, null, null)
-        }
-
-        itemView.chat_layout.setOnClickListener {
-            if (!hasSelect) {
-                onItemListener.onLocationClick(messageItem)
-            } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
-            }
         }
 
         chatLayout(isMe, isLast)

@@ -108,6 +108,7 @@ import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.toLocationData
 import one.mixin.android.vo.toQuoteMessageItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
@@ -374,7 +375,7 @@ internal constructor(
         )
     }
 
-    fun sendLocationMessage(conversationId: String, location: Location, senderId: String, isPlain: Boolean) {
+    fun sendLocationMessage(conversationId: String, senderId: String, location: Location, isPlain: Boolean) {
         val category = if (isPlain) MessageCategory.PLAIN_LOCATION.name else MessageCategory.SIGNAL_LOCATION.name
         jobManager.addJobInBackground(
             SendMessageJob(
@@ -867,6 +868,13 @@ internal constructor(
                                 sendPostMessage(conversationId, sender, it, isPlainMessage)
                             }
                         }
+                        ForwardCategory.LOCATION.name -> {
+                            item.content?.let {
+                                toLocationData(it)?.let {
+                                    sendLocationMessage(conversationId, sender.userId, it, isPlainMessage)
+                                }
+                            }
+                        }
                         ForwardCategory.APP_CARD.name -> {
                             item.content?.let {
                                 sendAppCardMessage(conversationId, sender, it)
@@ -1058,6 +1066,10 @@ internal constructor(
                     )
                     it.category.endsWith("_POST") -> ForwardMessage(
                         ForwardCategory.POST.name,
+                        content = it.content
+                    )
+                    it.category.endsWith("_LOCATION") -> ForwardMessage(
+                        ForwardCategory.LOCATION.name,
                         content = it.content
                     )
                     it.category == MessageCategory.APP_CARD.name -> ForwardMessage(
