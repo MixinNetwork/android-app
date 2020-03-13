@@ -4,6 +4,7 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.location.LocationListener
@@ -42,6 +43,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.util.calculationByDistance
 import one.mixin.android.util.distanceFormat
@@ -190,21 +192,19 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 location_icon.setBackgroundResource(R.drawable.ic_current_location)
             })
             ic_location_shared.setOnClickListener {
-                startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")
-                    )
-                )
+                try {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")))
+                } catch (e: ActivityNotFoundException) {
+                    toast(R.string.error_open_location)
+                }
             }
             location_go_iv.setOnClickListener {
                 selfPosition?.let { selfPosition ->
-                    startActivity(
-                        Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse("http://maps.google.com/maps?saddr=${selfPosition.latitude},${selfPosition.longitude}&daddr=${location.latitude},${location.longitude}")
-                        )
-                    )
+                    try {
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("http://maps.google.com/maps?saddr=${selfPosition.latitude},${selfPosition.longitude}&daddr=${location.latitude},${location.longitude}")))
+                    } catch (e: ActivityNotFoundException) {
+                        toast(R.string.error_open_location)
+                    }
                 }
             }
         }, {

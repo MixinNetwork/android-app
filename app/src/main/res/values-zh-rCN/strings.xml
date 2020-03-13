@@ -117,6 +117,7 @@
     <string name="error_pin_incorrect_with_times">错误 %1$d：密码不正确。你还有%2$d次机会，使用完需等待24小时后再次尝试。</string>
     <string name="error_too_small">错误 %1$d：金额太小</string>
     <string name="error_unable_to_open_media">无法找到能打开该媒体的应用</string>
+    <string name="error_open_location">无法找到地图应用</string>
     <string name="error_file_exists">文件不存在</string>
     <string name="error_address_exists">地址不存在</string>
     <string name="error_asset_exists">没有相关资产</string>

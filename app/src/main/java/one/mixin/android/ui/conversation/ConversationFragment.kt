@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.ClipData
 import android.content.Context
@@ -606,9 +607,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (requireContext().isGooglePlayServicesAvailable()) {
                     LocationActivity.show(requireContext(), location)
                 } else {
-                    requireActivity().startActivity(
-                        Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}"))
-                    )
+                    try {
+                        requireActivity().startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")))
+                    } catch (e: ActivityNotFoundException) {
+                        toast(R.string.error_open_location)
+                    }
                 }
             }
 
