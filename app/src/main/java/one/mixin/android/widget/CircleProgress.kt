@@ -87,7 +87,7 @@ class CircleProgress @JvmOverloads constructor(
             context.getColor(R.color.colorDarkBlue)
         )
         mBorder = a.getBoolean(R.styleable.CircleProgress_border, false)
-        mProgress = a.getInt(R.styleable.CircleProgress_progress, mProgress)
+        mProgress = a.getInt(R.styleable.CircleProgress_mProgress, mProgress)
         mMaxProgress = a.getInt(R.styleable.CircleProgress_maxProgress, mMaxProgress)
         mTextSize = a.getInt(R.styleable.CircleProgress_stringSize, mTextSize)
         a.recycle()

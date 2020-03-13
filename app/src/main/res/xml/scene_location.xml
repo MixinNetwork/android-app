@@ -1,0 +1,73 @@
+<MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:motion="http://schemas.android.com/apk/res-auto">
+
+    <Transition
+        motion:autoTransition="none"
+        motion:constraintSetEnd="@+id/end"
+        motion:constraintSetStart="@+id/start"
+        motion:duration="250"
+        motion:motionInterpolator="linear">
+
+        <OnSwipe
+            motion:dragDirection="dragUp"
+            motion:moveWhenScrollAtTop="true"
+            motion:touchAnchorId="@+id/location_bottom"
+            motion:touchAnchorSide="top" />
+
+        <ConstraintSet android:id="@+id/start">
+
+            <Constraint
+                android:id="@id/guideline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                motion:layout_constraintGuide_percent="0.3" />
+
+            <Constraint
+                android:id="@id/location_top"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                motion:layout_constraintBottom_toBottomOf="@id/guideline"
+                motion:layout_constraintTop_toTopOf="parent"
+                motion:progress="1" />
+
+
+            <Constraint
+                android:id="@id/location_bottom"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                motion:layout_constraintBottom_toBottomOf="parent"
+                motion:layout_constraintTop_toTopOf="@id/guideline" />
+
+
+        </ConstraintSet>
+
+        <ConstraintSet android:id="@+id/end">
+
+            <Constraint
+                android:id="@id/guideline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                motion:layout_constraintGuide_percent="0.7" />
+
+            <Constraint
+                android:id="@id/location_top"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                motion:layout_constraintBottom_toBottomOf="@id/guideline"
+                motion:layout_constraintTop_toTopOf="parent"
+                motion:progress="1" />
+
+
+            <Constraint
+                android:id="@id/location_bottom"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                motion:layout_constraintBottom_toBottomOf="parent"
+                motion:layout_constraintTop_toTopOf="@id/guideline" />
+
+        </ConstraintSet>
+    </Transition>
+
+</MotionScene>

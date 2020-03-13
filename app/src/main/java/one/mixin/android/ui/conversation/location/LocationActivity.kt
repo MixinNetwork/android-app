@@ -35,6 +35,7 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_location.*
+import kotlinx.android.synthetic.main.mention_location.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
@@ -122,6 +123,10 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_location)
+        if (location == null) {
+            motion.loadLayoutDescription(R.xml.scene_location)
+            motion.setTransition(R.id.start, R.id.end)
+        }
         map_view.onCreate(savedInstanceState)
         MapsInitializer.initialize(MixinApplication.appContext)
         map_view.getMapAsync(this)

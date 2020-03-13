@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -108,117 +107,65 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="5">
+        android:layout_height="match_parent">
 
-        <com.google.android.gms.maps.MapView
-            android:id="@+id/map_view"
+        <include layout="@layout/mention_location" />
+
+        <RelativeLayout
+            android:id="@+id/location_go"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:uiMapToolbar="false" />
-
-        <ImageView
-            android:id="@+id/ic_marker"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginBottom="20dp"
-            android:src="@drawable/ic_map_pin"
-            android:visibility="gone" />
+            android:layout_gravity="bottom"
+            android:layout_marginTop="-8dp"
+            android:background="@drawable/bg_upper_round"
+            android:padding="16dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent">
 
-        <ImageView
-            android:id="@+id/my_location"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|bottom"
-            android:layout_margin="6dp"
-            android:src="@drawable/ic_my_location"
-            android:visibility="visible" />
+            <ImageView
+                android:id="@+id/location_icon"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/bg_menu"
+                android:padding="4dp"
+                app:tint="?attr/icon_default" />
 
+            <ImageView
+                android:id="@+id/location_go_iv"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_alignParentEnd="true"
+                android:src="@drawable/ic_location_go" />
+
+            <TextView
+                android:id="@+id/location_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="16dp"
+                android:layout_toStartOf="@id/location_go_iv"
+                android:layout_toEndOf="@id/location_icon"
+                android:singleLine="true"
+                android:textColor="?attr/text_primary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/location_sub_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignBottom="@id/location_icon"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="2dp"
+                android:layout_toStartOf="@id/location_go_iv"
+                android:layout_toEndOf="@id/location_icon"
+                android:singleLine="true"
+                android:textColor="?attr/text_minor"
+                android:textSize="12sp" />
+
+        </RelativeLayout>
     </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/location_bottom"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="4"
-        tools:visibility="gone">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/location_recycler"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
-        <FrameLayout
-            android:id="@+id/pb"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="66dp"
-            android:background="?attr/bg_white"
-            android:visibility="gone">
-
-            <ProgressBar
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:layout_gravity="center"
-                android:theme="@style/AppTheme.BlueAccent" />
-        </FrameLayout>
-    </FrameLayout>
-
-    <RelativeLayout
-        android:id="@+id/location_go"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="-8dp"
-        android:background="@drawable/bg_upper_round"
-        android:padding="16dp"
-        android:visibility="gone"
-        tools:visibility="visible">
-
-        <ImageView
-            android:id="@+id/location_icon"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:background="@drawable/bg_menu"
-            android:padding="4dp"
-            app:tint="?attr/icon_default" />
-
-        <ImageView
-            android:id="@+id/location_go_iv"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:layout_alignParentEnd="true"
-            android:src="@drawable/ic_location_go" />
-
-        <TextView
-            android:id="@+id/location_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="2dp"
-            android:layout_marginEnd="16dp"
-            android:layout_toStartOf="@id/location_go_iv"
-            android:layout_toEndOf="@id/location_icon"
-            android:singleLine="true"
-            android:textColor="?attr/text_primary"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/location_sub_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@id/location_icon"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="2dp"
-            android:layout_toStartOf="@id/location_go_iv"
-            android:layout_toEndOf="@id/location_icon"
-            android:singleLine="true"
-            android:textColor="?attr/text_minor"
-            android:textSize="12sp" />
-
-    </RelativeLayout>
 
 </LinearLayout>
 
