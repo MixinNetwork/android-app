@@ -29,6 +29,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_location.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -46,7 +47,6 @@ import one.mixin.android.util.calculationByDistance
 import one.mixin.android.util.distanceFormat
 import one.mixin.android.vo.Location
 import timber.log.Timber
-import javax.inject.Inject
 
 class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
