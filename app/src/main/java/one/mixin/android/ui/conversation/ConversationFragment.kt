@@ -130,7 +130,6 @@ import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListe
 import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuType
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
-import one.mixin.android.ui.conversation.holder.LocationHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
@@ -1004,11 +1003,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (chat_rv.adapter == null) {
             chat_rv.adapter = chatAdapter
             chatAdapter.listen(destroyScope)
-            chat_rv.setRecyclerListener { holder ->
-               if (holder is LocationHolder) {
-                   holder.clearView()
-               }
-            }
         }
         chat_control.callback = chatControlCallback
         chat_control.activity = requireActivity()

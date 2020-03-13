@@ -18,7 +18,6 @@ import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.item_chat_location.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isGooglePlayServicesAvailable
@@ -40,7 +39,6 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
 
     companion object {
         val isGooglePlayServicesAvailable by lazy { MixinApplication.appContext.isGooglePlayServicesAvailable() }
-        val isDark = MixinApplication.appContext.booleanFromAttribute(R.attr.flag_night)
     }
 
     init {
@@ -53,7 +51,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
     override fun onMapReady(googleMap: GoogleMap) {
         MapsInitializer.initialize(MixinApplication.appContext)
         map = googleMap
-        if (isDark) {
+        if (isNightMode) {
             val style = MapStyleOptions.loadRawResourceStyle(MixinApplication.appContext, R.raw.mapstyle_night)
             googleMap.setMapStyle(style)
         }
@@ -62,12 +60,19 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
             uiSettings.isScrollGesturesEnabled = false
             uiSettings.isScrollGesturesEnabledDuringRotateOrZoom = false
         }
-        if (onResumeCalled) itemView.location_map.onResume()
+        if (onResumeCalled) {
+            itemView.location_map.onResume()
+        }
         setMapLocation()
     }
 
     private fun setMapLocation() {
         if (!::map.isInitialized) return
+        if (itemView.tag == location.hashCode())return
+        itemView.tag = location.hashCode()
+        onResumeCalled = true
+        map.clear()
+        itemView.location_map.onResume()
         location?.let { data ->
             val position = LatLng(data.latitude, data.longitude)
             with(map) {
@@ -128,7 +133,6 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         this.onItemListener = onItemListener
-
         location = GsonHelper.customGson.fromJson(messageItem.content!!, Location::class.java)
         if (location?.name == null) {
             itemView.location_sub_title.isVisible = false
@@ -230,23 +234,5 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         }
 
         chatLayout(isMe, isLast)
-    }
-
-    fun clearView() {
-        if (!::map.isInitialized) return
-        with(map) {
-            clear()
-            mapType = GoogleMap.MAP_TYPE_NONE
-        }
-    }
-
-    fun onResume() {
-        onResumeCalled = true
-        itemView.location_map.onResume()
-    }
-
-    fun onPause() {
-        onResumeCalled = false
-        itemView.location_map.onPause()
     }
 }
