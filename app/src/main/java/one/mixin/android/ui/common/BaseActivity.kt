@@ -17,6 +17,7 @@ import one.mixin.android.Constants.Theme.THEME_NIGHT_ID
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.defaultThemeId
 import one.mixin.android.util.SystemUIManager
 import org.jetbrains.anko.configuration
 
@@ -26,6 +27,7 @@ open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
 
     lateinit var lastLang: String
+    var lastThemeId: Int = defaultThemeId
 
     @Inject
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
