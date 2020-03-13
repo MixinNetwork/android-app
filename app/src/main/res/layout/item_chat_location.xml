@@ -62,20 +62,24 @@
                     android:id="@+id/location_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:visibility="gone"
+                    android:maxWidth="240dp"
                     android:padding="8dp"
-                    android:textColor="?attr/text_primary" />
+                    android:singleLine="true"
+                    android:textColor="?attr/text_primary"
+                    android:visibility="gone" />
 
                 <TextView
                     android:id="@+id/location_sub_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:maxWidth="240dp"
                     android:paddingStart="8dp"
                     android:paddingEnd="8dp"
-                    android:visibility="invisible"
                     android:paddingBottom="8dp"
+                    android:singleLine="true"
                     android:textColor="?attr/text_minor"
-                    android:textSize="12sp" />
+                    android:textSize="12sp"
+                    android:visibility="invisible" />
 
             </one.mixin.android.widget.InterceptLinearLayout>
 
