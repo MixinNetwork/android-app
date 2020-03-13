@@ -202,7 +202,7 @@ dependencies {
     implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:${coroutineAdapterVersion}") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
-    implementation 'com.google.android.gms:play-services-maps:17.0.0'
+
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.google.firebase:firebase-analytics:${firebaseVersion}"
     implementation "com.google.firebase:firebase-messaging:${firebaseMessageVersion}"
@@ -215,6 +215,7 @@ dependencies {
     implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
     implementation "com.google.android.play:core:${playVersion}"
     implementation "com.google.android.gms:play-services-safetynet:${google_play_services_version}"
+    implementation "com.google.android.gms:play-services-maps:${google_play_services_version}"
     implementation "com.google.zxing:core:${zxingVersion}"
     implementation "com.github.tougee:sticky-headers-recyclerview:${stickyheadersrecyclerviewVersion}"
     implementation "org.whispersystems:signal-protocol-android:${signalVersion}"

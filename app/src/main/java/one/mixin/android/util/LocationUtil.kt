@@ -43,7 +43,7 @@ fun Double.distanceFormat(): Pair<String, Int> {
     }
 }
 
-object JZLocationConverter {
+object LocationConverter {
     private fun LAT_OFFSET_0(x: Double, y: Double): Double {
         return -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * sqrt(abs(x))
     }

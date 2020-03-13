@@ -239,7 +239,7 @@ abstract class MixinJob(
                 return true
             } else {
                 SystemClock.sleep(SLEEP_MILLIS)
-                // throw NetworkException()
+                throw NetworkException()
             }
         }
         return true
