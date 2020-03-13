@@ -113,7 +113,7 @@ class LocationSearchAdapter(val callback: (Location) -> Unit) : RecyclerView.Ada
         if (keyword != null) {
             holder.itemView.title.highLight(keyword)
         }
-        holder.itemView.sub_title.text = venue?.location?.address
+        holder.itemView.sub_title.text = venue?.location?.address ?: venue?.location?.formattedAddress.toString()
         holder.itemView.location_icon.loadImage(venue?.getImageUrl())
         holder.itemView.location_icon.setBackgroundResource(R.drawable.bg_menu)
         holder.itemView.setOnClickListener {
@@ -123,7 +123,7 @@ class LocationSearchAdapter(val callback: (Location) -> Unit) : RecyclerView.Ada
                     venue.location.lat,
                     venue.location.lng,
                     venue.name,
-                    venue.location.address,
+                    venue.location.address ?: venue.location.formattedAddress.toString(),
                     venue.getImageUrl(),
                     venue.getVenueType()
                 )

@@ -383,7 +383,7 @@ class DecryptMessage : Injector() {
             data.category.endsWith("_LOCATION") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
                 if (checkLocationData(plain)) {
-                    val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status)
+                    val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.status, data.createdAt)
                     messageDao.insert(message)
                     sendNotificationJob(message, data.source)
                 }
