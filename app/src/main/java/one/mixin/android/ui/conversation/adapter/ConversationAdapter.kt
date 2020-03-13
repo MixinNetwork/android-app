@@ -662,6 +662,9 @@ class ConversationAdapter(
         }
 
     override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
+        if (holder is LocationHolder) {
+            holder.onResume()
+        }
         getItem(holder.layoutPosition)?.let {
             (holder as BaseViewHolder).listen(it.messageId)
             if (holder is BaseMentionHolder) {
@@ -672,6 +675,9 @@ class ConversationAdapter(
 
     override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
         (holder as BaseViewHolder).stopListen()
+        if (holder is LocationHolder) {
+            holder.onPause()
+        }
     }
 
     private fun getItemType(messageItem: MessageItem?): Int =

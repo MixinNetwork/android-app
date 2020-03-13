@@ -36,6 +36,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
     private val dp16 = itemView.context.dpToPx(16f)
 
     private lateinit var map: GoogleMap
+    private var onResumeCalled = false
 
     companion object {
         val isGooglePlayServicesAvailable by lazy { MixinApplication.appContext.isGooglePlayServicesAvailable() }
@@ -61,6 +62,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
             uiSettings.isScrollGesturesEnabled = false
             uiSettings.isScrollGesturesEnabledDuringRotateOrZoom = false
         }
+        if (onResumeCalled) itemView.location_map.onResume()
         setMapLocation()
     }
 
@@ -236,5 +238,15 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
             clear()
             mapType = GoogleMap.MAP_TYPE_NONE
         }
+    }
+
+    fun onResume() {
+        onResumeCalled = true
+        itemView.location_map.onResume()
+    }
+
+    fun onPause() {
+        onResumeCalled = false
+        itemView.location_map.onPause()
     }
 }
