@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.location
 
+import android.Manifest
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
@@ -31,6 +32,8 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import javax.inject.Inject
+import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.activity_location.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -42,6 +45,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
@@ -114,32 +118,12 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         override fun onProviderDisabled(provider: String) {}
     }
 
-    @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_location)
         map_view.onCreate(savedInstanceState)
         MapsInitializer.initialize(MixinApplication.appContext)
         map_view.getMapAsync(this)
-
-        val locationManager = getSystemService<LocationManager>()
-        locationManager?.getProviders(true)?.let { providers ->
-            for (provider in providers) {
-                val l = locationManager.getLastKnownLocation(provider)
-                if (l != null) {
-                    currentPosition = LatLng(l.latitude, l.longitude)
-                    selfPosition = LatLng(l.latitude, l.longitude)
-                    if (this@LocationActivity.location == null) {
-                        currentPosition?.let { currentPosition ->
-                            moveCamera(currentPosition)
-                            isInit = false
-                        }
-                        locationAdapter.accurate = getString(R.string.location_accurate, l.accuracy.toInt())
-                    }
-                }
-            }
-        }
-        locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 100f, mLocationListener)
         ic_back.setOnClickListener {
             if (search_va.displayedChild == 1) {
                 search_va.showPrevious()
@@ -215,14 +199,47 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     override fun onResume() {
         super.onResume()
         onResumeCalled = true
+        RxPermissions(this)
+            .request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+            .autoDispose(stopScope)
+            .subscribe { granted ->
+                if (granted) {
+                    findMyLocation()
+                } else {
+                    openPermissionSetting()
+                }
+            }
         if (mapsInitialized) {
             map_view.onResume()
         }
     }
 
+    @SuppressLint("MissingPermission")
+    private fun findMyLocation() {
+        val locationManager = getSystemService<LocationManager>()
+        locationManager?.getProviders(true)?.let { providers ->
+            for (provider in providers) {
+                val l = locationManager.getLastKnownLocation(provider)
+                if (l != null) {
+                    currentPosition = LatLng(l.latitude, l.longitude)
+                    selfPosition = LatLng(l.latitude, l.longitude)
+                    if (this@LocationActivity.location == null) {
+                        currentPosition?.let { currentPosition ->
+                            moveCamera(currentPosition)
+                            isInit = false
+                        }
+                        locationAdapter.accurate = getString(R.string.location_accurate, l.accuracy.toInt())
+                    }
+                }
+            }
+        }
+        locationManager?.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 100f, mLocationListener)
+    }
+
     override fun onPause() {
         super.onPause()
         onResumeCalled = false
+        getSystemService<LocationManager>()?.removeUpdates(mLocationListener)
         if (mapsInitialized) {
             map_view.onPause()
         }
