@@ -31,14 +31,18 @@ abstract class PagedHeaderAdapter<T>(diffCallback: DiffUtil.ItemCallback<T>) :
         if (isShowHeader()) super.getItemCount() + 1 else super.getItemCount()
 
     protected fun getPos(position: Int): Int {
-        return if (isShowHeader()) {
+        var pos = if (isShowHeader()) {
             position - 1
         } else {
             position
         }
+        if (pos < 0) {
+            pos = 0
+        }
+        return pos
     }
 
-    private fun isShowHeader() = headerView != null && showHeader
+    protected fun isShowHeader() = headerView != null && showHeader
 
     fun setShowHeader(show: Boolean, rv: RecyclerView) {
         if (show != showHeader) {

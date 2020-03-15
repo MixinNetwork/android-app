@@ -18,7 +18,7 @@ class TransactionsAdapter :
     var listener: OnSnapshotListener? = null
 
     override fun getHeaderId(pos: Int): Long {
-        return if (headerView != null && pos == TYPE_HEADER) {
+        return if (isShowHeader() && pos == TYPE_HEADER) {
             -1
         } else {
             val snapshot = getItem(getPos(pos))
