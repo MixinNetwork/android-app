@@ -54,7 +54,18 @@
                     <com.google.android.gms.maps.MapView
                         android:id="@+id/location_map"
                         android:layout_width="260dp"
-                        android:layout_height="180dp" />
+                        android:layout_height="180dp"
+                        app:liteMode="true"
+                        app:uiCompass="false"
+                        app:uiMapToolbar="false"
+                        app:uiRotateGestures="false"
+                        app:uiScrollGestures="false"
+                        app:uiScrollGesturesDuringRotateOrZoom="false"
+                        app:uiTiltGestures="false"
+                        app:uiZoomControls="false"
+                        app:uiZoomGestures="false"
+                        app:useViewLifecycle="false"
+                        app:zOrderOnTop="false" />
 
                 </FrameLayout>
 
