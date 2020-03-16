@@ -313,27 +313,28 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
                 val cameraPosition = googleMap.cameraPosition
                 forceUpdate = CameraUpdateFactory.newLatLngZoom(cameraPosition.target, cameraPosition.zoom)
-                if (!marker.isVisible && !isInit) {
-                    marker.isVisible = true
+                if (!ic_marker.isVisible && !isInit) {
+                    ic_marker.isVisible = true
                     locationSearchAdapter.setMark()
                 }
             }
             markerAnimatorSet?.cancel()
             markerAnimatorSet = AnimatorSet()
-            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(marker, View.TRANSLATION_Y, -8.dp.toFloat()))
+            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(ic_marker, View.TRANSLATION_Y, -8.dp.toFloat()))
             markerAnimatorSet?.duration = 200
             markerAnimatorSet?.start()
         }
         googleMap.setOnCameraMoveListener {}
         googleMap.setOnMarkerClickListener { marker ->
             locationSearchAdapter.setMark(marker.zIndex)
+            ic_marker.isVisible = true
             false
         }
 
         googleMap.setOnCameraIdleListener {
             markerAnimatorSet?.cancel()
             markerAnimatorSet = AnimatorSet()
-            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(marker, View.TRANSLATION_Y, 0f))
+            markerAnimatorSet?.playTogether(ObjectAnimator.ofFloat(ic_marker, View.TRANSLATION_Y, 0f))
             markerAnimatorSet?.duration = 200
             markerAnimatorSet?.start()
             googleMap.cameraPosition.target.let { lastLang ->

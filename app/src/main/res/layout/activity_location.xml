@@ -118,7 +118,7 @@
             app:uiMapToolbar="false" />
 
         <ImageView
-            android:id="@+id/marker"
+            android:id="@+id/ic_marker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
