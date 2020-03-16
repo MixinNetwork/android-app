@@ -2,10 +2,12 @@ package one.mixin.android.ui.common.info
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.text.method.LinkMovementMethod
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
@@ -18,8 +20,12 @@ import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.linktext.AutoLinkMode
+import one.mixin.android.widget.linktext.AutoLinkTextView
 
 abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
@@ -85,6 +91,32 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
             if (realFragmentCount <= 0) {
                 activity?.finish()
             }
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    protected fun setDetailsTv(
+        detailsTv: AutoLinkTextView,
+        scrollView: NestedScrollView,
+        conversationId: String?
+    ) {
+        detailsTv.movementMethod = LinkMovementMethod()
+        detailsTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
+        detailsTv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
+        detailsTv.setAutoLinkOnClickListener { _, url ->
+            openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
+            dismiss()
+        }
+        detailsTv.setOnTouchListener { _, _ ->
+            if (detailsTv.canScrollVertically(1) ||
+                detailsTv.canScrollVertically(-1)) {
+                detailsTv.parent.requestDisallowInterceptTouchEvent(true)
+            }
+            return@setOnTouchListener false
+        }
+        scrollView.setOnTouchListener { _, _ ->
+            detailsTv.parent.requestDisallowInterceptTouchEvent(false)
+            return@setOnTouchListener false
         }
     }
 

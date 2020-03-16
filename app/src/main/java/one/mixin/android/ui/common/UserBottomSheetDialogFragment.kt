@@ -7,7 +7,6 @@ import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
-import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -56,12 +55,10 @@ import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.UserTransactionsFragment
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
-import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.util.Session
 import one.mixin.android.vo.CallState
 import one.mixin.android.vo.ConversationCategory
@@ -74,7 +71,6 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.webrtc.CallService
-import one.mixin.android.widget.linktext.AutoLinkMode
 import org.threeten.bp.Instant
 
 class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
@@ -190,14 +186,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
             dismiss()
         }
-        contentView.detail_tv.movementMethod = LinkMovementMethod()
-        contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
-        contentView.detail_tv.setAutoLinkOnClickListener { _, url ->
-            openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
-            dismiss()
-        }
-
+        setDetailsTv(contentView.detail_tv, contentView.scroll_view, conversationId)
         bottomViewModel.refreshUser(user.userId, true)
         lifecycleScope.launch {
             bottomViewModel.loadFavoriteApps(user.userId) { apps ->

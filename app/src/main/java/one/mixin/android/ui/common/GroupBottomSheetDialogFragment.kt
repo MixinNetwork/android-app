@@ -3,7 +3,6 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.TextUtils
-import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
@@ -41,13 +40,11 @@ import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuGroup
 import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.CODE
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.GroupActivity.Companion.ARGS_EXPAND
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
-import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
@@ -55,7 +52,6 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.SearchMessageItem
-import one.mixin.android.widget.linktext.AutoLinkMode
 import org.threeten.bp.Instant
 
 class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
@@ -127,14 +123,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             }
             dismiss()
         }
-        contentView.detail_tv.movementMethod = LinkMovementMethod()
-        contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
-        contentView.detail_tv.setAutoLinkOnClickListener { _, url ->
-            openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
-            dismiss()
-        }
-
+        setDetailsTv(contentView.detail_tv, contentView.scroll_view, conversationId)
         bottomViewModel.getConversationById(conversationId).observe(this, Observer { c ->
             if (c == null) return@Observer
 
