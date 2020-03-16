@@ -53,7 +53,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             if (pagedList != null && pagedList.isNotEmpty()) {
                 showEmpty(false)
                 localDataSize = pagedList.size
-                adapter.submitList(pagedList)
                 val opponentIds = pagedList.filter {
                     it?.opponentId != null
                 }.map {
@@ -63,6 +62,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             } else {
                 showEmpty(true)
             }
+            adapter.submitList(pagedList)
 
             if (!refreshedSnapshots) {
                 walletViewModel.refreshSnapshots()

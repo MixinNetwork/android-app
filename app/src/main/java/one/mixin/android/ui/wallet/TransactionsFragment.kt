@@ -8,6 +8,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
@@ -119,27 +120,17 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }
 
         dataObserver = Observer { pagedList ->
-            if (currentType == R.id.filters_radio_all) {
-                if (pagedList != null && pagedList.isNotEmpty()) {
-                    localDataSize = pagedList.size
-                    updateHeaderBottomLayout(false)
-                    val opponentIds = pagedList.filter {
-                        it?.opponentId != null
-                    }.map {
-                        it.opponentId!!
-                    }
-                    walletViewModel.checkAndRefreshUsers(opponentIds)
-                } else {
-                    updateHeaderBottomLayout(true)
+            if (pagedList != null && pagedList.isNotEmpty()) {
+                localDataSize = pagedList.size
+                updateHeaderBottomLayout(false)
+                val opponentIds = pagedList.filter {
+                    it?.opponentId != null
+                }.map {
+                    it.opponentId!!
                 }
+                walletViewModel.checkAndRefreshUsers(opponentIds)
             } else {
-                if (pagedList != null && pagedList.isNotEmpty()) {
-                    localDataSize = pagedList.size
-                    adapter.submitList(pagedList)
-                    updateHeaderBottomLayout(false)
-                } else {
-                    updateHeaderBottomLayout(true)
-                }
+                updateHeaderBottomLayout(true)
             }
             adapter.submitList(pagedList)
 
@@ -342,7 +333,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         filtersSheet.dismiss()
     }
 
-    private fun updateHeaderBottomLayout(expand: Boolean) {
-        headerView.bottom_rl.visibility = if (expand) VISIBLE else GONE
+    private fun updateHeaderBottomLayout(show: Boolean) {
+        headerView.bottom_rl.isVisible = show
     }
 }
