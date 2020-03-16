@@ -114,7 +114,8 @@
         <com.google.android.gms.maps.MapView
             android:id="@+id/map_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            app:uiMapToolbar="false" />
 
         <ImageView
             android:id="@+id/marker"
@@ -130,8 +131,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"
-            android:src="@drawable/ic_my_location"
             android:layout_margin="6dp"
+            android:src="@drawable/ic_my_location"
             android:visibility="visible" />
 
     </FrameLayout>
@@ -169,8 +170,8 @@
         android:id="@+id/location_go"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_upper_round"
         android:layout_marginTop="-8dp"
+        android:background="@drawable/bg_upper_round"
         android:padding="16dp"
         android:visibility="gone"
         tools:visibility="visible">
