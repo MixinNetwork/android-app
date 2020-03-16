@@ -306,7 +306,6 @@ internal class AppModule {
         val retrofit = Retrofit.Builder()
             .baseUrl(FOURSQUARE_URL)
             .addConverterFactory(GsonConverterFactory.create())
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .client(client)
             .build()

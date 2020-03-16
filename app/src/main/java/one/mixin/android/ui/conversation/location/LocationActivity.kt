@@ -31,9 +31,9 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
-import javax.inject.Inject
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_location.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -304,11 +304,13 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         } catch (e: Exception) {
             Timber.e(e)
         }
-        googleMap.uiSettings?.isMyLocationButtonEnabled = false
-        googleMap.uiSettings?.isZoomControlsEnabled = false
-        googleMap.uiSettings?.isCompassEnabled = false
-        googleMap.uiSettings?.isIndoorLevelPickerEnabled = false
-        googleMap.uiSettings?.isRotateGesturesEnabled = false
+        with(googleMap) {
+            uiSettings?.isMyLocationButtonEnabled = false
+            uiSettings?.isZoomControlsEnabled = false
+            uiSettings?.isCompassEnabled = false
+            uiSettings?.isIndoorLevelPickerEnabled = false
+            uiSettings?.isRotateGesturesEnabled = false
+        }
         googleMap.setOnCameraMoveStartedListener { reason ->
             if (reason == GoogleMap.OnCameraMoveStartedListener.REASON_GESTURE) {
                 val cameraPosition = googleMap.cameraPosition

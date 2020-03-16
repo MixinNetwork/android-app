@@ -68,7 +68,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
 
     private fun setMapLocation() {
         if (!::map.isInitialized) return
-        if (itemView.tag == location.hashCode())return
+        if (itemView.tag == location.hashCode()) return
         itemView.tag = location.hashCode()
         onResumeCalled = true
         map.clear()
