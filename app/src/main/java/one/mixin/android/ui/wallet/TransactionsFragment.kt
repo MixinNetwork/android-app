@@ -26,7 +26,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getEpochNano
+import one.mixin.android.extension.getRFC3339Nano
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigate
@@ -287,8 +287,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         } catch (e: NoSuchElementException) {
             null
         }
-        jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId, lastCreatedAt?.getEpochNano()
-            ?: nowInUtc().getEpochNano(), LIMIT))
+        jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId, lastCreatedAt?.getRFC3339Nano()
+            ?: nowInUtc().getRFC3339Nano(), LIMIT))
     }
 
     override fun onApplyClick() {
