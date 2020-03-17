@@ -36,8 +36,11 @@ import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_location.*
 import kotlinx.android.synthetic.main.mention_location.*
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.FoursquareService
@@ -123,12 +126,11 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_location)
-        if (location == null) {
-            motion.loadLayoutDescription(R.xml.scene_location)
-            motion.setTransition(R.id.start, R.id.end)
+        if (location != null) {
+            motion.loadLayoutDescription(0)
         }
-        map_view.onCreate(savedInstanceState)
         MapsInitializer.initialize(MixinApplication.appContext)
+        map_view.onCreate(savedInstanceState)
         map_view.getMapAsync(this)
         ic_back.setOnClickListener {
             if (search_va.displayedChild == 1) {
@@ -141,9 +143,8 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         }
         ic_search.isVisible = location == null
         ic_location_shared.isVisible = location != null
-        pb.isVisible = location == null
+        location_pb.isVisible = location == null
         location_go.isVisible = location != null
-        location_bottom.isVisible = location == null
         location_recycler.isVisible = location == null
         ic_search.setOnClickListener {
             search_va.showNext()
@@ -358,43 +359,38 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private var lastSearchJob: Job? = null
     fun search(latlng: LatLng) {
-        pb.isVisible = locationAdapter.venues == null
+        location_pb.isVisible = locationAdapter.venues == null
         if (lastSearchJob != null && lastSearchJob?.isActive == true) {
             lastSearchJob?.cancel()
         }
-        lastSearchJob = lifecycleScope.launch {
-            val result = try {
-                foursquareService.searchVenues("${latlng.latitude},${latlng.longitude}")
-            } catch (e: Exception) {
-                Timber.e(e)
-                return@launch
-            }
+        lastSearchJob = lifecycleScope.launch(errorHandler) {
+            val result = foursquareService.searchVenues("${latlng.latitude},${latlng.longitude}")
+
             result.response?.venues.let { list ->
                 list.let { data ->
                     locationAdapter.venues = data
-                    pb.isVisible = data == null
+                    location_pb.isVisible = data == null
                 }
             }
         }
     }
 
+    private val errorHandler = CoroutineExceptionHandler { _, error ->
+        Timber.e(error)
+    }
+
     private var lastSearchQueryJob: Job? = null
     fun search(query: String) {
-        pb.isVisible = locationSearchAdapter.venues == null
+        location_pb.isVisible = locationSearchAdapter.venues == null
         val currentPosition = this.currentPosition ?: return
         if (lastSearchQueryJob != null && lastSearchQueryJob?.isActive == true) {
             lastSearchQueryJob?.cancel()
         }
-        lastSearchQueryJob = lifecycleScope.launch {
-            val result = try {
-                foursquareService.searchVenues("${currentPosition.latitude},${currentPosition.longitude}", query)
-            } catch (e: Exception) {
-                Timber.e(e)
-                return@launch
-            }
+        lastSearchQueryJob = lifecycleScope.launch(errorHandler) {
+            val result = foursquareService.searchVenues("${currentPosition.latitude},${currentPosition.longitude}", query)
             result.response?.venues.let { data ->
                 locationSearchAdapter.venues = data
-                pb.isVisible = data == null
+                location_pb.isVisible = data == null
                 googleMap?.clear()
                 data?.forEachIndexed { index, item ->
                     googleMap?.addMarker(
