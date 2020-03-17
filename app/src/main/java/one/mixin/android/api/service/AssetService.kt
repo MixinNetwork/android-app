@@ -33,7 +33,7 @@ interface AssetService {
     @GET("assets/{id}/snapshots")
     fun snapshots(
         @Path("id") id: String,
-        @Query("offset") offset: Long = 0L,
+        @Query("offset") offset: String = "",
         @Query("limit") limit: Int = LIMIT
     ): Call<MixinResponse<List<Snapshot>>>
 
@@ -54,7 +54,7 @@ interface AssetService {
 
     @GET("snapshots")
     fun allSnapshots(
-        @Query("offset") offset: Long = 0L,
+        @Query("offset") offset: String = "",
         @Query("limit") limit: Int = LIMIT
     ): Call<MixinResponse<List<Snapshot>>>
 
