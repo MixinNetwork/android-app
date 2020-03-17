@@ -36,6 +36,8 @@ class GroupTextView(context: Context, attrs: AttributeSet?) : AutoLinkTextView(c
     }
 
     override fun scrollTo(x: Int, y: Int) {
-        // do nothing
+        if (expand) {
+            super.scrollTo(x, y)
+        }
     }
 }
