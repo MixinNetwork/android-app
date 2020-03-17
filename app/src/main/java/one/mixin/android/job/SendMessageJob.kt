@@ -130,6 +130,7 @@ open class SendMessageJob(
         var content = message.content
         if (message.category == MessageCategory.PLAIN_TEXT.name ||
             message.category == MessageCategory.PLAIN_POST.name ||
+            message.category == MessageCategory.PLAIN_LOCATION.name ||
             message.isCall() ||
             message.category == MessageCategory.APP_CARD.name) {
             if (message.content != null) {

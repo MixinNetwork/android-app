@@ -9,12 +9,12 @@ import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.vo.Location
 import one.mixin.android.vo.foursquare.Venue
 import one.mixin.android.vo.foursquare.getImageUrl
 import one.mixin.android.vo.foursquare.getVenueType
+import one.mixin.android.websocket.LocationPayload
 
-class LocationAdapter(val currentCallback: () -> Unit, val callback: (Location) -> Unit) : RecyclerView.Adapter<VenueHolder>() {
+class LocationAdapter(val currentCallback: () -> Unit, val callback: (LocationPayload) -> Unit) : RecyclerView.Adapter<VenueHolder>() {
     var venues: List<Venue>? = null
         set(value) {
             field = value
@@ -54,7 +54,7 @@ class LocationAdapter(val currentCallback: () -> Unit, val callback: (Location) 
             holder.itemView.sub_title.text = venue?.location?.address ?: venue?.location?.formattedAddress.toString()
             holder.itemView.setOnClickListener {
                 venue ?: return@setOnClickListener
-                callback(Location(venue.location.lat, venue.location.lng, venue.name, venue.location.address ?: venue.location.formattedAddress.toString(), venue.getImageUrl(), venue.getVenueType()))
+                callback(LocationPayload(venue.location.lat, venue.location.lng, venue.name, venue.location.address ?: venue.location.formattedAddress.toString(), venue.getVenueType()))
             }
         }
     }

@@ -12,7 +12,7 @@ class Venue(
 fun Venue.getImageUrl(): String? {
     if (categories.isNullOrEmpty()) return null
     return categories[0].icon.run {
-        "${prefix}88$suffix"
+        "${prefix}64$suffix"
     }
 }
 
@@ -21,7 +21,7 @@ fun Venue.getVenueType(): String? {
     return categories[0].icon.run {
         val matcher = venuePattern.matcher(prefix)
         if (matcher.find()) {
-            val start = matcher.start() + 13
+            val start = matcher.start() + 14
             val end = matcher.end() - 1
             if (start < end) {
                 return prefix.substring(start, end)

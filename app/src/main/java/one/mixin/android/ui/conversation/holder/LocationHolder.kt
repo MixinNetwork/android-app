@@ -26,9 +26,9 @@ import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.Location
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSignal
+import one.mixin.android.websocket.LocationPayload
 import org.jetbrains.anko.dip
 
 class LocationHolder constructor(containerView: View) : BaseViewHolder(containerView), OnMapReadyCallback {
@@ -123,7 +123,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
 
     private var onItemListener: ConversationAdapter.OnItemListener? = null
 
-    private var location: Location? = null
+    private var location: LocationPayload? = null
     fun bind(
         messageItem: MessageItem,
         isLast: Boolean,
@@ -133,7 +133,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         this.onItemListener = onItemListener
-        location = GsonHelper.customGson.fromJson(messageItem.content!!, Location::class.java)
+        location = GsonHelper.customGson.fromJson(messageItem.content!!, LocationPayload::class.java)
         if (location?.name == null) {
             itemView.location_sub_title.isVisible = false
             itemView.location_title.visibility = View.INVISIBLE

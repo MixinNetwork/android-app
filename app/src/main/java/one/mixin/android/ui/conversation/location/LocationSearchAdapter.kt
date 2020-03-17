@@ -8,12 +8,12 @@ import one.mixin.android.R
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.vo.Location
 import one.mixin.android.vo.foursquare.Venue
 import one.mixin.android.vo.foursquare.getImageUrl
 import one.mixin.android.vo.foursquare.getVenueType
+import one.mixin.android.websocket.LocationPayload
 
-class LocationSearchAdapter(val callback: (Location) -> Unit) : RecyclerView.Adapter<VenueHolder>() {
+class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerView.Adapter<VenueHolder>() {
     var venues: List<Venue>? = null
         set(value) {
             field = value
@@ -98,12 +98,11 @@ class LocationSearchAdapter(val callback: (Location) -> Unit) : RecyclerView.Ada
             holder.itemView.location_icon.imageTintList = null
             holder.itemView.setOnClickListener {
                 venue ?: return@setOnClickListener
-                Location(
+                LocationPayload(
                     venue.location.lat,
                     venue.location.lng,
                     venue.name,
                     venue.location.address,
-                    venue.getImageUrl(),
                     venue.getVenueType()
                 )
             }
@@ -119,12 +118,11 @@ class LocationSearchAdapter(val callback: (Location) -> Unit) : RecyclerView.Ada
         holder.itemView.setOnClickListener {
             venue ?: return@setOnClickListener
             callback(
-                Location(
+                LocationPayload(
                     venue.location.lat,
                     venue.location.lng,
                     venue.name,
                     venue.location.address ?: venue.location.formattedAddress.toString(),
-                    venue.getImageUrl(),
                     venue.getVenueType()
                 )
             )

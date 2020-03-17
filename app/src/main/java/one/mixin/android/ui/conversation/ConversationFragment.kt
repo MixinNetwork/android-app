@@ -156,7 +156,6 @@ import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
-import one.mixin.android.vo.Location
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
@@ -172,10 +171,11 @@ import one.mixin.android.vo.isLive
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
-import one.mixin.android.vo.toLocationData
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
+import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.StickerMessagePayload
+import one.mixin.android.websocket.toLocationData
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.ChatControlView
@@ -602,7 +602,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onLocationClick(messageItem: MessageItem) {
-                val location = GsonHelper.customGson.fromJson(messageItem.content, Location::class.java)
+                val location = GsonHelper.customGson.fromJson(messageItem.content, LocationPayload::class.java)
                 if (requireContext().isGooglePlayServicesAvailable()) {
                     LocationActivity.show(requireContext(), location)
                 } else {
@@ -1627,7 +1627,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun sendLocation(location: Location) {
+    private fun sendLocation(location: LocationPayload) {
         createConversation {
             chatViewModel.sendLocationMessage(conversationId, sender.userId, location, isPlainMessage())
             scrollToDown()

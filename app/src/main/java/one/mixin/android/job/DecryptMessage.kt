@@ -52,7 +52,6 @@ import one.mixin.android.vo.ResendSessionMessage
 import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotType
-import one.mixin.android.vo.checkLocationData
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
@@ -85,6 +84,7 @@ import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.websocket.SystemConversationMessagePayload
 import one.mixin.android.websocket.SystemSessionMessageAction
 import one.mixin.android.websocket.SystemSessionMessagePayload
+import one.mixin.android.websocket.checkLocationData
 import one.mixin.android.websocket.createCountSignalKeys
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
@@ -381,7 +381,7 @@ class DecryptMessage : Injector() {
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_LOCATION") -> {
-                val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
+                val plain = if (data.category == MessageCategory.PLAIN_LOCATION.name) String(Base64.decode(plainText)) else plainText
                 if (checkLocationData(plain)) {
                     val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.status, data.createdAt)
                     messageDao.insert(message)

@@ -77,7 +77,6 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
-import one.mixin.android.vo.Location
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
@@ -108,7 +107,6 @@ import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
-import one.mixin.android.vo.toLocationData
 import one.mixin.android.vo.toQuoteMessageItem
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
@@ -116,8 +114,10 @@ import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
+import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.RecallMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
+import one.mixin.android.websocket.toLocationData
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -375,7 +375,7 @@ internal constructor(
         )
     }
 
-    fun sendLocationMessage(conversationId: String, senderId: String, location: Location, isPlain: Boolean) {
+    fun sendLocationMessage(conversationId: String, senderId: String, location: LocationPayload, isPlain: Boolean) {
         val category = if (isPlain) MessageCategory.PLAIN_LOCATION.name else MessageCategory.SIGNAL_LOCATION.name
         jobManager.addJobInBackground(
             SendMessageJob(

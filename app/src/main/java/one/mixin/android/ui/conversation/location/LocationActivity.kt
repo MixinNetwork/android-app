@@ -51,7 +51,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.util.calculationByDistance
 import one.mixin.android.util.distanceFormat
-import one.mixin.android.vo.Location
+import one.mixin.android.websocket.LocationPayload
+import one.mixin.android.websocket.getImageUrl
 import timber.log.Timber
 
 class LocationActivity : BaseActivity(), OnMapReadyCallback {
@@ -78,14 +79,14 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     private var onResumeCalled = false
     private var forceUpdate: CameraUpdate? = null
 
-    private val location: Location? by lazy {
-        intent.getParcelableExtra<Location>(LOCATION)
+    private val location: LocationPayload? by lazy {
+        intent.getParcelableExtra<LocationPayload>(LOCATION)
     }
 
     private val locationAdapter by lazy {
         LocationAdapter({
             currentPosition?.let { currentPosition ->
-                setResult(Location(currentPosition.latitude, currentPosition.longitude, null, null))
+                setResult(LocationPayload(currentPosition.latitude, currentPosition.longitude, null, null))
             }
         }, {
             setResult(it)
@@ -170,7 +171,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             location.address?.let { address ->
                 location_sub_title.text = address
             }
-            location.iconUrl.notNullWithElse({
+            location.getImageUrl().notNullWithElse({
                 location_icon.loadImage(it)
             }, {
                 location_icon.setBackgroundResource(R.drawable.ic_current_location)
@@ -292,7 +293,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun setResult(location: Location) {
+    private fun setResult(location: LocationPayload) {
         setResult(Activity.RESULT_OK, Intent().putExtra(LOCATION_NAME, location))
         finish()
     }
@@ -435,7 +436,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         private val LOCATION_NAME = "location_name"
         private val LOCATION = "location"
 
-        fun getResult(intent: Intent): Location? {
+        fun getResult(intent: Intent): LocationPayload? {
             return intent.getParcelableExtra(LOCATION_NAME)
         }
 
@@ -445,7 +446,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             }
         }
 
-        fun show(context: Context, location: Location) {
+        fun show(context: Context, location: LocationPayload) {
             Intent(context, LocationActivity::class.java).run {
                 putExtra(LOCATION, location)
                 context.startActivity(this)
