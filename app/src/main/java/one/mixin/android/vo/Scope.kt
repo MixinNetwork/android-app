@@ -17,8 +17,17 @@ data class Scope(val name: String, val desc: String) : Parcelable {
             override fun areContentsTheSame(oldItem: Scope, newItem: Scope) = oldItem == newItem
         }
 
-        val SCOPES = arrayListOf("PROFILE:READ", "PHONE:READ", "MESSAGES:REPRESENT",
-            "CONTACTS:READ", "ASSETS:READ", "SNAPSHOTS:READ", "APPS:READ", "APPS:WRITE")
+        val SCOPES = arrayListOf(
+            "PROFILE:READ",
+            "PHONE:READ",
+            "MESSAGES:REPRESENT",
+            "CONTACTS:READ",
+            "ASSETS:READ",
+            "SNAPSHOTS:READ",
+            "APPS:READ",
+            "APPS:WRITE",
+            "APPS:FAVORITE:READ"
+        )
     }
 }
 
@@ -32,6 +41,7 @@ fun Scope.convertName(ctx: Context): String {
         Scope.SCOPES[5] -> R.string.auth_snapshot_read
         Scope.SCOPES[6] -> R.string.auth_app_read
         Scope.SCOPES[7] -> R.string.auth_apps_write
+        Scope.SCOPES[8] -> R.string.auth_apps_favorite_read
         else -> R.string.auth_public_profile
     }
     return ctx.getString(id)
