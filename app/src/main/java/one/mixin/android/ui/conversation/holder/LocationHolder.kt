@@ -139,7 +139,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
             itemView.location_title.visibility = View.INVISIBLE
         } else {
             itemView.location_sub_title.isVisible = true
-            itemView.location_title.visibility = View.VISIBLE
+            itemView.location_title.isVisible = true
             itemView.location_title.text = location?.name
             itemView.location_sub_title.text = location?.address
         }

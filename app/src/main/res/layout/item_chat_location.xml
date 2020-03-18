@@ -69,43 +69,53 @@
 
                 </FrameLayout>
 
-                <TextView
-                    android:id="@+id/location_title"
-                    android:layout_width="wrap_content"
+                <RelativeLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:maxWidth="240dp"
-                    android:padding="8dp"
-                    android:singleLine="true"
-                    android:textColor="?attr/text_primary"
-                    android:visibility="gone" />
-
-                <TextView
-                    android:id="@+id/location_sub_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxWidth="240dp"
                     android:paddingStart="8dp"
+                    android:paddingTop="8dp"
                     android:paddingEnd="8dp"
-                    android:paddingBottom="8dp"
-                    android:singleLine="true"
-                    android:textColor="?attr/text_minor"
-                    android:textSize="12sp"
-                    android:visibility="invisible" />
+                    android:paddingBottom="8dp">
+
+                    <TextView
+                        android:id="@+id/location_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:maxWidth="240dp"
+                        android:singleLine="true"
+                        android:textColor="?attr/text_primary"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/location_sub_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/location_title"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginTop="3dp"
+                        android:layout_toStartOf="@id/chat_time"
+                        android:maxWidth="240dp"
+                        android:singleLine="true"
+                        android:textColor="?attr/text_minor"
+                        android:textSize="12sp"
+                        android:visibility="invisible" />
+
+                    <TextView
+                        android:id="@+id/chat_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_gravity="bottom|end"
+                        android:drawablePadding="3dp"
+                        android:fontFamily="@font/sf_pro_light"
+                        android:textColor="@color/color_chat_date"
+                        android:textSize="@dimen/chat_date_size"
+                        tools:text="7:48AM" />
+                </RelativeLayout>
 
             </one.mixin.android.widget.InterceptLinearLayout>
 
-            <TextView
-                android:id="@+id/chat_time"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_marginBottom="8dp"
-                android:drawablePadding="3dp"
-                android:fontFamily="@font/sf_pro_light"
-                android:gravity="end|bottom"
-                android:textColor="@color/color_chat_date"
-                android:textSize="@dimen/chat_date_size"
-                tools:text="7:48AM" />
 
         </FrameLayout>
     </LinearLayout>

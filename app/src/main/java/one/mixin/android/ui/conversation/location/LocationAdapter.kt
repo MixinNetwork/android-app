@@ -51,10 +51,10 @@ class LocationAdapter(val currentCallback: () -> Unit, val callback: (LocationPa
             holder.itemView.location_icon.loadImage(venue?.getImageUrl())
             holder.itemView.location_icon.setBackgroundResource(R.drawable.bg_menu)
             holder.itemView.location_icon.imageTintList = ColorStateList.valueOf(holder.itemView.context.colorFromAttribute(R.attr.icon_default))
-            holder.itemView.sub_title.text = venue?.location?.address ?: venue?.location?.formattedAddress.toString()
+            holder.itemView.sub_title.text = venue?.location?.address ?: venue?.location?.formattedAddress?.get(0)
             holder.itemView.setOnClickListener {
                 venue ?: return@setOnClickListener
-                callback(LocationPayload(venue.location.lat, venue.location.lng, venue.name, venue.location.address ?: venue.location.formattedAddress.toString(), venue.getVenueType()))
+                callback(LocationPayload(venue.location.lat, venue.location.lng, venue.name, venue.location.address ?: venue.location.formattedAddress?.get(0), venue.getVenueType()))
             }
         }
     }
