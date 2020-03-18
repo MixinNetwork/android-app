@@ -11,6 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
+import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.Session
@@ -93,7 +94,7 @@ class DecryptCallMessage(
 
                             val savedMessage = createCallMessage(curData.messageId, m.conversationId, curData.userId, m.category, m.content,
                                 m.createdAt, curData.status, m.quoteMessageId)
-                            messageDao.insert(savedMessage)
+                            database.insertAndNotifyConversation(savedMessage)
                             listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
                         }
                     }
@@ -103,7 +104,7 @@ class DecryptCallMessage(
             } else if (isExpired) {
                 val message = createCallMessage(data.messageId, data.conversationId, data.userId, MessageCategory.WEBRTC_AUDIO_CANCEL.name,
                     null, data.createdAt, data.status)
-                messageDao.insert(message)
+                database.insertAndNotifyConversation(message)
             }
             notifyServer(data)
         } else {
@@ -148,7 +149,7 @@ class DecryptCallMessage(
 
                 val message = createCallMessage(data.quoteMessageId!!, data.conversationId, data.userId,
                     MessageCategory.WEBRTC_AUDIO_CANCEL.name, null, data.createdAt, data.status)
-                messageDao.insert(message)
+                database.insertAndNotifyConversation(message)
             }
             notifyServer(data)
         } else {
@@ -263,6 +264,6 @@ class DecryptCallMessage(
         val realCategory = category ?: data.category
         val message = createCallMessage(data.quoteMessageId, data.conversationId, userId, realCategory,
             null, data.createdAt, messageStatus, mediaDuration = duration)
-        messageDao.insert(message)
+        database.insertAndNotifyConversation(message)
     }
 }

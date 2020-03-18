@@ -171,6 +171,7 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("""
                     CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts4` USING FTS4(`message_id` TEXT NOT NULL, `content` TEXT, tokenize=unicode61, notindexed=`message_id`)
                 """)
+                database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
             }
         }
     }

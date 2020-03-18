@@ -17,6 +17,7 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
+import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.autoDownload
@@ -121,7 +122,7 @@ class DecryptMessage : Injector() {
                 if (data.conversationId != SYSTEM_USER && data.conversationId != Session.getAccountId()) {
                     val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
                         data.data, data.createdAt, data.status)
-                    messageDao.insert(message)
+                    database.insertAndNotifyConversation(message)
                 }
                 updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
                 return
@@ -170,7 +171,7 @@ class DecryptMessage : Injector() {
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             return
         }
-        messageDao.insert(message)
+        database.insertAndNotifyConversation(message)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
         sendNotificationJob(message, data.source)
     }
@@ -205,7 +206,7 @@ class DecryptMessage : Injector() {
                 }
             }
         }
-        messageDao.insert(message)
+        database.insertAndNotifyConversation(message)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
         sendNotificationJob(message, data.source)
     }
@@ -367,7 +368,7 @@ class DecryptMessage : Injector() {
                     }
                 }
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
-                messageDao.insert(message)
+                database.insertAndNotifyConversation(message)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 val userMap = mentions?.map { it.identityNumber to it.fullName }?.toMap()
                 sendNotificationJob(message, data.source, userMap, quoteMe || mentionMe)
@@ -376,7 +377,7 @@ class DecryptMessage : Injector() {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
                 val message = createPostMessage(data.messageId, data.conversationId, data.userId, data.category, plain,
                     plain.postOptimize(), data.createdAt, data.status)
-                messageDao.insert(message)
+                database.insertAndNotifyConversation(message)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 sendNotificationJob(message, data.source)
             }
@@ -403,7 +404,7 @@ class DecryptMessage : Injector() {
                     )
                 }
 
-                messageDao.insert(message)
+                database.insertAndNotifyConversation(message)
                 MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
                     jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 }
@@ -425,7 +426,7 @@ class DecryptMessage : Injector() {
                         quoteMessageItem?.messageId, quoteMessageItem.toJson())
                 }
 
-                messageDao.insert(message)
+                database.insertAndNotifyConversation(message)
                 MixinApplication.appContext.autoDownload(autoDownloadVideo) {
                     jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 }
@@ -442,7 +443,7 @@ class DecryptMessage : Injector() {
                         quoteMessageItem?.messageId, quoteMessageItem.toJson())
                 }
 
-                messageDao.insert(message)
+                database.insertAndNotifyConversation(message)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 MixinApplication.appContext.autoDownload(autoDownloadDocument) {
                     jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -458,7 +459,7 @@ class DecryptMessage : Injector() {
                         mediaData.key, mediaData.digest, MediaStatus.PENDING, data.status,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson())
                 }
-                messageDao.insert(message)
+                database.insertAndNotifyConversation(message)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 sendNotificationJob(message, data.source)
             }
@@ -481,7 +482,7 @@ class DecryptMessage : Injector() {
                     createStickerMessage(data.messageId, data.conversationId, data.userId, data.category, null,
                         mediaData.albumId, mediaData.stickerId, mediaData.name, data.status, data.createdAt)
                 }
-                messageDao.insert(message)
+                database.insertAndNotifyConversation(message)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_CONTACT") -> {
@@ -492,7 +493,7 @@ class DecryptMessage : Injector() {
                         plainText, contactData.userId, data.status, data.createdAt,
                         quoteMessageItem?.messageId, quoteMessageItem.toJson())
                 }
-                messageDao.insert(message)
+                database.insertAndNotifyConversation(message)
                 syncUser(contactData.userId)
                 sendNotificationJob(message, data.source)
             }
@@ -505,7 +506,7 @@ class DecryptMessage : Injector() {
                 }
                 val message = createLiveMessage(data.messageId, data.conversationId, data.userId, data.category, null,
                     liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, data.createdAt)
-                messageDao.insert(message)
+                database.insertAndNotifyConversation(message)
                 sendNotificationJob(message, data.source)
             }
         }
@@ -536,7 +537,7 @@ class DecryptMessage : Injector() {
             snapshotDao.deletePendingSnapshotByHash(it)
         }
         snapshotDao.insert(snapshot)
-        messageDao.insert(message)
+        database.insertAndNotifyConversation(message)
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
 
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
@@ -583,7 +584,7 @@ class DecryptMessage : Injector() {
                 return
             }
         }
-        messageDao.insert(message)
+        database.insertAndNotifyConversation(message)
     }
 
     private fun processSignalMessage(data: BlazeMessageData) {
@@ -664,7 +665,7 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.SIGNAL_CONTACT.name ||
             data.category == MessageCategory.SIGNAL_LOCATION.name ||
             data.category == MessageCategory.SIGNAL_POST.name) {
-            messageDao.insert(createMessage(data.messageId, data.conversationId,
+            database.insertAndNotifyConversation(createMessage(data.messageId, data.conversationId,
                 data.userId, data.category, data.data, data.createdAt, MessageStatus.FAILED.name))
         }
     }

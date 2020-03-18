@@ -1,6 +1,7 @@
 package one.mixin.android.db
 
 import one.mixin.android.vo.App
+import one.mixin.android.vo.Message
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 
@@ -94,5 +95,12 @@ fun MixinDatabase.deleteMessage(id: String) {
         messageDao().deleteMessage(id)
         mentionMessageDao().deleteMessage(id)
         messageFts4Dao().deleteByMessageId(id)
+    }
+}
+
+fun MixinDatabase.insertAndNotifyConversation(message: Message) {
+    runInTransaction {
+        messageDao().insert(message)
+        conversationDao().increaseUnseenMessageCountById(message.conversationId)
     }
 }

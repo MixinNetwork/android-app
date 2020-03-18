@@ -20,7 +20,8 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.Base64
-import one.mixin.android.db.MessageDao
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.nowInUtc
@@ -70,7 +71,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     lateinit var jobManager: MixinJobManager
     @Inject
     @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
-    lateinit var messageDao: MessageDao
+    lateinit var database: MixinDatabase
     @Inject
     lateinit var accountService: AccountService
     @Inject
@@ -169,7 +170,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             val savedMessage = createCallMessage(bmd.messageId, m.conversationId, bmd.userId, m.category, m.content,
                 m.createdAt, bmd.status, bmd.messageId)
             if (checkConversation(m)) {
-                messageDao.insert(savedMessage)
+                database.insertAndNotifyConversation(savedMessage)
             }
             return
         }
@@ -316,7 +317,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             val mId = UUID.randomUUID().toString()
             val m = createCallMessage(mId, conversationId, self.userId, MessageCategory.WEBRTC_AUDIO_FAILED.name,
                 null, nowInUtc(), MessageStatus.READ.name, mId)
-            messageDao.insert(m)
+            database.insertAndNotifyConversation(m)
             callState.setCallState(CallState.STATE_IDLE)
             disconnect()
         } else if (state != CallState.STATE_CONNECTED) {
@@ -476,16 +477,16 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         when {
             m.category == MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
                 val status = if (declineTriggeredByUser) MessageStatus.READ else MessageStatus.DELIVERED
-                messageDao.insert(createNewReadMessage(m, uId, status))
+                database.insertAndNotifyConversation(createNewReadMessage(m, uId, status))
             }
             m.category == MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
                 val msg = createCallMessage(m.id, m.conversationId, uId, m.category, m.content,
                     m.createdAt, MessageStatus.READ.name, m.quoteMessageId, m.mediaDuration)
-                messageDao.insert(msg)
+                database.insertAndNotifyConversation(msg)
             }
             m.category == MessageCategory.WEBRTC_AUDIO_END.name || m.category == MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
                 val msg = createNewReadMessage(m, uId, MessageStatus.READ)
-                messageDao.insert(msg)
+                database.insertAndNotifyConversation(msg)
             }
         }
     }
