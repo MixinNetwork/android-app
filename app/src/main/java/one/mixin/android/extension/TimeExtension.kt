@@ -180,3 +180,8 @@ fun String.createAtToLong(): Long {
     val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)
     return date.toInstant().toEpochMilli()
 }
+
+fun String.getRFC3339Nano(): String {
+    val date = ZonedDateTime.parse(this).toOffsetDateTime()
+    return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'").withZone(LocaleZone))
+}

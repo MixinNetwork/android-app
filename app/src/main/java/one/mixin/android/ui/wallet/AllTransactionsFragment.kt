@@ -18,7 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.extension.getEpochNano
+import one.mixin.android.extension.getRFC3339Nano
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.RefreshSnapshotsJob
@@ -108,7 +108,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             null
         }
         jobManager.addJobInBackground(RefreshSnapshotsJob(limit = LIMIT,
-            offset = lastCreatedAt?.getEpochNano() ?: nowInUtc().getEpochNano()))
+            offset = lastCreatedAt?.getRFC3339Nano() ?: nowInUtc().getRFC3339Nano()))
     }
 
     override fun onApplyClick() {
