@@ -29,18 +29,19 @@ import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import javax.inject.Inject
+import kotlin.math.max
+import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_location.*
 import kotlinx.android.synthetic.main.mention_location.*
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.FoursquareService
@@ -48,6 +49,7 @@ import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
@@ -392,7 +394,31 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 locationSearchAdapter.venues = data
                 location_pb.isVisible = data == null
                 googleMap?.clear()
+                var south: Double? = null
+                var west: Double? = null
+                var north: Double? = null
+                var east: Double? = null
                 data?.forEachIndexed { index, item ->
+                    south = if (south == null) {
+                        item.location.lat
+                    } else {
+                        min(south!!, item.location.lat)
+                    }
+                    west = if (west == null) {
+                        item.location.lng
+                    } else {
+                        min(west!!, item.location.lng)
+                    }
+                    north = if (north == null) {
+                        item.location.lat
+                    } else {
+                        max(north!!, item.location.lat)
+                    }
+                    east = if (east == null) {
+                        item.location.lng
+                    } else {
+                        max(east!!, item.location.lng)
+                    }
                     googleMap?.addMarker(
                         MarkerOptions().zIndex(index.toFloat()).position(
                             LatLng(
@@ -401,18 +427,27 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                             )
                         ).icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_location_search_maker))
                     )
+
+                    if (south != null && west != null && north != null && east != null) {
+                        val bound = LatLngBounds(LatLng(south!!, west!!), LatLng(north!!, east!!))
+                        moveBounds(bound)
+                    }
                 }
             }
         }
+    }
+
+    private fun moveBounds(bound: LatLngBounds) {
+        googleMap?.animateCamera(CameraUpdateFactory.newLatLngBounds(bound, 64.dp))
     }
 
     private var markerAnimatorSet: AnimatorSet? = null
 
     private val textWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
-            s.notNullWithElse({ s ->
+            s.notEmptyWithElse({ charSequence ->
                 location_recycler.adapter = locationSearchAdapter
-                val content = s.toString()
+                val content = charSequence.toString()
                 locationSearchAdapter.keyword = content
                 search(content)
             }, {

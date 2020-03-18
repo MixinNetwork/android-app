@@ -554,6 +554,14 @@ inline fun <T> T?.notNullWithElse(normalAction: (T) -> Unit, elseAction: () -> U
     }
 }
 
+inline fun CharSequence?.notEmptyWithElse(normalAction: (CharSequence) -> Unit, elseAction: () -> Unit) {
+    return if (!this.isNullOrEmpty()) {
+        normalAction(this)
+    } else {
+        elseAction()
+    }
+}
+
 inline fun <T : Number, R> T?.notEmptyWithElse(normalAction: (T) -> R, elseAction: () -> R): R {
     return if (this != null && this != 0) {
         normalAction(this)
