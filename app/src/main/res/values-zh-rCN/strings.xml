@@ -677,7 +677,7 @@
     <string name="bottom_deposit_tip_eos">该充值地址支持所有基于 EOS 发行的代币，例如 EOS、IQ、BLACK、OCT、KARMA 等。</string>
     <string name="bottom_deposit_tip_eth">该充值地址支持所有符合 ERC-20 标准的代币，例如 ETH、XIN、HT、LOOM、DGD、LEO、PRS、CANDY 等。</string>
     <string name="bottom_deposit_tip_btc">该充值地址仅支持 BTC 和 Omni USDT。</string>
-    <string name="bottom_deposit_tip_trx">该充值地址支持 TRX 和所有符合 TRC-10 标准的代币，例如 TRX、BTT 等。</string>
+    <string name="bottom_deposit_tip_trx">该充值地址支持 TRX 和所有符合 TRC-10 TRC-20 标准的代币，例如 TRX、BTT、USDT-TRON 等。</string>
     <string name="bottom_deposit_tip_common">该充值地址仅支持 %1$s。</string>
     <!--sticker-->
     <string name="sticker_manager">管理贴纸</string>
