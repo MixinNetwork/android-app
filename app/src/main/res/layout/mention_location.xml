@@ -69,11 +69,41 @@
             android:visibility="gone">
 
             <ProgressBar
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:layout_gravity="center"
                 android:theme="@style/AppTheme.BlueAccent" />
         </FrameLayout>
+
+
+        <LinearLayout
+            android:id="@+id/location_empty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/bg_white"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="32dp"
+                android:text="@string/location_no_result"
+                android:textColor="?attr/text_minor"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/location_empty_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:textColor="?attr/text_minor"
+                android:textSize="14sp" />
+        </LinearLayout>
+
 
     </FrameLayout>
 

@@ -41,8 +41,10 @@
 
     <attr name="flag_night" format="boolean|reference" />
 
-    <attr name="icon_emergency" format="reference"/>
-    <attr name="icon_emergency_contact" format="reference"/>
+    <attr name="map_default" format="reference" />
 
-    <attr name="code_border"  format="color|reference" />
+    <attr name="icon_emergency" format="reference" />
+    <attr name="icon_emergency_contact" format="reference" />
+
+    <attr name="code_border" format="color|reference" />
 </resources>

@@ -392,6 +392,8 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             val result = foursquareService.searchVenues("${currentPosition.latitude},${currentPosition.longitude}", query)
             result.response?.venues.let { data ->
                 locationSearchAdapter.venues = data
+                location_empty.isVisible = data.isNullOrEmpty()
+                location_empty_tv.text = getString(R.string.location_empty, query)
                 location_pb.isVisible = data == null
                 googleMap?.clear()
                 var south: Double? = null
