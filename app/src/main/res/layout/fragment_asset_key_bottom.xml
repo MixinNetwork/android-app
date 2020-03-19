@@ -120,5 +120,18 @@
             app:layout_constraintHorizontal_bias="0.1"
             app:layout_constraintStart_toEndOf="@+id/guide_line_2"
             app:layout_constraintTop_toBottomOf="@+id/chain_as_tv"/>
+
+        <TextView
+            android:id="@+id/asset_key_warning"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin10"
+            android:textColor="@color/colorRed"
+            android:textSize="14sp"
+            android:text="@string/wallet_transactions_asset_key_warning"
+            app:layout_constraintEnd_toEndOf="@id/guide_line_1"
+            app:layout_constraintHorizontal_bias="0.1"
+            app:layout_constraintStart_toEndOf="@+id/guide_line_2"
+            app:layout_constraintTop_toBottomOf="@+id/asset_key_as_tv"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

@@ -2,14 +2,11 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.ClipData
 import android.os.Bundle
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_asset_key_bottom.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -44,10 +41,5 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.symbol_as_tv.text = asset.symbol
         contentView.chain_as_tv.text = asset.chainName
         contentView.asset_key_as_tv.text = asset.assetKey
-        contentView.asset_key_as_tv.setOnLongClickListener {
-            requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, asset.assetKey))
-            requireContext().toast(R.string.wallet_transactions_copy_tip)
-            return@setOnLongClickListener true
-        }
     }
 }
