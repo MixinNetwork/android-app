@@ -7,7 +7,7 @@ buildscript {
         ext.appcompatVersion = '1.2.0-alpha03'
         ext.pagingVersion = '2.1.1'
         ext.collectionx = '1.1.0'
-        ext.roomVersion = '2.3.0-SNAPSHOT'
+        ext.roomVersion = '2.2.5'
         ext.navigationVersion = '2.2.1'
         ext.workManagerVersion = '2.3.3'
         ext.constraintLayoutVersion = '2.0.0-beta4'
@@ -106,7 +106,6 @@ allprojects {
         google()
         jcenter()
         maven { url "https://jitpack.io" }
-        maven { url 'https://ci.android.com/builds/submitted/6228642/androidx_snapshot/latest/repository/' }
     }
 }
 
