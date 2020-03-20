@@ -1,7 +1,6 @@
 package one.mixin.android.ui.setting
 
 import android.app.Dialog
-import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
@@ -25,10 +24,7 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_emergency_contact_bottom, null)
         (dialog as BottomSheet).setCustomView(contentView)
-    }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contentView.continue_tv.setOnClickListener {
             if (Session.getAccount()?.hasPin == true) {
                 activity?.supportFragmentManager?.inTransaction {

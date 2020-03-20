@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.content.SharedPreferences
-import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
@@ -74,10 +73,7 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
         }
-    }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contentView.title_view.left_ib.setOnClickListener { dismiss() }
         contentView.auth_tv.setOnClickListener {
             if (loggedIn) {

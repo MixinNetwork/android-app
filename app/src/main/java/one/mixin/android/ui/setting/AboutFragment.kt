@@ -21,8 +21,8 @@ class AboutFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_about, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         val versionName = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName
         title_view.setSubTitle(getString(R.string.app_name), getString(R.string.about_version, versionName))
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }

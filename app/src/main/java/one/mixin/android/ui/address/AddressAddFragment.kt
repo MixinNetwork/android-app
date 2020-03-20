@@ -58,8 +58,8 @@ class AddressAddFragment : BaseFragment() {
     ): View? =
         inflater.inflate(R.layout.fragment_address_add, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         title_view.right_animator.isEnabled = false
         title_view.left_ib.setOnClickListener {
             if (!isAdded) return@setOnClickListener

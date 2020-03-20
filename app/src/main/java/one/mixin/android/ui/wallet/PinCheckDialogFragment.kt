@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
@@ -52,10 +51,7 @@ class PinCheckDialogFragment : DialogFragment(), Injectable {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_pin_check, null)
         dialog.setContentView(contentView)
-    }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contentView.pin.setListener(object : PinView.OnPinListener {
             override fun onUpdate(index: Int) {
                 if (index == contentView.pin.getCount()) {

@@ -111,8 +111,8 @@ class ForwardFragment : BaseFragment() {
         forward_tv.text = str
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         if (isShare) {
             title_view.title_tv.text = getString(R.string.share)
         }

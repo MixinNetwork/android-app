@@ -2,6 +2,7 @@ package one.mixin.android.ui.common
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.ClipData
 import android.content.Intent
 import android.graphics.drawable.Drawable
@@ -120,8 +121,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     override fun getLayoutId() = R.layout.fragment_user_bottom_sheet
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
         user = arguments!!.getParcelable(ARGS_USER)!!
         conversationId = arguments!!.getString(ARGS_CONVERSATION_ID)
         contentView.title.right_iv.setOnClickListener { dismiss() }

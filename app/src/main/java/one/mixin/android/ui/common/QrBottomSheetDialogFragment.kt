@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Bundle
 import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.os.bundleOf
@@ -63,10 +62,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_qr_bottom_sheet, null)
         (dialog as BottomSheet).setCustomView(contentView)
-    }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contentView.title.left_ib.setOnClickListener { dismiss() }
         contentView.right_animator.setOnClickListener { showBottom() }
         if (type == TYPE_MY_QR) {

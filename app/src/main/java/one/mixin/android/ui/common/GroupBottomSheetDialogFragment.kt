@@ -1,6 +1,7 @@
 package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
@@ -82,9 +83,8 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
     override fun getLayoutId() = R.layout.fragment_group_bottom_sheet
 
-    @SuppressLint("SetTextI18n")
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
         contentView.title.right_iv.setOnClickListener { dismiss() }
         contentView.join_tv.setOnClickListener {
             if (code == null) return@setOnClickListener

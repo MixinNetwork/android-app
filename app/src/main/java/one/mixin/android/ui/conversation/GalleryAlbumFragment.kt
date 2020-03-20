@@ -40,8 +40,8 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_gallery_album, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         view_pager.adapter = albumAdapter
         album_tl.setupWithViewPager(view_pager)
         album_tl.tabMode = TabLayout.MODE_SCROLLABLE

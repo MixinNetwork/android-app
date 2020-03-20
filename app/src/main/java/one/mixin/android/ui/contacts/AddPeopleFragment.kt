@@ -65,10 +65,7 @@ class AddPeopleFragment : BaseFragment() {
         keyboard.setKeyboardKeys(keys)
         keyboard.setOnClickKeyboardListener(mKeyboardListener)
         keyboard.animate().translationY(0f).start()
-    }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         search_tv.setOnClickListener {
             search_animator.displayedChild = POS_PROGRESS
             search_tv.isEnabled = false

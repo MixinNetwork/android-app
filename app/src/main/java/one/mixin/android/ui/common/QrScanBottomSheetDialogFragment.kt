@@ -44,10 +44,7 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.bottom_qr_scan, null)
         (dialog as BottomSheet).setCustomView(contentView)
-    }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contentView.qr_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.qr_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.qr_tv.setAutoLinkOnClickListener { _, url ->

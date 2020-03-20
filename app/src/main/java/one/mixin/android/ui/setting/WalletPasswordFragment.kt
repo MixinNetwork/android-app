@@ -75,8 +75,8 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_wallet_password, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         if (change) {
             title_view.setSubTitle(getString(R.string.wallet_password_set_new_pin), "2/5")
             tip_tv.text = getString(R.string.wallet_password_set_new_pin_desc)

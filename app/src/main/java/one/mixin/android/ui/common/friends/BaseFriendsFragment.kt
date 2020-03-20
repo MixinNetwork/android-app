@@ -36,8 +36,8 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder, VM : ViewModel> :
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         layoutInflater.inflate(R.layout.fragment_friends, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         title_view.title_tv.text = getString(getTitleResId())
         title_view.left_ib.setOnClickListener {
             search_et.hideKeyboard()

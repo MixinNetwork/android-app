@@ -37,8 +37,8 @@ class SharedMediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         savedInstanceState: Bundle?
     ): View? = inflater.inflate(R.layout.fragment_shared_media, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         view_pager.adapter = adapter
         shared_tl.setupWithViewPager(view_pager)

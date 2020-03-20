@@ -64,8 +64,8 @@ class TransactionFragment : BaseFragment() {
             isClickable = true
         }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         title_view.right_animator.visibility = View.GONE
         if (snapshot == null || asset == null) {

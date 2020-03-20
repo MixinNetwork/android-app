@@ -41,8 +41,8 @@ class LoadingFragment : BaseFragment() {
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val loadingViewModel: LoadingViewModel by viewModels { viewModelFactory }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         MixinApplication.get().onlining.set(true)
         lifecycleScope.launch {
             if (!defaultSharedPreferences.getBoolean(IS_LOADED, false)) {

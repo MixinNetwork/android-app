@@ -6,7 +6,6 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Typeface
-import android.os.Bundle
 import android.text.Editable
 import android.text.InputFilter
 import android.text.Spannable
@@ -104,18 +103,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_transfer, null)
-        contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight()
-        }
-        (dialog as BottomSheet).apply {
-            setCustomView(contentView)
-        }
-    }
-
     override fun onDismiss(dialog: DialogInterface) {
         if (isAdded) {
             operateKeyboard(false)
@@ -172,8 +159,17 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         bottomSheet
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
+        contentView = View.inflate(context, R.layout.fragment_transfer, null)
+        contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+            height = requireContext().statusBarHeight()
+        }
+        (dialog as BottomSheet).apply {
+            setCustomView(contentView)
+        }
+
         WorkManager.getInstance(requireContext()).enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
         contentView.title_view.left_ib.setOnClickListener { dismiss() }
         contentView.amount_et.addTextChangedListener(mWatcher)

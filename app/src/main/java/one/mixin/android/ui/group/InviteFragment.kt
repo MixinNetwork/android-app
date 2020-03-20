@@ -59,8 +59,8 @@ class InviteFragment : BaseFragment() {
         }, { ErrorHandler.handleError(it) })
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
 
         inviteViewModel.getConversation(conversationId).observe(viewLifecycleOwner, Observer {

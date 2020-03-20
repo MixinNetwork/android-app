@@ -48,8 +48,8 @@ class WalletSettingFragment : BaseViewModelFragment<SettingViewModel>() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_wallet_setting, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
         change_tv.setOnClickListener {
             navTo(OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)

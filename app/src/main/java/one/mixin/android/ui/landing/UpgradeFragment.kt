@@ -40,8 +40,8 @@ class UpgradeFragment : BaseFragment() {
         inflater.inflate(R.layout.fragment_upgrade, container, false)
 
     @SuppressLint("SetTextI18n")
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         MixinApplication.get().onlining.set(true)
         lifecycleScope.launch {
             val done = MessageFts4Helper.syncMessageFts4(preProcess = true) { progress ->

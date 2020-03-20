@@ -59,10 +59,6 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         b_rv.adapter = adapter
         menuView.adapter = menuAdapter
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         viewModel.getConversationStorageUsage().observe(viewLifecycleOwner, Observer {
             if (progress.visibility != View.GONE) {
                 progress.visibility = View.GONE

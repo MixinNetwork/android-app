@@ -1,6 +1,7 @@
 package one.mixin.android.ui.common
 
 import android.os.Bundle
+import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.lifecycle.LiveData
@@ -35,8 +36,8 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
 
     private var barShown = false
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         floodMessageCount = floodMessageDao.getFloodMessageCount()
         linkState.observe(viewLifecycleOwner, Observer { state ->
             check(state)

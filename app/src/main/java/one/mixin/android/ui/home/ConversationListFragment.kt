@@ -117,8 +117,8 @@ class ConversationListFragment : LinkFragment() {
     ): View? =
         inflater.inflate(R.layout.fragment_conversation_list, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         messageAdapter.headerView = message_rv.inflate(R.layout.item_list_conversation_header, false).apply {
             header_close.setOnClickListener {
                 messageAdapter.setShowHeader(false, message_rv)

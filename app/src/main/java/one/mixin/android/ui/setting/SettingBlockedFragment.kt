@@ -37,10 +37,6 @@ class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() 
         super.onViewCreated(view, savedInstanceState)
         blocked_rv.adapter = adapter
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         viewModel.blockingUsers(stopScope).observe(viewLifecycleOwner, Observer {
             if (it != null && it.isNotEmpty()) {
                 block_va.displayedChild = POS_LIST

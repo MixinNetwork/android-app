@@ -88,8 +88,8 @@ class StickerFragment : BaseFragment() {
     ): View? =
         layoutInflater.inflate(R.layout.fragment_sticker, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         if (type == TYPE_NORMAL && albumId != null) {
             stickerViewModel.observeStickers(albumId!!).observe(viewLifecycleOwner, Observer { list ->
                 list?.let { updateStickers(it) }

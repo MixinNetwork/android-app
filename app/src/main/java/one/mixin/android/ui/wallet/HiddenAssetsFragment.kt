@@ -46,8 +46,8 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_hidden_assets, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         left_ib.setOnClickListener { activity?.onBackPressed() }
         assetsAdapter.onItemListener = this
         ItemTouchHelper(AssetItemCallback(object : AssetItemCallback.ItemCallbackListener {

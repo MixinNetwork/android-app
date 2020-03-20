@@ -69,8 +69,8 @@ class StickerManagementFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_sticker_management, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { requireActivity().onBackPressed() }
         title_view.right_tv.textColor = requireContext().colorFromAttribute(R.attr.text_primary)
         title_view.right_animator.setOnClickListener {

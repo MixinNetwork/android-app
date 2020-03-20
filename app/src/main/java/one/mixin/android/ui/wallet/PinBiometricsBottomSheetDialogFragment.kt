@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import android.view.View
 import androidx.core.os.bundleOf
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
@@ -32,10 +31,8 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_pin_bottom_sheet, null)
         (dialog as BottomSheet).setCustomView(contentView)
-    }
+        setBiometricLayout()
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contentView.title.setText(getTipTextRes())
         contentView.biometric_tv.setText(R.string.verify_by_biometric)
     }
