@@ -6,7 +6,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -67,10 +66,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView = View.inflate(context, R.layout.fragment_auth, null)
         dialog as BottomSheet
         dialog.setCustomView(contentView)
-    }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contentView.title_view.right_iv.setOnClickListener { dismiss() }
         contentView.avatar.loadCircleImage(auth.app.iconUrl, R.mipmap.ic_launcher_round)
         contentView.scope_rv.adapter = scopeAdapter

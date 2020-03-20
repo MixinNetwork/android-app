@@ -2,7 +2,6 @@ package one.mixin.android.ui.common.biometric
 
 import android.app.Activity
 import android.content.Intent
-import android.os.Bundle
 import androidx.core.view.postDelayed
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
@@ -27,16 +26,6 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
     private var biometricDialog: BiometricDialog? = null
     private var dismissRunnable: Runnable? = null
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        contentView.title_view.right_iv.setOnClickListener { dismiss() }
-        contentView.biometric_layout.setKeyboard(contentView.keyboard)
-        contentView.biometric_layout.callback = biometricLayoutCallback
-        contentView.post {
-            contentView.biometric_layout.keyboardHeight = contentView.keyboard.height
-        }
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == BiometricUtil.REQUEST_CODE_CREDENTIALS && resultCode == Activity.RESULT_OK) {
@@ -60,6 +49,15 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
      * @return Return true will dismiss the bottom sheet, otherwise do nothing.
      */
     abstract fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean
+
+    protected fun setBiometricLayout() {
+        contentView.title_view.right_iv.setOnClickListener { dismiss() }
+        contentView.biometric_layout.setKeyboard(contentView.keyboard)
+        contentView.biometric_layout.callback = biometricLayoutCallback
+        contentView.post {
+            contentView.biometric_layout.keyboardHeight = contentView.keyboard.height
+        }
+    }
 
     protected fun showErrorInfo(
         content: String,

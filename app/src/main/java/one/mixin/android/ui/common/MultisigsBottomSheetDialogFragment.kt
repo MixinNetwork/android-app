@@ -3,7 +3,6 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
-import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
 import androidx.lifecycle.lifecycleScope
@@ -52,11 +51,9 @@ class MultisigsBottomSheetDialogFragment :
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_multisigs_bottom_sheet, null)
         (dialog as BottomSheet).setCustomView(contentView)
-    }
+        setBiometricLayout()
+        setBiometricItem()
 
-    @SuppressLint("SetTextI18n")
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         val t = this.t
         if (t is Multi2MultiBiometricItem) {
             if (t.action == MultisigsAction.cancel.name) {

@@ -12,7 +12,6 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
 import android.view.ContextMenu
@@ -146,30 +145,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         requireArguments().getParcelable<AppCardData>(ARGS_APP_CARD)
     }
 
-    @SuppressLint("RestrictedApi", "SetJavaScriptEnabled")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_web, null)
-        contentView.chat_web_view.setOnKeyListener { _, keyCode, _ ->
-            if (keyCode == KeyEvent.KEYCODE_BACK && contentView.chat_web_view.canGoBack()) {
-                contentView.chat_web_view.goBack()
-                return@setOnKeyListener true
-            }
-            return@setOnKeyListener false
-        }
-        val statusBarHeight = requireContext().statusBarHeight()
-        contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = statusBarHeight
-        }
-        contentView.web_control.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-            topMargin = requireContext().dpToPx(6f) + statusBarHeight
-        }
-        registerForContextMenu(contentView.chat_web_view)
-        (dialog as BottomSheet).apply {
-            setCustomView(contentView)
-        }
-    }
-
     override fun onCreateContextMenu(
         menu: ContextMenu,
         v: View,
@@ -246,9 +221,30 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     var uploadMessage: ValueCallback<Array<Uri>>? = null
-    @SuppressLint("SetJavaScriptEnabled")
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+
+    @SuppressLint("RestrictedApi", "SetJavaScriptEnabled")
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
+        contentView = View.inflate(context, R.layout.fragment_web, null)
+        contentView.chat_web_view.setOnKeyListener { _, keyCode, _ ->
+            if (keyCode == KeyEvent.KEYCODE_BACK && contentView.chat_web_view.canGoBack()) {
+                contentView.chat_web_view.goBack()
+                return@setOnKeyListener true
+            }
+            return@setOnKeyListener false
+        }
+        val statusBarHeight = requireContext().statusBarHeight()
+        contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+            height = statusBarHeight
+        }
+        contentView.web_control.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            topMargin = requireContext().dpToPx(6f) + statusBarHeight
+        }
+        registerForContextMenu(contentView.chat_web_view)
+        (dialog as BottomSheet).apply {
+            setCustomView(contentView)
+        }
+
         if (BuildConfig.DEBUG) {
             WebView.setWebContentsDebuggingEnabled(true)
         }

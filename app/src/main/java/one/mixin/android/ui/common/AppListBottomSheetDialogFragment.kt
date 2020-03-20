@@ -2,7 +2,6 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
@@ -61,10 +60,7 @@ class AppListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_app_list_bottom_sheet, null)
         (dialog as BottomSheet).setCustomView(contentView)
-    }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contentView.title_view.right_iv.setOnClickListener { dismiss() }
         contentView.title_tv.text = title
         contentView.recycler_view.layoutManager = LinearLayoutManager(requireContext())

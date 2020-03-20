@@ -3,7 +3,6 @@ package one.mixin.android.ui.conversation.web
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
-import android.os.Bundle
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_permission.view.*
 import one.mixin.android.R
@@ -63,6 +62,8 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         requireContext().realSize().y / 2
     }
 
+    private var isHandle: Boolean = false
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
@@ -70,11 +71,7 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         dialog as BottomSheet
         dialog.setCustomView(contentView)
         dialog.setCustomViewHeight(miniHeight)
-    }
 
-    private var isHandle: Boolean = false
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         isHandle = false
         if (permission == PERMISSION_CAMERA) {
             contentView.info.setText(R.string.permission_camera)

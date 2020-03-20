@@ -66,8 +66,8 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
         arguments!!.getString(ARGS_USER_ID)!!
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         title_view.right_animator.visibility = View.GONE
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }

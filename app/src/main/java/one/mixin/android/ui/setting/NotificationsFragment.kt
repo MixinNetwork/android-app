@@ -37,8 +37,8 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_notifications, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         transfer_rl.setOnClickListener {
             showDialog(transfer_tv.text.toString().removeEnd(accountSymbol))

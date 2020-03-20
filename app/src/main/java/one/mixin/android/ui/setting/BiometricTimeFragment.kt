@@ -48,8 +48,8 @@ class BiometricTimeFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_biometric_time, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
         lv.adapter = adapter
         val footer = layoutInflater.inflate(R.layout.view_biometric_footer, lv, false)

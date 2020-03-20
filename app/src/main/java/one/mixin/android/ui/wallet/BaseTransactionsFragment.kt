@@ -84,8 +84,8 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     abstract fun refreshSnapshots()
     abstract fun onApplyClick()
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         transactionsRv = view?.findViewById(R.id.transactions_rv)
         val transactionLayoutManager = LinearLayoutManager(requireContext())
         transactionsRv?.layoutManager = transactionLayoutManager

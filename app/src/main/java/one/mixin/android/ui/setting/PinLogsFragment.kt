@@ -34,8 +34,8 @@ class PinLogsFragment : BaseViewModelFragment<SettingViewModel>() {
     ): View? =
         inflater.inflate(R.layout.fragment_pin_logs, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
         list.adapter = adapter
         list.setOnScrollChangeListener { _, _, _, _, _ ->

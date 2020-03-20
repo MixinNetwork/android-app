@@ -2,7 +2,6 @@ package one.mixin.android.ui.conversation.tansfer
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
 import android.view.View.GONE
@@ -50,10 +49,9 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_transfer_bottom_sheet, null)
         (dialog as BottomSheet).setCustomView(contentView)
-    }
+        setBiometricLayout()
+        setBiometricItem()
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         when (t) {
             is TransferBiometricItem -> {
                 (t as TransferBiometricItem).let {

@@ -2,7 +2,6 @@ package one.mixin.android.ui.conversation
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_withdrawal_tip_bottom_sheet.view.*
@@ -36,11 +35,7 @@ class WithdrawalTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             setCustomView(contentView)
             dismissClickOutside = false
         }
-    }
 
-    @SuppressLint("SetTextI18n")
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contentView.title_tv.text = getString(R.string.bottom_withdrawal_title, asset.symbol)
         contentView.continue_tv.setOnClickListener {
             callback?.onSuccess()

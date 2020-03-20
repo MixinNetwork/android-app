@@ -43,8 +43,8 @@ class DepositAccountFragment : DepositFragment() {
         inflater.inflate(R.layout.fragment_deposit_account, container, false).apply { this.setOnClickListener { } }
 
     @SuppressLint("SetTextI18n")
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
         title.right_animator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
         title.setSubTitle(getString(R.string.filters_deposit), asset.symbol)

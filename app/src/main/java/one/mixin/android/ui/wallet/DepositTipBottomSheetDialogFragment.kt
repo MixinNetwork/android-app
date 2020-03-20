@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_deposit_tip_bottom_sheet.view.*
@@ -31,7 +30,7 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         arguments!!.getParcelable<AssetItem>(ARGS_ASSET)!!
     }
 
-    @SuppressLint("RestrictedApi")
+    @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_deposit_tip_bottom_sheet, null)
@@ -39,11 +38,7 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             setCustomView(contentView)
             dismissClickOutside = false
         }
-    }
 
-    @SuppressLint("SetTextI18n")
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contentView.title_tv.text = getString(R.string.bottom_deposit_title, asset.symbol)
         contentView.asset_icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         contentView.asset_icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)

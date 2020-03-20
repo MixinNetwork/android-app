@@ -38,16 +38,12 @@ class SetupNameFragment : BaseFragment() {
         fun newInstance() = SetupNameFragment()
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        MixinApplication.get().onlining.set(true)
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_setup_name, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        MixinApplication.get().onlining.set(true)
         name_fab.visibility = GONE
         name_fab.setOnClickListener {
             name_fab.show()

@@ -3,10 +3,10 @@ package one.mixin.android.ui.common.profile
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
-import android.os.Bundle
 import android.provider.MediaStore
 import android.text.method.LinkMovementMethod
 import android.util.Base64
@@ -84,8 +84,8 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         return contentView.measuredHeight
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
         contentView.title.right_iv.setOnClickListener { dismiss() }
         val account = Session.getAccount()
         if (account == null) {

@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import android.view.View
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
@@ -79,10 +78,8 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_pin_bottom_sheet_address, null)
         (dialog as BottomSheet).setCustomView(contentView)
-    }
+        setBiometricLayout()
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contentView.title_view.right_iv.setOnClickListener { dismiss() }
         contentView.title.text = getTitle()
         contentView.asset_icon.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)

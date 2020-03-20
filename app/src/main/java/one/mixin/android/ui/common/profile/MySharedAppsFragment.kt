@@ -38,8 +38,8 @@ class MySharedAppsFragment : BaseFragment() {
         savedInstanceState: Bundle?
     ): View? = inflater.inflate(R.layout.fragment_my_shared_apps, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         recyclerView.adapter = adapter
         recyclerView.addItemDecoration(SegmentationItemDecoration())
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }

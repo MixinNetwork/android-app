@@ -90,10 +90,7 @@ class ContactsFragment : BaseFragment() {
             !defaultSharedPreferences.getBoolean(PREF_DELETE_MOBILE_CONTACTS, false)) {
             fetchContacts()
         }
-    }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contactsViewModel.getFriends().observe(viewLifecycleOwner, Observer { users ->
             if (users != null && users.isNotEmpty()) {
                 if (!hasContactPermission()) {

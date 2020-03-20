@@ -32,10 +32,7 @@ class ContactBottomSheetDialog : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_contact_bottom_sheet, null)
         (dialog as BottomSheet).setCustomView(contentView)
-    }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contentView.index.text = if (user.fullName != null && user.fullName!!.isNotEmpty()) user.fullName!![0].toString() else ""
         contentView.name.text = user.fullName
         contentView.mobile_tv.text = getString(R.string.contact_mobile, user.phone)

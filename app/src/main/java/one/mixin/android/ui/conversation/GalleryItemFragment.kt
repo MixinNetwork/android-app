@@ -65,8 +65,8 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_draggable_recycler_view, container, false)
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         rv.layoutManager = GridLayoutManager(context, COLUMN)
         rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
         adapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN

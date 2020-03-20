@@ -3,7 +3,6 @@ package one.mixin.android.ui.conversation
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -72,13 +71,6 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
 
     var callback: Callback? = null
 
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_giphy_search_bottom_sheet, null)
-        (dialog as BottomSheet).setCustomView(contentView)
-    }
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         shown = true
@@ -90,8 +82,12 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         super.onDetach()
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
+        contentView = View.inflate(context, R.layout.fragment_giphy_search_bottom_sheet, null)
+        (dialog as BottomSheet).setCustomView(contentView)
+
         contentView.sticker_rv.layoutManager = GridLayoutManager(context, COLUMN).apply {
             spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                 override fun getSpanSize(pos: Int): Int {

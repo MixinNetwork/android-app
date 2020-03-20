@@ -100,9 +100,9 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         return mediaDialogView
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         dialog?.window?.requestFeature(Window.FEATURE_NO_TITLE)
-        super.onActivityCreated(savedInstanceState)
+        super.onViewCreated(view, savedInstanceState)
         dialog?.window?.setBackgroundDrawable(ColorDrawable(0x00000000))
         dialog?.window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
         dialog?.window?.setWindowAnimations(R.style.BottomSheet_Animation)

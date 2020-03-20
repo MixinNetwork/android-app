@@ -1,7 +1,6 @@
 package one.mixin.android.ui.setting
 
 import android.app.Dialog
-import android.os.Bundle
 import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
@@ -52,10 +51,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         contentView = view
         (dialog as BottomSheet).setCustomView(contentView)
-    }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contentView.close_iv.setOnClickListener { dismiss() }
         contentView.search_et.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {

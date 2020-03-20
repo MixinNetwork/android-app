@@ -5,7 +5,6 @@ import android.app.Dialog
 import android.content.Context
 import android.net.Uri
 import android.net.UrlQuerySanitizer
-import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
 import androidx.core.view.isInvisible
@@ -74,13 +73,6 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         arguments!!.getString(AvatarActivity.ARGS_URL)!!
     }
 
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_confirm, null)
-        (dialog as BottomSheet).setCustomView(contentView)
-    }
-
     private fun authDevice(ephemeralId: String, pubKey: String) = lifecycleScope.launch {
         val response = try {
             withContext(Dispatchers.IO) {
@@ -116,8 +108,12 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
+        contentView = View.inflate(context, R.layout.fragment_confirm, null)
+        (dialog as BottomSheet).setCustomView(contentView)
+
         contentView.confirm.setOnClickListener {
             refreshUI(true)
             isCancelable = false

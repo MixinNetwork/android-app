@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_asset_key_bottom.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
@@ -31,10 +30,7 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_asset_key_bottom, null)
         (dialog as BottomSheet).setCustomView(contentView)
-    }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
         contentView.title_view.right_iv.setOnClickListener { dismiss() }
         contentView.title_view.title_tv.text = asset.name
         contentView.title_view.showBadgeCircleView(asset)
