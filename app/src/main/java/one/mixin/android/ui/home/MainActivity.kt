@@ -60,6 +60,7 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toast
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshStickerAlbumJob.Companion.REFRESH_STICKER_ALBUM_PRE_KEY
@@ -93,7 +94,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroup
 import one.mixin.android.widget.MaterialSearchView
-import one.mixin.android.worker.RefreshAccountWorker
 import one.mixin.android.worker.RefreshAssetsWorker
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
@@ -197,8 +197,8 @@ class MainActivity : BlazeBaseActivity() {
         jobManager.addJobInBackground(BackupJob())
 
         doAsync {
-            WorkManager.getInstance(this@MainActivity)
-                .enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
+            jobManager.addJobInBackground(RefreshAccountJob())
+
             WorkManager.getInstance(this@MainActivity)
                 .enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
             WorkManager.getInstance(this@MainActivity)

@@ -115,7 +115,7 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
     private var first = true
 
     override fun onAlbumMediaLoad(cursor: Cursor) {
-        if (!first) return
+        if (!first || cursor.isClosed) return
 
         first = false
         rv.post {
