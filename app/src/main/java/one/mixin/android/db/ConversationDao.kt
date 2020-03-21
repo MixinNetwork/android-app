@@ -170,6 +170,10 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT announcement FROM conversations WHERE conversation_id = :conversationId ")
     suspend fun getAnnouncementByConversationId(conversationId: String): String?
 
-    @Query("UPDATE conversations SET unseen_message_count = unseen_message_count + 1 WHERE conversation_id = :conversationId")
-    fun increaseUnseenMessageCountById(conversationId: String)
+    @Query("""
+        UPDATE conversations SET unseen_message_count = (
+        SELECT count(1) FROM messages
+        WHERE conversation_id = :conversationId AND status = 'SENT' AND user_id != :userId) WHERE conversation_id = :conversationId
+    """)
+    fun unseenMessageCount(conversationId: String, userId: String?)
 }

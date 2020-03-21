@@ -102,9 +102,9 @@ fun MixinDatabase.deleteMessage(id: String) {
 fun MixinDatabase.insertAndNotifyConversation(message: Message) {
     runInTransaction {
         messageDao().insert(message)
-        val me = Session.getAccountId()
-        if (me != message.userId) {
-            conversationDao().increaseUnseenMessageCountById(message.conversationId)
+        val userId = Session.getAccountId()
+        if (userId != message.userId) {
+            conversationDao().unseenMessageCount(message.conversationId, userId)
         }
     }
 }
