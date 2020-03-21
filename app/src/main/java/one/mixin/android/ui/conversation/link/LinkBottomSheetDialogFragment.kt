@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
@@ -87,27 +86,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        if (Build.VERSION.SDK_INT >= 26) {
-            dialog.window?.decorView?.systemUiVisibility =
-                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
-                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        }
-        contentView = View.inflate(context, R.layout.fragment_bottom_sheet, null)
-        dialog.setContentView(contentView)
-        val params = (contentView.parent as View).layoutParams as androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams
-        val behavior = params.behavior
-
-        if (behavior != null && behavior is BottomSheetBehavior<*>) {
-            behavior.peekHeight = requireContext().dpToPx(300f)
-            behavior.addBottomSheetCallback(mBottomSheetBehaviorCallback)
-            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, requireContext().dpToPx(300f))
-            dialog.window?.setGravity(Gravity.BOTTOM)
-        }
-    }
-
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val linkViewModel: BottomSheetViewModel by viewModels { viewModelFactory }
@@ -132,8 +110,26 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
     private fun getUserOrAppNotFoundTip(isApp: Boolean) = if (isApp) R.string.error_app_not_found else R.string.error_user_not_found
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
+        if (Build.VERSION.SDK_INT >= 26) {
+            dialog.window?.decorView?.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        }
+        contentView = View.inflate(context, R.layout.fragment_bottom_sheet, null)
+        dialog.setContentView(contentView)
+        val params = (contentView.parent as View).layoutParams as androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams
+        val behavior = params.behavior
+
+        if (behavior != null && behavior is BottomSheetBehavior<*>) {
+            behavior.peekHeight = requireContext().dpToPx(300f)
+            behavior.addBottomSheetCallback(mBottomSheetBehaviorCallback)
+            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, requireContext().dpToPx(300f))
+            dialog.window?.setGravity(Gravity.BOTTOM)
+        }
+
         val isUserScheme = url.startsWith(Scheme.USERS, true) || url.startsWith(Scheme.HTTPS_USERS, true)
         val isAppScheme = url.startsWith(Scheme.APPS, true) || url.startsWith(Scheme.HTTPS_APPS, true)
         if (isUserScheme || isAppScheme) {
