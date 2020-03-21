@@ -17,6 +17,7 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MessageMentionDao
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.ResendSessionMessageDao
@@ -80,6 +81,9 @@ open class Injector : Injectable {
     lateinit var userApi: UserService
     @Inject
     lateinit var conversationService: ConversationService
+    @Inject
+    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
+    lateinit var database: MixinDatabase
 
     init {
         MixinApplication.get().appComponent.inject(this)
