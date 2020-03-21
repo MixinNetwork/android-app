@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/chat_msg_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="1.5dp">
+
+        <TextView
+            android:id="@+id/chat_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="1.5dp"
+            android:ellipsize="end"
+            android:gravity="start|center_vertical"
+            android:lines="1"
+            android:minWidth="30dp"
+            android:textColor="#19BEF1"
+            android:textSize="14sp" />
+
+        <FrameLayout
+            android:id="@+id/chat_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp">
+
+            <one.mixin.android.widget.InterceptLinearLayout
+                android:id="@+id/location_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clipChildren="true"
+                android:clipToPadding="true"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/location_holder"
+                        android:layout_width="260dp"
+                        android:layout_height="180dp"
+                        android:scaleType="centerCrop"
+                        android:src="?attr/map_default" />
+
+                    <com.google.android.gms.maps.MapView
+                        android:id="@+id/location_map"
+                        android:layout_width="260dp"
+                        android:layout_height="180dp"
+                        app:liteMode="true"
+                        app:uiCompass="false"
+                        app:uiMapToolbar="false"
+                        app:uiRotateGestures="false"
+                        app:uiScrollGestures="false"
+                        app:uiScrollGesturesDuringRotateOrZoom="false"
+                        app:uiTiltGestures="false"
+                        app:uiZoomControls="false"
+                        app:uiZoomGestures="false"
+                        app:useViewLifecycle="false"
+                        app:zOrderOnTop="false" />
+
+                </FrameLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="8dp"
+                    android:paddingTop="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="8dp">
+
+                    <TextView
+                        android:id="@+id/location_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:maxWidth="240dp"
+                        android:singleLine="true"
+                        android:textColor="?attr/text_primary"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/location_sub_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/location_title"
+                        android:layout_alignParentStart="true"
+                        android:layout_marginTop="3dp"
+                        android:layout_toStartOf="@id/chat_time"
+                        android:maxWidth="240dp"
+                        android:singleLine="true"
+                        android:textColor="?attr/text_minor"
+                        android:textSize="12sp"
+                        android:visibility="invisible" />
+
+                    <TextView
+                        android:id="@+id/chat_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_gravity="bottom|end"
+                        android:drawablePadding="3dp"
+                        android:fontFamily="@font/sf_pro_light"
+                        android:textColor="@color/color_chat_date"
+                        android:textSize="@dimen/chat_date_size"
+                        tools:text="7:48AM" />
+                </RelativeLayout>
+
+            </one.mixin.android.widget.InterceptLinearLayout>
+
+
+        </FrameLayout>
+    </LinearLayout>
+</FrameLayout>

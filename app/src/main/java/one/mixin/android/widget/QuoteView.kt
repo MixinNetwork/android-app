@@ -126,6 +126,16 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                 (reply_name_tv.layoutParams as LayoutParams).marginEnd =
                     dip(8)
             }
+            quoteMessageItem.type.endsWith("_LOCATION") -> {
+                reply_content_tv.setText(R.string.location)
+                setIcon(R.drawable.ic_status_location)
+                reply_iv.visibility = View.GONE
+                reply_avatar.visibility = View.GONE
+                (reply_content_tv.layoutParams as LayoutParams).marginEnd =
+                    dip(8)
+                (reply_name_tv.layoutParams as LayoutParams).marginEnd =
+                    dip(8)
+            }
             quoteMessageItem.type.endsWith("_AUDIO") -> {
                 quoteMessageItem.mediaDuration.notNullWithElse({
                     reply_content_tv.text = it.toLong().formatMillis()

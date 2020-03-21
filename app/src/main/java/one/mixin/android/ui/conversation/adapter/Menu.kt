@@ -16,4 +16,5 @@ sealed class MenuType {
     object File : MenuType()
     object Contact : MenuType()
     object App : MenuType()
+    object Location : MenuType()
 }

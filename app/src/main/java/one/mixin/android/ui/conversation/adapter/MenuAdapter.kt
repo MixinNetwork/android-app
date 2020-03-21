@@ -34,6 +34,7 @@ class MenuAdapter(
         add(Menu(MenuType.Camera, R.string.camera, R.drawable.ic_menu_camera, null))
         add(Menu(MenuType.File, R.string.document, R.drawable.ic_menu_file, null))
         add(Menu(MenuType.Contact, R.string.contact, R.drawable.ic_menu_contact, null))
+        add(Menu(MenuType.Location, R.string.location, R.drawable.ic_menu_location, null))
     }
 
     var onMenuListener: OnMenuListener? = null

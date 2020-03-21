@@ -39,6 +39,7 @@ import one.mixin.android.ui.conversation.holder.FileQuoteHolder
 import one.mixin.android.ui.conversation.holder.HyperlinkHolder
 import one.mixin.android.ui.conversation.holder.ImageHolder
 import one.mixin.android.ui.conversation.holder.ImageQuoteHolder
+import one.mixin.android.ui.conversation.holder.LocationHolder
 import one.mixin.android.ui.conversation.holder.PostHolder
 import one.mixin.android.ui.conversation.holder.RecallHolder
 import one.mixin.android.ui.conversation.holder.SecretHolder
@@ -346,6 +347,12 @@ class ConversationAdapter(
                         onItemListener
                     )
                 }
+                LOCATION_TYPE -> {
+                    (holder as LocationHolder).bind(
+                        it, isLast(position),
+                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                    )
+                }
                 else -> {
                 }
             }
@@ -642,6 +649,11 @@ class ConversationAdapter(
                     .inflate(R.layout.item_chat_recall, parent, false)
                 RecallHolder(item)
             }
+            LOCATION_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_location, parent, false)
+                LocationHolder(item)
+            }
             else -> {
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_transparent, parent, false)
@@ -729,6 +741,8 @@ class ConversationAdapter(
                     item.type == MessageCategory.SIGNAL_POST.name -> POST_TYPE
                 item.isCallMessage() -> CALL_TYPE
                 item.isRecall() -> RECALL_TYPE
+                item.type == MessageCategory.PLAIN_LOCATION.name ||
+                    item.type == MessageCategory.SIGNAL_LOCATION.name -> LOCATION_TYPE
                 else -> UNKNOWN_TYPE
             }
         }, NULL_TYPE)
@@ -763,6 +777,7 @@ class ConversationAdapter(
         const val SECRET_TYPE = 17
         const val CALL_TYPE = 18
         const val RECALL_TYPE = 19
+        const val LOCATION_TYPE = 20
 
         private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
             override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
@@ -838,6 +853,8 @@ class ConversationAdapter(
         open fun onOpenHomePage() {}
 
         open fun onSayHi() {}
+
+        open fun onLocationClick(messageItem: MessageItem) {}
     }
 
     fun addSelect(messageItem: MessageItem): Boolean {

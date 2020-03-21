@@ -117,6 +117,7 @@
     <string name="error_pin_incorrect_with_times">错误 %1$d：密码不正确。你还有%2$d次机会，使用完需等待24小时后再次尝试。</string>
     <string name="error_too_small">错误 %1$d：金额太小</string>
     <string name="error_unable_to_open_media">无法找到能打开该媒体的应用</string>
+    <string name="error_open_location">无法找到地图应用</string>
     <string name="error_file_exists">文件不存在</string>
     <string name="error_address_exists">地址不存在</string>
     <string name="error_asset_exists">没有相关资产</string>
@@ -430,6 +431,7 @@
     <string name="conversation_status_voice">语音电话</string>
     <string name="conversation_status_transfer">转账</string>
     <string name="conversation_status_sticker">贴纸</string>
+    <string name="conversation_status_location">位置</string>
     <string name="conversation_status_live">直播</string>
     <string name="setting_no_blocked">没有屏蔽任何人</string>
     <string name="setting_no_auth_app">没有授权任何机器人</string>
@@ -555,6 +557,7 @@
     <string name="alert_key_group_sticker_message">%1$s 发送一张贴纸</string>
     <string name="alert_key_group_contact_message">%1$s 分享了一个联系人</string>
     <string name="alert_key_group_post_message">%1$s 发送一篇文章</string>
+    <string name="alert_key_group_location_message">%1$s 发送一个位置</string>
     <string name="alert_key_contact_text_message">发送一条消息</string>
     <string name="alert_key_contact_image_message">发送一张照片</string>
     <string name="alert_key_contact_video_message">发送一个视频</string>
@@ -565,6 +568,7 @@
     <string name="alert_key_contact_sticker_message">发送一张贴纸</string>
     <string name="alert_key_contact_contact_message">分享了一个联系人</string>
     <string name="alert_key_contact_post_message">发送了一篇文章</string>
+    <string name="alert_key_contact_location_message">发送了一个位置</string>
     <string name="alert_key_contact_audio_call_message">发起了语音通话</string>
 
     <string name="unread">未读消息</string>
@@ -610,6 +614,7 @@
     <string name="voice">语音电话</string>
     <string name="document">文件</string>
     <string name="contact">联系人</string>
+    <string name="location">位置</string>
     <string name="sticker">贴纸</string>
     <string name="video">视频</string>
     <string name="audio">语音</string>
@@ -761,4 +766,16 @@
     <string name="multisig_state_unlocked">这笔交易已经被其他人撤销了，您无法再次撤销。</string>
 
     <string name="desktop_upgrade">请升级 Mixin Messenger 桌面端至最新版！</string>
+    <!-- location -->
+    <string name="location_send_current_location">发送您当前的位置</string>
+    <string name="location_send_this_location">发送这个位置</string>
+    <string name="location_google_error">没有安装Google service</string>
+    <string name="location_go">导航</string>
+    <string name="location_accurate">精确到 %1$d 米</string>
+    <string name="location_unnamed">未命名地点</string>
+    <string name="location_distance">距离您 %1$s %2$s</string>
+    <string name="location_kilometre">千米</string>
+    <string name="location_metre">米</string>
+    <string name="location_no_result">没有结果</string>
+    <string name="location_empty">未能搜索到 \"%1$s\"。\n测试其他关键词。</string>
 </resources>

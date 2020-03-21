@@ -94,6 +94,7 @@ import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createLiveMessage
+import one.mixin.android.vo.createLocationMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.createPostMessage
@@ -113,8 +114,10 @@ import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
+import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.RecallMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
+import one.mixin.android.websocket.toLocationData
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -193,7 +196,8 @@ internal constructor(
     }
 
     fun sendAppCardMessage(conversationId: String, sender: User, content: String) {
-        val message = createAppCardMessage(UUID.randomUUID().toString(), conversationId,
+        val message = createAppCardMessage(
+            UUID.randomUUID().toString(), conversationId,
             sender.userId, content, nowInUtc(), MessageStatus.SENDING.name
         )
         jobManager.addJobInBackground(SendMessageJob(message))
@@ -224,10 +228,12 @@ internal constructor(
 
     fun sendAttachmentMessage(conversationId: String, sender: User, attachment: Attachment, isPlain: Boolean, replyMessage: MessageItem? = null) {
         val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
-        val message = createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
+        val message = createAttachmentMessage(
+            UUID.randomUUID().toString(), conversationId, sender.userId, category,
             null, attachment.filename, attachment.uri.toString(),
             attachment.mimeType, attachment.fileSize, nowInUtc(), null,
-            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
+            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+        )
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 
@@ -241,9 +247,11 @@ internal constructor(
         replyMessage: MessageItem? = null
     ) {
         val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
-        val message = createAudioMessage(UUID.randomUUID().toString(), conversationId, sender.userId, null, category,
+        val message = createAudioMessage(
+            UUID.randomUUID().toString(), conversationId, sender.userId, null, category,
             file.length(), Uri.fromFile(file).toString(), duration.toString(), nowInUtc(), waveForm, null, null,
-            MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
+            MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+        )
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 
@@ -277,8 +285,10 @@ internal constructor(
         val category = if (isPlain) MessageCategory.PLAIN_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
         val transferContactData = ContactMessagePayload(shareUserId)
         val encoded = GsonHelper.customGson.toJson(transferContactData).base64Encode()
-        val message = createContactMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
-            category, encoded, shareUserId, MessageStatus.SENDING.name, nowInUtc(), replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
+        val message = createContactMessage(
+            UUID.randomUUID().toString(), conversationId, sender.userId,
+            category, encoded, shareUserId, MessageStatus.SENDING.name, nowInUtc(), replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+        )
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
@@ -361,6 +371,23 @@ internal constructor(
             SendGiphyJob(
                 conversationId, senderId, image.url, image.width, image.height,
                 category, UUID.randomUUID().toString(), previewUrl, nowInUtc()
+            )
+        )
+    }
+
+    fun sendLocationMessage(conversationId: String, senderId: String, location: LocationPayload, isPlain: Boolean) {
+        val category = if (isPlain) MessageCategory.PLAIN_LOCATION.name else MessageCategory.SIGNAL_LOCATION.name
+        jobManager.addJobInBackground(
+            SendMessageJob(
+                createLocationMessage(
+                    UUID.randomUUID().toString(),
+                    conversationId,
+                    senderId,
+                    category,
+                    GsonHelper.customGson.toJson(location),
+                    MessageStatus.SENT.name,
+                    nowInUtc()
+                )
             )
         )
     }
@@ -561,9 +588,11 @@ internal constructor(
                             }
                         jobManager.addJobInBackground(
                             SendAttachmentMessageJob(
-                                createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category, null,
+                                createAttachmentMessage(
+                                    UUID.randomUUID().toString(), conversationId, sender.userId, category, null,
                                     message.name, uri, message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null, null,
-                                    MediaStatus.PENDING, MessageStatus.SENDING.name)
+                                    MediaStatus.PENDING, MessageStatus.SENDING.name
+                                )
                             )
                         )
                     }
@@ -839,6 +868,13 @@ internal constructor(
                                 sendPostMessage(conversationId, sender, it, isPlainMessage)
                             }
                         }
+                        ForwardCategory.LOCATION.name -> {
+                            item.content?.let {
+                                toLocationData(it)?.let {
+                                    sendLocationMessage(conversationId, sender.userId, it, isPlainMessage)
+                                }
+                            }
+                        }
                         ForwardCategory.APP_CARD.name -> {
                             item.content?.let {
                                 sendAppCardMessage(conversationId, sender, it)
@@ -1030,6 +1066,10 @@ internal constructor(
                     )
                     it.category.endsWith("_POST") -> ForwardMessage(
                         ForwardCategory.POST.name,
+                        content = it.content
+                    )
+                    it.category.endsWith("_LOCATION") -> ForwardMessage(
+                        ForwardCategory.LOCATION.name,
                         content = it.content
                     )
                     it.category == MessageCategory.APP_CARD.name -> ForwardMessage(

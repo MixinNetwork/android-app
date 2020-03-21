@@ -124,6 +124,7 @@
     <string name="error_user_not_found">User not found</string>
     <string name="error_app_not_found">App not found</string>
     <string name="error_unable_to_open_media">Can\'t find an app able to open this media.</string>
+    <string name="error_open_location">Can\'t find an map app</string>
     <string name="error_file_exists">File does not exist</string>
     <string name="error_address_exists">Address does not exist</string>
     <string name="error_asset_exists">Asset does not exist</string>
@@ -443,6 +444,7 @@
     <string name="conversation_status_voice">Voice call</string>
     <string name="conversation_status_transfer">Transfer</string>
     <string name="conversation_status_sticker">Sticker</string>
+    <string name="conversation_status_location">Location</string>
     <string name="conversation_status_live">Live</string>
     <string name="setting_no_blocked">No blocked users</string>
     <string name="setting_no_auth_app">No auth app</string>
@@ -567,6 +569,7 @@
     <string name="alert_key_group_sticker_message">%1$s send a sticker</string>
     <string name="alert_key_group_contact_message">%1$s shared a contact</string>
     <string name="alert_key_group_post_message">%1$s send a post</string>
+    <string name="alert_key_group_location_message">%1$s send a location</string>
     <string name="alert_key_contact_text_message">send you a message</string>
     <string name="alert_key_contact_image_message">send you a photo</string>
     <string name="alert_key_contact_video_message">send you a video</string>
@@ -577,6 +580,7 @@
     <string name="alert_key_contact_sticker_message">send you a sticker</string>
     <string name="alert_key_contact_contact_message">shared a contact</string>
     <string name="alert_key_contact_post_message">send a post</string>
+    <string name="alert_key_contact_location_message">send a location</string>
     <string name="alert_key_contact_audio_call_message">ask you an audio call</string>
     <string name="unread">New Messages</string>
     <string name="stranger_from">The sender is not in your contacts</string>
@@ -621,6 +625,7 @@
     <string name="document">File</string>
     <string name="voice">Voice</string>
     <string name="contact">Contact</string>
+    <string name="location">Location</string>
     <string name="sticker">Sticker</string>
     <string name="video">Video</string>
     <string name="audio">Audio</string>
@@ -775,5 +780,17 @@
     <string name="multisig_state_unlocked">This multisig link has already been unlocked by someone, you can not make a duplicate operation.</string>
 
     <string name="desktop_upgrade">Please upgrade Mixin Messenger Desktop to the latest version.</string>
+    <!-- location -->
+    <string name="location_send_current_location">Send your Current Location</string>
+    <string name="location_send_this_location">Send This Location</string>
+    <string name="location_google_error">Google service is not installed</string>
+    <string name="location_go">Go</string>
+    <string name="location_accurate">Accurate to %1$d meters</string>
+    <string name="location_unnamed">Unnamed location</string>
+    <string name="location_distance">%1$s %2$s away</string>
+    <string name="location_kilometre">km</string>
+    <string name="location_metre">m</string>
+    <string name="location_no_result">NO RESULT</string>
+    <string name="location_empty">There were no results for \"%1$s\".\nTry new search</string>
 </resources>
 

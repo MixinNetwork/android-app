@@ -24,6 +24,7 @@ import okhttp3.SessionProvider
 import okhttp3.internal.http2.Header
 import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.MixinApplication
@@ -36,6 +37,7 @@ import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.EmergencyService
+import one.mixin.android.api.service.FoursquareService
 import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.ProvisioningService
@@ -231,8 +233,10 @@ internal class AppModule {
             }
             .customLogger(JobLogger())
             .networkUtil(jobNetworkUtil)
-        builder.scheduler(FrameworkJobSchedulerService
-            .createSchedulerFor(app.applicationContext, MyJobService::class.java))
+        builder.scheduler(
+            FrameworkJobSchedulerService
+                .createSchedulerFor(app.applicationContext, MyJobService::class.java)
+        )
         return MixinJobManager(builder.build())
     }
 
@@ -286,6 +290,26 @@ internal class AppModule {
             .client(client)
             .build()
         return retrofit.create(GiphyService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFoursquareService(): FoursquareService {
+        val client = OkHttpClient.Builder().apply {
+            if (BuildConfig.DEBUG) {
+                val logging = HttpLoggingInterceptor()
+                logging.level = HttpLoggingInterceptor.Level.BODY
+                addNetworkInterceptor(logging)
+                addNetworkInterceptor(StethoInterceptor())
+            }
+        }.build()
+        val retrofit = Retrofit.Builder()
+            .baseUrl(FOURSQUARE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
+            .client(client)
+            .build()
+        return retrofit.create(FoursquareService::class.java)
     }
 
     @Provides

@@ -57,6 +57,7 @@ import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createLiveMessage
+import one.mixin.android.vo.createLocationMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.createPostMessage
@@ -83,6 +84,7 @@ import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.websocket.SystemConversationMessagePayload
 import one.mixin.android.websocket.SystemSessionMessageAction
 import one.mixin.android.websocket.SystemSessionMessagePayload
+import one.mixin.android.websocket.checkLocationData
 import one.mixin.android.websocket.createCountSignalKeys
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
@@ -322,7 +324,9 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.PLAIN_STICKER.name ||
             data.category == MessageCategory.PLAIN_CONTACT.name ||
             data.category == MessageCategory.PLAIN_LIVE.name ||
-            data.category == MessageCategory.PLAIN_POST.name) {
+            data.category == MessageCategory.PLAIN_POST.name ||
+            data.category == MessageCategory.PLAIN_LOCATION.name
+        ) {
             if (!data.representativeId.isNullOrBlank()) {
                 data.userId = data.representativeId
             }
@@ -375,6 +379,14 @@ class DecryptMessage : Injector() {
                 messageDao.insert(message)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 sendNotificationJob(message, data.source)
+            }
+            data.category.endsWith("_LOCATION") -> {
+                val plain = if (data.category == MessageCategory.PLAIN_LOCATION.name) String(Base64.decode(plainText)) else plainText
+                if (checkLocationData(plain)) {
+                    val message = createLocationMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.status, data.createdAt)
+                    messageDao.insert(message)
+                    sendNotificationJob(message, data.source)
+                }
             }
             data.category.endsWith("_IMAGE") -> {
                 val decoded = Base64.decode(plainText)
@@ -650,6 +662,7 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.SIGNAL_AUDIO.name ||
             data.category == MessageCategory.SIGNAL_STICKER.name ||
             data.category == MessageCategory.SIGNAL_CONTACT.name ||
+            data.category == MessageCategory.SIGNAL_LOCATION.name ||
             data.category == MessageCategory.SIGNAL_POST.name) {
             messageDao.insert(createMessage(data.messageId, data.conversationId,
                 data.userId, data.category, data.data, data.createdAt, MessageStatus.FAILED.name))
@@ -662,6 +675,12 @@ class DecryptMessage : Injector() {
             messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
         } else if (data.category == MessageCategory.SIGNAL_POST.name) {
             messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
+        } else if (data.category == MessageCategory.SIGNAL_LOCATION.name) {
+            if (checkLocationData(plainText)) {
+                messageDao.updateMessageContentAndStatus(plainText, data.status, messageId)
+            } else {
+                messageDao.deleteMessage(messageId)
+            }
         } else if (data.category == MessageCategory.SIGNAL_IMAGE.name ||
             data.category == MessageCategory.SIGNAL_VIDEO.name ||
             data.category == MessageCategory.SIGNAL_AUDIO.name ||

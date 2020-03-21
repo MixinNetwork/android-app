@@ -37,7 +37,7 @@
         <attr name="playColor" format="color"/>
         <attr name="shadowColor" format="color" />
         <attr name="progressColor" format="color" />
-        <attr name="progress" format="integer" />
+        <attr name="mProgress" format="integer" />
         <attr name="maxProgress" format="integer" />
         <attr name="stringSize" format="dimension"/>
         <attr name="border" format="boolean"/>

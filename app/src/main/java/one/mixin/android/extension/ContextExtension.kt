@@ -272,6 +272,7 @@ const val REQUEST_GALLERY = 0x02
 const val REQUEST_CAMERA = 0x03
 const val REQUEST_FILE = 0x04
 const val REQUEST_AUDIO = 0x05
+const val REQUEST_LOCATION = 0x06
 fun Fragment.openImage(output: Uri) {
     val cameraIntents = ArrayList<Intent>()
     val captureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -547,6 +548,14 @@ inline fun <T, R> T?.notNullWithElse(normalAction: (T) -> R, elseAction: () -> R
 
 inline fun <T> T?.notNullWithElse(normalAction: (T) -> Unit, elseAction: () -> Unit) {
     return if (this != null) {
+        normalAction(this)
+    } else {
+        elseAction()
+    }
+}
+
+inline fun CharSequence?.notEmptyWithElse(normalAction: (CharSequence) -> Unit, elseAction: () -> Unit) {
+    return if (!this.isNullOrEmpty()) {
         normalAction(this)
     } else {
         elseAction()

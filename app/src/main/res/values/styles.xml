@@ -53,6 +53,8 @@
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
 
         <item name="code_border">@color/codeBorder</item>
+
+        <item name="map_default">@drawable/ic_map_default_night</item>
     </style>
 
 

@@ -19,6 +19,7 @@ import one.mixin.android.di.module.WalletActivityModule
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.group.GroupActivity
@@ -84,6 +85,9 @@ abstract class ActivityModule {
 
     @ContributesAndroidInjector(modules = [(CommonModule::class)])
     internal abstract fun contributeMarkdown(): MarkdownActivity
+
+    @ContributesAndroidInjector(modules = [(CommonModule::class)])
+    internal abstract fun contributeLocation(): LocationActivity
 
     @ContributesAndroidInjector(modules = [(CommonModule::class), (SharedMediaActivityModule::class)])
     internal abstract fun contributeSharedMedia(): SharedMediaActivity

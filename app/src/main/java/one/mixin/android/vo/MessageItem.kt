@@ -170,6 +170,8 @@ fun MessageItem.canRecall(): Boolean {
         this.type == MessageCategory.SIGNAL_CONTACT.name ||
         this.type == MessageCategory.SIGNAL_AUDIO.name ||
         this.type == MessageCategory.SIGNAL_LIVE.name ||
+        this.type == MessageCategory.SIGNAL_POST.name ||
+        this.type == MessageCategory.SIGNAL_LOCATION.name ||
         this.type == MessageCategory.PLAIN_TEXT.name ||
         this.type == MessageCategory.PLAIN_IMAGE.name ||
         this.type == MessageCategory.PLAIN_VIDEO.name ||
@@ -177,7 +179,9 @@ fun MessageItem.canRecall(): Boolean {
         this.type == MessageCategory.PLAIN_DATA.name ||
         this.type == MessageCategory.PLAIN_CONTACT.name ||
         this.type == MessageCategory.PLAIN_AUDIO.name ||
-        this.type == MessageCategory.PLAIN_LIVE.name
+        this.type == MessageCategory.PLAIN_LIVE.name ||
+        this.type == MessageCategory.PLAIN_POST.name ||
+        this.type == MessageCategory.PLAIN_LOCATION.name
 }
 
 fun MessageItem.isRecall() = type == MessageCategory.MESSAGE_RECALL.name

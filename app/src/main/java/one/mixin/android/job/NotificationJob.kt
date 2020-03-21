@@ -215,6 +215,19 @@ class NotificationJob(val message: Message, private val userMap: Map<String, Str
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_contact_message))
                 }
             }
+            MessageCategory.SIGNAL_LOCATION.name, MessageCategory.PLAIN_LOCATION.name -> {
+                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+                    notificationBuilder.setTicker(
+                        context.getString(R.string.alert_key_group_location_message, user.fullName))
+                    notificationBuilder.setContentTitle(conversation.getConversationName())
+                    notificationBuilder.setContentText(
+                        context.getString(R.string.alert_key_group_location_message, user.fullName))
+                } else {
+                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_location_message))
+                    notificationBuilder.setContentTitle(user.fullName)
+                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_location_message))
+                }
+            }
             MessageCategory.SIGNAL_POST.name, MessageCategory.PLAIN_POST.name -> {
                 if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(

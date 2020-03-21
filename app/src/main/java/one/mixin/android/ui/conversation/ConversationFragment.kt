@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.ClipData
 import android.content.Context
@@ -81,6 +82,7 @@ import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
+import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
@@ -95,6 +97,7 @@ import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
@@ -127,6 +130,7 @@ import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListe
 import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuType
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
@@ -140,6 +144,7 @@ import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
@@ -168,7 +173,9 @@ import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
+import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.StickerMessagePayload
+import one.mixin.android.websocket.toLocationData
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.ChatControlView
@@ -592,6 +599,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onOpenHomePage() {
                 openBotHome()
+            }
+
+            override fun onLocationClick(messageItem: MessageItem) {
+                val location = GsonHelper.customGson.fromJson(messageItem.content, LocationPayload::class.java)
+                if (requireContext().isGooglePlayServicesAvailable()) {
+                    LocationActivity.show(requireContext(), location)
+                } else {
+                    try {
+                        requireActivity().startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")))
+                    } catch (e: ActivityNotFoundException) {
+                        toast(R.string.error_open_location)
+                    }
+                }
             }
 
             override fun onCallClick(messageItem: MessageItem) {
@@ -1406,6 +1426,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             ForwardCategory.POST.name -> {
                                 item.content?.let { content -> sendPost(content) }
                             }
+                            ForwardCategory.LOCATION.name -> {
+                                item.content?.let { content ->
+                                    toLocationData(content)?.let { location ->
+                                        sendLocation(location)
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1597,6 +1624,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 scrollToDown()
                 markRead()
             }
+        }
+    }
+
+    private fun sendLocation(location: LocationPayload) {
+        createConversation {
+            chatViewModel.sendLocationMessage(conversationId, sender.userId, location, isPlainMessage())
+            scrollToDown()
+            markRead()
         }
     }
 
@@ -1910,6 +1945,22 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 })
                         }
                     }
+                    MenuType.Location -> {
+                        if (requireContext().isGooglePlayServicesAvailable()) {
+                            RxPermissions(requireActivity())
+                                .request(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION)
+                                .autoDispose(stopScope)
+                                .subscribe { granted ->
+                                    if (granted) {
+                                        LocationActivity.show(this@ConversationFragment)
+                                    } else {
+                                        context?.openPermissionSetting()
+                                    }
+                                }
+                        } else {
+                            toast(R.string.location_google_error)
+                        }
+                    }
                     MenuType.App -> {
                         menu.app?.let { app ->
                             chat_control.chat_et.hideKeyboard()
@@ -2084,6 +2135,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             } else {
                 toast(R.string.error_file_exists)
             }
+        } else if (requestCode == REQUEST_LOCATION && resultCode == Activity.RESULT_OK) {
+            val intent = data ?: return
+            val location = LocationActivity.getResult(intent) ?: return
+            sendLocation(location)
         } else {
             super.onActivityResult(requestCode, resultCode, data)
         }

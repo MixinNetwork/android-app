@@ -62,7 +62,7 @@ abstract class BaseViewHolder constructor(containerView: View) :
         }
     }
 
-    private val isNightMode by lazy {
+    protected val isNightMode by lazy {
         itemView.context.booleanFromAttribute(R.attr.flag_night)
     }
 

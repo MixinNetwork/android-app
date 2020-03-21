@@ -35,6 +35,10 @@ android {
         buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('MIXIN_RECAPTCHA_KEY')}\""
         buildConfigField 'String', 'GIPHY_KEY', "\"${propOrEmpty('MIXIN_GIPHY_KEY')}\""
         buildConfigField 'String', 'SafetyNet_API_KEY', "\"${propOrEmpty('MIXIN_SAFETYNET_API_KEY')}\""
+        buildConfigField 'String', 'FS_CLIENT_ID', "\"${propOrEmpty('MIXIN_FS_CLIENT_ID')}\""
+        buildConfigField 'String', 'FS_SECRET', "\"${propOrEmpty('MIXIN_FS_SECRET')}\""
+        buildConfigField 'String', 'GOOGLE_MAP_KEY', "\"${propOrEmpty('MIXIN_GOOGLE_MAP_KEY')}\""
+        resValue "string", "google_maps_key", propOrEmpty('MIXIN_GOOGLE_MAP_KEY')
 
         packagingOptions {
             exclude 'kotlin/**'
@@ -210,6 +214,7 @@ dependencies {
     implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
     implementation "com.google.android.play:core:${playVersion}"
     implementation "com.google.android.gms:play-services-safetynet:${google_play_services_version}"
+    implementation "com.google.android.gms:play-services-maps:${google_play_services_version}"
     implementation "com.google.zxing:core:${zxingVersion}"
     implementation "com.github.tougee:sticky-headers-recyclerview:${stickyheadersrecyclerviewVersion}"
     implementation "org.whispersystems:signal-protocol-android:${signalVersion}"

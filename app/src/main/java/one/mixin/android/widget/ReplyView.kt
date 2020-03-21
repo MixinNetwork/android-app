@@ -110,6 +110,13 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 reply_view_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE
             }
+            messageItem.type.endsWith("_LOCATION") -> {
+                reply_view_tv.setText(R.string.location)
+                setIcon(R.drawable.ic_status_location)
+                (reply_view_tv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
+                reply_view_iv.visibility = View.GONE
+                reply_avatar.visibility = View.GONE
+            }
             messageItem.type.endsWith("_TEXT") -> {
                 if (messageItem.mentions?.isNotBlank() == true) {
                     val mentionRenderContext = MentionRenderCache.singleton.getMentionRenderContext(messageItem.mentions) { _ -> }

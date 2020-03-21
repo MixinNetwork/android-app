@@ -420,6 +420,12 @@ class ConversationListFragment : LinkFragment() {
                     itemView.msg_tv.text = MarkwonUtil.parseContent(conversationItem.content)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_file)
                 }
+                conversationItem.contentType == MessageCategory.SIGNAL_LOCATION.name ||
+                    conversationItem.contentType == MessageCategory.PLAIN_LOCATION.name -> {
+                    setConversationName(conversationItem)
+                    itemView.msg_tv.setText(R.string.conversation_status_location)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_location)
+                }
                 conversationItem.contentType == MessageCategory.SIGNAL_AUDIO.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_AUDIO.name -> {
                     setConversationName(conversationItem)
