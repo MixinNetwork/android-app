@@ -55,7 +55,7 @@ buildscript {
         ext.threetenabpVersion = '1.2.2'
         ext.signalVersion = '2.8.1'
         ext.fabVersion = '1.6'
-        ext.playVersion = '1.6.5'
+        ext.playVersion = '1.7.1'
         ext.google_play_services_version = '17.0.0'
         ext.svgVersion = '1.4'
         ext.reboundVersion = '0.3.8'
