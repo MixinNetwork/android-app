@@ -1,5 +1,6 @@
 package one.mixin.android.db
 
+import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.Sticker
@@ -101,6 +102,9 @@ fun MixinDatabase.deleteMessage(id: String) {
 fun MixinDatabase.insertAndNotifyConversation(message: Message) {
     runInTransaction {
         messageDao().insert(message)
-        conversationDao().increaseUnseenMessageCountById(message.conversationId)
+        val me = Session.getAccountId()
+        if (me != message.userId) {
+            conversationDao().increaseUnseenMessageCountById(message.conversationId)
+        }
     }
 }
