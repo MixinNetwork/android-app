@@ -34,13 +34,6 @@
                 android:orientation="horizontal"
                 motion:layout_constraintGuide_percent="0.3" />
 
-            <Constraint
-                android:id="@id/map_view"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                motion:layout_constraintBottom_toTopOf="@id/location_recycler"
-                motion:layout_constraintTop_toTopOf="parent" />
-
         </ConstraintSet>
     </Transition>
 
