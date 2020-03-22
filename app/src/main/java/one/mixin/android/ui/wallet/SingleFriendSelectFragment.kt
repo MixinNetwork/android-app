@@ -45,7 +45,7 @@ class SingleFriendSelectFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         title_view.setOnClickListener {
             search_et.hideKeyboard()
-            view?.findNavController()?.navigateUp()
+            view.findNavController().navigateUp()
         }
         transactions_rv.layoutManager = LinearLayoutManager(requireContext())
         transactions_rv.adapter = adapter
@@ -55,7 +55,7 @@ class SingleFriendSelectFragment : BaseFragment() {
                 if (Session.getAccount()?.hasPin == true) {
                     TransferFragment.newInstance(user.userId)
                         .showNow(parentFragmentManager, TransferFragment.TAG)
-                    view?.findNavController()?.navigateUp()
+                    view.findNavController().navigateUp()
                 } else {
                     toast(R.string.transfer_without_pin)
                 }

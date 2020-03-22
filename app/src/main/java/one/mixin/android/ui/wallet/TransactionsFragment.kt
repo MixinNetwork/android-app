@@ -95,10 +95,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }
         headerView.receive_tv.setOnClickListener {
             asset.differentProcess({
-                view?.navigate(R.id.action_transactions_to_deposit_public_key,
+                view.navigate(R.id.action_transactions_to_deposit_public_key,
                     Bundle().apply { putParcelable(ARGS_ASSET, asset) })
             }, {
-                view?.navigate(R.id.action_transactions_to_deposit_account,
+                view.navigate(R.id.action_transactions_to_deposit_account,
                     Bundle().apply { putParcelable(ARGS_ASSET, asset) })
             }, {
                 toast(getString(R.string.error_bad_data, ErrorHandler.BAD_DATA))

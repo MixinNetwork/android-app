@@ -65,8 +65,8 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                             walletViewModel.updateAssetHidden(asset.assetId, true)
                         }
                     }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                        view.setBackgroundResource(R.color.call_btn_icon_checked)
-                        (view.findViewById(R.id.snackbar_text) as TextView)
+                        this.view.setBackgroundResource(R.color.call_btn_icon_checked)
+                        (this.view.findViewById(R.id.snackbar_text) as TextView)
                             .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
                     }.show()
             }

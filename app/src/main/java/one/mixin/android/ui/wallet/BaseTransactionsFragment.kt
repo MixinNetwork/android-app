@@ -86,7 +86,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        transactionsRv = view?.findViewById(R.id.transactions_rv)
+        transactionsRv = view.findViewById(R.id.transactions_rv)
         val transactionLayoutManager = LinearLayoutManager(requireContext())
         transactionsRv?.layoutManager = transactionLayoutManager
         transactionsRv?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
