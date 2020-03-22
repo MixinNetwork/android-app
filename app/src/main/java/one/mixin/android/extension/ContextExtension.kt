@@ -604,8 +604,7 @@ inline fun <T : Fragment> T.withArgs(argsBuilder: Bundle.() -> Unit): T =
     this.apply { arguments = Bundle().apply(argsBuilder) }
 
 fun Context.isGooglePlayServicesAvailable() =
-    GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS &&
-        Locale.getDefault() != Locale.CHINA
+    GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS
 
 fun Fragment.getTipsByAsset(asset: AssetItem) =
     when (asset.chainId) {
