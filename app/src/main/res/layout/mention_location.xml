@@ -18,7 +18,7 @@
         android:id="@+id/location_top"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/location_bottom"
+        app:layout_constraintBottom_toTopOf="@id/guideline"
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.gms.maps.MapView
@@ -51,8 +51,9 @@
         android:id="@+id/location_bottom"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:background="@drawable/bg_upper_round"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="@id/guideline">
+        app:layout_constraintTop_toTopOf="@id/upper">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/location_recycler"
@@ -65,7 +66,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="66dp"
-            android:background="?attr/bg_white"
             android:visibility="gone">
 
             <ProgressBar
@@ -80,7 +80,6 @@
             android:id="@+id/location_empty"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="?attr/bg_white"
             android:orientation="vertical"
             android:visibility="gone">
 
@@ -106,5 +105,11 @@
 
 
     </FrameLayout>
+
+    <Space
+        android:id="@+id/upper"
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        app:layout_constraintBottom_toBottomOf="@id/guideline" />
 
 </androidx.constraintlayout.motion.widget.MotionLayout>
