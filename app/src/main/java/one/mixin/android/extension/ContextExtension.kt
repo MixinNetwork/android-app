@@ -47,7 +47,6 @@ import androidx.fragment.app.FragmentTransaction
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import java.io.File
-import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 import kotlin.math.roundToInt
