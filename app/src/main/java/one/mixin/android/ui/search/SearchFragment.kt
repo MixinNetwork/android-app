@@ -104,7 +104,7 @@ class SearchFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view?.setOnClickListener {
+        view.setOnClickListener {
             if (keyword.isNullOrBlank()) {
                 (requireActivity() as MainActivity).closeSearch()
             }

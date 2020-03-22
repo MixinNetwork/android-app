@@ -43,7 +43,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        title_view.left_ib.setOnClickListener { view?.findNavController()?.navigateUp() }
+        title_view.left_ib.setOnClickListener { view.findNavController().navigateUp() }
         title_view.right_animator.setOnClickListener { showFiltersSheet() }
         adapter.listener = this
         transactions_rv.itemAnimator = null

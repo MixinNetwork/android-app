@@ -83,7 +83,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         assetsAdapter.headerView = header
         footer = layoutInflater.inflate(R.layout.layout_wallet_asset_foot, coins_rv, false)
         footer.setOnClickListener {
-            view?.navigate(R.id.action_wallet_to_asset_add)
+            view.navigate(R.id.action_wallet_to_asset_add)
         }
         assetsAdapter.footerView = footer
         (coins_rv.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
@@ -103,8 +103,8 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                                     walletViewModel.updateAssetHidden(asset.assetId, false)
                                 }
                             }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                                view.setBackgroundResource(R.color.call_btn_icon_checked)
-                                (view.findViewById(R.id.snackbar_text) as TextView)
+                                this.view.setBackgroundResource(R.color.call_btn_icon_checked)
+                                (this.view.findViewById(R.id.snackbar_text) as TextView)
                                     .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
                             }.show()
                     }

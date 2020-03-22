@@ -56,13 +56,13 @@ class AddressManagementFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         title_view.right_animator.setOnClickListener {
-            view?.navigate(R.id.action_address_management_to_address_add,
+            view.navigate(R.id.action_address_management_to_address_add,
                 Bundle().apply {
                     putParcelable(ARGS_ASSET, asset)
                 })
         }
         empty_tv.setOnClickListener {
-            view?.navigate(R.id.action_address_management_to_address_add,
+            view.navigate(R.id.action_address_management_to_address_add,
                 Bundle().apply {
                     putParcelable(ARGS_ASSET, asset)
                 })
