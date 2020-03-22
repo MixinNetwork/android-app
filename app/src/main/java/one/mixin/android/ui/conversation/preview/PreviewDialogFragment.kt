@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.preview
 
+import android.app.Dialog
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
@@ -54,6 +55,10 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
 
     override fun onResume() {
         super.onResume()
+        dialog?.window?.apply {
+            setBackgroundDrawable(ColorDrawable(0x00000000))
+            setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
+        }
         if (currentState) {
             mixinPlayer.start()
         }
@@ -73,8 +78,42 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
 
     private var mediaDialogView: View? = null
 
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
+        dialog.window?.apply {
+            requestFeature(Window.FEATURE_NO_TITLE)
+            setWindowAnimations(R.style.BottomSheet_Animation)
+        }
+        dialog.setOnShowListener {
+            if (isVideo) {
+                val mimeType = getMimeType(uri!!)
+                if (mimeType == null || !mimeType.startsWith("video", true)) {
+                    context?.toast(R.string.error_format)
+                    dismiss()
+                }
+                mixinPlayer.loadVideo(uri.toString())
+                mixinPlayer.setVideoTextureView(mediaDialogView!!.dialog_video_texture)
+                mediaDialogView!!.time.setVideoPath(uri!!.getFilePath(requireContext()))
+                Observable.interval(0, 100, TimeUnit.MILLISECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDispose(this).subscribe {
+                        if (mixinPlayer.duration() != 0 && mixinPlayer.isPlaying()) {
+                            mediaDialogView!!.time.progress = mixinPlayer.getCurrentPos().toFloat() / mixinPlayer.duration()
+                        }
+                    }
+                mediaDialogView!!.dialog_ok.setOnClickListener {
+                    action!!(uri!!)
+                    dismiss()
+                }
+            } else {
+                mediaDialogView!!.dialog_send_ib.setOnClickListener { action!!(uri!!); dismiss() }
+                mediaDialogView!!.dialog_iv.loadImage(uri)
+            }
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        mediaDialogView = inflater.inflate(if (isVideo) {
+        mediaDialogView = LayoutInflater.from(context).inflate(if (isVideo) {
             R.layout.fragment_preview_video
         } else {
             R.layout.fragment_preview
@@ -96,42 +135,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
                 dismiss()
             }
         }
-
         return mediaDialogView
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        dialog?.window?.requestFeature(Window.FEATURE_NO_TITLE)
-        super.onViewCreated(view, savedInstanceState)
-        dialog?.window?.setBackgroundDrawable(ColorDrawable(0x00000000))
-        dialog?.window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
-        dialog?.window?.setWindowAnimations(R.style.BottomSheet_Animation)
-        dialog?.setOnShowListener {
-            if (isVideo) {
-                val mimeType = getMimeType(uri!!)
-                if (mimeType == null || !mimeType.startsWith("video", true)) {
-                    context?.toast(R.string.error_format)
-                    dismiss()
-                }
-                mixinPlayer.loadVideo(uri.toString())
-                mixinPlayer.setVideoTextureView(mediaDialogView!!.dialog_video_texture)
-                mediaDialogView!!.time.setVideoPath(uri!!.getFilePath(requireContext()))
-                Observable.interval(0, 100, TimeUnit.MILLISECONDS)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .autoDispose(this).subscribe {
-                    if (mixinPlayer.duration() != 0 && mixinPlayer.isPlaying()) {
-                        mediaDialogView!!.time.progress = mixinPlayer.getCurrentPos().toFloat() / mixinPlayer.duration()
-                    }
-                }
-                mediaDialogView!!.dialog_ok.setOnClickListener {
-                    action!!(uri!!)
-                    dismiss()
-                }
-            } else {
-                mediaDialogView!!.dialog_send_ib.setOnClickListener { action!!(uri!!); dismiss() }
-                mediaDialogView!!.dialog_iv.loadImage(uri)
-            }
-        }
     }
 
     private var uri: Uri? = null

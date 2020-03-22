@@ -606,6 +606,9 @@ inline fun <T : Fragment> T.withArgs(argsBuilder: Bundle.() -> Unit): T =
 fun Context.isGooglePlayServicesAvailable() =
     GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS
 
+fun Context.isFirebaseDecodeAvailable() =
+    isGooglePlayServicesAvailable() && Locale.getDefault() != Locale.CHINA
+
 fun Fragment.getTipsByAsset(asset: AssetItem) =
     when (asset.chainId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.bottom_deposit_tip_btc)

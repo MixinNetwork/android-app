@@ -34,7 +34,7 @@ import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hasNavigationBar
-import one.mixin.android.extension.isGooglePlayServicesAvailable
+import one.mixin.android.extension.isFirebaseDecodeAvailable
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
@@ -164,7 +164,7 @@ class EditFragment : CaptureVisionFragment() {
         if (!isAdded) return@launch
 
         val bitmap = BitmapFactory.decodeFile(path) ?: return@launch
-        if (requireContext().isGooglePlayServicesAvailable()) {
+        if (requireContext().isFirebaseDecodeAvailable()) {
             val visionImage = FirebaseVisionImage.fromBitmap(bitmap)
             detector.use { d ->
                 d.detectInImage(visionImage)

@@ -40,7 +40,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.getImageCachePath
-import one.mixin.android.extension.isGooglePlayServicesAvailable
+import one.mixin.android.extension.isFirebaseDecodeAvailable
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ACCOUNT_NAME
@@ -226,7 +226,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
     }
 
     private val isGooglePlayServicesAvailable by lazy {
-        context?.isGooglePlayServicesAvailable() ?: false
+        context?.isFirebaseDecodeAvailable() ?: false
     }
 
     private val imageAnalyzer = object : ImageAnalysis.Analyzer {
