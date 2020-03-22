@@ -69,7 +69,7 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.isAutoRotate
-import one.mixin.android.extension.isGooglePlayServicesAvailable
+import one.mixin.android.extension.isFirebaseDecodeAvailable
 import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
@@ -394,7 +394,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             imageView.drawingCache
         }
         if (bitmap != null) {
-            if (isGooglePlayServicesAvailable()) {
+            if (isFirebaseDecodeAvailable()) {
                 var url: String? = null
                 val image = FirebaseVisionImage.fromBitmap(bitmap)
                 val detector = FirebaseVision.getInstance().visionBarcodeDetector
