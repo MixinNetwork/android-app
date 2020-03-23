@@ -11,8 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import io.noties.markwon.recycler.MarkwonAdapter
-import io.noties.markwon.recycler.SimpleEntry
-import io.noties.markwon.recycler.table.TableEntry
 import kotlinx.android.synthetic.main.activity_markdown.*
 import kotlinx.android.synthetic.main.view_markdown.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.forward
@@ -20,7 +18,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
-import one.mixin.android.databinding.ActivityMarkdownBinding
 import one.mixin.android.extension.createPostTemp
 import one.mixin.android.extension.getPublicDocumentPath
 import one.mixin.android.extension.openPermissionSetting
