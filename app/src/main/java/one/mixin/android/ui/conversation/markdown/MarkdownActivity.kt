@@ -11,6 +11,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import io.noties.markwon.recycler.MarkwonAdapter
+import io.noties.markwon.recycler.SimpleEntry
+import io.noties.markwon.recycler.table.TableEntry
+import kotlinx.android.synthetic.main.activity_markdown.*
 import kotlinx.android.synthetic.main.view_markdown.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.forward
 import kotlinx.coroutines.Dispatchers
@@ -40,10 +43,9 @@ import org.commonmark.node.FencedCodeBlock
 class MarkdownActivity : BaseActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = ActivityMarkdownBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        binding.control.mode = isNightMode()
-        binding.control.callback = object : WebControlView.Callback {
+        setContentView(R.layout.activity_markdown)
+        control.mode = isNightMode()
+        control.callback = object : WebControlView.Callback {
             override fun onMoreClick() {
                 showBottomSheet()
             }
@@ -68,9 +70,9 @@ class MarkdownActivity : BaseActivity() {
                     .textLayoutIsRoot(R.layout.item_markdown_cell)
             }
         ).build()
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.recyclerView.setHasFixedSize(true)
-        binding.recyclerView.adapter = adapter
+        recycler_view.layoutManager = LinearLayoutManager(this)
+        recycler_view.setHasFixedSize(true)
+        recycler_view.adapter = adapter
         val markwon = MarkwonUtil.getMarkwon(this, { link ->
             LinkBottomSheetDialogFragment.newInstance(link)
                 .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
