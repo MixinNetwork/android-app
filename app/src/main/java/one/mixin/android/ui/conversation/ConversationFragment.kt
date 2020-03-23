@@ -101,6 +101,7 @@ import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
@@ -138,8 +139,6 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.sticker.StickerActivity
-import one.mixin.android.ui.url.openUrlWithExtraWeb
-import one.mixin.android.ui.url.openWebBottomSheet
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
@@ -502,7 +501,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onUrlClick(url: String) {
-                openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
+                url.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope)
             }
 
             override fun onMentionClick(identityNumber: String) {
@@ -541,7 +540,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
                 lifecycleScope.launch {
                     val app = chatViewModel.findAppById(userId)
-                    openUrlWithExtraWeb(action, conversationId, parentFragmentManager, app)
+                    action.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope, app)
                 }
             }
 
@@ -1180,7 +1179,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         group_desc.addAutoLinkMode(AutoLinkMode.MODE_URL)
         group_desc.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         group_desc.setAutoLinkOnClickListener { _, url ->
-            openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
+            url.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope)
         }
         group_flag.setOnClickListener {
             group_desc.expand()
@@ -1964,12 +1963,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     MenuType.App -> {
                         menu.app?.let { app ->
                             chat_control.chat_et.hideKeyboard()
-                            openWebBottomSheet(
+                            WebBottomSheetDialogFragment.newInstance(
                                 app.homeUri,
                                 conversationId,
-                                app.toApp(),
-                                parentFragmentManager
-                            )
+                                app.toApp()
+                            ).showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
                         }
                     }
                 }

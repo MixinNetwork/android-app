@@ -25,9 +25,9 @@ import io.noties.prism4j.Prism4j
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.postOptimize
-import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.util.markdown.table.TableEntryPlugin
 import org.commonmark.node.FencedCodeBlock
 import org.commonmark.node.Link
@@ -91,7 +91,7 @@ class MarkwonUtil {
                     override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
                         builder.linkResolver(object : LinkResolverDef() {
                             override fun resolve(view: View, link: String) {
-                                if (isMixinUrl(link)) {
+                                if (link.isMixinUrl()) {
                                     mixinLinkResolver.invoke(link)
                                 } else {
                                     linkResolver.invoke(link)

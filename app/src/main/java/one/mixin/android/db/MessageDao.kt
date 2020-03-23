@@ -193,8 +193,7 @@ interface MessageDao : BaseDao<Message> {
         """
             SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
             c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
-            u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
-            max(m.created_at) as latestMessageCreatedAt
+            u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
             FROM messages m
 			INNER JOIN users u ON c.owner_id = u.user_id
             INNER JOIN conversations c ON c.conversation_id = m.conversation_id
@@ -202,7 +201,7 @@ interface MessageDao : BaseDao<Message> {
             AND m.category IN('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST') 
             AND m.status != 'FAILED'
             GROUP BY m.conversation_id
-            ORDER BY latestMessageCreatedAt DESC
+            ORDER BY max(m.created_at) DESC
             LIMIT :limit
         """
     )

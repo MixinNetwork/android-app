@@ -93,7 +93,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
     private lateinit var code: String
     private lateinit var contentView: View
 
-    private val url: String by lazy { arguments!!.getString(CODE)!! }
+    private val url: String by lazy { requireArguments().getString(CODE)!! }
 
     override fun onStart() {
         try {

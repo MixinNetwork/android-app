@@ -32,6 +32,7 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
@@ -45,7 +46,6 @@ import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.setting.WalletPasswordFragment
-import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
@@ -97,7 +97,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
             detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
             detail_tv.setAutoLinkOnClickListener { _, url ->
-                openUrlWithExtraWeb(url, null, parentFragmentManager)
+                url.openAsUrlOrWeb(null, parentFragmentManager, lifecycleScope)
                 dismiss()
             }
             created_tv.text = getString(R.string.profile_join_in, account.created_at.dayTime())
@@ -240,7 +240,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
     }
 
     private fun changePhoto(byCamera: Boolean) {
-        RxPermissions(activity!!)
+        RxPermissions(requireActivity())
             .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
             .autoDispose(stopScope)
             .subscribe { granted ->

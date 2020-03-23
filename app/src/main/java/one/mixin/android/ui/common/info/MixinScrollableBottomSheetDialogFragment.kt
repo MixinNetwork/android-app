@@ -11,6 +11,7 @@ import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -19,10 +20,10 @@ import javax.inject.Inject
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.url.UrlInterpreterActivity
-import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.linktext.AutoLinkMode
 import one.mixin.android.widget.linktext.AutoLinkTextView
@@ -104,7 +105,7 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         detailsTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         detailsTv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         detailsTv.setAutoLinkOnClickListener { _, url ->
-            openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
+            url.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope)
             dismiss()
         }
         detailsTv.setOnTouchListener { _, _ ->
