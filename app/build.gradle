@@ -275,7 +275,6 @@ dependencies {
     implementation "io.noties.markwon:image-glide:${markwonVersion}"
     implementation "io.noties.markwon:ext-tables:${markwonVersion}"
     implementation "io.noties.markwon:recycler:${markwonVersion}"
-    implementation "io.noties.markwon:recycler-table:${markwonVersion}"
     implementation "io.noties.markwon:ext-strikethrough:${markwonVersion}"
     implementation "io.noties.markwon:html:${markwonVersion}"
     implementation "io.noties:prism4j:${prism4jVersion}"
