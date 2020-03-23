@@ -86,6 +86,7 @@
                     android:paddingBottom="8dp"
                     android:singleLine="true"
                     android:textColor="?attr/text_primary"
+                    android:textColorHint="?attr/text_assist"
                     android:textSize="18sp" />
 
                 <ImageButton
