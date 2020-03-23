@@ -273,7 +273,7 @@ class ConversationAdapter(
                     (holder as StrangerHolder).bind(onItemListener, isBot)
                 }
                 UNKNOWN_TYPE -> {
-                    (holder as UnknownHolder).bind()
+                    (holder as UnknownHolder).bind(it, isFirst(position), isLast(position), onItemListener)
                 }
                 STICKER_TYPE -> {
                     (holder as StickerHolder).bind(

@@ -1,23 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingBottom="8dp">
+    android:clickable="true"
+    android:focusable="true">
 
-    <TextView
-        android:id="@+id/chat_info"
+    <one.mixin.android.widget.MessageLayout
+        android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:background="@drawable/chat_bubble_unknown"
-        android:gravity="center"
-        android:maxWidth="300dp"
-        android:padding="4dp"
-        android:paddingEnd="8dp"
-        android:paddingStart="8dp"
-        android:text="@string/unknown_update_app"
-        android:textColor="?attr/text_primary"
-        android:textSize="12sp"
-        android:translationZ="1dp" />
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="1.5dp"
+        android:layout_marginEnd="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0"
+        app:layout_goneMarginBottom="0dp">
 
-</FrameLayout>
+        <TextView
+            android:id="@+id/chat_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:text="@string/unknown_update_app"
+            android:textColor="@color/text_white"
+            android:textSize="14sp"
+            tools:text="message" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/chat_secret"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:layout_marginBottom="2dp"
+                android:layout_marginEnd="3dp"
+                android:visibility="gone"
+                android:src="@drawable/ic_secret_white"
+                tools:ignore="ContentDescription"/>
+
+            <TextView
+                android:id="@+id/chat_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/sf_pro_light"
+                android:gravity="bottom"
+                android:textColor="@color/text_white"
+                android:textSize="@dimen/chat_date_size"
+                tools:ignore="SmallSp"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/chat_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:lines="1"
+            android:minWidth="30dp"
+            android:textColor="#19BEF1"
+            android:textSize="14sp" />
+
+    </one.mixin.android.widget.MessageLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+
