@@ -43,6 +43,7 @@
             android:layout_gravity="end|bottom"
             android:layout_margin="6dp"
             android:src="@drawable/ic_my_location"
+            android:foreground="@drawable/mixin_ripple"
             android:visibility="visible" />
 
     </FrameLayout>
