@@ -34,7 +34,6 @@
         android:theme="@style/AppTheme"
         android:hasFragileUserData="true"
         android:requestLegacyExternalStorage="true"
-        android:extractNativeLibs="true"
         tools:replace="allowBackup">
         <activity
             android:name=".ui.home.MainActivity"
