@@ -2,6 +2,7 @@ package one.mixin.android.ui.common.info
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.Gravity
 import android.view.View
@@ -24,6 +25,7 @@ import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.linktext.AutoLinkMode
 import one.mixin.android.widget.linktext.AutoLinkTextView
 
@@ -37,9 +39,13 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
     lateinit var viewModelFactory: ViewModelProvider.Factory
     protected val bottomViewModel: BottomSheetViewModel by viewModels { viewModelFactory }
 
-    override fun getTheme() = R.style.AppTheme_Dialog
+    override fun getTheme() = R.style.MixinBottomSheet
 
     protected var behavior: BottomSheetBehavior<*>? = null
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        return MixinBottomSheetDialog(requireContext(), theme)
+    }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
