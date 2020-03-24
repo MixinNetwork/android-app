@@ -44,7 +44,9 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
     protected var behavior: BottomSheetBehavior<*>? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return MixinBottomSheetDialog(requireContext(), theme)
+        return MixinBottomSheetDialog(requireContext(), theme).apply {
+            dismissWithAnimation = true
+        }
     }
 
     @SuppressLint("RestrictedApi")
