@@ -51,6 +51,7 @@ import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
@@ -64,10 +65,13 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.openAsUrl
+import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
@@ -76,11 +80,8 @@ import one.mixin.android.extension.supportsQ
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.url.isMixinUrl
-import one.mixin.android.ui.url.openUrl
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
@@ -135,10 +136,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val url: String by lazy {
-        arguments!!.getString(URL)!!
+        requireArguments().getString(URL)!!
     }
     private val conversationId: String? by lazy {
-        arguments!!.getString(CONVERSATION_ID)
+        requireArguments().getString(CONVERSATION_ID)
     }
     private var app: App? = null
     private val appCard: AppCardData? by lazy {
@@ -193,13 +194,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                     if (result != null) {
                                         if (!isAdded) return@addOnSuccessListener
 
-                                        openUrl(result, parentFragmentManager) {
-                                            QrScanBottomSheetDialogFragment.newInstance(result)
-                                                .showNow(
-                                                    parentFragmentManager,
-                                                    QrScanBottomSheetDialogFragment.TAG
-                                                )
-                                        }
+                                        result.openAsUrlOrQrScan(parentFragmentManager, lifecycleScope)
                                     } else {
                                         if (isAdded) toast(R.string.can_not_recognize)
                                     }
@@ -324,7 +319,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 override fun onPageFinished() {
                     reloadTheme()
                 }
-            }, conversationId, this.parentFragmentManager)
+            }, conversationId, this.parentFragmentManager, lifecycleScope)
 
         contentView.chat_web_view.webChromeClient = object : WebChromeClient() {
             override fun onReceivedTitle(view: WebView?, title: String?) {
@@ -696,7 +691,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     class WebViewClientImpl(
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
-        private val fragmentManager: FragmentManager
+        private val fragmentManager: FragmentManager,
+        private val scope: CoroutineScope
     ) : WebViewClient() {
 
         override fun onPageFinished(view: WebView?, url: String?) {
@@ -713,8 +709,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (view == null || url == null) {
                 return super.shouldOverrideUrlLoading(view, url)
             }
-            if (isMixinUrl(url)) {
-                openUrl(url, fragmentManager, {})
+            if (url.isMixinUrl()) {
+                url.openAsUrl(fragmentManager, scope) {}
                 return true
             }
             val extraHeaders = HashMap<String, String>()

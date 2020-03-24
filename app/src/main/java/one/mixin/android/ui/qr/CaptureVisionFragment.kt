@@ -11,9 +11,9 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.closeSilently
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.widget.PseudoNotificationView
 
 abstract class CaptureVisionFragment : BaseFragment() {
@@ -41,7 +41,7 @@ abstract class CaptureVisionFragment : BaseFragment() {
 
     private val pseudoViewCallback = object : PseudoNotificationView.Callback {
         override fun onClick(content: String) {
-            if (!isMixinUrl(content)) {
+            if (!content.isMixinUrl()) {
                 MainActivity.showFromScan(requireActivity(), scanText = content)
             } else if (content.startsWith(Constants.Scheme.TRANSFER, true) ||
                 content.startsWith(Constants.Scheme.HTTPS_TRANSFER, true)

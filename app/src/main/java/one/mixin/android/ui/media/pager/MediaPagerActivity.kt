@@ -71,6 +71,7 @@ import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.isAutoRotate
 import one.mixin.android.extension.isFirebaseDecodeAvailable
 import one.mixin.android.extension.isLandscape
+import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
@@ -78,9 +79,7 @@ import one.mixin.android.extension.supportsPie
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.media.SharedMediaViewModel
-import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.SensorOrientationChangeNotifier
 import one.mixin.android.util.Session
@@ -400,16 +399,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 val detector = FirebaseVision.getInstance().visionBarcodeDetector
                 detector.detectInImage(image)
                     .addOnSuccessListener { barcodes ->
-                        url = barcodes.firstOrNull()?.rawValue
-                        if (url != null) {
-                            openUrl(url!!, supportFragmentManager) {
-                                QrScanBottomSheetDialogFragment.newInstance(url!!)
-                                    .showNow(
-                                        supportFragmentManager,
-                                        QrScanBottomSheetDialogFragment.TAG
-                                    )
-                            }
-                        }
+                        barcodes.firstOrNull()?.rawValue?.openAsUrlOrQrScan(supportFragmentManager, lifecycleScope)
                     }
                     .addOnFailureListener {
                         toast(R.string.can_not_recognize)
@@ -443,10 +433,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             imageView.isDrawingCacheEnabled = false
         }
         if (url != null) {
-            openUrl(url, supportFragmentManager) {
-                QrScanBottomSheetDialogFragment.newInstance(url)
-                    .showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
-            }
+            url.openAsUrlOrQrScan(supportFragmentManager, lifecycleScope)
         } else {
             toast(R.string.can_not_recognize)
         }
