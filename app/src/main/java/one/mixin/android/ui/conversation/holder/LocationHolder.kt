@@ -101,7 +101,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
                     R.drawable.chat_bubble_reply_me_night
                 )
             }
-            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp10
+            (itemView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
         } else {
             lp.gravity = Gravity.START
             if (isLast) {
@@ -202,6 +202,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
                 true
             }
         }
+        val isMe = meId == messageItem.userId
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), false) { statusIcon, secretIcon ->
@@ -210,7 +211,6 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
         }
 
-        val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             itemView.chat_name.visibility = View.VISIBLE
             itemView.chat_name.text = messageItem.userFullName
