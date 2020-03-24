@@ -123,8 +123,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        user = arguments!!.getParcelable(ARGS_USER)!!
-        conversationId = arguments!!.getString(ARGS_CONVERSATION_ID)
+        user = requireArguments().getParcelable(ARGS_USER)!!
+        conversationId = requireArguments().getString(ARGS_CONVERSATION_ID)
         contentView.title.right_iv.setOnClickListener { dismiss() }
         contentView.avatar.setOnClickListener {
             if (!isAdded) return@setOnClickListener
