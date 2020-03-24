@@ -1,12 +1,14 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
+import com.crashlytics.android.Crashlytics
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.MapsInitializer
@@ -30,6 +32,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.websocket.LocationPayload
 import org.jetbrains.anko.dip
+import java.lang.Exception
 
 class LocationHolder constructor(containerView: View) : BaseViewHolder(containerView), OnMapReadyCallback {
     private val dp16 = itemView.context.dpToPx(16f)
@@ -133,7 +136,12 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         this.onItemListener = onItemListener
-        location = GsonHelper.customGson.fromJson(messageItem.content!!, LocationPayload::class.java)
+        try {
+            location = GsonHelper.customGson.fromJson(messageItem.content!!, LocationPayload::class.java)
+        } catch (e: Exception) {
+            Crashlytics.log(Log.ERROR, "LocationHolder decrypt failed", "" + messageItem.content)
+            Crashlytics.logException(e)
+        }
         if (location?.name == null) {
             itemView.location_sub_title.isVisible = false
             itemView.location_title.visibility = View.INVISIBLE
