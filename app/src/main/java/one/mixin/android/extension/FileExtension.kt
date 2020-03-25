@@ -51,9 +51,9 @@ fun hasWritePermission(): Boolean {
     ) == PackageManager.PERMISSION_GRANTED
 }
 
-private fun Context.getAppPath(): File {
+private fun Context.getAppPath(): File? {
     return if (!hasWritePermission()) {
-        getBestAvailableCacheRoot()
+        null
     } else if (isAvailable()) {
         File(
             "${Environment.getExternalStorageDirectory()}${File.separator}Mixin${File.separator}"
@@ -70,13 +70,15 @@ private fun Context.getAppPath(): File {
     }
 }
 
-fun Context.getMediaPath(): File {
-    return File("${getAppPath().absolutePath}${File.separator}Media${File.separator}")
+fun Context.getMediaPath(): File? {
+    val path = getAppPath() ?: return null
+    return File("${path.absolutePath}${File.separator}Media${File.separator}")
 }
 
-fun Context.getBackupPath(): File {
+fun Context.getBackupPath(): File? {
+    val path = getAppPath() ?: return null
     val parentName = Session.getAccount()?.identity_number
-    val f = File("${getAppPath().absolutePath}${File.separator}Backup${File.separator}$parentName${File.separator}")
+    val f = File("${path.absolutePath}${File.separator}Backup${File.separator}$parentName${File.separator}")
     if (!f.exists() || !f.isDirectory) {
         f.delete()
         f.mkdirs()

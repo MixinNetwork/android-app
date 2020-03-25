@@ -1,11 +1,13 @@
 package one.mixin.android.ui.conversation
 
+import android.Manifest
 import android.app.Activity
 import android.app.NotificationManager
 import android.content.ContentResolver.SCHEME_CONTENT
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.net.Uri
+import androidx.annotation.RequiresPermission
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,10 +18,6 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import java.io.File
-import java.io.FileInputStream
-import java.util.UUID
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -122,6 +120,10 @@ import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import timber.log.Timber
+import java.io.File
+import java.io.FileInputStream
+import java.util.UUID
+import javax.inject.Inject
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class ConversationViewModel
@@ -660,7 +662,7 @@ internal constructor(
             }
         }
     }
-
+    @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun retryUpload(id: String, onError: () -> Unit) {
         doAsync {
             conversationRepository.findMessageById(id)?.let {
@@ -696,6 +698,7 @@ internal constructor(
         }
     }
 
+    @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun retryDownload(id: String) {
         doAsync {
             conversationRepository.findMessageById(id)?.let {

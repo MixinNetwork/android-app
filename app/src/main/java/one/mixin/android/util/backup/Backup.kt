@@ -30,7 +30,7 @@ suspend fun backup(
         return@coroutineScope
     }
 
-    val backupDir = context.getBackupPath()
+    val backupDir = context.getBackupPath() ?: return@coroutineScope
     val availableSize = StatFs(backupDir.path).availableBytes
     if (availableSize < dbFile.length()) {
         withContext(Dispatchers.Main) {
@@ -137,7 +137,7 @@ suspend fun delete(
     context: Context
 ): Boolean = withContext(Dispatchers.IO) {
     val backupDir = context.getBackupPath()
-    return@withContext backupDir.deleteRecursively()
+    return@withContext backupDir?.deleteRecursively() ?: return@withContext false
 }
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -145,7 +145,7 @@ suspend fun findBackup(
     context: Context,
     coroutineContext: CoroutineContext
 ): File? = withContext(coroutineContext) {
-    val backupDir = context.getBackupPath()
+    val backupDir = context.getBackupPath() ?: return@withContext null
     if (!backupDir.exists() || !backupDir.isDirectory) return@withContext null
     val files = backupDir.listFiles()
     if (files.isNullOrEmpty()) return@withContext null

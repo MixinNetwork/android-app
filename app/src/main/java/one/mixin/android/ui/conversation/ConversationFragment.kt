@@ -413,14 +413,36 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 return b
             }
 
+            @SuppressLint("MissingPermission")
             override fun onRetryDownload(messageId: String) {
-                chatViewModel.retryDownload(messageId)
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe({ granted ->
+                        if (granted) {
+                            chatViewModel.retryDownload(messageId)
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    }, {
+                    })
             }
 
+            @SuppressLint("MissingPermission")
             override fun onRetryUpload(messageId: String) {
-                chatViewModel.retryUpload(messageId) {
-                    toast(R.string.error_retry_upload)
-                }
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe({ granted ->
+                        if (granted) {
+                            chatViewModel.retryUpload(messageId) {
+                                toast(R.string.error_retry_upload)
+                            }
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    }, {
+                    })
             }
 
             override fun onCancel(id: String) {
@@ -614,7 +636,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     LocationActivity.show(requireContext(), location)
                 } else {
                     try {
-                        requireActivity().startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")))
+                        requireActivity().startActivity(
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")
+                            )
+                        )
                     } catch (e: ActivityNotFoundException) {
                         toast(R.string.error_open_location)
                     }
