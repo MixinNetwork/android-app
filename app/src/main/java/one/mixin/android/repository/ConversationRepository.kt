@@ -128,6 +128,8 @@ internal constructor(
     suspend fun indexUnread(conversationId: String) =
         readConversationDao.indexUnread(conversationId)
 
+    suspend fun conversationZeroClear(conversationId: String) = conversationDao.conversationZeroClear(conversationId)
+
     suspend fun indexMediaMessages(
         conversationId: String,
         messageId: String,
