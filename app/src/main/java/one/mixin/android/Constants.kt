@@ -42,6 +42,9 @@ object Constants {
         const val PREF_NOTIFICATION_ON = "pref_notification_on"
         const val PREF_BATTERY_OPTIMIZE = "pref_battery_optimize"
         const val PREF_SYNC_CIRCLE = "pref_sync_circle"
+        const val PREF_ATTACHMENT = "pref_attachment"
+        const val PREF_ATTACHMENT_END = "pref_attachment_end"
+        const val PREF_ATTACHMENT_OFFSET = "pref_attachment_offset"
     }
 
     object Scheme {
