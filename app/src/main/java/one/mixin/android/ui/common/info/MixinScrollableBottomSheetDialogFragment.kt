@@ -102,6 +102,13 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         }
     }
 
+    override fun dismiss() {
+        try {
+            super.dismiss()
+        } catch (ignored: IllegalStateException) {
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     protected fun setDetailsTv(
         detailsTv: AutoLinkTextView,
