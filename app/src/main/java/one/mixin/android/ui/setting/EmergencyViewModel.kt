@@ -25,7 +25,7 @@ internal constructor(
     suspend fun loginVerifyEmergency(id: String, request: EmergencyRequest) =
         accountRepository.loginVerifyEmergency(id, request)
 
-    suspend fun getFriendsNotBot() = userRepository.getFriendsNotBot()
+    suspend fun findFriendsNotBot() = userRepository.findFriendsNotBot()
 
     suspend fun findUserById(userId: String) = userRepository.suspendFindUserById(userId)
 

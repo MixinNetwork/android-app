@@ -88,7 +88,7 @@ interface UserDao : BaseDao<User> {
     suspend fun getFriendsNotBot(): List<User>
 
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND' AND app_id IS NULL")
-    fun findFriendsNotBot(): LiveData<List<User>>
+    suspend fun findFriendsNotBot(): List<User>
 
     @Query("""
         SELECT u.user_id FROM users u INNER JOIN participants p ON p.user_id = u.user_id 
