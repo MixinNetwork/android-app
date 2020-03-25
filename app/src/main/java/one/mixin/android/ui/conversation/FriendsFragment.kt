@@ -35,7 +35,7 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder, ConversationViewM
     @Inject
     lateinit var jobManager: MixinJobManager
 
-    private val conversationId: String by lazy { arguments!!.getString(CONVERSATION_ID)!! }
+    private val conversationId: String by lazy { requireArguments().getString(CONVERSATION_ID)!! }
 
     override fun getTitleResId() = R.string.contact_other_share
 

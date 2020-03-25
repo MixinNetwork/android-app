@@ -98,9 +98,7 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     fun findContactUsers() = userDao.findContactUsers()
 
-    suspend fun getFriendsNotBot() = userDao.getFriendsNotBot()
-
-    fun findFriendsNotBot() = userDao.findFriendsNotBot()
+    suspend fun findFriendsNotBot() = userDao.findFriendsNotBot()
 
     fun findAppsByIds(appIds: List<String>) = appDao.findAppsByIds(appIds)
 

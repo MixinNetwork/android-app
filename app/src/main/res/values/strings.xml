@@ -45,7 +45,7 @@
     <string name="select">Select</string>
     <string name="changing">Changing…</string>
     <string name="secret_url" translatable="false">https://mixin.one/pages/1000007</string>
-    <string name="transfer_to_">Transfer To</string>
+    <string name="transfer_to">Transfer To</string>
     <string name="hidden">Hidden</string>
     <string name="shown">Shown</string>
     <string name="undo_capital">UNDO</string>

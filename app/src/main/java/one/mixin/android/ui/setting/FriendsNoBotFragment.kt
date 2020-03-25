@@ -37,13 +37,13 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, Emergen
         }
     }
 
-    private val pin: String by lazy { arguments!!.getString(LandingActivity.ARGS_PIN)!! }
+    private val pin: String by lazy { requireArguments().getString(LandingActivity.ARGS_PIN)!! }
 
     override fun getModelClass() = EmergencyViewModel::class.java
 
     override fun getTitleResId() = R.string.setting_emergency_select_contact
 
-    override suspend fun getFriends() = viewModel.getFriendsNotBot()
+    override suspend fun getFriends() = viewModel.findFriendsNotBot()
 
     override fun onItemClick(user: User) {
         alertDialogBuilder()

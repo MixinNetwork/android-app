@@ -43,7 +43,7 @@
     <string name="rebate">退款</string>
     <string name="select">选择</string>
     <string name="changing">正在修改…</string>
-    <string name="transfer_to_">转账给</string>
+    <string name="transfer_to">转账给</string>
     <string name="hidden">隐藏</string>
     <string name="shown">显示</string>
     <string name="undo_capital">撤销</string>
