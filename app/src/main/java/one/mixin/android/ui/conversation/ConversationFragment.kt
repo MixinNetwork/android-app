@@ -203,7 +203,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         const val CONVERSATION_ID = "conversation_id"
         const val RECIPIENT_ID = "recipient_id"
         const val RECIPIENT = "recipient"
-        private const val MESSAGE_ID = "message_id"
+        const val MESSAGE_ID = "message_id"
+        const val SCROLL_MESSAGE_ID = "scroll_message_id"
+        const val UNREAD_COUNT = "unread_count"
         private const val KEY_WORD = "key_word"
         private const val MESSAGES = "messages"
 
@@ -683,6 +685,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private val messageId: String? by lazy {
         requireArguments().getString(MESSAGE_ID, null)
+    }
+
+    private val scrollMessageId: String? by lazy {
+        requireArguments().getString(SCROLL_MESSAGE_ID, null)
     }
 
     private val keyword: String? by lazy {
@@ -1336,18 +1342,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun bindData() {
         lifecycleScope.launch {
             if (!isAdded) return@launch
-
-            unreadCount = if (!messageId.isNullOrEmpty()) {
-                chatViewModel.findMessageIndex(conversationId, messageId!!)
-            } else {
-                chatViewModel.indexUnread(conversationId)
-            }
-            val msgId = messageId ?: if (unreadCount <= 0) {
-                null
-            } else {
-                chatViewModel.findFirstUnreadMessageId(conversationId, unreadCount - 1)
-            }
-            liveDataMessage(unreadCount, msgId)
+            unreadCount = requireArguments().getInt(UNREAD_COUNT, 0)
+            liveDataMessage(unreadCount, scrollMessageId)
         }
 
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(viewLifecycleOwner, Observer { mentionMessages ->
