@@ -20,6 +20,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
@@ -33,6 +34,7 @@ import kotlinx.android.synthetic.main.item_list_conversation.view.*
 import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
 import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.R
@@ -192,7 +194,7 @@ class ConversationListFragment : LinkFragment() {
             }
         }
         shadow_view.setOnClickListener {
-            RxPermissions(activity!!)
+            RxPermissions(requireActivity())
                 .request(Manifest.permission.CAMERA)
                 .autoDispose(stopScope)
                 .subscribe { granted ->
@@ -219,7 +221,21 @@ class ConversationListFragment : LinkFragment() {
                     }
                     doAsync { messagesViewModel.createGroupConversation(item.conversationId) }
                 } else {
-                    ConversationActivity.show(requireContext(), conversationId = item.conversationId)
+                    lifecycleScope.launch {
+                        val user = if (item.isContact()) {
+                            messagesViewModel.suspendFindUserById(item.ownerId)
+                        } else null
+                        val messageId = if (item.unseenMessageCount != null && item.unseenMessageCount > 0) {
+                            messagesViewModel.findFirstUnreadMessageId(item.conversationId, item.unseenMessageCount - 1)
+                        } else null
+                        ConversationActivity.fastShow(
+                            requireContext(),
+                            conversationId = item.conversationId,
+                            recipient = user,
+                            messageId = messageId,
+                            unreadCount = item.unseenMessageCount ?: 0
+                        )
+                    }
                 }
             }
         }

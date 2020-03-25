@@ -72,6 +72,9 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
     fun findContactByConversationId(conversationId: String): User? =
         userDao.findContactByConversationId(conversationId)
 
+   suspend fun suspendFindContactByConversationId(conversationId: String): User? =
+        userDao.suspendFindContactByConversationId(conversationId)
+
     fun findSelf(): LiveData<User?> = userDao.findSelf(Session.getAccountId() ?: "")
 
     suspend fun upsert(user: User) = coroutineScope {
