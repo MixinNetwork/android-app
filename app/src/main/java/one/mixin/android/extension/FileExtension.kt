@@ -72,7 +72,8 @@ private fun Context.getAppPath(): File? {
 
 fun Context.getMediaPath(): File? {
     val path = getAppPath() ?: return null
-    return File("${path.absolutePath}${File.separator}Media${File.separator}")
+    val identityNumber = Session.getAccount()?.identity_number ?: return null
+    return File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Media${File.separator}")
 }
 
 fun Context.getBackupPath(): File? {
@@ -530,7 +531,7 @@ fun String.getFileNameNoEx(): String {
 fun String.getExtensionName(): String? {
     if (this.isNotEmpty()) {
         val dot = this.lastIndexOf('.')
-        if (dot > -1 && dot < this.length - 1) {
+        if (dot > 0 && dot < this.length - 1) {
             return this.substring(dot + 1)
         }
     }
