@@ -278,14 +278,14 @@ fun File.createPngTemp(noMedia: Boolean = true): File {
     return newTempFile("IMAGE_$time", ".png", noMedia)
 }
 
-fun File.createWebpTemp(noMedia: Boolean = true): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return newTempFile("IMAGE_$time", ".webp", noMedia)
+fun File.createWebpTemp(conversationId: String, messageId: String, noMedia: Boolean = true): File {
+    val path = generateConversationPath(conversationId)
+    return path.newTempFile(messageId, ".webp", noMedia)
 }
 
-fun File.createEmptyTemp(noMedia: Boolean = true): File {
-    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return newTempFile("IMAGE_$time", "", noMedia)
+fun File.createEmptyTemp(conversationId: String, messageId: String, noMedia: Boolean = true): File {
+    val path = generateConversationPath(conversationId)
+    return path.newTempFile(messageId, "", noMedia)
 }
 
 fun File.createDocumentTemp(conversationId: String, messageId: String, type: String?, noMedia: Boolean = true): File {
@@ -299,7 +299,7 @@ fun File.createDocumentTemp(conversationId: String, messageId: String, type: Str
     )
 }
 
-fun File.createDocumentFile(noMedia: Boolean = true, name: String? = null): Pair<File, Boolean> {
+private fun File.createDocumentFile(noMedia: Boolean = true, name: String? = null): Pair<File, Boolean> {
     val defaultName = "FILE_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}"
     val fileName = name ?: defaultName
     if (!this.exists()) {
