@@ -2,6 +2,8 @@ package one.mixin.android.websocket
 
 import android.annotation.SuppressLint
 import android.os.Parcelable
+import android.util.Log
+import com.crashlytics.android.Crashlytics
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 import one.mixin.android.util.GsonHelper
@@ -23,18 +25,21 @@ fun LocationPayload.getImageUrl(): String? {
 }
 
 fun checkLocationData(content: String): Boolean {
-    return try {
-        GsonHelper.customGson.fromJson(content, LocationPayload::class.java)
-        true
-    } catch (e: Exception) {
-        false
-    }
+    return toLocationData(content) != null
 }
 
-fun toLocationData(content: String): LocationPayload? {
+fun toLocationData(content: String?): LocationPayload? {
+    content ?: return null
     return try {
-        GsonHelper.customGson.fromJson(content, LocationPayload::class.java)
-    } catch (e: Exception) {
+        GsonHelper.customGson.fromJson(content, LocationPayload::class.java).run {
+            if (latitude == 0.0 && longitude == 0.0) {
+                return null
+            }
+            this
+        }
+    } catch (e: java.lang.Exception) {
+        Crashlytics.log(Log.ERROR, "LocationHolder decrypt failed", content)
+        Crashlytics.logException(e)
         null
     }
 }
