@@ -1006,6 +1006,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var firstPosition = 0
 
     private fun initView() {
+        Timber.d("@@@ into initView: ${SystemClock.uptimeMillis() - ConversationActivity.start}")
         chat_rv.visibility = INVISIBLE
         if (chat_rv.adapter == null) {
             chat_rv.adapter = chatAdapter
@@ -1202,6 +1203,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         callState.observe(viewLifecycleOwner, Observer { info ->
             chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
         })
+        Timber.d("@@@ before bindData: ${SystemClock.uptimeMillis() - ConversationActivity.start}")
         bindData()
     }
 
@@ -1339,8 +1341,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 chatAdapter.submitList(data)
                 Timber.d("@@@ submitList ${SystemClock.uptimeMillis() - ConversationActivity.start}")
+                if (!zeroCleared) {
+                    lifecycleScope.launch {
+                        chatViewModel.conversationZeroClear(conversationId)
+                        Timber.d("@@@ conversationZeroClearInf ${SystemClock.uptimeMillis() - ConversationActivity.start}")
+                    }
+                    zeroCleared = true
+                }
             })
     }
+
+    private var zeroCleared = false
 
     private var unreadCount = 0
     private fun bindData() {

@@ -68,6 +68,7 @@ class ConversationActivity : BlazeBaseActivity() {
                 )
             }
         ) {
+            Timber.d("@@@ after launch ${SystemClock.uptimeMillis() - start}")
             val messageId = bundle.getString(MESSAGE_ID)
             val conversationId = bundle.getString(CONVERSATION_ID)
             val userId = bundle.getString(RECIPIENT_ID)
@@ -75,11 +76,17 @@ class ConversationActivity : BlazeBaseActivity() {
             val cid: String
             if (conversationId == null) {
                 val user = userRepository.suspendFindUserById(userId!!)!!
+                Timber.d("@@@ findUser cost ${SystemClock.uptimeMillis() - start}")
                 cid = conversationId ?: generateConversationId(Session.getAccountId()!!, user.userId)
                 require(user.userId != Session.getAccountId()) { "error data" }
                 bundle.putParcelable(RECIPIENT, user)
             } else {
-                val user = userRepository.suspendFindContactByConversationId(conversationId)
+                val user = if (userId != null) {
+                    userRepository.suspendFindUserById(userId)!!
+                } else {
+                    userRepository.suspendFindContactByConversationId(conversationId)
+                }
+                Timber.d("@@@ userId: $userId, findUser cost ${SystemClock.uptimeMillis() - start}")
                 if (user == null || user.userId == Session.getAccountId()) {
                     throw IllegalArgumentException(
                         "error data ${bundle.getString(
@@ -90,7 +97,6 @@ class ConversationActivity : BlazeBaseActivity() {
                 cid = conversationId
                 bundle.putParcelable(RECIPIENT, user)
             }
-            Timber.d("@@@ findUser cost ${SystemClock.uptimeMillis() - start}")
             if (unreadCount == -1) {
                 unreadCount = if (!messageId.isNullOrEmpty()) {
                     conversationRepository.findMessageIndex(cid, messageId)
@@ -107,8 +113,6 @@ class ConversationActivity : BlazeBaseActivity() {
             }
             Timber.d("@@@ find findFirstUnreadMessageId cost: ${SystemClock.uptimeMillis() - start}")
             bundle.putString(SCROLL_MESSAGE_ID, msgId)
-            conversationRepository.conversationZeroClear(cid)
-            Timber.d("@@@ zero clear: ${SystemClock.uptimeMillis() - start}")
             replaceFragment(
                 ConversationFragment.newInstance(bundle),
                 R.id.container,
