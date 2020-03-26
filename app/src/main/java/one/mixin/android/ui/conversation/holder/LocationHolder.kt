@@ -30,6 +30,7 @@ import one.mixin.android.vo.isSignal
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.toLocationData
 import org.jetbrains.anko.dip
+import org.jetbrains.anko.textColorResource
 
 class LocationHolder constructor(containerView: View) : BaseViewHolder(containerView), OnMapReadyCallback {
     private val dp16 = itemView.context.dpToPx(16f)
@@ -39,6 +40,14 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
 
     companion object {
         val isGooglePlayServicesAvailable by lazy { MixinApplication.appContext.isGooglePlayServicesAvailable() }
+    }
+
+    private val dp36 by lazy {
+        36.dp
+    }
+
+    private val dp4 by lazy {
+        MixinApplication.appContext.dpToPx(4f).toFloat()
     }
 
     init {
@@ -143,6 +152,17 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
             itemView.location_title.text = location?.name
             itemView.location_sub_title.text = location?.address
         }
+        if (location?.name == null && location?.address == null) {
+            (itemView.location_bottom.layoutParams as ViewGroup.MarginLayoutParams).topMargin = -dp36
+            itemView.chat_time.setBackgroundResource(R.drawable.bg_bubble_shadow)
+            itemView.chat_time.textColorResource = R.color.white
+            itemView.chat_time.translationY = dp4
+        } else {
+            (itemView.location_bottom.layoutParams as ViewGroup.MarginLayoutParams).topMargin = 0
+            itemView.chat_time.setBackgroundResource(0)
+            itemView.chat_time.textColorResource = (R.color.color_chat_date)
+            itemView.chat_time.translationY = 0f
+        }
         if (isGooglePlayServicesAvailable) {
             itemView.location_holder.isVisible = false
             itemView.location_map.isVisible = true
@@ -205,7 +225,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         val isMe = meId == messageItem.userId
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), false) { statusIcon, secretIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), location?.name == null && location?.address == null) { statusIcon, secretIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
