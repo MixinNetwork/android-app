@@ -74,6 +74,13 @@ object Constants {
         const val CURRENT_VERSION = 31
     }
 
+    object Storage {
+        const val IMAGE = "IMAGE"
+        const val VIDEO = "VIDEO"
+        const val AUDIO = "AUDIO"
+        const val DATA = "DATA"
+    }
+
     object BackUp {
         const val BACKUP_PERIOD = "backup_period"
         const val BACKUP_LAST_TIME = "backup_last_time"

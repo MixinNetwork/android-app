@@ -29,11 +29,16 @@ import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import one.mixin.android.Constants.Storage.AUDIO
+import one.mixin.android.Constants.Storage.DATA
+import one.mixin.android.Constants.Storage.IMAGE
+import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.MixinApplication
 import one.mixin.android.util.Session
 import one.mixin.android.util.blurhash.Base83
 import one.mixin.android.util.blurhash.BlurHashDecoder
 import one.mixin.android.util.blurhash.BlurHashEncoder
+import one.mixin.android.vo.StorageUsage
 import one.mixin.android.widget.gallery.MimeType
 
 private fun isAvailable(): Boolean {
@@ -201,6 +206,70 @@ fun Context.getVideoPath(): File {
 fun Context.getAudioPath(): File {
     val root = getMediaPath()
     return File("$root${File.separator}Audio")
+}
+
+fun Context.getConversationImagePath(conversationId: String): File {
+    val root = getMediaPath()
+    return File("$root${File.separator}Images${File.separator}$conversationId")
+}
+
+fun Context.getConversationDocumentPath(conversationId: String): File {
+    val root = getMediaPath()
+    return File("$root${File.separator}Files${File.separator}$conversationId")
+}
+
+fun Context.getConversationVideoPath(conversationId: String): File {
+    val root = getMediaPath()
+    return File("$root${File.separator}Video${File.separator}$conversationId")
+}
+
+fun Context.getConversationAudioPath(conversationId: String): File {
+    val root = getMediaPath()
+    return File("$root${File.separator}Audio${File.separator}$conversationId")
+}
+
+fun Context.getConversationMediaSize(conversationId: String): Long {
+    var mediaSize = 0L
+    getConversationImagePath(conversationId).apply {
+        if (exists()) {
+            mediaSize += dirSize() ?: 0
+        }
+    }
+    getConversationVideoPath(conversationId).apply {
+        if (exists()) {
+            mediaSize += dirSize() ?: 0
+        }
+    }
+    getConversationAudioPath(conversationId).apply {
+        if (exists()) {
+            mediaSize += dirSize() ?: 0
+        }
+    }
+    getConversationDocumentPath(conversationId).apply {
+        if (exists()) {
+            mediaSize += dirSize() ?: 0
+        }
+    }
+    return mediaSize
+}
+
+fun Context.getStorageUsageByConversationAndType(conversationId: String, type: String): StorageUsage? {
+    val dir = when (type) {
+        IMAGE -> getConversationImagePath(conversationId)
+        VIDEO -> getConversationVideoPath(conversationId)
+        AUDIO -> getConversationAudioPath(conversationId)
+        DATA -> getConversationDocumentPath(conversationId)
+        else -> null
+    } ?: return null
+    return dir.run {
+        if (exists()) {
+            val mediaSize = dirSize() ?: return@run null
+            val count = list()?.size ?: return@run null
+            StorageUsage(conversationId, IMAGE, count, mediaSize)
+        } else {
+            null
+        }
+    }
 }
 
 fun Context.getPublicPicturePath(): File {

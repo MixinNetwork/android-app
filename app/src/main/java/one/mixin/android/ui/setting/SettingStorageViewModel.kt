@@ -1,31 +1,72 @@
 package one.mixin.android.ui.setting
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
+import one.mixin.android.Constants.Storage.AUDIO
+import one.mixin.android.Constants.Storage.DATA
+import one.mixin.android.Constants.Storage.IMAGE
+import one.mixin.android.Constants.Storage.VIDEO
+import one.mixin.android.MixinApplication
+import one.mixin.android.extension.deleteDir
+import one.mixin.android.extension.getConversationAudioPath
+import one.mixin.android.extension.getConversationDocumentPath
+import one.mixin.android.extension.getConversationImagePath
+import one.mixin.android.extension.getConversationMediaSize
+import one.mixin.android.extension.getConversationVideoPath
+import one.mixin.android.extension.getStorageUsageByConversationAndType
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.StorageUsage
+import javax.inject.Inject
 
 class SettingStorageViewModel @Inject
 internal constructor(
     private val conversationRepository: ConversationRepository
 ) : ViewModel() {
 
-    fun getStorageUsage(conversationId: String): Single<List<StorageUsage>?> =
-        conversationRepository.getStorageUsage(conversationId).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-
-    fun getConversationStorageUsage(): LiveData<List<ConversationStorageUsage>?> = conversationRepository.getConversationStorageUsage()
-
-    fun clear(conversationId: String, category: String) {
-        conversationRepository.getMediaByConversationIdAndCategory(conversationId, category)
-            ?.let { list ->
-                list.forEach { item ->
-                    conversationRepository.deleteMessage(item.messageId, item.mediaUrl)
-                }
+    fun getStorageUsage(conversationId: String): Single<List<StorageUsage>> =
+        Single.just(conversationId).map { cid ->
+            val result = mutableListOf<StorageUsage>()
+            val context = MixinApplication.appContext
+            context.getStorageUsageByConversationAndType(conversationId, IMAGE)?.apply {
+                result.add(this)
             }
+            context.getStorageUsageByConversationAndType(conversationId, VIDEO)?.apply {
+                result.add(this)
+            }
+            context.getStorageUsageByConversationAndType(conversationId, AUDIO)?.apply {
+                result.add(this)
+            }
+            context.getStorageUsageByConversationAndType(conversationId, DATA)?.apply {
+                result.add(this)
+            }
+            result.toList()
+        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+
+    fun getConversationStorageUsage(): Single<List<ConversationStorageUsage>> = conversationRepository.getConversationStorageUsage()
+        .map { list ->
+            list.asSequence().map { item ->
+                val context = MixinApplication.appContext
+                item.mediaSize = context.getConversationMediaSize(item.conversationId)
+                item
+            }.filter { conversationStorageUsage ->
+                conversationStorageUsage.mediaSize != 0L
+            }.sortedByDescending { conversationStorageUsage ->
+                conversationStorageUsage.mediaSize
+            }.toList()
+        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+
+    fun clear(conversationId: String, type: String) {
+        val context = MixinApplication.appContext
+        val dir = when (type) {
+            IMAGE -> context.getConversationImagePath(conversationId)
+            VIDEO -> context.getConversationVideoPath(conversationId)
+            AUDIO -> context.getConversationAudioPath(conversationId)
+            DATA -> context.getConversationDocumentPath(conversationId)
+            else -> null
+        } ?: return
+        dir.deleteDir()
     }
 }
