@@ -65,6 +65,7 @@ class ConversationActivity : BlazeBaseActivity() {
             val messageId = bundle.getString(MESSAGE_ID)
             val conversationId = bundle.getString(CONVERSATION_ID)
             val userId = bundle.getString(RECIPIENT_ID)
+            var unreadCount = bundle.getInt(UNREAD_COUNT)
             val cid: String
             if (conversationId == null) {
                 val user = userRepository.suspendFindUserById(userId!!)!!
@@ -83,10 +84,12 @@ class ConversationActivity : BlazeBaseActivity() {
                 cid = conversationId
                 bundle.putParcelable(RECIPIENT, user)
             }
-            val unreadCount = if (!messageId.isNullOrEmpty()) {
-                conversationRepository.findMessageIndex(cid, messageId)
-            } else {
-                conversationRepository.indexUnread(cid) ?: -1
+            if (unreadCount == -1) {
+                unreadCount = if (!messageId.isNullOrEmpty()) {
+                    conversationRepository.findMessageIndex(cid, messageId)
+                } else {
+                    conversationRepository.indexUnread(cid) ?: -1
+                }
             }
             bundle.putInt(UNREAD_COUNT, unreadCount)
             val msgId = messageId ?: if (unreadCount <= 0) {
@@ -112,7 +115,8 @@ class ConversationActivity : BlazeBaseActivity() {
             recipientId: String? = null,
             messageId: String? = null,
             keyword: String? = null,
-            messages: ArrayList<ForwardMessage>? = null
+            messages: ArrayList<ForwardMessage>? = null,
+            unreadCount: Int = -1
         ) {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }
@@ -123,7 +127,8 @@ class ConversationActivity : BlazeBaseActivity() {
                         recipientId,
                         messageId,
                         keyword,
-                        messages
+                        messages,
+                        unreadCount
                     )
                 )
             }.run {

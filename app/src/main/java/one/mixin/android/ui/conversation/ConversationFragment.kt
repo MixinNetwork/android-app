@@ -214,7 +214,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             recipientId: String?,
             messageId: String?,
             keyword: String?,
-            messages: ArrayList<ForwardMessage>?
+            messages: ArrayList<ForwardMessage>?,
+            unreadCount: Int = -1
         ): Bundle =
             Bundle().apply {
                 require(!(conversationId == null && recipientId == null)) { "lose data" }
@@ -227,6 +228,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 putString(CONVERSATION_ID, conversationId)
                 putString(RECIPIENT_ID, recipientId)
                 putParcelableArrayList(MESSAGES, messages)
+                putInt(UNREAD_COUNT, unreadCount)
             }
 
         fun newInstance(bundle: Bundle) = ConversationFragment().apply { arguments = bundle }
