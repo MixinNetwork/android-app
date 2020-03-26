@@ -122,7 +122,7 @@ internal class AppModule {
                     }
                 }
 
-                response.body()?.run {
+                response.body?.run {
                     val bytes = this.bytes()
                     val contentType = this.contentType()
                     val body = ResponseBody.create(contentType, bytes)
@@ -130,7 +130,7 @@ internal class AppModule {
                     if (bytes.isEmpty()) return@run
                     val mixinResponse = GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)
                     if (mixinResponse.errorCode != 401) return@run
-                    val authorization = response.request().header("Authorization")
+                    val authorization = response.request.header("Authorization")
                     if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
                         val jwt = authorization.substring(7)
                         if (Session.requestDelay(Session.getAccount(), jwt, Constants.DELAY_SECOND)) {
@@ -148,7 +148,7 @@ internal class AppModule {
                 }
 
                 if (!response.isSuccessful) {
-                    val code = response.code()
+                    val code = response.code
                     if (code in 500..599) {
                         throw ServerErrorException(code)
                     }

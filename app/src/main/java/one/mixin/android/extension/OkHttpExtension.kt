@@ -13,37 +13,37 @@ fun RequestBody.bodyToString(): String {
 }
 
 fun HttpUrl.cutOut(): String {
-    return toString().removePrefix(scheme() + "://" + host())
+    return toString().removePrefix(scheme + "://" + host)
 }
 
 fun Request.show(): String {
     return ("Request{method=" +
-        this.method() +
+        this.method +
         ", url=" +
-        this.url() +
+        this.url +
         ", tags=" +
         this.tag() +
         ", headers=" +
-        this.headers() +
+        this.headers +
         ", body=" +
-        this.body() +
+        this.body +
         '}'.toString())
 }
 
 fun Response.show(): String {
     return ("Response{protocol=" +
-        this.protocol() +
+        this.protocol +
         ", code=" +
-        this.code() +
+        this.code +
         ", message=" +
-        this.message() +
+        this.message +
         ", headers=" +
-        this.headers() +
+        this.headers +
         ", networkResponse=" +
-        this.networkResponse() +
+        this.networkResponse +
         ", cacheResponse=" +
-        this.cacheResponse() +
+        this.cacheResponse +
         ", priorResponse=" +
-        this.priorResponse() +
+        this.priorResponse +
         '}'.toString())
 }
