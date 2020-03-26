@@ -265,7 +265,7 @@ fun Context.getStorageUsageByConversationAndType(conversationId: String, type: S
         if (exists()) {
             val mediaSize = dirSize() ?: return@run null
             val count = list()?.size ?: return@run null
-            StorageUsage(conversationId, IMAGE, count, mediaSize)
+            StorageUsage(conversationId, type, count, mediaSize)
         } else {
             null
         }
