@@ -50,9 +50,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.io.File
-import javax.inject.Inject
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
@@ -192,6 +189,9 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.File
+import javax.inject.Inject
+import kotlin.math.abs
 
 @SuppressLint("InvalidWakeLockTag")
 class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
@@ -1297,6 +1297,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chatViewModel.getMessages(conversationId, unreadCount)
             .observe(viewLifecycleOwner, Observer { data ->
                 data?.let { list ->
+                    Timber.d("@@@ getMessages cost ${SystemClock.uptimeMillis() - ConversationActivity.start}")
                     if (oldCount == -1) {
                         oldCount = list.size
                     } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
@@ -1337,16 +1338,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                 }
                 chatAdapter.submitList(data)
+                Timber.d("@@@ submitList ${SystemClock.uptimeMillis() - ConversationActivity.start}")
             })
     }
 
     private var unreadCount = 0
     private fun bindData() {
-        lifecycleScope.launch {
-            if (!isAdded) return@launch
-            unreadCount = requireArguments().getInt(UNREAD_COUNT, 0)
-            liveDataMessage(unreadCount, scrollMessageId)
-        }
+        unreadCount = requireArguments().getInt(UNREAD_COUNT, 0)
+        liveDataMessage(unreadCount, scrollMessageId)
+        Timber.d("@@@ bindData 1 cost ${SystemClock.uptimeMillis() - ConversationActivity.start}")
 
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(viewLifecycleOwner, Observer { mentionMessages ->
             flag_layout.mentionCount = mentionMessages.size

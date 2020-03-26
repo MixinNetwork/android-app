@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -25,9 +26,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.io.File
-import javax.inject.Inject
-import kotlin.math.min
 import kotlinx.android.synthetic.main.fragment_conversation_list.*
 import kotlinx.android.synthetic.main.item_list_conversation.view.*
 import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
@@ -76,6 +74,9 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
+import java.io.File
+import javax.inject.Inject
+import kotlin.math.min
 
 class ConversationListFragment : LinkFragment() {
 
@@ -219,6 +220,7 @@ class ConversationListFragment : LinkFragment() {
                     }
                     doAsync { messagesViewModel.createGroupConversation(item.conversationId) }
                 } else {
+                    ConversationActivity.start = SystemClock.uptimeMillis()
                     ConversationActivity.show(
                         requireContext(),
                         conversationId = item.conversationId,
