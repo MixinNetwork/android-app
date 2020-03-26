@@ -364,4 +364,8 @@ internal constructor(
     }
 
     fun observeAllConversationUnread() = conversationDao.observeAllConversationUnread()
+
+    fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String) {
+        messageDao.deleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory)
+    }
 }

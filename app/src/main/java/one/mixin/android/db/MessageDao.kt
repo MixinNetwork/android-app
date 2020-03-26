@@ -244,6 +244,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("DELETE FROM messages WHERE id = :id")
     fun deleteMessage(id: String)
 
+    @Query("DELETE FROM messages WHERE media_status = 'DONE' AND conversation_id = :conversationId AND category IN (:signalCategory, :plainCategory)")
+    fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String)
+
     @Query("DELETE FROM messages WHERE conversation_id = :conversationId")
     suspend fun deleteMessageByConversationId(conversationId: String)
 

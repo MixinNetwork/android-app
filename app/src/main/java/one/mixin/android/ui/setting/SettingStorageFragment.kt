@@ -226,9 +226,9 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
     class CheckHolder(itemView: View, private val checkAction: (Boolean, StorageUsage) -> Unit) : RecyclerView.ViewHolder(itemView) {
         fun bind(storageUsage: StorageUsage) {
             itemView.check_view.setName(
-                when(storageUsage.type) {
+                when (storageUsage.type) {
                     IMAGE -> R.string.conversation_status_pic
-                    DATA-> R.string.conversation_status_file
+                    DATA -> R.string.conversation_status_file
                     VIDEO -> R.string.conversation_status_video
                     AUDIO -> R.string.conversation_status_audio
                     else -> R.string.unknown

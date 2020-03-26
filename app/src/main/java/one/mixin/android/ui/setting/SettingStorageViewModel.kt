@@ -18,6 +18,7 @@ import one.mixin.android.extension.getConversationVideoPath
 import one.mixin.android.extension.getStorageUsageByConversationAndType
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.vo.ConversationStorageUsage
+import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
 import javax.inject.Inject
 
@@ -61,10 +62,38 @@ internal constructor(
     fun clear(conversationId: String, type: String) {
         val context = MixinApplication.appContext
         val dir = when (type) {
-            IMAGE -> context.getConversationImagePath(conversationId)
-            VIDEO -> context.getConversationVideoPath(conversationId)
-            AUDIO -> context.getConversationAudioPath(conversationId)
-            DATA -> context.getConversationDocumentPath(conversationId)
+            IMAGE -> {
+                conversationRepository.deleteMediaMessageByConversationAndCategory(
+                    conversationId,
+                    MessageCategory.SIGNAL_IMAGE.name,
+                    MessageCategory.PLAIN_IMAGE.name
+                )
+                context.getConversationImagePath(conversationId)
+            }
+            VIDEO -> {
+                conversationRepository.deleteMediaMessageByConversationAndCategory(
+                    conversationId,
+                    MessageCategory.SIGNAL_VIDEO.name,
+                    MessageCategory.PLAIN_VIDEO.name
+                )
+                context.getConversationVideoPath(conversationId)
+            }
+            AUDIO -> {
+                conversationRepository.deleteMediaMessageByConversationAndCategory(
+                    conversationId,
+                    MessageCategory.SIGNAL_AUDIO.name,
+                    MessageCategory.PLAIN_AUDIO.name
+                )
+                context.getConversationAudioPath(conversationId)
+            }
+            DATA -> {
+                conversationRepository.deleteMediaMessageByConversationAndCategory(
+                    conversationId,
+                    MessageCategory.SIGNAL_DATA.name,
+                    MessageCategory.PLAIN_DATA.name
+                )
+                context.getConversationDocumentPath(conversationId)
+            }
             else -> null
         } ?: return
         dir.deleteDir()
