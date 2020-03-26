@@ -192,7 +192,7 @@ class ConversationListFragment : LinkFragment() {
             }
         }
         shadow_view.setOnClickListener {
-            RxPermissions(activity!!)
+            RxPermissions(requireActivity())
                 .request(Manifest.permission.CAMERA)
                 .autoDispose(stopScope)
                 .subscribe { granted ->
@@ -219,7 +219,11 @@ class ConversationListFragment : LinkFragment() {
                     }
                     doAsync { messagesViewModel.createGroupConversation(item.conversationId) }
                 } else {
-                    ConversationActivity.show(requireContext(), conversationId = item.conversationId)
+                    ConversationActivity.show(
+                        requireContext(),
+                        conversationId = item.conversationId,
+                        unreadCount = item.unseenMessageCount ?: -1
+                    )
                 }
             }
         }
