@@ -21,7 +21,7 @@ class BackupMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).pers
         val startTime = System.currentTimeMillis()
         val preferences = MixinApplication.appContext.defaultSharedPreferences
         if (!hasWritePermission()) return
-        if (preferences.getBoolean(PREF_BACKUP, false)) {
+        if (!preferences.getBoolean(PREF_BACKUP, false)) {
             val oldBackup = findOldBackupSync(MixinApplication.appContext)
             if (oldBackup != null && oldBackup.exists()) {
                 MixinApplication.get().getBackupPath(true)?.let { backupDir ->
