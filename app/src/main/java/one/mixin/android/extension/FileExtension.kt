@@ -78,14 +78,25 @@ private fun Context.getAppPath(): File? {
 fun Context.getMediaPath(): File? {
     val path = getAppPath() ?: return null
     val identityNumber = Session.getAccount()?.identity_number ?: return null
-    return File("${path.absolutePath}${File.separator}Media${File.separator}${File.separator}$identityNumber")
+    return File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Media")
 }
 
-fun Context.getBackupPath(): File? {
+fun Context.getBackupPath(create: Boolean = false): File? {
     val path = getAppPath() ?: return null
     val identityNumber = Session.getAccount()?.identity_number ?: return null
-    val f = File("${path.absolutePath}${File.separator}Backup${File.separator}$identityNumber${File.separator}")
-    if (!f.exists() || !f.isDirectory) {
+    val f = File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Backup")
+    if (create && (!f.exists() || !f.isDirectory)) {
+        f.delete()
+        f.mkdirs()
+    }
+    return f
+}
+
+fun Context.getOldBackupPath(create: Boolean = false): File? {
+    val path = getAppPath() ?: return null
+    val identityNumber = Session.getAccount()?.identity_number ?: return null
+    val f = File("${path.absolutePath}${File.separator}Backup${File.separator}$identityNumber")
+    if (create && (!f.exists() || !f.isDirectory)) {
         f.delete()
         f.mkdirs()
     }

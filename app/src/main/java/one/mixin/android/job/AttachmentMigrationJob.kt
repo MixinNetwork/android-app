@@ -5,6 +5,7 @@ import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
 import java.io.File
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_ATTACHMENT_BACKUP
 import one.mixin.android.Constants.Account.PREF_ATTACHMENT_END
 import one.mixin.android.Constants.Account.PREF_ATTACHMENT_OFFSET
 import one.mixin.android.MixinApplication
@@ -17,10 +18,12 @@ import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.createWebpTemp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getAudioPath
+import one.mixin.android.extension.getBackupPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getOldBackupPath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
@@ -48,6 +51,15 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
             preferences.putString(PREF_ATTACHMENT_END, migrationEnd)
         }
         if (!hasWritePermission()) return
+        if (preferences.getBoolean(PREF_ATTACHMENT_BACKUP, false)) {
+            val oldBackup = MixinApplication.get().getOldBackupPath()
+            if (oldBackup != null && oldBackup.exists()) {
+                MixinApplication.get().getBackupPath(true)?.let { backup ->
+                    oldBackup.renameTo(backup)
+                }
+            }
+            preferences.putBoolean(PREF_ATTACHMENT_BACKUP, true)
+        }
         val list = messageDao.findAttachmentMigration(migrationEnd, EACH, offset)
         list.forEach { attachment ->
             val path = attachment.mediaUrl?.toUri()?.getFilePath() ?: return@forEach

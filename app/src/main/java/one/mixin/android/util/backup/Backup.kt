@@ -5,15 +5,17 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.os.StatFs
 import androidx.annotation.RequiresPermission
-import java.io.File
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.getBackupPath
+import one.mixin.android.extension.getOldBackupPath
+import java.io.File
+import kotlin.coroutines.CoroutineContext
 
 private const val BACKUP_POSTFIX = ".backup"
 
@@ -30,7 +32,7 @@ suspend fun backup(
         return@coroutineScope
     }
 
-    val backupDir = context.getBackupPath() ?: return@coroutineScope
+    val backupDir = context.getBackupPath(true) ?: return@coroutineScope
     val availableSize = StatFs(backupDir.path).availableBytes
     if (availableSize < dbFile.length()) {
         withContext(Dispatchers.Main) {
@@ -40,7 +42,7 @@ suspend fun backup(
     }
 
     val exists = backupDir.listFiles()?.any { it.name.contains(dbFile.name) } == true
-    val name = "${dbFile.name}.${Constants.DataBase.CURRENT_VERSION}"
+    val name = dbFile.name
     val tmpName = if (exists) {
         "$name$BACKUP_POSTFIX"
     } else {
@@ -144,8 +146,27 @@ suspend fun delete(
 suspend fun findBackup(
     context: Context,
     coroutineContext: CoroutineContext
+): File? = findNewBackup(context, coroutineContext) ?: findOldBackup(context, coroutineContext)
+
+@RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+suspend fun findNewBackup(
+    context: Context,
+    coroutineContext: CoroutineContext
 ): File? = withContext(coroutineContext) {
-    val backupDir = context.getBackupPath() ?: return@withContext null
+    val backupDir = context.getOldBackupPath() ?: return@withContext null
+    if (!backupDir.exists() || !backupDir.isDirectory) return@withContext null
+    if (checkDb("$backupDir${File.separator}$DB_NAME")) {
+        return@withContext File("$backupDir${File.separator}$DB_NAME")
+    }
+    null
+}
+
+@RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+suspend fun findOldBackup(
+    context: Context,
+    coroutineContext: CoroutineContext
+) = withContext(coroutineContext) {
+    val backupDir = context.getOldBackupPath() ?: return@withContext null
     if (!backupDir.exists() || !backupDir.isDirectory) return@withContext null
     val files = backupDir.listFiles()
     if (files.isNullOrEmpty()) return@withContext null
@@ -160,4 +181,16 @@ suspend fun findBackup(
         if (exists) return@withContext f
     }
     null
+}
+
+fun checkDb(path: String): Boolean {
+    var db: SQLiteDatabase? = null
+    return try {
+        db = SQLiteDatabase.openDatabase(path, null, SQLiteDatabase.OPEN_READONLY)
+        db.version in Constants.DataBase.MINI_VERSION..Constants.DataBase.CURRENT_VERSION
+    } catch (ignored: Exception) {
+        false
+    } finally {
+        db?.close()
+    }
 }

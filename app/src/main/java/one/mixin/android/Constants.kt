@@ -45,6 +45,7 @@ object Constants {
         const val PREF_ATTACHMENT = "pref_attachment"
         const val PREF_ATTACHMENT_END = "pref_attachment_end"
         const val PREF_ATTACHMENT_OFFSET = "pref_attachment_offset"
+        const val PREF_ATTACHMENT_BACKUP = "pref_attachment_backup"
     }
 
     object Scheme {
