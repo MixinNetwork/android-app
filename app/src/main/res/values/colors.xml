@@ -142,4 +142,36 @@
         <item>#2887C4</item>
         <item>#52A98B</item>
     </array>
+    <array name="avatar_colors">
+        <item>#FFD659</item>
+        <item>#FFC168</item>
+        <item>#F58268</item>
+        <item>#F4979C</item>
+        <item>#EC7F87</item>
+        <item>#FF78CB</item>
+        <item>#C377E0</item>
+        <item>#8BAAFF</item>
+        <item>#78DCFA</item>
+        <item>#88E5B9</item>
+        <item>#BFF199</item>
+        <item>#C5E1A5</item>
+        <item>#CD907D</item>
+        <item>#BE938E</item>
+        <item>#B68F91</item>
+        <item>#BC987B</item>
+        <item>#A69E8E</item>
+        <item>#D4C99E</item>
+        <item>#93C2E6</item>
+        <item>#92C3D9</item>
+        <item>#8FBFC5</item>
+        <item>#80CBC4</item>
+        <item>#A4DBDB</item>
+        <item>#B2C8BD</item>
+        <item>#F7C8C9</item>
+        <item>#E2D4E7</item>
+        <item>#BABAE8</item>
+        <item>#BABCD5</item>
+        <item>#B5B5B5</item>
+        <item>#979797</item>
+    </array>
 </resources>
