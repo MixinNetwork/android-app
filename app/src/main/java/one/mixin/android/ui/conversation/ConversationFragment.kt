@@ -1341,17 +1341,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 chatAdapter.submitList(data)
                 Timber.d("@@@ submitList ${SystemClock.uptimeMillis() - ConversationActivity.start}")
-                if (!zeroCleared) {
-                    lifecycleScope.launch {
-                        chatViewModel.conversationZeroClear(conversationId)
-                        Timber.d("@@@ conversationZeroClearInf ${SystemClock.uptimeMillis() - ConversationActivity.start}")
-                    }
-                    zeroCleared = true
-                }
             })
     }
 
-    private var zeroCleared = false
 
     private var unreadCount = 0
     private fun bindData() {

@@ -224,7 +224,6 @@ class ConversationListFragment : LinkFragment() {
                     ConversationActivity.show(
                         requireContext(),
                         conversationId = item.conversationId,
-                        recipientId = item.ownerId,
                         unreadCount = item.unseenMessageCount ?: -1
                     )
                 }

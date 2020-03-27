@@ -88,7 +88,7 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId")
     suspend fun indexUnread(conversationId: String): Int?
 
-    @Query("UPDATE conversations SET unseen_message_count = 0 WHERE conversation_id = :conversationId")
+    @Query("UPDATE conversations SET unseen_message_count = 0 WHERE conversation_id = :conversationId AND unseen_message_count != 0")
     suspend fun conversationZeroClear(conversationId: String)
 
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")

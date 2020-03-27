@@ -113,6 +113,8 @@ class ConversationActivity : BlazeBaseActivity() {
             }
             Timber.d("@@@ find findFirstUnreadMessageId cost: ${SystemClock.uptimeMillis() - start}")
             bundle.putString(SCROLL_MESSAGE_ID, msgId)
+            conversationRepository.conversationZeroClear(cid)
+            Timber.d("@@@ zero clear: ${SystemClock.uptimeMillis() - start}")
             replaceFragment(
                 ConversationFragment.newInstance(bundle),
                 R.id.container,
