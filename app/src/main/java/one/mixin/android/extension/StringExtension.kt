@@ -287,7 +287,7 @@ val idNameCodeMap = ConcurrentHashMap<String, Int>()
 
 sealed class CodeType(val count: Int) {
     class Name(count: Int) : CodeType(count)
-    object Avatar : CodeType(24)
+    class Avatar(count: Int) : CodeType(count)
 }
 
 fun String.getColorCode(codeType: CodeType): Int {
