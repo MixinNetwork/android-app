@@ -215,7 +215,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             messageId: String?,
             keyword: String?,
             messages: ArrayList<ForwardMessage>?,
-            unreadCount: Int = -1
+            unreadCount: Int? = null
         ): Bundle =
             Bundle().apply {
                 require(!(conversationId == null && recipientId == null)) { "lose data" }
@@ -228,7 +228,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 putString(CONVERSATION_ID, conversationId)
                 putString(RECIPIENT_ID, recipientId)
                 putParcelableArrayList(MESSAGES, messages)
-                putInt(UNREAD_COUNT, unreadCount)
+                unreadCount?.let {
+                    putInt(UNREAD_COUNT, unreadCount)
+                }
             }
 
         fun newInstance(bundle: Bundle) = ConversationFragment().apply { arguments = bundle }
@@ -284,6 +286,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         } else {
                             unreadCount
                         }
+                        Timber.d("@@@ isFirstLoad position: $position, itemCount: $itemCount")
                         if (position >= itemCount - 1) {
                             (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
                                 itemCount - 1, 0
@@ -1356,6 +1359,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             flag_layout.mention_flag_layout.setOnClickListener {
                 lifecycleScope.launch {
                     val messageId = mentionMessages.first().messageId
+                    Timber.d("@@@ scrollToMessage $messageId")
                     scrollToMessage(messageId) {
                         lifecycleScope.launch {
                             chatViewModel.markMentionRead(messageId, conversationId)

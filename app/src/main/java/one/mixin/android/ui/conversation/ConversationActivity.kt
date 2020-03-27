@@ -72,7 +72,7 @@ class ConversationActivity : BlazeBaseActivity() {
             val messageId = bundle.getString(MESSAGE_ID)
             val conversationId = bundle.getString(CONVERSATION_ID)
             val userId = bundle.getString(RECIPIENT_ID)
-            var unreadCount = bundle.getInt(UNREAD_COUNT)
+            var unreadCount = bundle.getInt(UNREAD_COUNT, -1)
             val cid: String
             if (conversationId == null) {
                 val user = userRepository.suspendFindUserById(userId!!)!!
@@ -113,8 +113,6 @@ class ConversationActivity : BlazeBaseActivity() {
             }
             Timber.d("@@@ find findFirstUnreadMessageId cost: ${SystemClock.uptimeMillis() - start}")
             bundle.putString(SCROLL_MESSAGE_ID, msgId)
-            conversationRepository.conversationZeroClear(cid)
-            Timber.d("@@@ zero clear: ${SystemClock.uptimeMillis() - start}")
             replaceFragment(
                 ConversationFragment.newInstance(bundle),
                 R.id.container,
@@ -125,6 +123,7 @@ class ConversationActivity : BlazeBaseActivity() {
 
     companion object {
 
+        @JvmField
         var start = 0L
 
         fun show(
@@ -134,7 +133,7 @@ class ConversationActivity : BlazeBaseActivity() {
             messageId: String? = null,
             keyword: String? = null,
             messages: ArrayList<ForwardMessage>? = null,
-            unreadCount: Int = -1
+            unreadCount: Int? = null
         ) {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }

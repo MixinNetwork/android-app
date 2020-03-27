@@ -2,6 +2,7 @@ package one.mixin.android.util.chat;
 
 import android.annotation.SuppressLint;
 import android.database.Cursor;
+import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,6 +16,9 @@ import androidx.sqlite.db.SupportSQLiteQuery;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import one.mixin.android.ui.conversation.ConversationActivity;
+import timber.log.Timber;
 
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
@@ -79,7 +83,9 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
     @Override
     public void loadInitial(@NonNull LoadInitialParams params,
                             @NonNull LoadInitialCallback<T> callback) {
+        Timber.d("@@@ before count cost:" +  (SystemClock.uptimeMillis() - ConversationActivity.start));
         int totalCount = countItems();
+        Timber.d("@@@ after count cost:" +  (SystemClock.uptimeMillis() - ConversationActivity.start));
         if (totalCount == 0) {
             callback.onResult(Collections.emptyList(), 0, 0);
             return;
@@ -89,7 +95,9 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
         final int firstLoadPosition = computeInitialLoadPosition(params, totalCount);
         final int firstLoadSize = computeInitialLoadSize(params, firstLoadPosition, totalCount);
 
+        Timber.d("@@@ before loadRange cost:" +  (SystemClock.uptimeMillis() - ConversationActivity.start));
         List<T> list = loadRange(firstLoadPosition, firstLoadSize);
+        Timber.d("@@@ after loadRange cost:" +  (SystemClock.uptimeMillis() - ConversationActivity.start));
         if (list != null && list.size() == firstLoadSize) {
             callback.onResult(list, firstLoadPosition, totalCount);
         } else {
