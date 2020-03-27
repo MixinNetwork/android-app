@@ -10,12 +10,7 @@ import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
 import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.MixinApplication
-import one.mixin.android.extension.deleteDir
-import one.mixin.android.extension.getConversationAudioPath
-import one.mixin.android.extension.getConversationDocumentPath
-import one.mixin.android.extension.getConversationImagePath
 import one.mixin.android.extension.getConversationMediaSize
-import one.mixin.android.extension.getConversationVideoPath
 import one.mixin.android.extension.getStorageUsageByConversationAndType
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.vo.ConversationStorageUsage
@@ -60,42 +55,20 @@ internal constructor(
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun clear(conversationId: String, type: String) {
-        val context = MixinApplication.appContext
-        val dir = when (type) {
-            IMAGE -> {
-                conversationRepository.deleteMediaMessageByConversationAndCategory(
-                    conversationId,
-                    MessageCategory.SIGNAL_IMAGE.name,
-                    MessageCategory.PLAIN_IMAGE.name
-                )
-                context.getConversationImagePath(conversationId)
+        when (type) {
+            IMAGE -> clear(conversationId, MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name)
+            VIDEO -> clear(conversationId, MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name)
+            AUDIO -> clear(conversationId, MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name)
+            DATA -> clear(conversationId, MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name)
+        }
+    }
+
+    private fun clear(conversationId: String, signalCategory: String, plainCategory: String) {
+        conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory)
+            ?.let { list ->
+                list.forEach { item ->
+                    conversationRepository.deleteMessage(item.messageId, item.mediaUrl)
+                }
             }
-            VIDEO -> {
-                conversationRepository.deleteMediaMessageByConversationAndCategory(
-                    conversationId,
-                    MessageCategory.SIGNAL_VIDEO.name,
-                    MessageCategory.PLAIN_VIDEO.name
-                )
-                context.getConversationVideoPath(conversationId)
-            }
-            AUDIO -> {
-                conversationRepository.deleteMediaMessageByConversationAndCategory(
-                    conversationId,
-                    MessageCategory.SIGNAL_AUDIO.name,
-                    MessageCategory.PLAIN_AUDIO.name
-                )
-                context.getConversationAudioPath(conversationId)
-            }
-            DATA -> {
-                conversationRepository.deleteMediaMessageByConversationAndCategory(
-                    conversationId,
-                    MessageCategory.SIGNAL_DATA.name,
-                    MessageCategory.PLAIN_DATA.name
-                )
-                context.getConversationDocumentPath(conversationId)
-            }
-            else -> null
-        } ?: return
-        dir.deleteDir()
     }
 }

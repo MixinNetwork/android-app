@@ -35,12 +35,15 @@ import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
 import one.mixin.android.extension.copyFromInputStream
+import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.fileExists
 import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getBotNumber
+import one.mixin.android.extension.getDocumentPath
+import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
@@ -235,7 +238,6 @@ internal constructor(
             null, attachment.filename, attachment.uri.toString(),
             attachment.mimeType, attachment.fileSize, nowInUtc(), null,
             null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
-        jobManager.addJobInBackground(ConvertDataJobJob(message))
     }
 
     fun sendAudioMessage(

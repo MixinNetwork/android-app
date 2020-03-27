@@ -78,13 +78,13 @@ private fun Context.getAppPath(): File? {
 fun Context.getMediaPath(): File? {
     val path = getAppPath() ?: return null
     val identityNumber = Session.getAccount()?.identity_number ?: return null
-    return File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Media${File.separator}")
+    return File("${path.absolutePath}${File.separator}Media${File.separator}${File.separator}$identityNumber")
 }
 
 fun Context.getBackupPath(): File? {
     val path = getAppPath() ?: return null
-    val parentName = Session.getAccount()?.identity_number
-    val f = File("${path.absolutePath}${File.separator}Backup${File.separator}$parentName${File.separator}")
+    val identityNumber = Session.getAccount()?.identity_number ?: return null
+    val f = File("${path.absolutePath}${File.separator}Backup${File.separator}$identityNumber${File.separator}")
     if (!f.exists() || !f.isDirectory) {
         f.delete()
         f.mkdirs()
@@ -265,6 +265,7 @@ fun Context.getStorageUsageByConversationAndType(conversationId: String, type: S
         if (exists()) {
             val mediaSize = dirSize() ?: return@run null
             val count = list()?.size ?: return@run null
+            if (mediaSize == 0L || count == 0) return@run null
             StorageUsage(conversationId, type, count, mediaSize)
         } else {
             null

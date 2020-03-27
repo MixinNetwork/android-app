@@ -256,8 +256,8 @@ internal constructor(
 
     fun getConversationStorageUsage(): Single<List<ConversationStorageUsage>> = readConversationDao.getConversationStorageUsage()
 
-    fun getMediaByConversationIdAndCategory(conversationId: String, category: String) =
-        readMessageDao.getMediaByConversationIdAndCategory(conversationId, category)
+    fun getMediaByConversationIdAndCategory(conversationId: String, signalCategory: String, plainCategory: String) =
+        readMessageDao.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory)
 
     suspend fun findMessageIndex(conversationId: String, messageId: String) =
         readMessageDao.findMessageIndex(conversationId, messageId)
