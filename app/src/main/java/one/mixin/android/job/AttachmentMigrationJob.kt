@@ -23,7 +23,6 @@ import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getOldBackupPath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
@@ -31,6 +30,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
+import one.mixin.android.util.backup.findOldBackupSync
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
@@ -52,10 +52,10 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
         }
         if (!hasWritePermission()) return
         if (preferences.getBoolean(PREF_ATTACHMENT_BACKUP, false)) {
-            val oldBackup = MixinApplication.get().getOldBackupPath()
+            val oldBackup = findOldBackupSync(MixinApplication.appContext)
             if (oldBackup != null && oldBackup.exists()) {
-                MixinApplication.get().getBackupPath(true)?.let { backup ->
-                    oldBackup.renameTo(backup)
+                MixinApplication.get().getBackupPath(true)?.let { backupDir ->
+                    oldBackup.renameTo(File("$backupDir${File.separator}${Constants.DataBase.DB_NAME}"))
                 }
             }
             preferences.putBoolean(PREF_ATTACHMENT_BACKUP, true)

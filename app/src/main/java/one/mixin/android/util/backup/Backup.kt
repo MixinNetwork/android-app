@@ -5,6 +5,8 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.os.StatFs
 import androidx.annotation.RequiresPermission
+import java.io.File
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -14,8 +16,6 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.getBackupPath
 import one.mixin.android.extension.getOldBackupPath
-import java.io.File
-import kotlin.coroutines.CoroutineContext
 
 private const val BACKUP_POSTFIX = ".backup"
 
@@ -181,6 +181,24 @@ suspend fun findOldBackup(
         if (exists) return@withContext f
     }
     null
+}
+
+fun findOldBackupSync(context: Context): File? {
+    val backupDir = context.getOldBackupPath() ?: return null
+    if (!backupDir.exists() || !backupDir.isDirectory) return null
+    val files = backupDir.listFiles()
+    if (files.isNullOrEmpty()) return null
+    files.forEach { f ->
+        val name = f.name
+        val exists = try {
+            val version = name.split('.')[2].toInt()
+            version in Constants.DataBase.MINI_VERSION..Constants.DataBase.CURRENT_VERSION
+        } catch (e: Exception) {
+            false
+        }
+        if (exists) return f
+    }
+    return null
 }
 
 fun checkDb(path: String): Boolean {
