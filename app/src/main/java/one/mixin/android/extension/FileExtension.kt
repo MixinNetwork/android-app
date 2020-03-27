@@ -211,12 +211,12 @@ fun Context.getDocumentPath(): File {
 
 fun Context.getVideoPath(): File {
     val root = getMediaPath()
-    return File("$root${File.separator}Video")
+    return File("$root${File.separator}Videos")
 }
 
 fun Context.getAudioPath(): File {
     val root = getMediaPath()
-    return File("$root${File.separator}Audio")
+    return File("$root${File.separator}Audios")
 }
 
 fun Context.getConversationImagePath(conversationId: String): File {
