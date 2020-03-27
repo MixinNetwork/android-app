@@ -3,9 +3,7 @@ package one.mixin.android.job
 import android.net.Uri
 import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
-import java.io.File
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_ATTACHMENT_BACKUP
 import one.mixin.android.Constants.Account.PREF_ATTACHMENT_END
 import one.mixin.android.Constants.Account.PREF_ATTACHMENT_OFFSET
 import one.mixin.android.MixinApplication
@@ -18,7 +16,6 @@ import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.createWebpTemp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getAudioPath
-import one.mixin.android.extension.getBackupPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getFilePath
@@ -30,10 +27,10 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
-import one.mixin.android.util.backup.findOldBackupSync
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
+import java.io.File
 
 class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
     companion object {
@@ -51,15 +48,6 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
             preferences.putString(PREF_ATTACHMENT_END, migrationEnd)
         }
         if (!hasWritePermission()) return
-        if (preferences.getBoolean(PREF_ATTACHMENT_BACKUP, false)) {
-            val oldBackup = findOldBackupSync(MixinApplication.appContext)
-            if (oldBackup != null && oldBackup.exists()) {
-                MixinApplication.get().getBackupPath(true)?.let { backupDir ->
-                    oldBackup.renameTo(File("$backupDir${File.separator}${Constants.DataBase.DB_NAME}"))
-                }
-            }
-            preferences.putBoolean(PREF_ATTACHMENT_BACKUP, true)
-        }
         val list = messageDao.findAttachmentMigration(migrationEnd, EACH, offset)
         list.forEach { attachment ->
             val path = attachment.mediaUrl?.toUri()?.getFilePath() ?: return@forEach

@@ -12,6 +12,7 @@ import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
 import java.io.File
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.Constants
 import one.mixin.android.Constants.BackUp.BACKUP_LAST_TIME
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.MixinApplication
@@ -49,7 +50,7 @@ class BackupJob(private val force: Boolean = false) : BaseJob(
         }
         if (force) {
             backup(context)
-        } else {
+        } else if (context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BACKUP, false)) {
             val option = context.defaultSharedPreferences.getInt(BACKUP_PERIOD, 0)
             if (option in 1..3) {
                 val currentTime = System.currentTimeMillis()
