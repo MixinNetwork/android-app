@@ -51,6 +51,11 @@ class ConversationActivity : BlazeBaseActivity() {
         showConversation(intent)
     }
 
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(0, 0)
+    }
+
     @Inject
     lateinit var conversationRepository: ConversationRepository
     @Inject
