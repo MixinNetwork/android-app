@@ -9,6 +9,8 @@
 
 -keep class one.mixin.android.** { *; }
 
+-keep class io.jsonwebtoken.** { *; }
+
 # webrtc
 -dontwarn org.webrtc.NetworkMonitorAutoDetect
 -dontwarn android.net.Network
