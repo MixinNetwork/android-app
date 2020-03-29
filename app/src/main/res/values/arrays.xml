@@ -7,33 +7,6 @@
         <item>Monthly</item>
     </string-array>
 
-    <integer-array name="avatar">
-        <item>@drawable/bg_avatar_1</item>
-        <item>@drawable/bg_avatar_2</item>
-        <item>@drawable/bg_avatar_3</item>
-        <item>@drawable/bg_avatar_4</item>
-        <item>@drawable/bg_avatar_5</item>
-        <item>@drawable/bg_avatar_6</item>
-        <item>@drawable/bg_avatar_7</item>
-        <item>@drawable/bg_avatar_8</item>
-        <item>@drawable/bg_avatar_9</item>
-        <item>@drawable/bg_avatar_10</item>
-        <item>@drawable/bg_avatar_11</item>
-        <item>@drawable/bg_avatar_12</item>
-        <item>@drawable/bg_avatar_13</item>
-        <item>@drawable/bg_avatar_14</item>
-        <item>@drawable/bg_avatar_15</item>
-        <item>@drawable/bg_avatar_16</item>
-        <item>@drawable/bg_avatar_17</item>
-        <item>@drawable/bg_avatar_18</item>
-        <item>@drawable/bg_avatar_19</item>
-        <item>@drawable/bg_avatar_20</item>
-        <item>@drawable/bg_avatar_21</item>
-        <item>@drawable/bg_avatar_22</item>
-        <item>@drawable/bg_avatar_23</item>
-        <item>@drawable/bg_avatar_24</item>
-    </integer-array>
-
     <integer-array name="currency_flags">
         <item>@drawable/ic_flag_cny</item>
         <item>@drawable/ic_flag_usd</item>
