@@ -788,7 +788,6 @@
     <string name="location_distance">%1$s %2$s away</string>
     <string name="location_kilometre">km</string>
     <string name="location_metre">m</string>
-    <string name="location_no_result">NO RESULT</string>
-    <string name="location_empty">There were no results for \"%1$s\".\nTry new search</string>
+    <string name="location_empty">There were no results for \"%1$s\"\nTry new search</string>
 </resources>
 
