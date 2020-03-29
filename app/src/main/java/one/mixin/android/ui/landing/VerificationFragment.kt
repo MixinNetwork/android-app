@@ -9,6 +9,7 @@ import android.view.View.GONE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -274,7 +275,9 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
         if (verification_resend_tv != null) {
             verification_resend_tv.setText(R.string.landing_resend_code_enable)
             verification_resend_tv.isEnabled = true
-            context?.getColor(R.color.colorBlue)?.let { verification_resend_tv.setTextColor(it) }
+            context?.let {
+                verification_resend_tv.setTextColor(ContextCompat.getColor(it, R.color.colorBlue))
+            }
         }
         verification_need_help_tv?.isVisible = true
     }

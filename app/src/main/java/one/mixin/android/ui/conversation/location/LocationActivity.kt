@@ -457,6 +457,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 if (lastSearchQueryJob?.isActive == true) {
                     lastSearchQueryJob?.cancel()
                 }
+                location_empty.isVisible = true
                 locationSearchAdapter.keyword = null
                 locationSearchAdapter.venues = null
                 locationSearchAdapter.setMark()

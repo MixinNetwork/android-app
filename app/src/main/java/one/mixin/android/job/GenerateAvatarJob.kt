@@ -28,8 +28,11 @@ import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView
 import org.jetbrains.anko.dip
 
-class GenerateAvatarJob(private val groupId: String, val list: List<User>? = null) : BaseJob(Params(
-    PRIORITY_BACKGROUND).addTags(TAG)) {
+class GenerateAvatarJob(private val groupId: String, val list: List<User>? = null) : BaseJob(
+    Params(
+        PRIORITY_BACKGROUND
+    ).addTags(TAG)
+) {
     companion object {
         const val TAG = "GenerateAvatarJob"
         private const val serialVersionUID = 1L
@@ -105,8 +108,10 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
         }
         val verticalDividerRectF = RectF(size / 2f - dividerOffset, 0f, size / 2f + dividerOffset, size.toFloat())
         val horizontalDividerRectF = RectF(0f, size / 2f - dividerOffset, size.toFloat(), size / 2f + dividerOffset)
-        val halfHorizontalDividerRectF = RectF(size / 2f, size / 2f - dividerOffset, size.toFloat(),
-            size / 2f + dividerOffset)
+        val halfHorizontalDividerRectF = RectF(
+            size / 2f, size / 2f - dividerOffset, size.toFloat(),
+            size / 2f + dividerOffset
+        )
         val rectF = RectF()
 
         when (bitmaps.size) {
@@ -133,8 +138,10 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
                     val b = bitmaps[i]
                     if (texts[i] != null) {
                         val offset = b.width * .2f
-                        val src = Rect(offset.toInt(), offset.toInt(), b.width - offset.toInt(),
-                            b.height - offset.toInt())
+                        val src = Rect(
+                            offset.toInt(), offset.toInt(), b.width - offset.toInt(),
+                            b.height - offset.toInt()
+                        )
                         val dst = if (i == 0) {
                             RectF(0f, 0f, size / 2f, size.toFloat())
                         } else {
@@ -182,8 +189,10 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
                     if (i == 0) {
                         if (texts[i] != null) {
                             val offset = b.width * .2f
-                            val src = Rect(offset.toInt(), offset.toInt(), b.width - offset.toInt(),
-                                b.height - offset.toInt())
+                            val src = Rect(
+                                offset.toInt(), offset.toInt(), b.width - offset.toInt(),
+                                b.height - offset.toInt()
+                            )
                             val dst = RectF(0f, 0f, size / 2f, size.toFloat())
                             canvas.drawBitmap(b, src, dst, null)
                         } else {
@@ -200,8 +209,10 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
                         } else {
                             b.width * .1f
                         }
-                        val src = Rect(offset.toInt(), offset.toInt(), b.width - offset.toInt(),
-                            b.height - offset.toInt())
+                        val src = Rect(
+                            offset.toInt(), offset.toInt(), b.width - offset.toInt(),
+                            b.height - offset.toInt()
+                        )
                         val dst = when (i) {
                             1 -> {
                                 RectF(size / 2f, 0f, size.toFloat(), size / 2f)
@@ -247,8 +258,10 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
                     } else {
                         item.width * .1f
                     }
-                    val src = Rect(offset.toInt(), offset.toInt(), item.width - offset.toInt(),
-                        item.height - offset.toInt())
+                    val src = Rect(
+                        offset.toInt(), offset.toInt(), item.width - offset.toInt(),
+                        item.height - offset.toInt()
+                    )
                     val dst = when (i) {
                         0 -> {
                             RectF(0f, 0f, size / 2f, size / 2f)
@@ -299,13 +312,15 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
             if (item.isNullOrEmpty()) {
                 val user = users[i]
                 texts[i] = AvatarView.checkEmoji(user.fullName)
-                bitmaps.add(getBitmapByPlaceHolder(getAvatarPlaceHolderById(user.userId)))
+                bitmaps.add(getBitmapByPlaceHolder(user.userId))
             } else {
-                bitmaps.add(Glide.with(applicationContext)
-                    .asBitmap()
-                    .load(item)
-                    .submit()
-                    .get(10, TimeUnit.SECONDS))
+                bitmaps.add(
+                    Glide.with(applicationContext)
+                        .asBitmap()
+                        .load(item)
+                        .submit()
+                        .get(10, TimeUnit.SECONDS)
+                )
             }
         }
     }
@@ -318,28 +333,40 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
         m.mapRect(rectF, src)
     }
 
-    private fun getAvatarPlaceHolderById(id: String): Int {
-        try {
-            val num = id.getColorCode(CodeType.Avatar)
-            return avatarArray.getResourceId(num, -1)
+    private fun getBitmapByPlaceHolder(userId: String): Bitmap {
+        val color = try {
+            val num = userId.getColorCode(CodeType.Avatar(avatarArray.size))
+            avatarArray[num]
         } catch (e: Exception) {
+            -1
         }
-        return R.drawable.default_avatar
+        if (color == -1) {
+            val d = applicationContext.resources.getDrawable(R.drawable.default_avatar, applicationContext.theme)
+            if (d is BitmapDrawable) {
+                return d.bitmap
+            }
+
+            val b = Bitmap.createBitmap(d.intrinsicWidth, d.intrinsicHeight, Bitmap.Config.ARGB_8888)
+            val c = Canvas(b)
+            d.setBounds(0, 0, c.width, c.height)
+            d.draw(c)
+            return b
+        } else {
+            val b = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+            val c = Canvas(b)
+            paint.color = color
+            c.drawRect(Rect(0, 0, c.width, c.height), paint)
+            return b
+        }
+    }
+
+    private val paint by lazy {
+        Paint().apply {
+            style = Paint.Style.FILL
+        }
     }
 
     private val avatarArray by lazy {
-        applicationContext.resources.obtainTypedArray(R.array.avatar)
-    }
-
-    private fun getBitmapByPlaceHolder(placeHolder: Int): Bitmap {
-        val d = applicationContext.resources.getDrawable(placeHolder, applicationContext.theme)
-        if (d is BitmapDrawable) {
-            return d.bitmap
-        }
-        val b = Bitmap.createBitmap(d.intrinsicWidth, d.intrinsicHeight, Bitmap.Config.ARGB_8888)
-        val c = Canvas(b)
-        d.setBounds(0, 0, c.width, c.height)
-        d.draw(c)
-        return b
+        applicationContext.resources.getIntArray(R.array.avatar_colors)
     }
 }

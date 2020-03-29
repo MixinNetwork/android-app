@@ -16,6 +16,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.isActivityNotDestroyed
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.round
 import org.jetbrains.anko.sp
 
 class AvatarView : ViewAnimator {
@@ -81,10 +82,15 @@ class AvatarView : ViewAnimator {
         avatar_simple.setPadding(padding)
     }
 
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        avatar_tv.round((right - left) / 2)
+    }
+
     fun setInfo(name: String?, url: String?, id: String) {
         avatar_tv.text = checkEmoji(name)
         try {
-            avatar_tv.setBackgroundResource(getAvatarPlaceHolderById(id.getColorCode(CodeType.Avatar)))
+            avatar_tv.setBackgroundColor(getAvatarPlaceHolderById(id.getColorCode(CodeType.Avatar(avatarArray.size))))
         } catch (e: NumberFormatException) {
         }
         displayedChild = if (url != null && url.isNotEmpty()) {
@@ -112,13 +118,13 @@ class AvatarView : ViewAnimator {
 
     private fun getAvatarPlaceHolderById(code: Int): Int {
         try {
-           return avatarArray.getResourceId(code, -1)
+            return avatarArray[code]
         } catch (e: Exception) {
         }
         return R.drawable.default_avatar
     }
 
     private val avatarArray by lazy {
-        resources.obtainTypedArray(R.array.avatar)
+        resources.getIntArray(R.array.avatar_colors)
     }
 }

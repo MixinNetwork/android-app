@@ -30,7 +30,7 @@ buildscript {
         ext.rxJavaVersion = '2.2.19'
         ext.rxAndroidVersion = '2.1.1'
         ext.rxbindingVersion = '3.1.0'
-        ext.retrofitVersion = '2.7.2'
+        ext.retrofitVersion = '2.8.1'
         ext.coroutineAdapterVersion = '0.9.2'
         ext.stethoVersion = '1.5.1'
         ext.loggerVersion = '2.2.0'
@@ -52,7 +52,7 @@ buildscript {
         ext.glideTransformationsVersion = '3.2.0'
         ext.jobqueueVersion = '3.1.0'
         ext.stickyheadersrecyclerviewVersion = '0.7'
-        ext.threetenabpVersion = '1.2.2'
+        ext.threetenabpVersion = '1.2.3'
         ext.signalVersion = '2.8.1'
         ext.fabVersion = '1.6'
         ext.playVersion = '1.6.5'
@@ -92,7 +92,7 @@ buildscript {
         maven { url "https://jitpack.io" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.3'
+        classpath 'com.android.tools.build:gradle:3.6.1'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta09'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
         classpath 'com.google.gms:google-services:4.3.3'

@@ -15,7 +15,6 @@ import android.os.Build
 import android.provider.MediaStore
 import android.util.Base64
 import android.view.ContextMenu
-import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
@@ -221,13 +220,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_web, null)
-        contentView.chat_web_view.setOnKeyListener { _, keyCode, _ ->
-            if (keyCode == KeyEvent.KEYCODE_BACK && contentView.chat_web_view.canGoBack()) {
-                contentView.chat_web_view.goBack()
-                return@setOnKeyListener true
-            }
-            return@setOnKeyListener false
-        }
         val statusBarHeight = requireContext().statusBarHeight()
         contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = statusBarHeight

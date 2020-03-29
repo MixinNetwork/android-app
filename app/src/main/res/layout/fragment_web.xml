@@ -47,7 +47,7 @@
                 android:textColor="?attr/text_primary" />
         </LinearLayout>
 
-        <WebView
+        <one.mixin.android.widget.MixinWebView
             android:id="@+id/chat_web_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
