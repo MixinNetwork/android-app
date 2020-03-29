@@ -207,6 +207,17 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         })
     }
 
+    override fun onBackPressed() {
+        if (search_va.displayedChild == 1) {
+            search_va.showPrevious()
+            search_et.text = null
+            search_et.hideKeyboard()
+            location_empty.isVisible = false
+        } else {
+            super.onBackPressed()
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         onResumeCalled = true
@@ -459,7 +470,6 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 if (lastSearchQueryJob?.isActive == true) {
                     lastSearchQueryJob?.cancel()
                 }
-                location_empty.isVisible = false
                 locationSearchAdapter.keyword = null
                 locationSearchAdapter.venues = null
                 locationSearchAdapter.setMark()
