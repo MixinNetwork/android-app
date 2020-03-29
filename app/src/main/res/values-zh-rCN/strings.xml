@@ -774,6 +774,5 @@
     <string name="location_distance">距离您 %1$s %2$s</string>
     <string name="location_kilometre">千米</string>
     <string name="location_metre">米</string>
-    <string name="location_no_result">没有结果</string>
-    <string name="location_empty">未能搜索到 \"%1$s\"。\n测试其他关键词。</string>
+    <string name="location_empty">找不到 \"%1$s\"\n换个名字试试吧</string>
 </resources>
