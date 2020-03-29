@@ -71,12 +71,15 @@
                 </FrameLayout>
 
                 <RelativeLayout
+                    android:id="@+id/location_bottom"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:paddingStart="8dp"
-                    android:paddingTop="8dp"
-                    android:paddingEnd="8dp"
-                    android:paddingBottom="8dp">
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:paddingStart="6dp"
+                    android:paddingTop="6dp"
+                    android:paddingEnd="6dp"
+                    android:paddingBottom="6dp">
 
                     <TextView
                         android:id="@+id/location_title"
