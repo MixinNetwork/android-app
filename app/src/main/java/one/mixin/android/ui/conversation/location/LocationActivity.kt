@@ -139,6 +139,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 search_va.showPrevious()
                 search_et.text = null
                 search_et.hideKeyboard()
+                location_empty.isVisible = false
             } else {
                 finish()
             }
@@ -162,6 +163,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             search_va.showPrevious()
             search_et.text = null
             search_et.hideKeyboard()
+            location_empty.isVisible = false
         }
         search_et.addTextChangedListener(textWatcher)
         search_et.setOnEditorActionListener(object : TextView.OnEditorActionListener {
@@ -203,6 +205,17 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         }, {
             location_recycler.adapter = locationAdapter
         })
+    }
+
+    override fun onBackPressed() {
+        if (search_va.displayedChild == 1) {
+            search_va.showPrevious()
+            search_et.text = null
+            search_et.hideKeyboard()
+            location_empty.isVisible = false
+        } else {
+            super.onBackPressed()
+        }
     }
 
     override fun onResume() {
@@ -457,7 +470,6 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 if (lastSearchQueryJob?.isActive == true) {
                     lastSearchQueryJob?.cancel()
                 }
-                location_empty.isVisible = true
                 locationSearchAdapter.keyword = null
                 locationSearchAdapter.venues = null
                 locationSearchAdapter.setMark()
