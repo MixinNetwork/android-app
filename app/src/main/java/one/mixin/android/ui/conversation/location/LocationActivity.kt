@@ -139,6 +139,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 search_va.showPrevious()
                 search_et.text = null
                 search_et.hideKeyboard()
+                location_empty.isVisible = false
             } else {
                 finish()
             }
@@ -162,6 +163,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             search_va.showPrevious()
             search_et.text = null
             search_et.hideKeyboard()
+            location_empty.isVisible = false
         }
         search_et.addTextChangedListener(textWatcher)
         search_et.setOnEditorActionListener(object : TextView.OnEditorActionListener {
@@ -457,7 +459,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 if (lastSearchQueryJob?.isActive == true) {
                     lastSearchQueryJob?.cancel()
                 }
-                location_empty.isVisible = true
+                location_empty.isVisible = false
                 locationSearchAdapter.keyword = null
                 locationSearchAdapter.venues = null
                 locationSearchAdapter.setMark()
