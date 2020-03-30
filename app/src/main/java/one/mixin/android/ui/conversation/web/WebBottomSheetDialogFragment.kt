@@ -778,6 +778,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         @SerializedName("app_version")
         val appVersion: String = BuildConfig.VERSION_NAME,
         @SerializedName("appearance")
-        val appearance: String
+        val appearance: String,
+        @SerializedName("platform")
+        val platform: String = "Android"
     )
 }
