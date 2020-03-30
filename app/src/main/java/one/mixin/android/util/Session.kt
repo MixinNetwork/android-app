@@ -150,7 +150,7 @@ class Session {
             }
             val key = getRSAPrivateKeyFromString(token)
             return try {
-                val iat = Jwts.parser().setSigningKey(key).parseClaimsJws(string).body[Claims.ISSUED_AT] as Int
+                val iat = Jwts.parser().setSigningKey(key).parseClaimsJws(string).body[Claims.ISSUED_AT] as Long
                 abs(System.currentTimeMillis() / 1000 - iat) > offset
             } catch (e: Exception) {
                 false
