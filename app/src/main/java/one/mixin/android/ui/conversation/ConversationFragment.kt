@@ -204,7 +204,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         const val RECIPIENT_ID = "recipient_id"
         const val RECIPIENT = "recipient"
         const val MESSAGE_ID = "message_id"
-        const val SCROLL_MESSAGE_ID = "scroll_message_id"
+        const val INITIAL_POSITION_MESSAGE_ID = "initial_position_message_id"
         const val UNREAD_COUNT = "unread_count"
         private const val KEY_WORD = "key_word"
         private const val MESSAGES = "messages"
@@ -691,8 +691,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         requireArguments().getString(MESSAGE_ID, null)
     }
 
-    private val scrollMessageId: String? by lazy {
-        requireArguments().getString(SCROLL_MESSAGE_ID, null)
+    private val initialPositionMessageId: String? by lazy {
+        requireArguments().getString(INITIAL_POSITION_MESSAGE_ID, null)
     }
 
     private val keyword: String? by lazy {
@@ -1347,7 +1347,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var unreadCount = 0
     private fun bindData() {
         unreadCount = requireArguments().getInt(UNREAD_COUNT, 0)
-        liveDataMessage(unreadCount, scrollMessageId)
+        liveDataMessage(unreadCount, initialPositionMessageId)
 
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(viewLifecycleOwner, Observer { mentionMessages ->
             flag_layout.mentionCount = mentionMessages.size

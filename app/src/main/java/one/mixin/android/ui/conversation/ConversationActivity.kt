@@ -16,10 +16,10 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSATION_ID
+import one.mixin.android.ui.conversation.ConversationFragment.Companion.INITIAL_POSITION_MESSAGE_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.MESSAGE_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
-import one.mixin.android.ui.conversation.ConversationFragment.Companion.SCROLL_MESSAGE_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.UNREAD_COUNT
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ForwardMessage
@@ -77,23 +77,17 @@ class ConversationActivity : BlazeBaseActivity() {
             val userId = bundle.getString(RECIPIENT_ID)
             var unreadCount = bundle.getInt(UNREAD_COUNT, -1)
             val cid: String
-            if (conversationId == null) {
-                val user = userRepository.suspendFindUserById(userId!!)!!
-                cid = conversationId ?: generateConversationId(Session.getAccountId()!!, user.userId)
-                require(user.userId != Session.getAccountId()) { "error data" }
+            if (userId != null) {
+                val user = userRepository.suspendFindUserById(userId)
+                cid = conversationId ?: generateConversationId(Session.getAccountId()!!, userId)
+                require(user != null && userId != Session.getAccountId()) {
+                    "error data userId: $userId"
+                }
                 bundle.putParcelable(RECIPIENT, user)
             } else {
-                val user = if (userId != null) {
-                    userRepository.suspendFindUserById(userId)!!
-                } else {
-                    userRepository.suspendFindContactByConversationId(conversationId)
-                }
-                if (user == null || user.userId == Session.getAccountId()) {
-                    throw IllegalArgumentException(
-                        "error data ${bundle.getString(
-                            CONVERSATION_ID
-                        )}"
-                    )
+                val user = userRepository.suspendFindContactByConversationId(conversationId!!)
+                require(user?.userId != Session.getAccountId()) {
+                    "error data conversationId: $conversationId"
                 }
                 cid = conversationId
                 bundle.putParcelable(RECIPIENT, user)
@@ -111,7 +105,7 @@ class ConversationActivity : BlazeBaseActivity() {
             } else {
                 conversationRepository.findFirstUnreadMessageId(cid, unreadCount - 1)
             }
-            bundle.putString(SCROLL_MESSAGE_ID, msgId)
+            bundle.putString(INITIAL_POSITION_MESSAGE_ID, msgId)
             replaceFragment(
                 ConversationFragment.newInstance(bundle),
                 R.id.container,
@@ -127,7 +121,7 @@ class ConversationActivity : BlazeBaseActivity() {
             context: Context,
             conversationId: String,
             recipient: User?,
-            messageId: String?,
+            initialPositionMessageId: String?,
             unreadCount: Int
         ) {
             Intent(context, ConversationActivity::class.java).apply {
@@ -135,7 +129,7 @@ class ConversationActivity : BlazeBaseActivity() {
                     Bundle().apply {
                         putString(CONVERSATION_ID, conversationId)
                         putParcelable(RECIPIENT, recipient)
-                        putString(SCROLL_MESSAGE_ID, messageId)
+                        putString(INITIAL_POSITION_MESSAGE_ID, initialPositionMessageId)
                         putInt(UNREAD_COUNT, unreadCount)
                         putBoolean(ARGS_FAST_SHOW, true)
                     }

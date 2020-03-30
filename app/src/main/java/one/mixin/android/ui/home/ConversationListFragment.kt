@@ -232,7 +232,7 @@ class ConversationListFragment : LinkFragment() {
                             requireContext(),
                             conversationId = item.conversationId,
                             recipient = user,
-                            messageId = messageId,
+                            initialPositionMessageId = messageId,
                             unreadCount = item.unseenMessageCount ?: 0
                         )
                     }
