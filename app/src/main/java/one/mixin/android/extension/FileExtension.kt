@@ -28,6 +28,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.LinkedList
 import java.util.Locale
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
@@ -520,6 +521,29 @@ fun File.blurThumbnail(size: Size): Bitmap? {
         }
     } while (true)
     return blurThumbnail(size.width / scale, size.height / scale)
+}
+
+fun File.dirSize(): Long? {
+    return if (isDirectory) {
+        var result = 0L
+        val dirList = LinkedList<File>()
+        dirList.clear()
+        dirList.push(this)
+        while (!dirList.isEmpty()) {
+            val dirCurrent = dirList.pop()
+            val fileList = dirCurrent.listFiles()
+            for (f in fileList) {
+                if (f.isDirectory) {
+                    dirList.push(f)
+                } else {
+                    result += f.length()
+                }
+            }
+        }
+        return result
+    } else {
+        null
+    }
 }
 
 fun File.encodeBlurHash(): String? {
