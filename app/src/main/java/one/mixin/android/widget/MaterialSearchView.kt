@@ -19,17 +19,20 @@ import androidx.core.view.isVisible
 import com.jakewharton.rxbinding3.widget.textChanges
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import java.util.concurrent.TimeUnit
-import kotlin.math.roundToInt
 import kotlinx.android.synthetic.main.view_search.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.fadeIn
+import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.translationX
+import one.mixin.android.extension.translationY
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import org.jetbrains.annotations.NotNull
+import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 
 class MaterialSearchView : FrameLayout {
     var isOpen = false
@@ -51,6 +54,10 @@ class MaterialSearchView : FrameLayout {
         initSearchView()
     }
 
+    private val containerHeight by lazy {
+        context.screenHeight() * 0.45f
+    }
+
     @Suppress("unused")
     val currentQuery: String
         get() = if (!TextUtils.isEmpty(mCurrentQuery)) {
@@ -59,38 +66,51 @@ class MaterialSearchView : FrameLayout {
 
     private fun initStyle(attributeSet: AttributeSet?, defStyleAttribute: Int) {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
-        val typedArray = context.obtainStyledAttributes(attributeSet,
-            R.styleable.MaterialSearchView, defStyleAttribute, 0)
+        val typedArray = context.obtainStyledAttributes(
+            attributeSet,
+            R.styleable.MaterialSearchView, defStyleAttribute, 0
+        )
         if (typedArray.hasValue(R.styleable.MaterialSearchView_android_hint)) {
             setHint(typedArray.getString(R.styleable.MaterialSearchView_android_hint))
         }
         if (typedArray.hasValue(R.styleable.MaterialSearchView_searchCloseIcon)) {
-            setCancelIcon(typedArray.getResourceId(
-                R.styleable.MaterialSearchView_searchCloseIcon,
-                R.drawable.ic_action_navigation_close)
+            setCancelIcon(
+                typedArray.getResourceId(
+                    R.styleable.MaterialSearchView_searchCloseIcon,
+                    R.drawable.ic_action_navigation_close
+                )
             )
         }
         if (typedArray.hasValue(R.styleable.MaterialSearchView_searchBackIcon)) {
-            setBackIcon(typedArray.getResourceId(
-                R.styleable.MaterialSearchView_searchBackIcon,
-                R.drawable.ic_wallet)
+            setBackIcon(
+                typedArray.getResourceId(
+                    R.styleable.MaterialSearchView_searchBackIcon,
+                    R.drawable.ic_wallet
+                )
             )
         }
         if (typedArray.hasValue(R.styleable.MaterialSearchView_android_inputType)) {
-            setInputType(typedArray.getInteger(
-                R.styleable.MaterialSearchView_android_inputType,
-                InputType.TYPE_CLASS_TEXT)
+            setInputType(
+                typedArray.getInteger(
+                    R.styleable.MaterialSearchView_android_inputType,
+                    InputType.TYPE_CLASS_TEXT
+                )
             )
         }
         if (typedArray.hasValue(R.styleable.MaterialSearchView_searchBarHeight)) {
-            setSearchBarHeight(typedArray.getDimensionPixelSize(
-                R.styleable.MaterialSearchView_searchBarHeight, context.appCompatActionBarHeight()))
+            setSearchBarHeight(
+                typedArray.getDimensionPixelSize(
+                    R.styleable.MaterialSearchView_searchBarHeight, context.appCompatActionBarHeight()
+                )
+            )
         } else {
             setSearchBarHeight(context.appCompatActionBarHeight())
         }
         @Suppress("DEPRECATION")
-        ViewCompat.setFitsSystemWindows(this,
-            typedArray.getBoolean(R.styleable.MaterialSearchView_android_fitsSystemWindows, false))
+        ViewCompat.setFitsSystemWindows(
+            this,
+            typedArray.getBoolean(R.styleable.MaterialSearchView_android_fitsSystemWindows, false)
+        )
         typedArray.recycle()
     }
 
@@ -108,6 +128,12 @@ class MaterialSearchView : FrameLayout {
     }
 
     private fun initSearchView() {
+        container_circle.translationY = -containerHeight
+        container_circle.layoutParams.height = containerHeight.toInt()
+        container_shadow.layoutParams.height = context.screenHeight()
+        container_shadow.setOnClickListener {
+            hideContainer()
+        }
         search_et.setOnEditorActionListener { _, _, _ ->
             onSubmitQuery()
             true
@@ -124,9 +150,34 @@ class MaterialSearchView : FrameLayout {
                 search_et.setText("")
             }
         }
+        logo.setOnClickListener {
+            if (containerDisplay) {
+                hideContainer()
+            } else {
+                showContainer()
+            }
+        }
+    }
 
-        search_tv.setOnClickListener {
-            openSearch()
+    private fun hideContainer() {
+        containerDisplay = false
+        container_shadow.fadeOut()
+        add_ib.fadeOut()
+        group_ib.fadeIn()
+        wallet_ib.fadeIn()
+        container_circle.translationY(-containerHeight) {
+            container_circle.isVisible = false
+        }
+    }
+
+    private fun showContainer() {
+        containerDisplay = true
+        container_circle.isVisible = true
+        container_shadow.fadeIn()
+        add_ib.fadeIn()
+        group_ib.fadeOut()
+        wallet_ib.fadeOut()
+        container_circle.translationY(0f) {
         }
     }
 
@@ -135,25 +186,25 @@ class MaterialSearchView : FrameLayout {
         disposable?.dispose()
     }
 
-    var oldLeftX = 0f
-    var oldSearchWidth = 0
+    private var oldLeftX = 0f
+    private var oldSearchWidth = 0
 
     fun dragSearch(progress: Float) {
-        right_ib.translationX = context.dpToPx(42f) * progress
+        group_ib.translationX = context.dpToPx(84f) * progress
+        wallet_ib.translationX = context.dpToPx(84f) * progress
         val fastFadeOut = (1 - 2 * progress).coerceAtLeast(0f)
         val fastFadeIn = (progress.coerceAtLeast(.5f) - .5f) * 2
-        search_tv.isVisible = true
         search_et.isVisible = true
-        search_tv.alpha = fastFadeOut
         search_et.alpha = fastFadeIn
-        left_ib.isVisible = true
+        wallet_ib.isVisible = true
+        logo.isVisible = true
         back_ib.isVisible = true
-        left_ib.alpha = fastFadeOut
+        logo.alpha = fastFadeOut
         back_ib.alpha = fastFadeIn
     }
 
     fun openSearch() {
-        search_tv.animate().apply {
+        logo.animate().apply {
             setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
                     op()
@@ -165,35 +216,8 @@ class MaterialSearchView : FrameLayout {
 
                 private fun op() {
                     setListener(null)
-                    search_tv.isGone = true
-                    search_et.isVisible = true
-                    search_et.showKeyboard()
-                    search_et.animate().apply {
-                        setListener(object : AnimatorListenerAdapter() {
-                            override fun onAnimationCancel(animation: Animator?) {
-                                search_et.alpha = 1f
-                            }
-                        })
-                    }.setDuration(150L).alpha(1f).start()
-                }
-            })
-        }.alpha(0f).setDuration(150L).start()
-
-        left_ib.animate().apply {
-            setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
-                    op()
-                }
-
-                override fun onAnimationCancel(animation: Animator?) {
-                    op()
-                }
-
-                private fun op() {
-                    setListener(null)
-                    left_ib.isGone = true
-                    back_ib.isVisible = true
-                    back_ib.animate().apply {
+                    logo.isGone = true
+                    logo.animate().apply {
                         setListener(object : AnimatorListenerAdapter() {
                             override fun onAnimationCancel(animation: Animator?) {
                                 back_ib.alpha = 1f
@@ -206,9 +230,10 @@ class MaterialSearchView : FrameLayout {
         right_clear.visibility = View.GONE
 
         search_et.setText("")
-        oldLeftX = left_ib.x
+        oldLeftX = logo.x
         oldSearchWidth = search_et.measuredWidth
-        right_ib.translationX(context.dpToPx(42f).toFloat())
+        group_ib.translationX(context.dpToPx(84f).toFloat())
+        wallet_ib.translationX(context.dpToPx(84f).toFloat())
         mSearchViewListener?.onSearchViewOpened()
         isOpen = true
     }
@@ -227,14 +252,6 @@ class MaterialSearchView : FrameLayout {
                 private fun op() {
                     setListener(null)
                     search_et.isGone = true
-                    search_tv.isVisible = true
-                    search_tv.animate().apply {
-                        setListener(object : AnimatorListenerAdapter() {
-                            override fun onAnimationCancel(animation: Animator?) {
-                                search_tv.alpha = 1f
-                            }
-                        })
-                    }.setDuration(150L).alpha(1f).start()
                 }
             })
         }.alpha(0f).setDuration(150L).start()
@@ -251,11 +268,11 @@ class MaterialSearchView : FrameLayout {
                 private fun op() {
                     setListener(null)
                     back_ib.isGone = true
-                    left_ib.isVisible = true
-                    left_ib.animate().apply {
+                    logo.isVisible = true
+                    logo.animate().apply {
                         setListener(object : AnimatorListenerAdapter() {
                             override fun onAnimationCancel(animation: Animator?) {
-                                left_ib.alpha = 1f
+                                logo.alpha = 1f
                             }
                         })
                     }.setDuration(150L).alpha(1f).start()
@@ -264,7 +281,8 @@ class MaterialSearchView : FrameLayout {
         }.setDuration(150L).alpha(0f).start()
         right_clear.visibility = View.GONE
 
-        right_ib.translationX(0f)
+        group_ib.translationX(0f)
+        wallet_ib.translationX(0f)
         clearFocus()
         search_et.hideKeyboard()
         search_et.setText("")
@@ -327,7 +345,7 @@ class MaterialSearchView : FrameLayout {
     }
 
     fun setBackIcon(resourceId: Int) {
-        left_ib.setImageResource(resourceId)
+        wallet_ib.setImageResource(resourceId)
     }
 
     fun setInputType(inputType: Int) {
@@ -340,12 +358,14 @@ class MaterialSearchView : FrameLayout {
     }
 
     fun setOnRightClickListener(onClickListener: OnClickListener) {
-        right_ib.setOnClickListener(onClickListener)
+        group_ib.setOnClickListener(onClickListener)
     }
 
     fun setOnLeftClickListener(onClickListener: OnClickListener) {
-        left_ib.setOnClickListener(onClickListener)
+        wallet_ib.setOnClickListener(onClickListener)
     }
+
+    private var containerDisplay = false
 
     fun setOnBackClickListener(onClickListener: OnClickListener) {
         back_ib.setOnClickListener(onClickListener)
@@ -376,6 +396,7 @@ internal class SavedState : View.BaseSavedState {
     constructor(source: Parcel) : super(source) {
         isOpen = source.readInt() == 1
     }
+
     constructor(superState: Parcelable) : super(superState)
 
     override fun writeToParcel(out: Parcel, flags: Int) {
