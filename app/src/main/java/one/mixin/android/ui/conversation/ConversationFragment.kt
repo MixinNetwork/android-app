@@ -94,7 +94,6 @@ import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
@@ -695,8 +694,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private var imageUri: Uri? = null
-    // Todo
-    private fun createImageUri() = Uri.fromFile(context?.getImagePath()?.createImageTemp())
+    private fun createImageUri() = Uri.fromFile(context?.getOtherPath()?.createImageTemp())
 
     private val conversationId: String by lazy<String> {
         var cid = requireArguments().getString(CONVERSATION_ID)

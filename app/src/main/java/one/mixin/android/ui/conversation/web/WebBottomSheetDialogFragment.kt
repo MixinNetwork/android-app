@@ -61,7 +61,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isMixinUrl
@@ -495,7 +495,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var imageUri: Uri? = null
     private fun getImageUri(): Uri {
         if (imageUri == null) {
-            imageUri = Uri.fromFile(requireContext().getImagePath().createImageTemp())
+            imageUri = Uri.fromFile(requireContext().getOtherPath().createImageTemp())
         }
         return imageUri!!
     }

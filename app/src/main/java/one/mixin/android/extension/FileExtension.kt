@@ -204,6 +204,11 @@ fun Context.getImagePath(): File {
     return File("$root${File.separator}Images")
 }
 
+fun Context.getOtherPath(): File {
+    val root = getMediaPath()
+    return File("$root${File.separator}Others")
+}
+
 fun Context.getDocumentPath(): File {
     val root = getMediaPath()
     return File("$root${File.separator}Files")

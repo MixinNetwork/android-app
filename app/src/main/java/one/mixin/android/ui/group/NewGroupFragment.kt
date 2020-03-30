@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.createImageTemp
-import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openImage
@@ -65,7 +65,7 @@ class NewGroupFragment : BaseFragment() {
     }
     private val sender: User by lazy { Session.getAccount()!!.toUser() }
     private val imageUri: Uri by lazy {
-        Uri.fromFile(context?.getImagePath()?.createImageTemp())
+        Uri.fromFile(context?.getOtherPath()?.createImageTemp())
     }
     private var resultUri: Uri? = null
     private val adapter = NewGroupAdapter()

@@ -3,6 +3,7 @@ package one.mixin.android.job
 import android.net.Uri
 import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
+import java.io.File
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_ATTACHMENT_END
 import one.mixin.android.Constants.Account.PREF_ATTACHMENT_OFFSET
@@ -30,7 +31,6 @@ import one.mixin.android.extension.putString
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
-import java.io.File
 
 class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
     companion object {
