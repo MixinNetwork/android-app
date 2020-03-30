@@ -736,16 +736,23 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         super.onCreate(savedInstanceState)
         registerHeadsetPlugReceiver()
         recipient = requireArguments().getParcelable<User?>(RECIPIENT)
+        Timber.d("@@@ after onCreate cost ${SystemClock.uptimeMillis() - ConversationActivity.start}")
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_conversation, container, false)
+    ): View? {
+        val v = inflater.inflate(R.layout.fragment_conversation, container, false)
+        Timber.d("@@@ onCreateView cost ${SystemClock.uptimeMillis() - ConversationActivity.start}")
+
+        return v
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.d("@@@ in onViewCreated cost ${SystemClock.uptimeMillis() - ConversationActivity.start}")
         val messages = requireArguments().getParcelableArrayList<ForwardMessage>(MESSAGES)
         if (messages != null) {
             sendForwardMessages(messages)

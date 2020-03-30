@@ -23,6 +23,7 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.SCROLL_M
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.UNREAD_COUNT
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import timber.log.Timber
 import javax.inject.Inject
@@ -42,18 +43,23 @@ class ConversationActivity : BlazeBaseActivity() {
         Timber.d("@@@ backgroundImage ${SystemClock.uptimeMillis() - start}")
         window.decorView.systemUiVisibility =
             window.decorView.systemUiVisibility or SYSTEM_UI_FLAG_LAYOUT_STABLE
-        showConversation(intent)
+
+        if (intent.getBooleanExtra(ARGS_FAST_SHOW, false)) {
+            replaceFragment(
+                ConversationFragment.newInstance(intent.extras!!),
+                R.id.container,
+                ConversationFragment.TAG
+            )
+        } else {
+            showConversation(intent)
+        }
+        Timber.d("@@@ after show cost ${SystemClock.uptimeMillis() - ConversationActivity.start}")
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
         showConversation(intent)
-    }
-
-    override fun finish() {
-        super.finish()
-        overridePendingTransition(0, 0)
     }
 
     @Inject
@@ -130,6 +136,33 @@ class ConversationActivity : BlazeBaseActivity() {
 
         @JvmField
         var start = 0L
+
+        private const val ARGS_FAST_SHOW = "args_fast_show"
+
+        fun fastShow(
+            context: Context,
+            conversationId: String,
+            recipient: User?,
+            messageId: String?,
+            unreadCount: Int
+        ) {
+            Timber.d("@@@ in show cost ${SystemClock.uptimeMillis() - ConversationActivity.start}")
+            Intent(context, ConversationActivity::class.java).apply {
+                putExtras(
+                    Bundle().apply {
+                        putString(CONVERSATION_ID, conversationId)
+                        putParcelable(RECIPIENT, recipient)
+                        putString(SCROLL_MESSAGE_ID, messageId)
+                        putInt(UNREAD_COUNT, unreadCount)
+                        putBoolean(ARGS_FAST_SHOW, true)
+                    }
+                )
+                Timber.d("@@@ after putExtras cost ${SystemClock.uptimeMillis() - ConversationActivity.start}")
+            }.run {
+                context.startActivity(this)
+                Timber.d("@@@ after startActivity cost ${SystemClock.uptimeMillis() - ConversationActivity.start}")
+            }
+        }
 
         fun show(
             context: Context,

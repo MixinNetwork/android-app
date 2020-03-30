@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CONVERSATION_PAGE_SIZE
 import one.mixin.android.api.request.ConversationRequest
@@ -15,6 +14,7 @@ import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
@@ -22,10 +22,13 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.generateConversationId
+import javax.inject.Inject
 
 class ConversationListViewModel @Inject
 internal constructor(
     private val messageRepository: ConversationRepository,
+    private val userRepository: UserRepository,
+    private val conversationRepository: ConversationRepository,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
 
@@ -87,4 +90,9 @@ internal constructor(
             request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration),
             type = ConversationJob.TYPE_MUTE))
     }
+
+    suspend fun suspendFindUserById(query: String) = userRepository.suspendFindUserById(query)
+
+    suspend fun findFirstUnreadMessageId(conversationId: String, offset: Int): String? =
+        conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 }
