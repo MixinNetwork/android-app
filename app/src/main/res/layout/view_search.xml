@@ -29,7 +29,7 @@
         android:background="?attr/bg_white">
 
         <ImageButton
-            android:id="@+id/wallet_ib"
+            android:id="@+id/search_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
@@ -39,7 +39,7 @@
             android:layout_toStartOf="@+id/group_ib"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
-            app:srcCompat="@drawable/ic_wallet"
+            app:srcCompat="@drawable/ic_search_black"
             tools:ignore="ContentDescription" />
 
         <TextView

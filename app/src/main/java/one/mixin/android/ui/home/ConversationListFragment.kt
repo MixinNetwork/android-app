@@ -34,6 +34,7 @@ import kotlinx.android.synthetic.main.item_list_conversation.view.*
 import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
+import kotlinx.android.synthetic.main.view_shadow_circle.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
 import one.mixin.android.Constants.INTERVAL_48_HOURS
@@ -193,7 +194,7 @@ class ConversationListFragment : LinkFragment() {
                 down_iv.scaleY = 1f
             }
         }
-        shadow_view.setOnClickListener {
+        shadow_view.camera.setOnClickListener {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.CAMERA)
                 .autoDispose(stopScope)
@@ -204,6 +205,12 @@ class ConversationListFragment : LinkFragment() {
                         context?.openPermissionSetting()
                     }
                 }
+        }
+        shadow_view.wallet.setOnClickListener {
+            (requireActivity() as MainActivity).openWallet()
+        }
+        shadow_view.circle.setOnClickListener {
+            (requireActivity() as MainActivity).openCircle()
         }
         messageAdapter.onItemListener = object : PagedHeaderAdapter.OnItemListener<ConversationItem> {
             override fun onNormalLongClick(item: ConversationItem): Boolean {

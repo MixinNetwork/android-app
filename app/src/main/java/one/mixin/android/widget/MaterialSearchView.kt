@@ -19,6 +19,8 @@ import androidx.core.view.isVisible
 import com.jakewharton.rxbinding3.widget.textChanges
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 import kotlinx.android.synthetic.main.view_search.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.appCompatActionBarHeight
@@ -27,12 +29,11 @@ import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.translationX
 import one.mixin.android.extension.translationY
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import org.jetbrains.annotations.NotNull
-import java.util.concurrent.TimeUnit
-import kotlin.math.roundToInt
 
 class MaterialSearchView : FrameLayout {
     var isOpen = false
@@ -164,19 +165,19 @@ class MaterialSearchView : FrameLayout {
         container_shadow.fadeOut()
         add_ib.fadeOut()
         group_ib.fadeIn()
-        wallet_ib.fadeIn()
+        search_ib.fadeIn()
         container_circle.translationY(-containerHeight) {
             container_circle.isVisible = false
         }
     }
 
-    private fun showContainer() {
+    fun showContainer() {
         containerDisplay = true
         container_circle.isVisible = true
         container_shadow.fadeIn()
         add_ib.fadeIn()
         group_ib.fadeOut()
-        wallet_ib.fadeOut()
+        search_ib.fadeOut()
         container_circle.translationY(0f) {
         }
     }
@@ -191,12 +192,12 @@ class MaterialSearchView : FrameLayout {
 
     fun dragSearch(progress: Float) {
         group_ib.translationX = context.dpToPx(84f) * progress
-        wallet_ib.translationX = context.dpToPx(84f) * progress
+        search_ib.translationX = context.dpToPx(84f) * progress
         val fastFadeOut = (1 - 2 * progress).coerceAtLeast(0f)
         val fastFadeIn = (progress.coerceAtLeast(.5f) - .5f) * 2
         search_et.isVisible = true
         search_et.alpha = fastFadeIn
-        wallet_ib.isVisible = true
+        search_ib.isVisible = true
         logo.isVisible = true
         back_ib.isVisible = true
         logo.alpha = fastFadeOut
@@ -216,8 +217,17 @@ class MaterialSearchView : FrameLayout {
 
                 private fun op() {
                     setListener(null)
-                    logo.isGone = true
-                    logo.animate().apply {
+                    search_et.isVisible = true
+                    search_et.showKeyboard()
+                    search_et.animate().apply {
+                        setListener(object : AnimatorListenerAdapter() {
+                            override fun onAnimationCancel(animation: Animator?) {
+                                search_et.alpha = 1f
+                            }
+                        })
+                    }.setDuration(150L).alpha(1f).start()
+                    back_ib.isVisible = true
+                    back_ib.animate().apply {
                         setListener(object : AnimatorListenerAdapter() {
                             override fun onAnimationCancel(animation: Animator?) {
                                 back_ib.alpha = 1f
@@ -226,14 +236,15 @@ class MaterialSearchView : FrameLayout {
                     }.setDuration(150L).alpha(1f).start()
                 }
             })
-        }.setDuration(150L).alpha(0f).start()
+        }.alpha(0f).setDuration(150L).start()
+
         right_clear.visibility = View.GONE
 
         search_et.setText("")
         oldLeftX = logo.x
         oldSearchWidth = search_et.measuredWidth
         group_ib.translationX(context.dpToPx(84f).toFloat())
-        wallet_ib.translationX(context.dpToPx(84f).toFloat())
+        search_ib.translationX(context.dpToPx(84f).toFloat())
         mSearchViewListener?.onSearchViewOpened()
         isOpen = true
     }
@@ -282,7 +293,7 @@ class MaterialSearchView : FrameLayout {
         right_clear.visibility = View.GONE
 
         group_ib.translationX(0f)
-        wallet_ib.translationX(0f)
+        search_ib.translationX(0f)
         clearFocus()
         search_et.hideKeyboard()
         search_et.setText("")
@@ -345,7 +356,7 @@ class MaterialSearchView : FrameLayout {
     }
 
     fun setBackIcon(resourceId: Int) {
-        wallet_ib.setImageResource(resourceId)
+        search_ib.setImageResource(resourceId)
     }
 
     fun setInputType(inputType: Int) {
@@ -362,7 +373,7 @@ class MaterialSearchView : FrameLayout {
     }
 
     fun setOnLeftClickListener(onClickListener: OnClickListener) {
-        wallet_ib.setOnClickListener(onClickListener)
+        search_ib.setOnClickListener(onClickListener)
     }
 
     private var containerDisplay = false

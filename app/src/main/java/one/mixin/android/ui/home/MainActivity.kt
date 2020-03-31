@@ -487,9 +487,8 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun initView() {
         search_bar.setOnLeftClickListener(View.OnClickListener {
-            navigationController.pushWallet()
+            openSearch()
         })
-
         search_bar.setOnRightClickListener(View.OnClickListener {
             navigationController.pushContacts()
         })
@@ -528,6 +527,13 @@ class MainActivity : BlazeBaseActivity() {
 
     fun openSearch() {
         search_bar?.openSearch()
+    }
+
+    fun openWallet() {
+        navigationController.pushWallet()
+    }
+    fun openCircle() {
+        search_bar?.showContainer()
     }
 
     fun closeSearch() {
