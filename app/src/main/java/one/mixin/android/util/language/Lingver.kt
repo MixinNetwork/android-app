@@ -11,7 +11,7 @@ import android.content.res.Resources
 import android.os.Build
 import android.os.Build.VERSION_CODES
 import android.os.LocaleList
-import java.util.*
+import java.util.Locale
 
 /**
  * Lingver is a tool to manage your application locale and language.
@@ -59,6 +59,8 @@ class Lingver private constructor(private val store: LocaleStore) {
     fun getLanguage(): String {
         return verifyLanguage(getLocale().language)
     }
+
+    fun isCurrChinese() = getLanguage() == Locale.SIMPLIFIED_CHINESE.language
 
     private fun verifyLanguage(language: String): String {
         // get rid of deprecated language tags

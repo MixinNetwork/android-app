@@ -3,6 +3,7 @@ package one.mixin.android.extension
 import android.content.Context
 import one.mixin.android.R
 import one.mixin.android.util.TimeCache
+import one.mixin.android.util.language.Lingver
 import org.threeten.bp.DayOfWeek
 import org.threeten.bp.Instant
 import org.threeten.bp.LocalTime
@@ -13,6 +14,10 @@ import org.threeten.bp.format.DateTimeFormatter
 private val LocaleZone by lazy {
     ZoneId.systemDefault()
 }
+
+private const val weekPatternEn = "E, d MMM"
+private const val weekPatternCn = "MM月d日 E"
+private const val yearPattern = "MMM d, yyyy"
 
 fun nowInUtc() = Instant.now().toString()
 
@@ -73,35 +78,14 @@ fun String.timeAgoDate(context: Context): String {
         val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)
         timeAgoDate = when {
             (todayMilli <= date.toInstant().toEpochMilli()) -> context.getString(R.string.today)
-            (today.year == date.year && date.format(DateTimeFormatter.ofPattern("ww").withZone(LocaleZone)) == today.format(DateTimeFormatter.ofPattern("ww")
-                .withZone
-                (LocaleZone))) -> {
-                when (date.dayOfWeek) {
-                    DayOfWeek.MONDAY -> context.getString(R.string.week_monday)
-                    DayOfWeek.TUESDAY -> context.getString(R.string.week_tuesday)
-                    DayOfWeek.WEDNESDAY -> context.getString(R.string.week_wednesday)
-                    DayOfWeek.THURSDAY -> context.getString(R.string.week_thursday)
-                    DayOfWeek.FRIDAY -> context.getString(R.string.week_friday)
-                    DayOfWeek.SATURDAY -> context.getString(R.string.week_saturday)
-                    else -> context.getString(R.string.week_sunday)
-                }
-            }
             (today.year == date.year) -> {
-                "${date.format(DateTimeFormatter.ofPattern("MM/dd").withZone(LocaleZone))} ${
-                when (date.dayOfWeek) {
-                    DayOfWeek.MONDAY -> context.getString(R.string.week_monday)
-                    DayOfWeek.TUESDAY -> context.getString(R.string.week_tuesday)
-                    DayOfWeek.WEDNESDAY -> context.getString(R.string.week_wednesday)
-                    DayOfWeek.THURSDAY -> context.getString(R.string.week_thursday)
-                    DayOfWeek.FRIDAY -> context.getString(R.string.week_friday)
-                    DayOfWeek.SATURDAY -> context.getString(R.string.week_saturday)
-                    else -> context.getString(R.string.week_sunday)
+                if (Lingver.getInstance().isCurrChinese()) {
+                    date.format(DateTimeFormatter.ofPattern(weekPatternCn).withZone(LocaleZone))
+                } else {
+                    date.format(DateTimeFormatter.ofPattern(weekPatternEn).withZone(LocaleZone))
                 }
-                }"
             }
-            else -> {
-                date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd").withZone(LocaleZone))
-            }
+            else -> date.format(DateTimeFormatter.ofPattern(yearPattern).withZone(LocaleZone))
         }
         TimeCache.singleton.putTimeAgoDate(this + today, timeAgoDate)
     }

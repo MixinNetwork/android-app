@@ -399,7 +399,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 val detector = FirebaseVision.getInstance().visionBarcodeDetector
                 detector.detectInImage(image)
                     .addOnSuccessListener { barcodes ->
-                        barcodes.firstOrNull()?.rawValue?.openAsUrlOrQrScan(supportFragmentManager, lifecycleScope)
+                        url = barcodes.firstOrNull()?.rawValue
+                        url?.openAsUrlOrQrScan(supportFragmentManager, lifecycleScope)
                     }
                     .addOnFailureListener {
                         toast(R.string.can_not_recognize)
