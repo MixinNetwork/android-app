@@ -17,7 +17,9 @@
             android:id="@+id/container_circle"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="?attr/bg_white" />
+            android:background="?attr/bg_white"
+            android:clickable="true"
+            android:focusable="true" />
     </FrameLayout>
 
     <RelativeLayout
@@ -30,6 +32,7 @@
             android:id="@+id/wallet_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
             android:layout_gravity="center_vertical|start"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
@@ -49,14 +52,15 @@
             android:layout_marginEnd="16dp"
             android:text="Mixin"
             android:textColor="?attr/text_primary"
-            android:textSize="18sp"
             android:textStyle="bold"
+            android:textSize="18sp"
             tools:ignore="ContentDescription,HardcodedText" />
 
         <ImageButton
             android:id="@+id/back_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
             android:layout_gravity="center_vertical|start"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
@@ -72,6 +76,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
             android:background="@drawable/mixin_ripple"
@@ -84,6 +89,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
             android:alpha="0"
@@ -96,11 +102,10 @@
             android:id="@+id/search_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_centerVertical="true"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="10dp"
-            android:layout_toStartOf="@+id/left_ib"
+            android:layout_toStartOf="@+id/right_clear"
             android:layout_toEndOf="@+id/back_ib"
             android:background="@null"
             android:drawablePadding="6dp"
@@ -109,11 +114,8 @@
             android:imeOptions="actionSearch|flagNoExtractUi"
             android:inputType="text"
             android:maxLines="1"
-            android:paddingStart="12dp"
-            android:paddingEnd="24dp"
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_minor"
-            android:textSize="14sp"
             android:visibility="invisible" />
 
         <ImageButton
@@ -121,6 +123,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
             android:background="@drawable/mixin_ripple"
