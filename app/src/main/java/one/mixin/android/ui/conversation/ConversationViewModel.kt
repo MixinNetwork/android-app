@@ -1106,4 +1106,7 @@ internal constructor(
     suspend fun markMentionRead(messageId: String, conversationId: String) {
         conversationRepository.markMentionRead(messageId, conversationId)
     }
+
+    suspend fun conversationZeroClear(conversationId: String) =
+        conversationRepository.conversationZeroClear(conversationId)
 }

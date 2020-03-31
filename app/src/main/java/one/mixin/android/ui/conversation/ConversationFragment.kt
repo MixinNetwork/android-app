@@ -203,7 +203,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         const val CONVERSATION_ID = "conversation_id"
         const val RECIPIENT_ID = "recipient_id"
         const val RECIPIENT = "recipient"
-        private const val MESSAGE_ID = "message_id"
+        const val MESSAGE_ID = "message_id"
+        const val INITIAL_POSITION_MESSAGE_ID = "initial_position_message_id"
+        const val UNREAD_COUNT = "unread_count"
         private const val KEY_WORD = "key_word"
         private const val MESSAGES = "messages"
 
@@ -212,7 +214,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             recipientId: String?,
             messageId: String?,
             keyword: String?,
-            messages: ArrayList<ForwardMessage>?
+            messages: ArrayList<ForwardMessage>?,
+            unreadCount: Int? = null
         ): Bundle =
             Bundle().apply {
                 require(!(conversationId == null && recipientId == null)) { "lose data" }
@@ -225,6 +228,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 putString(CONVERSATION_ID, conversationId)
                 putString(RECIPIENT_ID, recipientId)
                 putParcelableArrayList(MESSAGES, messages)
+                unreadCount?.let {
+                    putInt(UNREAD_COUNT, unreadCount)
+                }
             }
 
         fun newInstance(bundle: Bundle) = ConversationFragment().apply { arguments = bundle }
@@ -685,6 +691,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         requireArguments().getString(MESSAGE_ID, null)
     }
 
+    private val initialPositionMessageId: String? by lazy {
+        requireArguments().getString(INITIAL_POSITION_MESSAGE_ID, null)
+    }
+
     private val keyword: String? by lazy {
         requireArguments().getString(KEY_WORD, null)
     }
@@ -731,7 +741,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? = inflater.inflate(R.layout.fragment_conversation, container, false)
+    ): View? {
+        return inflater.inflate(R.layout.fragment_conversation, container, false)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -1334,21 +1346,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private var unreadCount = 0
     private fun bindData() {
-        lifecycleScope.launch {
-            if (!isAdded) return@launch
-
-            unreadCount = if (!messageId.isNullOrEmpty()) {
-                chatViewModel.findMessageIndex(conversationId, messageId!!)
-            } else {
-                chatViewModel.indexUnread(conversationId)
-            }
-            val msgId = messageId ?: if (unreadCount <= 0) {
-                null
-            } else {
-                chatViewModel.findFirstUnreadMessageId(conversationId, unreadCount - 1)
-            }
-            liveDataMessage(unreadCount, msgId)
-        }
+        unreadCount = requireArguments().getInt(UNREAD_COUNT, 0)
+        liveDataMessage(unreadCount, initialPositionMessageId)
 
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(viewLifecycleOwner, Observer { mentionMessages ->
             flag_layout.mentionCount = mentionMessages.size

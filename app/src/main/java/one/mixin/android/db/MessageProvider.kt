@@ -46,7 +46,7 @@ class MessageProvider {
                     val argIndex = 1
                     statement.bindString(argIndex, conversationId)
 
-                    val countSql = "SELECT COUNT(*) FROM messages WHERE conversation_id = ?"
+                    val countSql = "SELECT COUNT(1) FROM messages WHERE conversation_id = ?"
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 1)
                     countStatement.bindString(argIndex, conversationId)
                     return object : MixinLimitOffsetDataSource<MessageItem>(database, statement, countStatement, false, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {

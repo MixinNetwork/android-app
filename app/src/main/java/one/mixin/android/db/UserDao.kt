@@ -47,6 +47,9 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
     fun findContactByConversationId(conversationId: String): User?
 
+    @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
+    suspend fun suspendFindContactByConversationId(conversationId: String): User?
+
     @Query("""
         SELECT * FROM users 
         WHERE user_id != :id 

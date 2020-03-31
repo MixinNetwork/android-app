@@ -129,8 +129,8 @@ object Constants {
 
     const val BATCH_SIZE = 700
 
-    const val PAGE_SIZE = 30
-    const val CONVERSATION_PAGE_SIZE = 20
+    const val PAGE_SIZE = 15
+    const val CONVERSATION_PAGE_SIZE = 15
 
     const val BIOMETRICS_ALIAS = "biometrics_alias"
     const val BIOMETRICS_PIN = "biometrics_pin"
