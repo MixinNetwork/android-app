@@ -11,11 +11,11 @@ import one.mixin.android.vo.ConversationItem
 @Dao
 interface CircleDao : BaseDao<Circle> {
 
-    @Query("SELECT c.* FROM circles c")
+    @Query("SELECT * FROM circles")
     fun observeAllCircles(): LiveData<List<Circle>>
 
     @Query("""
-        SELECT c.* FROM conversation_circles cc
+        SELECT c.* FROM circle_conversations cc
         INNER JOIN circles c ON c.circle_id = cc.circle_id
         WHERE conversation_id = :conversationId
     """)
@@ -35,7 +35,7 @@ interface CircleDao : BaseDao<Circle> {
         (SELECT count(*) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) AS mentionCount,  
         mm.mentions AS mentions 
         FROM conversations c
-        INNER JOIN conversation_circles cc ON cc.conversation_id = c.conversation_id
+        INNER JOIN circle_conversations cc ON cc.conversation_id = c.conversation_id
         INNER JOIN circles ci ON ci.circle_id = :circleId 
         INNER JOIN users ou ON ou.user_id = c.owner_id
         LEFT JOIN messages m ON c.last_message_id = m.id
@@ -44,7 +44,7 @@ interface CircleDao : BaseDao<Circle> {
         LEFT JOIN snapshots s ON s.snapshot_id = m.snapshot_id
         LEFT JOIN users pu ON pu.user_id = m.participant_id 
         WHERE c.category IS NOT NULL 
-        ORDER BY c.pin_time DESC, 
+        ORDER BY cc.pin_time DESC, 
             CASE 
                 WHEN m.created_at is NULL THEN c.created_at
                 ELSE m.created_at 

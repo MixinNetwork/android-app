@@ -28,8 +28,8 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetsExtra
 import one.mixin.android.vo.Circle
+import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
-import one.mixin.android.vo.ConversationCircle
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Hyperlink
@@ -78,7 +78,7 @@ import one.mixin.android.vo.User
     (MessageMention::class),
     (MessageFts4::class),
     (Circle::class),
-    (ConversationCircle::class)],
+    (CircleConversation::class)],
     version = CURRENT_VERSION)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
