@@ -77,6 +77,7 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.home.circle.ConversationCircleFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
@@ -523,6 +524,7 @@ class MainActivity : BlazeBaseActivity() {
                 false
             }
         }
+        supportFragmentManager.beginTransaction().add(R.id.container_circle, conversationCircleFragment, ConversationCircleFragment.TAG).commit()
     }
 
     fun openSearch() {
@@ -532,8 +534,13 @@ class MainActivity : BlazeBaseActivity() {
     fun openWallet() {
         navigationController.pushWallet()
     }
+
     fun openCircle() {
         search_bar?.showContainer()
+    }
+
+    private val conversationCircleFragment by lazy {
+        ConversationCircleFragment.newInstance()
     }
 
     fun closeSearch() {

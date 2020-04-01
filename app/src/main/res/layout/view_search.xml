@@ -17,6 +17,7 @@
             android:id="@+id/container_circle"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="?actionBarSize"
             android:background="?attr/bg_white"
             android:clickable="true"
             android:focusable="true" />
