@@ -16,8 +16,9 @@ private val LocaleZone by lazy {
 }
 
 private const val weekPatternEn = "E, d MMM"
-private const val weekPatternCn = "MM月d日 E"
-private const val yearPattern = "MMM d, yyyy"
+private const val weekPatternCn = "MM 月 d 日 E"
+private const val yearPatternEn = "MMM d, yyyy"
+private const val yearPatternCn = "yyyy 年 MM 月 d 日 E"
 
 fun nowInUtc() = Instant.now().toString()
 
@@ -85,7 +86,13 @@ fun String.timeAgoDate(context: Context): String {
                     date.format(DateTimeFormatter.ofPattern(weekPatternEn).withZone(LocaleZone))
                 }
             }
-            else -> date.format(DateTimeFormatter.ofPattern(yearPattern).withZone(LocaleZone))
+            else -> {
+                if (Lingver.getInstance().isCurrChinese()) {
+                    date.format(DateTimeFormatter.ofPattern(yearPatternCn).withZone(LocaleZone))
+                } else {
+                    date.format(DateTimeFormatter.ofPattern(yearPatternEn).withZone(LocaleZone))
+                }
+            }
         }
         TimeCache.singleton.putTimeAgoDate(this + today, timeAgoDate)
     }
