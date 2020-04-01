@@ -7,13 +7,14 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_coversation_circle.*
 import one.mixin.android.R
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.ConversationListViewModel
 import one.mixin.android.vo.ConversationCircleItem
 import timber.log.Timber
+import javax.inject.Inject
 
 class ConversationCircleFragment : BaseFragment() {
     companion object {
@@ -48,13 +49,26 @@ class ConversationCircleFragment : BaseFragment() {
     class ConversationCircleAdapter(val action: (String?) -> Unit) : RecyclerView.Adapter<ConversationCircleHolder>() {
         var conversationCircles: List<ConversationCircleItem>? = null
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationCircleHolder =
-            ConversationCircleHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_conversation_circle, parent, false))
+            if (viewType == 1) {
+                ConversationCircleHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_conversation_circle, parent, false))
+            } else {
+                ConversationCircleHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_conversation_circle_bottom, parent, false))
+            }
 
-        override fun getItemCount(): Int = (conversationCircles?.size ?: 0) + 1
+        override fun getItemCount(): Int = conversationCircles.notNullWithElse({ it.size + 1 }, 2)
+
+        override fun getItemViewType(position: Int): Int =
+            if (conversationCircles == null && position == 1) {
+                0
+            } else {
+                1
+            }
 
         override fun onBindViewHolder(holder: ConversationCircleHolder, position: Int) {
-            holder.itemView.setOnClickListener {
-                action(null)
+            if (getItemViewType(position) == 1) {
+                holder.itemView.setOnClickListener {
+                    action(null)
+                }
             }
         }
     }
