@@ -17,6 +17,7 @@ import one.mixin.android.api.WebSocketException
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
+import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
@@ -81,6 +82,9 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
     @Inject
     @Transient
     lateinit var addressService: AddressService
+    @Inject
+    @Transient
+    lateinit var circleService: CircleService
     @Inject
     @Transient
     @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
