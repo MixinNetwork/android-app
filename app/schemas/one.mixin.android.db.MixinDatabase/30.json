@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 30,
-    "identityHash": "cfcf8ce4bbe0cc54f08418e6d4ed9b3d",
+    "identityHash": "662cc9a06862f3154b16bc6e87c295bd",
     "entities": [
       {
         "tableName": "users",
@@ -1663,8 +1663,8 @@
         "foreignKeys": []
       },
       {
-        "tableName": "conversation_circles",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`conversation_id` TEXT NOT NULL, `circle_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`conversation_id`, `circle_id`))",
+        "tableName": "circle_conversations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`conversation_id` TEXT NOT NULL, `circle_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, `pin_time` TEXT, PRIMARY KEY(`conversation_id`, `circle_id`))",
         "fields": [
           {
             "fieldPath": "conversationId",
@@ -1683,6 +1683,12 @@
             "columnName": "created_at",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "pinTime",
+            "columnName": "pin_time",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -1699,7 +1705,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cfcf8ce4bbe0cc54f08418e6d4ed9b3d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '662cc9a06862f3154b16bc6e87c295bd')"
     ]
   }
 }

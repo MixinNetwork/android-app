@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 29,
-    "identityHash": "662cc9a06862f3154b16bc6e87c295bd",
+    "identityHash": "7e3b481b55d89f367a2d6761c2456e7d",
     "entities": [
       {
         "tableName": "users",
@@ -1635,77 +1635,12 @@
         },
         "indices": [],
         "foreignKeys": []
-      },
-      {
-        "tableName": "circles",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`circle_id` TEXT NOT NULL, `name` TEXT NOT NULL, PRIMARY KEY(`circle_id`))",
-        "fields": [
-          {
-            "fieldPath": "circleId",
-            "columnName": "circle_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "circle_id"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
-        "tableName": "circle_conversations",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`conversation_id` TEXT NOT NULL, `circle_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, `pin_time` TEXT, PRIMARY KEY(`conversation_id`, `circle_id`))",
-        "fields": [
-          {
-            "fieldPath": "conversationId",
-            "columnName": "conversation_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "circleId",
-            "columnName": "circle_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "createdAt",
-            "columnName": "created_at",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "pinTime",
-            "columnName": "pin_time",
-            "affinity": "TEXT",
-            "notNull": false
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "conversation_id",
-            "circle_id"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [],
-        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '662cc9a06862f3154b16bc6e87c295bd')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7e3b481b55d89f367a2d6761c2456e7d')"
     ]
   }
 }
