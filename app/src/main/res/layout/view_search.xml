@@ -39,7 +39,7 @@
             android:layout_toStartOf="@+id/group_ib"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
-            app:srcCompat="@drawable/ic_search_black"
+            app:srcCompat="@drawable/ic_search_home"
             tools:ignore="ContentDescription" />
 
         <TextView
