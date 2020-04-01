@@ -13,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
@@ -56,7 +57,7 @@ class MaterialSearchView : FrameLayout {
     }
 
     private val containerHeight by lazy {
-        context.screenHeight() * 0.45f
+        context.screenHeight() * 0.7f
     }
 
     @Suppress("unused")
@@ -130,7 +131,7 @@ class MaterialSearchView : FrameLayout {
 
     private fun initSearchView() {
         container_circle.translationY = -containerHeight
-        container_circle.layoutParams.height = containerHeight.toInt()
+        (container_circle.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxHeight = containerHeight.toInt()
         container_shadow.layoutParams.height = context.screenHeight()
         container_shadow.setOnClickListener {
             hideContainer()

@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <FrameLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/container_shadow"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -16,12 +16,13 @@
         <FrameLayout
             android:id="@+id/container_circle"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginTop="?actionBarSize"
             android:background="?attr/bg_white"
+            app:layout_constraintTop_toTopOf="parent"
             android:clickable="true"
             android:focusable="true" />
-    </FrameLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <RelativeLayout
         android:id="@+id/search_view"
