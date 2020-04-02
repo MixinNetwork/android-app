@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CONVERSATION_PAGE_SIZE
@@ -29,7 +30,6 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
-import javax.inject.Inject
 
 class ConversationListViewModel @Inject
 internal constructor(
