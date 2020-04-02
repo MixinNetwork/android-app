@@ -1,7 +1,6 @@
 package one.mixin.android.ui.home.circle
 
 import android.os.Bundle
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -72,7 +71,7 @@ class ConversationCircleFragment : BaseFragment() {
                 notifyDataSetChanged()
             }
 
-        private var currentCircleId: String? = null
+        var currentCircleId: String? = null
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationCircleHolder =
             if (viewType == 1) {
@@ -109,7 +108,7 @@ class ConversationCircleFragment : BaseFragment() {
                 }
                 holder.itemView.setOnLongClickListener {
                     if (conversationCircleItem != null) {
-                        showMenu(it, conversationCircleItem)
+                        showMenu(it.circle_title, conversationCircleItem)
                         true
                     } else {
                         false
@@ -120,7 +119,7 @@ class ConversationCircleFragment : BaseFragment() {
     }
 
     private fun showMenu(view: View, conversationCircleItem: ConversationCircleItem) {
-        val popMenu = PopupMenu(requireContext(), view, Gravity.CENTER or Gravity.BOTTOM)
+        val popMenu = PopupMenu(requireContext(), view)
         popMenu.menuInflater.inflate(R.menu.circle_menu, popMenu.menu)
         popMenu.setOnMenuItemClickListener {
             when (it.itemId) {
@@ -132,6 +131,9 @@ class ConversationCircleFragment : BaseFragment() {
                 }
                 R.id.delete -> {
                     delete(conversationCircleItem)
+                    if (conversationAdapter.currentCircleId == conversationCircleItem.circleId) {
+                        (requireActivity() as MainActivity).selectCircle(null, null)
+                    }
                 }
 
                 else -> {
