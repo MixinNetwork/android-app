@@ -587,6 +587,8 @@ class MainActivity : BlazeBaseActivity() {
                 response.data?.let { circle ->
                     userRepo.insertCircle(circle)
                 }
+            } else {
+                ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
             }
         }
     }

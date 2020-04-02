@@ -14,10 +14,10 @@ interface CircleService {
     fun getCircles(): Call<MixinResponse<List<Circle>>>
 
     @POST("circles")
-    suspend fun createCircle(@Body name: CircleBody): MixinResponse<Circle>
+    suspend fun createCircle(@Body body: CircleBody): MixinResponse<Circle>
 
     @POST("/circles/{id}")
-    fun updateCircle(@Path("id") id: String): MixinResponse<Any>
+    suspend fun updateCircle(@Path("id") id: String, @Body body: CircleBody): MixinResponse<Circle>
 
     @POST("/circles/{id}/delete")
     fun deleteCircle(@Path("id") id: String): MixinResponse<Any>

@@ -1,22 +1,30 @@
 package one.mixin.android.ui.home.circle
 
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_coversation_circle.*
 import kotlinx.android.synthetic.main.item_conversation_circle.view.*
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.EditDialog
+import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.ConversationListViewModel
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ConversationCircleItem
 
@@ -49,12 +57,15 @@ class ConversationCircleFragment : BaseFragment() {
     }
 
     private val conversationAdapter by lazy {
-        ConversationCircleAdapter { name, circleId ->
+        ConversationCircleAdapter({ name, circleId ->
             (requireActivity() as MainActivity).selectCircle(name, circleId)
-        }
+        }, { view, conversationCircleItem ->
+            showMenu(view, conversationCircleItem)
+        })
     }
 
-    class ConversationCircleAdapter(val action: (String?, String?) -> Unit) : RecyclerView.Adapter<ConversationCircleHolder>() {
+    class ConversationCircleAdapter(val action: (String?, String?) -> Unit, val showMenu: (View, ConversationCircleItem) -> Unit) :
+        RecyclerView.Adapter<ConversationCircleHolder>() {
         var conversationCircles: List<ConversationCircleItem>? = null
             set(value) {
                 field = value
@@ -96,8 +107,72 @@ class ConversationCircleFragment : BaseFragment() {
                     action(conversationCircleItem?.name, currentCircleId)
                     notifyDataSetChanged()
                 }
+                holder.itemView.setOnLongClickListener {
+                    if (conversationCircleItem != null) {
+                        showMenu(it, conversationCircleItem)
+                        true
+                    } else {
+                        false
+                    }
+                }
             }
         }
+    }
+
+    private fun showMenu(view: View, conversationCircleItem: ConversationCircleItem) {
+        val popMenu = PopupMenu(requireContext(), view, Gravity.CENTER or Gravity.BOTTOM)
+        popMenu.menuInflater.inflate(R.menu.circle_menu, popMenu.menu)
+        popMenu.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.rename -> {
+                    rename(conversationCircleItem)
+                }
+                R.id.edit -> {
+                    edit(conversationCircleItem)
+                }
+                R.id.delete -> {
+                    delete(conversationCircleItem)
+                }
+
+                else -> {
+                }
+            }
+            true
+        }
+        popMenu.show()
+    }
+
+    private fun rename(conversationCircleItem: ConversationCircleItem) {
+        editDialog {
+            titleText = this@ConversationCircleFragment.getString(R.string.circle_menu_edit_name)
+            editText = conversationCircleItem.name
+            maxTextCount = 128
+            editMaxLines = EditDialog.MAX_LINE.toInt()
+            allowEmpty = false
+            rightText = android.R.string.ok
+            rightAction = {
+                rename(conversationCircleItem.circleId, it)
+            }
+        }
+    }
+
+    private fun rename(circleId: String, name: String) {
+        conversationViewModel.viewModelScope.launch(errorHandler) {
+            val response = conversationViewModel.circleRename(circleId, name)
+            if (response.isSuccess) {
+                response.data?.let { circle ->
+                    conversationViewModel.insertCircle(circle)
+                }
+            } else {
+                ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+            }
+        }
+    }
+
+    private fun edit(conversationCircleItem: ConversationCircleItem) {
+    }
+
+    private fun delete(conversationCircleItem: ConversationCircleItem) {
     }
 
     class ConversationCircleHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

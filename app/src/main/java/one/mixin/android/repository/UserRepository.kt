@@ -132,4 +132,6 @@ constructor(
             circleDao.insert(circle)
         }
     }
+
+    suspend fun circleRename(circleId: String, name: String) = circleService.updateCircle(circleId, CircleBody(name))
 }

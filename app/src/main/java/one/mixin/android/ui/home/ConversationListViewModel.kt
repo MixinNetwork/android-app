@@ -17,6 +17,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.vo.Circle
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItem
@@ -97,4 +98,8 @@ internal constructor(
         conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 
     fun observeAllCircleItem() = userRepository.observeAllCircleItem()
+
+    suspend fun circleRename(circleId: String, name: String) = userRepository.circleRename(circleId, name)
+
+    suspend fun insertCircle(circle: Circle) = userRepository.insertCircle(circle)
 }
