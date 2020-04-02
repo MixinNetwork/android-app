@@ -32,7 +32,6 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import org.jetbrains.anko.textColor
-import timber.log.Timber
 
 class ConversationCircleEditFragment : BaseFragment() {
     companion object {
@@ -69,13 +68,15 @@ class ConversationCircleEditFragment : BaseFragment() {
         }
     }
 
+    private var oldConversationIds = mutableListOf<String>()
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_conversation_circle_edit, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener {
-            activity?.onBackPressed()
+            parentFragmentManager.popBackStackImmediate()
         }
         title_view.right_animator.setOnClickListener {
             save()
@@ -118,6 +119,11 @@ class ConversationCircleEditFragment : BaseFragment() {
         loadData()
     }
 
+    override fun onBackPressed(): Boolean {
+        parentFragmentManager.popBackStackImmediate()
+        return super.onBackPressed()
+    }
+
     private fun updateTitleText(size: Int) {
         if (adapter.selectItem.isEmpty()) {
             title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
@@ -133,6 +139,9 @@ class ConversationCircleEditFragment : BaseFragment() {
         val conversations = chatViewModel.successConversationList()
         adapter.sourceConversations = conversations
         val conversationItems = chatViewModel.findConversationItemByCircleId(circle.circleId)
+        conversationItems.forEach { item ->
+            oldConversationIds.add(item.conversationId)
+        }
         adapter.selectItem.clear()
         adapter.selectItem.addAll(conversationItems)
         selectAdapter.checkedItems.clear()
@@ -179,7 +188,12 @@ class ConversationCircleEditFragment : BaseFragment() {
                 chatViewModel.updateCircleConversations(circle.circleId, conversationRequests)
             },
             successBlock = {
-                Timber.d("@@@ ${it.data}")
+                val newConversationIds = mutableListOf<String>()
+                conversationRequests.forEach { item ->
+                    newConversationIds.add(item.conversationId)
+                }
+                chatViewModel.saveCircle(oldConversationIds, newConversationIds, circle.circleId)
+                parentFragmentManager.popBackStackImmediate()
             }
         )
     }

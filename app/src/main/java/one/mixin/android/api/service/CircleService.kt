@@ -16,6 +16,9 @@ interface CircleService {
     @GET("circles/{id}")
     fun getCircle(@Path("id") id: String): MixinResponse<Circle>
 
+    @GET("circles/{id}")
+    suspend fun getCircleById(@Path("id") id: String): MixinResponse<Circle>
+
     @POST("circles")
     suspend fun createCircle(@Body body: CircleBody): MixinResponse<Circle>
 

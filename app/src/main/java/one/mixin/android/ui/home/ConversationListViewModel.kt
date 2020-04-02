@@ -5,9 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CONVERSATION_PAGE_SIZE
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
@@ -19,6 +20,7 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.Circle
+import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
@@ -27,6 +29,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import javax.inject.Inject
 
 class ConversationListViewModel @Inject
 internal constructor(
@@ -131,4 +134,40 @@ internal constructor(
         userRepository.updateCircleConversations(id, circleConversationRequests)
 
     fun sortCircleConversations(list: List<CircleOrder>?) = viewModelScope.launch { userRepository.sortCircleConversations(list) }
+
+    suspend fun saveCircle(
+        oldConversationIds: List<String>,
+        newConversationIds: List<String>,
+        circleId: String
+    ) {
+        handleMixinResponse(
+            switchContext = Dispatchers.IO,
+            invokeNetwork = {
+                userRepository.getCircleById(circleId)
+            },
+            successBlock = {
+                it.data?.let { circle ->
+                    userRepository.insertCircle(circle)
+                    return@handleMixinResponse circle
+                }
+            }
+        )?.let {
+            val safeSet = oldConversationIds.intersect(newConversationIds)
+            val removeSet = oldConversationIds.subtract(safeSet)
+            val addSet = newConversationIds.subtract(safeSet)
+
+            removeSet.forEach { conversationId ->
+                userRepository.deleteCircleConversation(conversationId, circleId)
+            }
+            addSet.forEach { conversationId ->
+                val circleConversation = CircleConversation(
+                    conversationId,
+                    circleId,
+                    nowInUtc(),
+                    null
+                )
+                userRepository.insertCircleConversation(circleConversation)
+            }
+        }
+    }
 }

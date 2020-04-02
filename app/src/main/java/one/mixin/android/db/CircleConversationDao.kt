@@ -8,4 +8,7 @@ import one.mixin.android.vo.CircleConversation
 interface CircleConversationDao : BaseDao<CircleConversation> {
     @Query("UPDATE circle_conversations SET pin_time = :pinTime WHERE conversation_id = :conversationId AND circle_id = :circleId")
     fun updateConversationPinTimeById(conversationId: String, circleId: String, pinTime: String?)
+
+    @Query("DELETE FROM circle_conversations WHERE conversation_id = :conversationId AND circle_id = :circleId")
+    suspend fun deleteByIds(conversationId: String, circleId: String)
 }

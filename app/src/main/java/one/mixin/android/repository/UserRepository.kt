@@ -11,6 +11,7 @@ import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
+import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
@@ -21,6 +22,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleBody
+import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
@@ -33,7 +35,8 @@ constructor(
     private val appDao: AppDao,
     private val circleDao: CircleDao,
     private val userService: UserService,
-    private val circleService: CircleService
+    private val circleService: CircleService,
+    private val circleConversationDao: CircleConversationDao
 ) {
 
     fun findFriends(): LiveData<List<User>> = userDao.findFriends()
@@ -130,11 +133,7 @@ constructor(
 
     fun observeAllCircleItem() = circleDao.observeAllCircleItem()
 
-    suspend fun insertCircle(circle: Circle) {
-        withContext(Dispatchers.IO) {
-            circleDao.insert(circle)
-        }
-    }
+    suspend fun insertCircle(circle: Circle) = circleDao.insertSuspend(circle)
 
     suspend fun circleRename(circleId: String, name: String) = circleService.updateCircle(circleId, CircleBody(name))
 
@@ -155,4 +154,12 @@ constructor(
             }
         }
     }
+
+    suspend fun getCircleById(circleId: String) = circleService.getCircleById(circleId)
+
+    suspend fun deleteCircleConversation(conversationId: String, circleId: String) =
+        circleConversationDao.deleteByIds(conversationId, circleId)
+
+    suspend fun insertCircleConversation(circleConversation: CircleConversation) =
+        circleConversationDao.insertSuspend(circleConversation)
 }
