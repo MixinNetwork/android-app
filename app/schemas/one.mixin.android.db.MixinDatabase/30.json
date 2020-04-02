@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 30,
-    "identityHash": "662cc9a06862f3154b16bc6e87c295bd",
+    "identityHash": "1f89caf2a7aa8c2aab08f78bfa32bf5a",
     "entities": [
       {
         "tableName": "users",
@@ -1638,7 +1638,7 @@
       },
       {
         "tableName": "circles",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`circle_id` TEXT NOT NULL, `name` TEXT NOT NULL, PRIMARY KEY(`circle_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`circle_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`circle_id`))",
         "fields": [
           {
             "fieldPath": "circleId",
@@ -1649,6 +1649,12 @@
           {
             "fieldPath": "name",
             "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "created_at",
+            "columnName": "created_at",
             "affinity": "TEXT",
             "notNull": true
           }
@@ -1705,7 +1711,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '662cc9a06862f3154b16bc6e87c295bd')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1f89caf2a7aa8c2aab08f78bfa32bf5a')"
     ]
   }
 }

@@ -13,5 +13,8 @@ data class Circle(
     val circleId: String,
     @SerializedName("name")
     @ColumnInfo(name = "name")
-    val name: String
+    val name: String,
+    @SerializedName("created_at")
+    @ColumnInfo(name = "created_at")
+    val created_at: String
 )
