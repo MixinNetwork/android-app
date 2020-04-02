@@ -14,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.ConversationListViewModel
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ConversationCircleItem
 import timber.log.Timber
 import javax.inject.Inject
@@ -40,7 +41,8 @@ class ConversationCircleFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         circle_rv.layoutManager = LinearLayoutManager(requireContext())
         circle_rv.adapter = conversationAdapter
-        conversationViewModel.observeAllCircleItem().observe(this, Observer{
+        conversationViewModel.observeAllCircleItem().observe(this, Observer {
+            GsonHelper.customGson.toJson(it)
             conversationAdapter.conversationCircles = it
         })
     }
@@ -69,8 +71,17 @@ class ConversationCircleFragment : BaseFragment() {
                 1
             }
 
+        private fun getItem(position: Int): ConversationCircleItem? {
+            return if (position == 0) {
+                return null
+            } else {
+                conversationCircles?.get(position - 1)
+            }
+        }
+
         override fun onBindViewHolder(holder: ConversationCircleHolder, position: Int) {
             if (getItemViewType(position) == 1) {
+                holder.bind(getItem(position))
                 holder.itemView.setOnClickListener {
                     action(null)
                 }
@@ -82,8 +93,12 @@ class ConversationCircleFragment : BaseFragment() {
         fun bind(conversationCircleItem: ConversationCircleItem?) {
             if (conversationCircleItem == null) {
                 itemView.circle_icon.setImageResource(R.drawable.ic_circle_mixin)
+                itemView.circle_title.setText(R.string.circle_mixin)
+                itemView.circle_subtitle.setText(R.string.circle_all_conversation)
             } else {
                 itemView.circle_icon.setImageResource(R.drawable.ic_circle)
+                itemView.circle_title.text = conversationCircleItem.name
+                itemView.circle_subtitle.text = itemView.context.getString(R.string.circle_subtitle,conversationCircleItem.count)
             }
         }
     }

@@ -778,4 +778,7 @@
     <!--  circle  -->
     <string name="circle_bottom">为不同对话创建 Circle \n然后在它们之间快速切换</string>
     <string name="circle_add_title">添加 Circle</string>
+    <string name="circle_subtitle">%1$d Conversations</string>
+    <string name="circle_all_conversation">All Conversations</string>
+    <string name="circle_mixin">Mixin</string>
 </resources>
