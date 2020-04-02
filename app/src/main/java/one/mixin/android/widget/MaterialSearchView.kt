@@ -20,6 +20,8 @@ import androidx.core.view.isVisible
 import com.jakewharton.rxbinding3.widget.textChanges
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import java.util.concurrent.TimeUnit
+import kotlin.math.roundToInt
 import kotlinx.android.synthetic.main.view_search.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.appCompatActionBarHeight
@@ -33,8 +35,6 @@ import one.mixin.android.extension.translationX
 import one.mixin.android.extension.translationY
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import org.jetbrains.annotations.NotNull
-import java.util.concurrent.TimeUnit
-import kotlin.math.roundToInt
 
 class MaterialSearchView : FrameLayout {
     var isOpen = false
@@ -161,7 +161,7 @@ class MaterialSearchView : FrameLayout {
         }
     }
 
-    private fun hideContainer() {
+    fun hideContainer() {
         containerDisplay = false
         container_shadow.fadeOut()
         add_ib.fadeOut()
@@ -381,7 +381,7 @@ class MaterialSearchView : FrameLayout {
         search_ib.setOnClickListener(onClickListener)
     }
 
-    private var containerDisplay = false
+    var containerDisplay = false
 
     fun setOnBackClickListener(onClickListener: OnClickListener) {
         back_ib.setOnClickListener(onClickListener)

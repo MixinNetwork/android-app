@@ -9,16 +9,16 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_coversation_circle.*
 import kotlinx.android.synthetic.main.item_conversation_circle.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.ConversationListViewModel
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.ConversationCircleItem
-import timber.log.Timber
-import javax.inject.Inject
 
 class ConversationCircleFragment : BaseFragment() {
     companion object {
@@ -49,14 +49,19 @@ class ConversationCircleFragment : BaseFragment() {
     }
 
     private val conversationAdapter by lazy {
-        ConversationCircleAdapter {
-            Timber.d(it)
+        ConversationCircleAdapter { name, circleId ->
+            (requireActivity() as MainActivity).selectCircle(name, circleId)
         }
     }
 
-    class ConversationCircleAdapter(val action: (String?) -> Unit) : RecyclerView.Adapter<ConversationCircleHolder>() {
+    class ConversationCircleAdapter(val action: (String?, String?) -> Unit) : RecyclerView.Adapter<ConversationCircleHolder>() {
         var conversationCircles: List<ConversationCircleItem>? = null
-        var currentCircleId: String? = null
+            set(value) {
+                field = value
+                notifyDataSetChanged()
+            }
+
+        private var currentCircleId: String? = null
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationCircleHolder =
             if (viewType == 1) {
@@ -88,7 +93,8 @@ class ConversationCircleFragment : BaseFragment() {
                 holder.bind(currentCircleId, conversationCircleItem)
                 holder.itemView.setOnClickListener {
                     currentCircleId = conversationCircleItem?.circleId
-                    action(null)
+                    action(conversationCircleItem?.name, currentCircleId)
+                    notifyDataSetChanged()
                 }
             }
         }

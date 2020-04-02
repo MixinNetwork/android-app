@@ -39,7 +39,7 @@ constructor(mainActivity: MainActivity) {
     fun navigateToMessage() {
         val conversationListFragment = ConversationListFragment.newInstance()
         fragmentManager.beginTransaction()
-            .replace(containerId, conversationListFragment)
+            .replace(containerId, conversationListFragment, ConversationListFragment.TAG)
             .commitAllowingStateLoss()
     }
 

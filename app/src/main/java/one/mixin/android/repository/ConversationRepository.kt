@@ -75,8 +75,11 @@ internal constructor(
     fun getMessages(conversationId: String) =
         MessageProvider.getMessages(conversationId, readAppDatabase)
 
-    fun conversations(): DataSource.Factory<Int, ConversationItem> =
+    fun conversations(circleId: String?): DataSource.Factory<Int, ConversationItem> = if (circleId == null) {
         MessageProvider.getConversations(readAppDatabase)
+    } else {
+        MessageProvider.observeConversationsByCircleId(circleId, readAppDatabase)
+    }
 
     suspend fun successConversationList(): List<ConversationItem> = readConversationDao.successConversationList()
 

@@ -1,6 +1,8 @@
 package one.mixin.android.repository
 
 import androidx.lifecycle.LiveData
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -19,13 +21,17 @@ import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleBody
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class UserRepository
 @Inject
-constructor(private val userDao: UserDao, private val appDao: AppDao, private val circleDao: CircleDao, private val userService: UserService, private val circleService: CircleService) {
+constructor(
+    private val userDao: UserDao,
+    private val appDao: AppDao,
+    private val circleDao: CircleDao,
+    private val userService: UserService,
+    private val circleService: CircleService
+) {
 
     fun findFriends(): LiveData<List<User>> = userDao.findFriends()
 

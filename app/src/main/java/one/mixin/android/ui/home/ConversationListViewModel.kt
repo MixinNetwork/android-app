@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CONVERSATION_PAGE_SIZE
 import one.mixin.android.api.request.ConversationRequest
@@ -22,7 +23,6 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.generateConversationId
-import javax.inject.Inject
 
 class ConversationListViewModel @Inject
 internal constructor(
@@ -32,9 +32,9 @@ internal constructor(
     private val jobManager: MixinJobManager
 ) : ViewModel() {
 
-    fun observeConversations(): LiveData<PagedList<ConversationItem>> {
+    fun observeConversations(circleId: String?): LiveData<PagedList<ConversationItem>> {
         return LivePagedListBuilder(
-            messageRepository.conversations(), PagedList.Config.Builder()
+            messageRepository.conversations(circleId), PagedList.Config.Builder()
             .setPrefetchDistance(CONVERSATION_PAGE_SIZE * 2)
             .setPageSize(CONVERSATION_PAGE_SIZE)
             .setEnablePlaceholders(true)

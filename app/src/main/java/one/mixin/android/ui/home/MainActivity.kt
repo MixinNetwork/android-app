@@ -29,7 +29,9 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.view_search.view.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -102,8 +104,6 @@ import one.mixin.android.worker.RefreshAssetsWorker
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
 import org.jetbrains.anko.doAsync
-import timber.log.Timber
-import javax.inject.Inject
 
 class MainActivity : BlazeBaseActivity() {
 
@@ -561,6 +561,12 @@ class MainActivity : BlazeBaseActivity() {
         search_bar?.dragSearch(progress)
     }
 
+    fun selectCircle(name: String?, circleId: String?) {
+        search_bar?.logo?.text = name ?: "Mixin"
+        search_bar?.hideContainer()
+        (supportFragmentManager.findFragmentByTag(ConversationListFragment.TAG) as? ConversationListFragment)?.circleId = circleId
+    }
+
     private fun addCircle() {
         editDialog {
             titleText = this@MainActivity.getString(R.string.circle_add_title)
@@ -594,6 +600,7 @@ class MainActivity : BlazeBaseActivity() {
             searchMessageFragment != null -> super.onBackPressed()
             searchSingleFragment != null -> super.onBackPressed()
             search_bar.isOpen -> search_bar.closeSearch()
+            search_bar.containerDisplay -> search_bar.hideContainer()
             else -> super.onBackPressed()
         }
     }

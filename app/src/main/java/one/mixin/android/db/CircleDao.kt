@@ -23,7 +23,7 @@ interface CircleDao : BaseDao<Circle> {
     fun observeCirclesByConversationId(conversationId: String): LiveData<Circle>
 
     @Query("""
-         SELECT ci.circle_id, ci.name, ci.created_at, count(c.conversation_id) as count, sum(c.unseen_message_count) as unseen_message_count FROM circle_conversations cc LEFT JOIN conversations c  ON c.conversation_id == cc.conversation_id LEFT JOIN circles ci ON ci.circle_id==cc.circle_id GROUP BY cc.circle_id
+         SELECT ci.circle_id, ci.name, ci.created_at, count(c.conversation_id) as count, sum(c.unseen_message_count) as unseen_message_count FROM circles ci LEFT JOIN circle_conversations cc ON ci.circle_id==cc.circle_id LEFT JOIN conversations c  ON c.conversation_id == cc.conversation_id  GROUP BY ci.circle_id
     """)
     fun observeAllCircleItem(): LiveData<List<ConversationCircleItem>>
 
@@ -40,8 +40,8 @@ interface CircleDao : BaseDao<Circle> {
         pu.full_name AS participantFullName, pu.user_id AS participantUserId,
         (SELECT count(*) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) AS mentionCount,  
         mm.mentions AS mentions 
-        FROM conversations c
-        INNER JOIN circle_conversations cc ON cc.conversation_id = c.conversation_id
+        FROM circle_conversations cc
+        INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
         INNER JOIN circles ci ON ci.circle_id = :circleId 
         INNER JOIN users ou ON ou.user_id = c.owner_id
         LEFT JOIN messages m ON c.last_message_id = m.id
