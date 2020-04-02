@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.service.ConversationService
+import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
@@ -61,6 +62,7 @@ internal constructor(
     private val readMessageDao: MessageDao,
     @DatabaseCategory(DatabaseCategoryEnum.BASE)
     private val conversationDao: ConversationDao,
+    private val circleConversationDao: CircleConversationDao,
     @DatabaseCategory(DatabaseCategoryEnum.READ)
     private val readConversationDao: ConversationDao,
     private val participantDao: ParticipantDao,
@@ -201,9 +203,13 @@ internal constructor(
         conversationDao.deleteConversationById(conversationId)
     }
 
-    suspend fun updateConversationPinTimeById(conversationId: String, pinTime: String?) =
+    suspend fun updateConversationPinTimeById(conversationId: String, circleId: String?, pinTime: String?) =
         withContext(SINGLE_DB_THREAD) {
-            conversationDao.updateConversationPinTimeById(conversationId, pinTime)
+            if (circleId == null) {
+                conversationDao.updateConversationPinTimeById(conversationId, pinTime)
+            } else {
+                circleConversationDao.updateConversationPinTimeById(conversationId, circleId, pinTime)
+            }
         }
 
     suspend fun deleteMessageByConversationId(conversationId: String) = coroutineScope {

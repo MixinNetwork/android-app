@@ -72,8 +72,8 @@ internal constructor(
         messageRepository.deleteConversationById(conversationId)
     }
 
-    fun updateConversationPinTimeById(conversationId: String, pinTime: String?) = viewModelScope.launch {
-        messageRepository.updateConversationPinTimeById(conversationId, pinTime)
+    fun updateConversationPinTimeById(conversationId: String, circleId: String?, pinTime: String?) = viewModelScope.launch {
+        messageRepository.updateConversationPinTimeById(conversationId, circleId, pinTime)
     }
 
     fun mute(senderId: String, recipientId: String, duration: Long) {

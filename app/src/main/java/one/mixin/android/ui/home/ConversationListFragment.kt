@@ -350,13 +350,13 @@ class ConversationListFragment : LinkFragment() {
         if (hasPin) {
             view.pin_tv.setText(R.string.conversation_pin_clear)
             view.pin_tv.setOnClickListener {
-                messagesViewModel.updateConversationPinTimeById(conversationId, null)
+                messagesViewModel.updateConversationPinTimeById(conversationId, circleId, null)
                 bottomSheet.dismiss()
             }
         } else {
             view.pin_tv.setText(R.string.conversation_pin)
             view.pin_tv.setOnClickListener {
-                messagesViewModel.updateConversationPinTimeById(conversationId, nowInUtc())
+                messagesViewModel.updateConversationPinTimeById(conversationId, circleId, nowInUtc())
                 bottomSheet.dismiss()
             }
         }
