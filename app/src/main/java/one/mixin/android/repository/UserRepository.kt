@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
@@ -138,4 +139,10 @@ constructor(
     suspend fun deleteCircle(circleId: String) = circleService.deleteCircle(circleId)
 
     suspend fun deleteCircleById(circleId: String) = circleDao.deleteCircleById(circleId)
+
+    suspend fun findCircleConversationsByCircleId(circleId: String) =
+        circleDao.findCircleConversationsByCircleId(circleId)
+
+    suspend fun updateCircleConversations(id: String, circleConversationRequests: List<CircleConversationRequest>) =
+        circleService.updateCircleConversations(id, circleConversationRequests)
 }

@@ -51,7 +51,7 @@
             android:layout_width="10dp"
             android:layout_height="10dp"
             android:src="@drawable/ic_user_verified"
-            android:visibility="gone"
+            android:visibility="visible"
             tools:ignore="ContentDescription" />
 
         <ImageView
@@ -60,7 +60,7 @@
             android:layout_height="10dp"
             android:contentDescription="@null"
             android:src="@drawable/ic_bot"
-            android:visibility="gone" />
+            android:visibility="visible" />
 
     </LinearLayout>
 

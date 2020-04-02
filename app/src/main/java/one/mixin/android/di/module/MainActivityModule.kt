@@ -3,6 +3,7 @@ package one.mixin.android.di.module
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.home.ConversationListFragment
+import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.home.circle.ConversationCircleFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchSingleFragment
@@ -21,4 +22,7 @@ abstract class MainActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeConversationCircleFragment(): ConversationCircleFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeConversationCircleEditFragment(): ConversationCircleEditFragment
 }

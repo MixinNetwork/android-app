@@ -8,6 +8,7 @@ import androidx.paging.PagedList
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CONVERSATION_PAGE_SIZE
+import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.extension.nowInUtc
@@ -23,6 +24,7 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 
 class ConversationListViewModel @Inject
@@ -106,4 +108,14 @@ internal constructor(
     suspend fun deleteCircleById(circleId: String) = userRepository.deleteCircleById(circleId)
 
     suspend fun insertCircle(circle: Circle) = userRepository.insertCircle(circle)
+
+    suspend fun getFriends(): List<User> = userRepository.getFriends()
+
+    suspend fun successConversationList() = conversationRepository.successConversationList()
+
+    suspend fun findCircleConversationsByCircleId(circleId: String) =
+        userRepository.findCircleConversationsByCircleId(circleId)
+
+    suspend fun updateCircleConversations(id: String, circleConversationRequests: List<CircleConversationRequest>) =
+        userRepository.updateCircleConversations(id, circleConversationRequests)
 }

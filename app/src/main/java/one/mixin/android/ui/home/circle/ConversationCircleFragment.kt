@@ -170,6 +170,10 @@ class ConversationCircleFragment : BaseFragment() {
     }
 
     private fun edit(conversationCircleItem: ConversationCircleItem) {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.root_view, ConversationCircleEditFragment.newInstance(conversationCircleItem))
+            .addToBackStack(null)
+            .commitAllowingStateLoss()
     }
 
     private fun delete(conversationCircleItem: ConversationCircleItem) {
