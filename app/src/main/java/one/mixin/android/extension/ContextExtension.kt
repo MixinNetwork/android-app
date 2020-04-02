@@ -46,11 +46,6 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
-import java.io.File
-import java.util.Locale
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Future
-import kotlin.math.roundToInt
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -67,6 +62,11 @@ import org.jetbrains.anko.configuration
 import org.jetbrains.anko.displayMetrics
 import org.jetbrains.anko.textColorResource
 import timber.log.Timber
+import java.io.File
+import java.util.Locale
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Future
+import kotlin.math.roundToInt
 
 private val uiHandler = Handler(Looper.getMainLooper())
 
@@ -305,8 +305,10 @@ fun Fragment.openCamera(output: Uri) {
         intent.putExtra(MediaStore.EXTRA_OUTPUT, output)
     } else {
         val file = File(output.path)
-        val photoUri = FileProvider.getUriForFile(requireContext().applicationContext,
-            BuildConfig.APPLICATION_ID + ".provider", file)
+        val photoUri = FileProvider.getUriForFile(
+            requireContext().applicationContext,
+            BuildConfig.APPLICATION_ID + ".provider", file
+        )
         intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
     }
     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -329,11 +331,13 @@ fun Context.openMedia(messageItem: MessageItem) {
                 intent.setDataAndType(uri, messageItem.mediaMimeType)
                 startActivity(intent)
             } else {
-                val file = File(if (uri.scheme == ContentResolver.SCHEME_FILE) {
-                    uri.path
-                } else {
-                    messageItem.mediaUrl
-                })
+                val file = File(
+                    if (uri.scheme == ContentResolver.SCHEME_FILE) {
+                        uri.path
+                    } else {
+                        messageItem.mediaUrl
+                    }
+                )
                 if (!file.exists()) {
                     toast(R.string.error_file_exists)
                 } else {
@@ -453,11 +457,15 @@ fun getVideoModel(uri: Uri): VideoEditedInfo? {
         val resultHeight = ((mediaHeight * scale / 2).toDouble().roundToInt() * 2)
         return if (scale < 1) {
             val bitrate = MediaController.getBitrate(path, scale)
-            VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
-                fileName, bitrate)
+            VideoEditedInfo(
+                path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
+                fileName, bitrate
+            )
         } else {
-            VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, mediaWith, mediaHeight, thumbnail,
-                fileName, 0, false)
+            VideoEditedInfo(
+                path, duration, rotation, mediaWith, mediaHeight, mediaWith, mediaHeight, thumbnail,
+                fileName, 0, false
+            )
         }
     } catch (e: Exception) {
         Timber.e(e)
@@ -493,8 +501,10 @@ fun Context.openUrl(url: String) {
         val customTabsIntent = CustomTabsIntent.Builder()
             .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
             .setShowTitle(true)
-            .setActionButton(BitmapFactory.decodeResource(this.resources, R.drawable.ic_share),
-                this.getString(R.string.share), pendingIntent)
+            .setActionButton(
+                BitmapFactory.decodeResource(this.resources, R.drawable.ic_share),
+                this.getString(R.string.share), pendingIntent
+            )
             .build()
         customTabsIntent.launchUrl(this, uri)
         return
@@ -555,6 +565,22 @@ inline fun <T> T?.notNullWithElse(normalAction: (T) -> Unit, elseAction: () -> U
 }
 
 inline fun CharSequence?.notEmptyWithElse(normalAction: (CharSequence) -> Unit, elseAction: () -> Unit) {
+    return if (!this.isNullOrEmpty()) {
+        normalAction(this)
+    } else {
+        elseAction()
+    }
+}
+
+inline fun <T, R> Collection<T>?.notEmptyWithElse(normalAction: (Collection<T>) -> R, default: R): R {
+    return if (!this.isNullOrEmpty()) {
+        normalAction(this)
+    } else {
+        default
+    }
+}
+
+inline fun <T, R> Collection<T>?.notEmptyWithElse(normalAction: (Collection<T>) -> R, elseAction: () -> R): R {
     return if (!this.isNullOrEmpty()) {
         normalAction(this)
     } else {
@@ -664,7 +690,8 @@ fun Fragment.toast(textResource: Int) = requireActivity().toast(textResource)
 fun Fragment.toast(text: CharSequence) = requireActivity().toast(text)
 
 fun Context.getCurrentThemeId() = defaultSharedPreferences.getInt(
-        Constants.Theme.THEME_CURRENT_ID, defaultThemeId)
+    Constants.Theme.THEME_CURRENT_ID, defaultThemeId
+)
 
 val defaultThemeId = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
     Constants.Theme.THEME_DEFAULT_ID

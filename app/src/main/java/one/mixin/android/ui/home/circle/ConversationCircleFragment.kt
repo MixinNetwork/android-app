@@ -4,13 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_coversation_circle.*
 import kotlinx.android.synthetic.main.item_conversation_circle.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.ConversationListViewModel
 import one.mixin.android.vo.ConversationCircleItem
@@ -39,6 +40,9 @@ class ConversationCircleFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         circle_rv.layoutManager = LinearLayoutManager(requireContext())
         circle_rv.adapter = conversationAdapter
+        conversationViewModel.observeAllCircleItem().observe(this, Observer{
+            conversationAdapter.conversationCircles = it
+        })
     }
 
     private val conversationAdapter by lazy {
@@ -56,10 +60,10 @@ class ConversationCircleFragment : BaseFragment() {
                 ConversationCircleHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_conversation_circle_bottom, parent, false))
             }
 
-        override fun getItemCount(): Int = conversationCircles.notNullWithElse({ it.size + 1 }, 2)
+        override fun getItemCount(): Int = conversationCircles.notEmptyWithElse({ it.size + 1 }, 2)
 
         override fun getItemViewType(position: Int): Int =
-            if (conversationCircles == null && position == 1) {
+            if (conversationCircles.isNullOrEmpty() && position == 1) {
                 0
             } else {
                 1

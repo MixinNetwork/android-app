@@ -119,6 +119,8 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     suspend fun createCircle(name: String) = circleService.createCircle(CircleBody(name))
 
+    fun observeAllCircleItem() = circleDao.observeAllCircleItem()
+
     suspend fun insertCircle(circle: Circle) {
         withContext(Dispatchers.IO) {
             circleDao.insert(circle)

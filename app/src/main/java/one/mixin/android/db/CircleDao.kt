@@ -6,6 +6,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import one.mixin.android.vo.Circle
+import one.mixin.android.vo.ConversationCircleItem
 import one.mixin.android.vo.ConversationItem
 
 @Dao
@@ -20,6 +21,11 @@ interface CircleDao : BaseDao<Circle> {
         WHERE conversation_id = :conversationId
     """)
     fun observeCirclesByConversationId(conversationId: String): LiveData<Circle>
+
+    @Query("""
+        SELECT * FROM circles c 
+    """)
+    fun observeAllCircleItem(): LiveData<List<ConversationCircleItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("""
