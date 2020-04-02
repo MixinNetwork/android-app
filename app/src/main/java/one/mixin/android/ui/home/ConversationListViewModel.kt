@@ -162,6 +162,7 @@ internal constructor(
             addSet.forEach { conversationId ->
                 val circleConversation = CircleConversation(
                     conversationId,
+                    conversationId, // todo
                     circleId,
                     nowInUtc(),
                     null

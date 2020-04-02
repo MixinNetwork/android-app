@@ -11,6 +11,9 @@ data class CircleConversation(
     @ColumnInfo(name = "conversation_id")
     @SerializedName("conversation_id")
     val conversationId: String,
+    @ColumnInfo(name = "contact_id")
+    @SerializedName("contact_id")
+    val contactId: String?,
     @ColumnInfo(name = "circle_id")
     @SerializedName("circle_id")
     val circleId: String,

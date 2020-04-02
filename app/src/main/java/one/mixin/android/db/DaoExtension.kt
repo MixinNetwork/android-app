@@ -114,6 +114,7 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
 
 fun MixinDatabase.insertCircle(
     conversationId: String,
+    contactId: String?,
     circle: Circle
 ) {
     runInTransaction {
@@ -121,6 +122,7 @@ fun MixinDatabase.insertCircle(
         circleConversationDao().insert(
             CircleConversation(
                 conversationId,
+                conversationId, // Todo
                 circle.circleId,
                 nowInUtc(),
                 null

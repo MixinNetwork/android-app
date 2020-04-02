@@ -778,11 +778,11 @@
     <!--  circle  -->
     <string name="circle_bottom">为不同对话创建 Circle \n然后在它们之间快速切换</string>
     <string name="circle_add_title">添加 Circle</string>
-    <string name="circle_subtitle">%1$d Conversations</string>
-    <string name="circle_all_conversation">All Conversations</string>
+    <string name="circle_subtitle">%1$d 会话</string>
+    <string name="circle_all_conversation">所有会话</string>
     <string name="circle_mixin">Mixin</string>
-    <string name="circle_menu_edit_name">Edit Circle Name</string>
-    <string name="circle_menu_edit_conversation">Edit Conversation</string>
-    <string name="circle_menu_delete">Delete</string>
-    <string name="circle_menu_sort">sort</string>
+    <string name="circle_menu_edit_name">编辑名称</string>
+    <string name="circle_menu_edit_conversation">管理 Circle</string>
+    <string name="circle_menu_delete">删除</string>
+    <string name="circle_menu_sort">排序</string>
 </resources>

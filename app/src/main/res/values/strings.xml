@@ -798,6 +798,6 @@
     <string name="circle_menu_edit_name">Edit Circle Name</string>
     <string name="circle_menu_edit_conversation">Edit Conversation</string>
     <string name="circle_menu_delete">Delete</string>
-    <string name="circle_menu_sort">sort</string>
+    <string name="circle_menu_sort">Sort</string>
 </resources>
 
