@@ -39,10 +39,10 @@ internal constructor(
     fun observeConversations(circleId: String?): LiveData<PagedList<ConversationItem>> {
         return LivePagedListBuilder(
             messageRepository.conversations(circleId), PagedList.Config.Builder()
-                .setPrefetchDistance(CONVERSATION_PAGE_SIZE * 2)
-                .setPageSize(CONVERSATION_PAGE_SIZE)
-                .setEnablePlaceholders(true)
-                .build()
+            .setPrefetchDistance(CONVERSATION_PAGE_SIZE * 2)
+            .setPageSize(CONVERSATION_PAGE_SIZE)
+            .setEnablePlaceholders(true)
+            .build()
         ).build()
     }
 
@@ -53,21 +53,17 @@ internal constructor(
             val mutableList = mutableListOf<Participant>()
             val createAt = nowInUtc()
             participants.mapTo(mutableList) { Participant(conversationId, it.userId, "", createAt) }
-            val conversation = Conversation(
-                c.conversationId, c.ownerId, c.category, c.name, c.iconUrl,
+            val conversation = Conversation(c.conversationId, c.ownerId, c.category, c.name, c.iconUrl,
                 c.announcement, null, c.payType, createAt, null, null,
-                null, 0, ConversationStatus.START.ordinal, null
-            )
+                null, 0, ConversationStatus.START.ordinal, null)
             viewModelScope.launch {
                 messageRepository.insertConversation(conversation, mutableList)
             }
 
             val participantRequestList = mutableListOf<ParticipantRequest>()
             mutableList.mapTo(participantRequestList) { ParticipantRequest(it.userId, it.role) }
-            val request = ConversationRequest(
-                conversationId, it.category!!, it.name, it.iconUrl,
-                it.announcement, participantRequestList
-            )
+            val request = ConversationRequest(conversationId, it.category!!, it.name, it.iconUrl,
+                it.announcement, participantRequestList)
             jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))
         }
     }
@@ -128,8 +124,8 @@ internal constructor(
 
     suspend fun successConversationList() = conversationRepository.successConversationList()
 
-    suspend fun findCircleConversationsByCircleId(circleId: String) =
-        userRepository.findCircleConversationsByCircleId(circleId)
+    suspend fun findConversationItemByCircleId(circleId: String) =
+        userRepository.findConversationItemByCircleId(circleId)
 
     suspend fun updateCircleConversations(id: String, circleConversationRequests: List<CircleConversationRequest>) =
         userRepository.updateCircleConversations(id, circleConversationRequests)

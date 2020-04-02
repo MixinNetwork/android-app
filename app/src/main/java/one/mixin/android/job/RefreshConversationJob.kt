@@ -7,8 +7,10 @@ import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.SYSTEM_USER
 
 class RefreshConversationJob(val conversationId: String) :
-    MixinJob(Params(PRIORITY_UI_HIGH).groupBy("refresh_conversation")
-    .requireNetwork().persist(), conversationId) {
+    MixinJob(
+        Params(PRIORITY_UI_HIGH).groupBy("refresh_conversation")
+            .requireNetwork().persist(), conversationId
+    ) {
 
     override fun cancel() {
     }
@@ -54,6 +56,20 @@ class RefreshConversationJob(val conversationId: String) :
                 }
                 if (participants.size != localData.size || userIdList.isNotEmpty()) {
                     jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
+                }
+                data.circles?.let { circles ->
+                    circles.forEach {
+                        val circle = circleDao.findCircleById(it.circleId)
+                        if (circle == null) {
+                            val circleResponse = circleService.getCircle(it.circleId)
+                            if (circleResponse.isSuccess) {
+                                circleResponse.data?.let { item ->
+                                    circleDao.insert(item)
+                                }
+                            }
+                        }
+                        circleConversationDao.insert(it)
+                    }
                 }
             }
         }

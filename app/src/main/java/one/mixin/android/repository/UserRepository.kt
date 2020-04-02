@@ -142,8 +142,8 @@ constructor(
 
     suspend fun deleteCircleById(circleId: String) = circleDao.deleteCircleById(circleId)
 
-    suspend fun findCircleConversationsByCircleId(circleId: String) =
-        circleDao.findCircleConversationsByCircleId(circleId)
+    suspend fun findConversationItemByCircleId(circleId: String) =
+        circleDao.findConversationItemByCircleId(circleId)
 
     suspend fun updateCircleConversations(id: String, circleConversationRequests: List<CircleConversationRequest>) =
         circleService.updateCircleConversations(id, circleConversationRequests)

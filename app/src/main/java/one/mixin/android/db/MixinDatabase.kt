@@ -105,6 +105,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun mentionMessageDao(): MessageMentionDao
     abstract fun messageFts4Dao(): MessagesFts4Dao
     abstract fun circleDao(): CircleDao
+    abstract fun circleConversationDao(): CircleConversationDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null

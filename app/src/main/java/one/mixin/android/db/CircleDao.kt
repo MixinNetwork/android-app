@@ -62,6 +62,9 @@ interface CircleDao : BaseDao<Circle> {
     @Query("DELETE FROM circles WHERE circle_id =:circleId")
     suspend fun deleteCircleById(circleId: String)
 
+    @Query("SELECT * FROM circles WHERE circle_id = :circleId")
+    fun findCircleById(circleId: String): Circle?
+
     @Query("""
         SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
         c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId,
@@ -85,7 +88,7 @@ interface CircleDao : BaseDao<Circle> {
         LEFT JOIN users pu ON pu.user_id = m.participant_id 
         WHERE c.category IS NOT NULL 
     """)
-    suspend fun findCircleConversationsByCircleId(circleId: String): List<ConversationItem>
+    suspend fun findConversationItemByCircleId(circleId: String): List<ConversationItem>
 
     @Query("UPDATE circles SET order_at = :orderAt WHERE circle_id = :circleId")
     fun updateOrderAt(circleId: String, orderAt: String)

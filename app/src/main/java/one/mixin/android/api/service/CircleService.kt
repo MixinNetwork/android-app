@@ -13,16 +13,19 @@ interface CircleService {
     @GET("circles")
     suspend fun getCircles(): MixinResponse<List<Circle>>
 
+    @GET("circles/{id}")
+    fun getCircle(@Path("id") id: String): MixinResponse<Circle>
+
     @POST("circles")
     suspend fun createCircle(@Body body: CircleBody): MixinResponse<Circle>
 
-    @POST("/circles/{id}")
+    @POST("circles/{id}")
     suspend fun updateCircle(@Path("id") id: String, @Body body: CircleBody): MixinResponse<Circle>
 
-    @POST("/circles/{id}/delete")
+    @POST("circles/{id}/delete")
     suspend fun deleteCircle(@Path("id") id: String): MixinResponse<Any>
 
-    @POST("/circles/{id}/conversations")
+    @POST("circles/{id}/conversations")
     suspend fun updateCircleConversations(
         @Path("id") id: String,
         @Body conversationCircleRequests: List<CircleConversationRequest>

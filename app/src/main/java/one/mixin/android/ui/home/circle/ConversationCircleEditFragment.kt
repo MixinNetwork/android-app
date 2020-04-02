@@ -132,7 +132,7 @@ class ConversationCircleEditFragment : BaseFragment() {
     private fun loadData() = lifecycleScope.launch {
         val conversations = chatViewModel.successConversationList()
         adapter.sourceConversations = conversations
-        val conversationItems = chatViewModel.findCircleConversationsByCircleId(circle.circleId)
+        val conversationItems = chatViewModel.findConversationItemByCircleId(circle.circleId)
         adapter.selectItem.clear()
         adapter.selectItem.addAll(conversationItems)
         selectAdapter.checkedItems.clear()
