@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -55,6 +56,8 @@ class ConversationCircleFragment : BaseFragment() {
 
     class ConversationCircleAdapter(val action: (String?) -> Unit) : RecyclerView.Adapter<ConversationCircleHolder>() {
         var conversationCircles: List<ConversationCircleItem>? = null
+        var currentCircleId: String? = null
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationCircleHolder =
             if (viewType == 1) {
                 ConversationCircleHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_conversation_circle, parent, false))
@@ -81,8 +84,10 @@ class ConversationCircleFragment : BaseFragment() {
 
         override fun onBindViewHolder(holder: ConversationCircleHolder, position: Int) {
             if (getItemViewType(position) == 1) {
-                holder.bind(getItem(position))
+                val conversationCircleItem = getItem(position)
+                holder.bind(currentCircleId, conversationCircleItem)
                 holder.itemView.setOnClickListener {
+                    currentCircleId = conversationCircleItem?.circleId
                     action(null)
                 }
             }
@@ -90,15 +95,20 @@ class ConversationCircleFragment : BaseFragment() {
     }
 
     class ConversationCircleHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(conversationCircleItem: ConversationCircleItem?) {
+        fun bind(currentCircleId: String?, conversationCircleItem: ConversationCircleItem?) {
             if (conversationCircleItem == null) {
                 itemView.circle_icon.setImageResource(R.drawable.ic_circle_mixin)
                 itemView.circle_title.setText(R.string.circle_mixin)
                 itemView.circle_subtitle.setText(R.string.circle_all_conversation)
+                itemView.circle_unread_tv.isVisible = false
+                itemView.circle_check.isVisible = currentCircleId == null
             } else {
                 itemView.circle_icon.setImageResource(R.drawable.ic_circle)
                 itemView.circle_title.text = conversationCircleItem.name
-                itemView.circle_subtitle.text = itemView.context.getString(R.string.circle_subtitle,conversationCircleItem.count)
+                itemView.circle_subtitle.text = itemView.context.getString(R.string.circle_subtitle, conversationCircleItem.count)
+                itemView.circle_unread_tv.isVisible = currentCircleId != conversationCircleItem.circleId && conversationCircleItem.unseenMessageCount != 0
+                itemView.circle_unread_tv.text = "${conversationCircleItem.unseenMessageCount}"
+                itemView.circle_check.isVisible = currentCircleId == conversationCircleItem.circleId
             }
         }
     }
