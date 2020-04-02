@@ -22,6 +22,7 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.singleChoice
 import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.util.Session
+import one.mixin.android.util.TimeCache
 import one.mixin.android.util.language.Lingver
 
 class SettingFragment : Fragment() {
@@ -125,6 +126,7 @@ class SettingFragment : Fragment() {
                         else -> Locale.CHINA.language
                     }
                     Lingver.getInstance().setLocale(requireContext(), selected)
+                    TimeCache.singleton.evictAll()
                     activity?.recreate()
                 }
                 dialog.dismiss()
