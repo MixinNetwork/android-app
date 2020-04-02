@@ -69,6 +69,7 @@ import one.mixin.android.job.RefreshStickerAlbumJob.Companion.REFRESH_STICKER_AL
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.NavigationController
@@ -503,6 +504,12 @@ class MainActivity : BlazeBaseActivity() {
         search_bar.setOnAddClickListener(View.OnClickListener {
             addCircle()
         })
+        search_bar.setOnConfirmClickListener(View.OnClickListener {
+            val conversationCircleFragment =
+                supportFragmentManager.findFragmentByTag(ConversationCircleFragment.TAG) as ConversationCircleFragment
+            conversationCircleFragment.cancelSort()
+            search_bar?.action_va?.showPrevious()
+        })
 
         search_bar.setOnBackClickListener(View.OnClickListener {
             search_bar.closeSearch()
@@ -567,6 +574,10 @@ class MainActivity : BlazeBaseActivity() {
         (supportFragmentManager.findFragmentByTag(ConversationListFragment.TAG) as? ConversationListFragment)?.circleId = circleId
     }
 
+    fun sortAction() {
+        search_bar?.action_va?.showNext()
+    }
+
     private fun addCircle() {
         editDialog {
             titleText = this@MainActivity.getString(R.string.circle_add_title)
@@ -598,11 +609,19 @@ class MainActivity : BlazeBaseActivity() {
             supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
         val searchSingleFragment =
             supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG)
+        val conversationCircleFragment =
+            supportFragmentManager.findFragmentByTag(ConversationCircleFragment.TAG) as BaseFragment
         when {
             searchMessageFragment != null -> super.onBackPressed()
             searchSingleFragment != null -> super.onBackPressed()
             search_bar.isOpen -> search_bar.closeSearch()
-            search_bar.containerDisplay -> search_bar.hideContainer()
+            search_bar.containerDisplay -> {
+                if (!conversationCircleFragment.onBackPressed()) {
+                    search_bar.hideContainer()
+                } else {
+                    search_bar?.action_va?.showPrevious()
+                }
+            }
             else -> super.onBackPressed()
         }
     }

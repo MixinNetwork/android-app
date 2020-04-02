@@ -15,11 +15,13 @@ import one.mixin.android.db.CircleDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.db.updateRelationship
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleBody
+import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 
@@ -145,4 +147,12 @@ constructor(
 
     suspend fun updateCircleConversations(id: String, circleConversationRequests: List<CircleConversationRequest>) =
         circleService.updateCircleConversations(id, circleConversationRequests)
+
+    suspend fun sortCircleConversations(list: List<CircleOrder>?) = withContext(Dispatchers.IO) {
+        runInTransaction {
+            list?.forEach {
+                circleDao.updateOrderAt(it.circleId, it.orderAt)
+            }
+        }
+    }
 }

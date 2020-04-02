@@ -23,7 +23,7 @@ interface CircleDao : BaseDao<Circle> {
     fun observeCirclesByConversationId(conversationId: String): LiveData<Circle>
 
     @Query("""
-         SELECT ci.circle_id, ci.name, ci.created_at, count(c.conversation_id) as count, sum(c.unseen_message_count) as unseen_message_count FROM circles ci LEFT JOIN circle_conversations cc ON ci.circle_id==cc.circle_id LEFT JOIN conversations c  ON c.conversation_id == cc.conversation_id  GROUP BY ci.circle_id
+         SELECT ci.circle_id, ci.name, ci.created_at, count(c.conversation_id) as count, sum(c.unseen_message_count) as unseen_message_count FROM circles ci LEFT JOIN circle_conversations cc ON ci.circle_id==cc.circle_id LEFT JOIN conversations c  ON c.conversation_id == cc.conversation_id  GROUP BY ci.circle_id ORDER BY ci.order_at ASC, ci.created_at ASC
     """)
     fun observeAllCircleItem(): LiveData<List<ConversationCircleItem>>
 
@@ -86,4 +86,7 @@ interface CircleDao : BaseDao<Circle> {
         WHERE c.category IS NOT NULL 
     """)
     suspend fun findCircleConversationsByCircleId(circleId: String): List<ConversationItem>
+
+    @Query("UPDATE circles SET order_at = :orderAt WHERE circle_id = :circleId")
+    fun updateOrderAt(circleId: String, orderAt: String)
 }

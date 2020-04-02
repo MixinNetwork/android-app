@@ -164,7 +164,7 @@ class MaterialSearchView : FrameLayout {
     fun hideContainer() {
         containerDisplay = false
         container_shadow.fadeOut()
-        add_ib.fadeOut()
+        action_va.fadeOut()
         group_ib.fadeIn()
         search_ib.fadeIn()
         container_circle.translationY(-containerHeight) {
@@ -176,7 +176,7 @@ class MaterialSearchView : FrameLayout {
         containerDisplay = true
         container_circle.isVisible = true
         container_shadow.fadeIn()
-        add_ib.fadeIn()
+        action_va.fadeIn()
         group_ib.fadeOut()
         search_ib.fadeOut()
         container_circle.translationY(0f) {
@@ -375,6 +375,10 @@ class MaterialSearchView : FrameLayout {
 
     fun setOnAddClickListener(onClickListener: OnClickListener) {
         add_ib.setOnClickListener(onClickListener)
+    }
+
+    fun setOnConfirmClickListener(onClickListener: OnClickListener) {
+        confirm_ib.setOnClickListener(onClickListener)
     }
 
     fun setOnLeftClickListener(onClickListener: OnClickListener) {

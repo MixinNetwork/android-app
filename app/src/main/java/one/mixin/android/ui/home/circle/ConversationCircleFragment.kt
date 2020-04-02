@@ -2,6 +2,7 @@ package one.mixin.android.ui.home.circle
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
@@ -9,14 +10,17 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import java.util.Collections
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_coversation_circle.*
 import kotlinx.android.synthetic.main.item_conversation_circle.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.notEmptyWithElse
+import one.mixin.android.extension.shakeAnimator
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.editDialog
@@ -25,9 +29,14 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.ConversationCircleItem
+import one.mixin.android.widget.recyclerview.ItemTouchHelperAdapter
+import one.mixin.android.widget.recyclerview.OnStartDragListener
+import one.mixin.android.widget.recyclerview.SimpleItemTouchHelperCallback
+import org.threeten.bp.Instant
 
-class ConversationCircleFragment : BaseFragment() {
+class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
     companion object {
         const val TAG = "ConversationCircleFragment"
 
@@ -49,29 +58,79 @@ class ConversationCircleFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         circle_rv.layoutManager = LinearLayoutManager(requireContext())
         circle_rv.adapter = conversationAdapter
+        val callback: ItemTouchHelper.Callback = SimpleItemTouchHelperCallback(conversationAdapter)
+        itemTouchHelper = ItemTouchHelper(callback)
+        itemTouchHelper.attachToRecyclerView(circle_rv)
         conversationViewModel.observeAllCircleItem().observe(this, Observer {
             GsonHelper.customGson.toJson(it)
-            conversationAdapter.conversationCircles = it
+            val list = mutableListOf<ConversationCircleItem>()
+            list.addAll(it)
+            conversationAdapter.conversationCircles = list
         })
     }
 
     private val conversationAdapter by lazy {
-        ConversationCircleAdapter({ name, circleId ->
+        ConversationCircleAdapter(this, { name, circleId ->
             (requireActivity() as MainActivity).selectCircle(name, circleId)
         }, { view, conversationCircleItem ->
             showMenu(view, conversationCircleItem)
+        }, {
+            (requireActivity() as MainActivity).sortAction()
+        }, {
+            conversationViewModel.sortCircleConversations(it)
         })
     }
 
-    class ConversationCircleAdapter(val action: (String?, String?) -> Unit, val showMenu: (View, ConversationCircleItem) -> Unit) :
-        RecyclerView.Adapter<ConversationCircleHolder>() {
-        var conversationCircles: List<ConversationCircleItem>? = null
+    override fun onBackPressed(): Boolean {
+        if (conversationAdapter.sorting) {
+            conversationAdapter.cancelSort()
+            return true
+        }
+        return false
+    }
+
+    fun cancelSort() {
+        conversationAdapter.cancelSort()
+    }
+
+    class ConversationCircleAdapter(
+        private val dragStartListener: OnStartDragListener,
+        val action: (String?, String?) -> Unit,
+        val showMenu: (View, ConversationCircleItem) -> Unit,
+        val sortAction: () -> Unit,
+        val updateAction: (List<CircleOrder>?) -> Unit
+    ) :
+        RecyclerView.Adapter<ConversationCircleHolder>(), ItemTouchHelperAdapter {
+        var conversationCircles: MutableList<ConversationCircleItem>? = null
             set(value) {
+                if (sorting) return
                 field = value
                 notifyDataSetChanged()
             }
 
         var currentCircleId: String? = null
+
+        fun cancelSort() {
+            val now = Instant.now().epochSecond
+            val data = conversationCircles?.let { list ->
+                list.mapIndexed { index, item ->
+                    CircleOrder(item.circleId, Instant.ofEpochMilli(now + index).toString())
+                }
+            }
+            sorting = false
+            updateAction(data)
+        }
+
+        var sorting = false
+            set(value) {
+                if (field != value) {
+                    field = value
+                    notifyDataSetChanged()
+                    if (value) {
+                        sortAction()
+                    }
+                }
+            }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ConversationCircleHolder =
             if (viewType == 1) {
@@ -100,21 +159,46 @@ class ConversationCircleFragment : BaseFragment() {
         override fun onBindViewHolder(holder: ConversationCircleHolder, position: Int) {
             if (getItemViewType(position) == 1) {
                 val conversationCircleItem = getItem(position)
-                holder.bind(currentCircleId, conversationCircleItem)
+                holder.bind(sorting, currentCircleId, conversationCircleItem)
                 holder.itemView.setOnClickListener {
                     currentCircleId = conversationCircleItem?.circleId
                     action(conversationCircleItem?.name, currentCircleId)
                     notifyDataSetChanged()
                 }
-                holder.itemView.setOnLongClickListener {
-                    if (conversationCircleItem != null) {
-                        showMenu(it.circle_title, conversationCircleItem)
-                        true
-                    } else {
+                if (sorting) {
+                    holder.itemView.setOnLongClickListener(null)
+                    holder.itemView.setOnTouchListener { _, event ->
+                        if (event.action and (MotionEvent.ACTION_DOWN) == 0) {
+                            dragStartListener.onStartDrag(holder)
+                        }
                         false
+                    }
+                } else {
+                    holder.itemView.setOnTouchListener(null)
+                    holder.itemView.setOnLongClickListener {
+                        if (conversationCircleItem != null) {
+                            showMenu(it.circle_title, conversationCircleItem)
+                            true
+                        } else {
+                            false
+                        }
                     }
                 }
             }
+        }
+
+        override fun onItemDismiss(position: Int) {
+            if (position == 0) return
+            notifyItemRemoved(position)
+        }
+
+        override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
+            if (fromPosition == 0 || toPosition == 0) return false
+            conversationCircles?.let { conversationCircles ->
+                Collections.swap(conversationCircles, fromPosition - 1, toPosition - 1)
+                notifyItemMoved(fromPosition, toPosition)
+            }
+            return true
         }
     }
 
@@ -134,6 +218,9 @@ class ConversationCircleFragment : BaseFragment() {
                     if (conversationAdapter.currentCircleId == conversationCircleItem.circleId) {
                         (requireActivity() as MainActivity).selectCircle(null, null)
                     }
+                }
+                R.id.sort -> {
+                    conversationAdapter.sorting = true
                 }
 
                 else -> {
@@ -190,7 +277,16 @@ class ConversationCircleFragment : BaseFragment() {
     }
 
     class ConversationCircleHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(currentCircleId: String?, conversationCircleItem: ConversationCircleItem?) {
+        val shakeAnimator by lazy {
+            itemView.shakeAnimator()
+        }
+
+        fun bind(sorting: Boolean, currentCircleId: String?, conversationCircleItem: ConversationCircleItem?) {
+            if (sorting) {
+                shakeAnimator.start()
+            } else {
+                shakeAnimator.cancel()
+            }
             if (conversationCircleItem == null) {
                 itemView.circle_icon.setImageResource(R.drawable.ic_circle_mixin)
                 itemView.circle_title.setText(R.string.circle_mixin)
@@ -205,6 +301,13 @@ class ConversationCircleFragment : BaseFragment() {
                 itemView.circle_unread_tv.text = "${conversationCircleItem.unseenMessageCount}"
                 itemView.circle_check.isVisible = currentCircleId == conversationCircleItem.circleId
             }
+        }
+    }
+
+    private lateinit var itemTouchHelper: ItemTouchHelper
+    override fun onStartDrag(viewHolder: RecyclerView.ViewHolder) {
+        if (conversationAdapter.sorting) {
+            itemTouchHelper.startDrag(viewHolder)
         }
     }
 }

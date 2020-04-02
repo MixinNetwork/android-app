@@ -19,9 +19,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="?actionBarSize"
             android:background="?attr/bg_white"
-            app:layout_constraintTop_toTopOf="parent"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <RelativeLayout
@@ -52,6 +52,8 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
+            android:maxWidth="100dp"
+            android:singleLine="true"
             android:text="Mixin"
             android:textColor="?attr/text_primary"
             android:textSize="18sp"
@@ -86,20 +88,34 @@
             app:srcCompat="@drawable/ic_group"
             tools:ignore="ContentDescription" />
 
-        <ImageButton
-            android:id="@+id/add_ib"
+        <ViewAnimator
+            android:id="@+id/action_va"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
-            android:alpha="0"
-            android:background="@drawable/mixin_ripple"
-            android:padding="8dp"
-            android:visibility="gone"
-            app:srcCompat="@drawable/ic_add_black_24dp"
-            tools:ignore="ContentDescription" />
+            android:alpha="0">
+
+            <ImageButton
+                android:id="@+id/add_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/mixin_ripple"
+                android:padding="8dp"
+                app:srcCompat="@drawable/ic_add_black_24dp"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:id="@+id/confirm_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/mixin_ripple"
+                android:padding="8dp"
+                app:srcCompat="@drawable/ic_check_black_24dp"
+                tools:ignore="ContentDescription" />
+        </ViewAnimator>
 
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/search_et"

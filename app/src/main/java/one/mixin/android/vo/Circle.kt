@@ -3,6 +3,7 @@ package one.mixin.android.vo
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "circles")
@@ -16,5 +17,8 @@ data class Circle(
     val name: String,
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
-    val created_at: String
+    val created_at: String,
+    @Expose
+    @ColumnInfo(name = "order_at")
+    val order_at: String?
 )

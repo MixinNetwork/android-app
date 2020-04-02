@@ -17,3 +17,8 @@ class ConversationCircleItem(
     @ColumnInfo(name = "unseen_message_count")
     val unseenMessageCount: Int
 ) : Parcelable
+
+class CircleOrder(
+    val circleId: String,
+    val orderAt: String
+)

@@ -145,6 +145,13 @@ fun View.shaking() {
         .setDuration(600).start()
 }
 
+fun View.shakeAnimator() =
+    ObjectAnimator.ofFloat(this, "rotation", 0f, -1f, 0f, 1f, 0f).apply {
+        repeatCount = ObjectAnimator.INFINITE
+        repeatMode = ObjectAnimator.REVERSE
+        duration = 450
+    }
+
 fun View.animateWidth(form: Int, to: Int) {
     this.animateWidth(form, to, ANIMATION_DURATION_SHORTEST)
 }
@@ -260,8 +267,10 @@ fun View.capture(context: Context): String? {
     draw(c)
     b.save(outFile)
     return try {
-        MediaStore.Images.Media.insertImage(context.contentResolver, outFile.absolutePath,
-            outFile.name, null)
+        MediaStore.Images.Media.insertImage(
+            context.contentResolver, outFile.absolutePath,
+            outFile.name, null
+        )
         context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
         outFile.absolutePath
     } catch (e: FileNotFoundException) {
