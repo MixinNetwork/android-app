@@ -134,4 +134,8 @@ constructor(
     }
 
     suspend fun circleRename(circleId: String, name: String) = circleService.updateCircle(circleId, CircleBody(name))
+
+    suspend fun deleteCircle(circleId: String) = circleService.deleteCircle(circleId)
+
+    suspend fun deleteCircleById(circleId: String) = circleDao.deleteCircleById(circleId)
 }

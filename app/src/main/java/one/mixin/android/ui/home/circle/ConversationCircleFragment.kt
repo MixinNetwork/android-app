@@ -173,6 +173,14 @@ class ConversationCircleFragment : BaseFragment() {
     }
 
     private fun delete(conversationCircleItem: ConversationCircleItem) {
+        conversationViewModel.viewModelScope.launch(errorHandler) {
+            val response = conversationViewModel.deleteCircle(conversationCircleItem.circleId)
+            if (response.isSuccess) {
+                conversationViewModel.deleteCircleById(conversationCircleItem.circleId)
+            } else {
+                ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+            }
+        }
     }
 
     class ConversationCircleHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

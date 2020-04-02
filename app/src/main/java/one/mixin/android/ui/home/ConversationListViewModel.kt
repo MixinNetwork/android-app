@@ -101,5 +101,9 @@ internal constructor(
 
     suspend fun circleRename(circleId: String, name: String) = userRepository.circleRename(circleId, name)
 
+    suspend fun deleteCircle(circleId: String) = userRepository.deleteCircle(circleId)
+
+    suspend fun deleteCircleById(circleId: String) = userRepository.deleteCircleById(circleId)
+
     suspend fun insertCircle(circle: Circle) = userRepository.insertCircle(circle)
 }

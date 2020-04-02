@@ -20,7 +20,7 @@ interface CircleService {
     suspend fun updateCircle(@Path("id") id: String, @Body body: CircleBody): MixinResponse<Circle>
 
     @POST("/circles/{id}/delete")
-    fun deleteCircle(@Path("id") id: String): MixinResponse<Any>
+    suspend fun deleteCircle(@Path("id") id: String): MixinResponse<Any>
 
     @POST("/circles/{id}/conversations")
     fun getCircle(@Path("id") id: String): MixinResponse<Any>
