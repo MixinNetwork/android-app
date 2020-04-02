@@ -791,5 +791,6 @@
     <string name="location_empty">There were no results for \"%1$s\"\nTry new search</string>
     <!--  circle  -->
     <string name="circle_bottom">Create circle for different  groups of chats \nand quickly switch between them</string>
+    <string name="circle_add_title">Add Circle</string>
 </resources>
 

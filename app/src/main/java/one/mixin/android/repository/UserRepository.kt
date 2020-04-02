@@ -1,27 +1,31 @@
 package one.mixin.android.repository
 
 import androidx.lifecycle.LiveData
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
+import one.mixin.android.db.CircleDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
 import one.mixin.android.db.updateRelationship
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
+import one.mixin.android.vo.Circle
+import one.mixin.android.vo.CircleBody
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class UserRepository
 @Inject
-constructor(private val userDao: UserDao, private val appDao: AppDao, private val userService: UserService) {
+constructor(private val userDao: UserDao, private val appDao: AppDao, private val circleDao: CircleDao, private val userService: UserService, private val circleService: CircleService) {
 
     fun findFriends(): LiveData<List<User>> = userDao.findFriends()
 
@@ -72,7 +76,7 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
     fun findContactByConversationId(conversationId: String): User? =
         userDao.findContactByConversationId(conversationId)
 
-   suspend fun suspendFindContactByConversationId(conversationId: String): User? =
+    suspend fun suspendFindContactByConversationId(conversationId: String): User? =
         userDao.suspendFindContactByConversationId(conversationId)
 
     fun findSelf(): LiveData<User?> = userDao.findSelf(Session.getAccountId() ?: "")
@@ -112,4 +116,12 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
     suspend fun findUserByIdentityNumberSuspend(identityNumber: String) = userDao.suspendFindUserByIdentityNumber(identityNumber)
 
     suspend fun findUserIdByAppNumber(conversationId: String, appNumber: String) = userDao.findUserIdByAppNumber(conversationId, appNumber)
+
+    suspend fun createCircle(name: String) = circleService.createCircle(CircleBody(name))
+
+    suspend fun insertCircle(circle: Circle) {
+        withContext(Dispatchers.IO) {
+            circleDao.insert(circle)
+        }
+    }
 }

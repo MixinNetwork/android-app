@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_coversation_circle.*
+import kotlinx.android.synthetic.main.item_conversation_circle.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.common.BaseFragment
@@ -73,5 +74,13 @@ class ConversationCircleFragment : BaseFragment() {
         }
     }
 
-    class ConversationCircleHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+    class ConversationCircleHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        fun bind(conversationCircleItem: ConversationCircleItem?) {
+            if (conversationCircleItem == null) {
+                itemView.circle_icon.setImageResource(R.drawable.ic_circle_mixin)
+            } else {
+                itemView.circle_icon.setImageResource(R.drawable.ic_circle)
+            }
+        }
+    }
 }

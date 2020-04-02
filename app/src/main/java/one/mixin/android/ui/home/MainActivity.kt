@@ -29,7 +29,6 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -46,6 +45,7 @@ import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
+import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
@@ -68,12 +68,14 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
 import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
@@ -86,6 +88,7 @@ import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
@@ -99,6 +102,8 @@ import one.mixin.android.worker.RefreshAssetsWorker
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
 import org.jetbrains.anko.doAsync
+import timber.log.Timber
+import javax.inject.Inject
 
 class MainActivity : BlazeBaseActivity() {
 
@@ -121,6 +126,8 @@ class MainActivity : BlazeBaseActivity() {
     lateinit var accountRepo: AccountRepository
     @Inject
     lateinit var participantDao: ParticipantDao
+    @Inject
+    lateinit var circleDao: CircleDao
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener = InstallStateUpdatedListener { state ->
@@ -493,6 +500,9 @@ class MainActivity : BlazeBaseActivity() {
         search_bar.setOnRightClickListener(View.OnClickListener {
             navigationController.pushContacts()
         })
+        search_bar.setOnAddClickListener(View.OnClickListener {
+            addCircle()
+        })
 
         search_bar.setOnBackClickListener(View.OnClickListener {
             search_bar.closeSearch()
@@ -549,6 +559,30 @@ class MainActivity : BlazeBaseActivity() {
 
     fun dragSearch(progress: Float) {
         search_bar?.dragSearch(progress)
+    }
+
+    private fun addCircle() {
+        editDialog {
+            titleText = this@MainActivity.getString(R.string.circle_add_title)
+            maxTextCount = 128
+            editMaxLines = EditDialog.MAX_LINE.toInt()
+            allowEmpty = false
+            rightText = android.R.string.ok
+            rightAction = {
+                createCircle(it)
+            }
+        }
+    }
+
+    private fun createCircle(name: String) {
+        lifecycleScope.launch(errorHandler) {
+            val response = userRepo.createCircle(name)
+            if (response.isSuccess) {
+                response.data?.let { circle ->
+                    userRepo.insertCircle(circle)
+                }
+            }
+        }
     }
 
     override fun onBackPressed() {

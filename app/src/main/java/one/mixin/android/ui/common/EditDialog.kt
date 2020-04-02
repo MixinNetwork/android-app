@@ -14,7 +14,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.widget.BottomSheet
 
-@Suppress("unused")
 inline fun FragmentActivity.editDialog(
     builder: EditDialog.() -> Unit
 ): EditDialog {

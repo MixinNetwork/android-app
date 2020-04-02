@@ -777,4 +777,5 @@
     <string name="location_empty">找不到 \"%1$s\"\n换个名字试试吧</string>
     <!--  circle  -->
     <string name="circle_bottom">为不同对话创建 Circle \n然后在它们之间快速切换</string>
+    <string name="circle_add_title">添加 Circle</string>
 </resources>
