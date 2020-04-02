@@ -41,11 +41,11 @@ fun String.within24Hours(): Boolean {
 }
 
 fun String.timeAgo(context: Context): String {
-    var timeAgo = TimeCache.singleton.getTimeAgo(this)
+    val today = ZonedDateTime.of(ZonedDateTime.now().toLocalDate(),
+        LocalTime.MIN, LocaleZone.normalized())
+    var timeAgo = TimeCache.singleton.getTimeAgo(this + today)
     if (timeAgo == null) {
         val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)
-        val today = ZonedDateTime.of(ZonedDateTime.now().toLocalDate(),
-            LocalTime.MIN, LocaleZone.normalized())
         val todayMilli = today.toInstant().toEpochMilli()
         val offset = todayMilli - date.toInstant().toEpochMilli()
         timeAgo = when {
@@ -80,18 +80,22 @@ fun String.timeAgoDate(context: Context): String {
         timeAgoDate = when {
             (todayMilli <= date.toInstant().toEpochMilli()) -> context.getString(R.string.today)
             (today.year == date.year) -> {
-                if (Lingver.getInstance().isCurrChinese()) {
-                    date.format(DateTimeFormatter.ofPattern(weekPatternCn).withZone(LocaleZone))
-                } else {
-                    date.format(DateTimeFormatter.ofPattern(weekPatternEn).withZone(LocaleZone))
-                }
+                date.format(DateTimeFormatter.ofPattern(
+                    if (Lingver.getInstance().isCurrChinese()) {
+                        weekPatternCn
+                    } else {
+                        weekPatternEn
+                    }
+                ).withZone(LocaleZone))
             }
             else -> {
-                if (Lingver.getInstance().isCurrChinese()) {
-                    date.format(DateTimeFormatter.ofPattern(yearPatternCn).withZone(LocaleZone))
-                } else {
-                    date.format(DateTimeFormatter.ofPattern(yearPatternEn).withZone(LocaleZone))
-                }
+                date.format(DateTimeFormatter.ofPattern(
+                    if (Lingver.getInstance().isCurrChinese()) {
+                        yearPatternCn
+                    } else {
+                        yearPatternEn
+                    }
+                ).withZone(LocaleZone))
             }
         }
         TimeCache.singleton.putTimeAgoDate(this + today, timeAgoDate)
