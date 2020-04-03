@@ -364,7 +364,7 @@ class MessageProvider {
 	                    WHERE c.category IS NOT NULL AND cc.circle_id = '$circleId'
                     """
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 0)
-                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, statement, countStatement, false, "message_mentions", "conversations", "users", "messages", "snapshots") {
+                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, statement, countStatement, false, "message_mentions", "circle_conversations", "conversations", "circles", "users", "messages", "snapshots") {
                         override fun convertRows(cursor: Cursor): List<ConversationItem> {
                             val cursorIndexOfConversationId = CursorUtil.getColumnIndexOrThrow(cursor, "conversationId")
                             val cursorIndexOfGroupIconUrl = CursorUtil.getColumnIndexOrThrow(cursor, "groupIconUrl")
