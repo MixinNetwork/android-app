@@ -197,7 +197,10 @@ class ConversationCircleEditFragment : BaseFragment() {
                 )
             } else if (item is ConversationItem) {
                 conversationRequests.add(
-                    CircleConversationRequest(item.conversationId)
+                    CircleConversationRequest(
+                        item.conversationId,
+                        if (item.isContact()) item.ownerId else null
+                    )
                 )
             }
         }
