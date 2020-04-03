@@ -6,5 +6,5 @@ data class CircleConversationRequest(
     @SerializedName("conversation_id")
     val conversationId: String,
     @SerializedName("contact_id")
-    val contactId: String
+    val contactId: String? = null
 )

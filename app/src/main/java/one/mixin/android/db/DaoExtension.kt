@@ -1,10 +1,7 @@
 package one.mixin.android.db
 
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
-import one.mixin.android.vo.Circle
-import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
@@ -109,24 +106,5 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
         if (userId != message.userId) {
             conversationDao().unseenMessageCount(message.conversationId, userId)
         }
-    }
-}
-
-fun MixinDatabase.insertCircle(
-    conversationId: String,
-    contactId: String?,
-    circle: Circle
-) {
-    runInTransaction {
-        circleDao().insert(circle)
-        circleConversationDao().insert(
-            CircleConversation(
-                conversationId,
-                conversationId, // Todo
-                circle.circleId,
-                nowInUtc(),
-                null
-            )
-        )
     }
 }

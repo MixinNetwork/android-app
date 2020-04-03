@@ -36,10 +36,17 @@ class ConversationCircleSelectAdapter(
             holder.itemView.name_tv.text = item.fullName
             item.showVerifiedOrBot(holder.itemView.verified_iv, holder.itemView.bot_iv)
         } else if (item is ConversationItem) {
-            holder.itemView.avatar_view.setGroup(item.groupIconUrl)
-            holder.itemView.name_tv.text = item.groupName
-            holder.itemView.verified_iv.isVisible = false
-            holder.itemView.bot_iv.isVisible = false
+            holder.itemView.apply {
+                if (item.isGroup()) {
+                    avatar_view.setGroup(item.groupIconUrl)
+                    name_tv.text = item.groupName
+                } else {
+                    avatar_view.setInfo(item.getConversationName(), item.iconUrl(), item.ownerId)
+                    name_tv.text = item.name
+                }
+                bot_iv.isVisible = false
+                verified_iv.isVisible = false
+            }
         }
         holder.itemView.setOnClickListener {
             removeItem(item)

@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationRequest
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardAdapter
 import one.mixin.android.ui.home.ConversationListViewModel
@@ -68,7 +69,7 @@ class ConversationCircleEditFragment : BaseFragment() {
         }
     }
 
-    private var oldConversationIds = mutableListOf<String>()
+    private var oldCircleConversationRequestSet = mutableSetOf<CircleConversationRequest>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_conversation_circle_edit, container, false)
@@ -98,6 +99,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                 }
                 adapter.notifyDataSetChanged()
                 selectAdapter.notifyDataSetChanged()
+                select_rv.layoutManager?.scrollToPosition(selectAdapter.checkedItems.size - 1)
                 updateTitleText(adapter.selectItem.size)
             }
 
@@ -111,6 +113,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                 }
                 adapter.notifyDataSetChanged()
                 selectAdapter.notifyDataSetChanged()
+                select_rv.layoutManager?.scrollToPosition(selectAdapter.checkedItems.size - 1)
                 updateTitleText(adapter.selectItem.size)
             }
         })
@@ -139,8 +142,13 @@ class ConversationCircleEditFragment : BaseFragment() {
         val conversations = chatViewModel.successConversationList()
         adapter.sourceConversations = conversations
         val conversationItems = chatViewModel.findConversationItemByCircleId(circle.circleId)
-        conversationItems.forEach { item ->
-            oldConversationIds.add(item.conversationId)
+        val circleConversations = chatViewModel.findCircleConversationByCircleId(circle.circleId)
+        val inCircleContactId = mutableListOf<String>()
+        circleConversations.forEach { cc ->
+            oldCircleConversationRequestSet.add(CircleConversationRequest(cc.conversationId, cc.contactId))
+            if (cc.contactId != null) {
+                inCircleContactId.add(cc.contactId)
+            }
         }
         adapter.selectItem.clear()
         adapter.selectItem.addAll(conversationItems)
@@ -153,17 +161,36 @@ class ConversationCircleEditFragment : BaseFragment() {
             }
         }
         val list = chatViewModel.getFriends()
-        if (list.isNotEmpty()) {
-            adapter.sourceFriends = list.filter { item ->
+        val filteredFriends = if (list.isNotEmpty()) {
+            list.filter { item ->
                 !set.contains(item.userId)
             }
         } else {
-            adapter.sourceFriends = list
+            list
         }
+        adapter.sourceFriends = filteredFriends
+        val inCircleUsers = mutableListOf<User>()
+        filteredFriends.forEach {
+            if (inCircleContactId.contains(it.userId)) {
+                inCircleUsers.add(it)
+            }
+        }
+        adapter.selectItem.addAll(inCircleUsers)
+        selectAdapter.checkedItems.addAll(inCircleUsers)
+        selectAdapter.notifyDataSetChanged()
         adapter.changeData()
+        updateTitleText(adapter.selectItem.size)
     }
 
     private fun save() = lifecycleScope.launch {
+        val dialog = indeterminateProgressDialog(
+            message = R.string.pb_dialog_message,
+            title = R.string.saving
+        ).apply {
+            setCancelable(false)
+        }
+        dialog.show()
+
         val conversationRequests = mutableListOf<CircleConversationRequest>()
         adapter.selectItem.forEach { item ->
             if (item is User) {
@@ -175,10 +202,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                 )
             } else if (item is ConversationItem) {
                 conversationRequests.add(
-                    CircleConversationRequest(
-                        item.conversationId,
-                        item.ownerId
-                    )
+                    CircleConversationRequest(item.conversationId)
                 )
             }
         }
@@ -192,8 +216,19 @@ class ConversationCircleEditFragment : BaseFragment() {
                 conversationRequests.forEach { item ->
                     newConversationIds.add(item.conversationId)
                 }
-                chatViewModel.saveCircle(oldConversationIds, newConversationIds, circle.circleId)
-                parentFragmentManager.popBackStackImmediate()
+                val result = chatViewModel.saveCircle(oldCircleConversationRequestSet, conversationRequests, circle.circleId)
+                dialog.dismiss()
+                if (result) {
+                    parentFragmentManager.popBackStackImmediate()
+                }
+            },
+            exceptionBlock = {
+                dialog.dismiss()
+                return@handleMixinResponse false
+            },
+            failureBlock = {
+                dialog.dismiss()
+                return@handleMixinResponse false
             }
         )
     }

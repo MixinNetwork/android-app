@@ -136,10 +136,10 @@ internal constructor(
     fun sortCircleConversations(list: List<CircleOrder>?) = viewModelScope.launch { userRepository.sortCircleConversations(list) }
 
     suspend fun saveCircle(
-        oldConversationIds: List<String>,
-        newConversationIds: List<String>,
+        oldCircleConversationRequests: Set<CircleConversationRequest>,
+        newCircleConversationRequests: List<CircleConversationRequest>,
         circleId: String
-    ) {
+    ): Boolean {
         handleMixinResponse(
             switchContext = Dispatchers.IO,
             invokeNetwork = {
@@ -151,24 +151,28 @@ internal constructor(
                     return@handleMixinResponse circle
                 }
             }
-        )?.let {
-            val safeSet = oldConversationIds.intersect(newConversationIds)
-            val removeSet = oldConversationIds.subtract(safeSet)
-            val addSet = newConversationIds.subtract(safeSet)
+        ) ?: return false
 
-            removeSet.forEach { conversationId ->
-                userRepository.deleteCircleConversation(conversationId, circleId)
-            }
-            addSet.forEach { conversationId ->
-                val circleConversation = CircleConversation(
-                    conversationId,
-                    conversationId, // todo
-                    circleId,
-                    nowInUtc(),
-                    null
-                )
-                userRepository.insertCircleConversation(circleConversation)
-            }
+        val safeSet = oldCircleConversationRequests.intersect(newCircleConversationRequests)
+        val removeSet = oldCircleConversationRequests.subtract(safeSet)
+        val addSet = newCircleConversationRequests.subtract(safeSet)
+
+        removeSet.forEach { cc ->
+            userRepository.deleteCircleConversation(cc.conversationId, circleId)
         }
+        addSet.forEach { cc ->
+            val circleConversation = CircleConversation(
+                cc.conversationId,
+                cc.contactId,
+                circleId,
+                nowInUtc(),
+                null
+            )
+            userRepository.insertCircleConversation(circleConversation)
+        }
+        return true
     }
+
+    suspend fun findCircleConversationByCircleId(circleId: String) =
+        userRepository.findCircleConversationByCircleId(circleId)
 }

@@ -162,4 +162,7 @@ constructor(
 
     suspend fun insertCircleConversation(circleConversation: CircleConversation) =
         circleConversationDao.insertSuspend(circleConversation)
+
+    suspend fun findCircleConversationByCircleId(circleId: String) =
+        circleConversationDao.findCircleConversationByCircleId(circleId)
 }
