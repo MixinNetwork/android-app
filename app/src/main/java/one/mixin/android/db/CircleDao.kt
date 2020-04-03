@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.RoomWarnings
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.ConversationCircleItem
+import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.ConversationItem
 
 @Dao
@@ -29,20 +30,24 @@ interface CircleDao : BaseDao<Circle> {
     fun observeAllCircleItem(): LiveData<List<ConversationCircleItem>>
 
     @Query("""
-        SELECT ci.circle_id, ci.name, ci.created_at, count(c.conversation_id) as count, c.unseen_message_count as unseen_message_count
-        FROM circles ci LEFT JOIN circle_conversations cc ON ci.circle_id==cc.circle_id LEFT JOIN conversations c  ON c.conversation_id == cc.conversation_id
-        WHERE cc.conversation_id = :conversationId 
-        GROUP BY cc.circle_id ORDER BY ci.order_at ASC, ci.created_at DESC
+       SELECT ci.circle_id,  ci.name, count(c.conversation_id) as count FROM circles ci LEFT JOIN circle_conversations cc ON ci.circle_id=cc.circle_id
+        LEFT JOIN conversations c  ON c.conversation_id = cc.conversation_id
+        WHERE ci.circle_id IN (
+        SELECT cir.circle_id FROM circles cir LEFT JOIN circle_conversations ccr ON cir.circle_id = ccr.circle_id WHERE ccr.conversation_id = :conversationId)
+        GROUP BY ci.circle_id
+        ORDER BY ci.order_at ASC, ci.created_at DESC
     """)
-     suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleItem>
+     suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleManagerItem>
 
     @Query("""
-        SELECT ci.circle_id, ci.name, ci.created_at, count(c.conversation_id) as count, c.unseen_message_count as unseen_message_count
-        FROM circles ci LEFT JOIN circle_conversations cc ON ci.circle_id==cc.circle_id LEFT JOIN conversations c  ON c.conversation_id == cc.conversation_id
-        WHERE cc.conversation_id != :conversationId 
-        GROUP BY cc.circle_id ORDER BY ci.order_at ASC, ci.created_at DESC
+        SELECT ci.circle_id,  ci.name, count(c.conversation_id) as count FROM circles ci LEFT JOIN circle_conversations cc ON ci.circle_id=cc.circle_id
+        LEFT JOIN conversations c  ON c.conversation_id = cc.conversation_id
+        WHERE ci.circle_id NOT IN (
+        SELECT cir.circle_id FROM circles cir LEFT JOIN circle_conversations ccr ON cir.circle_id = ccr.circle_id WHERE ccr.conversation_id = :conversationId)
+        GROUP BY ci.circle_id
+        ORDER BY ci.order_at ASC, ci.created_at DESC
     """)
-    suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleItem>
+    suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("""

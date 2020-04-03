@@ -350,7 +350,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
     private fun startCircleManager() {
         activity?.addFragment(this,
-            CircleManagerFragment.newInstance(conversation.name, conversation.conversationId),
+            CircleManagerFragment.newInstance(conversation.name, conversationId = conversation.conversationId),
             CircleManagerFragment.TAG
         )
     }

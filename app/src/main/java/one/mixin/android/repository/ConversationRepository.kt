@@ -12,6 +12,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.ConversationDao
@@ -348,4 +349,6 @@ internal constructor(
             jobDao.insert(createAckJob(CREATE_MESSAGE, BlazeAckMessage(messageId, MessageMentionStatus.MENTION_READ.name), conversationId))
         }
     }
+
+    suspend fun updateCircles(id: String, requests: List<ConversationCircleRequest>) = conversationService.updateCircles(id, requests)
 }

@@ -24,7 +24,7 @@ import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleBody
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleOrder
-import one.mixin.android.vo.ConversationCircleItem
+import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 
@@ -170,9 +170,9 @@ constructor(
     suspend fun findCircleConversationByCircleId(circleId: String) =
         circleConversationDao.findCircleConversationByCircleId(circleId)
 
-    suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleItem> = circleDao.getIncludeCircleItem(conversationId)
+    suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleManagerItem> = circleDao.getIncludeCircleItem(conversationId)
 
-    suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleItem> = circleDao.getOtherCircleItem(conversationId)
+    suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem> = circleDao.getOtherCircleItem(conversationId)
 
     fun observeOtherCircleUnread(circleId: String) =
         circleDao.observeOtherCircleUnread(circleId)

@@ -16,6 +16,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.AuthorizeRequest
+import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.PinRequest
@@ -45,8 +46,9 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Circle
+import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCategory
-import one.mixin.android.vo.ConversationCircleItem
+import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
@@ -493,7 +495,13 @@ class BottomSheetViewModel @Inject internal constructor(
         userRepository.insertCircle(circle)
     }
 
-    suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleItem> = userRepository.getIncludeCircleItem(conversationId)
+    suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleManagerItem> = userRepository.getIncludeCircleItem(conversationId)
 
-    suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleItem> = userRepository.getOtherCircleItem(conversationId)
+    suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem> = userRepository.getOtherCircleItem(conversationId)
+
+    suspend fun updateCircles(conversationId: String, requests: List<ConversationCircleRequest>) = conversationRepo.updateCircles(conversationId, requests)
+
+    suspend fun deleteCircleConversation(conversationId: String, circleId: String) = userRepository.deleteCircleConversation(conversationId, circleId)
+
+    suspend fun insertCircleConversation(circleConversation: CircleConversation) = userRepository.insertCircleConversation(circleConversation)
 }

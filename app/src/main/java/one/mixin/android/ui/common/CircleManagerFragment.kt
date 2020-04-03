@@ -6,32 +6,46 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_circle_manager.*
 import kotlinx.android.synthetic.main.item_circle_manager.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.withArgs
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.ConversationCircleItem
+import one.mixin.android.util.Session
+import one.mixin.android.vo.CircleConversation
+import one.mixin.android.vo.ConversationCircleManagerItem
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.widget.SegmentationItemDecoration
+import javax.inject.Inject
 
 class CircleManagerFragment : BaseFragment() {
     companion object {
         const val TAG = "ConversationCircleFragment"
         private const val NAME = "name"
         private const val CONVERSATION_ID = "conversation_id"
+        private const val USER_ID = "user_id"
 
-        fun newInstance(name: String?, conversationId: String? = null): CircleManagerFragment {
+        fun newInstance(name: String?, conversationId: String? = null, userId: String? = null): CircleManagerFragment {
             return CircleManagerFragment().withArgs {
                 name?.let { putString(NAME, name) }
-                conversationId?.let { putString(CONVERSATION_ID, it) }
+                if (userId != null) {
+                    putString(USER_ID, userId)
+                    putString(CONVERSATION_ID, generateConversationId(Session.getAccountId()!!, userId))
+                } else {
+                    putString(CONVERSATION_ID, conversationId)
+                }
             }
         }
     }
@@ -42,6 +56,10 @@ class CircleManagerFragment : BaseFragment() {
 
     private val conversationId: String by lazy {
         arguments!!.getString(CONVERSATION_ID)!!
+    }
+
+    private val userId: String? by lazy {
+        arguments!!.getString(USER_ID)
     }
 
     @Inject
@@ -85,34 +103,67 @@ class CircleManagerFragment : BaseFragment() {
         }
     }
 
-    private val onAppCircle: (app: ConversationCircleItem) -> Unit = { app ->
-        bottomViewModel.viewModelScope.launch {
+    private val onAddCircle: (items: List<ConversationCircleManagerItem>?, item: ConversationCircleManagerItem) -> Unit = { items, item ->
+        lifecycleScope.launch {
             val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
                 setCancelable(false)
             }
-            // try {
-            //     if (bottomViewModel.addFavoriteApp(app.appId)) {
-            //         loadData()
-            //     }
-            // } catch (e: Exception) {
-            //     ErrorHandler.handleError(e)
-            // }
-            dialog.dismiss()
+            val requests = mutableListOf<ConversationCircleRequest>()
+            items?.let {
+                requests.addAll(it.map { ConversationCircleRequest(it.circleId) })
+            }
+            requests.add(ConversationCircleRequest(item.circleId))
+            handleMixinResponse(
+                switchContext = Dispatchers.IO,
+                invokeNetwork = {
+                    bottomViewModel.updateCircles(conversationId, requests)
+                },
+                successBlock = {
+                    bottomViewModel.insertCircleConversation(CircleConversation(conversationId, userId, item.circleId, nowInUtc(), null))
+                    dialog.dismiss()
+                    loadData()
+                },
+                exceptionBlock = {
+                    dialog.dismiss()
+                    return@handleMixinResponse false
+                },
+                failureBlock = {
+                    dialog.dismiss()
+                    return@handleMixinResponse false
+                }
+            )
         }
     }
-    private val onRemveCircle: (app: ConversationCircleItem) -> Unit = { app ->
-        bottomViewModel.viewModelScope.launch {
+
+    private val onRemoveCircle: (items: List<ConversationCircleManagerItem>?, item: ConversationCircleManagerItem) -> Unit = { items, item ->
+        lifecycleScope.launch {
             val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
                 setCancelable(false)
             }
-            // try {
-            //     if (bottomViewModel.removeFavoriteApp(app.appId, Session.getAccountId()!!)) {
-            //         loadData()
-            //     }
-            // } catch (e: Exception) {
-            //     ErrorHandler.handleError(e)
-            // }
-            dialog.dismiss()
+            val requests = mutableListOf<ConversationCircleRequest>()
+            items?.let {
+                requests.addAll(it.map { ConversationCircleRequest(it.circleId) })
+            }
+            requests.remove(ConversationCircleRequest(item.circleId))
+            handleMixinResponse(
+                switchContext = Dispatchers.IO,
+                invokeNetwork = {
+                    bottomViewModel.updateCircles(conversationId, requests)
+                },
+                successBlock = {
+                    bottomViewModel.deleteCircleConversation(conversationId, item.circleId)
+                    loadData()
+                    dialog.dismiss()
+                },
+                exceptionBlock = {
+                    dialog.dismiss()
+                    return@handleMixinResponse false
+                },
+                failureBlock = {
+                    dialog.dismiss()
+                    return@handleMixinResponse false
+                }
+            )
         }
     }
 
@@ -131,7 +182,7 @@ class CircleManagerFragment : BaseFragment() {
     }
 
     private fun createCircle(name: String) {
-        bottomViewModel.viewModelScope.launch(ErrorHandler.errorHandler) {
+        lifecycleScope.launch(ErrorHandler.errorHandler) {
             val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
                 setCancelable(false)
             }
@@ -140,6 +191,7 @@ class CircleManagerFragment : BaseFragment() {
                 response.data?.let { circle ->
                     bottomViewModel.insertCircle(circle)
                 }
+                loadData()
             } else {
                 ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
             }
@@ -148,22 +200,22 @@ class CircleManagerFragment : BaseFragment() {
     }
 
     private val circleAdapter by lazy {
-        CircleAdapter({
-            onAppCircle(it)
-        }, {
-            onRemveCircle(it)
+        CircleAdapter({ items, item ->
+            onAddCircle(items, item)
+        }, { items, item ->
+            onRemoveCircle(items, item)
         })
     }
 
     class CircleAdapter(
-        private val onAppCircle: (conversationCircleItem: ConversationCircleItem) -> Unit,
-        private val onRemveCircle: (conversationCircleItem: ConversationCircleItem) -> Unit
+        private val onAddCircle: (items: List<ConversationCircleManagerItem>?, item: ConversationCircleManagerItem) -> Unit,
+        private val onRemoveCircle: (items: List<ConversationCircleManagerItem>?, item: ConversationCircleManagerItem) -> Unit
     ) : RecyclerView.Adapter<CircleHolder>() {
 
-        private var includeCircleItem: List<ConversationCircleItem>? = null
-        private var otherCircleItem: List<ConversationCircleItem>? = null
+        private var includeCircleItem: List<ConversationCircleManagerItem>? = null
+        private var otherCircleItem: List<ConversationCircleManagerItem>? = null
 
-        fun setData(includeCircleItem: List<ConversationCircleItem>, otherCircleItem: List<ConversationCircleItem>) {
+        fun setData(includeCircleItem: List<ConversationCircleManagerItem>, otherCircleItem: List<ConversationCircleManagerItem>) {
             this.includeCircleItem = includeCircleItem
             this.otherCircleItem = otherCircleItem
             notifyDataSetChanged()
@@ -173,18 +225,15 @@ class CircleManagerFragment : BaseFragment() {
             CircleHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_circle_manager, parent, false))
 
         override fun getItemCount(): Int = (includeCircleItem.notEmptyWithElse({ it.size }, 0) +
-            otherCircleItem.notEmptyWithElse({ it.size }, 0)) + 1
+            otherCircleItem.notEmptyWithElse({ it.size }, 0))
 
         override fun getItemViewType(position: Int): Int {
             val favoriteSize = includeCircleItem.notNullWithElse({ it.size }, 0)
             return when {
-                position == 0 -> {
-                    2
-                }
-                position - 1 < favoriteSize -> {
+                position < favoriteSize -> {
                     0
                 }
-                position - 1 < favoriteSize + otherCircleItem.notNullWithElse({ it.size }, 0) -> {
+                position < favoriteSize + otherCircleItem.notNullWithElse({ it.size }, 0) -> {
                     1
                 }
                 else -> {
@@ -193,17 +242,17 @@ class CircleManagerFragment : BaseFragment() {
             }
         }
 
-        private fun getItem(position: Int): ConversationCircleItem? {
+        private fun getItem(position: Int): ConversationCircleManagerItem {
             return when (getItemViewType(position)) {
                 0 -> {
-                    includeCircleItem!![position - 1]
+                    includeCircleItem!![position]
                 }
                 1 -> {
                     val favoriteSize = includeCircleItem.notNullWithElse({ it.size }, 0)
-                    otherCircleItem!![position - 1 - favoriteSize]
+                    otherCircleItem!![position - favoriteSize]
                 }
                 else -> {
-                    null
+                    throw IllegalArgumentException("Conversation Circle type error")
                 }
             }
         }
@@ -211,11 +260,15 @@ class CircleManagerFragment : BaseFragment() {
         override fun onBindViewHolder(holder: CircleHolder, position: Int) {
             when (getItemViewType(position)) {
                 0 -> {
-                    holder.bind(getItem(position), onRemveCircle = onRemveCircle)
+                    holder.bind(getItem(position), onRemoveCircle = {
+                        onRemoveCircle(includeCircleItem, it)
+                    })
                 }
                 1 -> {
-                    holder.itemView.tag = position == includeCircleItem.notNullWithElse({ it.size + 1 }, 1)
-                    holder.bind(getItem(position), onAppCircle = onAppCircle)
+                    holder.itemView.tag = !includeCircleItem.isNullOrEmpty() && position == includeCircleItem?.size
+                    holder.bind(getItem(position), onAddCircle = {
+                        onAddCircle(includeCircleItem, it)
+                    })
                 }
                 else -> {
                     holder.bind(getItem(position))
@@ -226,32 +279,24 @@ class CircleManagerFragment : BaseFragment() {
 
     class CircleHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(
-            conversationCircleItem: ConversationCircleItem?,
-            onAppCircle: ((conversationCircleItem: ConversationCircleItem) -> Unit)? = null,
-            onRemveCircle: ((conversationCircleItem: ConversationCircleItem) -> Unit)? = null
+            conversationCircleItem: ConversationCircleManagerItem,
+            onAddCircle: ((conversationCircleItem: ConversationCircleManagerItem) -> Unit)? = null,
+            onRemoveCircle: ((conversationCircleItem: ConversationCircleManagerItem) -> Unit)? = null
         ) {
-            if (conversationCircleItem == null) {
-                itemView.action_iv.setImageResource(R.drawable.ic_circle_disable)
-                itemView.action_iv.setOnClickListener { }
-                itemView.circle_icon.setImageResource(R.drawable.ic_circle_mixin)
-                itemView.circle_title.setText(R.string.circle_mixin)
-                itemView.circle_subtitle.setText(R.string.circle_all_conversation)
-            } else {
-                if (onAppCircle != null) {
-                    itemView.action_iv.setImageResource(R.drawable.ic_add_circle)
-                    itemView.action_iv.setOnClickListener {
-                        onAppCircle.invoke(conversationCircleItem)
-                    }
-                } else {
-                    itemView.action_iv.setImageResource(R.drawable.ic_remove_circle)
-                    itemView.action_iv.setOnClickListener {
-                        onRemveCircle?.invoke(conversationCircleItem)
-                    }
+            if (onAddCircle != null) {
+                itemView.action_iv.setImageResource(R.drawable.ic_add_circle)
+                itemView.action_iv.setOnClickListener {
+                    onAddCircle.invoke(conversationCircleItem)
                 }
-                itemView.circle_icon.setImageResource(R.drawable.ic_circle)
-                itemView.circle_title.text = conversationCircleItem.name
-                itemView.circle_subtitle.text = itemView.context.getString(R.string.circle_subtitle, conversationCircleItem.count)
+            } else {
+                itemView.action_iv.setImageResource(R.drawable.ic_remove_circle)
+                itemView.action_iv.setOnClickListener {
+                    onRemoveCircle?.invoke(conversationCircleItem)
+                }
             }
+            itemView.circle_icon.setImageResource(R.drawable.ic_circle)
+            itemView.circle_title.text = conversationCircleItem.name
+            itemView.circle_subtitle.text = itemView.context.getString(R.string.circle_subtitle, conversationCircleItem.count)
         }
     }
 }
