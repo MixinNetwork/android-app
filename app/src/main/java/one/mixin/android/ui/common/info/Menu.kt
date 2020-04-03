@@ -15,6 +15,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.vo.App
 import one.mixin.android.widget.FlowLayout
+import org.jetbrains.anko.colorAttr
 
 @DslMarker
 annotation class MenuDsl
@@ -155,7 +156,7 @@ private fun addCirclesLayout(
         val tv = TextView(context).apply {
             setBackgroundResource(R.drawable.bg_round_rect_gray_border)
             text = name
-            setTextColor(R.color.textRemarks)
+            setTextColor(context.colorAttr(R.attr.text_remarks))
             setPadding(dp12, dp4, dp12, dp4)
         }
         flowLayout.addView(tv)
