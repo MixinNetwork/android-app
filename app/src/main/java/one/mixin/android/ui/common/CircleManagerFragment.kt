@@ -20,11 +20,9 @@ import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.withArgs
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
-import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.widget.SegmentationItemDecoration
@@ -119,7 +117,9 @@ class CircleManagerFragment : BaseFragment() {
                     bottomViewModel.updateCircles(conversationId, requests)
                 },
                 successBlock = {
-                    bottomViewModel.insertCircleConversation(CircleConversation(conversationId, userId, item.circleId, nowInUtc(), null))
+                    it.data?.forEach { circleConversation ->
+                        bottomViewModel.insertCircleConversation(circleConversation)
+                    }
                     dialog.dismiss()
                     loadData()
                 },
@@ -141,8 +141,8 @@ class CircleManagerFragment : BaseFragment() {
                 setCancelable(false)
             }
             val requests = mutableListOf<ConversationCircleRequest>()
-            items?.let {
-                requests.addAll(it.map { ConversationCircleRequest(it.circleId) })
+            items?.let { circleConversation ->
+                requests.addAll(circleConversation.map { ConversationCircleRequest(it.circleId) })
             }
             requests.remove(ConversationCircleRequest(item.circleId))
             handleMixinResponse(
