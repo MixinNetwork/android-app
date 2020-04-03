@@ -505,7 +505,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     private fun startCircleManager() {
         activity?.addFragment(
             this@UserBottomSheetDialogFragment,
-            CircleManagerFragment.newInstance(user.fullName, userId = user.userId),
+            CircleManagerFragment.newInstance(user.fullName, generateConversationId(Session.getAccountId()!!, user.userId)),
             CircleManagerFragment.TAG
         )
     }

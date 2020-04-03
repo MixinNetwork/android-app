@@ -46,6 +46,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.ConversationCategory
+import one.mixin.android.vo.ConversationCircleItem
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
@@ -491,4 +492,8 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun insertCircle(circle: Circle) {
         userRepository.insertCircle(circle)
     }
+
+    suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleItem> = userRepository.getIncludeCircleItem(conversationId)
+
+    suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleItem> = userRepository.getOtherCircleItem(conversationId)
 }

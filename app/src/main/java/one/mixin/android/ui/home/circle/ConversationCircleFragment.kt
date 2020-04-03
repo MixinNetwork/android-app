@@ -236,7 +236,7 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
         editDialog {
             titleText = this@ConversationCircleFragment.getString(R.string.circle_menu_edit_name)
             editText = conversationCircleItem.name
-            maxTextCount = 128
+            maxTextCount = 64
             editMaxLines = EditDialog.MAX_LINE.toInt()
             allowEmpty = false
             rightText = android.R.string.ok

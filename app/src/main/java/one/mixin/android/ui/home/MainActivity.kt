@@ -585,7 +585,8 @@ class MainActivity : BlazeBaseActivity() {
     private fun addCircle() {
         editDialog {
             titleText = this@MainActivity.getString(R.string.circle_add_title)
-            maxTextCount = 128
+            maxTextCount = 64
+            defaultEditEnable = false
             editMaxLines = EditDialog.MAX_LINE.toInt()
             allowEmpty = false
             rightText = android.R.string.ok
