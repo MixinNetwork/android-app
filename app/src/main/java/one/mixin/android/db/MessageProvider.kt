@@ -266,7 +266,7 @@ class MessageProvider {
                             val cursorIndexOfParticipantUserId = CursorUtil.getColumnIndexOrThrow(cursor, "participantUserId")
                             val cursorIndexOfMentionCount = CursorUtil.getColumnIndexOrThrow(cursor, "mentionCount")
                             val cursorIndexOfMentions = CursorUtil.getColumnIndexOrThrow(cursor, "mentions")
-                            val res = java.util.ArrayList<ConversationItem>(cursor.count)
+                            val res = ArrayList<ConversationItem>(cursor.count)
                             while (cursor.moveToNext()) {
                                 val item: ConversationItem
                                 val tmpConversationId = cursor.getString(cursorIndexOfConversationId)
@@ -275,11 +275,10 @@ class MessageProvider {
                                 val tmpGroupName = cursor.getString(cursorIndexOfGroupName)
                                 val tmpStatus = cursor.getInt(cursorIndexOfStatus)
                                 val tmpLastReadMessageId = cursor.getString(cursorIndexOfLastReadMessageId)
-                                val tmpUnseenMessageCount: Int?
-                                if (cursor.isNull(cursorIndexOfUnseenMessageCount)) {
-                                    tmpUnseenMessageCount = null
+                                val tmpUnseenMessageCount = if (cursor.isNull(cursorIndexOfUnseenMessageCount)) {
+                                    null
                                 } else {
-                                    tmpUnseenMessageCount = cursor.getInt(cursorIndexOfUnseenMessageCount)
+                                    cursor.getInt(cursorIndexOfUnseenMessageCount)
                                 }
                                 val tmpOwnerId = cursor.getString(cursorIndexOfOwnerId)
                                 val tmpPinTime = cursor.getString(cursorIndexOfPinTime)
@@ -287,11 +286,10 @@ class MessageProvider {
                                 val tmpAvatarUrl = cursor.getString(cursorIndexOfAvatarUrl)
                                 val tmpName = cursor.getString(cursorIndexOfName)
                                 val tmpOwnerVerified: Boolean?
-                                val tmp: Int?
-                                if (cursor.isNull(cursorIndexOfOwnerVerified)) {
-                                    tmp = null
+                                val tmp = if (cursor.isNull(cursorIndexOfOwnerVerified)) {
+                                    null
                                 } else {
-                                    tmp = cursor.getInt(cursorIndexOfOwnerVerified)
+                                    cursor.getInt(cursorIndexOfOwnerVerified)
                                 }
                                 tmpOwnerVerified = if (tmp == null) null else tmp != 0
                                 val tmpOwnerIdentityNumber = cursor.getString(cursorIndexOfOwnerIdentityNumber)
@@ -307,11 +305,10 @@ class MessageProvider {
                                 val tmpSenderFullName = cursor.getString(cursorIndexOfSenderFullName)
                                 val tmpParticipantFullName = cursor.getString(cursorIndexOfParticipantFullName)
                                 val tmpParticipantUserId = cursor.getString(cursorIndexOfParticipantUserId)
-                                val tmpMentionCount: Int?
-                                if (cursor.isNull(cursorIndexOfMentionCount)) {
-                                    tmpMentionCount = null
+                                val tmpMentionCount: Int? = if (cursor.isNull(cursorIndexOfMentionCount)) {
+                                    null
                                 } else {
-                                    tmpMentionCount = cursor.getInt(cursorIndexOfMentionCount)
+                                    cursor.getInt(cursorIndexOfMentionCount)
                                 }
                                 val tmpMentions = cursor.getString(cursorIndexOfMentions)
                                 item = ConversationItem(tmpConversationId, tmpAvatarUrl, tmpGroupIconUrl, tmpCategory, tmpGroupName, tmpName, tmpOwnerId, tmpOwnerIdentityNumber, tmpStatus, tmpLastReadMessageId, tmpUnseenMessageCount, tmpContent, tmpContentType, tmpMediaUrl, tmpCreatedAt, tmpPinTime, tmpSenderId, tmpSenderFullName, tmpMessageStatus, tmpActionName, tmpParticipantFullName, tmpParticipantUserId, tmpOwnerMuteUntil, tmpOwnerVerified, tmpMuteUntil, null, tmpAppId, tmpMentions, tmpMentionCount)
@@ -394,7 +391,7 @@ class MessageProvider {
                             val cursorIndexOfParticipantUserId = CursorUtil.getColumnIndexOrThrow(cursor, "participantUserId")
                             val cursorIndexOfMentionCount = CursorUtil.getColumnIndexOrThrow(cursor, "mentionCount")
                             val cursorIndexOfMentions = CursorUtil.getColumnIndexOrThrow(cursor, "mentions")
-                            val res = java.util.ArrayList<ConversationItem>(cursor.count)
+                            val res = ArrayList<ConversationItem>(cursor.count)
                             while (cursor.moveToNext()) {
                                 val item: ConversationItem
                                 val tmpConversationId = cursor.getString(cursorIndexOfConversationId)
@@ -403,11 +400,10 @@ class MessageProvider {
                                 val tmpGroupName = cursor.getString(cursorIndexOfGroupName)
                                 val tmpStatus = cursor.getInt(cursorIndexOfStatus)
                                 val tmpLastReadMessageId = cursor.getString(cursorIndexOfLastReadMessageId)
-                                val tmpUnseenMessageCount: Int?
-                                if (cursor.isNull(cursorIndexOfUnseenMessageCount)) {
-                                    tmpUnseenMessageCount = null
+                                val tmpUnseenMessageCount = if (cursor.isNull(cursorIndexOfUnseenMessageCount)) {
+                                    null
                                 } else {
-                                    tmpUnseenMessageCount = cursor.getInt(cursorIndexOfUnseenMessageCount)
+                                    cursor.getInt(cursorIndexOfUnseenMessageCount)
                                 }
                                 val tmpOwnerId = cursor.getString(cursorIndexOfOwnerId)
                                 val tmpPinTime = cursor.getString(cursorIndexOfPinTime)
@@ -415,11 +411,10 @@ class MessageProvider {
                                 val tmpAvatarUrl = cursor.getString(cursorIndexOfAvatarUrl)
                                 val tmpName = cursor.getString(cursorIndexOfName)
                                 val tmpOwnerVerified: Boolean?
-                                val tmp: Int?
-                                if (cursor.isNull(cursorIndexOfOwnerVerified)) {
-                                    tmp = null
+                                val tmp = if (cursor.isNull(cursorIndexOfOwnerVerified)) {
+                                    null
                                 } else {
-                                    tmp = cursor.getInt(cursorIndexOfOwnerVerified)
+                                    cursor.getInt(cursorIndexOfOwnerVerified)
                                 }
                                 tmpOwnerVerified = if (tmp == null) null else tmp != 0
                                 val tmpOwnerIdentityNumber = cursor.getString(cursorIndexOfOwnerIdentityNumber)
@@ -435,11 +430,10 @@ class MessageProvider {
                                 val tmpSenderFullName = cursor.getString(cursorIndexOfSenderFullName)
                                 val tmpParticipantFullName = cursor.getString(cursorIndexOfParticipantFullName)
                                 val tmpParticipantUserId = cursor.getString(cursorIndexOfParticipantUserId)
-                                val tmpMentionCount: Int?
-                                if (cursor.isNull(cursorIndexOfMentionCount)) {
-                                    tmpMentionCount = null
+                                val tmpMentionCount = if (cursor.isNull(cursorIndexOfMentionCount)) {
+                                    null
                                 } else {
-                                    tmpMentionCount = cursor.getInt(cursorIndexOfMentionCount)
+                                    cursor.getInt(cursorIndexOfMentionCount)
                                 }
                                 val tmpMentions = cursor.getString(cursorIndexOfMentions)
                                 item = ConversationItem(tmpConversationId, tmpAvatarUrl, tmpGroupIconUrl, tmpCategory, tmpGroupName, tmpName, tmpOwnerId, tmpOwnerIdentityNumber, tmpStatus, tmpLastReadMessageId, tmpUnseenMessageCount, tmpContent, tmpContentType, tmpMediaUrl, tmpCreatedAt, tmpPinTime, tmpSenderId, tmpSenderFullName, tmpMessageStatus, tmpActionName, tmpParticipantFullName, tmpParticipantUserId, tmpOwnerMuteUntil, tmpOwnerVerified, tmpMuteUntil, null, tmpAppId, tmpMentions, tmpMentionCount)

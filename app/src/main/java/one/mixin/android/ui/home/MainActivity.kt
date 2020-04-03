@@ -533,6 +533,9 @@ class MainActivity : BlazeBaseActivity() {
                 navigationController.showSearch()
             }
         })
+        search_bar.hideAction = {
+            (supportFragmentManager.findFragmentByTag(ConversationCircleFragment.TAG) as? ConversationCircleFragment)?.cancelSort()
+        }
         root_view.setOnKeyListener { _, keyCode, _ ->
             if (keyCode == KeyEvent.KEYCODE_BACK && search_bar.isOpen) {
                 search_bar.closeSearch()

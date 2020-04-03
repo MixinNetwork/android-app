@@ -170,7 +170,10 @@ class MaterialSearchView : FrameLayout {
         container_circle.translationY(-containerHeight) {
             container_circle.isVisible = false
         }
+        hideAction?.invoke()
     }
+
+    var hideAction: (() -> Unit)? = null
 
     fun showContainer() {
         containerDisplay = true
