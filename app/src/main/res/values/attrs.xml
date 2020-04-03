@@ -59,6 +59,7 @@
     </declare-styleable>
     <declare-styleable name="FlowLayout">
         <attr name="max_select" format="integer"/>
+        <attr name="singleLine" format="boolean" />
         <attr name="tag_gravity">
             <enum name="left" value="-1" />
             <enum name="center" value="0" />

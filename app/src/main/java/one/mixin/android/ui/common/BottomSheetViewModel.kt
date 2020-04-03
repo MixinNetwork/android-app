@@ -504,4 +504,7 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun deleteCircleConversation(conversationId: String, circleId: String) = userRepository.deleteCircleConversation(conversationId, circleId)
 
     suspend fun insertCircleConversation(circleConversation: CircleConversation) = userRepository.insertCircleConversation(circleConversation)
+
+    suspend fun findCirclesNameByConversationId(conversationId: String) =
+        userRepository.findCirclesNameByConversationId(conversationId)
 }

@@ -151,7 +151,15 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 u.muteUntil != user.muteUntil ||
                 u.fullName != user.fullName
             ) {
-                initMenu(u)
+                lifecycleScope.launch {
+                    val circleNames = bottomViewModel.findCirclesNameByConversationId(
+                        generateConversationId(
+                            Session.getAccountId()!!,
+                            u.userId
+                        )
+                    )
+                    initMenu(u, circleNames)
+                }
             }
             user = u
 
@@ -220,7 +228,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         }
     }
 
-    private fun initMenu(u: User) {
+    private fun initMenu(u: User, circleNames: List<String>) {
         val clearMenu = menu {
             title = getString(R.string.group_info_clear_chat)
             style = MenuStyle.Danger
@@ -353,6 +361,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     startCircleManager()
                     dismiss()
                 }
+                this.circleNames = circleNames
             }
         })
 

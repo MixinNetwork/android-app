@@ -5,6 +5,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.layout_menu.view.*
 import one.mixin.android.R
@@ -13,6 +14,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.vo.App
+import one.mixin.android.widget.FlowLayout
 
 @DslMarker
 annotation class MenuDsl
@@ -56,8 +58,9 @@ class MenuBuilder {
     var style: MenuStyle = MenuStyle.Normal
     var action: (() -> Unit)? = null
     var apps: List<App>? = null
+    var circleNames: List<String>? = null
 
-    fun build() = Menu(title, subtitle, style, action, apps)
+    fun build() = Menu(title, subtitle, style, action, apps, circleNames)
 }
 
 data class MenuList(
@@ -73,7 +76,8 @@ data class Menu(
     val subtitle: String? = null,
     val style: MenuStyle = MenuStyle.Normal,
     val action: (() -> Unit)? = null,
-    val apps: List<App>? = null
+    val apps: List<App>? = null,
+    val circleNames: List<String>? = null
 )
 
 enum class MenuStyle {
@@ -112,6 +116,12 @@ fun MenuList.createMenuLayout(
             }, {
                 menuLayout.avatar_group.isVisible = false
             })
+            menu.circleNames.notNullWithElse({
+                menuLayout.flow_layout.isVisible = true
+                addCirclesLayout(context, it, menuLayout.flow_layout)
+            }, {
+                menuLayout.flow_layout.isVisible = false
+            })
             val top = index == 0
             val bottom = index == group.menus.size - 1
             menuLayout.roundTopOrBottom(dp13.toFloat(), top, bottom)
@@ -132,4 +142,23 @@ fun MenuList.createMenuLayout(
         })
     }
     return listLayout
+}
+
+private fun addCirclesLayout(
+    context: Context,
+    circles: List<String>,
+    flowLayout: FlowLayout
+) {
+    val dp12 = context.dpToPx(12f)
+    val dp4 = context.dpToPx(4f)
+    circles.forEach { name ->
+        val tv = TextView(context).apply {
+            setBackgroundResource(R.drawable.bg_round_rect_gray_border)
+            text = name
+            setTextColor(R.color.textRemarks)
+            setPadding(dp12, dp4, dp12, dp4)
+        }
+        flowLayout.addView(tv)
+        (tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
+    }
 }

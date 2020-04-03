@@ -169,7 +169,10 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
         contentView.count_tv.text = getString(R.string.group_participants_count, participantCount)
         if (changeMenu || me != localMe) {
-            initMenu(localMe)
+            lifecycleScope.launch {
+                val circleNames = bottomViewModel.findCirclesNameByConversationId(conversationId)
+                initMenu(localMe, circleNames)
+            }
         }
         me = localMe
         if (me != null) {
@@ -189,7 +192,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         }
     }
 
-    private fun initMenu(me: Participant?) {
+    private fun initMenu(me: Participant?, circleNames: List<String>) {
         val list = menuList {
             menuGroup {
                 menu {
@@ -216,6 +219,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                    startCircleManager()
                     dismiss()
                 }
+                this.circleNames = circleNames
             }
         })
 

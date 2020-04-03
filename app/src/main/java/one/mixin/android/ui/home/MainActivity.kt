@@ -586,10 +586,10 @@ class MainActivity : BlazeBaseActivity() {
         search_bar?.action_va?.showNext()
     }
 
-    private var dotObserver = Observer<Int> {
-        search_bar.dot.isVisible = it > 0
+    private var dotObserver = Observer<Int?> {
+        search_bar.dot.isVisible = it != null && it > 0
     }
-    private var dotLiveData: LiveData<Int>? = null
+    private var dotLiveData: LiveData<Int?>? = null
 
     private fun observeOtherCircleUnread(circleId: String?) = lifecycleScope.launch {
         dotLiveData?.removeObserver(dotObserver)

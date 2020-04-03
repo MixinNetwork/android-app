@@ -123,5 +123,13 @@ interface CircleDao : BaseDao<Circle> {
         LEFT JOIN conversations c ON c.conversation_id == cc.conversation_id 
         WHERE ci.circle_id != :circleId
     """)
-    fun observeOtherCircleUnread(circleId: String): LiveData<Int>
+    fun observeOtherCircleUnread(circleId: String): LiveData<Int?>
+
+    @Query("""
+        SELECT ci.name FROM circles ci 
+        LEFT JOIN circle_conversations cc ON ci.circle_id==cc.circle_id 
+        LEFT JOIN conversations c ON c.conversation_id == cc.conversation_id
+        WHERE cc.conversation_id = :conversationId
+    """)
+    suspend fun findCirclesNameByConversationId(conversationId: String): List<String>
 }

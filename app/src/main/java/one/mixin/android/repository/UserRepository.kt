@@ -176,4 +176,7 @@ constructor(
 
     fun observeOtherCircleUnread(circleId: String) =
         circleDao.observeOtherCircleUnread(circleId)
+
+    suspend fun findCirclesNameByConversationId(conversationId: String) =
+        circleDao.findCirclesNameByConversationId(conversationId)
 }

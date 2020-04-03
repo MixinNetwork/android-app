@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout android:id="@+id/language_rl"
-    android:layout_width="match_parent"
-    android:layout_height="56dp"
-    android:background="?attr/bg_gray_light"
-    android:foreground="?attr/selectableItemBackground"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_gray_light"
+        android:foreground="?attr/selectableItemBackground"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <TextView
         android:id="@+id/title_tv"
@@ -14,6 +15,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginEnd="@dimen/margin16"
         android:textSize="14sp"
         tools:ignore="RelativeOverlap" />
 
@@ -24,6 +26,19 @@
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+
+    <one.mixin.android.widget.FlowLayout
+        android:id="@+id/flow_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/title_tv"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="1.5dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:layout_marginEnd="@dimen/margin16"
+        app:singleLine="true"
+        app:tag_gravity="right" />
 
     <TextView
         android:id="@+id/subtitle_tv"
