@@ -346,6 +346,16 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
         }
 
+        list.groups.add(menuGroup {
+            menu {
+                title = getString(R.string.circle)
+                action = {
+                    startCircleManager()
+                    dismiss()
+                }
+            }
+        })
+
         if (u.relationship == UserRelationship.FRIEND.name) {
             list.groups.add(menuGroup {
                 menu(muteMenu)
@@ -492,6 +502,14 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         }
     }
 
+    private fun startCircleManager() {
+        activity?.addFragment(
+            this@UserBottomSheetDialogFragment,
+            CircleManagerFragment.newInstance(user.fullName, userId = user.userId),
+            CircleManagerFragment.TAG
+        )
+    }
+
     @SuppressLint("CheckResult")
     private fun startVoiceCall() {
         if (!callState.isIdle()) {
@@ -521,10 +539,12 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     private fun callVoice() {
         if (LinkState.isOnline(linkState.state)) {
-            CallService.outgoing(requireContext(), user, generateConversationId(
-                Session.getAccountId()!!,
-                user.userId
-            ))
+            CallService.outgoing(
+                requireContext(), user, generateConversationId(
+                    Session.getAccountId()!!,
+                    user.userId
+                )
+            )
             dismiss()
         } else {
             toast(R.string.error_no_connection)

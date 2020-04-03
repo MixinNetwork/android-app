@@ -800,5 +800,7 @@
     <string name="circle_menu_edit_conversation">Edit Conversation</string>
     <string name="circle_menu_delete">Delete</string>
     <string name="circle_menu_sort">Sort</string>
+    <string name="circle" translatable="false">Circles</string>
+    <string name="circle_title" translatable="false">%1$s\'s Circles</string>
 </resources>
 

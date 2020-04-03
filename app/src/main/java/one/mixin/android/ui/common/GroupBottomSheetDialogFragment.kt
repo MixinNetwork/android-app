@@ -208,6 +208,17 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 }
             }
         }
+
+        list.groups.add(menuGroup {
+            menu {
+                title = getString(R.string.circle)
+                action = {
+                   startCircleManager()
+                    dismiss()
+                }
+            }
+        })
+
         if (me != null) {
             if (me.role == ParticipantRole.OWNER.name || me.role == ParticipantRole.ADMIN.name) {
                 val announcementString = if (TextUtils.isEmpty(conversation.announcement)) {
@@ -335,6 +346,13 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 SearchMessageFragment.newInstance(searchMessageItem, ""), SearchMessageFragment.TAG
             )
         }
+    }
+
+    private fun startCircleManager() {
+        activity?.addFragment(this,
+            CircleManagerFragment.newInstance(conversation.name, conversationId = conversation.conversationId),
+            CircleManagerFragment.TAG
+        )
     }
 
     private fun mute() {

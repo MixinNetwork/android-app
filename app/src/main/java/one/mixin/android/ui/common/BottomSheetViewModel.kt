@@ -44,6 +44,7 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Circle
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
@@ -483,5 +484,11 @@ class BottomSheetViewModel @Inject internal constructor(
 
     private suspend fun refreshAppNotExist(appIds: List<String>) = withContext(Dispatchers.IO) {
         accountRepository.refreshAppNotExist(appIds)
+    }
+
+    suspend fun createCircle(name: String) = userRepository.createCircle(name)
+
+    suspend fun insertCircle(circle: Circle) {
+        userRepository.insertCircle(circle)
     }
 }
