@@ -160,6 +160,9 @@ constructor(
     suspend fun deleteCircleConversation(conversationId: String, circleId: String) =
         circleConversationDao.deleteByIds(conversationId, circleId)
 
+    suspend fun deleteByCircleId(circleId: String) =
+        circleConversationDao.deleteByCircleId(circleId)
+
     suspend fun insertCircleConversation(circleConversation: CircleConversation) =
         circleConversationDao.insertSuspend(circleConversation)
 

@@ -13,6 +13,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
+import one.mixin.android.db.withTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
@@ -119,7 +120,12 @@ internal constructor(
 
     suspend fun deleteCircle(circleId: String) = userRepository.deleteCircle(circleId)
 
-    suspend fun deleteCircleById(circleId: String) = userRepository.deleteCircleById(circleId)
+    suspend fun deleteCircleById(circleId: String) {
+        withTransaction {
+            userRepository.deleteCircleById(circleId)
+            userRepository.deleteByCircleId(circleId)
+        }
+    }
 
     suspend fun insertCircle(circle: Circle) = userRepository.insertCircle(circle)
 
@@ -157,18 +163,20 @@ internal constructor(
         val removeSet = oldCircleConversationRequests.subtract(safeSet)
         val addSet = newCircleConversationRequests.subtract(safeSet)
 
-        removeSet.forEach { cc ->
-            userRepository.deleteCircleConversation(cc.conversationId, circleId)
-        }
-        addSet.forEach { cc ->
-            val circleConversation = CircleConversation(
-                cc.conversationId,
-                cc.contactId,
-                circleId,
-                nowInUtc(),
-                null
-            )
-            userRepository.insertCircleConversation(circleConversation)
+        withTransaction {
+            removeSet.forEach { cc ->
+                userRepository.deleteCircleConversation(cc.conversationId, circleId)
+            }
+            addSet.forEach { cc ->
+                val circleConversation = CircleConversation(
+                    cc.conversationId,
+                    cc.contactId,
+                    circleId,
+                    nowInUtc(),
+                    null
+                )
+                userRepository.insertCircleConversation(circleConversation)
+            }
         }
         return true
     }

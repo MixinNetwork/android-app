@@ -84,14 +84,15 @@ interface CircleDao : BaseDao<Circle> {
         mm.mentions AS mentions 
         FROM circle_conversations cc
         INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
-        INNER JOIN circles ci ON ci.circle_id = :circleId 
+        INNER JOIN circles ci ON ci.circle_id = cc.circle_id 
         INNER JOIN users ou ON ou.user_id = c.owner_id
         LEFT JOIN messages m ON c.last_message_id = m.id
         LEFT JOIN message_mentions mm ON mm.message_id = m.id
         LEFT JOIN users mu ON mu.user_id = m.user_id
         LEFT JOIN snapshots s ON s.snapshot_id = m.snapshot_id
         LEFT JOIN users pu ON pu.user_id = m.participant_id 
-        WHERE c.category IS NOT NULL 
+        WHERE cc.circle_id = :circleId 
+        AND c.category IS NOT NULL 
     """)
     suspend fun findConversationItemByCircleId(circleId: String): List<ConversationItem>
 

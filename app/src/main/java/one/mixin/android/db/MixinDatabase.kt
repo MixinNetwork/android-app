@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
@@ -162,4 +163,8 @@ abstract class MixinDatabase : RoomDatabase() {
 
 fun runInTransaction(block: () -> Unit) {
     MixinDatabase.getDatabase(MixinApplication.appContext).runInTransaction(block)
+}
+
+suspend fun withTransaction(block: suspend() -> Unit) {
+    MixinDatabase.getDatabase(MixinApplication.appContext).withTransaction(block)
 }
