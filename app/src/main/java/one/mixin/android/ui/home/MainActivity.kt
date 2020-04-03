@@ -10,7 +10,10 @@ import android.view.KeyEvent
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.getSystemService
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.work.WorkManager
 import com.bugsnag.android.Bugsnag
@@ -576,10 +579,26 @@ class MainActivity : BlazeBaseActivity() {
         search_bar?.logo?.text = name ?: "Mixin"
         search_bar?.hideContainer()
         (supportFragmentManager.findFragmentByTag(ConversationListFragment.TAG) as? ConversationListFragment)?.circleId = circleId
+        observeOtherCircleUnread(circleId)
     }
 
     fun sortAction() {
         search_bar?.action_va?.showNext()
+    }
+
+    private var dotObserver = Observer<Int> {
+        search_bar.dot.isVisible = it > 0
+    }
+    private var dotLiveData: LiveData<Int>? = null
+
+    private fun observeOtherCircleUnread(circleId: String?) = lifecycleScope.launch {
+        dotLiveData?.removeObserver(dotObserver)
+        if (circleId == null) {
+            search_bar.dot.isVisible = false
+            return@launch
+        }
+        dotLiveData = userRepo.observeOtherCircleUnread(circleId)
+        dotLiveData?.observe(this@MainActivity, dotObserver)
     }
 
     private fun addCircle() {

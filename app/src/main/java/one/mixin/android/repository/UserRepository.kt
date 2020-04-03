@@ -173,4 +173,7 @@ constructor(
     suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleItem> = circleDao.getIncludeCircleItem(conversationId)
 
     suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleItem> = circleDao.getOtherCircleItem(conversationId)
+
+    fun observeOtherCircleUnread(circleId: String) =
+        circleDao.observeOtherCircleUnread(circleId)
 }
