@@ -82,6 +82,7 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.home.circle.ConversationCircleFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
@@ -614,9 +615,12 @@ class MainActivity : BlazeBaseActivity() {
             supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG)
         val conversationCircleFragment =
             supportFragmentManager.findFragmentByTag(ConversationCircleFragment.TAG) as BaseFragment
+        val conversationCircleEditFragment =
+            supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
         when {
             searchMessageFragment != null -> super.onBackPressed()
             searchSingleFragment != null -> super.onBackPressed()
+            conversationCircleEditFragment != null -> super.onBackPressed()
             search_bar.isOpen -> search_bar.closeSearch()
             search_bar.containerDisplay -> {
                 if (!conversationCircleFragment.onBackPressed()) {

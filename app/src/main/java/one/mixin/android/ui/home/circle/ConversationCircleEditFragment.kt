@@ -122,11 +122,6 @@ class ConversationCircleEditFragment : BaseFragment() {
         loadData()
     }
 
-    override fun onBackPressed(): Boolean {
-        parentFragmentManager.popBackStackImmediate()
-        return super.onBackPressed()
-    }
-
     private fun updateTitleText(size: Int) {
         if (adapter.selectItem.isEmpty()) {
             title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)

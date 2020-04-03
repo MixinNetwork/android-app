@@ -19,6 +19,7 @@ import kotlinx.android.synthetic.main.fragment_coversation_circle.*
 import kotlinx.android.synthetic.main.item_conversation_circle.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.shakeAnimator
 import one.mixin.android.ui.common.BaseFragment
@@ -259,10 +260,12 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
     }
 
     private fun edit(conversationCircleItem: ConversationCircleItem) {
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.root_view, ConversationCircleEditFragment.newInstance(conversationCircleItem))
-            .addToBackStack(null)
-            .commitAllowingStateLoss()
+        requireActivity().addFragment(
+            this@ConversationCircleFragment,
+            ConversationCircleEditFragment.newInstance(conversationCircleItem),
+            ConversationCircleEditFragment.TAG,
+            R.id.root_view
+        )
     }
 
     private fun delete(conversationCircleItem: ConversationCircleItem) {

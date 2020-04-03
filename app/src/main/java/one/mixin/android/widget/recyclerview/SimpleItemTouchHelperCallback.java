@@ -1,6 +1,7 @@
 package one.mixin.android.widget.recyclerview;
 
 import android.graphics.Canvas;
+
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,7 +35,7 @@ public class SimpleItemTouchHelperCallback extends ItemTouchHelper.Callback {
             return makeMovementFlags(dragFlags, swipeFlags);
         } else {
             final int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
-            final int swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
+            final int swipeFlags = 0;
             return makeMovementFlags(dragFlags, swipeFlags);
         }
     }
