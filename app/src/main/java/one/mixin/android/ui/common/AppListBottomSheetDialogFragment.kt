@@ -35,10 +35,10 @@ class AppListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val appList by lazy {
-        arguments!!.getParcelableArrayList<App>(ARGS_APP_LIST)
+        requireArguments().getParcelableArrayList<App>(ARGS_APP_LIST)
     }
     private val title: String by lazy {
-        arguments!!.getString(ARGS_TITLE)!!
+        requireArguments().getString(ARGS_TITLE)!!
     }
 
     private val adapter = AppListAdapter {

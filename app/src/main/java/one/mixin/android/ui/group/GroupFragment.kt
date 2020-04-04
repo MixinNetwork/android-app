@@ -70,15 +70,15 @@ class GroupFragment : BaseFragment() {
     }
 
     private val from: Int by lazy {
-        arguments!!.getInt(ARGS_FROM)
+        requireArguments().getInt(ARGS_FROM)
     }
 
     private val alreadyUsers: ArrayList<User>? by lazy {
-        arguments!!.getParcelableArrayList<User>(ARGS_ALREADY_USERS)
+        requireArguments().getParcelableArrayList<User>(ARGS_ALREADY_USERS)
     }
 
     private val conversationId: String? by lazy {
-        arguments!!.getString(ARGS_CONVERSATION_ID)
+        requireArguments().getString(ARGS_CONVERSATION_ID)
     }
 
     private val groupFriendAdapter: GroupFriendAdapter by lazy {

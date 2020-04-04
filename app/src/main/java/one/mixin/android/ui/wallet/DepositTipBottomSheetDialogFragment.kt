@@ -27,7 +27,7 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val asset: AssetItem by lazy {
-        arguments!!.getParcelable<AssetItem>(ARGS_ASSET)!!
+        requireArguments().getParcelable<AssetItem>(ARGS_ASSET)!!
     }
 
     @SuppressLint("RestrictedApi", "SetTextI18n")

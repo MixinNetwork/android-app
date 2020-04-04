@@ -36,7 +36,7 @@ class VerificationEmergencyIdFragment : FabLoadingFragment<EmergencyViewModel>()
         }
     }
 
-    private val phone by lazy { arguments!!.getString(ARGS_PHONE) }
+    private val phone by lazy { requireArguments().getString(ARGS_PHONE) }
 
     override fun getModelClass() = EmergencyViewModel::class.java
 

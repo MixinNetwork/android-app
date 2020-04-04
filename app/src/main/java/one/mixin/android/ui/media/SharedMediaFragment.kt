@@ -22,7 +22,7 @@ class SharedMediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     }
 
     private val conversationId: String by lazy {
-        arguments!!.getString(ARGS_CONVERSATION_ID)!!
+        requireArguments().getString(ARGS_CONVERSATION_ID)!!
     }
 
     private val adapter: SharedMediaAdapter by lazy {

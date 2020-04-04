@@ -43,7 +43,7 @@ class AddressManagementFragment : BaseFragment() {
 
     private var deleteSuccess = false
     private val asset: AssetItem by lazy {
-        arguments!!.getParcelable<AssetItem>(ARGS_ASSET)!!
+        requireArguments().getParcelable<AssetItem>(ARGS_ASSET)!!
     }
     private var addresses: List<Address>? = null
 
@@ -108,9 +108,9 @@ class AddressManagementFragment : BaseFragment() {
         }
         ItemTouchHelper(ItemCallback(object : ItemCallback.ItemCallbackListener {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val deletePos = viewHolder.adapterPosition
+                val deletePos = viewHolder.bindingAdapterPosition
                 val addr = adapter.addresses!![deletePos]
-                val deleteItem = adapter.removeItem(viewHolder.adapterPosition)!!
+                val deleteItem = adapter.removeItem(viewHolder.bindingAdapterPosition)!!
                 val bottomSheet = showBottomSheet(addr, asset)
                 parentFragmentManager.executePendingTransactions()
                 bottomSheet.dialog?.setOnDismissListener {

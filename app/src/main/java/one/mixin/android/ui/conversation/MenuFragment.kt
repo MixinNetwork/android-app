@@ -32,9 +32,9 @@ class MenuFragment : BaseFragment() {
         }
     }
 
-    private val isGroup by lazy { arguments!!.getBoolean(ARGS_IS_GROUP) }
-    private val isBot by lazy { arguments!!.getBoolean(ARGS_IS_BOT) }
-    private val isSelfCreatedBot by lazy { arguments!!.getBoolean(ARGS_IS_SELF_CREATED_BOT) }
+    private val isGroup by lazy { requireArguments().getBoolean(ARGS_IS_GROUP) }
+    private val isBot by lazy { requireArguments().getBoolean(ARGS_IS_BOT) }
+    private val isSelfCreatedBot by lazy { requireArguments().getBoolean(ARGS_IS_SELF_CREATED_BOT) }
 
     private val menuAdapter by lazy { MenuAdapter(isGroup, isBot, isSelfCreatedBot) }
 

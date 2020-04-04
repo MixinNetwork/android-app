@@ -52,10 +52,10 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val appName: String? by lazy {
-        arguments!!.getString(ARGS_NAME)
+        requireArguments().getString(ARGS_NAME)
     }
     private val appAvatar: String? by lazy {
-        arguments!!.getString(ARGS_AVATAR)
+        requireArguments().getString(ARGS_AVATAR)
     }
 
     private val miniHeight by lazy {

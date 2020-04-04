@@ -60,11 +60,11 @@ class StickerFragment : BaseFragment() {
     }
 
     private val albumId: String? by lazy {
-        arguments!!.getString(ARGS_ALBUM_ID)
+        requireArguments().getString(ARGS_ALBUM_ID)
     }
 
     private val type: Int by lazy {
-        arguments!!.getInt(ARGS_TYPE)
+        requireArguments().getInt(ARGS_TYPE)
     }
 
     private val stickers = mutableListOf<Sticker>()

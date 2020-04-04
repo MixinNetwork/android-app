@@ -76,9 +76,9 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     private var mCountDownTimer: CountDownTimer? = null
 
     private val pin: String? by lazy {
-        arguments!!.getString(ARGS_PIN)
+        requireArguments().getString(ARGS_PIN)
     }
-    private val phoneNum by lazy { arguments!!.getString(ARGS_PHONE_NUM)!! }
+    private val phoneNum by lazy { requireArguments().getString(ARGS_PHONE_NUM)!! }
 
     private var recaptchaView: RecaptchaView? = null
 
@@ -89,7 +89,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        hasEmergencyContact = arguments!!.getBoolean(ARGS_HAS_EMERGENCY_CONTACT)
+        hasEmergencyContact = requireArguments().getBoolean(ARGS_HAS_EMERGENCY_CONTACT)
         pin_verification_title_tv.text = getString(R.string.landing_validation_title, phoneNum)
         verification_resend_tv.setOnClickListener { sendVerification() }
         verification_need_help_tv.setOnClickListener { showBottom() }
@@ -144,7 +144,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
 
     private fun handlePhoneModification() {
         showLoading()
-        viewModel.changePhone(arguments!!.getString(ARGS_ID)!!, pin_verification_view.code(), pin = pin!!)
+        viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, pin_verification_view.code(), pin = pin!!)
             .autoDispose(stopScope).subscribe({ r: MixinResponse<Account> ->
                 verification_next_fab.hide()
                 verification_cover.visibility = GONE
@@ -155,7 +155,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
                 doAsync {
                     val a = Session.getAccount()
                     a?.let {
-                        val phone = arguments!!.getString(ARGS_PHONE_NUM) ?: return@doAsync
+                        val phone = requireArguments().getString(ARGS_PHONE_NUM) ?: return@doAsync
                         viewModel.updatePhone(a.userId, phone)
                         a.phone = phone
                         Session.storeAccount(a)
@@ -188,7 +188,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
             session_secret = sessionSecret)
 
         handleMixinResponse(
-            invokeNetwork = { viewModel.create(arguments!!.getString(ARGS_ID)!!, accountRequest) },
+            invokeNetwork = { viewModel.create(requireArguments().getString(ARGS_ID)!!, accountRequest) },
             switchContext = Dispatchers.IO,
             successBlock = { response ->
                 defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
@@ -212,7 +212,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     private fun sendVerification(gRecaptchaResponse: String? = null) {
         showLoading()
         val verificationRequest = VerificationRequest(
-            arguments!!.getString(ARGS_PHONE_NUM),
+            requireArguments().getString(ARGS_PHONE_NUM),
             if (isPhoneModification()) VerificationPurpose.PHONE.name else VerificationPurpose.SESSION.name,
             gRecaptchaResponse)
         viewModel.verification(verificationRequest)

@@ -32,7 +32,7 @@ class AudioFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     override fun getModelClass() = SharedMediaViewModel::class.java
 
     private val conversationId: String by lazy {
-        arguments!!.getString(Constants.ARGS_CONVERSATION_ID)!!
+        requireArguments().getString(Constants.ARGS_CONVERSATION_ID)!!
     }
 
     private val adapter = AudioAdapter(fun(messageItem: MessageItem) {

@@ -55,11 +55,11 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
         }
     }
 
-    private val user: User? by lazy { arguments!!.getParcelable<User>(ARGS_USER) }
-    private val pin: String? by lazy { arguments!!.getString(ARGS_PIN) }
-    private val verificationId by lazy { arguments!!.getString(ARGS_VERIFICATION_ID)!! }
-    private val from by lazy { arguments!!.getInt(ARGS_FROM) }
-    private val userIdentityNumber: String? by lazy { arguments!!.getString(ARGS_IDENTITY_NUMBER) }
+    private val user: User? by lazy { requireArguments().getParcelable<User>(ARGS_USER) }
+    private val pin: String? by lazy { requireArguments().getString(ARGS_PIN) }
+    private val verificationId by lazy { requireArguments().getString(ARGS_VERIFICATION_ID)!! }
+    private val from by lazy { requireArguments().getInt(ARGS_FROM) }
+    private val userIdentityNumber: String? by lazy { requireArguments().getString(ARGS_IDENTITY_NUMBER) }
 
     override fun getModelClass() = EmergencyViewModel::class.java
 

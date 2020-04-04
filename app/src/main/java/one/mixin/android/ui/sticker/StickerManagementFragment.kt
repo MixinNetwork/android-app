@@ -59,7 +59,7 @@ class StickerManagementFragment : BaseFragment() {
 
     private val padding: Int by lazy { requireContext().dip(PADDING) }
 
-    private val albumId: String? by lazy { arguments!!.getString(ARGS_ALBUM_ID) }
+    private val albumId: String? by lazy { requireArguments().getString(ARGS_ALBUM_ID) }
 
     private val stickers = mutableListOf<Sticker>()
     private val stickerAdapter: StickerAdapter by lazy {

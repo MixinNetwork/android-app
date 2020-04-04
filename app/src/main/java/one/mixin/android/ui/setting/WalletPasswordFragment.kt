@@ -62,10 +62,10 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
     }
 
     private val change: Boolean by lazy {
-        arguments!!.getBoolean(ARGS_CHANGE)
+        requireArguments().getBoolean(ARGS_CHANGE)
     }
     private val oldPassword: String? by lazy {
-        if (change) arguments!!.getString(ARGS_OLD_PASSWORD) else null
+        if (change) requireArguments().getString(ARGS_OLD_PASSWORD) else null
     }
 
     private var step = STEP1

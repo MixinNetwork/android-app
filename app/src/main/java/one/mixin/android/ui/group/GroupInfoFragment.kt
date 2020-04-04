@@ -75,7 +75,7 @@ class GroupInfoFragment : BaseFragment() {
     }
 
     private val conversationId: String by lazy {
-        arguments!!.getString(ARGS_CONVERSATION_ID)!!
+        requireArguments().getString(ARGS_CONVERSATION_ID)!!
     }
     private var self: User? = null
     private var participantsMap: ArrayMap<String, Participant> = ArrayMap()

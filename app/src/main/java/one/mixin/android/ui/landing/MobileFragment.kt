@@ -76,7 +76,7 @@ class MobileFragment : BaseFragment() {
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        pin = arguments!!.getString(ARGS_PIN)
+        pin = requireArguments().getString(ARGS_PIN)
         if (pin != null) {
             mobile_title_tv.setText(R.string.landing_enter_new_mobile_number)
         }

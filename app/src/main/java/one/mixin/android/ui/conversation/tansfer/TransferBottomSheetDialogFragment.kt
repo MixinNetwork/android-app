@@ -41,7 +41,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
     }
 
     private val t: BiometricItem by lazy {
-        arguments!!.getParcelable<BiometricItem>(ARGS_BIOMETRIC_ITEM)!!
+        requireArguments().getParcelable<BiometricItem>(ARGS_BIOMETRIC_ITEM)!!
     }
 
     @SuppressLint("RestrictedApi")

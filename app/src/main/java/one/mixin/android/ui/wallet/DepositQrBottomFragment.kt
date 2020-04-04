@@ -55,8 +55,8 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         fun getSize(context: Context) = context.screenWidth() - context.dpToPx(64f)
     }
 
-    private val asset: AssetItem by lazy { arguments!!.getParcelable<AssetItem>(ARGS_ASSET)!! }
-    private val type: Int by lazy { arguments!!.getInt(ARGS_TYPE) }
+    private val asset: AssetItem by lazy { requireArguments().getParcelable<AssetItem>(ARGS_ASSET)!! }
+    private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {

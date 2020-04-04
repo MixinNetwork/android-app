@@ -49,8 +49,8 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
 
     private val stopScope = scope(Lifecycle.Event.ON_STOP)
 
-    private val album: Album by lazy { arguments!!.getParcelable<Album>(ARGS_ALBUM)!! }
-    private val needCamera: Boolean by lazy { arguments!!.getBoolean(ARGS_NEED_CAMERA) }
+    private val album: Album by lazy { requireArguments().getParcelable<Album>(ARGS_ALBUM)!! }
+    private val needCamera: Boolean by lazy { requireArguments().getBoolean(ARGS_NEED_CAMERA) }
 
     private val padding: Int by lazy {
         requireContext().dip(PADDING)

@@ -42,7 +42,7 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
         }
     }
 
-    private val from by lazy { arguments!!.getInt(ARGS_FROM) }
+    private val from by lazy { requireArguments().getInt(ARGS_FROM) }
 
     @Inject
     lateinit var accountRepository: AccountRepository

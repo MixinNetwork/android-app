@@ -43,9 +43,9 @@ abstract class BaseCaptureFragment : CaptureVisionFragment() {
 
     protected var videoFile: File? = null
 
-    private val forAddress: Boolean by lazy { arguments!!.getBoolean(CaptureActivity.ARGS_FOR_ADDRESS) }
-    private val forAccountName: Boolean by lazy { arguments!!.getBoolean(CaptureActivity.ARGS_FOR_ACCOUNT_NAME) }
-    private val forMemo: Boolean by lazy { arguments!!.getBoolean(CaptureActivity.ARGS_FOR_MEMO) }
+    private val forAddress: Boolean by lazy { requireArguments().getBoolean(CaptureActivity.ARGS_FOR_ADDRESS) }
+    private val forAccountName: Boolean by lazy { requireArguments().getBoolean(CaptureActivity.ARGS_FOR_ACCOUNT_NAME) }
+    private val forMemo: Boolean by lazy { requireArguments().getBoolean(CaptureActivity.ARGS_FOR_MEMO) }
 
     @SuppressLint("RestrictedApi")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

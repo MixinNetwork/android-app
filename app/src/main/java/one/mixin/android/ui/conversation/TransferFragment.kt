@@ -127,9 +127,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
     private val adapter = TypeAdapter()
 
-    private val userId: String? by lazy { arguments!!.getString(ARGS_USER_ID) }
+    private val userId: String? by lazy { requireArguments().getString(ARGS_USER_ID) }
     private var address: Address? = null
-    private val supportSwitchAsset by lazy { arguments!!.getBoolean(ARGS_SWITCH_ASSET) }
+    private val supportSwitchAsset by lazy { requireArguments().getBoolean(ARGS_SWITCH_ASSET) }
 
     private var user: User? = null
 
@@ -263,10 +263,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         contentView.avatar.setNet(requireContext().dpToPx(16f))
         contentView.expand_iv.isVisible = false
         contentView.asset_rl.setOnClickListener(null)
-        currentAsset = arguments!!.getParcelable(ARGS_ASSET)
+        currentAsset = requireArguments().getParcelable(ARGS_ASSET)
         currentAsset?.let { updateAssetUI(it) }
 
-        address = arguments!!.getParcelable(ARGS_ADDRESS)
+        address = requireArguments().getParcelable(ARGS_ADDRESS)
         if (address == null || currentAsset == null) return
 
         chatViewModel.observeAddress(address!!.addressId).observe(this, Observer {

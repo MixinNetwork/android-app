@@ -26,7 +26,7 @@ class ViewEmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>()
 
     override fun getModelClass(): Class<EmergencyViewModel> = EmergencyViewModel::class.java
 
-    private val user: User by lazy { arguments!!.getParcelable<User>(ARGS_USER)!! }
+    private val user: User by lazy { requireArguments().getParcelable<User>(ARGS_USER)!! }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_view_emergency_contact, container, false)

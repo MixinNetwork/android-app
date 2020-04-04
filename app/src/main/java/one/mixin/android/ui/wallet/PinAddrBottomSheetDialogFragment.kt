@@ -63,15 +63,15 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         }
     }
 
-    private val assetId: String? by lazy { arguments!!.getString(ARGS_ASSET_ID) }
-    private val assetName: String? by lazy { arguments!!.getString(ARGS_ASSET_NAME) }
-    private val assetUrl: String? by lazy { arguments!!.getString(ARGS_ASSET_URL) }
-    private val chainIconUrl: String? by lazy { arguments!!.getString(ARGS_CHAIN_URL) }
-    private val label: String? by lazy { arguments!!.getString(ARGS_LABEL) }
-    private val destination: String? by lazy { arguments!!.getString(ARGS_DESTINATION) }
-    private val addressId: String? by lazy { arguments!!.getString(ARGS_ADDRESS_ID) }
-    private val type: Int by lazy { arguments!!.getInt(ARGS_TYPE) }
-    private val addressTag: String? by lazy { arguments!!.getString(ARGS_TAG) }
+    private val assetId: String? by lazy { requireArguments().getString(ARGS_ASSET_ID) }
+    private val assetName: String? by lazy { requireArguments().getString(ARGS_ASSET_NAME) }
+    private val assetUrl: String? by lazy { requireArguments().getString(ARGS_ASSET_URL) }
+    private val chainIconUrl: String? by lazy { requireArguments().getString(ARGS_CHAIN_URL) }
+    private val label: String? by lazy { requireArguments().getString(ARGS_LABEL) }
+    private val destination: String? by lazy { requireArguments().getString(ARGS_DESTINATION) }
+    private val addressId: String? by lazy { requireArguments().getString(ARGS_ADDRESS_ID) }
+    private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
+    private val addressTag: String? by lazy { requireArguments().getString(ARGS_TAG) }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {

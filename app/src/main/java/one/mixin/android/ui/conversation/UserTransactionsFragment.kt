@@ -63,7 +63,7 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
     }
 
     private val userId by lazy {
-        arguments!!.getString(ARGS_USER_ID)!!
+        requireArguments().getString(ARGS_USER_ID)!!
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -30,7 +30,7 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     }
 
     private val conversationId: String by lazy {
-        arguments!!.getString(ARGS_CONVERSATION_ID)!!
+        requireArguments().getString(ARGS_CONVERSATION_ID)!!
     }
 
     private val padding: Int by lazy {

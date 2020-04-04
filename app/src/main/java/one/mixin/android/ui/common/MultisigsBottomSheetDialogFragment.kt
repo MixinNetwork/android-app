@@ -41,7 +41,7 @@ class MultisigsBottomSheetDialogFragment :
     }
 
     private val t: MultisigsBiometricItem by lazy {
-        arguments!!.getParcelable<MultisigsBiometricItem>(ARGS_BIOMETRIC_ITEM)!!
+        requireArguments().getParcelable<MultisigsBiometricItem>(ARGS_BIOMETRIC_ITEM)!!
     }
 
     private var success: Boolean = false

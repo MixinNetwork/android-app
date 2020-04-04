@@ -32,10 +32,10 @@ class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val userList by lazy {
-        arguments!!.getParcelableArrayList<User>(ARGS_USER_LIST)
+        requireArguments().getParcelableArrayList<User>(ARGS_USER_LIST)
     }
     private val title: String by lazy {
-        arguments!!.getString(ARGS_TITLE)!!
+        requireArguments().getString(ARGS_TITLE)!!
     }
 
     private val adapter = UserListAdapter()

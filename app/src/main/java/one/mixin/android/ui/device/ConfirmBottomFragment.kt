@@ -70,7 +70,7 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
     lateinit var provisioningService: ProvisioningService
 
     private val url: String by lazy {
-        arguments!!.getString(AvatarActivity.ARGS_URL)!!
+        requireArguments().getString(AvatarActivity.ARGS_URL)!!
     }
 
     private fun authDevice(ephemeralId: String, pubKey: String) = lifecycleScope.launch {

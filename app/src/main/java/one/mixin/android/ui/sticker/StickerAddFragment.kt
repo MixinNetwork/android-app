@@ -70,8 +70,8 @@ class StickerAddFragment : BaseFragment() {
         }
     }
 
-    private val url: String by lazy { arguments!!.getString(ARGS_URL)!! }
-    private val fromManagement: Boolean by lazy { arguments!!.getBoolean(ARGS_FROM_MANAGEMENT) }
+    private val url: String by lazy { requireArguments().getString(ARGS_URL)!! }
+    private val fromManagement: Boolean by lazy { requireArguments().getBoolean(ARGS_FROM_MANAGEMENT) }
     private var dialog: Dialog? = null
     private val dp100 by lazy {
         requireContext().dpToPx(100f)

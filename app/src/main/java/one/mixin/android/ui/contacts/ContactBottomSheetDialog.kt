@@ -25,7 +25,7 @@ class ContactBottomSheetDialog : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private val user: User by lazy { arguments!!.getParcelable<User>(ARGS_USER)!! }
+    private val user: User by lazy { requireArguments().getParcelable<User>(ARGS_USER)!! }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {

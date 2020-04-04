@@ -9,8 +9,8 @@ import one.mixin.android.extension.alertDialogBuilder
 
 class IncapableDialog : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val title = arguments!!.getString(EXTRA_TITLE)
-        val message = arguments!!.getString(EXTRA_MESSAGE)
+        val title = requireArguments().getString(EXTRA_TITLE)
+        val message = requireArguments().getString(EXTRA_MESSAGE)
         val builder = alertDialogBuilder()
         if (!TextUtils.isEmpty(title)) {
             builder.setTitle(title)

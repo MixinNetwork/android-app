@@ -39,7 +39,7 @@ class InviteFragment : BaseFragment() {
     }
 
     private val conversationId: String by lazy {
-        arguments!!.getString(ARGS_ID)!!
+        requireArguments().getString(ARGS_ID)!!
     }
 
     @Inject

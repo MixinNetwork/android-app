@@ -69,13 +69,13 @@ class ForwardFragment : BaseFragment() {
     }
 
     private val messages: ArrayList<ForwardMessage>? by lazy {
-        arguments!!.getParcelableArrayList<ForwardMessage>(ARGS_MESSAGES)
+        requireArguments().getParcelableArrayList<ForwardMessage>(ARGS_MESSAGES)
     }
     private val isShare: Boolean by lazy {
-        arguments!!.getBoolean(ARGS_SHARE)
+        requireArguments().getBoolean(ARGS_SHARE)
     }
     private val fromConversation: Boolean by lazy {
-        arguments!!.getBoolean(ARGS_FROM_CONVERSATION)
+        requireArguments().getBoolean(ARGS_FROM_CONVERSATION)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =

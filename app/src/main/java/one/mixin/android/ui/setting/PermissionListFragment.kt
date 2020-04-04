@@ -46,10 +46,10 @@ class PermissionListFragment : BaseViewModelFragment<SettingViewModel>() {
     }
 
     private val app: App by lazy {
-        arguments!!.getParcelable<App>(ARGS_APP)!!
+        requireArguments().getParcelable<App>(ARGS_APP)!!
     }
     private val auth: AuthorizationResponse by lazy {
-        arguments!!.getParcelable<AuthorizationResponse>(ARGS_AUTHORIZATION)!!
+        requireArguments().getParcelable<AuthorizationResponse>(ARGS_AUTHORIZATION)!!
     }
 
     override fun getModelClass() = SettingViewModel::class.java

@@ -65,15 +65,15 @@ class EditFragment : CaptureVisionFragment() {
     }
 
     private val path: String by lazy {
-        arguments!!.getString(ARGS_PATH)!!
+        requireArguments().getString(ARGS_PATH)!!
     }
 
     private val isVideo by lazy {
-        arguments!!.getBoolean(IS_VIDEO)
+        requireArguments().getBoolean(IS_VIDEO)
     }
 
     private val fromGallery by lazy {
-        arguments!!.getBoolean(ARGS_FROM_GALLERY)
+        requireArguments().getBoolean(ARGS_FROM_GALLERY)
     }
 
     private val mixinPlayer: MixinPlayer by lazy {

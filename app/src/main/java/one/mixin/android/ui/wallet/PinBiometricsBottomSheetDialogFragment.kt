@@ -24,7 +24,7 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
             }
     }
 
-    private val fromWalletSetting by lazy { arguments!!.getBoolean(FROM_WALLET_SETTING) }
+    private val fromWalletSetting by lazy { requireArguments().getBoolean(FROM_WALLET_SETTING) }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {

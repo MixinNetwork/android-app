@@ -52,11 +52,11 @@ class SearchSingleFragment : BaseFragment() {
     }
 
     private val data by lazy {
-        arguments!!.getParcelableArrayList<Parcelable>(ARGS_LIST)
+        requireArguments().getParcelableArrayList<Parcelable>(ARGS_LIST)
     }
 
     private val query by lazy {
-        arguments!!.getString(ARGS_QUERY)!!
+        requireArguments().getString(ARGS_QUERY)!!
     }
 
     private val type by lazy {

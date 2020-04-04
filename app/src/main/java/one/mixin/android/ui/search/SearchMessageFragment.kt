@@ -55,9 +55,9 @@ class SearchMessageFragment : BaseFragment() {
     }
 
     private val searchMessageItem: SearchMessageItem by lazy {
-        arguments!!.getParcelable<SearchMessageItem>(ARGS_SEARCH_MESSAGE)!!
+        requireArguments().getParcelable<SearchMessageItem>(ARGS_SEARCH_MESSAGE)!!
     }
-    private val query by lazy { arguments!!.getString(ARGS_QUERY)!! }
+    private val query by lazy { requireArguments().getString(ARGS_QUERY)!! }
 
     private val adapter by lazy { SearchMessageAdapter() }
 
