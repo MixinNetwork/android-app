@@ -2,8 +2,10 @@ package one.mixin.android.api.service
 
 import io.reactivex.Observable
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.response.UserSession
+import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.User
 import retrofit2.Call
@@ -52,4 +54,7 @@ interface UserService {
 
     @GET("users/{id}")
     suspend fun getUserByIdSuspend(@Path("id") id: String): MixinResponse<User>
+
+    @POST("users/{id}/circles")
+    suspend fun updateCircles(@Path("id") id: String, @Body requests: List<ConversationCircleRequest>): MixinResponse<List<CircleConversation>>
 }

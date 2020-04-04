@@ -12,8 +12,10 @@ import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.service.ConversationService
+import one.mixin.android.api.service.UserService
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
@@ -34,6 +36,7 @@ import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ChatMinimal
+import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItem
@@ -71,6 +74,7 @@ internal constructor(
     private val participantSessionDao: ParticipantSessionDao,
     private val jobDao: JobDao,
     private val conversationService: ConversationService,
+    private val userService: UserService,
     private val jobManager: MixinJobManager
 ) {
 
@@ -350,5 +354,11 @@ internal constructor(
         }
     }
 
-    suspend fun updateCircles(id: String, requests: List<ConversationCircleRequest>) = conversationService.updateCircles(id, requests)
+    suspend fun updateCircles(conversationId: String?, userId: String?, requests: List<ConversationCircleRequest>): MixinResponse<List<CircleConversation>> {
+        return if (userId != null) {
+            userService.updateCircles(userId, requests)
+        } else {
+            conversationService.updateCircles(conversationId!!, requests)
+        }
+    }
 }

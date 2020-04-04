@@ -499,7 +499,8 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem> = userRepository.getOtherCircleItem(conversationId)
 
-    suspend fun updateCircles(conversationId: String, requests: List<ConversationCircleRequest>) = conversationRepo.updateCircles(conversationId, requests)
+    suspend fun updateCircles(conversationId: String?, userId: String?, requests: List<ConversationCircleRequest>) =
+        conversationRepo.updateCircles(conversationId, userId, requests)
 
     suspend fun deleteCircleConversation(conversationId: String, circleId: String) = userRepository.deleteCircleConversation(conversationId, circleId)
 

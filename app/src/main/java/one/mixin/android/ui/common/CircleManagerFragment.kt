@@ -24,6 +24,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.withArgs
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.widget.SegmentationItemDecoration
@@ -36,14 +37,13 @@ class CircleManagerFragment : BaseFragment() {
         private const val USER_ID = "user_id"
 
         fun newInstance(name: String?, conversationId: String? = null, userId: String? = null): CircleManagerFragment {
+            require(!(conversationId == null && userId == null)) {
+                "empty data"
+            }
             return CircleManagerFragment().withArgs {
                 name?.let { putString(NAME, name) }
-                if (userId != null) {
-                    putString(USER_ID, userId)
-                    putString(CONVERSATION_ID, generateConversationId(Session.getAccountId()!!, userId))
-                } else {
-                    putString(CONVERSATION_ID, conversationId)
-                }
+                putString(USER_ID, userId)
+                putString(CONVERSATION_ID, conversationId)
             }
         }
     }
@@ -52,8 +52,8 @@ class CircleManagerFragment : BaseFragment() {
         arguments!!.getString(NAME, "")
     }
 
-    private val conversationId: String by lazy {
-        arguments!!.getString(CONVERSATION_ID)!!
+    private val conversationId: String? by lazy {
+        arguments!!.getString(CONVERSATION_ID)
     }
 
     private val userId: String? by lazy {
@@ -93,8 +93,8 @@ class CircleManagerFragment : BaseFragment() {
 
     private fun loadData() {
         bottomViewModel.viewModelScope.launch {
-            val includeCircleItem = bottomViewModel.getIncludeCircleItem(conversationId)
-            val otherCircleItem = bottomViewModel.getOtherCircleItem(conversationId)
+            val includeCircleItem = bottomViewModel.getIncludeCircleItem(conversationId ?: generateConversationId(Session.getAccountId()!!, userId!!))
+            val otherCircleItem = bottomViewModel.getOtherCircleItem(conversationId ?: generateConversationId(Session.getAccountId()!!, userId!!))
             circle_manager_rv.isVisible = includeCircleItem.isNotEmpty() || otherCircleItem.isNotEmpty()
             empty.isVisible = includeCircleItem.isEmpty() && otherCircleItem.isEmpty()
             circleAdapter.setData(includeCircleItem, otherCircleItem)
@@ -114,11 +114,19 @@ class CircleManagerFragment : BaseFragment() {
             handleMixinResponse(
                 switchContext = Dispatchers.IO,
                 invokeNetwork = {
-                    bottomViewModel.updateCircles(conversationId, requests)
+                    bottomViewModel.updateCircles(conversationId, userId, requests)
                 },
                 successBlock = {
                     it.data?.forEach { circleConversation ->
-                        bottomViewModel.insertCircleConversation(circleConversation)
+                        bottomViewModel.insertCircleConversation(
+                            CircleConversation(
+                                circleConversation.conversationId,
+                                userId,
+                                circleConversation.circleId,
+                                circleConversation.createdAt,
+                                null
+                            )
+                        )
                     }
                     dialog.dismiss()
                     loadData()
@@ -148,10 +156,10 @@ class CircleManagerFragment : BaseFragment() {
             handleMixinResponse(
                 switchContext = Dispatchers.IO,
                 invokeNetwork = {
-                    bottomViewModel.updateCircles(conversationId, requests)
+                    bottomViewModel.updateCircles(conversationId, userId, requests)
                 },
                 successBlock = {
-                    bottomViewModel.deleteCircleConversation(conversationId, item.circleId)
+                    bottomViewModel.deleteCircleConversation(conversationId ?: generateConversationId(Session.getAccountId()!!, userId!!), item.circleId)
                     loadData()
                     dialog.dismiss()
                 },
@@ -294,7 +302,6 @@ class CircleManagerFragment : BaseFragment() {
                     onRemoveCircle?.invoke(conversationCircleItem)
                 }
             }
-            itemView.circle_icon.setImageResource(R.drawable.ic_circle)
             itemView.circle_title.text = conversationCircleItem.name
             itemView.circle_subtitle.text = itemView.context.getString(R.string.circle_subtitle, conversationCircleItem.count)
         }
