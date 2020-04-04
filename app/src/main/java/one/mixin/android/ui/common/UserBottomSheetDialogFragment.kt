@@ -129,10 +129,12 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         contentView.avatar.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 
-            user.avatarUrl?.let { url ->
-                AvatarActivity.show(requireActivity(), url, contentView.avatar)
-                dismiss()
+            val avatar = user.avatarUrl
+            if (avatar.isNullOrBlank()) {
+                return@setOnClickListener
             }
+            AvatarActivity.show(requireActivity(), avatar, contentView.avatar)
+            dismiss()
         }
 
         bottomViewModel.findUserById(user.userId).observe(this, Observer { u ->
