@@ -26,14 +26,8 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     lateinit var viewModelFactory: ViewModelProvider.Factory
     protected val walletViewModel: WalletViewModel by viewModels { viewModelFactory }
 
-    private var localDataSizeChanged = true
-    protected var localDataSize: Int = 0
-        set(value) {
-            if (field != value) {
-                field = value
-                localDataSizeChanged = true
-            }
-        }
+    protected var refreshPosition = 0
+
     private var transactionsRv: RecyclerView? = null
     protected var initialLoadKey: Int? = null
 
@@ -81,7 +75,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     protected var currentType = R.id.filters_radio_all
     protected var currentOrder = R.id.sort_time
 
-    abstract fun refreshSnapshots()
+    abstract fun refreshSnapshots(pos: Int)
     abstract fun onApplyClick()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -92,9 +86,9 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
         transactionsRv?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val lastPos = transactionLayoutManager.findLastVisibleItemPosition()
-                if (localDataSizeChanged && lastPos >= localDataSize - 1 && lastPos >= LIMIT - 1) {
-                    localDataSizeChanged = false
-                    refreshSnapshots()
+                if (lastPos >= refreshPosition + LIMIT) {
+                    refreshPosition = lastPos
+                    refreshSnapshots(lastPos)
                 }
             }
         })
