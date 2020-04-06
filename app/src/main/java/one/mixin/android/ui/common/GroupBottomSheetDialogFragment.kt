@@ -60,14 +60,31 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     companion object {
         const val TAG = "ProfileBottomSheetDialogFragment"
 
-        fun newInstance(conversationId: String, code: String? = null, expand: Boolean = false) =
-            GroupBottomSheetDialogFragment().apply {
+        private var instant: GroupBottomSheetDialogFragment? = null
+        fun newInstance(
+            conversationId: String,
+            code: String? = null,
+            expand: Boolean = false
+        ): GroupBottomSheetDialogFragment {
+            try {
+                instant?.dismiss()
+            } catch (ignored: IllegalStateException) {
+            }
+            instant = null
+            return GroupBottomSheetDialogFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARGS_CONVERSATION_ID, conversationId)
                     putString(CODE, code)
                     putBoolean(ARGS_EXPAND, expand)
                 }
+                instant = this
             }
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        instant = null
     }
 
     var callback: Callback? = null

@@ -63,8 +63,22 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
 
         const val MAX_PHOTO_SIZE = 512
 
-        fun newInstance() =
-            ProfileBottomSheetDialogFragment()
+        private var instant: ProfileBottomSheetDialogFragment? = null
+        fun newInstance(): ProfileBottomSheetDialogFragment {
+            try {
+                instant?.dismiss()
+            } catch (ignored: IllegalStateException) {
+            }
+            instant = null
+            return ProfileBottomSheetDialogFragment().apply {
+                instant = this
+            }
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        instant = null
     }
 
     private val imageUri: Uri by lazy {
