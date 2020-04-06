@@ -27,7 +27,7 @@ constructor(mainActivity: MainActivity) {
 
     fun pushWallet() {
         if (Session.getAccount()?.hasPin == true) {
-            WalletActivity.show(context, leftInAnim = true)
+            WalletActivity.show(context)
         } else {
             fragmentManager.beginTransaction()
                 .replace(R.id.root_view, WalletPasswordFragment.newInstance(false))

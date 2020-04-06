@@ -240,7 +240,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
                                     } else if (activity is MainActivity) {
                                         context?.toast(R.string.wallet_set_password_success)
                                         parentFragmentManager.popBackStackImmediate()
-                                        WalletActivity.show(activity, leftInAnim = true)
+                                        WalletActivity.show(activity)
                                     } else {
                                         if (change) {
                                             context?.toast(R.string.wallet_change_password_success)
