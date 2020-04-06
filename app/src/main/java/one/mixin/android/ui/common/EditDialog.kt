@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import kotlinx.android.synthetic.main.fragment_bottom_edit.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.widget.BottomSheet
 
@@ -98,11 +99,13 @@ class EditDialog : MixinBottomSheetDialogFragment() {
         contentView.edit_cancel.setText(leftText)
         contentView.edit_cancel.setOnClickListener {
             leftAction?.invoke()
+            contentView.edit_et.hideKeyboard()
             dismiss()
         }
         contentView.edit_save.setText(rightText)
         contentView.edit_save.setOnClickListener {
             rightAction?.invoke(contentView.edit_et.text.toString())
+            contentView.edit_et.hideKeyboard()
             dismiss()
         }
         (dialog as BottomSheet).apply {

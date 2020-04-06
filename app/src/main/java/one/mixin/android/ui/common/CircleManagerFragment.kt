@@ -49,15 +49,15 @@ class CircleManagerFragment : BaseFragment() {
     }
 
     private val name: String by lazy {
-        arguments!!.getString(NAME, "")
+        requireArguments().getString(NAME, "")
     }
 
     private val conversationId: String? by lazy {
-        arguments!!.getString(CONVERSATION_ID)
+        requireArguments().getString(CONVERSATION_ID)
     }
 
     private val userId: String? by lazy {
-        arguments!!.getString(USER_ID)
+        requireArguments().getString(USER_ID)
     }
 
     @Inject
