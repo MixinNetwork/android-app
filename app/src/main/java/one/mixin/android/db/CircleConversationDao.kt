@@ -15,6 +15,9 @@ interface CircleConversationDao : BaseDao<CircleConversation> {
     @Query("SELECT * FROM circle_conversations WHERE circle_id = :circleId")
     suspend fun findCircleConversationByCircleId(circleId: String): List<CircleConversation>
 
+    @Query("SELECT * FROM circle_conversations WHERE circle_id = :circleId AND conversation_id = :conversationId")
+    fun findCircleConversationByCircleId(circleId: String, conversationId: String): CircleConversation?
+
     @Query("DELETE FROM circle_conversations WHERE circle_id = :circleId")
     suspend fun deleteByCircleId(circleId: String)
 }

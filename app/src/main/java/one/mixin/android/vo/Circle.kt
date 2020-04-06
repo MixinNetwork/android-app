@@ -17,8 +17,10 @@ data class Circle(
     val name: String,
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
-    val created_at: String,
+    val createdAt: String,
     @Expose
     @ColumnInfo(name = "order_at")
-    val order_at: String?
+    val orderAt: String?
 )
+
+class CircleBody(val name: String)

@@ -140,9 +140,9 @@ class ConversationCircleEditFragment : BaseFragment() {
         val circleConversations = chatViewModel.findCircleConversationByCircleId(circle.circleId)
         val inCircleContactId = mutableListOf<String>()
         circleConversations.forEach { cc ->
-            oldCircleConversationRequestSet.add(CircleConversationRequest(cc.conversationId, cc.contactId))
-            if (cc.contactId != null) {
-                inCircleContactId.add(cc.contactId)
+            oldCircleConversationRequestSet.add(CircleConversationRequest(cc.conversationId, cc.userId))
+            if (cc.userId != null) {
+                inCircleContactId.add(cc.userId)
             }
         }
         adapter.selectItem.clear()

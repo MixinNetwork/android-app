@@ -2,6 +2,7 @@ package one.mixin.android.db
 
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
+import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
@@ -66,6 +67,19 @@ fun StickerDao.insertUpdate(s: Sticker) {
             s.createdAt = System.currentTimeMillis().toString()
         }
         insert(s)
+    }
+}
+
+fun CircleConversationDao.insertUpdate(
+    circleConversation: CircleConversation
+) {
+    runInTransaction {
+        val c = findCircleConversationByCircleId(circleConversation.circleId, circleConversation.conversationId)
+        if (c == null) {
+            insert(circleConversation)
+        } else {
+            update(circleConversation)
+        }
     }
 }
 

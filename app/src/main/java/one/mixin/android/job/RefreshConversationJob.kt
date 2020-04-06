@@ -1,6 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import one.mixin.android.db.insertUpdate
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
@@ -68,7 +69,7 @@ class RefreshConversationJob(val conversationId: String) :
                                 }
                             }
                         }
-                        circleConversationDao.insert(it)
+                        circleConversationDao.insertUpdate(it)
                     }
                 }
             }

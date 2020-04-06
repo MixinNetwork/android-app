@@ -13,7 +13,7 @@ data class CircleConversation(
     val conversationId: String,
     @ColumnInfo(name = "user_id")
     @SerializedName("user_id")
-    val contactId: String?,
+    val userId: String?,
     @ColumnInfo(name = "circle_id")
     @SerializedName("circle_id")
     val circleId: String,
