@@ -35,42 +35,46 @@
             android:id="@+id/search_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/group_ib"
             android:layout_gravity="center_vertical|start"
+            android:layout_centerVertical="true"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
-            android:layout_toStartOf="@+id/group_ib"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
             app:srcCompat="@drawable/ic_search_home"
             tools:ignore="ContentDescription" />
 
-        <TextView
-            android:id="@+id/logo"
+        <FrameLayout
+            android:id="@+id/logo_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="16dp"
-            android:maxWidth="100dp"
-            android:minWidth="32dp"
-            android:singleLine="true"
-            android:text="Mixin"
-            android:textColor="?attr/text_primary"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            tools:ignore="ContentDescription,HardcodedText" />
+            android:layout_centerInParent="true">
 
-        <ImageView
-            android:id="@+id/dot"
-            android:layout_width="8dp"
-            android:layout_height="8dp"
-            android:layout_marginStart="2dp"
-            android:layout_alignTop="@id/logo"
-            android:layout_above="@id/center"
-            android:layout_toEndOf="@id/logo"
-            android:visibility="gone"
-            android:src="@drawable/ic_dot" />
+            <TextView
+                android:id="@+id/logo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:gravity="center"
+                android:maxWidth="100dp"
+                android:minWidth="32dp"
+                android:singleLine="true"
+                android:text="Mixin"
+                android:textColor="?attr/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:ignore="ContentDescription,HardcodedText" />
+
+            <ImageView
+                android:id="@+id/dot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:layout_gravity="top|end"
+                android:src="@drawable/ic_dot"
+                android:visibility="gone" />
+        </FrameLayout>
 
         <ImageButton
             android:id="@+id/back_ib"
@@ -98,6 +102,19 @@
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
             app:srcCompat="@drawable/ic_group"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/wallet_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_shadow_wallet"
             tools:ignore="ContentDescription" />
 
         <ViewAnimator

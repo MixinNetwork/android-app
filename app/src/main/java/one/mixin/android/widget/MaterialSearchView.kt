@@ -152,7 +152,7 @@ class MaterialSearchView : FrameLayout {
                 search_et.setText("")
             }
         }
-        logo.setOnClickListener {
+        logo_layout.setOnClickListener {
             if (containerDisplay) {
                 hideContainer()
             } else {
@@ -166,6 +166,7 @@ class MaterialSearchView : FrameLayout {
         container_shadow.fadeOut()
         action_va.fadeOut()
         group_ib.fadeIn()
+        wallet_ib.fadeIn()
         search_ib.fadeIn()
         container_circle.translationY(-containerHeight) {
             container_circle.isVisible = false
@@ -181,6 +182,7 @@ class MaterialSearchView : FrameLayout {
         container_shadow.fadeIn()
         action_va.fadeIn()
         group_ib.fadeOut()
+        wallet_ib.fadeOut()
         search_ib.fadeOut()
         container_circle.translationY(0f) {
         }
@@ -197,19 +199,20 @@ class MaterialSearchView : FrameLayout {
     fun dragSearch(progress: Float) {
         group_ib.translationX = context.dpToPx(84f) * progress
         search_ib.translationX = context.dpToPx(84f) * progress
+        wallet_ib.translationX = context.dpToPx(-40f) * progress
         val fastFadeOut = (1 - 2 * progress).coerceAtLeast(0f)
         val fastFadeIn = (progress.coerceAtLeast(.5f) - .5f) * 2
         search_et.isVisible = true
         search_et.alpha = fastFadeIn
         search_ib.isVisible = true
-        logo.isVisible = true
+        logo_layout.isVisible = true
         back_ib.isVisible = true
-        logo.alpha = fastFadeOut
+        logo_layout.alpha = fastFadeOut
         back_ib.alpha = fastFadeIn
     }
 
     fun openSearch() {
-        logo.animate().apply {
+        logo_layout.animate().apply {
             setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
                     op()
@@ -245,10 +248,11 @@ class MaterialSearchView : FrameLayout {
         right_clear.visibility = View.GONE
 
         search_et.setText("")
-        oldLeftX = logo.x
+        oldLeftX = logo_layout.x
         oldSearchWidth = search_et.measuredWidth
         group_ib.translationX(context.dpToPx(84f).toFloat())
         search_ib.translationX(context.dpToPx(84f).toFloat())
+        wallet_ib.translationX(context.dpToPx(-40f).toFloat())
         mSearchViewListener?.onSearchViewOpened()
         isOpen = true
     }
@@ -283,11 +287,11 @@ class MaterialSearchView : FrameLayout {
                 private fun op() {
                     setListener(null)
                     back_ib.isGone = true
-                    logo.isVisible = true
-                    logo.animate().apply {
+                    logo_layout.isVisible = true
+                    logo_layout.animate().apply {
                         setListener(object : AnimatorListenerAdapter() {
                             override fun onAnimationCancel(animation: Animator?) {
-                                logo.alpha = 1f
+                                logo_layout.alpha = 1f
                             }
                         })
                     }.setDuration(150L).alpha(1f).start()
@@ -298,6 +302,7 @@ class MaterialSearchView : FrameLayout {
 
         group_ib.translationX(0f)
         search_ib.translationX(0f)
+        wallet_ib.translationX(0f)
         clearFocus()
         search_et.hideKeyboard()
         search_et.setText("")
@@ -372,8 +377,12 @@ class MaterialSearchView : FrameLayout {
         search_view.layoutParams.height = height
     }
 
-    fun setOnRightClickListener(onClickListener: OnClickListener) {
+    fun setOnGroupClickListener(onClickListener: OnClickListener) {
         group_ib.setOnClickListener(onClickListener)
+    }
+
+    fun setOnWalletClickListener(onClickListener: OnClickListener) {
+        wallet_ib.setOnClickListener(onClickListener)
     }
 
     fun setOnAddClickListener(onClickListener: OnClickListener) {
