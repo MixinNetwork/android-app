@@ -29,7 +29,6 @@ import one.mixin.android.ui.home.ConversationListViewModel
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.ConversationCircleItem
 import one.mixin.android.widget.recyclerview.ItemTouchHelperAdapter
@@ -62,8 +61,7 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
         val callback: ItemTouchHelper.Callback = SimpleItemTouchHelperCallback(conversationAdapter)
         itemTouchHelper = ItemTouchHelper(callback)
         itemTouchHelper.attachToRecyclerView(circle_rv)
-        conversationViewModel.observeAllCircleItem().observe(this, Observer {
-            GsonHelper.customGson.toJson(it)
+        conversationViewModel.observeAllCircleItem().observe(viewLifecycleOwner, Observer {
             val list = mutableListOf<ConversationCircleItem>()
             list.addAll(it)
             conversationAdapter.conversationCircles = list

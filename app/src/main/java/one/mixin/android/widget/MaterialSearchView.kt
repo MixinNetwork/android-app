@@ -166,6 +166,7 @@ class MaterialSearchView : FrameLayout {
         container_shadow.fadeOut()
         action_va.fadeOut()
         group_ib.fadeIn()
+        wallet_ib.fadeIn()
         search_ib.fadeIn()
         container_circle.translationY(-containerHeight) {
             container_circle.isVisible = false
@@ -181,6 +182,7 @@ class MaterialSearchView : FrameLayout {
         container_shadow.fadeIn()
         action_va.fadeIn()
         group_ib.fadeOut()
+        wallet_ib.fadeOut()
         search_ib.fadeOut()
         container_circle.translationY(0f) {
         }
@@ -195,8 +197,9 @@ class MaterialSearchView : FrameLayout {
     private var oldSearchWidth = 0
 
     fun dragSearch(progress: Float) {
-        group_ib.translationX = context.dpToPx(84f) * progress
-        search_ib.translationX = context.dpToPx(84f) * progress
+        group_ib.translationX = context.dpToPx(132f) * progress
+        search_ib.translationX = context.dpToPx(132f) * progress
+        wallet_ib.translationX = context.dpToPx(132f) * progress
         val fastFadeOut = (1 - 2 * progress).coerceAtLeast(0f)
         val fastFadeIn = (progress.coerceAtLeast(.5f) - .5f) * 2
         search_et.isVisible = true
@@ -247,8 +250,9 @@ class MaterialSearchView : FrameLayout {
         search_et.setText("")
         oldLeftX = logo.x
         oldSearchWidth = search_et.measuredWidth
-        group_ib.translationX(context.dpToPx(84f).toFloat())
-        search_ib.translationX(context.dpToPx(84f).toFloat())
+        group_ib.translationX(context.dpToPx(132f).toFloat())
+        wallet_ib.translationX(context.dpToPx(132f).toFloat())
+        search_ib.translationX(context.dpToPx(132f).toFloat())
         mSearchViewListener?.onSearchViewOpened()
         isOpen = true
     }
@@ -298,6 +302,7 @@ class MaterialSearchView : FrameLayout {
 
         group_ib.translationX(0f)
         search_ib.translationX(0f)
+        wallet_ib.translationX(0f)
         clearFocus()
         search_et.hideKeyboard()
         search_et.setText("")
@@ -372,8 +377,12 @@ class MaterialSearchView : FrameLayout {
         search_view.layoutParams.height = height
     }
 
-    fun setOnRightClickListener(onClickListener: OnClickListener) {
+    fun setOnGroupClickListener(onClickListener: OnClickListener) {
         group_ib.setOnClickListener(onClickListener)
+    }
+
+    fun setOnWalletClickListener(onClickListener: OnClickListener) {
+        wallet_ib.setOnClickListener(onClickListener)
     }
 
     fun setOnAddClickListener(onClickListener: OnClickListener) {
