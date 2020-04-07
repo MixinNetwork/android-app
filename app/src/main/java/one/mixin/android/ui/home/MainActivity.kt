@@ -35,6 +35,7 @@ import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.view_search.view.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -48,6 +49,7 @@ import one.mixin.android.Constants.Load.IS_SYNC_SESSION
 import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
@@ -62,6 +64,7 @@ import one.mixin.android.extension.alert
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
@@ -626,14 +629,29 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun createCircle(name: String) {
         lifecycleScope.launch(errorHandler) {
-            val response = userRepo.createCircle(name)
-            if (response.isSuccess) {
-                response.data?.let { circle ->
-                    userRepo.insertCircle(circle)
-                }
-            } else {
-                ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+            val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
+                setCancelable(false)
             }
+            handleMixinResponse(
+                switchContext = Dispatchers.IO,
+                invokeNetwork = {
+                    userRepo.createCircle(name)
+                },
+                successBlock = { response ->
+                    response.data?.let { circle ->
+                        userRepo.insertCircle(circle)
+                    }
+                },
+                exceptionBlock = {
+                    dialog.dismiss()
+                    return@handleMixinResponse false
+                },
+                failureBlock = {
+                    dialog.dismiss()
+                    return@handleMixinResponse false
+                }
+            )
+            dialog.dismiss()
         }
     }
 

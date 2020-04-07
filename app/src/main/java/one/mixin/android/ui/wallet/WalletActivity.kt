@@ -52,9 +52,13 @@ class WalletActivity : BlazeBaseActivity() {
         intent.extras?.getParcelable<AssetItem>(ASSET)
     }
 
+    override fun finish() {
+        super.finish()
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+    }
+
     companion object {
         const val ASSET = "ASSET"
-        const val LEFT_IN_ANIM = "left_in_anim"
 
         fun show(
             activity: Activity,
@@ -67,6 +71,7 @@ class WalletActivity : BlazeBaseActivity() {
             }
             myIntent.putExtras(bundle)
             activity.startActivity(myIntent)
+            activity.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
         }
     }
 }
