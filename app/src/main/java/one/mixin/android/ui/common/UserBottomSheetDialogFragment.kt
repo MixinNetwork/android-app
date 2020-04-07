@@ -151,7 +151,15 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 u.muteUntil != user.muteUntil ||
                 u.fullName != user.fullName
             ) {
-                initMenu(u)
+                lifecycleScope.launch {
+                    val circleNames = bottomViewModel.findCirclesNameByConversationId(
+                        generateConversationId(
+                            Session.getAccountId()!!,
+                            u.userId
+                        )
+                    )
+                    initMenu(u, circleNames)
+                }
             }
             user = u
 
@@ -220,7 +228,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         }
     }
 
-    private fun initMenu(u: User) {
+    private fun initMenu(u: User, circleNames: List<String>) {
         val clearMenu = menu {
             title = getString(R.string.group_info_clear_chat)
             style = MenuStyle.Danger
@@ -345,6 +353,17 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 }
             }
         }
+
+        list.groups.add(menuGroup {
+            menu {
+                title = getString(R.string.circle)
+                action = {
+                    startCircleManager()
+                    dismiss()
+                }
+                this.circleNames = circleNames
+            }
+        })
 
         if (u.relationship == UserRelationship.FRIEND.name) {
             list.groups.add(menuGroup {
@@ -492,6 +511,14 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         }
     }
 
+    private fun startCircleManager() {
+        activity?.addFragment(
+            this@UserBottomSheetDialogFragment,
+            CircleManagerFragment.newInstance(user.fullName, userId = user.userId),
+            CircleManagerFragment.TAG
+        )
+    }
+
     @SuppressLint("CheckResult")
     private fun startVoiceCall() {
         if (!callState.isIdle()) {
@@ -521,10 +548,12 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     private fun callVoice() {
         if (LinkState.isOnline(linkState.state)) {
-            CallService.outgoing(requireContext(), user, generateConversationId(
-                Session.getAccountId()!!,
-                user.userId
-            ))
+            CallService.outgoing(
+                requireContext(), user, generateConversationId(
+                    Session.getAccountId()!!,
+                    user.userId
+                )
+            )
             dismiss()
         } else {
             toast(R.string.error_no_connection)

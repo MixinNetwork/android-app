@@ -2,6 +2,7 @@ package one.mixin.android.api.response
 
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.api.request.ParticipantRequest
+import one.mixin.android.vo.CircleConversation
 
 open class ConversationResponse(
     @SerializedName("conversation_id")
@@ -24,6 +25,8 @@ open class ConversationResponse(
     val participants: List<ParticipantRequest>,
     @SerializedName("participant_sessions")
     val participantSessions: List<UserSession>?,
+    @SerializedName("circles")
+    val circles: List<CircleConversation>?,
     @SerializedName("mute_until")
     val muteUntil: String
 )

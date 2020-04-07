@@ -2,101 +2,181 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/search_view"
-    android:background="?attr/bg_white"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
-    <ImageButton
-        android:id="@+id/left_ib"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|start"
-        android:background="@drawable/mixin_ripple"
-        android:padding="8dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginStart="4dp"
-        app:srcCompat="@drawable/ic_wallet"
-        tools:ignore="ContentDescription"/>
-
-    <ImageButton
-        android:id="@+id/back_ib"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|start"
-        android:background="@drawable/mixin_ripple"
-        android:layout_marginEnd="4dp"
-        android:layout_marginStart="4dp"
-        android:padding="8dp"
-        android:alpha="0"
-        android:visibility="gone"
-        app:srcCompat="@drawable/ic_back"
-        tools:ignore="ContentDescription"/>
-
-    <ImageButton
-        android:id="@+id/right_ib"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|end"
-        android:background="@drawable/mixin_ripple"
-        android:padding="8dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginStart="4dp"
-        app:srcCompat="@drawable/ic_group"
-        tools:ignore="ContentDescription"/>
-
-    <TextView
-        android:id="@+id/search_tv"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/container_shadow"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="10dp"
-        android:layout_marginEnd="54dp"
-        android:layout_marginStart="54dp"
-        android:layout_marginTop="10dp"
-        android:layout_gravity="center_vertical"
-        android:background="@drawable/bg_search"
-        android:fontFamily="@font/sf_pro_light"
-        android:hint="@string/search"
-        android:gravity="center_vertical"
-        android:paddingEnd="24dp"
-        android:paddingStart="12dp"
-        android:textColor="?attr/text_primary"
-        android:textColorHint="?attr/text_minor"
-        android:textSize="14sp"/>
+        android:background="#66000000"
+        android:visibility="gone">
 
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/search_et"
+        <FrameLayout
+            android:id="@+id/container_circle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="?actionBarSize"
+            android:background="?attr/bg_white"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <RelativeLayout
+        android:id="@+id/search_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center_vertical"
-        android:layout_marginBottom="10dp"
-        android:layout_marginEnd="78dp"
-        android:layout_marginStart="54dp"
-        android:layout_marginTop="10dp"
-        android:background="@null"
-        android:drawablePadding="6dp"
-        android:hint="@string/search_hint"
-        android:imeOptions="actionSearch|flagNoExtractUi"
-        android:inputType="text"
-        android:maxLines="1"
-        android:gravity="center_vertical"
-        android:paddingEnd="24dp"
-        android:paddingStart="12dp"
-        android:textColor="?attr/text_primary"
-        android:textColorHint="?attr/text_minor"
-        android:textSize="14sp"
-        android:visibility="invisible"/>
-
-    <ImageButton
-        android:id="@+id/right_clear"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|end"
-        android:visibility="gone"
-        android:background="@drawable/mixin_ripple"
-        android:layout_marginEnd="4dp"
-        android:layout_marginStart="4dp"
-        android:padding="8dp"
-        app:srcCompat="@drawable/ic_close_black"
-        tools:ignore="ContentDescription"/>
+        android:clickable="true"
+        android:background="?attr/bg_white">
+
+        <ImageButton
+            android:id="@+id/search_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center_vertical|start"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:layout_toStartOf="@+id/group_ib"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_search_home"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/logo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:maxWidth="100dp"
+            android:minWidth="32dp"
+            android:singleLine="true"
+            android:text="Mixin"
+            android:textColor="?attr/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:ignore="ContentDescription,HardcodedText" />
+
+        <ImageView
+            android:id="@+id/dot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginStart="2dp"
+            android:layout_alignTop="@id/logo"
+            android:layout_above="@id/center"
+            android:layout_toEndOf="@id/logo"
+            android:visibility="gone"
+            android:src="@drawable/ic_dot" />
+
+        <ImageButton
+            android:id="@+id/back_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center_vertical|start"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:alpha="0"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            android:visibility="gone"
+            app:srcCompat="@drawable/ic_back"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/group_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@+id/wallet_ib"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_group"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
+            android:id="@+id/wallet_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_shadow_wallet"
+            tools:ignore="ContentDescription" />
+
+        <ViewAnimator
+            android:id="@+id/action_va"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:visibility="gone"
+            android:alpha="0">
+
+            <ImageButton
+                android:id="@+id/add_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/mixin_ripple"
+                android:padding="8dp"
+                app:srcCompat="@drawable/ic_add_black_24dp"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:id="@+id/confirm_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/mixin_ripple"
+                android:padding="8dp"
+                app:srcCompat="@drawable/ic_check_black_24dp"
+                tools:ignore="ContentDescription" />
+        </ViewAnimator>
+
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/search_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="16dp"
+            android:layout_toStartOf="@+id/right_clear"
+            android:layout_toEndOf="@+id/back_ib"
+            android:background="@null"
+            android:drawablePadding="6dp"
+            android:gravity="center_vertical"
+            android:hint="@string/search_hint"
+            android:imeOptions="actionSearch|flagNoExtractUi"
+            android:inputType="text"
+            android:maxLines="1"
+            android:textColor="?attr/text_primary"
+            android:textColorHint="?attr/text_minor"
+            android:visibility="gone" />
+
+        <ImageButton
+            android:id="@+id/right_clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            android:visibility="gone"
+            app:srcCompat="@drawable/ic_close_black"
+            tools:ignore="ContentDescription" />
+
+    </RelativeLayout>
+
 </FrameLayout>

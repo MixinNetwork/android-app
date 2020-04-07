@@ -28,6 +28,7 @@
     <string name="forward">转发</string>
     <string name="forward_success">转发成功</string>
     <string name="save">保存</string>
+    <string name="saving">保存中…</string>
     <string name="pb_dialog_message">请稍等…</string>
     <string name="other">其他</string>
     <string name="not_logged_in">还没有登录</string>
@@ -775,4 +776,15 @@
     <string name="location_kilometre">千米</string>
     <string name="location_metre">米</string>
     <string name="location_empty">找不到 \"%1$s\"\n换个名字试试吧</string>
+    <!--  circle  -->
+    <string name="circle_bottom">为不同对话创建 Circle \n然后在它们之间快速切换</string>
+    <string name="circle_add_title">添加 Circle</string>
+    <string name="circle_subtitle">%1$d 会话</string>
+    <string name="circle_all_conversation">所有会话</string>
+    <string name="circle_mixin">Mixin</string>
+    <string name="circle_menu_edit_name">编辑名称</string>
+    <string name="circle_menu_edit_conversation">管理 Circle</string>
+    <string name="circle_menu_delete">删除</string>
+    <string name="circle_menu_sort">排序</string>
+    <string name="circle_info">新建一个圈子可以过滤会话</string>
 </resources>

@@ -10,7 +10,10 @@ import android.view.KeyEvent
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.getSystemService
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.work.WorkManager
 import com.bugsnag.android.Bugsnag
@@ -31,6 +34,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.view_search.view.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -46,6 +50,7 @@ import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
+import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
@@ -67,16 +72,21 @@ import one.mixin.android.job.RefreshStickerAlbumJob.Companion.REFRESH_STICKER_AL
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
 import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
 import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
+import one.mixin.android.ui.home.circle.ConversationCircleFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
@@ -85,6 +95,7 @@ import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
@@ -120,6 +131,8 @@ class MainActivity : BlazeBaseActivity() {
     lateinit var accountRepo: AccountRepository
     @Inject
     lateinit var participantDao: ParticipantDao
+    @Inject
+    lateinit var circleDao: CircleDao
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener = InstallStateUpdatedListener { state ->
@@ -487,11 +500,22 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun initView() {
         search_bar.setOnLeftClickListener(View.OnClickListener {
-            navigationController.pushWallet()
+            openSearch()
         })
-
-        search_bar.setOnRightClickListener(View.OnClickListener {
+        search_bar.setOnGroupClickListener(View.OnClickListener {
             navigationController.pushContacts()
+        })
+        search_bar.setOnWalletClickListener(View.OnClickListener {
+            openWallet()
+        })
+        search_bar.setOnAddClickListener(View.OnClickListener {
+            addCircle()
+        })
+        search_bar.setOnConfirmClickListener(View.OnClickListener {
+            val conversationCircleFragment =
+                supportFragmentManager.findFragmentByTag(ConversationCircleFragment.TAG) as ConversationCircleFragment
+            conversationCircleFragment.cancelSort()
+            search_bar?.action_va?.showPrevious()
         })
 
         search_bar.setOnBackClickListener(View.OnClickListener {
@@ -516,6 +540,9 @@ class MainActivity : BlazeBaseActivity() {
                 navigationController.showSearch()
             }
         })
+        search_bar.hideAction = {
+            (supportFragmentManager.findFragmentByTag(ConversationCircleFragment.TAG) as? ConversationCircleFragment)?.cancelSort()
+        }
         root_view.setOnKeyListener { _, keyCode, _ ->
             if (keyCode == KeyEvent.KEYCODE_BACK && search_bar.isOpen) {
                 search_bar.closeSearch()
@@ -524,10 +551,23 @@ class MainActivity : BlazeBaseActivity() {
                 false
             }
         }
+        supportFragmentManager.beginTransaction().add(R.id.container_circle, conversationCircleFragment, ConversationCircleFragment.TAG).commit()
     }
 
     fun openSearch() {
         search_bar?.openSearch()
+    }
+
+    private fun openWallet() {
+        navigationController.pushWallet()
+    }
+
+    fun openCircle() {
+        search_bar?.showContainer()
+    }
+
+    private val conversationCircleFragment by lazy {
+        ConversationCircleFragment.newInstance()
     }
 
     fun closeSearch() {
@@ -538,15 +578,80 @@ class MainActivity : BlazeBaseActivity() {
         search_bar?.dragSearch(progress)
     }
 
+    fun selectCircle(name: String?, circleId: String?) {
+        search_bar?.logo?.text = name ?: "Mixin"
+        search_bar?.hideContainer()
+        (supportFragmentManager.findFragmentByTag(ConversationListFragment.TAG) as? ConversationListFragment)?.circleId = circleId
+        observeOtherCircleUnread(circleId)
+    }
+
+    fun sortAction() {
+        search_bar?.action_va?.showNext()
+    }
+
+    private var dotObserver = Observer<Int?> {
+        search_bar.dot.isVisible = it != null && it > 0
+    }
+    private var dotLiveData: LiveData<Int?>? = null
+
+    private fun observeOtherCircleUnread(circleId: String?) = lifecycleScope.launch {
+        dotLiveData?.removeObserver(dotObserver)
+        if (circleId == null) {
+            search_bar.dot.isVisible = false
+            return@launch
+        }
+        dotLiveData = userRepo.observeOtherCircleUnread(circleId)
+        dotLiveData?.observe(this@MainActivity, dotObserver)
+    }
+
+    private fun addCircle() {
+        editDialog {
+            titleText = this@MainActivity.getString(R.string.circle_add_title)
+            maxTextCount = 64
+            defaultEditEnable = false
+            editMaxLines = EditDialog.MAX_LINE.toInt()
+            allowEmpty = false
+            rightText = android.R.string.ok
+            rightAction = {
+                createCircle(it)
+            }
+        }
+    }
+
+    private fun createCircle(name: String) {
+        lifecycleScope.launch(errorHandler) {
+            val response = userRepo.createCircle(name)
+            if (response.isSuccess) {
+                response.data?.let { circle ->
+                    userRepo.insertCircle(circle)
+                }
+            } else {
+                ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+            }
+        }
+    }
+
     override fun onBackPressed() {
         val searchMessageFragment =
             supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
         val searchSingleFragment =
             supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG)
+        val conversationCircleFragment =
+            supportFragmentManager.findFragmentByTag(ConversationCircleFragment.TAG) as BaseFragment
+        val conversationCircleEditFragment =
+            supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
         when {
             searchMessageFragment != null -> super.onBackPressed()
             searchSingleFragment != null -> super.onBackPressed()
+            conversationCircleEditFragment != null -> super.onBackPressed()
             search_bar.isOpen -> search_bar.closeSearch()
+            search_bar.containerDisplay -> {
+                if (!conversationCircleFragment.onBackPressed()) {
+                    search_bar.hideContainer()
+                } else {
+                    search_bar?.action_va?.showPrevious()
+                }
+            }
             else -> super.onBackPressed()
         }
     }

@@ -2,10 +2,12 @@ package one.mixin.android.api.service
 
 import io.reactivex.Observable
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.AttachmentResponse
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.vo.CircleConversation
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -51,4 +53,7 @@ interface ConversationService {
 
     @POST("conversations/{id}/mute")
     fun mute(@Path("id") id: String, @Body request: ConversationRequest): Call<MixinResponse<ConversationResponse>>
+
+    @POST("conversations/{id}/circles")
+    suspend fun updateCircles(@Path("id") id: String, @Body requests: List<ConversationCircleRequest>): MixinResponse<List<CircleConversation>>
 }

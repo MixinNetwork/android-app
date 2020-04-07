@@ -4,6 +4,7 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.AppListBottomSheetDialogFragment
+import one.mixin.android.ui.common.CircleManagerFragment
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
@@ -104,4 +105,7 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeQrBottomSheetDialogFragment(): QrBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeCircleManagerFragment(): CircleManagerFragment
 }

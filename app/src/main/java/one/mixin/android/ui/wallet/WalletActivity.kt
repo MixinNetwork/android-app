@@ -51,14 +51,6 @@ class WalletActivity : BlazeBaseActivity() {
     private val asset: AssetItem? by lazy {
         intent.extras?.getParcelable<AssetItem>(ASSET)
     }
-    private val leftInAnim by lazy { intent.extras?.getBoolean(LEFT_IN_ANIM) }
-
-    override fun finish() {
-        super.finish()
-        if (leftInAnim == true) {
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-        }
-    }
 
     companion object {
         const val ASSET = "ASSET"
@@ -66,20 +58,15 @@ class WalletActivity : BlazeBaseActivity() {
 
         fun show(
             activity: Activity,
-            assetItem: AssetItem? = null,
-            leftInAnim: Boolean = false
+            assetItem: AssetItem? = null
         ) {
             val myIntent = Intent(activity, WalletActivity::class.java)
             val bundle = Bundle()
             assetItem?.let {
                 bundle.putParcelable(ASSET, assetItem)
             }
-            bundle.putBoolean(LEFT_IN_ANIM, leftInAnim)
             myIntent.putExtras(bundle)
             activity.startActivity(myIntent)
-            if (leftInAnim) {
-                activity.overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
-            }
         }
     }
 }

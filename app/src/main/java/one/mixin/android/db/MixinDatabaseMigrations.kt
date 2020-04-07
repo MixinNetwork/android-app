@@ -174,5 +174,12 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
             }
         }
+
+        val MIGRATION_29_30: Migration = object : Migration(29, 30) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `circles` (`circle_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `ordered_at` TEXT, PRIMARY KEY(`circle_id`))")
+                database.execSQL("CREATE TABLE IF NOT EXISTS `circle_conversations` (`conversation_id` TEXT NOT NULL, `circle_id` TEXT NOT NULL, `user_id` TEXT, `created_at` TEXT NOT NULL, `pin_time` TEXT, PRIMARY KEY(`conversation_id`, `circle_id`))")
+            }
+        }
     }
 }

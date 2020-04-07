@@ -11,10 +11,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import kotlinx.android.synthetic.main.fragment_bottom_edit.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.widget.BottomSheet
 
-@Suppress("unused")
 inline fun FragmentActivity.editDialog(
     builder: EditDialog.() -> Unit
 ): EditDialog {
@@ -51,6 +51,7 @@ class EditDialog : MixinBottomSheetDialogFragment() {
     var editMaxLines: Int = 1
     var maxTextCount: Int = -1
     var allowEmpty: Boolean = false
+    var defaultEditEnable: Boolean = true
 
     @StringRes var leftText: Int = R.string.cancel
     var leftAction: (() -> Unit)? = null
@@ -73,6 +74,7 @@ class EditDialog : MixinBottomSheetDialogFragment() {
         if (maxLines == 1) {
             contentView.edit_et.isSingleLine = true
         }
+        contentView.edit_save.isEnabled = defaultEditEnable
         contentView.edit_et.maxLines = maxLines
         if (maxTextCount != -1) {
             contentView.input_layout.isCounterEnabled = true
@@ -97,11 +99,13 @@ class EditDialog : MixinBottomSheetDialogFragment() {
         contentView.edit_cancel.setText(leftText)
         contentView.edit_cancel.setOnClickListener {
             leftAction?.invoke()
+            contentView.edit_et.hideKeyboard()
             dismiss()
         }
         contentView.edit_save.setText(rightText)
         contentView.edit_save.setOnClickListener {
             rightAction?.invoke(contentView.edit_et.text.toString())
+            contentView.edit_et.hideKeyboard()
             dismiss()
         }
         (dialog as BottomSheet).apply {

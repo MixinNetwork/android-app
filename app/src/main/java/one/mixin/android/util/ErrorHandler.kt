@@ -7,6 +7,7 @@ import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineExceptionHandler
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.ClientErrorException
@@ -83,6 +84,10 @@ open class ErrorHandler {
                     }
                 }
             }
+        }
+
+        val errorHandler = CoroutineExceptionHandler { _, error ->
+            ErrorHandler.handleError(error)
         }
 
         private const val BAD_REQUEST = 400

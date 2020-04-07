@@ -16,6 +16,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.AuthorizeRequest
+import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.PinRequest
@@ -44,7 +45,10 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Circle
+import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCategory
+import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
@@ -484,4 +488,24 @@ class BottomSheetViewModel @Inject internal constructor(
     private suspend fun refreshAppNotExist(appIds: List<String>) = withContext(Dispatchers.IO) {
         accountRepository.refreshAppNotExist(appIds)
     }
+
+    suspend fun createCircle(name: String) = userRepository.createCircle(name)
+
+    suspend fun insertCircle(circle: Circle) {
+        userRepository.insertCircle(circle)
+    }
+
+    suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleManagerItem> = userRepository.getIncludeCircleItem(conversationId)
+
+    suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem> = userRepository.getOtherCircleItem(conversationId)
+
+    suspend fun updateCircles(conversationId: String?, userId: String?, requests: List<ConversationCircleRequest>) =
+        conversationRepo.updateCircles(conversationId, userId, requests)
+
+    suspend fun deleteCircleConversation(conversationId: String, circleId: String) = userRepository.deleteCircleConversation(conversationId, circleId)
+
+    suspend fun insertCircleConversation(circleConversation: CircleConversation) = userRepository.insertCircleConversation(circleConversation)
+
+    suspend fun findCirclesNameByConversationId(conversationId: String) =
+        userRepository.findCirclesNameByConversationId(conversationId)
 }

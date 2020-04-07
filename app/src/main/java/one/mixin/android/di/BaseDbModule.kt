@@ -118,4 +118,12 @@ internal class BaseDbModule {
     @Singleton
     @Provides
     fun providesMessageFts4Dao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.messageFts4Dao()
+
+    @Singleton
+    @Provides
+    fun providesCircleDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.circleDao()
+
+    @Singleton
+    @Provides
+    fun providesCircleConversationDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.circleConversationDao()
 }

@@ -18,6 +18,8 @@ open class FlowLayout @JvmOverloads constructor(context: Context, attrs: Attribu
     private val mGravity: Int
     private var lineViews: MutableList<View> = ArrayList()
 
+    var singleLine = false
+
     var maxWidth: Int = 0
         set(value) {
             if (field != value) {
@@ -29,6 +31,7 @@ open class FlowLayout @JvmOverloads constructor(context: Context, attrs: Attribu
     init {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.FlowLayout)
         mGravity = ta.getInt(R.styleable.FlowLayout_tag_gravity, LEFT)
+        singleLine = ta.getBoolean(R.styleable.FlowLayout_singleLine, false)
         maxWidth = ta.getDimensionPixelSize(R.styleable.FlowLayout_flow_max_width, dip(300))
         round(dip(8f))
         ta.recycle()
@@ -72,7 +75,7 @@ open class FlowLayout @JvmOverloads constructor(context: Context, attrs: Attribu
 
             val childHeight = (child.measuredHeight + lp.topMargin + lp.bottomMargin)
 
-            if (lineWidth + childWidth > sizeWidth - paddingLeft - paddingRight) {
+            if (!singleLine && lineWidth + childWidth > sizeWidth - paddingLeft - paddingRight) {
                 width = max(width, lineWidth)
                 lineWidth = childWidth
                 height += lineHeight

@@ -4,9 +4,9 @@ import android.graphics.Rect
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ItemDecoration
-import org.jetbrains.anko.dip
+import one.mixin.android.extension.dp
 
-class SegmentationItemDecoration : ItemDecoration() {
+class SegmentationItemDecoration(val offset: Int = 8.dp) : ItemDecoration() {
     override fun getItemOffsets(
         outRect: Rect,
         view: View,
@@ -15,6 +15,6 @@ class SegmentationItemDecoration : ItemDecoration() {
     ) {
         super.getItemOffsets(outRect, view, parent, state)
         if (view.tag != null && view.tag as Boolean)
-            outRect.top = view.context.dip(32)
+            outRect.top = offset
     }
 }

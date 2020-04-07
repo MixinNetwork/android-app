@@ -186,7 +186,10 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
         contentView.count_tv.text = getString(R.string.group_participants_count, participantCount)
         if (changeMenu || me != localMe) {
-            initMenu(localMe)
+            lifecycleScope.launch {
+                val circleNames = bottomViewModel.findCirclesNameByConversationId(conversationId)
+                initMenu(localMe, circleNames)
+            }
         }
         me = localMe
         if (me != null) {
@@ -206,7 +209,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         }
     }
 
-    private fun initMenu(me: Participant?) {
+    private fun initMenu(me: Participant?, circleNames: List<String>) {
         val list = menuList {
             menuGroup {
                 menu {
@@ -225,6 +228,18 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 }
             }
         }
+
+        list.groups.add(menuGroup {
+            menu {
+                title = getString(R.string.circle)
+                action = {
+                   startCircleManager()
+                    dismiss()
+                }
+                this.circleNames = circleNames
+            }
+        })
+
         if (me != null) {
             if (me.role == ParticipantRole.OWNER.name || me.role == ParticipantRole.ADMIN.name) {
                 val announcementString = if (TextUtils.isEmpty(conversation.announcement)) {
@@ -352,6 +367,13 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 SearchMessageFragment.newInstance(searchMessageItem, ""), SearchMessageFragment.TAG
             )
         }
+    }
+
+    private fun startCircleManager() {
+        activity?.addFragment(this,
+            CircleManagerFragment.newInstance(conversation.name, conversationId = conversation.conversationId),
+            CircleManagerFragment.TAG
+        )
     }
 
     private fun mute() {

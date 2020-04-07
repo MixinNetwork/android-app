@@ -7,21 +7,38 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.CircleConversationRequest
+import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
+import one.mixin.android.db.CircleConversationDao
+import one.mixin.android.db.CircleDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.db.updateRelationship
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
+import one.mixin.android.vo.Circle
+import one.mixin.android.vo.CircleBody
+import one.mixin.android.vo.CircleConversation
+import one.mixin.android.vo.CircleOrder
+import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 
 @Singleton
 class UserRepository
 @Inject
-constructor(private val userDao: UserDao, private val appDao: AppDao, private val userService: UserService) {
+constructor(
+    private val userDao: UserDao,
+    private val appDao: AppDao,
+    private val circleDao: CircleDao,
+    private val userService: UserService,
+    private val circleService: CircleService,
+    private val circleConversationDao: CircleConversationDao
+) {
 
     fun findFriends(): LiveData<List<User>> = userDao.findFriends()
 
@@ -72,7 +89,7 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
     fun findContactByConversationId(conversationId: String): User? =
         userDao.findContactByConversationId(conversationId)
 
-   suspend fun suspendFindContactByConversationId(conversationId: String): User? =
+    suspend fun suspendFindContactByConversationId(conversationId: String): User? =
         userDao.suspendFindContactByConversationId(conversationId)
 
     fun findSelf(): LiveData<User?> = userDao.findSelf(Session.getAccountId() ?: "")
@@ -112,4 +129,54 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
     suspend fun findUserByIdentityNumberSuspend(identityNumber: String) = userDao.suspendFindUserByIdentityNumber(identityNumber)
 
     suspend fun findUserIdByAppNumber(conversationId: String, appNumber: String) = userDao.findUserIdByAppNumber(conversationId, appNumber)
+
+    suspend fun createCircle(name: String) = circleService.createCircle(CircleBody(name))
+
+    fun observeAllCircleItem() = circleDao.observeAllCircleItem()
+
+    suspend fun insertCircle(circle: Circle) = circleDao.insertSuspend(circle)
+
+    suspend fun circleRename(circleId: String, name: String) = circleService.updateCircle(circleId, CircleBody(name))
+
+    suspend fun deleteCircle(circleId: String) = circleService.deleteCircle(circleId)
+
+    suspend fun deleteCircleById(circleId: String) = circleDao.deleteCircleById(circleId)
+
+    suspend fun findConversationItemByCircleId(circleId: String) =
+        circleDao.findConversationItemByCircleId(circleId)
+
+    suspend fun updateCircleConversations(id: String, circleConversationRequests: List<CircleConversationRequest>) =
+        circleService.updateCircleConversations(id, circleConversationRequests)
+
+    suspend fun sortCircleConversations(list: List<CircleOrder>?) = withContext(Dispatchers.IO) {
+        runInTransaction {
+            list?.forEach {
+                circleDao.updateOrderAt(it.circleId, it.orderAt)
+            }
+        }
+    }
+
+    suspend fun getCircleById(circleId: String) = circleService.getCircleById(circleId)
+
+    suspend fun deleteCircleConversation(conversationId: String, circleId: String) =
+        circleConversationDao.deleteByIds(conversationId, circleId)
+
+    suspend fun deleteByCircleId(circleId: String) =
+        circleConversationDao.deleteByCircleId(circleId)
+
+    suspend fun insertCircleConversation(circleConversation: CircleConversation) =
+        circleConversationDao.insertSuspend(circleConversation)
+
+    suspend fun findCircleConversationByCircleId(circleId: String) =
+        circleConversationDao.findCircleConversationByCircleId(circleId)
+
+    suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleManagerItem> = circleDao.getIncludeCircleItem(conversationId)
+
+    suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem> = circleDao.getOtherCircleItem(conversationId)
+
+    fun observeOtherCircleUnread(circleId: String) =
+        circleDao.observeOtherCircleUnread(circleId)
+
+    suspend fun findCirclesNameByConversationId(conversationId: String) =
+        circleDao.findCirclesNameByConversationId(conversationId)
 }

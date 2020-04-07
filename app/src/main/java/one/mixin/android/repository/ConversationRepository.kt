@@ -12,7 +12,11 @@ import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.service.ConversationService
+import one.mixin.android.api.service.UserService
+import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
@@ -32,6 +36,7 @@ import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ChatMinimal
+import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItem
@@ -61,6 +66,7 @@ internal constructor(
     private val readMessageDao: MessageDao,
     @DatabaseCategory(DatabaseCategoryEnum.BASE)
     private val conversationDao: ConversationDao,
+    private val circleConversationDao: CircleConversationDao,
     @DatabaseCategory(DatabaseCategoryEnum.READ)
     private val readConversationDao: ConversationDao,
     private val participantDao: ParticipantDao,
@@ -68,6 +74,7 @@ internal constructor(
     private val participantSessionDao: ParticipantSessionDao,
     private val jobDao: JobDao,
     private val conversationService: ConversationService,
+    private val userService: UserService,
     private val jobManager: MixinJobManager
 ) {
 
@@ -75,8 +82,11 @@ internal constructor(
     fun getMessages(conversationId: String) =
         MessageProvider.getMessages(conversationId, readAppDatabase)
 
-    fun conversations(): DataSource.Factory<Int, ConversationItem> =
+    fun conversations(circleId: String?): DataSource.Factory<Int, ConversationItem> = if (circleId == null) {
         MessageProvider.getConversations(readAppDatabase)
+    } else {
+        MessageProvider.observeConversationsByCircleId(circleId, readAppDatabase)
+    }
 
     suspend fun successConversationList(): List<ConversationItem> = readConversationDao.successConversationList()
 
@@ -198,9 +208,13 @@ internal constructor(
         conversationDao.deleteConversationById(conversationId)
     }
 
-    suspend fun updateConversationPinTimeById(conversationId: String, pinTime: String?) =
+    suspend fun updateConversationPinTimeById(conversationId: String, circleId: String?, pinTime: String?) =
         withContext(SINGLE_DB_THREAD) {
-            conversationDao.updateConversationPinTimeById(conversationId, pinTime)
+            if (circleId == null) {
+                conversationDao.updateConversationPinTimeById(conversationId, pinTime)
+            } else {
+                circleConversationDao.updateConversationPinTimeById(conversationId, circleId, pinTime)
+            }
         }
 
     suspend fun deleteMessageByConversationId(conversationId: String) = coroutineScope {
@@ -337,6 +351,14 @@ internal constructor(
         messageMentionDao.suspendMarkMentionRead(messageId)
         withContext(Dispatchers.IO) {
             jobDao.insert(createAckJob(CREATE_MESSAGE, BlazeAckMessage(messageId, MessageMentionStatus.MENTION_READ.name), conversationId))
+        }
+    }
+
+    suspend fun updateCircles(conversationId: String?, userId: String?, requests: List<ConversationCircleRequest>): MixinResponse<List<CircleConversation>> {
+        return if (userId != null) {
+            userService.updateCircles(userId, requests)
+        } else {
+            conversationService.updateCircles(conversationId!!, requests)
         }
     }
 }
