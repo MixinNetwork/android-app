@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.circle
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -31,6 +32,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.ConversationCircleItem
+import one.mixin.android.vo.getCircleColor
 import one.mixin.android.widget.recyclerview.ItemTouchHelperAdapter
 import one.mixin.android.widget.recyclerview.OnStartDragListener
 import one.mixin.android.widget.recyclerview.SimpleItemTouchHelperCallback
@@ -289,13 +291,13 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
                 shakeAnimator.cancel()
             }
             if (conversationCircleItem == null) {
-                itemView.circle_icon.setImageResource(R.drawable.ic_circle_mixin)
+                itemView.circle_icon.imageTintList = ColorStateList.valueOf(conversationCircleItem.getCircleColor())
                 itemView.circle_title.setText(R.string.circle_mixin)
                 itemView.circle_subtitle.setText(R.string.circle_all_conversation)
                 itemView.circle_unread_tv.isVisible = false
                 itemView.circle_check.isVisible = currentCircleId == null
             } else {
-                itemView.circle_icon.setImageResource(R.drawable.ic_circle)
+                itemView.circle_icon.imageTintList = ColorStateList.valueOf(conversationCircleItem.getCircleColor())
                 itemView.circle_title.text = conversationCircleItem.name
                 itemView.circle_subtitle.text = itemView.context.getString(R.string.circle_subtitle, conversationCircleItem.count)
                 itemView.circle_unread_tv.isVisible = currentCircleId != conversationCircleItem.circleId && conversationCircleItem.unseenMessageCount != 0

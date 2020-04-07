@@ -1,8 +1,11 @@
 package one.mixin.android.vo
 
+import android.graphics.Color
 import android.os.Parcelable
 import androidx.room.ColumnInfo
+import kotlin.math.abs
 import kotlinx.android.parcel.Parcelize
+import one.mixin.android.ui.conversation.holder.BaseViewHolder
 
 @Parcelize
 class ConversationCircleItem(
@@ -22,3 +25,12 @@ class CircleOrder(
     val circleId: String,
     val orderAt: String
 )
+
+fun ConversationCircleItem?.getCircleColor(): Int {
+    return if (this == null) {
+        Color.BLACK
+    } else {
+        val colors = BaseViewHolder.colors
+        colors[abs(this.circleId.hashCode()).rem(colors.size)]
+    }
+}

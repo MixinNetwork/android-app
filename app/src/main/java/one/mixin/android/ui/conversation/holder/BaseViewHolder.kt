@@ -24,7 +24,7 @@ import one.mixin.android.vo.MessageStatus
 abstract class BaseViewHolder constructor(containerView: View) :
     RecyclerView.ViewHolder(containerView) {
     companion object {
-        private val colors: IntArray =
+        val colors: IntArray =
             MixinApplication.appContext.resources.getIntArray(R.array.name_colors)
         val HIGHLIGHTED = Color.parseColor("#CCEF8C")
         val LINK_COLOR = Color.parseColor("#5FA7E4")
