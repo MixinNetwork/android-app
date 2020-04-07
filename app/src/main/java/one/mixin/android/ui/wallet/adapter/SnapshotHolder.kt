@@ -70,6 +70,8 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 listener?.onNormalItemClick(snapshot)
             }
         }
+
+        itemView.tag = snapshot.createdAt
     }
 }
 

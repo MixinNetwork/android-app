@@ -75,7 +75,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     protected var currentType = R.id.filters_radio_all
     protected var currentOrder = R.id.sort_time
 
-    abstract fun refreshSnapshots(pos: Int)
+    abstract fun refreshSnapshots(lastCreatedAt: String?)
     abstract fun onApplyClick()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -88,7 +88,8 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
                 val lastPos = transactionLayoutManager.findLastVisibleItemPosition()
                 if (lastPos >= refreshPosition + LIMIT) {
                     refreshPosition = lastPos
-                    refreshSnapshots(lastPos)
+                    val view = transactionLayoutManager.findViewByPosition(lastPos)
+                    refreshSnapshots(view?.tag as? String?)
                 }
             }
         })
