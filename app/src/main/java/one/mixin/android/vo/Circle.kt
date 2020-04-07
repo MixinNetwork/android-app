@@ -23,4 +23,4 @@ data class Circle(
     val orderedAt: String?
 )
 
-class CircleBody(val name: String)
+data class CircleName(val name: String)

@@ -21,7 +21,7 @@ import one.mixin.android.db.updateRelationship
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
-import one.mixin.android.vo.CircleBody
+import one.mixin.android.vo.CircleName
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.ConversationCircleManagerItem
@@ -130,13 +130,13 @@ constructor(
 
     suspend fun findUserIdByAppNumber(conversationId: String, appNumber: String) = userDao.findUserIdByAppNumber(conversationId, appNumber)
 
-    suspend fun createCircle(name: String) = circleService.createCircle(CircleBody(name))
+    suspend fun createCircle(name: String) = circleService.createCircle(CircleName(name))
 
     fun observeAllCircleItem() = circleDao.observeAllCircleItem()
 
     suspend fun insertCircle(circle: Circle) = circleDao.insertSuspend(circle)
 
-    suspend fun circleRename(circleId: String, name: String) = circleService.updateCircle(circleId, CircleBody(name))
+    suspend fun circleRename(circleId: String, name: String) = circleService.updateCircle(circleId, CircleName(name))
 
     suspend fun deleteCircle(circleId: String) = circleService.deleteCircle(circleId)
 
