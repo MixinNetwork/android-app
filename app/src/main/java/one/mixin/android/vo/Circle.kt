@@ -30,6 +30,4 @@ data class CircleOrder(
     val orderedAt: String
 )
 
-
-
 data class CircleName(val name: String)

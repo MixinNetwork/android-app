@@ -14,6 +14,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import java.util.Collections
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_coversation_circle.*
 import kotlinx.android.synthetic.main.item_conversation_circle.view.*
 import kotlinx.coroutines.launch
@@ -38,8 +40,6 @@ import one.mixin.android.widget.recyclerview.ItemTouchHelperAdapter
 import one.mixin.android.widget.recyclerview.OnStartDragListener
 import one.mixin.android.widget.recyclerview.SimpleItemTouchHelperCallback
 import org.threeten.bp.Instant
-import java.util.Collections
-import javax.inject.Inject
 
 class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
     companion object {
