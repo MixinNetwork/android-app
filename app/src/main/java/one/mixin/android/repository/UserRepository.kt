@@ -21,8 +21,8 @@ import one.mixin.android.db.updateRelationship
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
-import one.mixin.android.vo.CircleName
 import one.mixin.android.vo.CircleConversation
+import one.mixin.android.vo.CircleName
 import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.User
