@@ -21,11 +21,11 @@ class ConversationCircleItem(
     val unseenMessageCount: Int
 ) : Parcelable
 
-fun ConversationCircleItem?.getCircleColor(): Int {
-    return if (this == null) {
+fun getCircleColor(circleId: String?): Int {
+    return if (circleId == null) {
         Color.BLACK
     } else {
         val colors = BaseViewHolder.colors
-        colors[abs(this.circleId.hashCode()).rem(colors.size)]
+        colors[abs(circleId.hashCode()).rem(colors.size)]
     }
 }

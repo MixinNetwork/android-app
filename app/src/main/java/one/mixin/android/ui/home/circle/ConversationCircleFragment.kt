@@ -305,19 +305,18 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
                 shakeAnimator.cancel()
             }
             if (conversationCircleItem == null) {
-                itemView.circle_icon.imageTintList = ColorStateList.valueOf(conversationCircleItem.getCircleColor())
                 itemView.circle_title.setText(R.string.circle_mixin)
                 itemView.circle_subtitle.setText(R.string.circle_all_conversation)
                 itemView.circle_unread_tv.isVisible = false
                 itemView.circle_check.isVisible = currentCircleId == null
             } else {
-                itemView.circle_icon.imageTintList = ColorStateList.valueOf(conversationCircleItem.getCircleColor())
                 itemView.circle_title.text = conversationCircleItem.name
                 itemView.circle_subtitle.text = itemView.context.getString(R.string.circle_subtitle, conversationCircleItem.count)
                 itemView.circle_unread_tv.isVisible = currentCircleId != conversationCircleItem.circleId && conversationCircleItem.unseenMessageCount != 0
                 itemView.circle_unread_tv.text = "${conversationCircleItem.unseenMessageCount}"
                 itemView.circle_check.isVisible = currentCircleId == conversationCircleItem.circleId
             }
+            itemView.circle_icon.imageTintList = ColorStateList.valueOf(getCircleColor(conversationCircleItem?.circleId))
         }
     }
 
