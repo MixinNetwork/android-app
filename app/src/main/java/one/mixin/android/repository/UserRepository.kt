@@ -151,7 +151,7 @@ constructor(
     suspend fun sortCircleConversations(list: List<CircleOrder>?) = withContext(Dispatchers.IO) {
         runInTransaction {
             list?.forEach {
-                circleDao.updateOrderAt(it.circleId, it.orderAt)
+                circleDao.updateOrderAt(CircleOrder(it.circleId, it.orderedAt))
             }
         }
     }

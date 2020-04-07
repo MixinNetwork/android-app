@@ -21,11 +21,6 @@ class ConversationCircleItem(
     val unseenMessageCount: Int
 ) : Parcelable
 
-class CircleOrder(
-    val circleId: String,
-    val orderAt: String
-)
-
 fun ConversationCircleItem?.getCircleColor(): Int {
     return if (this == null) {
         Color.BLACK
