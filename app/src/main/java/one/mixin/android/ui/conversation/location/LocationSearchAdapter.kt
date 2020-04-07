@@ -31,9 +31,9 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
             currentVenues = null
             return
         }
-        index.toInt().let { index ->
-            if (index < venues?.size!!) {
-                currentVenues = venues!![index]
+        index.toInt().let { i ->
+            if (i < venues?.size!!) {
+                currentVenues = venues!![i]
             }
         }
     }

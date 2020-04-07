@@ -2,7 +2,6 @@ package one.mixin.android.util.markdown
 
 import android.content.Context
 import android.view.View
-import com.bumptech.glide.Glide
 import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.LinkResolverDef
 import io.noties.markwon.Markwon
@@ -41,7 +40,6 @@ class MarkwonUtil {
             mixinLinkResolver: (String) -> Unit,
             linkResolver: (String) -> Unit
         ): Markwon {
-            val requestManager = Glide.with(context)
             val isNightMode = context.isNightMode()
             val prism4j = Prism4j(LanguageGrammerLocator())
             val prism4jTheme = if (isNightMode) {
@@ -104,8 +102,6 @@ class MarkwonUtil {
 
         fun getMiniMarkwon(context: Context): Markwon {
             val isNightMode = context.isNightMode()
-            val requestManager = Glide.with(context)
-
             val prism4j = Prism4j(LanguageGrammerLocator())
             val prism4jTheme = if (isNightMode) {
                 Prism4jThemeDarkula.create()

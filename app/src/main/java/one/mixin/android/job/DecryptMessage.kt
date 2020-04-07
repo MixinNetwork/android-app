@@ -244,9 +244,11 @@ class DecryptMessage : Injector() {
                 messageMentionDao.deleteMessage(msg.id)
                 messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
-                    File(msg.mediaUrl.getFilePath()).let { file ->
-                        if (file.exists() && file.isFile) {
-                            file.delete()
+                    msg.mediaUrl.getFilePath()?.let {
+                        File(it).let { file ->
+                            if (file.exists() && file.isFile) {
+                                file.delete()
+                            }
                         }
                     }
                 }

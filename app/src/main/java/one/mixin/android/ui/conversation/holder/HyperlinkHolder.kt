@@ -93,9 +93,9 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
 
         itemView.chat_tv.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
@@ -112,22 +112,22 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
 
         itemView.chat_tv.setOnClickListener {
             if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
 
         itemView.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
 
         itemView.setOnClickListener {
             if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
 
@@ -189,7 +189,7 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
 
         itemView.setOnClickListener {
             if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
 

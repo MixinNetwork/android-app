@@ -88,8 +88,8 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
                 val lastPos = transactionLayoutManager.findLastVisibleItemPosition()
                 if (lastPos >= refreshPosition + LIMIT) {
                     refreshPosition = lastPos
-                    val view = transactionLayoutManager.findViewByPosition(lastPos)
-                    refreshSnapshots(view?.tag as? String?)
+                    val itemView = transactionLayoutManager.findViewByPosition(lastPos)
+                    refreshSnapshots(itemView?.tag as? String?)
                 }
             }
         })

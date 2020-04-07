@@ -204,7 +204,9 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
         callState.setCallState(CallState.STATE_DIALING)
         audioManager.start(true)
-        conversationId = intent.getStringExtra(EXTRA_CONVERSATION_ID)
+        val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
+        require(cid != null)
+        conversationId = cid
         user = intent.getParcelableExtra(ARGS_USER)
         callState.user = user
         updateNotification()

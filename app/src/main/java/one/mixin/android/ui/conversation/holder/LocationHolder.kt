@@ -179,46 +179,46 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
 
         itemView.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
         itemView.setOnClickListener {
             if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             } else {
                 onItemListener.onLocationClick(messageItem)
             }
         }
         itemView.location_layout.setOnClickListener {
             if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             } else {
                 onItemListener.onLocationClick(messageItem)
             }
         }
         itemView.chat_layout.setOnClickListener {
             if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             } else {
                 onItemListener.onLocationClick(messageItem)
             }
         }
         itemView.location_layout.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
         itemView.chat_layout.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }

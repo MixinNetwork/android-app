@@ -191,22 +191,22 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
         }
         itemView.setOnClickListener {
             if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
         itemView.chat_layout.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
         itemView.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
@@ -217,7 +217,7 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
         chatLayout(isMe, isLast)
@@ -231,7 +231,7 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         if (hasSelect) {
-            onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+            onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
         } else if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
             if (isMe) {
                 onItemListener.onRetryUpload(messageItem.messageId)

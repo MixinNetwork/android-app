@@ -19,7 +19,9 @@ class GroupActivity : BlazeBaseActivity() {
             val fragment = GroupFragment.newInstance()
             replaceFragment(fragment, R.id.container, GroupFragment.TAG)
         } else if (type == INFO) {
-            val f = GroupInfoFragment.newInstance(intent.getStringExtra(ARGS_CONVERSATION_ID))
+            val conversationId = intent.getStringExtra(ARGS_CONVERSATION_ID)
+            require(conversationId != null)
+            val f = GroupInfoFragment.newInstance(conversationId)
             replaceFragment(f, R.id.container, GroupInfoFragment.TAG)
         }
     }

@@ -12,7 +12,6 @@ import com.google.android.exoplayer2.util.MimeTypes
 import kotlinx.android.synthetic.main.item_chat_file_quote.view.*
 import kotlinx.android.synthetic.main.layout_file_holder_bottom.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
@@ -27,8 +26,6 @@ import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 
 class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerView) {
-    private val dp16 = itemView.context.dpToPx(16f)
-
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
@@ -215,22 +212,22 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
         }
         itemView.setOnClickListener {
             if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
         itemView.chat_layout.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
         itemView.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
@@ -240,7 +237,7 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
     }
@@ -253,7 +250,7 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         if (hasSelect) {
-            onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+            onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
         } else if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
             if (isMe) {
                 onItemListener.onRetryUpload(messageItem.messageId)

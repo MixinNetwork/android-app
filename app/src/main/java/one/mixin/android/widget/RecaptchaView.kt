@@ -69,12 +69,14 @@ class RecaptchaView(private val context: Context, private val callback: Callback
         webView.animate().translationY(context.screenHeight().toFloat())
     }
 
+    @Suppress("unused")
     @JavascriptInterface
-    fun postMessage(value: String) {
+    fun postMessage(@Suppress("UNUSED_PARAMETER") value: String) {
         context.cancelRunOnUIThread(stopWebViewRunnable)
         context.runOnUIThread(stopWebViewRunnable)
     }
 
+    @Suppress("unused")
     @JavascriptInterface
     fun postToken(value: String) {
         context.cancelRunOnUIThread(stopWebViewRunnable)

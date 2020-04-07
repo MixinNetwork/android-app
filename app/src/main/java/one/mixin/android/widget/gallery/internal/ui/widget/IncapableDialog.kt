@@ -18,7 +18,7 @@ class IncapableDialog : DialogFragment() {
         if (!TextUtils.isEmpty(message)) {
             builder.setMessage(message)
         }
-        builder.setPositiveButton(android.R.string.ok) { dialog: DialogInterface, which: Int -> dialog.dismiss() }
+        builder.setPositiveButton(android.R.string.ok) { dialog: DialogInterface, _: Int -> dialog.dismiss() }
         return builder.create()
     }
 

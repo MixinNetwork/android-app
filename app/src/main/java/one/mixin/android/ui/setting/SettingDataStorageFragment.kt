@@ -112,17 +112,17 @@ class SettingDataStorageFragment : BaseFragment() {
                 dialog.dismiss()
             }
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                var value = 0
+                var localValue = 0
                 if (menuView.check_photo.isChecked) {
-                    value += (AUTO_DOWNLOAD_PHOTO)
+                    localValue += (AUTO_DOWNLOAD_PHOTO)
                 }
                 if (menuView.check_video.isChecked) {
-                    value += (AUTO_DOWNLOAD_VIDEO)
+                    localValue += (AUTO_DOWNLOAD_VIDEO)
                 }
                 if (menuView.check_document.isChecked) {
-                    value += (AUTO_DOWNLOAD_DOCUMENT)
+                    localValue += (AUTO_DOWNLOAD_DOCUMENT)
                 }
-                defaultSharedPreferences.putInt(key, value)
+                defaultSharedPreferences.putInt(key, localValue)
                 refresh()
                 dialog.dismiss()
             }.create().apply {

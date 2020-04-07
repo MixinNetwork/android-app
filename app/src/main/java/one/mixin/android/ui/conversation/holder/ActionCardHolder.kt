@@ -35,9 +35,9 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
         }
         itemView.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
@@ -61,7 +61,7 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
         itemView.chat_description.text = actionCard.description
         itemView.setOnClickListener {
             if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             } else {
                 onItemListener.onAppCardClick(actionCard, messageItem.userId)
             }

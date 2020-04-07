@@ -51,23 +51,21 @@ class PinView : LinearLayout {
     ) {
         LayoutInflater.from(context).inflate(R.layout.layout_pin, this, true) as LinearLayout
         val ta = context.obtainStyledAttributes(attrs, R.styleable.PinView)
-        ta?.let { typedArray ->
-            if (typedArray.hasValue(R.styleable.PinView_pin_color)) {
-                color = typedArray.getColor(R.styleable.PinView_pin_color, Color.BLACK)
-            }
-            if (typedArray.hasValue(R.styleable.PinView_pin_count)) {
-                count = typedArray.getInt(R.styleable.PinView_pin_count, DEFAULT_COUNT)
-            }
-            if (typedArray.hasValue(R.styleable.PinView_pin_tipVisible)) {
-                tipVisible = typedArray.getBoolean(R.styleable.PinView_pin_tipVisible, true)
-                if (!tipVisible) {
-                    tip_tv.visibility = View.GONE
-                    line.visibility = View.GONE
-                }
+        if (ta.hasValue(R.styleable.PinView_pin_color)) {
+            color = ta.getColor(R.styleable.PinView_pin_color, Color.BLACK)
+        }
+        if (ta.hasValue(R.styleable.PinView_pin_count)) {
+            count = ta.getInt(R.styleable.PinView_pin_count, DEFAULT_COUNT)
+        }
+        if (ta.hasValue(R.styleable.PinView_pin_tipVisible)) {
+            tipVisible = ta.getBoolean(R.styleable.PinView_pin_tipVisible, true)
+            if (!tipVisible) {
+                tip_tv.visibility = View.GONE
+                line.visibility = View.GONE
             }
         }
-        ta?.recycle()
-        orientation = LinearLayout.VERTICAL
+        ta.recycle()
+        orientation = VERTICAL
         mid = count / 2
         for (i in 0..count) {
             if (i == mid) {

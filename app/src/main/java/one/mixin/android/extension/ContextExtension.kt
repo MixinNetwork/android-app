@@ -229,18 +229,15 @@ fun FragmentActivity.replaceFragment(fragment: Fragment, frameId: Int, tag: Stri
 }
 
 fun FragmentActivity.addFragment(from: Fragment, to: Fragment, tag: String, id: Int = R.id.container) {
-    val fm = supportFragmentManager
-    fm?.let {
-        val ft = it.beginTransaction()
-            .setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
-        if (to.isAdded) {
-            ft.show(to)
-        } else {
-            ft.add(id, to, tag)
-        }
-        ft.addToBackStack(null)
-        ft.commitAllowingStateLoss()
+    val ft = supportFragmentManager.beginTransaction()
+        .setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
+    if (to.isAdded) {
+        ft.show(to)
+    } else {
+        ft.add(id, to, tag)
     }
+    ft.addToBackStack(null)
+    ft.commitAllowingStateLoss()
 }
 
 fun Fragment.navTo(fragment: Fragment, tag: String) {

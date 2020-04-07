@@ -120,7 +120,7 @@ class EditFragment : CaptureVisionFragment() {
         }
         close_iv.setOnClickListener { activity?.onBackPressed() }
         download_iv.setOnClickListener {
-            RxPermissions(activity!!)
+            RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
                 .subscribe { granted ->
@@ -170,8 +170,8 @@ class EditFragment : CaptureVisionFragment() {
                 d.detectInImage(visionImage)
                     .addOnSuccessListener { result ->
                         result.firstOrNull()?.rawValue?.let {
-                            lifecycleScope.launch {
-                                if (!isAdded) return@launch
+                            lifecycleScope.launch innerLaunch@{
+                                if (!isAdded) return@innerLaunch
                                 pseudoNotificationView.addContent(it)
                             }
                         }
