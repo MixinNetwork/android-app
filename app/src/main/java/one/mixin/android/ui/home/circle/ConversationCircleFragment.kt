@@ -14,14 +14,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import java.util.Collections
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_coversation_circle.*
 import kotlinx.android.synthetic.main.item_conversation_circle.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.shakeAnimator
@@ -39,6 +38,8 @@ import one.mixin.android.widget.recyclerview.ItemTouchHelperAdapter
 import one.mixin.android.widget.recyclerview.OnStartDragListener
 import one.mixin.android.widget.recyclerview.SimpleItemTouchHelperCallback
 import org.threeten.bp.Instant
+import java.util.Collections
+import javax.inject.Inject
 
 class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
     companion object {
@@ -115,14 +116,16 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
         var currentCircleId: String? = null
 
         fun cancelSort() {
-            val now = Instant.now().epochSecond
-            val data = conversationCircles?.let { list ->
-                list.mapIndexed { index, item ->
-                    CircleOrder(item.circleId, Instant.ofEpochMilli(now + index).toString())
+            if (sorting) {
+                val now = System.currentTimeMillis()
+                val data = conversationCircles?.let { list ->
+                    list.mapIndexed { index, item ->
+                        CircleOrder(item.circleId, Instant.ofEpochMilli(now - index).toString())
+                    }
                 }
+                sorting = false
+                updateAction(data)
             }
-            sorting = false
-            updateAction(data)
         }
 
         var sorting = false
@@ -219,9 +222,6 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
                 }
                 R.id.delete -> {
                     delete(conversationCircleItem)
-                    if (conversationAdapter.currentCircleId == conversationCircleItem.circleId) {
-                        (requireActivity() as MainActivity).selectCircle(null, null)
-                    }
                 }
                 R.id.sort -> {
                     conversationAdapter.sorting = true
@@ -272,14 +272,25 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
     }
 
     private fun delete(conversationCircleItem: ConversationCircleItem) {
-        conversationViewModel.viewModelScope.launch(errorHandler) {
-            val response = conversationViewModel.deleteCircle(conversationCircleItem.circleId)
-            if (response.isSuccess) {
-                conversationViewModel.deleteCircleById(conversationCircleItem.circleId)
-            } else {
-                ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+        alertDialogBuilder()
+            .setMessage(getString(R.string.circle_delete_tip, conversationCircleItem.name))
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
+                dialog.dismiss()
             }
-        }
+            .setPositiveButton(R.string.confirm) { _, _ ->
+                conversationViewModel.viewModelScope.launch(errorHandler) {
+                    val response = conversationViewModel.deleteCircle(conversationCircleItem.circleId)
+                    if (response.isSuccess) {
+                        conversationViewModel.deleteCircleById(conversationCircleItem.circleId)
+                        if (conversationAdapter.currentCircleId == conversationCircleItem.circleId) {
+                            (requireActivity() as MainActivity).selectCircle(null, null)
+                        }
+                    } else {
+                        ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+                    }
+                }
+            }
+            .show()
     }
 
     class ConversationCircleHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

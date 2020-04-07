@@ -1,5 +1,6 @@
 package one.mixin.android.extension
 
+import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.DialogInterface
@@ -62,6 +63,10 @@ fun Fragment.indeterminateProgressDialog(message: String? = null, title: String?
 
 fun Fragment.indeterminateProgressDialog(message: Int? = null, title: Int? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {
     return requireActivity().indeterminateProgressDialog(message?.let { requireActivity().getString(it) }, title?.let { requireActivity().getString(it) }, init)
+}
+
+fun Activity.indeterminateProgressDialog(message: Int? = null, title: Int? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {
+    return indeterminateProgressDialog(message?.let { getString(it) }, title?.let { getString(it) }, init)
 }
 
 @Deprecated(message = "Android progress dialogs are deprecated")

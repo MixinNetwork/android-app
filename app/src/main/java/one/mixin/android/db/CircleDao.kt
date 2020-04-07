@@ -35,7 +35,7 @@ interface CircleDao : BaseDao<Circle> {
         WHERE ci.circle_id IN (
         SELECT cir.circle_id FROM circles cir LEFT JOIN circle_conversations ccr ON cir.circle_id = ccr.circle_id WHERE ccr.conversation_id = :conversationId)
         GROUP BY ci.circle_id
-        ORDER BY ci.ordered_at ASC, ci.created_at DESC
+        ORDER BY ci.ordered_at ASC, ci.created_at ASC
     """)
      suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleManagerItem>
 
@@ -45,7 +45,7 @@ interface CircleDao : BaseDao<Circle> {
         WHERE ci.circle_id NOT IN (
         SELECT cir.circle_id FROM circles cir LEFT JOIN circle_conversations ccr ON cir.circle_id = ccr.circle_id WHERE ccr.conversation_id = :conversationId)
         GROUP BY ci.circle_id
-        ORDER BY ci.ordered_at ASC, ci.created_at DESC
+        ORDER BY ci.ordered_at ASC, ci.created_at ASC
     """)
     suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem>
 

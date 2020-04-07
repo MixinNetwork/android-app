@@ -16,6 +16,7 @@ import one.mixin.android.db.CircleDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
+import one.mixin.android.db.insertUpdateSuspend
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.db.updateRelationship
 import one.mixin.android.util.Session
@@ -134,7 +135,7 @@ constructor(
 
     fun observeAllCircleItem() = circleDao.observeAllCircleItem()
 
-    suspend fun insertCircle(circle: Circle) = circleDao.insertSuspend(circle)
+    suspend fun insertCircle(circle: Circle) = circleDao.insertUpdateSuspend(circle)
 
     suspend fun circleRename(circleId: String, name: String) = circleService.updateCircle(circleId, CircleName(name))
 

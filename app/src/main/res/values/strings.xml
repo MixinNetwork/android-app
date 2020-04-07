@@ -803,5 +803,6 @@
     <string name="circle" translatable="false">Circles</string>
     <string name="circle_title" translatable="false">%1$s\'s Circles</string>
     <string name="circle_info">If you want to filter conversation, please\n set a circle for the conversation first.</string>
+    <string name="circle_delete_tip">Delete \"%1$s\" ?</string>
 </resources>
 

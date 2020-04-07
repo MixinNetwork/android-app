@@ -87,7 +87,7 @@ open class ErrorHandler {
         }
 
         val errorHandler = CoroutineExceptionHandler { _, error ->
-            ErrorHandler.handleError(error)
+            handleError(error)
         }
 
         private const val BAD_REQUEST = 400
