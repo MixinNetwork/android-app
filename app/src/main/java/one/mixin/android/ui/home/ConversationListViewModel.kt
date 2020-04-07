@@ -170,8 +170,8 @@ internal constructor(
             addSet.forEach { cc ->
                 val circleConversation = CircleConversation(
                     cc.conversationId,
-                    cc.contactId,
                     circleId,
+                    cc.userId,
                     nowInUtc(),
                     null
                 )

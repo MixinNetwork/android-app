@@ -121,8 +121,8 @@ class CircleManagerFragment : BaseFragment() {
                         bottomViewModel.insertCircleConversation(
                             CircleConversation(
                                 circleConversation.conversationId,
-                                userId,
                                 circleConversation.circleId,
+                                userId,
                                 circleConversation.createdAt,
                                 null
                             )

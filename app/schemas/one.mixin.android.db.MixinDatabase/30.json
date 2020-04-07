@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 30,
-    "identityHash": "91bcc37aab41310ecef163796ff22c5e",
+    "identityHash": "40fa7fad401e7ea22bfdbbe72b848a9c",
     "entities": [
       {
         "tableName": "users",
@@ -1638,7 +1638,7 @@
       },
       {
         "tableName": "circles",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`circle_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_at` TEXT, PRIMARY KEY(`circle_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`circle_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `ordered_at` TEXT, PRIMARY KEY(`circle_id`))",
         "fields": [
           {
             "fieldPath": "circleId",
@@ -1653,14 +1653,14 @@
             "notNull": true
           },
           {
-            "fieldPath": "created_at",
+            "fieldPath": "createdAt",
             "columnName": "created_at",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "order_at",
-            "columnName": "order_at",
+            "fieldPath": "orderedAt",
+            "columnName": "ordered_at",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -1676,7 +1676,7 @@
       },
       {
         "tableName": "circle_conversations",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`conversation_id` TEXT NOT NULL, `user_id` TEXT, `circle_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, `pin_time` TEXT, PRIMARY KEY(`conversation_id`, `circle_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`conversation_id` TEXT NOT NULL, `circle_id` TEXT NOT NULL, `user_id` TEXT, `created_at` TEXT NOT NULL, `pin_time` TEXT, PRIMARY KEY(`conversation_id`, `circle_id`))",
         "fields": [
           {
             "fieldPath": "conversationId",
@@ -1685,16 +1685,16 @@
             "notNull": true
           },
           {
-            "fieldPath": "contactId",
-            "columnName": "user_id",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
             "fieldPath": "circleId",
             "columnName": "circle_id",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "user_id",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "createdAt",
@@ -1723,7 +1723,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '91bcc37aab41310ecef163796ff22c5e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '40fa7fad401e7ea22bfdbbe72b848a9c')"
     ]
   }
 }

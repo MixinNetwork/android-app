@@ -26,17 +26,17 @@ interface CircleDao : BaseDao<Circle> {
     @Query("""
         SELECT ci.circle_id, ci.name, ci.created_at, count(c.conversation_id) as count, sum(c.unseen_message_count) as unseen_message_count 
         FROM circles ci LEFT JOIN circle_conversations cc ON ci.circle_id==cc.circle_id LEFT JOIN conversations c  ON c.conversation_id == cc.conversation_id
-        GROUP BY ci.circle_id ORDER BY ci.order_at ASC, ci.created_at DESC
+        GROUP BY ci.circle_id ORDER BY ci.ordered_at ASC, ci.created_at DESC
     """)
     fun observeAllCircleItem(): LiveData<List<ConversationCircleItem>>
 
     @Query("""
-       SELECT ci.circle_id,  ci.name, count(c.conversation_id) as count FROM circles ci LEFT JOIN circle_conversations cc ON ci.circle_id=cc.circle_id
+        SELECT ci.circle_id,  ci.name, count(c.conversation_id) as count FROM circles ci LEFT JOIN circle_conversations cc ON ci.circle_id=cc.circle_id
         LEFT JOIN conversations c  ON c.conversation_id = cc.conversation_id
         WHERE ci.circle_id IN (
         SELECT cir.circle_id FROM circles cir LEFT JOIN circle_conversations ccr ON cir.circle_id = ccr.circle_id WHERE ccr.conversation_id = :conversationId)
         GROUP BY ci.circle_id
-        ORDER BY ci.order_at ASC, ci.created_at DESC
+        ORDER BY ci.ordered_at ASC, ci.created_at DESC
     """)
      suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleManagerItem>
 
@@ -46,7 +46,7 @@ interface CircleDao : BaseDao<Circle> {
         WHERE ci.circle_id NOT IN (
         SELECT cir.circle_id FROM circles cir LEFT JOIN circle_conversations ccr ON cir.circle_id = ccr.circle_id WHERE ccr.conversation_id = :conversationId)
         GROUP BY ci.circle_id
-        ORDER BY ci.order_at ASC, ci.created_at DESC
+        ORDER BY ci.ordered_at ASC, ci.created_at DESC
     """)
     suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem>
 
@@ -114,7 +114,7 @@ interface CircleDao : BaseDao<Circle> {
     """)
     suspend fun findConversationItemByCircleId(circleId: String): List<ConversationItem>
 
-    @Query("UPDATE circles SET order_at = :orderAt WHERE circle_id = :circleId")
+    @Query("UPDATE circles SET ordered_at = :orderAt WHERE circle_id = :circleId")
     fun updateOrderAt(circleId: String, orderAt: String)
 
     @Query("""

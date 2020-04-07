@@ -19,8 +19,8 @@ data class Circle(
     @ColumnInfo(name = "created_at")
     val createdAt: String,
     @Expose
-    @ColumnInfo(name = "order_at")
-    val orderAt: String?
+    @ColumnInfo(name = "ordered_at")
+    val orderedAt: String?
 )
 
 class CircleBody(val name: String)
