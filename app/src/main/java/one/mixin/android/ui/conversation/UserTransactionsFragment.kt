@@ -121,12 +121,7 @@ class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem
         }
     }
 
-    override fun refreshSnapshots(pos: Int) {
-        val lastCreatedAt = try {
-            adapter.currentList?.get(pos)?.createdAt
-        } catch (e: NoSuchElementException) {
-            null
-        }
+    override fun refreshSnapshots(lastCreatedAt: String?) {
         jobManager.addJobInBackground(RefreshSnapshotsJob(
             offset = lastCreatedAt?.getRFC3339Nano() ?: nowInUtc().getRFC3339Nano(),
             limit = LIMIT,

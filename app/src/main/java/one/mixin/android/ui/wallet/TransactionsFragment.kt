@@ -280,14 +280,9 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }
     }
 
-    override fun refreshSnapshots(pos: Int) {
-        val lastCreatedAt = try {
-            adapter.currentList?.get(pos)?.createdAt
-        } catch (e: NoSuchElementException) {
-            null
-        }
-        jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId, lastCreatedAt?.getRFC3339Nano()
-            ?: nowInUtc().getRFC3339Nano(), LIMIT))
+    override fun refreshSnapshots(lastCreatedAt: String?) {
+        jobManager.addJobInBackground(RefreshSnapshotsJob(
+            asset.assetId, lastCreatedAt?.getRFC3339Nano() ?: nowInUtc().getRFC3339Nano(), LIMIT))
     }
 
     override fun onApplyClick() {
