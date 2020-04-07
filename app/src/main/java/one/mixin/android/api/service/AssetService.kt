@@ -56,7 +56,7 @@ interface AssetService {
     fun allSnapshots(
         @Query("offset") offset: String = "",
         @Query("limit") limit: Int = LIMIT,
-        @Query("opponent") opponent: String = ""
+        @Query("opponent") opponent: String? = null
     ): Call<MixinResponse<List<Snapshot>>>
 
     @GET("snapshots/{id}")

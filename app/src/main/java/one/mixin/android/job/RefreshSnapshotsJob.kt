@@ -8,7 +8,7 @@ class RefreshSnapshotsJob(
     private val assetId: String? = null,
     private val offset: String = "",
     private val limit: Int = LIMIT,
-    private val opponent: String = ""
+    private val opponent: String? = null
 ) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).requireNetwork()) {
 
     companion object {
