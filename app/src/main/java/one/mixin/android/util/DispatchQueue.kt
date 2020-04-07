@@ -1,10 +1,11 @@
 package one.mixin.android.util
 
+import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.util.Log
 import java.util.concurrent.CountDownLatch
+import timber.log.Timber
 
 class DispatchQueue(threadName: String) : Thread() {
     @Volatile
@@ -16,6 +17,7 @@ class DispatchQueue(threadName: String) : Thread() {
         start()
     }
 
+    @Suppress("unused")
     fun sendMessage(msg: Message, delay: Int = 0) {
         try {
             syncLatch.await()
@@ -25,7 +27,7 @@ class DispatchQueue(threadName: String) : Thread() {
                 handler!!.sendMessageDelayed(msg, delay.toLong())
             }
         } catch (e: Exception) {
-            Log.e(TAG, "", e)
+            Timber.e(e)
         }
     }
 
@@ -34,7 +36,7 @@ class DispatchQueue(threadName: String) : Thread() {
             syncLatch.await()
             handler!!.removeCallbacks(runnable)
         } catch (e: Exception) {
-            Log.e(TAG, "", e)
+            Timber.e(e)
         }
     }
 
@@ -48,34 +50,32 @@ class DispatchQueue(threadName: String) : Thread() {
                 handler!!.postDelayed(runnable, delay)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "", e)
+            Timber.e(e)
         }
     }
 
+    @Suppress("unused")
     fun cleanupQueue() {
         try {
             syncLatch.await()
             handler!!.removeCallbacksAndMessages(null)
         } catch (e: Exception) {
-            Log.e(TAG, "", e)
+            Timber.e(e)
         }
     }
 
-    fun handleMessage(inputMessage: Message) {
+    fun handleMessage(@Suppress("UNUSED_PARAMETER") inputMessage: Message) {
     }
 
     override fun run() {
         Looper.prepare()
-        handler = object : Handler() {
+        handler = @SuppressLint("HandlerLeak")
+        object : Handler() {
             override fun handleMessage(msg: Message) {
                 this@DispatchQueue.handleMessage(msg)
             }
         }
         syncLatch.countDown()
         Looper.loop()
-    }
-
-    companion object {
-        private const val TAG = "DispatchQueue"
     }
 }

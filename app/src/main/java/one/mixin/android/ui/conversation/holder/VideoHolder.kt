@@ -57,15 +57,15 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         }
         itemView.setOnClickListener {
             if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
 
         itemView.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
@@ -97,14 +97,14 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
             itemView.progress.setOnLongClickListener { false }
             itemView.chat_image.setOnLongClickListener {
                 if (!hasSelect) {
-                    onItemListener.onLongClick(messageItem, adapterPosition)
+                    onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                 } else {
                     true
                 }
             }
             itemView.chat_image.setOnClickListener {
                 if (hasSelect) {
-                    onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                    onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 } else {
                     onItemListener.onImageClick(messageItem, itemView.chat_image)
                 }
@@ -142,14 +142,14 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
                         itemView.play.visibility = GONE
                         itemView.chat_image.setOnLongClickListener {
                             if (!hasSelect) {
-                                onItemListener.onLongClick(messageItem, adapterPosition)
+                                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                             } else {
                                 true
                             }
                         }
                         itemView.chat_image.setOnClickListener {
                             if (hasSelect) {
-                                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                             }
                         }
                     }
@@ -161,14 +161,14 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
                         itemView.progress.setBindId(messageItem.messageId)
                         itemView.progress.setOnLongClickListener {
                             if (!hasSelect) {
-                                onItemListener.onLongClick(messageItem, adapterPosition)
+                                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                             } else {
                                 false
                             }
                         }
                         itemView.progress.setOnClickListener {
                             if (hasSelect) {
-                                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                             } else {
                                 onItemListener.onCancel(messageItem.messageId)
                             }
@@ -185,14 +185,14 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
                         itemView.progress.setOnLongClickListener { false }
                         itemView.chat_image.setOnLongClickListener {
                             if (!hasSelect) {
-                                onItemListener.onLongClick(messageItem, adapterPosition)
+                                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                             } else {
                                 true
                             }
                         }
                         itemView.chat_image.setOnClickListener {
                             if (hasSelect) {
-                                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                             } else {
                                 onItemListener.onImageClick(messageItem, itemView.chat_image)
                             }
@@ -211,14 +211,14 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
                         itemView.progress.setProgress(-1)
                         itemView.progress.setOnLongClickListener {
                             if (!hasSelect) {
-                                onItemListener.onLongClick(messageItem, adapterPosition)
+                                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                             } else {
                                 false
                             }
                         }
                         itemView.progress.setOnClickListener {
                             if (hasSelect) {
-                                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                             } else {
                                 if (isMe) {
                                     onItemListener.onRetryUpload(messageItem.messageId)

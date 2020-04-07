@@ -24,6 +24,7 @@ class SharedMediaActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
         val conversationId = intent.getStringExtra(ARGS_CONVERSATION_ID)
+        require(conversationId != null)
         replaceFragment(SharedMediaFragment.newInstance(conversationId), R.id.container, SharedMediaFragment.TAG)
         window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
     }

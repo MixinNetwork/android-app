@@ -69,7 +69,7 @@ class BackupJob(private val force: Boolean = false) : BaseJob(Params(if (force) 
         if (!mediaCachePath.exists()) {
             return
         }
-        for (mediaCacheChild in mediaCachePath.listFiles()) {
+        mediaCachePath.listFiles()?.forEach { mediaCacheChild ->
             if (mediaCacheChild.isDirectory) {
                 val local = File("$mediaPath${File.separator}${mediaCacheChild.name}${File.separator}")
                 mediaCacheChild.moveChileFileToDir(local) { newFile, oldFile ->

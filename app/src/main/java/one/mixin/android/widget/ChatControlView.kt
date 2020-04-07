@@ -33,6 +33,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
@@ -42,6 +43,7 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.fadeIn
@@ -112,11 +114,11 @@ class ChatControlView : FrameLayout {
     private var upBeforeGrant = false
     private var keyboardShown = false
 
-    private val sendDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_send_checked, context.theme) }
-    private val audioDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_mic, context.theme) }
+    private val sendDrawable: Drawable by lazy { ResourcesCompat.getDrawable(resources, R.drawable.ic_chat_send_checked, context.theme)!! }
+    private val audioDrawable: Drawable by lazy { ResourcesCompat.getDrawable(resources, R.drawable.ic_chat_mic, context.theme)!! }
 
-    private val stickerDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_sticker, context.theme) }
-    private val keyboardDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_keyboard, context.theme) }
+    private val stickerDrawable: Drawable by lazy { ResourcesCompat.getDrawable(resources, R.drawable.ic_chat_sticker, context.theme)!! }
+    private val keyboardDrawable: Drawable by lazy { ResourcesCompat.getDrawable(resources, R.drawable.ic_chat_keyboard, context.theme)!! }
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -526,8 +528,8 @@ class ChatControlView : FrameLayout {
         val vX = velocityTracker?.xVelocity
         velocityTracker?.recycle()
         velocityTracker = null
-        return if (vY != null && Math.abs(vY) >= minVelocity) {
-            if (vX != null && Math.abs(vX) > Math.abs(vY)) {
+        return if (vY != null && abs(vY) >= minVelocity) {
+            if (vX != null && abs(vX) > abs(vY)) {
                 FLING_NONE
             } else {
                 if (startY > event.rawY) {
@@ -545,7 +547,7 @@ class ChatControlView : FrameLayout {
         currentChecked = NONE
     }
 
-    private val keyListener = OnKeyListener { v, keyCode, event ->
+    private val keyListener = OnKeyListener { _, keyCode, _ ->
         if (keyCode == KeyEvent.KEYCODE_DEL) {
             callback.onDelete()
         }
@@ -596,7 +598,7 @@ class ChatControlView : FrameLayout {
                 if (downY != 0f && getDraggableContainer() != null && !isRecording) {
                     val dif = moveY - downY
                     dragging = if (!dragging) {
-                        Math.abs(moveY - startY) > touchSlop
+                        abs(moveY - startY) > touchSlop
                     } else dragging
                     if (dif != 0f) {
                         triggeredCancel = true
@@ -644,7 +646,7 @@ class ChatControlView : FrameLayout {
                 if (downY != 0f) {
                     val dif = moveY - downY
                     dragging = if (!dragging) {
-                        Math.abs(dif) > touchSlop
+                        abs(dif) > touchSlop
                     } else dragging
                     if (dif != 0f) {
                         triggeredCancel = true

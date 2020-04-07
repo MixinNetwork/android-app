@@ -38,15 +38,15 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
         }
         itemView.setOnClickListener {
             if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
 
         itemView.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
@@ -88,14 +88,14 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
                 button.rightPadding = dp12
                 button.setOnLongClickListener {
                     if (!hasSelect) {
-                        onItemListener.onLongClick(messageItem, adapterPosition)
+                        onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                     } else {
                         true
                     }
                 }
                 button.setOnClickListener {
                     if (hasSelect) {
-                        onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                        onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                     } else {
                         onItemListener.onActionClick(b.action, messageItem.userId)
                     }

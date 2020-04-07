@@ -30,7 +30,9 @@ class StickerActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
         if (intent.hasExtra(ARGS_SHOW_ADD) && intent.getBooleanExtra(ARGS_SHOW_ADD, false)) {
-            replaceFragment(StickerAddFragment.newInstance(intent.getStringExtra(ARGS_URL)), R.id.container,
+            val url = intent.getStringExtra(ARGS_URL)
+            require(url != null)
+            replaceFragment(StickerAddFragment.newInstance(url), R.id.container,
                 StickerAddFragment.TAG)
         } else {
             replaceFragment(StickerManagementFragment.newInstance(intent.getStringExtra(ARGS_PERSONAL_ALBUM_ID)),

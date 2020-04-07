@@ -43,7 +43,7 @@ class SquareLayout : FrameLayout {
 
     override fun dispatchDraw(canvas: Canvas) {
         super.dispatchDraw(canvas)
-        path.addRect(rect, Path.Direction.CCW)
+        rect?.let { path.addRect(it, Path.Direction.CCW) }
         canvas.drawPath(path, paint)
     }
 }

@@ -97,7 +97,7 @@ class AuthenticationsFragment : BaseViewModelFragment<SettingViewModel>() {
             itemView.name_tv.text = app.name
             itemView.number_tv.text = app.appNumber
             itemView.setOnClickListener {
-                onAppClick.onClick(app, adapterPosition)
+                onAppClick.onClick(app, absoluteAdapterPosition)
             }
         }
     }

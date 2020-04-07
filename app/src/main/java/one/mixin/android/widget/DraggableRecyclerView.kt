@@ -32,15 +32,13 @@ class DraggableRecyclerView @JvmOverloads constructor(
 
     init {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.DraggableRecyclerView)
-        if (ta != null) {
-            if (ta.hasValue(R.styleable.DraggableRecyclerView_drag_direction)) {
-                direction = ta.getInteger(R.styleable.DraggableRecyclerView_drag_direction, DIRECTION_NONE)
-            }
-            if (ta.hasValue(R.styleable.DraggableRecyclerView_over_direction)) {
-                over = ta.getInteger(R.styleable.DraggableRecyclerView_over_direction, OVER_NONE)
-            }
-            ta.recycle()
+        if (ta.hasValue(R.styleable.DraggableRecyclerView_drag_direction)) {
+            direction = ta.getInteger(R.styleable.DraggableRecyclerView_drag_direction, DIRECTION_NONE)
         }
+        if (ta.hasValue(R.styleable.DraggableRecyclerView_over_direction)) {
+            over = ta.getInteger(R.styleable.DraggableRecyclerView_over_direction, OVER_NONE)
+        }
+        ta.recycle()
 
         setOnTouchListener { _, event ->
             when (event.action) {

@@ -83,40 +83,40 @@ class ImageQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
         itemView.chat_layout.chat_quote_layout.setRatio(messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat())
         itemView.chat_image_layout.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
 
         itemView.chat_layout.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
 
         itemView.chat_image_layout.setOnClickListener {
             if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
 
         itemView.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
 
         itemView.setOnClickListener {
             if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
 
@@ -128,14 +128,14 @@ class ImageQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
                     itemView.progress.visibility = View.GONE
                     itemView.chat_image.setOnLongClickListener {
                         if (!hasSelect) {
-                            onItemListener.onLongClick(messageItem, adapterPosition)
+                            onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                         } else {
                             true
                         }
                     }
                     itemView.chat_image.setOnClickListener {
                         if (hasSelect) {
-                            onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                            onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                         }
                     }
                 }
@@ -146,14 +146,14 @@ class ImageQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
                     itemView.progress.setBindId(messageItem.messageId)
                     itemView.progress.setOnLongClickListener {
                         if (!hasSelect) {
-                            onItemListener.onLongClick(messageItem, adapterPosition)
+                            onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                         } else {
                             false
                         }
                     }
                     itemView.progress.setOnClickListener {
                         if (hasSelect) {
-                            onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                            onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                         } else {
                             onItemListener.onCancel(messageItem.messageId)
                         }
@@ -169,14 +169,14 @@ class ImageQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
                     itemView.progress.setOnLongClickListener { false }
                     itemView.chat_image.setOnLongClickListener {
                         if (!hasSelect) {
-                            onItemListener.onLongClick(messageItem, adapterPosition)
+                            onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                         } else {
                             true
                         }
                     }
                     itemView.chat_image.setOnClickListener {
                         if (hasSelect) {
-                            onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                            onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                         } else {
                             onItemListener.onImageClick(messageItem, itemView.chat_image)
                         }
@@ -194,14 +194,14 @@ class ImageQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
                     itemView.progress.setProgress(-1)
                     itemView.progress.setOnLongClickListener {
                         if (!hasSelect) {
-                            onItemListener.onLongClick(messageItem, adapterPosition)
+                            onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
                         } else {
                             false
                         }
                     }
                     itemView.progress.setOnClickListener {
                         if (hasSelect) {
-                            onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                            onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                         } else {
                             if (isMe && messageItem.mediaUrl != null) {
                                 onItemListener.onRetryUpload(messageItem.messageId)
@@ -250,7 +250,7 @@ class ImageQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
             if (!hasSelect) {
                 onItemListener.onQuoteMessageClick(messageItem.messageId, messageItem.quoteId)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
         chatLayout(isMe, isLast)

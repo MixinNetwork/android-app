@@ -169,22 +169,22 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
         }
         itemView.setOnClickListener {
             if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
         itemView.chat_layout.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
         itemView.setOnLongClickListener {
             if (!hasSelect) {
-                onItemListener.onLongClick(messageItem, adapterPosition)
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
             } else {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
                 true
             }
         }
@@ -198,7 +198,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         if (hasSelect) {
-            onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+            onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
         } else if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
             if (isMe) {
                 onItemListener.onRetryUpload(messageItem.messageId)

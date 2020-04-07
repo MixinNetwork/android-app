@@ -52,7 +52,7 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         assetsAdapter.onItemListener = this
         ItemTouchHelper(AssetItemCallback(object : AssetItemCallback.ItemCallbackListener {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
-                val hiddenPos = viewHolder.adapterPosition
+                val hiddenPos = viewHolder.absoluteAdapterPosition
                 val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
                 val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
                 lifecycleScope.launch(Dispatchers.IO) {
