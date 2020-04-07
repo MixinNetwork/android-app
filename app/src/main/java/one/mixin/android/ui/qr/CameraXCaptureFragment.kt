@@ -73,6 +73,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
     private var camera: Camera? = null
 
     private var displayId: Int = -1
+    private var surfaceProvider: Preview.SurfaceProvider? = null
     private lateinit var displayManager: DisplayManager
 
     private var imageCaptureFile: File? = null
@@ -118,6 +119,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
 
         view_finder.post {
             displayId = view_finder.display.displayId
+            surfaceProvider = view_finder.createSurfaceProvider(camera?.cameraInfo)
             bindCameraUseCase()
         }
         bottom_ll.isVisible = !forScan
@@ -179,7 +181,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
                 .setTargetAspectRatioCustom(screenAspectRatio)
                 .setTargetRotation(rotation)
                 .build()
-            preview?.setSurfaceProvider(view_finder.previewSurfaceProvider)
+            preview?.setSurfaceProvider(surfaceProvider)
 
             imageCapture = ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
