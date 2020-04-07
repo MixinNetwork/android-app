@@ -121,7 +121,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
         dataObserver = Observer { pagedList ->
             if (pagedList != null && pagedList.isNotEmpty()) {
-                localDataSize = pagedList.size
                 updateHeaderBottomLayout(false)
                 val opponentIds = pagedList.filter {
                     it?.opponentId != null
@@ -281,9 +280,9 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }
     }
 
-    override fun refreshSnapshots() {
+    override fun refreshSnapshots(pos: Int) {
         val lastCreatedAt = try {
-            adapter.currentList?.last()?.createdAt
+            adapter.currentList?.get(pos)?.createdAt
         } catch (e: NoSuchElementException) {
             null
         }

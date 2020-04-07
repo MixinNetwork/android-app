@@ -33,7 +33,7 @@ interface AssetService {
     @GET("assets/{id}/snapshots")
     fun snapshots(
         @Path("id") id: String,
-        @Query("offset") offset: String = "",
+        @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = LIMIT
     ): Call<MixinResponse<List<Snapshot>>>
 
@@ -54,8 +54,9 @@ interface AssetService {
 
     @GET("snapshots")
     fun allSnapshots(
-        @Query("offset") offset: String = "",
-        @Query("limit") limit: Int = LIMIT
+        @Query("offset") offset: String? = null,
+        @Query("limit") limit: Int = LIMIT,
+        @Query("opponent") opponent: String? = null
     ): Call<MixinResponse<List<Snapshot>>>
 
     @GET("snapshots/{id}")
@@ -63,9 +64,6 @@ interface AssetService {
 
     @GET("transfers/trace/{id}")
     suspend fun getSnapshotByTraceId(@Path("id") traceId: String): MixinResponse<Snapshot>
-
-    @GET("mutual_snapshots/{id}")
-    fun mutualSnapshots(@Path("id") id: String): Call<MixinResponse<List<Snapshot>>>
 
     @GET("external/transactions")
     suspend fun pendingDeposits(

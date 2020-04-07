@@ -65,7 +65,17 @@ internal constructor(
             .setInitialLoadKey(initialLoadKey)
             .build()
 
-    fun snapshotsByUserId(opponentId: String): LiveData<List<SnapshotItem>> = assetRepository.snapshotsByUserId(opponentId)
+    fun snapshotsByUserId(
+        opponentId: String,
+        initialLoadKey: Int? = 0
+    ): LiveData<PagedList<SnapshotItem>> =
+        LivePagedListBuilder(assetRepository.snapshotsByUserId(opponentId), PagedList.Config.Builder()
+            .setPrefetchDistance(PAGE_SIZE)
+            .setPageSize(PAGE_SIZE)
+            .setEnablePlaceholders(true)
+            .build())
+            .setInitialLoadKey(initialLoadKey)
+            .build()
 
     suspend fun snapshotLocal(assetId: String, snapshotId: String) = assetRepository.snapshotLocal(assetId, snapshotId)
 
@@ -81,8 +91,6 @@ internal constructor(
     }
 
     suspend fun verifyPin(code: String) = accountRepository.verifyPin(code)
-
-    fun getUserById(id: String): User? = userRepository.getUserById(id)
 
     fun checkAndRefreshUsers(userIds: List<String>) = viewModelScope.launch {
         val existUsers = userRepository.findUserExist(userIds)
@@ -124,8 +132,11 @@ internal constructor(
         jobManager.addJobInBackground(RefreshTopAssetsJob())
     }
 
-    fun refreshSnapshots(assetId: String? = null) {
-        jobManager.addJobInBackground(RefreshSnapshotsJob(assetId))
+    fun refreshSnapshots(
+        assetId: String? = null,
+        opponentId: String = ""
+    ) {
+        jobManager.addJobInBackground(RefreshSnapshotsJob(assetId, opponent = opponentId))
     }
 
     fun refreshAsset(assetId: String? = null) {
