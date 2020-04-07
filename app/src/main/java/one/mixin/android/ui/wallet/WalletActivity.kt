@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.navigation.NavArgument
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import javax.inject.Inject
 import one.mixin.android.R
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.job.MixinJobManager
@@ -15,7 +16,6 @@ import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
-import javax.inject.Inject
 
 class WalletActivity : BlazeBaseActivity() {
 

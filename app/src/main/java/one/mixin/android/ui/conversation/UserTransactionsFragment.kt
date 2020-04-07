@@ -5,13 +5,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
-import androidx.work.WorkManager
-import androidx.work.workDataOf
+import androidx.paging.PagedList
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transactions_user.*
 import kotlinx.android.synthetic.main.layout_empty_transaction.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -19,19 +16,18 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.extension.getRFC3339Nano
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.withArgs
-import one.mixin.android.job.MixinJobManager
-import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.job.RefreshSnapshotsJob
+import one.mixin.android.ui.wallet.BaseTransactionsFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
-import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
-import one.mixin.android.ui.wallet.adapter.SnapshotListAdapter
+import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.worker.RefreshUserSnapshotsWorker
 
-class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
+class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
 
     companion object {
         const val TAG = "UserTransactionsFragment"
@@ -39,14 +35,6 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
         fun newInstance(userId: String) = UserTransactionsFragment().withArgs {
             putString(ARGS_USER_ID, userId)
         }
-    }
-
-    @Inject
-    lateinit var jobManager: MixinJobManager
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val walletViewModel: WalletViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(WalletViewModel::class.java)
     }
 
     override fun onCreateView(
@@ -58,9 +46,7 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
             isClickable = true
         }
 
-    private val adapter by lazy {
-        SnapshotListAdapter()
-    }
+    private val adapter = SnapshotPagedAdapter()
 
     private val userId by lazy {
         requireArguments().getString(ARGS_USER_ID)!!
@@ -71,20 +57,22 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
         transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         title_view.right_animator.visibility = View.GONE
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        WorkManager.getInstance(requireContext())
-            .enqueueOneTimeNetworkWorkRequest<RefreshUserSnapshotsWorker>(
-                workDataOf(RefreshUserSnapshotsWorker.USER_ID to userId)
-            )
         adapter.listener = this
         transactions_rv.adapter = adapter
-        walletViewModel.snapshotsByUserId(userId).observe(viewLifecycleOwner, Observer {
+        dataObserver = Observer {
             if (it != null && it.isNotEmpty()) {
                 showEmpty(false)
-                adapter.submitList(it)
             } else {
                 showEmpty(true)
             }
-        })
+            adapter.submitList(it)
+
+            if (!refreshedSnapshots) {
+                walletViewModel.refreshSnapshots(opponentId = userId)
+                refreshedSnapshots = true
+            }
+        }
+        bindLiveData(walletViewModel.snapshotsByUserId(userId, initialLoadKey))
     }
 
     override fun <T> onNormalItemClick(item: T) {
@@ -131,5 +119,22 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
                 transactions_rv.visibility = View.VISIBLE
             }
         }
+    }
+
+    override fun refreshSnapshots(pos: Int) {
+        val lastCreatedAt = try {
+            adapter.currentList?.get(pos)?.createdAt
+        } catch (e: NoSuchElementException) {
+            null
+        }
+        jobManager.addJobInBackground(RefreshSnapshotsJob(
+            offset = lastCreatedAt?.getRFC3339Nano() ?: nowInUtc().getRFC3339Nano(),
+            limit = LIMIT,
+            opponent = userId
+        ))
+    }
+
+    override fun onApplyClick() {
+        // Left empty
     }
 }

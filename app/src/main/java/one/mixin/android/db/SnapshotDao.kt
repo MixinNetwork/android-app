@@ -1,6 +1,5 @@
 package one.mixin.android.db
 
-import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
@@ -52,7 +51,7 @@ interface SnapshotDao : BaseDao<Snapshot> {
     fun allSnapshotsByTypeOrderByAmount(type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.opponent_id = :opponentId AND s.type != 'pending' ORDER BY s.created_at DESC, s.snapshot_id DESC")
-    fun snapshotsByUserId(opponentId: String): LiveData<List<SnapshotItem>>
+    fun snapshotsByUserId(opponentId: String): DataSource.Factory<Int, SnapshotItem>
 
     @Query("DELETE FROM snapshots WHERE asset_id = :assetId AND type = 'pending'")
     suspend fun clearPendingDepositsByAssetId(assetId: String)

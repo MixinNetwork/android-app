@@ -7,7 +7,8 @@ import one.mixin.android.vo.Snapshot
 class RefreshSnapshotsJob(
     private val assetId: String? = null,
     private val offset: String = "",
-    private val limit: Int = LIMIT
+    private val limit: Int = LIMIT,
+    private val opponent: String = ""
 ) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).requireNetwork()) {
 
     companion object {
@@ -17,7 +18,7 @@ class RefreshSnapshotsJob(
 
     override fun onRun() {
         val response = if (assetId == null) {
-            assetService.allSnapshots(offset, limit).execute().body()
+            assetService.allSnapshots(offset, limit, opponent).execute().body()
         } else {
             assetService.snapshots(assetId, offset, limit).execute().body()
         }

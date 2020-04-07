@@ -16,7 +16,6 @@ import one.mixin.android.worker.RefreshSnapshotsWorker
 import one.mixin.android.worker.RefreshStickerAlbumWorker
 import one.mixin.android.worker.RefreshStickerWorker
 import one.mixin.android.worker.RefreshTopAssetsWorker
-import one.mixin.android.worker.RefreshUserSnapshotsWorker
 import one.mixin.android.worker.RefreshUserWorker
 import one.mixin.android.worker.RemoveStickersWorker
 
@@ -76,11 +75,6 @@ abstract class WorkersModuleBinds {
     @IntoMap
     @WorkerKey(RefreshTopAssetsWorker::class)
     abstract fun bindRefreshTopAssetsWorker(factory: RefreshTopAssetsWorker.Factory): ChildWorkerFactory
-
-    @Binds
-    @IntoMap
-    @WorkerKey(RefreshUserSnapshotsWorker::class)
-    abstract fun bindRefreshUserSnapshotsWorker(factory: RefreshUserSnapshotsWorker.Factory): ChildWorkerFactory
 
     @Binds
     @IntoMap
