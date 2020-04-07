@@ -38,6 +38,7 @@ import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
+import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
@@ -243,9 +244,14 @@ class ConversationListFragment : LinkFragment() {
                 }
             }
         }
-        selectCircle(null)
         start_bn.setOnClickListener {
             navigationController.pushContacts()
+        }
+        val circleId = defaultSharedPreferences.getString(CIRCLE_ID, null)
+        if (circleId == null) {
+            selectCircle(null)
+        } else {
+            this.circleId = circleId
         }
     }
 

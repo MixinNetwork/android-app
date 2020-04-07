@@ -40,6 +40,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
+import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.Load.IS_LOADED
 import one.mixin.android.Constants.Load.IS_SYNC_SESSION
@@ -62,6 +64,7 @@ import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
@@ -543,6 +546,7 @@ class MainActivity : BlazeBaseActivity() {
         search_bar.hideAction = {
             (supportFragmentManager.findFragmentByTag(ConversationCircleFragment.TAG) as? ConversationCircleFragment)?.cancelSort()
         }
+        search_bar?.logo?.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
         root_view.setOnKeyListener { _, keyCode, _ ->
             if (keyCode == KeyEvent.KEYCODE_BACK && search_bar.isOpen) {
                 search_bar.closeSearch()
@@ -580,6 +584,8 @@ class MainActivity : BlazeBaseActivity() {
 
     fun selectCircle(name: String?, circleId: String?) {
         search_bar?.logo?.text = name ?: "Mixin"
+        defaultSharedPreferences.putString(CIRCLE_NAME, name)
+        defaultSharedPreferences.putString(CIRCLE_ID, circleId)
         search_bar?.hideContainer()
         (supportFragmentManager.findFragmentByTag(ConversationListFragment.TAG) as? ConversationListFragment)?.circleId = circleId
         observeOtherCircleUnread(circleId)

@@ -75,6 +75,11 @@ object Constants {
         const val BACKUP_LAST_TIME = "backup_last_time"
     }
 
+    object CIRCLE {
+        const val CIRCLE_ID = "circle_id"
+        const val CIRCLE_NAME = "circle_name"
+    }
+
     object Download {
         const val AUTO_DOWNLOAD_MOBILE = "auto_download_mobile"
         const val AUTO_DOWNLOAD_WIFI = "auto_download_wifi"

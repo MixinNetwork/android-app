@@ -19,8 +19,10 @@ import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_coversation_circle.*
 import kotlinx.android.synthetic.main.item_conversation_circle.view.*
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.shakeAnimator
 import one.mixin.android.ui.common.BaseFragment
@@ -59,9 +61,10 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         circle_rv.layoutManager = LinearLayoutManager(requireContext())
-        circle_rv.adapter = conversationAdapter
+        conversationAdapter.currentCircleId = defaultSharedPreferences.getString(CIRCLE_ID, null)
         val callback: ItemTouchHelper.Callback = SimpleItemTouchHelperCallback(conversationAdapter)
         itemTouchHelper = ItemTouchHelper(callback)
+        circle_rv.adapter = conversationAdapter
         itemTouchHelper.attachToRecyclerView(circle_rv)
         conversationViewModel.observeAllCircleItem().observe(viewLifecycleOwner, Observer {
             val list = mutableListOf<ConversationCircleItem>()
