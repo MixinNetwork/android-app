@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -27,6 +28,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.getCircleColor
 import one.mixin.android.widget.SegmentationItemDecoration
 
 class CircleManagerFragment : BaseFragment() {
@@ -304,6 +306,7 @@ class CircleManagerFragment : BaseFragment() {
             }
             itemView.circle_title.text = conversationCircleItem.name
             itemView.circle_subtitle.text = itemView.context.getString(R.string.circle_subtitle, conversationCircleItem.count)
+            itemView.circle_icon.imageTintList = ColorStateList.valueOf(getCircleColor(conversationCircleItem.circleId))
         }
     }
 }
