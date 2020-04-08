@@ -788,4 +788,6 @@
     <string name="circle_menu_sort">排序</string>
     <string name="circle_info">新建一个圈子可以过滤会话</string>
     <string name="circle_delete_tip">确认删除 \"%1$s\" ?</string>
+    <string name="circle_empty_info">您可以添加联系人或者群组到当前 Circle</string>
+    <string name="circle_empty_start">添加会话</string>
 </resources>

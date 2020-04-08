@@ -270,7 +270,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         }
     }
 
-    private fun edit(conversationCircleItem: ConversationCircleItem) {
+    fun edit(conversationCircleItem: ConversationCircleItem) {
         requireActivity().addFragment(
             this@CirclesFragment,
             ConversationCircleEditFragment.newInstance(conversationCircleItem),

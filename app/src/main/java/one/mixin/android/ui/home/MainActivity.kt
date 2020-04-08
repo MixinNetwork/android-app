@@ -515,9 +515,9 @@ class MainActivity : BlazeBaseActivity() {
             addCircle()
         })
         search_bar.setOnConfirmClickListener(View.OnClickListener {
-            val CirclesFragment =
+            val circlesFragment =
                 supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
-            CirclesFragment.cancelSort()
+            circlesFragment.cancelSort()
             search_bar?.action_va?.showPrevious()
         })
 
@@ -592,6 +592,17 @@ class MainActivity : BlazeBaseActivity() {
         observeOtherCircleUnread(circleId)
     }
 
+    fun openCircleEdit(circleId: String) {
+        conversationDao
+        lifecycleScope.launch {
+            userRepo.findCircleItemByCircleIdSuspend(circleId)?.let { circleItem ->
+                val circlesFragment =
+                    supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment?
+                circlesFragment?.edit(circleItem)
+            }
+        }
+    }
+
     fun sortAction() {
         search_bar?.action_va?.showNext()
     }
@@ -638,6 +649,7 @@ class MainActivity : BlazeBaseActivity() {
                 successBlock = { response ->
                     response.data?.let { circle ->
                         userRepo.insertCircle(circle)
+                        openCircleEdit(circle.circleId)
                     }
                 },
                 exceptionBlock = {
@@ -658,7 +670,7 @@ class MainActivity : BlazeBaseActivity() {
             supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
         val searchSingleFragment =
             supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG)
-        val CirclesFragment =
+        val circlesFragment =
             supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment
         val conversationCircleEditFragment =
             supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
@@ -668,7 +680,7 @@ class MainActivity : BlazeBaseActivity() {
             conversationCircleEditFragment != null -> super.onBackPressed()
             search_bar.isOpen -> search_bar.closeSearch()
             search_bar.containerDisplay -> {
-                if (!CirclesFragment.onBackPressed()) {
+                if (!circlesFragment.onBackPressed()) {
                     search_bar.hideContainer()
                 } else {
                     search_bar?.action_va?.showPrevious()

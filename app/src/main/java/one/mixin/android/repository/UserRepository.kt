@@ -189,4 +189,7 @@ constructor(
 
     suspend fun findCirclesNameByConversationId(conversationId: String) =
         circleDao.findCirclesNameByConversationId(conversationId)
+
+    suspend fun findCircleItemByCircleIdSuspend(circleId: String) =
+        circleDao.findCircleItemByCircleIdSuspend(circleId)
 }
