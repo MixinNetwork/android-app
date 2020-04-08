@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:background="?attr/bg_white"
     android:foreground="?android:attr/selectableItemBackground"
-    android:padding="16dp">
+    android:padding="12dp">
 
     <ImageView
         android:id="@+id/circle_icon"

@@ -28,8 +28,8 @@
         android:id="@+id/search_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:clickable="true"
         android:background="?attr/bg_white"
+        android:clickable="true"
         android:focusable="true">
 
         <ImageButton
@@ -46,32 +46,39 @@
             app:srcCompat="@drawable/ic_search_home"
             tools:ignore="ContentDescription" />
 
-        <TextView
-            android:id="@+id/logo"
+        <FrameLayout
+            android:id="@+id/logo_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_marginStart="16dp"
-            android:maxWidth="180dp"
-            android:minWidth="32dp"
-            android:singleLine="true"
-            android:textColor="?attr/text_primary"
-            android:textSize="18sp"
-            android:text="Mixin"
-            android:textStyle="bold"
-            tools:ignore="ContentDescription,HardcodedText" />
+            android:padding="4dp">
 
-        <ImageView
-            android:id="@+id/dot"
-            android:layout_width="8dp"
-            android:layout_height="8dp"
-            android:layout_marginStart="2dp"
-            android:layout_alignTop="@id/logo"
-            android:layout_toEndOf="@id/logo"
-            android:visibility="gone"
-            android:src="@drawable/ic_dot"
-            android:contentDescription="@null" />
+            <TextView
+                android:id="@+id/logo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:maxWidth="180dp"
+                android:minWidth="32dp"
+                android:singleLine="true"
+                android:text="Mixin"
+                android:textColor="?attr/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:ignore="ContentDescription,HardcodedText" />
+
+            <ImageView
+                android:id="@+id/dot"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:layout_gravity="end|top"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_dot"
+                android:visibility="gone"
+                tools:visibility="visible" />
+        </FrameLayout>
 
         <ImageButton
             android:id="@+id/back_ib"
@@ -92,10 +99,10 @@
             android:id="@+id/group_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toStartOf="@+id/wallet_ib"
             android:layout_centerVertical="true"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
+            android:layout_toStartOf="@+id/wallet_ib"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
             app:srcCompat="@drawable/ic_group"
@@ -122,8 +129,8 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
-            android:visibility="gone"
-            android:alpha="0">
+            android:alpha="0"
+            android:visibility="gone">
 
             <ImageButton
                 android:id="@+id/add_ib"

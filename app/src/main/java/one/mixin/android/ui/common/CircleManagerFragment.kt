@@ -33,7 +33,7 @@ import one.mixin.android.widget.SegmentationItemDecoration
 
 class CircleManagerFragment : BaseFragment() {
     companion object {
-        const val TAG = "ConversationCircleFragment"
+        const val TAG = "CirclesFragment"
         private const val NAME = "name"
         private const val CONVERSATION_ID = "conversation_id"
         private const val USER_ID = "user_id"

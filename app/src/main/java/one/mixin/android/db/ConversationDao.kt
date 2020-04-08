@@ -179,4 +179,16 @@ interface ConversationDao : BaseDao<Conversation> {
         WHERE conversation_id = :conversationId AND status = 'SENT' AND user_id != :userId) WHERE conversation_id = :conversationId
     """)
     fun unseenMessageCount(conversationId: String, userId: String?)
+
+    @Query("""
+        SELECT sum(unseen_message_count) FROM conversations
+    """)
+    fun observeAllConversationUnread(): LiveData<Int?>
+
+    @Query("""
+        SELECT c.unseen_message_count FROM conversations c
+        LEFT JOIN circle_conversations cc ON c.conversation_id = cc.conversation_id AND cc.circle_id != :circleId
+        WHERE c.unseen_message_count > 0 LIMIT 1
+    """)
+    fun hasUnreadMessage(circleId: String): LiveData<Int?>
 }
