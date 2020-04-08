@@ -36,6 +36,7 @@ import kotlinx.android.synthetic.main.item_list_conversation.view.*
 import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
+import kotlinx.android.synthetic.main.view_empty.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
@@ -245,7 +246,11 @@ class ConversationListFragment : LinkFragment() {
             }
         }
         start_bn.setOnClickListener {
-            navigationController.pushContacts()
+            circleId.notNullWithElse({ circleId ->
+                (requireActivity() as MainActivity).openCircleEdit(circleId)
+            }, {
+                navigationController.pushContacts()
+            })
         }
         val circleId = defaultSharedPreferences.getString(CIRCLE_ID, null)
         if (circleId == null) {
@@ -259,6 +264,13 @@ class ConversationListFragment : LinkFragment() {
         Observer<PagedList<ConversationItem>> { pagedList ->
             messageAdapter.submitList(pagedList)
             if (pagedList == null || pagedList.isEmpty()) {
+                if (circleId == null) {
+                    empty_view.info_tv.setText(R.string.empty_info)
+                    empty_view.start_bn.setText(R.string.empty_start)
+                } else {
+                    empty_view.info_tv.setText(R.string.circle_empty_info)
+                    empty_view.start_bn.setText(R.string.circle_empty_start)
+                }
                 empty_view.visibility = VISIBLE
             } else {
                 empty_view.visibility = GONE

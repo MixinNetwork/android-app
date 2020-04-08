@@ -361,4 +361,6 @@ internal constructor(
             conversationService.updateCircles(conversationId!!, requests)
         }
     }
+
+    fun observeAllConversationUnread() = conversationDao.observeAllConversationUnread()
 }

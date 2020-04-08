@@ -1,6 +1,7 @@
 package one.mixin.android.repository
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -13,12 +14,15 @@ import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.CircleConversationDao
 import one.mixin.android.db.CircleDao
+import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
 import one.mixin.android.db.insertUpdateSuspend
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.db.updateRelationship
+import one.mixin.android.di.type.DatabaseCategory
+import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
@@ -37,6 +41,8 @@ constructor(
     private val appDao: AppDao,
     private val circleDao: CircleDao,
     private val userService: UserService,
+    @DatabaseCategory(DatabaseCategoryEnum.BASE)
+    private val conversationDao: ConversationDao,
     private val circleService: CircleService,
     private val circleConversationDao: CircleConversationDao
 ) {
@@ -175,9 +181,15 @@ constructor(
 
     suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem> = circleDao.getOtherCircleItem(conversationId)
 
-    fun observeOtherCircleUnread(circleId: String) =
-        circleDao.observeOtherCircleUnread(circleId)
+    fun hasUnreadMessage(circleId: String): LiveData<Boolean> {
+        return conversationDao.hasUnreadMessage(circleId).map {
+            it != null && it > 0
+        }
+    }
 
     suspend fun findCirclesNameByConversationId(conversationId: String) =
         circleDao.findCirclesNameByConversationId(conversationId)
+
+    suspend fun findCircleItemByCircleIdSuspend(circleId: String) =
+        circleDao.findCircleItemByCircleIdSuspend(circleId)
 }

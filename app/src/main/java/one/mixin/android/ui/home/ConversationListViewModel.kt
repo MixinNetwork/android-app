@@ -183,4 +183,6 @@ internal constructor(
 
     suspend fun findCircleConversationByCircleId(circleId: String) =
         userRepository.findCircleConversationByCircleId(circleId)
+
+    fun observeAllConversationUnread() = conversationRepository.observeAllConversationUnread()
 }

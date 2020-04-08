@@ -90,8 +90,8 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
-import one.mixin.android.ui.home.circle.ConversationCircleFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
@@ -515,9 +515,9 @@ class MainActivity : BlazeBaseActivity() {
             addCircle()
         })
         search_bar.setOnConfirmClickListener(View.OnClickListener {
-            val conversationCircleFragment =
-                supportFragmentManager.findFragmentByTag(ConversationCircleFragment.TAG) as ConversationCircleFragment
-            conversationCircleFragment.cancelSort()
+            val circlesFragment =
+                supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
+            circlesFragment.cancelSort()
             search_bar?.action_va?.showPrevious()
         })
 
@@ -544,7 +544,7 @@ class MainActivity : BlazeBaseActivity() {
             }
         })
         search_bar.hideAction = {
-            (supportFragmentManager.findFragmentByTag(ConversationCircleFragment.TAG) as? ConversationCircleFragment)?.cancelSort()
+            (supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
         }
         search_bar?.logo?.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
         root_view.setOnKeyListener { _, keyCode, _ ->
@@ -555,7 +555,8 @@ class MainActivity : BlazeBaseActivity() {
                 false
             }
         }
-        supportFragmentManager.beginTransaction().add(R.id.container_circle, conversationCircleFragment, ConversationCircleFragment.TAG).commit()
+        supportFragmentManager.beginTransaction().add(R.id.container_circle, circlesFragment, CirclesFragment.TAG).commit()
+        observeOtherCircleUnread(defaultSharedPreferences.getString(CIRCLE_ID, null))
     }
 
     fun openSearch() {
@@ -570,8 +571,8 @@ class MainActivity : BlazeBaseActivity() {
         search_bar?.showContainer()
     }
 
-    private val conversationCircleFragment by lazy {
-        ConversationCircleFragment.newInstance()
+    private val circlesFragment by lazy {
+        CirclesFragment.newInstance()
     }
 
     fun closeSearch() {
@@ -591,14 +592,25 @@ class MainActivity : BlazeBaseActivity() {
         observeOtherCircleUnread(circleId)
     }
 
+    fun openCircleEdit(circleId: String) {
+        conversationDao
+        lifecycleScope.launch {
+            userRepo.findCircleItemByCircleIdSuspend(circleId)?.let { circleItem ->
+                val circlesFragment =
+                    supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment?
+                circlesFragment?.edit(circleItem)
+            }
+        }
+    }
+
     fun sortAction() {
         search_bar?.action_va?.showNext()
     }
 
-    private var dotObserver = Observer<Int?> {
-        search_bar.dot.isVisible = it != null && it > 0
+    private var dotObserver = Observer<Boolean> {
+        search_bar.dot.isVisible = it
     }
-    private var dotLiveData: LiveData<Int?>? = null
+    private var dotLiveData: LiveData<Boolean>? = null
 
     private fun observeOtherCircleUnread(circleId: String?) = lifecycleScope.launch {
         dotLiveData?.removeObserver(dotObserver)
@@ -606,7 +618,7 @@ class MainActivity : BlazeBaseActivity() {
             search_bar.dot.isVisible = false
             return@launch
         }
-        dotLiveData = userRepo.observeOtherCircleUnread(circleId)
+        dotLiveData = userRepo.hasUnreadMessage(circleId = circleId)
         dotLiveData?.observe(this@MainActivity, dotObserver)
     }
 
@@ -637,6 +649,7 @@ class MainActivity : BlazeBaseActivity() {
                 successBlock = { response ->
                     response.data?.let { circle ->
                         userRepo.insertCircle(circle)
+                        openCircleEdit(circle.circleId)
                     }
                 },
                 exceptionBlock = {
@@ -657,8 +670,8 @@ class MainActivity : BlazeBaseActivity() {
             supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
         val searchSingleFragment =
             supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG)
-        val conversationCircleFragment =
-            supportFragmentManager.findFragmentByTag(ConversationCircleFragment.TAG) as BaseFragment
+        val circlesFragment =
+            supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as BaseFragment
         val conversationCircleEditFragment =
             supportFragmentManager.findFragmentByTag(ConversationCircleEditFragment.TAG)
         when {
@@ -667,7 +680,7 @@ class MainActivity : BlazeBaseActivity() {
             conversationCircleEditFragment != null -> super.onBackPressed()
             search_bar.isOpen -> search_bar.closeSearch()
             search_bar.containerDisplay -> {
-                if (!conversationCircleFragment.onBackPressed()) {
+                if (!circlesFragment.onBackPressed()) {
                     search_bar.hideContainer()
                 } else {
                     search_bar?.action_va?.showPrevious()

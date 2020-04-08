@@ -41,12 +41,12 @@ import one.mixin.android.widget.recyclerview.OnStartDragListener
 import one.mixin.android.widget.recyclerview.SimpleItemTouchHelperCallback
 import org.threeten.bp.Instant
 
-class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
+class CirclesFragment : BaseFragment(), OnStartDragListener {
     companion object {
-        const val TAG = "ConversationCircleFragment"
+        const val TAG = "CirclesFragment"
 
-        fun newInstance(): ConversationCircleFragment {
-            return ConversationCircleFragment()
+        fun newInstance(): CirclesFragment {
+            return CirclesFragment()
         }
     }
 
@@ -71,6 +71,9 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
             val list = mutableListOf<ConversationCircleItem>()
             list.addAll(it)
             conversationAdapter.conversationCircles = list
+        })
+        conversationViewModel.observeAllConversationUnread().observe(viewLifecycleOwner, Observer {
+            conversationAdapter.allUnread = it
         })
     }
 
@@ -114,6 +117,11 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
             }
 
         var currentCircleId: String? = null
+        var allUnread: Int? = null
+            set(value) {
+                field = value
+                if (currentCircleId != null) notifyDataSetChanged()
+            }
 
         fun cancelSort() {
             if (sorting) {
@@ -166,7 +174,7 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
         override fun onBindViewHolder(holder: ConversationCircleHolder, position: Int) {
             if (getItemViewType(position) == 1) {
                 val conversationCircleItem = getItem(position)
-                holder.bind(sorting, currentCircleId, conversationCircleItem)
+                holder.bind(sorting, currentCircleId, conversationCircleItem, allUnread)
                 holder.itemView.setOnClickListener {
                     currentCircleId = conversationCircleItem?.circleId
                     action(conversationCircleItem?.name, currentCircleId)
@@ -237,7 +245,7 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
 
     private fun rename(conversationCircleItem: ConversationCircleItem) {
         editDialog {
-            titleText = this@ConversationCircleFragment.getString(R.string.circle_menu_edit_name)
+            titleText = this@CirclesFragment.getString(R.string.circle_menu_edit_name)
             editText = conversationCircleItem.name
             maxTextCount = 64
             editMaxLines = EditDialog.MAX_LINE.toInt()
@@ -262,9 +270,9 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
         }
     }
 
-    private fun edit(conversationCircleItem: ConversationCircleItem) {
+    fun edit(conversationCircleItem: ConversationCircleItem) {
         requireActivity().addFragment(
-            this@ConversationCircleFragment,
+            this@CirclesFragment,
             ConversationCircleEditFragment.newInstance(conversationCircleItem),
             ConversationCircleEditFragment.TAG,
             R.id.root_view
@@ -294,11 +302,11 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
     }
 
     class ConversationCircleHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val shakeAnimator by lazy {
+        private val shakeAnimator by lazy {
             itemView.shakeAnimator()
         }
 
-        fun bind(sorting: Boolean, currentCircleId: String?, conversationCircleItem: ConversationCircleItem?) {
+        fun bind(sorting: Boolean, currentCircleId: String?, conversationCircleItem: ConversationCircleItem?, allUnread: Int?) {
             if (sorting) {
                 shakeAnimator.start()
             } else {
@@ -307,7 +315,8 @@ class ConversationCircleFragment : BaseFragment(), OnStartDragListener {
             if (conversationCircleItem == null) {
                 itemView.circle_title.setText(R.string.circle_mixin)
                 itemView.circle_subtitle.setText(R.string.circle_all_conversation)
-                itemView.circle_unread_tv.isVisible = false
+                itemView.circle_unread_tv.isVisible = currentCircleId != null && allUnread != 0 && allUnread != null
+                itemView.circle_unread_tv.text = "$allUnread"
                 itemView.circle_check.isVisible = currentCircleId == null
             } else {
                 itemView.circle_title.text = conversationCircleItem.name

@@ -152,7 +152,7 @@ class MaterialSearchView : FrameLayout {
                 search_et.setText("")
             }
         }
-        logo.setOnClickListener {
+        logo_layout.setOnClickListener {
             if (containerDisplay) {
                 hideContainer()
             } else {
@@ -205,14 +205,14 @@ class MaterialSearchView : FrameLayout {
         search_et.isVisible = true
         search_et.alpha = fastFadeIn
         search_ib.isVisible = true
-        logo.isVisible = true
+        logo_layout.isVisible = true
         back_ib.isVisible = true
-        logo.alpha = fastFadeOut
+        logo_layout.alpha = fastFadeOut
         back_ib.alpha = fastFadeIn
     }
 
     fun openSearch() {
-        logo.animate().apply {
+        logo_layout.animate().apply {
             setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
                     op()
@@ -248,7 +248,7 @@ class MaterialSearchView : FrameLayout {
         right_clear.visibility = View.GONE
 
         search_et.setText("")
-        oldLeftX = logo.x
+        oldLeftX = logo_layout.x
         oldSearchWidth = search_et.measuredWidth
         group_ib.translationX(context.dpToPx(132f).toFloat())
         wallet_ib.translationX(context.dpToPx(132f).toFloat())
@@ -287,11 +287,11 @@ class MaterialSearchView : FrameLayout {
                 private fun op() {
                     setListener(null)
                     back_ib.isGone = true
-                    logo.isVisible = true
-                    logo.animate().apply {
+                    logo_layout.isVisible = true
+                    logo_layout.animate().apply {
                         setListener(object : AnimatorListenerAdapter() {
                             override fun onAnimationCancel(animation: Animator?) {
-                                logo.alpha = 1f
+                                logo_layout.alpha = 1f
                             }
                         })
                     }.setDuration(150L).alpha(1f).start()

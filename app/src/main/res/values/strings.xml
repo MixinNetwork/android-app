@@ -800,9 +800,11 @@
     <string name="circle_menu_edit_conversation">Edit Conversation</string>
     <string name="circle_menu_delete">Delete</string>
     <string name="circle_menu_sort">Sort</string>
-    <string name="circle" translatable="false">Circles</string>
-    <string name="circle_title" translatable="false">%1$s\'s Circles</string>
+    <string name="circle">Circles</string>
+    <string name="circle_title">%1$s\'s Circles</string>
     <string name="circle_info">If you want to filter conversation, please\n set a circle for the conversation first.</string>
     <string name="circle_delete_tip">Delete \"%1$s\" ?</string>
+    <string name="circle_empty_info">You can add contacts or group to \n the current circle.</string>
+    <string name="circle_empty_start">Add Conversations</string>
 </resources>
 
