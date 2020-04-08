@@ -1,13 +1,14 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
+import kotlinx.coroutines.runBlocking
+import one.mixin.android.RxBus
+import one.mixin.android.event.RefreshSnapshotEvent
 import one.mixin.android.vo.Snapshot
 
 class RefreshSnapshotsJob(
     private val assetId: String? = null,
     private val offset: String? = null,
-    private val limit: Int = LIMIT,
     private val opponent: String? = null
 ) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).requireNetwork()) {
 
@@ -16,20 +17,21 @@ class RefreshSnapshotsJob(
         const val GROUP = "RefreshSnapshotsJob"
     }
 
-    override fun onRun() {
+    override fun onRun() = runBlocking {
         val response = if (assetId == null) {
-            assetService.allSnapshots(offset, limit, opponent).execute().body()
+            assetService.getAllSnapshots(offset, opponent = opponent)
         } else {
-            assetService.snapshots(assetId, offset, limit).execute().body()
+            assetService.getSnapshotsByAssetId(assetId, offset)
         }
-        if (response != null && response.isSuccess && response.data != null) {
+        if (response.isSuccess && response.data != null) {
             val list = response.data as List<Snapshot>
-            snapshotDao.insertList(list)
+            snapshotDao.insertListSuspend(list)
             list.forEach { item ->
                 if (assetDao.simpleAsset(item.assetId) == null) {
                     jobManager.addJobInBackground(RefreshAssetsJob(item.assetId))
                 }
             }
+            RxBus.publish(RefreshSnapshotEvent(list.last().createdAt))
         }
     }
 }

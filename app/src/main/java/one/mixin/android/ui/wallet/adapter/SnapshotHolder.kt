@@ -16,17 +16,17 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
 
     open fun bind(snapshot: SnapshotItem, listener: OnSnapshotListener?) {
         val isPositive = snapshot.amount.toFloat() > 0
-        when {
-            snapshot.type == SnapshotType.pending.name -> {
+        when (snapshot.type) {
+            SnapshotType.pending.name -> {
                 itemView.name.text = itemView.context.getString(R.string.pending_confirmations, snapshot.confirmations, snapshot.assetConfirmations)
                 itemView.avatar.setNet()
                 itemView.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
             }
-            snapshot.type == SnapshotType.deposit.name -> {
+            SnapshotType.deposit.name -> {
                 itemView.name.setText(R.string.filters_deposit)
                 itemView.avatar.setNet()
             }
-            snapshot.type == SnapshotType.transfer.name -> {
+            SnapshotType.transfer.name -> {
                 itemView.name.setText(R.string.filters_transfer)
                 itemView.avatar.setInfo(snapshot.opponentFullName, snapshot.avatarUrl, snapshot.opponentId ?: "")
                 itemView.avatar.setOnClickListener {
@@ -34,19 +34,19 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 }
                 itemView.avatar.setTextSize(12f)
             }
-            snapshot.type == SnapshotType.withdrawal.name -> {
+            SnapshotType.withdrawal.name -> {
                 itemView.name.setText(R.string.filters_withdrawal)
                 itemView.avatar.setNet()
             }
-            snapshot.type == SnapshotType.fee.name -> {
+            SnapshotType.fee.name -> {
                 itemView.name.setText(R.string.filters_fee)
                 itemView.avatar.setNet()
             }
-            snapshot.type == SnapshotType.rebate.name -> {
+            SnapshotType.rebate.name -> {
                 itemView.name.setText(R.string.filters_rebate)
                 itemView.avatar.setNet()
             }
-            snapshot.type == SnapshotType.raw.name -> {
+            SnapshotType.raw.name -> {
                 itemView.name.setText(R.string.filters_raw)
                 itemView.avatar.setNet()
             }
@@ -70,8 +70,6 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
                 listener?.onNormalItemClick(snapshot)
             }
         }
-
-        itemView.tag = snapshot.createdAt
     }
 }
 

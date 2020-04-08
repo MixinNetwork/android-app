@@ -47,13 +47,11 @@ constructor(
 
     suspend fun asset(id: String) = assetService.getAssetByIdSuspend(id)
 
-    fun assetLocal(id: String) = assetDao.simpleAsset(id)
+    suspend fun simpleAsset(id: String) = assetDao.simpleAsset(id)
 
     fun insertAsset(asset: Asset) = assetDao.insert(asset)
 
     fun insertPendingDeposit(snapshot: List<Snapshot>) = snapshotDao.insertList(snapshot)
-
-    fun snapshots(id: String) = assetService.snapshots(id)
 
     fun snapshotsFromDb(
         id: String,

@@ -39,7 +39,7 @@ interface AssetDao : BaseDao<Asset> {
     fun asset(id: String): LiveData<Asset>
 
     @Query("SELECT * FROM assets WHERE asset_id = :id")
-    fun simpleAsset(id: String): Asset?
+    suspend fun simpleAsset(id: String): Asset?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE ae.hidden = 1 $POSTFIX_ASSET_ITEM")

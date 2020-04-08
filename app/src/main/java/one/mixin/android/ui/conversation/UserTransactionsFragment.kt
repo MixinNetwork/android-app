@@ -16,10 +16,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.getRFC3339Nano
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.withArgs
-import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.ui.wallet.BaseTransactionsFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
@@ -68,7 +65,7 @@ class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem
             adapter.submitList(it)
 
             if (!refreshedSnapshots) {
-                walletViewModel.refreshSnapshots(opponentId = userId)
+                walletViewModel.refreshSnapshots(opponent = userId)
                 refreshedSnapshots = true
             }
         }
@@ -121,12 +118,8 @@ class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem
         }
     }
 
-    override fun refreshSnapshots(lastCreatedAt: String?) {
-        jobManager.addJobInBackground(RefreshSnapshotsJob(
-            offset = lastCreatedAt?.getRFC3339Nano() ?: nowInUtc().getRFC3339Nano(),
-            limit = LIMIT,
-            opponent = userId
-        ))
+    override fun refreshSnapshots() {
+        walletViewModel.refreshSnapshots(offset = refreshOffset, opponent = userId)
     }
 
     override fun onApplyClick() {
