@@ -54,7 +54,6 @@ import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
-import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
@@ -137,8 +136,6 @@ class MainActivity : BlazeBaseActivity() {
     lateinit var accountRepo: AccountRepository
     @Inject
     lateinit var participantDao: ParticipantDao
-    @Inject
-    lateinit var circleDao: CircleDao
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener = InstallStateUpdatedListener { state ->
