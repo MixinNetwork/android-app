@@ -18,10 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.extension.getRFC3339Nano
 import one.mixin.android.extension.navigate
-import one.mixin.android.extension.nowInUtc
-import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -100,9 +97,8 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         }
     }
 
-    override fun refreshSnapshots(lastCreatedAt: String?) {
-        jobManager.addJobInBackground(RefreshSnapshotsJob(limit = LIMIT,
-            offset = lastCreatedAt?.getRFC3339Nano() ?: nowInUtc().getRFC3339Nano()))
+    override fun refreshSnapshots() {
+        walletViewModel.refreshSnapshots(offset = refreshOffset)
     }
 
     override fun onApplyClick() {

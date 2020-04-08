@@ -26,17 +26,14 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getRFC3339Nano
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigate
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
-import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
@@ -280,9 +277,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }
     }
 
-    override fun refreshSnapshots(lastCreatedAt: String?) {
-        jobManager.addJobInBackground(RefreshSnapshotsJob(
-            asset.assetId, lastCreatedAt?.getRFC3339Nano() ?: nowInUtc().getRFC3339Nano(), LIMIT))
+    override fun refreshSnapshots() {
+        walletViewModel.refreshSnapshots(asset.assetId, offset = refreshOffset)
     }
 
     override fun onApplyClick() {

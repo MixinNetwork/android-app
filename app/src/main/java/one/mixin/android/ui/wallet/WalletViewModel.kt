@@ -132,13 +132,6 @@ internal constructor(
         jobManager.addJobInBackground(RefreshTopAssetsJob())
     }
 
-    fun refreshSnapshots(
-        assetId: String? = null,
-        opponentId: String = ""
-    ) {
-        jobManager.addJobInBackground(RefreshSnapshotsJob(assetId, opponent = opponentId))
-    }
-
     fun refreshAsset(assetId: String? = null) {
         jobManager.addJobInBackground(RefreshAssetsJob(assetId))
     }
@@ -208,4 +201,12 @@ internal constructor(
     fun getUser(userId: String) = userRepository.getUserById(userId)
 
     suspend fun errorCount() = accountRepository.errorCount()
+
+    fun refreshSnapshots(
+        assetId: String? = null,
+        offset: String? = null,
+        opponent: String? = null
+    ) {
+        jobManager.addJobInBackground(RefreshSnapshotsJob(assetId, offset, opponent))
+    }
 }

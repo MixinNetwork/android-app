@@ -31,11 +31,18 @@ interface AssetService {
     suspend fun getAssetByIdSuspend(@Path("id") id: String): MixinResponse<Asset>
 
     @GET("assets/{id}/snapshots")
-    fun snapshots(
+    suspend fun getSnapshotsByAssetId(
         @Path("id") id: String,
         @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = LIMIT
-    ): Call<MixinResponse<List<Snapshot>>>
+    ): MixinResponse<List<Snapshot>>
+
+    @GET("snapshots")
+    suspend fun getAllSnapshots(
+        @Query("offset") offset: String? = null,
+        @Query("limit") limit: Int = LIMIT,
+        @Query("opponent") opponent: String? = null
+    ): MixinResponse<List<Snapshot>>
 
     @POST("transfers")
     suspend fun transfer(@Body request: TransferRequest): MixinResponse<Void>
@@ -51,13 +58,6 @@ interface AssetService {
 
     @GET("assets/{id}/addresses")
     fun addresses(@Path("id") id: String): Call<MixinResponse<List<Address>>>
-
-    @GET("snapshots")
-    fun allSnapshots(
-        @Query("offset") offset: String? = null,
-        @Query("limit") limit: Int = LIMIT,
-        @Query("opponent") opponent: String? = null
-    ): Call<MixinResponse<List<Snapshot>>>
 
     @GET("snapshots/{id}")
     suspend fun getSnapshotById(@Path("id") id: String): MixinResponse<Snapshot>
