@@ -102,8 +102,8 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
         transactionsRv?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val lastPos = transactionLayoutManager.findLastVisibleItemPosition()
-                if (lastPos >= refreshPosition + LIMIT && lastRefreshOffset != refreshOffset) {
-                    refreshPosition += LIMIT
+                if (lastPos >= refreshPosition + LIMIT - 1 && lastRefreshOffset != refreshOffset) {
+                    refreshPosition += LIMIT - 1
                     refreshSnapshots()
                     lastRefreshOffset = refreshOffset
                 }
