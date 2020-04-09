@@ -63,3 +63,10 @@ fun AssetItem.differentProcess(
         else -> errorAction()
     }
 }
+
+fun AssetItem.needShowReserve() =
+    reserve.isNotBlank() && try {
+        reserve.toInt() > 0
+    } catch (e: NumberFormatException) {
+        false
+    }

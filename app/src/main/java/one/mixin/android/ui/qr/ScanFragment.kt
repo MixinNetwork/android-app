@@ -55,12 +55,6 @@ class ScanFragment : BaseCameraxFragment() {
 
     private var imageAnalysis: ImageAnalysis? = null
 
-    private val forScan by lazy {
-        arguments?.getBoolean(CaptureActivity.ARGS_FOR_ADDRESS) == true ||
-            arguments?.getBoolean(CaptureActivity.ARGS_FOR_ACCOUNT_NAME) == true ||
-            arguments?.getBoolean(CaptureActivity.ARGS_FOR_MEMO) == true
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

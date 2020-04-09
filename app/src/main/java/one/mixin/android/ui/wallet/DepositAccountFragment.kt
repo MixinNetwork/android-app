@@ -30,6 +30,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment.Companion.TYPE_TAG
+import one.mixin.android.vo.needShowReserve
 
 class DepositAccountFragment : DepositFragment() {
 
@@ -57,7 +58,10 @@ class DepositAccountFragment : DepositFragment() {
         account_name_key_code.text = asset.destination
         account_memo_key_code.text = asset.tag
         tip_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
-        warning_tv.text = getString(R.string.deposit_account_attention, asset.symbol)
+        val reserveTip = if (asset.needShowReserve()) {
+            getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
+        } else ""
+        warning_tv.text = "${getString(R.string.deposit_account_attention)} $reserveTip"
         account_name_qr_fl.setOnClickListener {
             DepositQrBottomFragment.newInstance(asset).show(parentFragmentManager, DepositQrBottomFragment.TAG)
         }
