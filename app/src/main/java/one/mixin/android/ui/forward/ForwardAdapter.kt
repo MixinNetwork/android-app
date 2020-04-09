@@ -12,7 +12,7 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.ConversationCheckView
 
-class ForwardAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
+class ForwardAdapter(private val disableCheck: Boolean = false) : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     StickyRecyclerHeadersAdapter<ForwardAdapter.HeaderViewHolder> {
 
     companion object {
@@ -129,10 +129,18 @@ class ForwardAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if (viewType == TYPE_CONVERSATION) {
             ConversationViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_forward_conversation,
-                parent, false))
+                parent, false).apply {
+                if (disableCheck) {
+                    (this as ConversationCheckView).disableCheck()
+                }
+            })
         } else {
             FriendViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_friend,
-                parent, false))
+                parent, false).apply {
+                if (disableCheck) {
+                    (this as ConversationCheckView).disableCheck()
+                }
+            })
         }
     }
 

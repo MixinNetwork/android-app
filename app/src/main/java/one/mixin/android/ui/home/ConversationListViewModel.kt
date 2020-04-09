@@ -185,4 +185,6 @@ internal constructor(
         userRepository.findCircleConversationByCircleId(circleId)
 
     fun observeAllConversationUnread() = conversationRepository.observeAllConversationUnread()
+
+    suspend fun getCircleConversationCount(conversationId: String) = userRepository.getCircleConversationCount(conversationId)
 }

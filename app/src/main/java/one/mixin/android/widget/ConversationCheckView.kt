@@ -58,8 +58,16 @@ class ConversationCheckView : LinearLayout, Checkable {
     }
 
     override fun toggle() {
-        isChecked = !isChecked
+        if (checkEnabled) {
+            isChecked = !isChecked
+        }
     }
+
+    fun disableCheck() {
+        checkEnabled = false
+    }
+
+    private var checkEnabled: Boolean = true
 
     fun bind(item: ConversationItem, listener: ForwardAdapter.ForwardListener?) {
         if (item.isGroup()) {

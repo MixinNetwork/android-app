@@ -24,6 +24,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardAdapter
 import one.mixin.android.ui.home.ConversationListViewModel
@@ -39,6 +40,8 @@ class ConversationCircleEditFragment : BaseFragment() {
         const val TAG = "ConversationCircleEditFragment"
 
         const val ARGS_CIRCLE = "args_circle"
+
+        private const val CIRCLE_CONVERSATION_LIMIT = 5
 
         fun newInstance(
             circle: ConversationCircleItem
@@ -59,7 +62,7 @@ class ConversationCircleEditFragment : BaseFragment() {
         requireArguments().getParcelable<ConversationCircleItem>(ARGS_CIRCLE)!!
     }
 
-    private val adapter = ForwardAdapter()
+    private val adapter = ForwardAdapter(true)
 
     private val selectAdapter: ConversationCircleSelectAdapter by lazy {
         ConversationCircleSelectAdapter { item ->
@@ -90,31 +93,45 @@ class ConversationCircleEditFragment : BaseFragment() {
         conversation_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         adapter.setForwardListener(object : ForwardAdapter.ForwardListener {
             override fun onUserItemClick(user: User) {
-                if (adapter.selectItem.contains(user)) {
-                    adapter.selectItem.remove(user)
-                    selectAdapter.checkedItems.remove(user)
-                } else {
-                    adapter.selectItem.add(user)
-                    selectAdapter.checkedItems.add(user)
+                lifecycleScope.launch {
+                    if (adapter.selectItem.contains(user)) {
+                        adapter.selectItem.remove(user)
+                        selectAdapter.checkedItems.remove(user)
+                    } else {
+                        val count = chatViewModel.getCircleConversationCount(generateConversationId(Session.getAccountId()!!, user.userId))
+                        if (count >= CIRCLE_CONVERSATION_LIMIT) {
+                            toast(R.string.circle_limit)
+                            return@launch
+                        }
+                        adapter.selectItem.add(user)
+                        selectAdapter.checkedItems.add(user)
+                    }
+                    adapter.notifyDataSetChanged()
+                    selectAdapter.notifyDataSetChanged()
+                    select_rv.layoutManager?.scrollToPosition(selectAdapter.checkedItems.size - 1)
+                    updateTitleText(adapter.selectItem.size)
                 }
-                adapter.notifyDataSetChanged()
-                selectAdapter.notifyDataSetChanged()
-                select_rv.layoutManager?.scrollToPosition(selectAdapter.checkedItems.size - 1)
-                updateTitleText(adapter.selectItem.size)
             }
 
             override fun onConversationItemClick(item: ConversationItem) {
-                if (adapter.selectItem.contains(item)) {
-                    adapter.selectItem.remove(item)
-                    selectAdapter.checkedItems.remove(item)
-                } else {
-                    adapter.selectItem.add(item)
-                    selectAdapter.checkedItems.add(item)
+                lifecycleScope.launch {
+                    if (adapter.selectItem.contains(item)) {
+                        adapter.selectItem.remove(item)
+                        selectAdapter.checkedItems.remove(item)
+                    } else {
+                        val count = chatViewModel.getCircleConversationCount(item.conversationId)
+                        if (count >= CIRCLE_CONVERSATION_LIMIT) {
+                            toast(R.string.circle_limit)
+                            return@launch
+                        }
+                        adapter.selectItem.add(item)
+                        selectAdapter.checkedItems.add(item)
+                    }
+                    adapter.notifyDataSetChanged()
+                    selectAdapter.notifyDataSetChanged()
+                    select_rv.layoutManager?.scrollToPosition(selectAdapter.checkedItems.size - 1)
+                    updateTitleText(adapter.selectItem.size)
                 }
-                adapter.notifyDataSetChanged()
-                selectAdapter.notifyDataSetChanged()
-                select_rv.layoutManager?.scrollToPosition(selectAdapter.checkedItems.size - 1)
-                updateTitleText(adapter.selectItem.size)
             }
         })
         search_et.addTextChangedListener(mWatcher)
