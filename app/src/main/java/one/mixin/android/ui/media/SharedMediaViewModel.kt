@@ -78,6 +78,18 @@ class SharedMediaViewModel @Inject constructor(
             .build()
     }
 
+    fun getPostMessages(conversationId: String): LiveData<PagedList<MessageItem>> {
+        return LivePagedListBuilder(
+            conversationRepository.getPostMessages(conversationId),
+            PagedList.Config.Builder()
+                .setPrefetchDistance(PAGE_SIZE * 2)
+                .setPageSize(PAGE_SIZE)
+                .setEnablePlaceholders(true)
+                .build()
+        )
+            .build()
+    }
+
     fun getLinkMessages(conversationId: String): LiveData<PagedList<HyperlinkItem>> {
         return LivePagedListBuilder(
             conversationRepository.getLinkMessages(conversationId),

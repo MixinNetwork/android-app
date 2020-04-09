@@ -332,6 +332,8 @@ internal constructor(
 
     fun getAudioMessages(conversationId: String) = messageDao.getAudioMessages(conversationId)
 
+    fun getPostMessages(conversationId: String) = messageDao.getPostMessages(conversationId)
+
     fun getLinkMessages(conversationId: String) = messageDao.getLinkMessages(conversationId)
 
     fun getFileMessages(conversationId: String) = messageDao.getFileMessages(conversationId)
