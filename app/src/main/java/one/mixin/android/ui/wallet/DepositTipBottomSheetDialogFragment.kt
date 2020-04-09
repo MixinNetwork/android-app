@@ -7,6 +7,7 @@ import android.view.View
 import kotlinx.android.synthetic.main.fragment_deposit_tip_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID
+import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.extension.loadImage
@@ -44,10 +45,16 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.asset_icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         contentView.tips_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
         contentView.continue_tv.setOnClickListener { dismiss() }
-        contentView.warning_tv.text = if (asset.chainId == EOS_CHAIN_ID) {
-            getString(R.string.deposit_account_attention, asset.symbol)
-        } else {
-            getString(R.string.deposit_attention)
+        contentView.warning_tv.text = when (asset.chainId) {
+            EOS_CHAIN_ID -> {
+                getString(R.string.deposit_account_attention, asset.symbol)
+            }
+            RIPPLE_CHAIN_ID -> {
+                getString(R.string.deposit_attention_xrp)
+            }
+            else -> {
+                getString(R.string.deposit_attention)
+            }
         }
 
         startCountDown()

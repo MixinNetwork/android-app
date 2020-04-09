@@ -17,6 +17,7 @@ import kotlinx.android.synthetic.main.fragment_deposit_key.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
@@ -55,6 +56,9 @@ class DepositPublicKeyFragment : DepositFragment() {
         }
         key_code.text = asset.destination
         confirm_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
+        warning_tv.text = getString(if (asset.chainId == RIPPLE_CHAIN_ID) {
+          R.string.deposit_attention_xrp
+        } else R.string.deposit_attention)
         qr_fl.setOnClickListener {
             DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(parentFragmentManager, DepositQrBottomFragment.TAG)
         }
