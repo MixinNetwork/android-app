@@ -229,17 +229,6 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             }
         }
 
-        list.groups.add(menuGroup {
-            menu {
-                title = getString(R.string.circle)
-                action = {
-                   startCircleManager()
-                    dismiss()
-                }
-                this.circleNames = circleNames
-            }
-        })
-
         if (me != null) {
             if (me.role == ParticipantRole.OWNER.name || me.role == ParticipantRole.ADMIN.name) {
                 val announcementString = if (TextUtils.isEmpty(conversation.announcement)) {
@@ -297,6 +286,18 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 menu(muteMenu)
             })
         }
+
+        list.groups.add(menuGroup {
+            menu {
+                title = getString(R.string.circle)
+                action = {
+                    startCircleManager()
+                    dismiss()
+                }
+                this.circleNames = circleNames
+            }
+        })
+
         val deleteMenu = if (me != null) {
             menu {
                 title = getString(R.string.group_info_exit_group)

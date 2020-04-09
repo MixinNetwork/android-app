@@ -313,6 +313,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 dismiss()
             }
         }
+
         val list = menuList {
             menuGroup {
                 menu {
@@ -354,17 +355,6 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
         }
 
-        list.groups.add(menuGroup {
-            menu {
-                title = getString(R.string.circle)
-                action = {
-                    startCircleManager()
-                    dismiss()
-                }
-                this.circleNames = circleNames
-            }
-        })
-
         if (u.relationship == UserRelationship.FRIEND.name) {
             list.groups.add(menuGroup {
                 menu(muteMenu)
@@ -399,6 +389,17 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 menu(transactionMenu)
             })
         }
+
+        list.groups.add(menuGroup {
+            menu {
+                title = getString(R.string.circle)
+                action = {
+                    startCircleManager()
+                    dismiss()
+                }
+                this.circleNames = circleNames
+            }
+        })
 
         when (u.relationship) {
             UserRelationship.BLOCKING.name -> {
