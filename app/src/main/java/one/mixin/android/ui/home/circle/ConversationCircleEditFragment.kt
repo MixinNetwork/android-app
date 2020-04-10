@@ -22,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.CircleConversationPayload
 import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
@@ -29,6 +30,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardAdapter
 import one.mixin.android.ui.home.ConversationListViewModel
 import one.mixin.android.util.Session
+import one.mixin.android.vo.CircleConversationAction
 import one.mixin.android.vo.ConversationCircleItem
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
@@ -72,7 +74,7 @@ class ConversationCircleEditFragment : BaseFragment() {
         }
     }
 
-    private var oldCircleConversationRequestSet = mutableSetOf<CircleConversationRequest>()
+    private var oldCircleConversationPayloadSet = mutableSetOf<CircleConversationPayload>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_conversation_circle_edit, container, false)
@@ -157,7 +159,7 @@ class ConversationCircleEditFragment : BaseFragment() {
         val circleConversations = chatViewModel.findCircleConversationByCircleId(circle.circleId)
         val inCircleContactId = mutableListOf<String>()
         circleConversations.forEach { cc ->
-            oldCircleConversationRequestSet.add(CircleConversationRequest(cc.conversationId, cc.userId))
+            oldCircleConversationPayloadSet.add(CircleConversationPayload(cc.conversationId, cc.userId))
             if (cc.userId != null) {
                 inCircleContactId.add(cc.userId)
             }
@@ -203,39 +205,44 @@ class ConversationCircleEditFragment : BaseFragment() {
         }
         dialog.show()
 
-        val conversationRequests = mutableListOf<CircleConversationRequest>()
+        val conversationRequests = mutableListOf<CircleConversationPayload>()
         adapter.selectItem.forEach { item ->
             if (item is User) {
                 conversationRequests.add(
-                    CircleConversationRequest(
+                    CircleConversationPayload(
                         generateConversationId(Session.getAccountId()!!, item.userId),
                         item.userId
                     )
                 )
             } else if (item is ConversationItem) {
                 conversationRequests.add(
-                    CircleConversationRequest(
+                    CircleConversationPayload(
                         item.conversationId,
                         if (item.isContact()) item.ownerId else null
                     )
                 )
             }
         }
+        val safeSet = oldCircleConversationPayloadSet.intersect(conversationRequests)
+        val removeSet = oldCircleConversationPayloadSet.subtract(safeSet)
+        val addSet = conversationRequests.subtract(safeSet)
+        if (addSet.isEmpty() && removeSet.isEmpty()) parentFragmentManager.popBackStackImmediate()
+        val request = mutableListOf<CircleConversationRequest>().apply {
+            addAll(addSet.map { CircleConversationRequest(it.conversationId, it.userId, CircleConversationAction.ADD.name) })
+            addAll(removeSet.map { CircleConversationRequest(it.conversationId, it.userId, CircleConversationAction.REMOVE.name) })
+        }
+
         handleMixinResponse(
             switchContext = Dispatchers.IO,
             invokeNetwork = {
-                chatViewModel.updateCircleConversations(circle.circleId, conversationRequests)
+                chatViewModel.updateCircleConversations(circle.circleId, request)
             },
             successBlock = {
-                val newConversationIds = mutableListOf<String>()
-                conversationRequests.forEach { item ->
-                    newConversationIds.add(item.conversationId)
+                if (it.isSuccess) {
+                    chatViewModel.saveCircle(circle.circleId, it.data, removeSet)
                 }
-                val result = chatViewModel.saveCircle(oldCircleConversationRequestSet, conversationRequests, circle.circleId)
                 dialog.dismiss()
-                if (result) {
-                    parentFragmentManager.popBackStackImmediate()
-                }
+                parentFragmentManager.popBackStackImmediate()
             },
             exceptionBlock = {
                 dialog.dismiss()
