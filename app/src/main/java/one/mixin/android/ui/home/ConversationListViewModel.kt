@@ -6,10 +6,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CONVERSATION_PAGE_SIZE
-import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.CircleConversationPayload
 import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
@@ -136,53 +135,28 @@ internal constructor(
     suspend fun findConversationItemByCircleId(circleId: String) =
         userRepository.findConversationItemByCircleId(circleId)
 
-    suspend fun updateCircleConversations(id: String, circleConversationRequests: List<CircleConversationRequest>) =
-        userRepository.updateCircleConversations(id, circleConversationRequests)
+    suspend fun updateCircleConversations(id: String, circleConversationRequests: List<CircleConversationRequest>) = userRepository.updateCircleConversations(id, circleConversationRequests)
 
     fun sortCircleConversations(list: List<CircleOrder>?) = viewModelScope.launch { userRepository.sortCircleConversations(list) }
 
     suspend fun saveCircle(
-        oldCircleConversationRequests: Set<CircleConversationRequest>,
-        newCircleConversationRequests: List<CircleConversationRequest>,
-        circleId: String
-    ): Boolean {
-        handleMixinResponse(
-            switchContext = Dispatchers.IO,
-            invokeNetwork = {
-                userRepository.getCircleById(circleId)
-            },
-            successBlock = {
-                it.data?.let { circle ->
-                    userRepository.insertCircle(circle)
-                    return@handleMixinResponse circle
-                }
-            }
-        ) ?: return false
-
-        val safeSet = oldCircleConversationRequests.intersect(newCircleConversationRequests)
-        val removeSet = oldCircleConversationRequests.subtract(safeSet)
-        val addSet = newCircleConversationRequests.subtract(safeSet)
-
-        withTransaction {
-            removeSet.forEach { cc ->
-                userRepository.deleteCircleConversation(cc.conversationId, circleId)
-            }
-            addSet.forEach { cc ->
-                val circleConversation = CircleConversation(
-                    cc.conversationId,
-                    circleId,
-                    cc.userId,
-                    nowInUtc(),
-                    null
-                )
-                userRepository.insertCircleConversation(circleConversation)
-            }
+        circleId: String,
+        addCircleConversation: List<CircleConversation>?,
+        removeCircleConversation: Set<CircleConversationPayload>
+    ) {
+        addCircleConversation?.forEach { circleConversation ->
+            userRepository.insertCircleConversation(circleConversation)
         }
-        return true
+
+        removeCircleConversation.forEach { cc ->
+            userRepository.deleteCircleConversation(cc.conversationId, circleId)
+        }
     }
 
     suspend fun findCircleConversationByCircleId(circleId: String) =
         userRepository.findCircleConversationByCircleId(circleId)
 
     fun observeAllConversationUnread() = conversationRepository.observeAllConversationUnread()
+
+    suspend fun getCircleConversationCount(conversationId: String) = userRepository.getCircleConversationCount(conversationId)
 }

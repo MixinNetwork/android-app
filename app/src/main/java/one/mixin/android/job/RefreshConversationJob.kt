@@ -62,8 +62,8 @@ class RefreshConversationJob(val conversationId: String) :
                     circles.forEach {
                         val circle = circleDao.findCircleById(it.circleId)
                         if (circle == null) {
-                            val circleResponse = circleService.getCircle(it.circleId)
-                            if (circleResponse.isSuccess) {
+                            val circleResponse = circleService.getCircle(it.circleId).execute().body()
+                            if (circleResponse?.isSuccess == true) {
                                 circleResponse.data?.let { item ->
                                     circleDao.insert(item)
                                 }

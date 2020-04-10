@@ -24,3 +24,5 @@ data class CircleConversation(
     @ColumnInfo(name = "pin_time")
     val pinTime: String?
 )
+
+enum class CircleConversationAction { ADD, REMOVE }

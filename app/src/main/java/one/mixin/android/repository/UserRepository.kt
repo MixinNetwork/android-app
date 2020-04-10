@@ -163,8 +163,6 @@ constructor(
         }
     }
 
-    suspend fun getCircleById(circleId: String) = circleService.getCircleById(circleId)
-
     suspend fun deleteCircleConversation(conversationId: String, circleId: String) =
         circleConversationDao.deleteByIds(conversationId, circleId)
 
@@ -192,4 +190,6 @@ constructor(
 
     suspend fun findCircleItemByCircleIdSuspend(circleId: String) =
         circleDao.findCircleItemByCircleIdSuspend(circleId)
+
+    suspend fun getCircleConversationCount(conversationId: String) = circleConversationDao.getCircleConversationCount(conversationId)
 }

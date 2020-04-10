@@ -793,4 +793,5 @@
     <string name="circle_delete_tip">确认删除 \"%1$s\" ?</string>
     <string name="circle_empty_info">您可以添加联系人或者群组到当前圈子</string>
     <string name="circle_empty_start">添加会话</string>
+    <string name="circle_limit">已达到上限</string>
 </resources>

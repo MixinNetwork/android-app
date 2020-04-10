@@ -26,6 +26,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.CircleConversation
+import one.mixin.android.vo.CircleConversationAction
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getCircleColor
@@ -103,16 +104,12 @@ class CircleManagerFragment : BaseFragment() {
         }
     }
 
-    private val onAddCircle: (items: List<ConversationCircleManagerItem>?, item: ConversationCircleManagerItem) -> Unit = { items, item ->
+    private val onAddCircle: (item: ConversationCircleManagerItem) -> Unit = { item ->
         lifecycleScope.launch {
             val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
                 setCancelable(false)
             }
-            val requests = mutableListOf<ConversationCircleRequest>()
-            items?.let {
-                requests.addAll(it.map { ConversationCircleRequest(it.circleId) })
-            }
-            requests.add(ConversationCircleRequest(item.circleId))
+            val requests = listOf(ConversationCircleRequest(item.circleId, CircleConversationAction.ADD.name))
             handleMixinResponse(
                 switchContext = Dispatchers.IO,
                 invokeNetwork = {
@@ -145,16 +142,12 @@ class CircleManagerFragment : BaseFragment() {
         }
     }
 
-    private val onRemoveCircle: (items: List<ConversationCircleManagerItem>?, item: ConversationCircleManagerItem) -> Unit = { items, item ->
+    private val onRemoveCircle: (item: ConversationCircleManagerItem) -> Unit = { item ->
         lifecycleScope.launch {
             val dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message).apply {
                 setCancelable(false)
             }
-            val requests = mutableListOf<ConversationCircleRequest>()
-            items?.let { circleConversation ->
-                requests.addAll(circleConversation.map { ConversationCircleRequest(it.circleId) })
-            }
-            requests.remove(ConversationCircleRequest(item.circleId))
+            val requests = listOf(ConversationCircleRequest(item.circleId, CircleConversationAction.REMOVE.name))
             handleMixinResponse(
                 switchContext = Dispatchers.IO,
                 invokeNetwork = {
@@ -210,16 +203,12 @@ class CircleManagerFragment : BaseFragment() {
     }
 
     private val circleAdapter by lazy {
-        CircleAdapter({ items, item ->
-            onAddCircle(items, item)
-        }, { items, item ->
-            onRemoveCircle(items, item)
-        })
+        CircleAdapter(onAddCircle, onRemoveCircle)
     }
 
     class CircleAdapter(
-        private val onAddCircle: (items: List<ConversationCircleManagerItem>?, item: ConversationCircleManagerItem) -> Unit,
-        private val onRemoveCircle: (items: List<ConversationCircleManagerItem>?, item: ConversationCircleManagerItem) -> Unit
+        private val onAddCircle: (item: ConversationCircleManagerItem) -> Unit,
+        private val onRemoveCircle: (item: ConversationCircleManagerItem) -> Unit
     ) : RecyclerView.Adapter<CircleHolder>() {
 
         private var includeCircleItem: List<ConversationCircleManagerItem>? = null
@@ -270,15 +259,11 @@ class CircleManagerFragment : BaseFragment() {
         override fun onBindViewHolder(holder: CircleHolder, position: Int) {
             when (getItemViewType(position)) {
                 0 -> {
-                    holder.bind(getItem(position), onRemoveCircle = {
-                        onRemoveCircle(includeCircleItem, it)
-                    })
+                    holder.bind(getItem(position), onRemoveCircle = onRemoveCircle)
                 }
                 1 -> {
                     holder.itemView.tag = !includeCircleItem.isNullOrEmpty() && position == includeCircleItem?.size
-                    holder.bind(getItem(position), onAddCircle = {
-                        onAddCircle(includeCircleItem, it)
-                    })
+                    holder.bind(getItem(position), onAddCircle = onAddCircle)
                 }
                 else -> {
                     holder.bind(getItem(position))

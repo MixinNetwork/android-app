@@ -3,7 +3,9 @@ package one.mixin.android.api.service
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.vo.Circle
+import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleName
+import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -11,13 +13,10 @@ import retrofit2.http.Path
 
 interface CircleService {
     @GET("circles")
-    suspend fun getCircles(): MixinResponse<List<Circle>>
+    fun getCircles(): Call<MixinResponse<List<Circle>>>
 
     @GET("circles/{id}")
-    fun getCircle(@Path("id") id: String): MixinResponse<Circle>
-
-    @GET("circles/{id}")
-    suspend fun getCircleById(@Path("id") id: String): MixinResponse<Circle>
+    fun getCircle(@Path("id") id: String): Call<MixinResponse<Circle>>
 
     @POST("circles")
     suspend fun createCircle(@Body body: CircleName): MixinResponse<Circle>
@@ -32,5 +31,5 @@ interface CircleService {
     suspend fun updateCircleConversations(
         @Path("id") id: String,
         @Body conversationCircleRequests: List<CircleConversationRequest>
-    ): MixinResponse<Any>
+    ): MixinResponse<List<CircleConversation>>
 }
