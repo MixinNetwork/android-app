@@ -3,8 +3,8 @@ package one.mixin.android.ui.conversation.adapter
 import android.content.Context
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentPagerAdapter
+import androidx.fragment.app.FragmentActivity
+import androidx.viewpager2.adapter.FragmentStateAdapter
 import kotlinx.android.synthetic.main.layout_sticker_tab.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
@@ -15,7 +15,7 @@ import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
 
-class StickerAlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) : FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+class StickerAlbumAdapter(activity: FragmentActivity, private val albums: List<StickerAlbum>) : FragmentStateAdapter(activity) {
     companion object {
         const val TYPE_RECENT = 0
         const val TYPE_LIKE = 1
@@ -28,7 +28,9 @@ class StickerAlbumAdapter(fm: FragmentManager, private val albums: List<StickerA
     var callback: StickerAlbumFragment.Callback? = null
     var rvCallback: DraggableRecyclerView.Callback? = null
 
-    override fun getItem(position: Int): Fragment {
+    override fun getItemCount() = albums.size + UN_NORMAL_COUNT
+
+    override fun createFragment(position: Int): Fragment {
         val fragment = when (position) {
             TYPE_RECENT -> StickerFragment.newInstance(type = TYPE_RECENT)
             TYPE_LIKE -> StickerFragment.newInstance(type = TYPE_LIKE)
@@ -68,8 +70,6 @@ class StickerAlbumAdapter(fm: FragmentManager, private val albums: List<StickerA
         }
         return fragment
     }
-
-    override fun getCount(): Int = albums.size + UN_NORMAL_COUNT
 
     fun getTabView(pos: Int, context: Context): View {
         val view = View.inflate(context, R.layout.layout_sticker_tab, null)

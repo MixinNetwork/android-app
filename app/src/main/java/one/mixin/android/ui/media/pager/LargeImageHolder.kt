@@ -29,12 +29,13 @@ class LargeImageHolder(itemView: View) : MediaPagerHolder(itemView) {
         if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
             circleProgress.isVisible = false
             circleProgress.setBindId(messageItem.messageId)
-            imageView.setImage(FileBitmapDecoderFactory(File(messageItem.mediaUrl?.getFilePath())))
+            messageItem.mediaUrl?.getFilePath()?.let { imageView.setImage(FileBitmapDecoderFactory(File(it))) }
         } else {
             val imageData = Base64.decode(messageItem.thumbImage, Base64.DEFAULT)
             imageView.setImage(BitmapFactory.decodeByteArray(imageData, 0, imageData.size))
             circleProgress.isVisible = true
             circleProgress.setBindId(messageItem.messageId)
+            @Suppress("ControlFlowWithEmptyBody")
             if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
                 circleProgress.enableLoading()
             } else if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {

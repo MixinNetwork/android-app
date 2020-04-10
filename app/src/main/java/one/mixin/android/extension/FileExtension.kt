@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Matrix
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.media.ThumbnailUtils
@@ -29,7 +28,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.LinkedList
 import java.util.Locale
 import one.mixin.android.MixinApplication
 import one.mixin.android.util.Session
@@ -410,65 +408,19 @@ fun File.blurThumbnail(size: Size): Bitmap? {
     return blurThumbnail(size.width / scale, size.height / scale)
 }
 
-fun File.dirSize(): Long? {
-    return if (isDirectory) {
-        var result = 0L
-        val dirList = LinkedList<File>()
-        dirList.clear()
-        dirList.push(this)
-        while (!dirList.isEmpty()) {
-            val dirCurrent = dirList.pop()
-            val fileList = dirCurrent.listFiles()
-            for (f in fileList) {
-                if (f.isDirectory) {
-                    dirList.push(f)
-                } else {
-                    result += f.length()
-                }
-            }
-        }
-        return result
-    } else {
-        null
-    }
-}
-
 fun File.moveChileFileToDir(dir: File, eachCallback: ((newFile: File, oldFile: File) -> Unit)? = null) {
     if (!dir.exists()) {
         dir.mkdirs()
     }
     if (isDirectory && dir.isDirectory) {
-        for (chile in listFiles()) {
-            if (chile.length() > 0 && chile.isFile) {
-                val newFile = File("${dir.absolutePath}${File.separator}${chile.name}")
-                chile.renameTo(newFile)
-                eachCallback?.let {
-                    it.invoke(newFile, chile)
-                }
+        listFiles()?.forEach { child ->
+            if (child.length() > 0 && child.isFile) {
+                val newFile = File("${dir.absolutePath}${File.separator}${child.name}")
+                child.renameTo(newFile)
+                eachCallback?.invoke(newFile, child)
             }
         }
     }
-}
-
-fun File.deleteDir() {
-    if (isDirectory) {
-        val children = listFiles()
-        for (child in children) {
-            child.deleteDir()
-        }
-    }
-    delete()
-}
-
-fun Bitmap.rotate(angle: String): Bitmap? {
-    val matrix = Matrix()
-    when (angle) {
-        "90" -> matrix.postRotate(90f)
-        "180" -> matrix.postRotate(180f)
-        "270" -> matrix.postRotate(270f)
-        else -> return this
-    }
-    return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
 }
 
 fun Bitmap.zoomOut(): Bitmap? {

@@ -98,6 +98,7 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isGooglePlayServicesAvailable
+import one.mixin.android.extension.isHeadsetOn
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
@@ -873,7 +874,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
             isCling =
                 values[0] < 5.0f && values[0] != sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY).maximumRange
-            if (AudioPlayer.isEnd() || AudioPlayer.audioFilePlaying() || audioManager.isWiredHeadsetOn || audioManager.isBluetoothScoOn || audioManager.isBluetoothA2dpOn) {
+            if (AudioPlayer.isEnd() || AudioPlayer.audioFilePlaying() || audioManager.isHeadsetOn()) {
                 if (wakeLock.isHeld) {
                     wakeLock.release()
                     changeToHeadset()
@@ -1673,8 +1674,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         })
         chatViewModel.getGroupParticipantsLiveData(conversationId)
             .observe(viewLifecycleOwner, Observer { users ->
-                users?.let {
-                    groupNumber = it.size
+                users?.let { u ->
+                    groupNumber = u.size
                     action_bar.setSubTitle(
                         groupName ?: "",
                         getString(R.string.title_participants, groupNumber)
@@ -1695,6 +1696,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         mention_rv.layoutManager = LinearLayoutManager(context)
     }
 
+    @Suppress("SameParameterValue")
     private fun showGroupBottomSheet(expand: Boolean) {
         hideIfShowBottomSheet()
         val bottomSheetDialogFragment = GroupBottomSheetDialogFragment.newInstance(
@@ -2225,12 +2227,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
         } else {
-            if (fling == FLING_UP) {
-                max
-            } else if (fling == FLING_DOWN) {
-                0
-            } else {
-                input_layout.keyboardHeight
+            when (fling) {
+                FLING_UP -> {
+                    max
+                }
+                FLING_DOWN -> {
+                    0
+                }
+                else -> {
+                    input_layout.keyboardHeight
+                }
             }
         }
         if (targetH == 0) {
@@ -2353,7 +2359,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun resetAudioMode() {
-        if (!audioManager.isWiredHeadsetOn && !audioManager.isBluetoothScoOn && !audioManager.isBluetoothA2dpOn) {
+        if (!audioManager.isHeadsetOn()) {
             if (isCling) {
                 changeToReceiver()
             } else {

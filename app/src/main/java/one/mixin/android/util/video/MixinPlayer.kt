@@ -11,6 +11,7 @@ import com.google.android.exoplayer2.Player.STATE_BUFFERING
 import com.google.android.exoplayer2.Player.STATE_READY
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.Timeline
+import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.source.BehindLiveWindowException
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
@@ -60,7 +61,10 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     }
 
     fun setAudioStreamType(streamType: Int) {
-        this.player.audioStreamType = streamType
+        val audioAttributes = AudioAttributes.Builder()
+            .setContentType(streamType)
+            .build()
+        this.player.setAudioAttributes(audioAttributes, false)
     }
 
     fun isPlaying() = player.playWhenReady
