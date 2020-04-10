@@ -212,9 +212,6 @@ class MainActivity : BlazeBaseActivity() {
         Crashlytics.setUserIdentifier(account?.userId)
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
-        if (!defaultSharedPreferences.getBoolean(CIRCLE_REFRESH, false)) {
-            jobManager.addJobInBackground(RefreshCirclesJob())
-        }
         jobManager.addJobInBackground(BackupJob())
 
         doAsync {
