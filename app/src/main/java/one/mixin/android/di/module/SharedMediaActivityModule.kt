@@ -6,6 +6,7 @@ import one.mixin.android.ui.media.AudioFragment
 import one.mixin.android.ui.media.FileFragment
 import one.mixin.android.ui.media.LinkFragment
 import one.mixin.android.ui.media.MediaFragment
+import one.mixin.android.ui.media.PostFragment
 import one.mixin.android.ui.media.SharedMediaFragment
 
 @Module
@@ -24,4 +25,7 @@ abstract class SharedMediaActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeLinkFragment(): LinkFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributePostFragment(): PostFragment
 }

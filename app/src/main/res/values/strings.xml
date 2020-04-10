@@ -83,6 +83,7 @@
     <string name="files">Files</string>
     <string name="no_media">NO MEDIA</string>
     <string name="no_audio">NO AUDIO</string>
+    <string name="no_post">NO POST</string>
     <string name="no_file">NO FILE</string>
     <string name="no_link">NO LINK</string>
     <string name="media_date_patten">MMM dd, yyyy</string>

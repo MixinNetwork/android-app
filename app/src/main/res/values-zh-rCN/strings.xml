@@ -78,6 +78,7 @@
     <string name="files">文档</string>
     <string name="no_media">没有媒体</string>
     <string name="no_audio">没有音频</string>
+    <string name="no_post">没有文章</string>
     <string name="no_file">没有文件</string>
     <string name="no_link">没有链接</string>
     <string name="media_date_patten">yyyy年MM月dd日</string>

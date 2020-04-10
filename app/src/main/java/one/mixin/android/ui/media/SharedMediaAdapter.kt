@@ -1,34 +1,26 @@
 package one.mixin.android.ui.media
 
-import android.content.Context
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentPagerAdapter
-import one.mixin.android.R
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.viewpager2.adapter.FragmentStateAdapter
 
 class SharedMediaAdapter(
-    fm: FragmentManager,
-    private val context: Context,
+    activity: FragmentActivity,
     private val conversationId: String
-) : FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
+) : FragmentStateAdapter(activity) {
     companion object {
-        private const val TAG_COUNT = 4
+        private const val TAB_COUNT = 5
     }
 
-    override fun getItem(position: Int) = when (position) {
-        0 -> MediaFragment.newInstance(conversationId)
-        1 -> AudioFragment.newInstance(conversationId)
-        2 -> LinkFragment.newInstance(conversationId)
-        else -> FileFragment.newInstance(conversationId)
-    }
+    override fun getItemCount() = TAB_COUNT
 
-    override fun getCount() = TAG_COUNT
-
-    override fun getPageTitle(position: Int) = context.getString(
-        when (position) {
-            0 -> R.string.media
-            1 -> R.string.audio
-            2 -> R.string.links
-            else -> R.string.files
+    override fun createFragment(position: Int): Fragment {
+        return when (position) {
+            0 -> MediaFragment.newInstance(conversationId)
+            1 -> AudioFragment.newInstance(conversationId)
+            2 -> PostFragment.newInstance(conversationId)
+            3 -> LinkFragment.newInstance(conversationId)
+            else -> FileFragment.newInstance(conversationId)
         }
-    )
+    }
 }
