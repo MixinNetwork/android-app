@@ -6,12 +6,15 @@ import java.io.IOException
 import javax.inject.Inject
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.RatchetSenderKeyDao
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.AssetDao
+import one.mixin.android.db.CircleConversationDao
+import one.mixin.android.db.CircleDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
@@ -24,6 +27,7 @@ import one.mixin.android.db.ResendSessionMessageDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.UserDao
+import one.mixin.android.db.insertUpdate
 import one.mixin.android.di.Injectable
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
@@ -65,6 +69,12 @@ open class Injector : Injectable {
     lateinit var snapshotDao: SnapshotDao
     @Inject
     lateinit var assetDao: AssetDao
+    @Inject
+    lateinit var circleDao: CircleDao
+    @Inject
+    lateinit var circleConversationDao: CircleConversationDao
+    @Inject
+    lateinit var circleService: CircleService
     @Inject
     lateinit var chatWebSocket: ChatWebSocket
     @Inject
@@ -170,6 +180,21 @@ open class Injector : Injectable {
                     participantDao.replaceAll(conversationId, remote)
                     conversationDao.updateConversation(conversationData.conversationId, ownerId, conversationData.category, conversationData.name,
                         conversationData.announcement, conversationData.muteUntil, conversationData.createdAt, status)
+
+                    conversationData.circles?.let { circles ->
+                        circles.forEach {
+                            val circle = circleDao.findCircleById(it.circleId)
+                            if (circle == null) {
+                                val circleResponse = circleService.getCircle(it.circleId).execute().body()
+                                if (circleResponse?.isSuccess == true) {
+                                    circleResponse.data?.let { item ->
+                                        circleDao.insert(item)
+                                    }
+                                }
+                            }
+                            circleConversationDao.insertUpdate(it)
+                        }
+                    }
 
                     val sessionParticipants = conversationData.participantSessions?.map {
                         ParticipantSession(conversationId, it.userId, it.sessionId)

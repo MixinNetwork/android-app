@@ -163,8 +163,6 @@ constructor(
         }
     }
 
-    suspend fun getCircleById(circleId: String) = circleService.getCircleById(circleId)
-
     suspend fun deleteCircleConversation(conversationId: String, circleId: String) =
         circleConversationDao.deleteByIds(conversationId, circleId)
 

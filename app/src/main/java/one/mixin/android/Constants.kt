@@ -78,6 +78,7 @@ object Constants {
     object CIRCLE {
         const val CIRCLE_ID = "circle_id"
         const val CIRCLE_NAME = "circle_name"
+        const val CIRCLE_REFRESH = "circle_refresh"
     }
 
     object Download {

@@ -43,6 +43,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
+import one.mixin.android.Constants.CIRCLE.CIRCLE_REFRESH
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.Load.IS_LOADED
 import one.mixin.android.Constants.Load.IS_SYNC_SESSION
@@ -71,6 +72,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
+import one.mixin.android.job.RefreshCirclesJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshStickerAlbumJob.Companion.REFRESH_STICKER_ALBUM_PRE_KEY
@@ -210,6 +212,9 @@ class MainActivity : BlazeBaseActivity() {
         Crashlytics.setUserIdentifier(account?.userId)
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
+        if (!defaultSharedPreferences.getBoolean(CIRCLE_REFRESH, false)) {
+            jobManager.addJobInBackground(RefreshCirclesJob())
+        }
         jobManager.addJobInBackground(BackupJob())
 
         doAsync {

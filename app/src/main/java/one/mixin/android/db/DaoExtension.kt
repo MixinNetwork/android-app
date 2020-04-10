@@ -97,6 +97,19 @@ suspend fun CircleDao.insertUpdateSuspend(
     }
 }
 
+fun CircleDao.insertUpdate(
+    circle: Circle
+) {
+    runInTransaction {
+        val c = findCircleById(circle.circleId)
+        if (c == null) {
+            insert(circle)
+        } else {
+            update(circle)
+        }
+    }
+}
+
 fun MixinDatabase.clearParticipant(
     conversationId: String,
     participantId: String

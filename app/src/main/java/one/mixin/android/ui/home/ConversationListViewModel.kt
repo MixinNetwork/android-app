@@ -8,7 +8,6 @@ import androidx.paging.PagedList
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CONVERSATION_PAGE_SIZE
-import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.CircleConversationPayload
 import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.api.request.ConversationRequest
