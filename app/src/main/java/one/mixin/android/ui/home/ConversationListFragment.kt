@@ -97,8 +97,21 @@ class ConversationListFragment : LinkFragment() {
     }
 
     private val messageAdapter by lazy {
-        MessageAdapter()
+        MessageAdapter().apply {
+            registerAdapterDataObserver(messageAdapterDataObserver)
+        }
     }
+
+    private val messageAdapterDataObserver =
+        object : RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
+                super.onItemRangeChanged(positionStart, itemCount)
+                if (scrollTop) {
+                    scrollTop = false
+                    (message_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(0, 0)
+                }
+            }
+        }
 
     private var distance = 0
     private var shadowVisible = true
@@ -260,6 +273,13 @@ class ConversationListFragment : LinkFragment() {
         }
     }
 
+    override fun onDestroyView() {
+        if (isAdded) {
+            messageAdapter.unregisterAdapterDataObserver(messageAdapterDataObserver)
+        }
+        super.onDestroyView()
+    }
+
     private val observer by lazy {
         Observer<PagedList<ConversationItem>> { pagedList ->
             messageAdapter.submitList(pagedList)
@@ -293,10 +313,12 @@ class ConversationListFragment : LinkFragment() {
             }
         }
 
+    private var scrollTop = false
     private fun selectCircle(circleId: String?) {
         liveData?.removeObserver(observer)
         val liveData = messagesViewModel.observeConversations(circleId)
         liveData.observe(viewLifecycleOwner, observer)
+        scrollTop = true
         this.liveData = liveData
     }
 
