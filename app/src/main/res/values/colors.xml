@@ -173,4 +173,22 @@
         <item>#AD98DA</item>
         <item>#C097D9</item>
     </array>
+    <array name="circle_colors">
+        <item>#8E7BFF</item>
+        <item>#5377FF</item>
+        <item>#4B00D8</item>
+        <item>#BD6DDA</item>
+        <item>#FD89F1</item>
+        <item>#FA7B95</item>
+        <item>#E94156</item>
+        <item>#FA9652</item>
+        <item>#F1D22B</item>
+        <item>#BAE361</item>
+        <item>#5EDD5E</item>
+        <item>#49919C</item>
+        <item>#45B7FE</item>
+        <item>#5DDEF3</item>
+        <item>#72B6E8</item>
+        <item>#CEA06B</item>
+    </array>
 </resources>
