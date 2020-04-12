@@ -541,6 +541,9 @@ class DecryptMessage : Injector() {
                 participantSessionDao.insertList(ps)
             }
         } else if (systemSession.action == SystemSessionMessageAction.DESTROY.name) {
+            if (Session.getExtensionSessionId() != systemSession.sessionId) {
+                return
+            }
             Session.deleteExtensionSessionId()
             signalProtocol.deleteSession(systemSession.userId)
             participantSessionDao.deleteByUserIdAndSessionId(systemSession.userId, systemSession.sessionId)
