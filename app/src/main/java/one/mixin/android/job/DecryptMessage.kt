@@ -9,6 +9,7 @@ import com.crashlytics.android.Crashlytics
 import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
@@ -20,17 +21,20 @@ import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.runInTransaction
+import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.autoDownload
 import one.mixin.android.extension.autoDownloadDocument
 import one.mixin.android.extension.autoDownloadPhoto
 import one.mixin.android.extension.autoDownloadVideo
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
+import one.mixin.android.extension.putString
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
@@ -634,6 +638,10 @@ class DecryptMessage : Injector() {
                 runInTransaction {
                     circleDao.deleteCircleById(systemMessage.circleId)
                     circleConversationDao.deleteByCircleId(systemMessage.circleId)
+                }
+                RxBus.publish(CircleDeleteEvent(systemMessage.circleId))
+                if (systemMessage.circleId == MixinApplication.appContext.defaultSharedPreferences.getString(Constants.CIRCLE.CIRCLE_ID, null)) {
+                    MixinApplication.appContext.defaultSharedPreferences.putString(Constants.CIRCLE.CIRCLE_ID, null)
                 }
             }
         }
