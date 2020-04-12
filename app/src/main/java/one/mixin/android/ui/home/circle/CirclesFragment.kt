@@ -128,7 +128,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
                 val now = System.currentTimeMillis()
                 val data = conversationCircles?.let { list ->
                     list.mapIndexed { index, item ->
-                        CircleOrder(item.circleId, Instant.ofEpochMilli(now - index).toString())
+                        CircleOrder(item.circleId, Instant.ofEpochMilli(now + index).toString())
                     }
                 }
                 sorting = false
