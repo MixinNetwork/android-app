@@ -19,6 +19,7 @@ import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.autoDownload
 import one.mixin.android.extension.autoDownloadDocument
@@ -38,6 +39,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
+import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
@@ -66,6 +68,7 @@ import one.mixin.android.vo.createReplyTextMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
 import one.mixin.android.vo.createVideoMessage
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isIllegalMessageCategory
 import one.mixin.android.vo.mediaDownloaded
 import one.mixin.android.vo.toJson
@@ -81,10 +84,14 @@ import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.RecallMessagePayload
 import one.mixin.android.websocket.ResendData
 import one.mixin.android.websocket.StickerMessagePayload
+import one.mixin.android.websocket.SystemCircleMessageAction
+import one.mixin.android.websocket.SystemCircleMessagePayload
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.websocket.SystemConversationMessagePayload
 import one.mixin.android.websocket.SystemSessionMessageAction
 import one.mixin.android.websocket.SystemSessionMessagePayload
+import one.mixin.android.websocket.SystemUserMessageAction
+import one.mixin.android.websocket.SystemUserMessagePayload
 import one.mixin.android.websocket.checkLocationData
 import one.mixin.android.websocket.createCountSignalKeys
 import one.mixin.android.websocket.createParamBlazeMessage
@@ -216,6 +223,14 @@ class DecryptMessage : Injector() {
             val json = Base64.decode(data.data)
             val systemMessage = gson.fromJson(String(json), SystemConversationMessagePayload::class.java)
             processSystemConversationMessage(data, systemMessage)
+        } else if (data.category == MessageCategory.SYSTEM_USER.name) {
+            val json = Base64.decode(data.data)
+            val systemMessage = gson.fromJson(String(json), SystemUserMessagePayload::class.java)
+            processSystemUserMessage(systemMessage)
+        } else if (data.category == MessageCategory.SYSTEM_CIRCLE.name) {
+            val json = Base64.decode(data.data)
+            val systemMessage = gson.fromJson(String(json), SystemCircleMessagePayload::class.java)
+            processSystemCircleMessage(data, systemMessage)
         } else if (data.category == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name) {
             val json = Base64.decode(data.data)
             val systemSnapshot = gson.fromJson(String(json), Snapshot::class.java)
@@ -587,6 +602,41 @@ class DecryptMessage : Injector() {
             }
         }
         database.insertAndNotifyConversation(message)
+    }
+
+    private fun processSystemUserMessage(systemMessage: SystemUserMessagePayload) {
+        if (systemMessage.action == SystemUserMessageAction.UPDATE.name) {
+            jobManager.addJobInBackground(RefreshUserJob(listOf(systemMessage.userId)))
+        }
+    }
+
+    private fun processSystemCircleMessage(data: BlazeMessageData, systemMessage: SystemCircleMessagePayload) {
+        when (systemMessage.action) {
+            SystemCircleMessageAction.CREATE.name, SystemCircleMessageAction.UPDATE.name -> {
+                jobManager.addJobInBackground(RefreshCircleJob(systemMessage.circleId))
+            }
+            SystemCircleMessageAction.ADD.name -> {
+                val conversationId = systemMessage.conversationId ?: generateConversationId(Session.getAccountId()!!, systemMessage.userId ?: return)
+                if (circleDao.findCircleById(systemMessage.circleId) == null) {
+                    jobManager.addJobInBackground(RefreshCircleJob(systemMessage.circleId))
+                }
+                val circleConversation = CircleConversation(systemMessage.circleId, conversationId, systemMessage.userId, data.updatedAt, null)
+                systemMessage.userId?.let { userId ->
+                    syncUser(userId)
+                }
+                circleConversationDao.insertUpdate(circleConversation)
+            }
+            SystemCircleMessageAction.REMOVE.name -> {
+                val conversationId = systemMessage.conversationId ?: generateConversationId(Session.getAccountId()!!, systemMessage.userId ?: return)
+                circleConversationDao.deleteByIds(conversationId, systemMessage.circleId)
+            }
+            SystemCircleMessageAction.DELETE.name -> {
+                runInTransaction {
+                    circleDao.deleteCircleById(systemMessage.circleId)
+                    circleConversationDao.deleteByCircleId(systemMessage.circleId)
+                }
+            }
+        }
     }
 
     private fun processSignalMessage(data: BlazeMessageData) {

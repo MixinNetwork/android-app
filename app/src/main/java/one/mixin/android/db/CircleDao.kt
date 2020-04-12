@@ -90,7 +90,10 @@ interface CircleDao : BaseDao<Circle> {
     fun observeConversationsByCircleId(circleId: String): DataSource.Factory<Int, ConversationItem>
 
     @Query("DELETE FROM circles WHERE circle_id =:circleId")
-    suspend fun deleteCircleById(circleId: String)
+    suspend fun deleteCircleByIdSuspend(circleId: String)
+
+    @Query("DELETE FROM circles WHERE circle_id =:circleId")
+    fun deleteCircleById(circleId: String)
 
     @Query("SELECT * FROM circles WHERE circle_id = :circleId")
     fun findCircleById(circleId: String): Circle?
