@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import io.reactivex.android.schedulers.AndroidSchedulers
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -42,6 +43,8 @@ import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.defaultSharedPreferences
@@ -271,6 +274,14 @@ class ConversationListFragment : LinkFragment() {
         } else {
             this.circleId = circleId
         }
+        RxBus.listen(CircleDeleteEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe {
+                if (it.circleId == this.circleId) {
+                    (requireActivity() as MainActivity).selectCircle(null, null)
+                }
+            }
     }
 
     override fun onDestroyView() {
