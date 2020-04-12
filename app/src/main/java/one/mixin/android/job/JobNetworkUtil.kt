@@ -8,12 +8,10 @@ import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
-import android.net.NetworkInfo
 import android.net.NetworkRequest
 import android.os.Build
 import android.os.Build.VERSION
 import android.os.PowerManager
-import androidx.core.net.ConnectivityManagerCompat
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
 import one.mixin.android.vo.LinkState
@@ -67,23 +65,18 @@ class JobNetworkUtil(val context: Context, private val linkState: LinkState) : N
             return NetworkUtil.DISCONNECTED
         }
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val netInfo: NetworkInfo?
-        try {
-            netInfo = cm.activeNetworkInfo
-            if (netInfo == null) return NetworkUtil.DISCONNECTED
-        } catch (t: Throwable) {
+        val network = cm.activeNetwork ?: return NetworkUtil.DISCONNECTED
+        val networkCapabilities = cm.getNetworkCapabilities(network) ?: return NetworkUtil.DISCONNECTED
+        if (!networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) &&
+            !networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
             return NetworkUtil.DISCONNECTED
         }
-        val metered = try {
-            ConnectivityManagerCompat.isActiveNetworkMetered(cm)
-        } catch (e: Exception) {
-            return NetworkUtil.DISCONNECTED
-        }
-        if (netInfo.isConnected) {
+        if (networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
             if (LinkState.isOnline(linkState.state)) {
                 return NetworkUtil.WEB_SOCKET
             }
-            return if (!metered) {
+            val unMetered = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+            return if (unMetered) {
                 NetworkUtil.UNMETERED
             } else {
                 NetworkUtil.METERED
@@ -99,13 +92,13 @@ class JobNetworkUtil(val context: Context, private val linkState: LinkState) : N
      */
     @TargetApi(23)
     private fun isDozing(context: Context): Boolean {
-        if (VERSION.SDK_INT >= 23) {
+        return if (VERSION.SDK_INT >= 23) {
             val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-            return powerManager.isDeviceIdleMode && !powerManager.isIgnoringBatteryOptimizations(
+            powerManager.isDeviceIdleMode && !powerManager.isIgnoringBatteryOptimizations(
                 context.packageName
             )
         } else {
-            return false
+            false
         }
     }
 

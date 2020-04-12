@@ -1,8 +1,11 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.extension
 
 import android.content.Context
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
+import android.net.NetworkCapabilities
+import android.os.Build
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Download.MOBILE_DEFAULT
 import one.mixin.android.Constants.Download.ROAMING_DEFAULT
@@ -22,23 +25,29 @@ val autoDownloadDocument: (value: Int) -> Boolean = {
 fun Context.isConnectedToWiFi(): Boolean {
     try {
         val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val netInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
-        if (netInfo != null && netInfo.state == NetworkInfo.State.CONNECTED) {
-            return true
-        }
+        val network = connectivityManager.activeNetwork ?: return false
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
+            ?: return false
+        return networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
     } catch (e: Exception) {
         Timber.e(e)
     }
-
     return false
 }
 
 fun Context.isRoaming(): Boolean {
     try {
         val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val netInfo = connectivityManager.activeNetworkInfo
-        if (netInfo != null) {
-            return netInfo.isRoaming
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val network = connectivityManager.activeNetwork ?: return false
+            val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
+                ?: return false
+            return !networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_ROAMING)
+        } else {
+            val netInfo = connectivityManager.activeNetworkInfo
+            if (netInfo != null) {
+                return netInfo.isRoaming
+            }
         }
     } catch (e: Exception) {
         Timber.e(e)
@@ -47,7 +56,7 @@ fun Context.isRoaming(): Boolean {
     return false
 }
 
-fun Context.diffrentNetWorkAction(wifiAction: () -> Unit, mobileAction: () -> Unit, roaming: () -> Unit) {
+fun Context.differentNetWorkAction(wifiAction: () -> Unit, mobileAction: () -> Unit, roaming: () -> Unit) {
     when {
         isConnectedToWiFi() -> {
             wifiAction()
@@ -62,7 +71,7 @@ fun Context.diffrentNetWorkAction(wifiAction: () -> Unit, mobileAction: () -> Un
 }
 
 fun Context.autoDownload(support: (value: Int) -> Boolean, action: () -> Unit) {
-    diffrentNetWorkAction({
+    differentNetWorkAction({
         if (support(getAutoDownloadWifiValue())) {
             action()
         }

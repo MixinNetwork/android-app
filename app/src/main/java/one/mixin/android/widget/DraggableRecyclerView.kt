@@ -1,5 +1,6 @@
 package one.mixin.android.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
@@ -8,6 +9,7 @@ import android.view.ViewConfiguration
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 
+@SuppressLint("ClickableViewAccessibility")
 class DraggableRecyclerView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -75,7 +77,7 @@ class DraggableRecyclerView @JvmOverloads constructor(
                         callback?.onScroll(disY)
                         downY = moveY
                         dragging = true
-                        isLayoutFrozen = true
+                        suppressLayout(true)
                         return@setOnTouchListener true
                     }
                     downY = moveY
@@ -106,7 +108,7 @@ class DraggableRecyclerView @JvmOverloads constructor(
                         downY = 0f
                         startY = 0f
                         dragging = false
-                        isLayoutFrozen = false
+                        suppressLayout(false)
                         callback?.onRelease(fling)
                         return@setOnTouchListener true
                     }

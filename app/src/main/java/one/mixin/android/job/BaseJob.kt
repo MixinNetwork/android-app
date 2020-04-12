@@ -195,9 +195,11 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
 
     public override fun shouldReRunOnThrowable(throwable: Throwable, runCount: Int, maxRunCount: Int): RetryConstraint {
         if (runCount >= 100) {
-            val metaData = MetaData()
-            metaData.addToTab("Job", "shouldReRunOnThrowable", "Retry max count:$runCount")
-            Bugsnag.notify(throwable, metaData)
+            Bugsnag.notify(throwable) { report ->
+                report.error.metaData = MetaData().apply {
+                    addToTab("Job", "shouldReRunOnThrowable", "Retry max count:$runCount")
+                }
+            }
         }
         return if (shouldRetry(throwable)) {
             RetryConstraint.RETRY
@@ -212,9 +214,11 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {
         if (cancelReason == CancelReason.REACHED_RETRY_LIMIT) {
             throwable?.let {
-                val metaData = MetaData()
-                metaData.addToTab("Job", "CancelReason", "REACHED_RETRY_LIMIT")
-                Bugsnag.notify(it, metaData)
+                Bugsnag.notify(it) { report ->
+                    report.error.metaData = MetaData().apply {
+                        addToTab("Job", "CancelReason", "REACHED_RETRY_LIMIT")
+                    }
+                }
             }
         }
     }
@@ -223,6 +227,7 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
         return Integer.MAX_VALUE
     }
 
+    @Suppress("unused")
     companion object {
         private const val serialVersionUID = 1L
 

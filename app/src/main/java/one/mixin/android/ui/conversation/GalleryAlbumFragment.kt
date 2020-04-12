@@ -8,7 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.viewpager.widget.ViewPager
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.android.synthetic.main.fragment_gallery_album.*
 import one.mixin.android.R
 import one.mixin.android.ui.conversation.adapter.GalleryAlbumAdapter
@@ -34,7 +36,7 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
     private val albumCollection = AlbumCollection()
 
     private val albumAdapter: GalleryAlbumAdapter by lazy {
-        GalleryAlbumAdapter(requireContext(), childFragmentManager)
+        GalleryAlbumAdapter(requireActivity())
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -43,7 +45,10 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view_pager.adapter = albumAdapter
-        album_tl.setupWithViewPager(view_pager)
+        TabLayoutMediator(album_tl, view_pager, TabLayoutMediator.TabConfigurationStrategy { tab, position ->
+            tab.text = albumAdapter.albums?.get(position)?.getDisplayName(requireContext())
+            view_pager.setCurrentItem(tab.position, true)
+        }).attach()
         album_tl.tabMode = TabLayout.MODE_SCROLLABLE
         view_pager.currentItem = 0
         va.displayedChild = POS_LOADING
@@ -65,19 +70,7 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
                 rvCallback?.onRelease(fling)
             }
         }
-        view_pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-            }
-
-            override fun onPageSelected(position: Int) {
-            }
-
-            override fun onPageScrollStateChanged(state: Int) {
-                if (state != ViewPager.SCROLL_STATE_IDLE) {
-                    albumAdapter.getFragment(view_pager.currentItem)?.hideBlur()
-                }
-            }
-        })
+        view_pager.registerOnPageChangeCallback(onPageChangeCallback)
 
         albumCollection.onCreate(this, this)
         albumCollection.onRestoreInstanceState(savedInstanceState)
@@ -87,6 +80,11 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         albumCollection.onSaveInstanceState(outState)
+    }
+
+    override fun onDestroyView() {
+        view_pager?.unregisterOnPageChangeCallback(onPageChangeCallback)
+        super.onDestroyView()
     }
 
     override fun onDestroy() {
@@ -113,4 +111,12 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
     }
 
     override fun onAlbumReset() {}
+
+    private val onPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
+        override fun onPageScrollStateChanged(state: Int) {
+            if (state != ViewPager.SCROLL_STATE_IDLE) {
+                albumAdapter.getFragment(view_pager.currentItem)?.hideBlur()
+            }
+        }
+    }
 }

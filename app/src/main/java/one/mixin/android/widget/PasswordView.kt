@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package one.mixin.android.widget
 
 import android.content.Context
@@ -6,6 +8,7 @@ import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import one.mixin.android.R
 import org.jetbrains.anko.dip
 
@@ -42,23 +45,21 @@ class PasswordView : View {
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.PasswordView)
-        ta?.let {
-            if (ta.hasValue(R.styleable.PasswordView_circleColor)) {
-                circleColor = ta.getColor(R.styleable.PasswordView_circleColor, ContextCompat.getColor(context, COLOR))
-                ringPaint.color = circleColor
-                circlePaint.color = circleColor
-            }
-            ta.recycle()
+        if (ta.hasValue(R.styleable.PasswordView_circleColor)) {
+            circleColor = ta.getColor(R.styleable.PasswordView_circleColor, ContextCompat.getColor(context, COLOR))
+            ringPaint.color = circleColor
+            circlePaint.color = circleColor
         }
+        ta.recycle()
 
         attrs?.let {
             val bgValue = it.getAttributeValue("http://schemas.android.com/apk/res/android", "background")
             if (bgValue == null) {
-                background = resources.getDrawable(R.drawable.bg_view_password, context.theme)
+                background = ResourcesCompat.getDrawable(resources, R.drawable.bg_view_password, context.theme)
             }
         }
 
-        passwordList = kotlin.CharArray(count)
+        passwordList = CharArray(count)
     }
 
     override fun onDraw(canvas: Canvas) {

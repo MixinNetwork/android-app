@@ -15,7 +15,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.media.MediaMetadataRetriever
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -34,11 +34,9 @@ import android.view.KeyEvent
 import android.view.ViewConfiguration
 import android.view.Window
 import android.view.WindowManager
-import androidx.annotation.IdRes
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -157,14 +155,13 @@ fun Context.appCompatActionBarHeight(): Int {
 }
 
 fun Context.networkConnected(): Boolean {
-    val cm = getSystemService<ConnectivityManager>() ?: return false
-    val network: NetworkInfo
-    try {
-        network = cm.activeNetworkInfo
-    } catch (t: Throwable) {
-        return false
-    }
-    return network != null && network.isConnected
+    val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val network = connectivityManager.activeNetwork ?: return false
+    val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
+        ?: return false
+    return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
+        (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
 }
 
 fun Context.realSize(): Point {
@@ -228,7 +225,12 @@ fun FragmentActivity.replaceFragment(fragment: Fragment, frameId: Int, tag: Stri
     supportFragmentManager.inTransaction { replace(frameId, fragment, tag) }
 }
 
-fun FragmentActivity.addFragment(from: Fragment, to: Fragment, tag: String, id: Int = R.id.container) {
+fun FragmentActivity.addFragment(
+    @Suppress("UNUSED_PARAMETER") from: Fragment,
+    to: Fragment,
+    tag: String,
+    id: Int = R.id.container
+) {
     val ft = supportFragmentManager.beginTransaction()
         .setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
     if (to.isAdded) {
@@ -248,20 +250,6 @@ inline fun FragmentManager.inTransaction(func: FragmentTransaction.() -> Unit) {
     val fragmentTransaction = beginTransaction()
     fragmentTransaction.func()
     fragmentTransaction.commitAllowingStateLoss()
-}
-
-fun Fragment.bottomShowFragment(fragment: Fragment, @IdRes id: Int, tag: String) {
-    val fm = fragmentManager
-    fm?.let {
-        val ft = it.beginTransaction()
-            .setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
-        if (fragment.isAdded) {
-            ft.show(fragment)
-        } else {
-            ft.add(id, fragment, tag).addToBackStack(null)
-        }
-        ft.commitAllowingStateLoss()
-    }
 }
 
 const val REQUEST_IMAGE = 0x01
