@@ -226,6 +226,9 @@ class DecryptMessage : Injector() {
         if (data.category == MessageCategory.SYSTEM_CONVERSATION.name) {
             val json = Base64.decode(data.data)
             val systemMessage = gson.fromJson(String(json), SystemConversationMessagePayload::class.java)
+            if (systemMessage.action != SystemConversationAction.UPDATE.name || systemMessage.participantId == null) {
+                syncConversation(data)
+            }
             processSystemConversationMessage(data, systemMessage)
         } else if (data.category == MessageCategory.SYSTEM_USER.name) {
             val json = Base64.decode(data.data)
@@ -600,7 +603,11 @@ class DecryptMessage : Injector() {
             jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.REMOVE_PARTICIPANT, systemMessage.participantId))
         } else if (systemMessage.action == SystemConversationAction.CREATE.name) {
         } else if (systemMessage.action == SystemConversationAction.UPDATE.name) {
-            jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
+            if (systemMessage.participantId != null) {
+                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(systemMessage.participantId), forceRefresh = true))
+            } else {
+                jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
+            }
             return
         } else if (systemMessage.action == SystemConversationAction.ROLE.name) {
             participantDao.updateParticipantRole(data.conversationId, systemMessage.participantId!!, systemMessage.role!!)
