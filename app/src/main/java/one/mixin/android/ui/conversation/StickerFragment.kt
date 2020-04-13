@@ -11,8 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
-import javax.inject.Inject
-import kotlin.random.Random
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -32,6 +30,8 @@ import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_BOTTOM
 import one.mixin.android.widget.RLottieImageView
 import org.jetbrains.anko.dip
+import javax.inject.Inject
+import kotlin.random.Random
 
 class StickerFragment : BaseFragment() {
 
@@ -188,15 +188,6 @@ class StickerFragment : BaseFragment() {
             } else {
                 val s = stickers[if (needAdd) position - 1 else position]
 //                item.loadSticker(s.assetUrl, s.assetType)
-//                val result = when (random.nextInt()) {
-//                    1 -> R.raw.dice1
-//                    2 -> R.raw.dice2
-//                    3 -> R.raw.dice3
-//                    4 -> R.raw.dice4
-//                    5 -> R.raw.dice5
-//                    else -> R.raw.dice6
-//                }
-//                item.setAnimation(result, size, size)
                 item.setAnimation(R.raw.covid, size, size)
                 item.playAnimation()
                 item.setAutoRepeat(true)

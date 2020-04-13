@@ -29,57 +29,27 @@ target_link_libraries(mixin
                       lib_ogg
                       log)
 
-#add_library(lz4 STATIC ${CMAKE_SOURCE_DIR}/lz4/lz4.c)
 
-include_directories(
-    ${CMAKE_SOURCE_DIR}/lz4/
-    ${CMAKE_SOURCE_DIR}/rlottie/inc
-    ${CMAKE_SOURCE_DIR}/rlottie/src/vector/
-    ${CMAKE_SOURCE_DIR}/rlottie/src/vector/pixman
-    ${CMAKE_SOURCE_DIR}/rlottie/src/vector/freetype
-    ${CMAKE_SOURCE_DIR}/rlottie/src/vector/stb
-)
+add_library(lib_lz4 STATIC IMPORTED)
+set_target_properties(lib_lz4 PROPERTIES IMPORTED_LOCATION
+        ${CMAKE_SOURCE_DIR}/lz4/lib/${ANDROID_ABI}/liblz4.a)
+
+add_library(lib_rlottie_internal STATIC IMPORTED)
+set_target_properties(lib_rlottie_internal PROPERTIES IMPORTED_LOCATION
+        ${CMAKE_SOURCE_DIR}/rlottie/lib/${ANDROID_ABI}/librlottie_internal.a)
 
 add_library(rlottie
         SHARED
         ${CMAKE_SOURCE_DIR}/lottie.cpp
-        ${CMAKE_SOURCE_DIR}/lz4/lz4.c
-        ${CMAKE_SOURCE_DIR}/lz4/lz4frame.c
-        ${CMAKE_SOURCE_DIR}/lz4/lz4hc.c
-        ${CMAKE_SOURCE_DIR}/lz4/xxhash.c
-        ${CMAKE_SOURCE_DIR}/rlottie/inc
-        ${CMAKE_SOURCE_DIR}/rlottie/src/lottie/lottieanimation.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/lottie/lottieitem.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/lottie/lottiekeypath.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/lottie/lottieloader.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/lottie/lottiemodel.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/lottie/lottieparser.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/freetype/v_ft_math.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/freetype/v_ft_raster.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/freetype/v_ft_stroker.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/pixman/vregion.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/stb/stb_image.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vbezier.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vbitmap.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vbrush.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vcompositionfunctions.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vdasher.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vdebug.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vdrawable.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vdrawhelper.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vdrawhelper_neon.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/velapsedtimer.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vimageloader.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vinterpolator.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vmatrix.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vpainter.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vpath.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vpathmesure.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vraster.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vrect.cpp
-        ${CMAKE_SOURCE_DIR}/rlottie/src/vector/vrle.cpp
         )
+
+target_include_directories(rlottie PRIVATE
+        ${CMAKE_SOURCE_DIR}/rlottie/inc
+        ${CMAKE_SOURCE_DIR}/lz4/inc)
+
 target_link_libraries(
         rlottie
+        lib_lz4
+        lib_rlottie_internal
         jnigraphics
         ${log-lib})
