@@ -482,12 +482,12 @@ fun ByteArray.encodeBitmap(): Bitmap? {
 
 fun Bitmap.toDrawable(): Drawable = BitmapDrawable(MixinApplication.appContext.resources, this)
 
-fun String.toDrawable(): Drawable? {
+fun String.toDrawable(width: Int, height: Int): Drawable? {
     return try {
         if (!Base83.isValid(this)) {
             this.decodeBase64().encodeBitmap()?.toDrawable()
         } else {
-            BlurHashDecoder.decode(this, 100, 100, 1.0)?.toDrawable()
+            BlurHashDecoder.decode(this, maxOf(width, 64), maxOf(height, 64), 1.0)?.toDrawable()
         }
     } catch (e: Exception) {
         null
