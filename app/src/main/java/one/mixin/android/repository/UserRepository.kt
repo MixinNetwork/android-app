@@ -129,6 +129,8 @@ constructor(
 
     fun findAppsByIds(appIds: List<String>) = appDao.findAppsByIds(appIds)
 
+    suspend fun getApps() = appDao.getApps()
+
     suspend fun findMultiUsersByIds(ids: Set<String>) = userDao.findMultiUsersByIds(ids)
 
     suspend fun fetchUser(ids: List<String>) = userService.fetchUsers(ids)

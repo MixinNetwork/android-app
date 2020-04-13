@@ -38,6 +38,7 @@ import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
 import kotlinx.android.synthetic.main.view_empty.view.*
+import kotlinx.android.synthetic.main.view_shadow_circle.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
@@ -69,6 +70,7 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.home.bot.BotManagerBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.util.Session
 import one.mixin.android.util.markdown.MarkwonUtil
@@ -215,7 +217,7 @@ class ConversationListFragment : LinkFragment() {
                 down_iv.scaleY = 1f
             }
         }
-        shadow_view.setOnClickListener {
+        shadow_view.camera.setOnClickListener {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.CAMERA)
                 .autoDispose(stopScope)
@@ -226,6 +228,11 @@ class ConversationListFragment : LinkFragment() {
                         context?.openPermissionSetting()
                     }
                 }
+        }
+
+        shadow_view.circle.setOnClickListener {
+            BotManagerBottomSheetDialogFragment()
+                .show(parentFragmentManager, BotManagerBottomSheetDialogFragment.TAG)
         }
         messageAdapter.onItemListener = object : PagedHeaderAdapter.OnItemListener<ConversationItem> {
             override fun onNormalLongClick(item: ConversationItem): Boolean {

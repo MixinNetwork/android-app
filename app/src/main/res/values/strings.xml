@@ -808,5 +808,7 @@
     <string name="circle_empty_info">You can add contacts or group to \n the current circle.</string>
     <string name="circle_empty_start">Add Conversations</string>
     <string name="circle_limit">The number has reached the limit</string>
+    <!--  bot  -->
+    <string name="bot_title">Bots</string>
 </resources>
 

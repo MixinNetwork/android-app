@@ -13,6 +13,7 @@ import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.group.GroupViewModel
 import one.mixin.android.ui.group.InviteViewModel
 import one.mixin.android.ui.home.ConversationListViewModel
+import one.mixin.android.ui.home.bot.BotManagerViewModel
 import one.mixin.android.ui.landing.LoadingViewModel
 import one.mixin.android.ui.landing.MobileViewModel
 import one.mixin.android.ui.media.SharedMediaViewModel
@@ -129,6 +130,11 @@ internal abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(MySharedAppsViewModel::class)
     internal abstract fun bindMySharedAppsViewModel(mySharedAppsViewModel: MySharedAppsViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(BotManagerViewModel::class)
+    internal abstract fun bindBotManagerViewModel(botManagerViewModel: BotManagerViewModel): ViewModel
 
     @Binds
     internal abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
