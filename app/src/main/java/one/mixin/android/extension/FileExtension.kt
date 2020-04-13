@@ -199,6 +199,7 @@ fun Context.getPublicPicturePath(): File {
 fun Context.getPublicDocumentPath(): File {
     return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "Mixin")
 }
+
 fun Context.getImageCachePath(): File {
     val root = getBestAvailableCacheRoot()
     return File("$root${File.separator}Images")
@@ -404,7 +405,7 @@ fun File.encodeBlurHash(): String? {
 }
 
 fun String.decodeBlurHash(width: Int, height: Int): Bitmap? {
-    return BlurHashDecoder.decode(this, width, height)
+    return BlurHashDecoder.decode(this, width, height, 1.0)
 }
 
 fun File.moveChileFileToDir(dir: File, eachCallback: ((newFile: File, oldFile: File) -> Unit)? = null) {
@@ -470,10 +471,14 @@ fun ByteArray.encodeBitmap(): Bitmap? {
 fun Bitmap.toDrawable(): Drawable = BitmapDrawable(MixinApplication.appContext.resources, this)
 
 fun String.toDrawable(): Drawable? {
-    return if (!Base83.isValid(this)) {
-        this.decodeBase64().encodeBitmap()?.toDrawable()
-    } else {
-        BlurHashDecoder.decode(this, 100, 100)?.toDrawable()
+    return try {
+        if (!Base83.isValid(this)) {
+            this.decodeBase64().encodeBitmap()?.toDrawable()
+        } else {
+            BlurHashDecoder.decode(this, 100, 100, 1.0)?.toDrawable()
+        }
+    } catch (e: Exception) {
+        null
     }
 }
 

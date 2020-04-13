@@ -11,6 +11,7 @@ import com.bumptech.glide.load.engine.Resource;
 import com.bumptech.glide.load.resource.SimpleResource;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class BlurHashResourceDecoder implements ResourceDecoder<BlurHash, Bitmap> {
 
@@ -34,6 +35,6 @@ public class BlurHashResourceDecoder implements ResourceDecoder<BlurHash, Bitmap
       finalWidth  = (int) (finalHeight * width / (float) height);
     }
 
-    return new SimpleResource<>(BlurHashDecoder.decode(source.getHash(), finalWidth, finalHeight));
+    return new SimpleResource<>(Objects.requireNonNull(BlurHashDecoder.decode(source.getHash(), finalWidth, finalHeight, 1.0)));
   }
 }
