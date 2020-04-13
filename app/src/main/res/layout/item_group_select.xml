@@ -26,42 +26,15 @@
         app:layout_constraintBottom_toBottomOf="@id/avatar_view"
         app:layout_constraintEnd_toEndOf="@id/avatar_view" />
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/name_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="3dp"
         android:gravity="center"
+        android:singleLine="true"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/avatar_view">
-
-        <TextView
-            android:id="@+id/name_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:maxWidth="42dp"
-            android:singleLine="true"
-            android:textColor="?attr/text_primary"
-            android:textSize="12sp" />
-
-        <ImageView
-            android:id="@+id/verified_iv"
-            android:layout_width="10dp"
-            android:layout_height="10dp"
-            android:src="@drawable/ic_user_verified"
-            android:visibility="gone"
-            tools:ignore="ContentDescription" />
-
-        <ImageView
-            android:id="@+id/bot_iv"
-            android:layout_width="10dp"
-            android:layout_height="10dp"
-            android:contentDescription="@null"
-            android:src="@drawable/ic_bot"
-            android:visibility="gone" />
-
-    </LinearLayout>
-
+        app:layout_constraintTop_toBottomOf="@id/avatar_view" />
 </androidx.constraintlayout.widget.ConstraintLayout>
