@@ -143,7 +143,7 @@ interface ConversationDao : BaseDao<Conversation> {
     suspend fun deleteConversationById(conversationId: String)
 
     @Query("UPDATE conversations SET mute_until = :muteUntil WHERE conversation_id = :conversationId")
-    fun updateGroupDuration(conversationId: String, muteUntil: String)
+    fun updateGroupMuteUntil(conversationId: String, muteUntil: String)
 
     @Query("UPDATE conversations SET icon_url = :iconUrl WHERE conversation_id = :conversationId")
     fun updateGroupIconUrl(conversationId: String, iconUrl: String)

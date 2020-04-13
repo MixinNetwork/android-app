@@ -81,7 +81,7 @@ interface UserDao : BaseDao<User> {
     fun getGroupParticipants(conversationId: String): LiveData<List<User>>
 
     @Query("UPDATE users SET mute_until = :muteUntil WHERE user_id = :id")
-    fun updateDuration(id: String, muteUntil: String)
+    fun updateMuteUntil(id: String, muteUntil: String)
 
     @Query("UPDATE users SET phone = :phone WHERE user_id = :id")
     fun updatePhone(id: String, phone: String)

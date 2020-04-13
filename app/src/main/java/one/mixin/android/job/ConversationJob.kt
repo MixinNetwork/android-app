@@ -135,9 +135,9 @@ class ConversationJob(
                 jobManager.addJobInBackground(GenerateAvatarJob(cr.conversationId))
             } else if (type == TYPE_MUTE) {
                 if (cr.category == ConversationCategory.CONTACT.name) {
-                    recipientId?.let { userDao.updateDuration(it, cr.muteUntil) }
+                    recipientId?.let { userDao.updateMuteUntil(it, cr.muteUntil) }
                 } else {
-                    conversationId?.let { conversationDao.updateGroupDuration(it, cr.muteUntil) }
+                    conversationId?.let { conversationDao.updateGroupMuteUntil(it, cr.muteUntil) }
                 }
             } else {
                 RxBus.publish(ConversationEvent(type, true))
