@@ -2,7 +2,7 @@ package one.mixin.android.websocket
 
 import com.google.gson.annotations.SerializedName
 
-class SystemCircleMessagePayload(
+data class SystemCircleMessagePayload(
     @SerializedName("action")
     val action: String,
     @SerializedName("circle_id")

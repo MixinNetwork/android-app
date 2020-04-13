@@ -2,7 +2,7 @@ package one.mixin.android.websocket
 
 import com.google.gson.annotations.SerializedName
 
-class SystemUserMessagePayload(
+data class SystemUserMessagePayload(
     @SerializedName("action")
     val action: String,
     @SerializedName("user_id")

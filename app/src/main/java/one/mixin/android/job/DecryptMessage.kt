@@ -613,7 +613,7 @@ class DecryptMessage : Injector() {
 
     private fun processSystemUserMessage(systemMessage: SystemUserMessagePayload) {
         if (systemMessage.action == SystemUserMessageAction.UPDATE.name) {
-            jobManager.addJobInBackground(RefreshUserJob(listOf(systemMessage.userId)))
+            jobManager.addJobInBackground(RefreshUserJob(listOf(systemMessage.userId), forceRefresh = true))
         }
     }
 
