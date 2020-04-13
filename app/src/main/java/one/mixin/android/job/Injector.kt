@@ -137,7 +137,7 @@ open class Injector : Injectable {
     }
 
     protected fun syncConversation(data: BlazeMessageData) {
-        if (data.conversationId == SYSTEM_USER || data.conversationId == Session.getAccountId() || data.category == MessageCategory.SYSTEM_CONVERSATION.name) {
+        if (data.conversationId == SYSTEM_USER || data.conversationId == Session.getAccountId()) {
             return
         }
         var conversation = conversationDao.getConversation(data.conversationId)

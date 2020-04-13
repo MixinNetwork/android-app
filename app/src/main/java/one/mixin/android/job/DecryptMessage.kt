@@ -139,7 +139,9 @@ class DecryptMessage : Injector() {
                 return
             }
 
-            syncConversation(data)
+            if (data.category != MessageCategory.SYSTEM_CONVERSATION.name) {
+                syncConversation(data)
+            }
             checkSession(data)
             if (data.category.startsWith("SYSTEM_")) {
                 processSystemMessage(data)
@@ -226,7 +228,7 @@ class DecryptMessage : Injector() {
         if (data.category == MessageCategory.SYSTEM_CONVERSATION.name) {
             val json = Base64.decode(data.data)
             val systemMessage = gson.fromJson(String(json), SystemConversationMessagePayload::class.java)
-            if (systemMessage.action != SystemConversationAction.UPDATE.name || systemMessage.participantId == null) {
+            if (systemMessage.action != SystemConversationAction.UPDATE.name) {
                 syncConversation(data)
             }
             processSystemConversationMessage(data, systemMessage)
@@ -603,7 +605,7 @@ class DecryptMessage : Injector() {
             jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.REMOVE_PARTICIPANT, systemMessage.participantId))
         } else if (systemMessage.action == SystemConversationAction.CREATE.name) {
         } else if (systemMessage.action == SystemConversationAction.UPDATE.name) {
-            if (systemMessage.participantId != null) {
+            if (!systemMessage.participantId.isNullOrBlank()) {
                 jobManager.addJobInBackground(RefreshUserJob(arrayListOf(systemMessage.participantId), forceRefresh = true))
             } else {
                 jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
