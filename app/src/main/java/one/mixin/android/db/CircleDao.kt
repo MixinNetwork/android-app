@@ -24,7 +24,7 @@ interface CircleDao : BaseDao<Circle> {
 
     @Query("""
         SELECT ci.circle_id, ci.name, ci.created_at, count(c.conversation_id) as count, sum(c.unseen_message_count) as unseen_message_count 
-        FROM circles ci LEFT JOIN circle_conversations cc ON ci.circle_id = cc.circle_id LEFT JOIN conversations c  ON c.conversation_id = cc.conversation_id
+        FROM circles ci LEFT JOIN circle_conversations cc ON ci.circle_id = cc.circle_id LEFT JOIN conversations c ON c.conversation_id = cc.conversation_id
         GROUP BY ci.circle_id ORDER BY ci.ordered_at ASC, ci.created_at ASC
     """)
     fun observeAllCircleItem(): LiveData<List<ConversationCircleItem>>

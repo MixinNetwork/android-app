@@ -627,7 +627,7 @@ class DecryptMessage : Injector() {
                 if (circleDao.findCircleById(systemMessage.circleId) == null) {
                     jobManager.addJobInBackground(RefreshCircleJob(systemMessage.circleId))
                 }
-                val circleConversation = CircleConversation(systemMessage.circleId, conversationId, systemMessage.userId, data.updatedAt, null)
+                val circleConversation = CircleConversation(conversationId, systemMessage.circleId, systemMessage.userId, data.updatedAt, null)
                 systemMessage.userId?.let { userId ->
                     syncUser(userId)
                 }
