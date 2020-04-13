@@ -30,11 +30,12 @@ import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.bitmap2String
+import one.mixin.android.extension.blurThumbnail
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.deserialize
-import one.mixin.android.extension.encodeBlurHash
 import one.mixin.android.extension.fileExists
 import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getBotNumber
@@ -417,7 +418,7 @@ internal constructor(
                 val path = uri.getFilePath(MixinApplication.get()) ?: return@map -1
                 gifFile.copyFromInputStream(FileInputStream(path))
                 val size = getImageSize(gifFile)
-                val thumbnail = gifFile.encodeBlurHash()
+                val thumbnail = gifFile.blurThumbnail(size)?.bitmap2String(mimeType)
 
                 val message = createMediaMessage(
                     UUID.randomUUID().toString(),
@@ -459,7 +460,7 @@ internal constructor(
                     return@map -1
                 }
                 val size = getImageSize(imageFile)
-                val thumbnail = imageFile.encodeBlurHash()
+                val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mimeType)
                 val message = createMediaMessage(
                     UUID.randomUUID().toString(),
                     conversationId,

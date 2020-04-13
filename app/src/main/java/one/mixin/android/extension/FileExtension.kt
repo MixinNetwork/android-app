@@ -400,6 +400,18 @@ fun File.copy(destFile: File) {
     dest.closeSilently()
 }
 
+fun File.blurThumbnail(size: Size): Bitmap? {
+    var scale = 1
+    do {
+        if (maxOf(size.width, size.height) / scale > 64) {
+            scale++
+        } else {
+            break
+        }
+    } while (true)
+    return blurThumbnail(size.width / scale, size.height / scale)
+}
+
 fun File.encodeBlurHash(): String? {
     return BlurHashEncoder.encode(inputStream())
 }
