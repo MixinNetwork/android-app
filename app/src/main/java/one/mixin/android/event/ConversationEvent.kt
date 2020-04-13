@@ -1,3 +1,3 @@
 package one.mixin.android.event
 
-class ConversationEvent(val type: Int, val isSuccess: Boolean)
+data class ConversationEvent(val type: Int, val isSuccess: Boolean)

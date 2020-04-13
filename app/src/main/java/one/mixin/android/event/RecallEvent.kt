@@ -1,3 +1,3 @@
 package one.mixin.android.event
 
-class RecallEvent(val messageId: String)
+data class RecallEvent(val messageId: String)

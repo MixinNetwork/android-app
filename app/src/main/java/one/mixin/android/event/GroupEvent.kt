@@ -1,3 +1,3 @@
 package one.mixin.android.event
 
-class GroupEvent(val conversationId: String)
+data class GroupEvent(val conversationId: String)

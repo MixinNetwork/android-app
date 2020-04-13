@@ -1,3 +1,3 @@
 package one.mixin.android.event
 
-class CircleDeleteEvent(val circleId: String)
+data class CircleDeleteEvent(val circleId: String)

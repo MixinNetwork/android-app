@@ -374,6 +374,7 @@ abstract class MixinJob(
                 .setName(data.name)
                 .setIconUrl(data.iconUrl)
                 .setAnnouncement(data.announcement)
+                .setMuteUntil(data.muteUntil)
                 .setCodeUrl(data.codeUrl).build()
             conversationDao.insert(c)
             if (!c.announcement.isNullOrBlank()) {

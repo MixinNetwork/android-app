@@ -1,3 +1,3 @@
 package one.mixin.android.event
 
-class DragReleaseEvent(val isExpand: Boolean)
+data class DragReleaseEvent(val isExpand: Boolean)

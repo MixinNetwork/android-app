@@ -8,8 +8,8 @@
 
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar_view"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:layout_gravity="center"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
