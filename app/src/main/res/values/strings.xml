@@ -811,5 +811,8 @@
     <!--  bot  -->
     <string name="bot_title">Bots</string>
     <string name="bot_dock_empty">长按并拖拽机器人置顶</string>
+    <string name="bot_internal_scan">Scan QR</string>
+    <string name="bot_internal_camera">Camera</string>
+    <string name="bot_internal_wallet">Wallet</string>
 </resources>
 

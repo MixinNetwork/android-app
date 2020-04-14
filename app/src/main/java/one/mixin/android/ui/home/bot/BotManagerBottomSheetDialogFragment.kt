@@ -72,6 +72,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
         initView()
+        loadData()
     }
 
     override fun onStart() {
@@ -107,20 +108,26 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         contentView.bot_rv.layoutManager = GridLayoutManager(requireContext(), 4)
         contentView.bot_rv.adapter = bottomListAdapter
         contentView.bot_rv.setOnDragListener(bottomListAdapter.dragInstance)
-        lifecycleScope.launch {
-            bottomListAdapter.list = botManagerViewModel.getApps()
-        }
         contentView.bot_dock.setOnDockListener(this)
+    }
+
+    private fun loadData() {
+        lifecycleScope.launch {
+            val apps = mutableListOf<AppInterface>(InternalWallet, InternalCamera, InternalScan)
+            apps.addAll(botManagerViewModel.getApps())
+            bottomListAdapter.list = apps
+        }
     }
 
     private val bottomListAdapter by lazy {
         BotManagerAdapter()
     }
 
-    open fun getPeekHeight(contentView: View, behavior: BottomSheetBehavior<*>): Int = 0
+    fun getPeekHeight(contentView: View, behavior: BottomSheetBehavior<*>): Int = 0
 
-    open fun onStateChanged(bottomSheet: View, newState: Int) {}
-    open fun onSlide(bottomSheet: View, slideOffset: Float) {}
+    fun onStateChanged(bottomSheet: View, newState: Int) {}
+
+    fun onSlide(bottomSheet: View, slideOffset: Float) {}
 
     private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
 
@@ -133,9 +140,10 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         }
     }
 
-    override fun onDockAdd(app: App) {
+    override fun onDockAdd(app: AppInterface) {
     }
 
-    override fun onDockRemove(app: App) {
+    override fun onDockRemove(app: AppInterface) {
     }
+
 }

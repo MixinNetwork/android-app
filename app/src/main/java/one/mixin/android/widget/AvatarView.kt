@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import kotlinx.android.synthetic.main.item_bot_manager.view.*
 import kotlinx.android.synthetic.main.view_avatar.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.CodeType
@@ -17,6 +18,9 @@ import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.isActivityNotDestroyed
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
+import one.mixin.android.ui.home.bot.AppInterface
+import one.mixin.android.ui.home.bot.InternalApp
+import one.mixin.android.vo.App
 import org.jetbrains.anko.sp
 
 class AvatarView : ViewAnimator {
@@ -26,13 +30,19 @@ class AvatarView : ViewAnimator {
         LayoutInflater.from(context).inflate(R.layout.view_avatar, this, true)
         val ta = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
         if (ta.hasValue(R.styleable.CircleImageView_border_text_size)) {
-            avatar_tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, ta.getDimension(R.styleable.CircleImageView_border_text_size,
-                sp(20f).toFloat()))
+            avatar_tv.setTextSize(
+                TypedValue.COMPLEX_UNIT_PX, ta.getDimension(
+                    R.styleable.CircleImageView_border_text_size,
+                    sp(20f).toFloat()
+                )
+            )
         }
         if (ta.hasValue(R.styleable.CircleImageView_border_width)) {
             avatar_simple.borderWidth = ta.getDimensionPixelSize(R.styleable.CircleImageView_border_width, 0)
-            avatar_simple.borderColor = ta.getColor(R.styleable.CircleImageView_border_color,
-                ContextCompat.getColor(context, android.R.color.white))
+            avatar_simple.borderColor = ta.getColor(
+                R.styleable.CircleImageView_border_color,
+                ContextCompat.getColor(context, android.R.color.white)
+            )
             avatar_tv.setBorderInfo(avatar_simple.borderWidth.toFloat(), avatar_simple.borderColor)
         }
 
@@ -101,6 +111,17 @@ class AvatarView : ViewAnimator {
             POS_AVATAR
         } else {
             POS_TEXT
+        }
+    }
+
+    fun renderApp(app: AppInterface) {
+        if (app is App) {
+            setInfo(app.name, app.iconUrl, app.appId)
+        } else if (app is InternalApp) {
+            displayedChild = POS_AVATAR
+            avatar_simple.setBackgroundResource(0)
+            avatar_simple.setPadding(0)
+            avatar_simple.setImageResource(app.icon)
         }
     }
 

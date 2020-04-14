@@ -15,6 +15,7 @@ import kotlinx.android.synthetic.main.item_dock.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.vibrate
+import one.mixin.android.ui.home.bot.AppInterface
 import one.mixin.android.vo.App
 
 class BotDock : ViewGroup, View.OnLongClickListener {
@@ -109,7 +110,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         return MarginLayoutParams(context, attrs)
     }
 
-    var apps: MutableList<App> = mutableListOf()
+    var apps: MutableList<AppInterface> = mutableListOf()
         set(value) {
             field = value
             render()
@@ -123,7 +124,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
             if (i - 1 < apps.size) {
                 avatar.isVisible = true
                 val app = apps[i - 1]
-                avatar.setInfo(app.name, app.iconUrl, app.appId)
+                avatar.renderApp(app)
                 avatar.tag = app
                 avatar.setOnLongClickListener(this@BotDock)
             } else {
@@ -135,7 +136,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         requestLayout()
     }
 
-    fun addApp(app: App) {
+    fun addApp(app: AppInterface) {
         if (!apps.contains(app)) {
             apps.add(app)
             render()
@@ -143,7 +144,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         }
     }
 
-    fun remove(app: App) {
+    fun remove(app: AppInterface) {
         if (apps.contains(app)) {
             apps.remove(app)
             render()
@@ -158,7 +159,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
     }
 
     interface OnDockListener {
-        fun onDockAdd(app: App)
-        fun onDockRemove(app: App)
+        fun onDockAdd(app: AppInterface)
+        fun onDockRemove(app: AppInterface)
     }
 }

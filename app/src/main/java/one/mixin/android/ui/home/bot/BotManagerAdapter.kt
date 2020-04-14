@@ -22,7 +22,7 @@ class BotManagerAdapter : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>
         return ListViewHolder(view)
     }
 
-    var list: List<App>? = null
+    var list: List<AppInterface>? = null
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -30,8 +30,12 @@ class BotManagerAdapter : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>
 
     override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
         list?.get(position)?.let { app ->
-            holder.itemView.avatar.setInfo(app.name, app.iconUrl, app.appId)
-            holder.itemView.name.text = app.name
+            holder.itemView.avatar.renderApp(app)
+            if (app is App) {
+                holder.itemView.name.text = app.name
+            } else if (app is InternalApp) {
+                holder.itemView.name.setText(app.name)
+            }
             holder.itemView.avatar.tag = position
             holder.itemView.avatar.setOnLongClickListener(this)
         }
