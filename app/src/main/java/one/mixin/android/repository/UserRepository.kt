@@ -49,6 +49,8 @@ constructor(
 
     fun findFriends(): LiveData<List<User>> = userDao.findFriends()
 
+    fun findContacts(): LiveData<List<User>> = userDao.findContacts()
+
     suspend fun getFriends(): List<User> = userDao.getFriends()
 
     suspend fun fuzzySearchUser(query: String): List<User> = userDao.fuzzySearchUser(query, query, Session.getAccountId() ?: "")

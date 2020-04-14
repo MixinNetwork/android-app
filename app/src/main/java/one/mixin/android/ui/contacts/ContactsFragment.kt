@@ -91,7 +91,7 @@ class ContactsFragment : BaseFragment() {
             fetchContacts()
         }
 
-        contactsViewModel.getFriends().observe(viewLifecycleOwner, Observer { users ->
+        contactsViewModel.findContacts().observe(viewLifecycleOwner, Observer { users ->
             if (users != null && users.isNotEmpty()) {
                 if (!hasContactPermission()) {
                     contactAdapter.friendSize = users.size

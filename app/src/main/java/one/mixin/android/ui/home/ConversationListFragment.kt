@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
@@ -26,7 +25,6 @@ import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.io.File
@@ -56,7 +54,6 @@ import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openNotificationSetting
-import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.renderConversation
 import one.mixin.android.extension.timeAgo
@@ -71,7 +68,6 @@ import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.bot.BotManagerBottomSheetDialogFragment
-import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.util.Session
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
@@ -217,22 +213,15 @@ class ConversationListFragment : LinkFragment() {
                 down_iv.scaleY = 1f
             }
         }
-        shadow_view.camera.setOnClickListener {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.CAMERA)
-                .autoDispose(stopScope)
-                .subscribe { granted ->
-                    if (granted) {
-                        CaptureActivity.show(requireActivity())
-                    } else {
-                        context?.openPermissionSetting()
-                    }
-                }
+        shadow_view.bot.setOnClickListener {
+            BotManagerBottomSheetDialogFragment()
+                .show(parentFragmentManager, BotManagerBottomSheetDialogFragment.TAG)
+        }
+
+        shadow_view.wallet.setOnClickListener {
         }
 
         shadow_view.circle.setOnClickListener {
-            BotManagerBottomSheetDialogFragment()
-                .show(parentFragmentManager, BotManagerBottomSheetDialogFragment.TAG)
         }
         messageAdapter.onItemListener = object : PagedHeaderAdapter.OnItemListener<ConversationItem> {
             override fun onNormalLongClick(item: ConversationItem): Boolean {

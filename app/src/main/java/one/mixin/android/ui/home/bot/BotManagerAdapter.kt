@@ -58,6 +58,7 @@ class BotManagerAdapter : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>
         } else {
             v.startDrag(data, shadowBuilder, v, 0)
         }
+        v.alpha = 0.2f
         v.context.vibrate(longArrayOf(0, 30L))
         return true
     }

@@ -93,6 +93,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
             v.startDrag(data, shadowBuilder, v, 0)
         }
         v.context.vibrate(longArrayOf(0, 30L))
+        v.alpha = 0.2f
         return true
     }
 
@@ -138,6 +139,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         if (!apps.contains(app)) {
             apps.add(app)
             render()
+            onDockListener?.onDockAdd(app)
         }
     }
 
@@ -145,6 +147,18 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         if (apps.contains(app)) {
             apps.remove(app)
             render()
+            onDockListener?.onDockRemove(app)
         }
+    }
+
+    private var onDockListener: OnDockListener? = null
+
+    fun setOnDockListener(listener: OnDockListener) {
+        this.onDockListener = listener
+    }
+
+    interface OnDockListener {
+        fun onDockAdd(app: App)
+        fun onDockRemove(app: App)
     }
 }

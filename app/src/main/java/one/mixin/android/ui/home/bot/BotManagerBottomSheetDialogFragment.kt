@@ -24,9 +24,11 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinBottomSheetDialog
+import one.mixin.android.widget.bot.BotDock
 
-class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
+class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener, Injectable {
 
     companion object {
         const val TAG = "BorManagerBottomSheetDialogFragment"
@@ -108,6 +110,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), Injecta
         lifecycleScope.launch {
             bottomListAdapter.list = botManagerViewModel.getApps()
         }
+        contentView.bot_dock.setOnDockListener(this)
     }
 
     private val bottomListAdapter by lazy {
@@ -128,5 +131,11 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), Injecta
         override fun onSlide(bottomSheet: View, slideOffset: Float) {
             this@BotManagerBottomSheetDialogFragment.onSlide(bottomSheet, slideOffset)
         }
+    }
+
+    override fun onDockAdd(app: App) {
+    }
+
+    override fun onDockRemove(app: App) {
     }
 }

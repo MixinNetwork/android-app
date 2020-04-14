@@ -34,6 +34,8 @@ internal constructor(
 
     fun getFriends(): LiveData<List<User>> = userRepository.findFriends()
 
+    fun findContacts(): LiveData<List<User>> = userRepository.findContacts()
+
     fun findSelf(): LiveData<User?> = userRepository.findSelf()
 
     fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
