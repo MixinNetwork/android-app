@@ -7,6 +7,7 @@ import kotlin.math.abs
 import kotlinx.android.parcel.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import java.util.UUID
 
 @Parcelize
 class ConversationCircleItem(
@@ -26,8 +27,13 @@ fun getCircleColor(circleId: String?): Int {
     return if (circleId == null) {
         Color.BLACK
     } else {
-        colors[abs(circleId.hashCode()).rem(colors.size)]
+        val hashcode = try {
+            UUID.fromString(circleId).hashCode()
+        } catch (e: IllegalArgumentException) {
+            circleId.hashCode()
+        }
+        colors[abs(hashcode).rem(colors.size)]
     }
 }
 
-private val colors: IntArray = MixinApplication.appContext.resources.getIntArray(R.array.name_colors)
+private val colors: IntArray = MixinApplication.appContext.resources.getIntArray(R.array.circle_colors)
