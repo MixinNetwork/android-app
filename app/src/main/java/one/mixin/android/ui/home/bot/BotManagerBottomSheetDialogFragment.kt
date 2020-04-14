@@ -141,9 +141,12 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
     }
 
     override fun onDockAdd(app: AppInterface) {
+        bottomListAdapter.list.remove(app)
+        bottomListAdapter.notifyDataSetChanged()
     }
 
     override fun onDockRemove(app: AppInterface) {
+        bottomListAdapter.list.add(app)
+        bottomListAdapter.notifyDataSetChanged()
     }
-
 }

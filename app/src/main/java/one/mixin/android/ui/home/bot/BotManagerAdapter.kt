@@ -22,7 +22,7 @@ class BotManagerAdapter : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>
         return ListViewHolder(view)
     }
 
-    var list: List<AppInterface>? = null
+    var list: MutableList<AppInterface> = mutableListOf()
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -43,10 +43,6 @@ class BotManagerAdapter : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>
 
     override fun getItemCount(): Int {
         return list.notEmptyWithElse({ it.size }, 0)
-    }
-
-    fun updateList(list: List<App>) {
-        this.list = list
     }
 
     val dragInstance: BotManagerDragListener?

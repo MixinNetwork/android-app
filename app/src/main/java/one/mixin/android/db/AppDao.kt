@@ -58,4 +58,9 @@ interface AppDao : BaseDao<App> {
         SELECT a.* FROM apps a INNER JOIN users u ON u.user_id = a.app_id WHERE u.relationship = 'FRIEND' AND a.app_id NOT IN (SELECT fa.app_id FROM favorite_apps fa WHERE fa.user_id = :userId)
     """)
     suspend fun getUnfavoriteApps(userId: String): List<App>
+
+    @Query("""
+        SELECT a.* FROM apps a WHERE a.app_id in (:appIds)
+    """)
+    suspend fun getTopApps(appIds: List<String>): List<App>
 }

@@ -196,4 +196,6 @@ constructor(
         circleDao.findCircleItemByCircleIdSuspend(circleId)
 
     suspend fun getCircleConversationCount(conversationId: String) = circleConversationDao.getCircleConversationCount(conversationId)
+
+    suspend fun getTopApps(appIds: List<String>): List<App> = appDao.getTopApps(appIds)
 }

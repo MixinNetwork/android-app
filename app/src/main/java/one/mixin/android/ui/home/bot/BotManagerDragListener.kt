@@ -17,36 +17,39 @@ class BotManagerDragListener : OnDragListener {
             DragEvent.ACTION_DRAG_LOCATION -> {
                 when (v.id) {
                     R.id.dock_1 -> {
+                        Timber.d("111")
                     }
                     R.id.dock_2 -> {
+                        Timber.d("222")
                     }
                     R.id.dock_3 -> {
+                        Timber.d("333")
                     }
                     R.id.dock_4 -> {
+                        Timber.d("444")
                     }
                     R.id.bot_dock -> {
                     }
                 }
             }
             DragEvent.ACTION_DROP -> {
-                Timber.d("$v.id")
-                Timber.d("${R.id.dock_1} ${R.id.dock_2} ${R.id.dock_3} ${R.id.dock_4}")
-
                 when (v.id) {
                     R.id.dock_1, R.id.dock_2, R.id.dock_3, R.id.dock_4, R.id.bot_dock -> {
-                        val source = viewSource.parent.parent as RecyclerView
-                        val adapterSource = source.adapter as BotManagerAdapter? ?: return false
-                        val list = adapterSource.list ?: return false
-                        val positionSource = viewSource.tag as Int
-                        if (v.id == R.id.bot_dock) {
-                            (v as BotDock).addApp(list[positionSource])
-                        } else {
-                            (v.parent as BotDock).addApp(list[positionSource])
+                        val source = viewSource.parent.parent
+                        if (source is RecyclerView) {
+                            val adapterSource = source.adapter as BotManagerAdapter? ?: return false
+                            val list = adapterSource.list ?: return false
+                            val positionSource = viewSource.tag as Int
+                            if (v.id == R.id.bot_dock) {
+                                (v as BotDock).addApp(list[positionSource])
+                            } else {
+                                (v.parent as BotDock).addApp(list[positionSource])
+                            }
                         }
                     }
                     R.id.bot_rv -> {
                         if (viewSource.tag is Int) return false
-                        val positionSource = viewSource.tag as App
+                        val positionSource = viewSource.tag as AppInterface
                         (viewSource.parent.parent as BotDock).remove(positionSource)
                     }
                     else -> {
