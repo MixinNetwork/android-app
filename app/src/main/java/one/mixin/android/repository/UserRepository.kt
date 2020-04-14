@@ -23,6 +23,7 @@ import one.mixin.android.db.runInTransaction
 import one.mixin.android.db.updateRelationship
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
+import one.mixin.android.job.RefreshCircleJob.Companion.REFRESH_CIRCLE_CONVERSATION_LIMIT
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
@@ -175,9 +176,11 @@ constructor(
     suspend fun findCircleConversationByCircleId(circleId: String) =
         circleConversationDao.findCircleConversationByCircleId(circleId)
 
-    suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleManagerItem> = circleDao.getIncludeCircleItem(conversationId)
+    suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleManagerItem> =
+        circleDao.getIncludeCircleItem(conversationId)
 
-    suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem> = circleDao.getOtherCircleItem(conversationId)
+    suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem> =
+        circleDao.getOtherCircleItem(conversationId)
 
     fun hasUnreadMessage(circleId: String): LiveData<Boolean> {
         return conversationDao.hasUnreadMessage(circleId).map {
@@ -191,5 +194,15 @@ constructor(
     suspend fun findCircleItemByCircleIdSuspend(circleId: String) =
         circleDao.findCircleItemByCircleIdSuspend(circleId)
 
-    suspend fun getCircleConversationCount(conversationId: String) = circleConversationDao.getCircleConversationCount(conversationId)
+    suspend fun getCircleConversationCount(conversationId: String) =
+        circleConversationDao.getCircleConversationCount(conversationId)
+
+    fun getCircles() = circleService.getCircles()
+
+    fun getCircleConversations(circleId: String, offset: String? = null, limit: Int = REFRESH_CIRCLE_CONVERSATION_LIMIT) =
+        circleService.getCircleConversations(circleId, offset, limit)
+
+    fun insertUpdateCircle(c: Circle) = circleDao.insertUpdate(c)
+
+    fun insertUpdateCircleConversation(cc: CircleConversation) = circleConversationDao.insertUpdate(cc)
 }

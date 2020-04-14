@@ -50,6 +50,7 @@ import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.Load.IS_LOADED
+import one.mixin.android.Constants.Load.IS_SYNC_CIRCLE
 import one.mixin.android.Constants.Load.IS_SYNC_SESSION
 import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
@@ -192,7 +193,8 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         if (!defaultSharedPreferences.getBoolean(IS_LOADED, false) ||
-            !defaultSharedPreferences.getBoolean(IS_SYNC_SESSION, false)
+            !defaultSharedPreferences.getBoolean(IS_SYNC_SESSION, false) ||
+            !defaultSharedPreferences.getBoolean(IS_SYNC_CIRCLE, false)
         ) {
             InitializeActivity.showLoading(this, false)
             finish()

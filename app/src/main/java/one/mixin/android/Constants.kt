@@ -105,6 +105,7 @@ object Constants {
     object Load {
         const val IS_LOADED = "is_loaded"
         const val IS_SYNC_SESSION = "is_sync_session"
+        const val IS_SYNC_CIRCLE = "is_sync_circle"
     }
 
     object ChainId {
