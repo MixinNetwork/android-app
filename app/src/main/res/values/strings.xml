@@ -810,5 +810,6 @@
     <string name="circle_limit">The number has reached the limit</string>
     <!--  bot  -->
     <string name="bot_title">Bots</string>
+    <string name="bot_dock_empty">长按并拖拽机器人置顶</string>
 </resources>
 

@@ -26,6 +26,7 @@ class BotManagerBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_bot_manager, null)
+
         (dialog as BottomSheet).setCustomView(contentView)
         initView()
     }
@@ -34,6 +35,7 @@ class BotManagerBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.bot_close.setOnClickListener {
             dismiss()
         }
+        contentView.bot_dock.setOnDragListener(bottomListAdapter.dragInstance)
         contentView.bot_rv.layoutManager = GridLayoutManager(requireContext(), 4)
         contentView.bot_rv.adapter = bottomListAdapter
         contentView.bot_rv.setOnDragListener(bottomListAdapter.dragInstance)

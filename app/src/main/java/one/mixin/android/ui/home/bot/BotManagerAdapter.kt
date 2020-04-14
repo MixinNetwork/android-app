@@ -32,9 +32,8 @@ class BotManagerAdapter : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>
         list?.get(position)?.let { app ->
             holder.itemView.avatar.setInfo(app.name, app.iconUrl, app.appId)
             holder.itemView.name.text = app.name
-            holder.itemView.tag = position
+            holder.itemView.avatar.tag = position
             holder.itemView.avatar.setOnLongClickListener(this)
-            holder.itemView.avatar.setOnDragListener(BotManagerDragListener())
         }
     }
 

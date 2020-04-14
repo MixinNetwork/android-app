@@ -796,4 +796,5 @@
     <string name="circle_limit">已达到上限</string>
     <!--  bot  -->
     <string name="bot_title">小程序</string>
+    <string name="bot_dock_empty">长按并拖拽机器人置顶</string>
 </resources>
