@@ -12,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Load.IS_LOADED
-import one.mixin.android.Constants.Load.IS_SYNC_CIRCLE
 import one.mixin.android.Constants.Load.IS_SYNC_SESSION
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -53,22 +52,10 @@ class LoadingFragment : BaseFragment() {
             if (!defaultSharedPreferences.getBoolean(IS_SYNC_SESSION, false)) {
                 syncSession()
             }
-            if (!defaultSharedPreferences.getBoolean(IS_SYNC_CIRCLE, false)) {
-                syncCircle()
-            }
             context?.let {
                 MainActivity.show(it)
             }
             activity?.finish()
-        }
-    }
-
-    private suspend fun syncCircle() {
-        try {
-            loadingViewModel.syncRefreshCircle()
-            requireContext().defaultSharedPreferences.putBoolean(IS_SYNC_CIRCLE, true)
-        } catch (e: Exception) {
-            ErrorHandler.handleError(e)
         }
     }
 

@@ -21,11 +21,8 @@ import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.vo.SenderKey
 import one.mixin.android.crypto.vo.Session
 import one.mixin.android.extension.getDeviceId
-import one.mixin.android.job.RefreshCircleJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.repository.ConversationRepository
-import one.mixin.android.repository.UserRepository
-import one.mixin.android.vo.Circle
 import one.mixin.android.vo.ParticipantSession
 
 class LoadingViewModel @Inject internal
@@ -33,7 +30,6 @@ constructor(
     private val signalKeyService: SignalKeyService,
     private val accountService: AccountService,
     private val userService: UserService,
-    private val userRepo: UserRepository,
     private val conversationRepo: ConversationRepository
 ) : ViewModel() {
     private val sessionDao: SessionDao =
@@ -117,34 +113,6 @@ constructor(
                 }
             } catch (e: Exception) {
                 elseCallBack.invoke(e)
-            }
-        }
-    }
-
-    suspend fun syncRefreshCircle() = withContext(Dispatchers.IO) {
-        val circleResponse = userRepo.getCircles().execute().body()
-        if (circleResponse?.isSuccess == true) {
-            circleResponse.data?.let { cList ->
-                cList.forEach { c ->
-                    handleCircle(c)
-                }
-            }
-        }
-    }
-
-    private fun handleCircle(c: Circle, offset: String? = null) {
-        userRepo.insertUpdateCircle(c)
-        val ccResponse = userRepo.getCircleConversations(
-            c.circleId, offset, RefreshCircleJob.REFRESH_CIRCLE_CONVERSATION_LIMIT).execute().body()
-        if (ccResponse?.isSuccess == true) {
-            ccResponse.data?.let { ccList ->
-                ccList.forEach { cc ->
-                    userRepo.insertUpdateCircleConversation(cc)
-                }
-
-                if (ccList.size >= RefreshCircleJob.REFRESH_CIRCLE_CONVERSATION_LIMIT) {
-                    handleCircle(c, ccList.last().createdAt)
-                }
             }
         }
     }

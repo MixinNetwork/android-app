@@ -13,6 +13,8 @@ class RefreshCircleJob(
         const val REFRESH_CIRCLE_CONVERSATION_LIMIT = 500
     }
 
+    private val refreshUserIdSet = mutableSetOf<String>()
+
     override fun onRun() {
         if (circleId == null) {
             val circleResponse = circleService.getCircles().execute().body()
@@ -20,6 +22,7 @@ class RefreshCircleJob(
                 circleResponse.data?.let { cList ->
                     cList.forEach { c ->
                         handleCircle(c)
+                        circleDao.insertUpdate(c)
                     }
                 }
             }
@@ -28,19 +31,32 @@ class RefreshCircleJob(
             if (circleResponse?.isSuccess == true) {
                 circleResponse.data?.let { c ->
                     handleCircle(c)
+                    circleDao.insertUpdate(c)
                 }
             }
+        }
+
+        if (refreshUserIdSet.isNotEmpty()) {
+            jobManager.addJobInBackground(RefreshUserJob(refreshUserIdSet.toList()))
         }
     }
 
     private fun handleCircle(c: Circle, offset: String? = null) {
-        circleDao.insertUpdate(c)
         val ccResponse = circleService.getCircleConversations(
             c.circleId, offset, REFRESH_CIRCLE_CONVERSATION_LIMIT).execute().body()
         if (ccResponse?.isSuccess == true) {
             ccResponse.data?.let { ccList ->
                 ccList.forEach { cc ->
                     circleConversationDao.insertUpdate(cc)
+
+                    cc.userId?.let { uid ->
+                        if (!refreshUserIdSet.contains(uid)) {
+                            val user = userDao.findUser(uid)
+                            if (user == null) {
+                                refreshUserIdSet.add(uid)
+                            }
+                        }
+                    }
                 }
 
                 if (ccList.size >= REFRESH_CIRCLE_CONVERSATION_LIMIT) {

@@ -42,6 +42,7 @@ object Constants {
         const val PREF_FIAT_MAP = "pref_fiat_map"
         const val PREF_NOTIFICATION_ON = "pref_notification_on"
         const val PREF_BATTERY_OPTIMIZE = "pref_battery_optimize"
+        const val PREF_SYNC_CIRCLE = "pref_sync_circle"
     }
 
     object Scheme {
@@ -105,7 +106,6 @@ object Constants {
     object Load {
         const val IS_LOADED = "is_loaded"
         const val IS_SYNC_SESSION = "is_sync_session"
-        const val IS_SYNC_CIRCLE = "is_sync_circle"
     }
 
     object ChainId {
