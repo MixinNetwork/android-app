@@ -1,11 +1,15 @@
 package one.mixin.android.ui.home
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
+import android.net.Uri
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.view.KeyEvent
 import android.view.View
 import androidx.appcompat.app.AlertDialog
@@ -41,6 +45,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.INTERVAL_24_HOURS
@@ -232,6 +237,8 @@ class MainActivity : BlazeBaseActivity() {
         handlerCode(intent)
 
         sendSafetyNetRequest()
+
+        checkBatteryOptimization()
     }
 
     override fun onStart() {
@@ -242,6 +249,24 @@ class MainActivity : BlazeBaseActivity() {
     override fun onDestroy() {
         super.onDestroy()
         appUpdateManager.unregisterListener(updatedListener)
+    }
+
+    @SuppressLint("BatteryLife")
+    private fun checkBatteryOptimization() {
+        val batteryOptimize = defaultSharedPreferences.getLong(PREF_BATTERY_OPTIMIZE, 0)
+        val cur = System.currentTimeMillis()
+        if (cur - batteryOptimize > Constants.INTERVAL_48_HOURS) {
+            getSystemService<PowerManager>()?.let { pm ->
+                if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                    Intent().apply {
+                        action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                        data = Uri.parse("package:$packageName")
+                        startActivity(this)
+                    }
+                }
+            }
+            defaultSharedPreferences.putLong(PREF_BATTERY_OPTIMIZE, cur)
+        }
     }
 
     private fun delayShowModifyMobile() = lifecycleScope.launch {
