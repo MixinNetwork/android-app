@@ -124,7 +124,7 @@ internal abstract class ViewModelModule {
     @Binds
     @IntoMap
     @ViewModelKey(UrlInterpreterViewModel::class)
-    internal abstract fun bindUrlInterperterModel(urlInterpreterViewModel: UrlInterpreterViewModel): ViewModel
+    internal abstract fun bindUrlInterpreterModel(urlInterpreterViewModel: UrlInterpreterViewModel): ViewModel
 
     @Binds
     @IntoMap
