@@ -14,20 +14,22 @@ class BotManagerDragListener : OnDragListener {
         val viewSource = event.localState as View? ?: return false
         when (event.action) {
             DragEvent.ACTION_DRAG_LOCATION -> {
-                when (v.id) {
-                    R.id.dock_1 -> {
-                        Timber.d("111")
-                    }
-                    R.id.dock_2 -> {
-                        Timber.d("222")
-                    }
-                    R.id.dock_3 -> {
-                        Timber.d("333")
-                    }
-                    R.id.dock_4 -> {
-                        Timber.d("444")
-                    }
-                    R.id.bot_dock -> {
+                if (viewSource.tag is BotInterface) {
+                    when (v.id) {
+                        R.id.dock_1 -> {
+                            (v.parent as BotDock).float(1, viewSource.tag as BotInterface)
+                        }
+                        R.id.dock_2 -> {
+                            (v.parent as BotDock).float(2, viewSource.tag as BotInterface)
+                        }
+                        R.id.dock_3 -> {
+                            (v.parent as BotDock).float(3, viewSource.tag as BotInterface)
+                        }
+                        R.id.dock_4 -> {
+                            (v.parent as BotDock).float(4, viewSource.tag as BotInterface)
+                        }
+                        R.id.bot_dock -> {
+                        }
                     }
                 }
             }

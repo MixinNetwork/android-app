@@ -155,6 +155,10 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         }
     }
 
+    fun float(index: Int, bot: BotInterface) {
+     
+    }
+
     private var onDockListener: OnDockListener? = null
 
     fun setOnDockListener(listener: OnDockListener) {
