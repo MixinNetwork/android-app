@@ -197,5 +197,5 @@ constructor(
 
     suspend fun getCircleConversationCount(conversationId: String) = circleConversationDao.getCircleConversationCount(conversationId)
 
-    suspend fun getTopApps(appIds: List<String>): List<App> = appDao.getTopApps(appIds)
+    suspend fun getNotTopApps(appIds: List<String>): List<App> = appDao.getNotTopApps(appIds)
 }

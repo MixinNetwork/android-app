@@ -5,7 +5,6 @@ import android.view.View
 import android.view.View.OnDragListener
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
-import one.mixin.android.vo.App
 import one.mixin.android.widget.bot.BotDock
 import timber.log.Timber
 
@@ -38,7 +37,7 @@ class BotManagerDragListener : OnDragListener {
                         val source = viewSource.parent.parent
                         if (source is RecyclerView) {
                             val adapterSource = source.adapter as BotManagerAdapter? ?: return false
-                            val list = adapterSource.list ?: return false
+                            val list = adapterSource.list
                             val positionSource = viewSource.tag as Int
                             if (v.id == R.id.bot_dock) {
                                 (v as BotDock).addApp(list[positionSource])
@@ -49,7 +48,7 @@ class BotManagerDragListener : OnDragListener {
                     }
                     R.id.bot_rv -> {
                         if (viewSource.tag is Int) return false
-                        val positionSource = viewSource.tag as AppInterface
+                        val positionSource = viewSource.tag as BotInterface
                         (viewSource.parent.parent as BotDock).remove(positionSource)
                     }
                     else -> {

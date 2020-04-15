@@ -10,7 +10,7 @@ import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlin.contracts.contract
 import kotlinx.android.parcel.Parcelize
-import one.mixin.android.ui.home.bot.AppInterface
+import one.mixin.android.ui.home.bot.BotInterface
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -53,7 +53,7 @@ data class App(
     val resourcePatterns: ArrayList<String>?,
     @ColumnInfo(name = "updated_at")
     val updatedAt: String?
-) : Parcelable, AppInterface {
+) : Parcelable, BotInterface {
 
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<App>() {

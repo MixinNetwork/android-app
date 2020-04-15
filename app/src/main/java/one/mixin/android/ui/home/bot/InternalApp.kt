@@ -1,34 +1,28 @@
 package one.mixin.android.ui.home.bot
 
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.vo.App
 
-interface AppInterface
+interface BotInterface
 
-class InternalApp(@StringRes val name: Int, @DrawableRes val icon: Int) : AppInterface
-
-val InternalWallet = InternalApp(R.string.bot_internal_wallet, R.drawable.ic_bot_wallet)
-val InternalCamera = InternalApp(R.string.bot_internal_camera, R.drawable.ic_bot_camera)
-val InternalScan = InternalApp(R.string.bot_internal_scan, R.drawable.ic_bot_scan)
-
-const val VALUE_WALLET = 0x001
-const val VALUE_CAMERA = 0x010
-const val VALUE_SCAN = 0x100
-
-class BotDataSource {
-    private val topApp = mutableListOf<AppInterface>()
-    private val internalApp = mutableListOf<AppInterface>()
-
-    fun init(value: Int) {
-        if (value.or(0x110) == 0x111){
-        }
-        if (value.or(0x110) == 0x111){
-
-        }
-        if (value.or(0x110) == 0x111){
-
-        }
-    }
+data class Bot(val id: String, val name: String, val icon: String? = null) : BotInterface {
+    constructor(app: App) : this(app.appId, app.name, app.iconUrl)
 }
+
+fun Bot.getInternalIcon(): Int = when (id) {
+    VALUE_WALLET -> R.drawable.ic_bot_wallet
+    VALUE_CAMERA -> R.drawable.ic_bot_camera
+    VALUE_SCAN -> R.drawable.ic_bot_scan
+    else -> 0
+}
+
+const val VALUE_WALLET = "0x001"
+const val VALUE_CAMERA = "0x010"
+const val VALUE_SCAN = "0x100"
+
+const val TOP_BOT = "top_bot"
+
+val InternalWallet = Bot(VALUE_WALLET, MixinApplication.appContext.getString(R.string.bot_internal_wallet))
+val InternalCamera = Bot(VALUE_CAMERA, MixinApplication.appContext.getString(R.string.bot_internal_camera))
+val InternalScan = Bot(VALUE_SCAN, MixinApplication.appContext.getString(R.string.bot_internal_scan))

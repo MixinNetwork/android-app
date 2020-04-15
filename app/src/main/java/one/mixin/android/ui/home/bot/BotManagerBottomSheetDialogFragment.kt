@@ -16,13 +16,18 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.scope
 import javax.inject.Inject
+import kotlinx.android.synthetic.main.fragment_bot_manager.*
 import kotlinx.android.synthetic.main.fragment_bot_manager.view.*
+import kotlinx.android.synthetic.main.fragment_bot_manager.view.bot_dock
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.putString
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinBottomSheetDialog
@@ -113,9 +118,38 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
 
     private fun loadData() {
         lifecycleScope.launch {
-            val apps = mutableListOf<AppInterface>(InternalWallet, InternalCamera, InternalScan)
-            apps.addAll(botManagerViewModel.getApps())
-            bottomListAdapter.list = apps
+            val defaultApps = mutableListOf<BotInterface>(InternalWallet, InternalCamera, InternalScan)
+            val topApps = mutableListOf<BotInterface>()
+            val topIds = mutableListOf<String>()
+            defaultSharedPreferences.getString(TOP_BOT, null)?.let {
+                val ids = GsonHelper.customGson.fromJson(it, Array<String>::class.java)
+                ids.forEach { id ->
+                    topIds.add(id)
+                    when (id) {
+                        VALUE_WALLET -> {
+                            topApps.add(InternalWallet)
+                            defaultApps.remove(InternalWallet)
+                        }
+                        VALUE_CAMERA -> {
+                            topApps.add(InternalCamera)
+                            defaultApps.remove(InternalCamera)
+                        }
+                        VALUE_SCAN -> {
+                            topApps.add(InternalScan)
+                            defaultApps.remove(InternalScan)
+                        }
+                        else -> {
+                            botManagerViewModel.findAppById(id)?.let { app ->
+                                topApps.add(Bot(app))
+                            }
+                        }
+                    }
+                }
+            }
+
+            contentView.bot_dock.apps = topApps
+            defaultApps.addAll(botManagerViewModel.getTopApps(topIds))
+            bottomListAdapter.list = defaultApps
         }
     }
 
@@ -140,13 +174,20 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         }
     }
 
-    override fun onDockAdd(app: AppInterface) {
-        bottomListAdapter.list.remove(app)
-        bottomListAdapter.notifyDataSetChanged()
+    override fun onDockChange(apps: List<BotInterface>) {
+        saveTopApps(apps)
+        loadData()
     }
 
-    override fun onDockRemove(app: AppInterface) {
-        bottomListAdapter.list.add(app)
-        bottomListAdapter.notifyDataSetChanged()
+    private fun saveTopApps(apps: List<BotInterface>) {
+        apps.map {
+            if (it is App) {
+                it.appId
+            } else {
+                (it as Bot).id
+            }
+        }.apply {
+            defaultSharedPreferences.putString(TOP_BOT, GsonHelper.customGson.toJson(this))
+        }
     }
 }

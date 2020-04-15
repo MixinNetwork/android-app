@@ -18,8 +18,9 @@ import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.isActivityNotDestroyed
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
-import one.mixin.android.ui.home.bot.AppInterface
-import one.mixin.android.ui.home.bot.InternalApp
+import one.mixin.android.ui.home.bot.Bot
+import one.mixin.android.ui.home.bot.BotInterface
+import one.mixin.android.ui.home.bot.getInternalIcon
 import one.mixin.android.vo.App
 import org.jetbrains.anko.sp
 
@@ -114,14 +115,18 @@ class AvatarView : ViewAnimator {
         }
     }
 
-    fun renderApp(app: AppInterface) {
+    fun renderApp(app: BotInterface) {
         if (app is App) {
             setInfo(app.name, app.iconUrl, app.appId)
-        } else if (app is InternalApp) {
+        } else if (app is Bot) {
             displayedChild = POS_AVATAR
             avatar_simple.setBackgroundResource(0)
             avatar_simple.setPadding(0)
-            avatar_simple.setImageResource(app.icon)
+            if (app.icon != null) {
+                avatar_simple.loadImage(app.icon, R.drawable.ic_avatar_place_holder)
+            } else {
+                avatar_simple.setImageResource(app.getInternalIcon())
+            }
         }
     }
 

@@ -22,7 +22,7 @@ class BotManagerAdapter : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>
         return ListViewHolder(view)
     }
 
-    var list: MutableList<AppInterface> = mutableListOf()
+    var list: List<BotInterface> = listOf()
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -33,8 +33,8 @@ class BotManagerAdapter : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>
             holder.itemView.avatar.renderApp(app)
             if (app is App) {
                 holder.itemView.name.text = app.name
-            } else if (app is InternalApp) {
-                holder.itemView.name.setText(app.name)
+            } else if (app is Bot) {
+                holder.itemView.name.text = app.name
             }
             holder.itemView.avatar.tag = position
             holder.itemView.avatar.setOnLongClickListener(this)
