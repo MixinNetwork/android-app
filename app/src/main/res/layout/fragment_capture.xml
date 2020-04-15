@@ -78,6 +78,7 @@
         android:id="@+id/bottom_ll"
         android:layout_width="match_parent"
         android:layout_height="100dp"
+        android:layout_marginBottom="50dp"
         android:layout_alignParentBottom="true">
 
         <ImageView
@@ -85,7 +86,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/margin20"
+            android:layout_marginStart="56dp"
             android:padding="8dp"
             android:background="@drawable/mixin_ripple"
             android:src="@drawable/ic_camera_gallery"
@@ -103,26 +104,12 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="@dimen/margin20"
+            android:layout_marginEnd="56dp"
             android:padding="8dp"
             android:background="@drawable/mixin_ripple"
             android:src="@drawable/ic_switch_camera"
             tools:ignore="ContentDescription"/>
     </RelativeLayout>
-
-    <one.mixin.android.widget.PseudoNotificationView
-        android:id="@+id/pseudo_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"/>
-
-    <ViewStub
-        android:id="@+id/stub"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout="@layout/view_camera_tip"/>
 
     <one.mixin.android.widget.CaptureBorderView
         android:id="@+id/capture_border_view"

@@ -46,7 +46,7 @@ import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 
-class EditFragment : CaptureVisionFragment() {
+class EditFragment : VisionFragment() {
 
     companion object {
         const val TAG = "EditFragment"
@@ -172,7 +172,7 @@ class EditFragment : CaptureVisionFragment() {
                         result.firstOrNull()?.rawValue?.let {
                             lifecycleScope.launch innerLaunch@{
                                 if (!isAdded) return@innerLaunch
-                                pseudoNotificationView.addContent(it)
+                                pseudoNotificationView?.addContent(it)
                             }
                         }
                     }
@@ -180,7 +180,7 @@ class EditFragment : CaptureVisionFragment() {
         } else {
             bitmap.decodeQR()?.let {
                 withContext(Dispatchers.Main) {
-                    pseudoNotificationView.addContent(it)
+                    pseudoNotificationView?.addContent(it)
                 }
             }
         }

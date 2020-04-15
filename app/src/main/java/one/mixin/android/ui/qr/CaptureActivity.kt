@@ -12,8 +12,6 @@ import one.mixin.android.util.isCameraCanUse
 
 class CaptureActivity : BlazeBaseActivity() {
 
-    private lateinit var captureFragment: BaseCaptureFragment
-
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_Capture
     }
@@ -27,13 +25,15 @@ class CaptureActivity : BlazeBaseActivity() {
         overridePendingTransition(R.anim.slide_in_bottom, 0)
         checkCameraCanUse()
         setContentView(R.layout.activity_contact)
-        captureFragment = when {
-                intent.hasExtra(ARGS_FOR_ADDRESS) -> CameraXCaptureFragment.newInstance(true)
-                intent.hasExtra(ARGS_FOR_ACCOUNT_NAME) -> CameraXCaptureFragment.newInstance(forAccountName = true)
-                intent.hasExtra(ARGS_FOR_MEMO) -> CameraXCaptureFragment.newInstance(forMemo = true)
-                else -> CameraXCaptureFragment.newInstance()
-            }
-        replaceFragment(captureFragment, R.id.container, CameraXCaptureFragment.TAG)
+        when {
+            intent.hasExtra(ARGS_FOR_ADDRESS) ->
+                replaceFragment(ScanFragment.newInstance(forAddress = true), R.id.container, ScanFragment.TAG)
+            intent.hasExtra(ARGS_FOR_ACCOUNT_NAME) ->
+                replaceFragment(ScanFragment.newInstance(forAccountName = true), R.id.container, ScanFragment.TAG)
+            intent.hasExtra(ARGS_FOR_MEMO) ->
+                replaceFragment(ScanFragment.newInstance(forMemo = true), R.id.container, ScanFragment.TAG)
+            else -> replaceFragment(CaptureFragment.newInstance(), R.id.container, CaptureFragment.TAG)
+        }
     }
 
     override fun finish() {

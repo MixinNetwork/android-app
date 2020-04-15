@@ -16,8 +16,8 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.widget.PseudoNotificationView
 
-abstract class CaptureVisionFragment : BaseFragment() {
-    protected lateinit var pseudoNotificationView: PseudoNotificationView
+abstract class VisionFragment : BaseFragment() {
+    protected var pseudoNotificationView: PseudoNotificationView? = null
 
     protected val detector: FirebaseVisionBarcodeDetector =
         FirebaseVision.getInstance().getVisionBarcodeDetector(
@@ -28,7 +28,7 @@ abstract class CaptureVisionFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        pseudoNotificationView = view.findViewById<PseudoNotificationView>(R.id.pseudo_view).apply {
+        pseudoNotificationView = view.findViewById<PseudoNotificationView>(R.id.pseudo_view)?.apply {
             translationY = -requireContext().dpToPx(300f).toFloat()
             callback = pseudoViewCallback
         }

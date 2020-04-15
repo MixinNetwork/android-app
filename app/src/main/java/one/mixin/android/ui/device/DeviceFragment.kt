@@ -104,7 +104,7 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
             } else {
-                RxPermissions(activity!!)
+                RxPermissions(requireActivity())
                     .request(Manifest.permission.CAMERA)
                     .autoDispose(stopScope)
                     .subscribe { granted ->
