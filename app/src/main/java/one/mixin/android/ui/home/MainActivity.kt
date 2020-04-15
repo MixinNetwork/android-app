@@ -3,6 +3,7 @@ package one.mixin.android.ui.home
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.NotificationManager
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
@@ -122,6 +123,7 @@ import one.mixin.android.worker.RefreshAssetsWorker
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
 import org.jetbrains.anko.doAsync
+import timber.log.Timber
 
 class MainActivity : BlazeBaseActivity() {
 
@@ -265,7 +267,11 @@ class MainActivity : BlazeBaseActivity() {
                     Intent().apply {
                         action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
                         data = Uri.parse("package:$packageName")
-                        startActivity(this)
+                        try {
+                            startActivity(this)
+                        } catch (e: ActivityNotFoundException) {
+                            Timber.w("Battery optimization activity not found")
+                        }
                     }
                 }
             }
