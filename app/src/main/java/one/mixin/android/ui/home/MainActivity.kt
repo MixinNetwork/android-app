@@ -3,6 +3,7 @@ package one.mixin.android.ui.home
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.NotificationManager
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
@@ -46,6 +47,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
+import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.INTERVAL_24_HOURS
@@ -69,6 +71,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
@@ -76,6 +79,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
+import one.mixin.android.job.RefreshCircleJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshStickerAlbumJob.Companion.REFRESH_STICKER_ALBUM_PRE_KEY
@@ -119,6 +123,7 @@ import one.mixin.android.worker.RefreshAssetsWorker
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
 import org.jetbrains.anko.doAsync
+import timber.log.Timber
 
 class MainActivity : BlazeBaseActivity() {
 
@@ -214,6 +219,10 @@ class MainActivity : BlazeBaseActivity() {
         Bugsnag.setUser(account?.userId, account?.identity_number, account?.full_name)
         Crashlytics.setUserIdentifier(account?.userId)
 
+        if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
+            jobManager.addJobInBackground(RefreshCircleJob())
+            defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
+        }
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
         jobManager.addJobInBackground(BackupJob())
 
@@ -227,18 +236,15 @@ class MainActivity : BlazeBaseActivity() {
             WorkManager.getInstance(this@MainActivity)
                 .enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>()
         }
-
-        refreshStickerAlbum()
         checkRoot()
-
         checkUpdate()
 
         initView()
         handlerCode(intent)
 
         sendSafetyNetRequest()
-
         checkBatteryOptimization()
+        refreshStickerAlbum()
     }
 
     override fun onStart() {
@@ -261,7 +267,11 @@ class MainActivity : BlazeBaseActivity() {
                     Intent().apply {
                         action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
                         data = Uri.parse("package:$packageName")
-                        startActivity(this)
+                        try {
+                            startActivity(this)
+                        } catch (e: ActivityNotFoundException) {
+                            Timber.w("Battery optimization activity not found")
+                        }
                     }
                 }
             }

@@ -41,6 +41,7 @@ object Constants {
         const val PREF_FIAT_MAP = "pref_fiat_map"
         const val PREF_NOTIFICATION_ON = "pref_notification_on"
         const val PREF_BATTERY_OPTIMIZE = "pref_battery_optimize"
+        const val PREF_SYNC_CIRCLE = "pref_sync_circle"
     }
 
     object Scheme {

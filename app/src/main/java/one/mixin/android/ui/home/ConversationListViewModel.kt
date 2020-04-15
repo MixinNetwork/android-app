@@ -135,7 +135,8 @@ internal constructor(
     suspend fun findConversationItemByCircleId(circleId: String) =
         userRepository.findConversationItemByCircleId(circleId)
 
-    suspend fun updateCircleConversations(id: String, circleConversationRequests: List<CircleConversationRequest>) = userRepository.updateCircleConversations(id, circleConversationRequests)
+    suspend fun updateCircleConversations(id: String, circleConversationRequests: List<CircleConversationRequest>) =
+        userRepository.updateCircleConversations(id, circleConversationRequests)
 
     fun sortCircleConversations(list: List<CircleOrder>?) = viewModelScope.launch { userRepository.sortCircleConversations(list) }
 

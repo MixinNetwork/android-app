@@ -179,9 +179,11 @@ constructor(
     suspend fun findCircleConversationByCircleId(circleId: String) =
         circleConversationDao.findCircleConversationByCircleId(circleId)
 
-    suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleManagerItem> = circleDao.getIncludeCircleItem(conversationId)
+    suspend fun getIncludeCircleItem(conversationId: String): List<ConversationCircleManagerItem> =
+        circleDao.getIncludeCircleItem(conversationId)
 
-    suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem> = circleDao.getOtherCircleItem(conversationId)
+    suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem> =
+        circleDao.getOtherCircleItem(conversationId)
 
     fun hasUnreadMessage(circleId: String): LiveData<Boolean> {
         return conversationDao.hasUnreadMessage(circleId).map {
@@ -195,7 +197,8 @@ constructor(
     suspend fun findCircleItemByCircleIdSuspend(circleId: String) =
         circleDao.findCircleItemByCircleIdSuspend(circleId)
 
-    suspend fun getCircleConversationCount(conversationId: String) = circleConversationDao.getCircleConversationCount(conversationId)
+    suspend fun getCircleConversationCount(conversationId: String) =
+        circleConversationDao.getCircleConversationCount(conversationId)
 
     suspend fun getNotTopApps(appIds: List<String>): List<App> = appDao.getNotTopApps(appIds)
 
