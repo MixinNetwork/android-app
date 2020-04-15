@@ -217,13 +217,12 @@ class MainActivity : BlazeBaseActivity() {
         Bugsnag.setUser(account?.userId, account?.identity_number, account?.full_name)
         Crashlytics.setUserIdentifier(account?.userId)
 
-        jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
-        jobManager.addJobInBackground(BackupJob())
-
         if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
             jobManager.addJobInBackground(RefreshCircleJob())
             defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
         }
+        jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
+        jobManager.addJobInBackground(BackupJob())
 
         doAsync {
             jobManager.addJobInBackground(RefreshAccountJob())
@@ -235,18 +234,15 @@ class MainActivity : BlazeBaseActivity() {
             WorkManager.getInstance(this@MainActivity)
                 .enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>()
         }
-
-        refreshStickerAlbum()
         checkRoot()
-
         checkUpdate()
 
         initView()
         handlerCode(intent)
 
         sendSafetyNetRequest()
-
         checkBatteryOptimization()
+        refreshStickerAlbum()
     }
 
     override fun onStart() {
