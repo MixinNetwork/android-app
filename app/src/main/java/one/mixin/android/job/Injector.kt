@@ -35,7 +35,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
-import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.SYSTEM_USER

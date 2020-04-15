@@ -2,6 +2,7 @@ package one.mixin.android.api.service
 
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.CircleConversationRequest
+import one.mixin.android.job.RefreshCircleJob.Companion.REFRESH_CIRCLE_CONVERSATION_LIMIT
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleName
@@ -10,6 +11,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface CircleService {
     @GET("circles")
@@ -32,4 +34,11 @@ interface CircleService {
         @Path("id") id: String,
         @Body conversationCircleRequests: List<CircleConversationRequest>
     ): MixinResponse<List<CircleConversation>>
+
+    @GET("circles/{id}/conversations")
+    fun getCircleConversations(
+        @Path("id") id: String,
+        @Query("offset") offset: String? = null,
+        @Query("limit") limit: Int = REFRESH_CIRCLE_CONVERSATION_LIMIT
+    ): Call<MixinResponse<List<CircleConversation>>>
 }

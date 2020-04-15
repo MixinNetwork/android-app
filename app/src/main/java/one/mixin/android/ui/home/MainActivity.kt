@@ -46,6 +46,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
+import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.INTERVAL_24_HOURS
@@ -69,6 +70,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
@@ -76,6 +78,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
+import one.mixin.android.job.RefreshCircleJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshStickerAlbumJob.Companion.REFRESH_STICKER_ALBUM_PRE_KEY
@@ -216,6 +219,11 @@ class MainActivity : BlazeBaseActivity() {
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
         jobManager.addJobInBackground(BackupJob())
+
+        if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
+            jobManager.addJobInBackground(RefreshCircleJob())
+            defaultSharedPreferences.putBoolean(PREF_SYNC_CIRCLE, true)
+        }
 
         doAsync {
             jobManager.addJobInBackground(RefreshAccountJob())
