@@ -181,5 +181,12 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("CREATE TABLE IF NOT EXISTS `circle_conversations` (`conversation_id` TEXT NOT NULL, `circle_id` TEXT NOT NULL, `user_id` TEXT, `created_at` TEXT NOT NULL, `pin_time` TEXT, PRIMARY KEY(`conversation_id`, `circle_id`))")
             }
         }
+
+        val MIGRATION_30_31: Migration = object : Migration(30, 31) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE assets ADD COLUMN reserve TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE apps ADD COLUMN category TEXT")
+            }
+        }
     }
 }

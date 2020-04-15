@@ -14,7 +14,7 @@ interface AssetDao : BaseDao<Asset> {
         const val PREFIX_ASSET_ITEM = "SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, " +
             "a1.balance, a1.destination AS destination, a1.tag AS tag, a1.price_btc AS priceBtc, a1.price_usd AS priceUsd, " +
             "a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden, " +
-            "a1.confirmations, a2.icon_url AS chainIconUrl, a2.symbol as chainSymbol, a2.name as chainName, " +
+            "a1.confirmations, a1.reserve as reserve, a2.icon_url AS chainIconUrl, a2.symbol as chainSymbol, a2.name as chainName, " +
             "a1.asset_key AS assetKey FROM assets a1 " +
             "LEFT JOIN assets a2 ON a1.chain_id = a2.asset_id " +
             "LEFT JOIN assets_extra ae ON ae.asset_id = a1.asset_id "

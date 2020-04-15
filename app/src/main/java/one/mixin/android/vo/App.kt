@@ -36,6 +36,9 @@ data class App(
     @SerializedName("icon_url")
     @ColumnInfo(name = "icon_url")
     val iconUrl: String,
+    @SerializedName("category")
+    @ColumnInfo(name = "category")
+    val category: String?,
     @SerializedName("description")
     @ColumnInfo(name = "description")
     val description: String,

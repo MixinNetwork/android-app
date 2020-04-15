@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.bot
 
+import androidx.annotation.DrawableRes
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.vo.App
@@ -17,12 +18,28 @@ fun Bot.getInternalIcon(): Int = when (id) {
     else -> 0
 }
 
-const val VALUE_WALLET = "A16BAE57-8540-4F61-890A-80CB7AB379D3"
-const val VALUE_CAMERA = "D4A9E7CD-A127-42B4-BEE2-08DF17059802"
-const val VALUE_SCAN = "3FFF6F27-DBE0-482C-910B-FB09356C4E40"
+const val VALUE_WALLET = "a16bae57-8540-4f61-890a-80cb7ab379d3"
+const val VALUE_CAMERA = "d4a9e7cd-a127-42b4-bee2-08df17059802"
+const val VALUE_SCAN = "3fff6f27-dbe0-482c-910b-fb09356c4e40"
 
 const val TOP_BOT = "top_bot"
 
 val InternalWallet = Bot(VALUE_WALLET, MixinApplication.appContext.getString(R.string.bot_internal_wallet))
 val InternalCamera = Bot(VALUE_CAMERA, MixinApplication.appContext.getString(R.string.bot_internal_camera))
 val InternalScan = Bot(VALUE_SCAN, MixinApplication.appContext.getString(R.string.bot_internal_scan))
+
+enum class BotCategory(@DrawableRes icon: Int) {
+    BOOK(R.drawable.ic_bot_category_book),
+    CIRCLE(R.drawable.ic_bot_category_circle),
+    EXCHANGE (R.drawable.ic_bot_category_exchange),
+    GAME(R.drawable.ic_bot_category_game),
+    MUSIC(R.drawable.ic_bot_category_music),
+    NEWS(R.drawable.ic_bot_category_news),
+    OTHER(R.drawable.ic_bot_category_other),
+    SHOPPING(R.drawable.ic_bot_category_shopping),
+    TEACH(R.drawable.ic_bot_category_teach),
+    TOOLS(R.drawable.ic_bot_category_tools),
+    VIDEO(R.drawable.ic_bot_category_video),
+    WALLET(R.drawable.ic_bot_category_wallet),
+    WEATHER(R.drawable.ic_bot_category_weather),
+}

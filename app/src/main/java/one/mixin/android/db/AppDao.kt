@@ -13,7 +13,7 @@ interface AppDao : BaseDao<App> {
     companion object {
         const val PREFIX_APP_ITEM = """
             SELECT a.app_id as appId,a.app_number as appNumber, a.home_uri as homeUri, a.redirect_uri as redirectUri,
-            a.name as name, a.icon_url as iconUrl, a.description as description, a.app_secret as appSecret,
+            a.name as name, a.icon_url as iconUrl, a.category as category, a.description as description, a.app_secret as appSecret,
             a.capabilities as capabilities, a.creator_id as creatorId, a.resource_patterns as resourcePatterns, 
             a.updated_at as updatedAt, u.user_id as userId, u.avatar_url as avatarUrl
         """

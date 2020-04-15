@@ -26,7 +26,8 @@ data class AssetItem(
     val chainIconUrl: String?,
     val chainSymbol: String?,
     val chainName: String?,
-    val assetKey: String?
+    val assetKey: String?,
+    val reserve: String
 ) : Parcelable {
     fun fiat(): BigDecimal {
         return BigDecimal(balance).multiply(priceFiat())
