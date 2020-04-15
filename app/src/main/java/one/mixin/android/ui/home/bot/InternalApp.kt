@@ -7,26 +7,17 @@ import one.mixin.android.vo.App
 
 interface BotInterface
 
-data class Bot(val id: String, val name: String, val icon: String? = null) : BotInterface {
-    constructor(app: App) : this(app.appId, app.name, app.iconUrl)
-}
+data class Bot(val id: String, val name: String, @DrawableRes val icon: Int) : BotInterface
 
-fun Bot.getInternalIcon(): Int = when (id) {
-    VALUE_WALLET -> R.drawable.ic_bot_wallet
-    VALUE_CAMERA -> R.drawable.ic_bot_camera
-    VALUE_SCAN -> R.drawable.ic_bot_scan
-    else -> 0
-}
-
-const val VALUE_WALLET = "1462e610-7de1-4865-bc06-d71cfcbd0329"
-const val VALUE_CAMERA = "15366a81-077c-414b-8829-552c5c87a2ae"
-const val VALUE_SCAN = "1cc9189a-ddcd-4b95-a18b-4411da1b8d80"
+const val INTERNAL_WALLET_ID = "1462e610-7de1-4865-bc06-d71cfcbd0329"
+const val INTERNAL_CAMERA_ID = "15366a81-077c-414b-8829-552c5c87a2ae"
+const val INTERNAL_SCAN_ID = "1cc9189a-ddcd-4b95-a18b-4411da1b8d80"
 
 const val TOP_BOT = "top_bot"
 
-val InternalWallet = Bot(VALUE_WALLET, MixinApplication.appContext.getString(R.string.bot_internal_wallet))
-val InternalCamera = Bot(VALUE_CAMERA, MixinApplication.appContext.getString(R.string.bot_internal_camera))
-val InternalScan = Bot(VALUE_SCAN, MixinApplication.appContext.getString(R.string.bot_internal_scan))
+val InternalWallet = Bot(INTERNAL_WALLET_ID, MixinApplication.appContext.getString(R.string.bot_internal_wallet), R.drawable.ic_bot_wallet)
+val InternalCamera = Bot(INTERNAL_CAMERA_ID, MixinApplication.appContext.getString(R.string.bot_internal_camera), R.drawable.ic_bot_camera)
+val InternalScan = Bot(INTERNAL_SCAN_ID, MixinApplication.appContext.getString(R.string.bot_internal_scan), R.drawable.ic_bot_scan)
 
 enum class BotCategory(@DrawableRes val icon: Int) {
     BOOK(R.drawable.ic_bot_category_book),

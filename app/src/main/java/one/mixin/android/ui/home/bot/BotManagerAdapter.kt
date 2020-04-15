@@ -14,7 +14,7 @@ import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.vibrate
 import one.mixin.android.vo.App
 
-class BotManagerAdapter : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>(), View.OnLongClickListener {
+class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>(), View.OnLongClickListener {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
         val view = LayoutInflater.from(
             parent.context
@@ -29,12 +29,18 @@ class BotManagerAdapter : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>
         }
 
     override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
-        list?.get(position)?.let { app ->
+        list[position].let { app ->
             holder.itemView.avatar.renderApp(app)
             if (app is App) {
                 holder.itemView.name.text = app.name
             } else if (app is Bot) {
                 holder.itemView.name.text = app.name
+            }
+            holder.itemView.setOnClickListener {
+                botCallBack.invoke(app)
+            }
+            holder.itemView.avatar.setOnClickListener {
+                botCallBack.invoke(app)
             }
             holder.itemView.avatar.tag = position
             holder.itemView.avatar.setOnLongClickListener(this)
@@ -60,6 +66,6 @@ class BotManagerAdapter : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>
         }
         v.alpha = 0.2f
         v.context.vibrate(longArrayOf(0, 30L))
-        return true
+        return false
     }
 }

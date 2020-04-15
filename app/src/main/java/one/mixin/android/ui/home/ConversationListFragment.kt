@@ -39,7 +39,6 @@ import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
 import kotlinx.android.synthetic.main.view_empty.view.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.android.synthetic.main.view_shadow_circle.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
@@ -72,11 +71,12 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.home.bot.BotManagerBottomSheetDialogFragment
+import one.mixin.android.ui.home.bot.INTERNAL_CAMERA_ID
+import one.mixin.android.ui.home.bot.INTERNAL_SCAN_ID
+import one.mixin.android.ui.home.bot.INTERNAL_WALLET_ID
 import one.mixin.android.ui.home.bot.TOP_BOT
-import one.mixin.android.ui.home.bot.VALUE_CAMERA
-import one.mixin.android.ui.home.bot.VALUE_SCAN
-import one.mixin.android.ui.home.bot.VALUE_WALLET
 import one.mixin.android.ui.home.bot.getCategoryIcon
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
@@ -444,20 +444,20 @@ class ConversationListFragment : LinkFragment() {
                         }
 
                     when (id) {
-                        VALUE_WALLET -> {
+                        INTERNAL_WALLET_ID -> {
                             view.isVisible = true
                             view.setImageResource(R.drawable.ic_bot_category_wallet)
                             view.setOnClickListener {
                                 (requireActivity() as MainActivity).openWallet()
                             }
                         }
-                        VALUE_CAMERA -> {
+                        INTERNAL_CAMERA_ID -> {
                             view.isVisible = true
                             view.setImageResource(R.drawable.ic_bot_category_camera)
                             // Todo
                             view.setOnClickListener { }
                         }
-                        VALUE_SCAN -> {
+                        INTERNAL_SCAN_ID -> {
                             view.isVisible = true
                             view.setImageResource(R.drawable.ic_bot_category_scan)
                             // Todo
@@ -467,8 +467,11 @@ class ConversationListFragment : LinkFragment() {
                             messagesViewModel.findAppById(id)?.notNullWithElse({ app ->
                                 view.isVisible = true
                                 view.setImageResource(app.getCategoryIcon())
-                                // Todo
-                                view.setOnClickListener { }
+                                view.setOnClickListener {
+                                    WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app).show(
+                                        parentFragmentManager, WebBottomSheetDialogFragment.TAG
+                                    )
+                                }
                             }, {
                                 view.isInvisible = true
                             })

@@ -94,7 +94,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         }
         v.context.vibrate(longArrayOf(0, 30L))
         v.alpha = 0.2f
-        return true
+        return false
     }
 
     override fun generateDefaultLayoutParams(): MarginLayoutParams {
@@ -126,10 +126,14 @@ class BotDock : ViewGroup, View.OnLongClickListener {
                 avatar.renderApp(app)
                 avatar.tag = app
                 avatar.setOnLongClickListener(this@BotDock)
+                avatar.setOnClickListener {
+                    onDockListener?.onDockClick(app)
+                }
             } else {
                 avatar.isInvisible = true
                 avatar.tag = null
                 avatar.setOnLongClickListener(null)
+                avatar.setOnClickListener(null)
             }
         }
         requestLayout()
@@ -159,5 +163,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
 
     interface OnDockListener {
         fun onDockChange(apps: List<BotInterface>)
+
+        fun onDockClick(app: BotInterface)
     }
 }

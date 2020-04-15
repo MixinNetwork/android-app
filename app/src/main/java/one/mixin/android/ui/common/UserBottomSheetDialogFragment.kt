@@ -536,6 +536,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         } else {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.RECORD_AUDIO)
+                .autoDispose(stopScope)
                 .subscribe({ granted ->
                     if (granted) {
                         callVoice()
@@ -659,7 +660,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             UserRelationship.STRANGER.name -> {
                 contentView.add_tv.visibility = VISIBLE
                 contentView.add_tv.setCompoundDrawables(null, null, null, null)
-                contentView.add_tv.text = getString(R.string.add_contact)
+                contentView.add_tv.text = getString(
+                    if (user.isBot()) {
+                        R.string.add_bot
+                    } else {
+                        R.string.add_contact
+                    }
+                )
                 contentView.add_tv.setOnClickListener {
                     updateRelationship(UserRelationship.FRIEND.name)
                 }

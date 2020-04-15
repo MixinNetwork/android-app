@@ -16,7 +16,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.scope
 import javax.inject.Inject
-import kotlinx.android.synthetic.main.fragment_bot_manager.*
 import kotlinx.android.synthetic.main.fragment_bot_manager.view.*
 import kotlinx.android.synthetic.main.fragment_bot_manager.view.bot_dock
 import kotlinx.coroutines.launch
@@ -28,7 +27,9 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.putString
+import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.App
@@ -128,21 +129,21 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
                 ids.forEach { id ->
                     topIds.add(id)
                     when (id) {
-                        VALUE_WALLET -> {
+                        INTERNAL_WALLET_ID -> {
                             topApps.add(InternalWallet)
                             defaultApps.remove(InternalWallet)
                         }
-                        VALUE_CAMERA -> {
+                        INTERNAL_CAMERA_ID -> {
                             topApps.add(InternalCamera)
                             defaultApps.remove(InternalCamera)
                         }
-                        VALUE_SCAN -> {
+                        INTERNAL_SCAN_ID -> {
                             topApps.add(InternalScan)
                             defaultApps.remove(InternalScan)
                         }
                         else -> {
                             botManagerViewModel.findAppById(id)?.let { app ->
-                                topApps.add(Bot(app))
+                                topApps.add(app)
                             }
                         }
                     }
@@ -156,7 +157,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
     }
 
     private val bottomListAdapter by lazy {
-        BotManagerAdapter()
+        BotManagerAdapter(clickAction)
     }
 
     fun getPeekHeight(contentView: View, behavior: BottomSheetBehavior<*>): Int = 0
@@ -180,6 +181,32 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         saveTopApps(apps)
         loadData()
         RxBus.publish(BotEvent())
+    }
+
+    override fun onDockClick(app: BotInterface) {
+        clickAction(app)
+    }
+
+    private val clickAction: (BotInterface) -> Unit = { app ->
+        if (app is App) {
+            lifecycleScope.launch {
+                botManagerViewModel.findUserByAppId(app.appId)?.let { user ->
+                    UserBottomSheetDialogFragment.newInstance(user).show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                }
+            }
+        } else if (app is Bot) {
+            when (app.id) {
+                INTERNAL_WALLET_ID -> {
+                    WalletActivity.show(requireActivity())
+                }
+                INTERNAL_CAMERA_ID -> {
+                    // Todo
+                }
+                INTERNAL_SCAN_ID -> {
+                    // Todo
+                }
+            }
+        }
     }
 
     private fun saveTopApps(apps: List<BotInterface>) {

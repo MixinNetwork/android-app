@@ -1,5 +1,6 @@
 package one.mixin.android.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -9,7 +10,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.setPadding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import kotlinx.android.synthetic.main.item_bot_manager.view.*
 import kotlinx.android.synthetic.main.view_avatar.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.CodeType
@@ -20,13 +20,13 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.ui.home.bot.BotInterface
-import one.mixin.android.ui.home.bot.getInternalIcon
 import one.mixin.android.vo.App
 import org.jetbrains.anko.sp
 
 class AvatarView : ViewAnimator {
 
     constructor(context: Context) : this(context, null)
+    @SuppressLint("CustomViewStyleable")
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         LayoutInflater.from(context).inflate(R.layout.view_avatar, this, true)
         val ta = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
@@ -61,10 +61,9 @@ class AvatarView : ViewAnimator {
 
             val builder = StringBuilder()
             var step = 0
-            for (i in 0 until name.length) {
-                val c = name[i]
-                if (!Character.isLetterOrDigit(c) && !Character.isSpaceChar(c) && !Character.isWhitespace(c)) {
-                    builder.append(c)
+            for (element in name) {
+                if (!Character.isLetterOrDigit(element) && !Character.isSpaceChar(element) && !Character.isWhitespace(element)) {
+                    builder.append(element)
                     step++
                     if (step > 1) {
                         break
@@ -122,11 +121,7 @@ class AvatarView : ViewAnimator {
             displayedChild = POS_AVATAR
             avatar_simple.setBackgroundResource(0)
             avatar_simple.setPadding(0)
-            if (app.icon != null) {
-                avatar_simple.loadImage(app.icon, R.drawable.ic_avatar_place_holder)
-            } else {
-                avatar_simple.setImageResource(app.getInternalIcon())
-            }
+            avatar_simple.setImageResource(app.icon)
         }
     }
 

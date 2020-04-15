@@ -9,4 +9,6 @@ class BotManagerViewModel @Inject internal constructor(val userRepository: UserR
     suspend fun getTopApps(appIds: List<String>) = userRepository.getNotTopApps(appIds)
 
     suspend fun findAppById(appId: String) = userRepository.findAppById(appId)
+
+    suspend fun findUserByAppId(appId: String) = userRepository.findUserByAppId(appId)
 }

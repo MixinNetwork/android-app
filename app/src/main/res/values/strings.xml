@@ -219,6 +219,7 @@
     <string name="contact_receive_money">Receive Money</string>
     <string name="contact_receive_tip">Scan the QR Code to pay me</string>
     <string name="add_contact">+ Add Contact</string>
+    <string name="add_bot">+ Add Bot</string>
     <string name="contact_search_hint">Name, Mixin ID</string>
     <string name="contact_share_apps_title">%1$s\'s Shared Apps</string>
     <string name="contact_share_apps_no_app">NO APP</string>
@@ -810,7 +811,7 @@
     <string name="circle_limit">The number has reached the limit</string>
     <!--  bot  -->
     <string name="bot_title">Bots</string>
-    <string name="bot_dock_empty">长按并拖拽机器人置顶</string>
+    <string name="bot_dock_empty">Long press and drag the bot to the top</string>
     <string name="bot_internal_scan">Scan QR</string>
     <string name="bot_internal_camera">Camera</string>
     <string name="bot_internal_wallet">Wallet</string>
