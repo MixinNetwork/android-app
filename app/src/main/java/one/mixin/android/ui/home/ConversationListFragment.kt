@@ -453,21 +453,21 @@ class ConversationListFragment : LinkFragment() {
                         }
                         VALUE_CAMERA -> {
                             view.isVisible = true
-                            view.setImageResource(R.drawable.ic_bot_category_tools)
-                            view.setOnClickListener { }
+                            view.setImageResource(R.drawable.ic_bot_category_camera)
                             // Todo
+                            view.setOnClickListener { }
                         }
                         VALUE_SCAN -> {
                             view.isVisible = true
+                            view.setImageResource(R.drawable.ic_bot_category_scan)
                             // Todo
-                            view.setImageResource(R.drawable.ic_bot_category_tools)
                             view.setOnClickListener { }
                         }
                         else -> {
                             messagesViewModel.findAppById(id)?.notNullWithElse({ app ->
                                 view.isVisible = true
-                                // Todo
                                 view.setImageResource(app.getCategoryIcon())
+                                // Todo
                                 view.setOnClickListener { }
                             }, {
                                 view.isInvisible = true
