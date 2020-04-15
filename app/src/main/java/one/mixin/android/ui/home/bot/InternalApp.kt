@@ -28,10 +28,10 @@ val InternalWallet = Bot(VALUE_WALLET, MixinApplication.appContext.getString(R.s
 val InternalCamera = Bot(VALUE_CAMERA, MixinApplication.appContext.getString(R.string.bot_internal_camera))
 val InternalScan = Bot(VALUE_SCAN, MixinApplication.appContext.getString(R.string.bot_internal_scan))
 
-enum class BotCategory(@DrawableRes icon: Int) {
+enum class BotCategory(@DrawableRes val icon: Int) {
     BOOK(R.drawable.ic_bot_category_book),
     CIRCLE(R.drawable.ic_bot_category_circle),
-    EXCHANGE (R.drawable.ic_bot_category_exchange),
+    EXCHANGE(R.drawable.ic_bot_category_exchange),
     GAME(R.drawable.ic_bot_category_game),
     MUSIC(R.drawable.ic_bot_category_music),
     NEWS(R.drawable.ic_bot_category_news),
@@ -42,4 +42,22 @@ enum class BotCategory(@DrawableRes icon: Int) {
     VIDEO(R.drawable.ic_bot_category_video),
     WALLET(R.drawable.ic_bot_category_wallet),
     WEATHER(R.drawable.ic_bot_category_weather),
+}
+
+@DrawableRes
+fun App.getCategoryIcon(): Int = when (category) {
+    BotCategory.BOOK.name -> BotCategory.BOOK.icon
+    BotCategory.CIRCLE.name -> BotCategory.CIRCLE.icon
+    BotCategory.EXCHANGE.name -> BotCategory.EXCHANGE.icon
+    BotCategory.GAME.name -> BotCategory.GAME.icon
+    BotCategory.MUSIC.name -> BotCategory.MUSIC.icon
+    BotCategory.NEWS.name -> BotCategory.NEWS.icon
+    BotCategory.OTHER.name -> BotCategory.OTHER.icon
+    BotCategory.SHOPPING.name -> BotCategory.SHOPPING.icon
+    BotCategory.TEACH.name -> BotCategory.TEACH.icon
+    BotCategory.TOOLS.name -> BotCategory.TOOLS.icon
+    BotCategory.VIDEO.name -> BotCategory.VIDEO.icon
+    BotCategory.WALLET.name -> BotCategory.WALLET.icon
+    BotCategory.WEATHER.name -> BotCategory.WEATHER.icon
+    else -> BotCategory.OTHER.icon
 }

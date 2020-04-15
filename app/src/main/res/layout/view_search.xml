@@ -102,23 +102,10 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
-            android:layout_toStartOf="@+id/wallet_ib"
+            android:layout_alignParentEnd="true"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
             app:srcCompat="@drawable/ic_group"
-            tools:ignore="ContentDescription" />
-
-        <ImageButton
-            android:id="@+id/wallet_ib"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            android:background="@drawable/mixin_ripple"
-            android:padding="8dp"
-            app:srcCompat="@drawable/ic_shadow_wallet"
             tools:ignore="ContentDescription" />
 
         <ViewAnimator

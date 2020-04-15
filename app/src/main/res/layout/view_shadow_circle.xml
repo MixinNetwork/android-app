@@ -13,29 +13,29 @@
         android:padding="32dp"
         android:src="@drawable/ic_shadow_bot"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/circle"
-        app:layout_constraintStart_toEndOf="@id/wallet"
+        app:layout_constraintEnd_toStartOf="@id/left_icon"
+        app:layout_constraintStart_toEndOf="@id/right_icon"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/circle"
+        android:id="@+id/right_icon"
         android:layout_width="88dp"
         android:layout_height="88dp"
         android:foreground="@drawable/mixin_ripple"
         android:padding="32dp"
-        android:src="@drawable/ic_shadow_circle"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@id/bot"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/bot"
         app:layout_constraintTop_toTopOf="@id/bot" />
 
     <ImageView
-        android:id="@+id/wallet"
+        android:id="@+id/left_icon"
         android:layout_width="88dp"
         android:layout_height="88dp"
         android:foreground="@drawable/mixin_ripple"
         android:padding="32dp"
-        android:src="@drawable/ic_shadow_wallet"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@id/bot"
         app:layout_constraintEnd_toStartOf="@id/bot"
         app:layout_constraintStart_toStartOf="parent"

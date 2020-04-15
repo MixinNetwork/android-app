@@ -9,7 +9,7 @@ class AppItem(
     val appNumber: String,
     val homeUri: String,
     val redirectUri: String,
-    val category:String?,
+    val category: String?,
     val name: String,
     val iconUrl: String,
     val description: String,

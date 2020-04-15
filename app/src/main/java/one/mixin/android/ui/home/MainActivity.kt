@@ -533,9 +533,6 @@ class MainActivity : BlazeBaseActivity() {
         search_bar.setOnGroupClickListener(View.OnClickListener {
             navigationController.pushContacts()
         })
-        search_bar.setOnWalletClickListener(View.OnClickListener {
-            openWallet()
-        })
         search_bar.setOnAddClickListener(View.OnClickListener {
             addCircle()
         })
@@ -588,7 +585,7 @@ class MainActivity : BlazeBaseActivity() {
         search_bar?.openSearch()
     }
 
-    private fun openWallet() {
+    fun openWallet() {
         navigationController.pushWallet()
     }
 

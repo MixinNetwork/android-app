@@ -21,7 +21,9 @@ import kotlinx.android.synthetic.main.fragment_bot_manager.view.*
 import kotlinx.android.synthetic.main.fragment_bot_manager.view.bot_dock
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.di.Injectable
+import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -177,6 +179,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
     override fun onDockChange(apps: List<BotInterface>) {
         saveTopApps(apps)
         loadData()
+        RxBus.publish(BotEvent())
     }
 
     private fun saveTopApps(apps: List<BotInterface>) {
