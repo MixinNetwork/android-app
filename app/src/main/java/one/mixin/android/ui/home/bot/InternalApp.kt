@@ -17,9 +17,9 @@ fun Bot.getInternalIcon(): Int = when (id) {
     else -> 0
 }
 
-const val VALUE_WALLET = "0x001"
-const val VALUE_CAMERA = "0x010"
-const val VALUE_SCAN = "0x100"
+const val VALUE_WALLET = "A16BAE57-8540-4F61-890A-80CB7AB379D3"
+const val VALUE_CAMERA = "D4A9E7CD-A127-42B4-BEE2-08DF17059802"
+const val VALUE_SCAN = "3FFF6F27-DBE0-482C-910B-FB09356C4E40"
 
 const val TOP_BOT = "top_bot"
 
