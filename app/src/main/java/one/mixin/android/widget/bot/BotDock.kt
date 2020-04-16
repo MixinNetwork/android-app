@@ -21,7 +21,6 @@ import kotlinx.android.synthetic.main.item_dock.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.home.bot.BotInterface
-import timber.log.Timber
 
 class BotDock : ViewGroup, View.OnLongClickListener {
 
@@ -187,7 +186,6 @@ class BotDock : ViewGroup, View.OnLongClickListener {
     fun shove(index: Int, bot: BotInterface) {
         val appIndex = apps.indexOf(bot)
         if (appIndex != -1 && currentShoveIndex != index) {
-            Timber.d("$index")
             currentShoveIndex = index
             when {
                 appIndex + 1 > index -> {

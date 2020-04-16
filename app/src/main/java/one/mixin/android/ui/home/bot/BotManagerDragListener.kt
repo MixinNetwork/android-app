@@ -6,12 +6,9 @@ import android.view.View.OnDragListener
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.widget.bot.BotDock
-import org.jetbrains.anko.switch
-import timber.log.Timber
 
 class BotManagerDragListener : OnDragListener {
     override fun onDrag(v: View, event: DragEvent): Boolean {
-        Timber.d("${event.action}")
         val viewSource = event.localState as View? ?: return false
         when (event.action) {
             DragEvent.ACTION_DRAG_ENDED -> {
