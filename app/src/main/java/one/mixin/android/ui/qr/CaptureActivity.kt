@@ -42,7 +42,7 @@ class CaptureActivity : BlazeBaseActivity() {
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(0, R.anim.slide_out_bottom)
+        overridePendingTransition(R.anim.stay, R.anim.slide_out_bottom)
     }
 
     private fun checkCameraCanUse() {
@@ -82,6 +82,7 @@ class CaptureActivity : BlazeBaseActivity() {
                     actionWithIntent.invoke(this)
                 }
             }
+            activity.overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
         }
     }
 }

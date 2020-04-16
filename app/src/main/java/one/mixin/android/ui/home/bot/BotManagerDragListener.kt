@@ -37,6 +37,31 @@ class BotManagerDragListener : OnDragListener {
                         R.id.bot_dock -> {
                         }
                     }
+                } else if (viewSource.tag is Int) {
+                    val source = viewSource.parent.parent
+                    if (source is RecyclerView) {
+                        if (v.id != R.id.bot_dock) {
+                            when (v.id) {
+                                R.id.dock_1 -> {
+                                    0
+                                }
+                                R.id.dock_2 -> {
+                                    1
+                                }
+                                R.id.dock_3 -> {
+                                    2
+                                }
+                                R.id.dock_4 -> {
+                                    3
+                                }
+                                else -> {
+                                    null
+                                }
+                            }?.let { position ->
+                                (v.parent as BotDock).shove(position)
+                            }
+                        }
+                    }
                 }
             }
             DragEvent.ACTION_DROP -> {
@@ -47,10 +72,24 @@ class BotManagerDragListener : OnDragListener {
                             val adapterSource = source.adapter as BotManagerAdapter? ?: return false
                             val list = adapterSource.list
                             val positionSource = viewSource.tag as Int
+                            val position = when (v.id) {
+                                R.id.dock_1 -> {
+                                    0
+                                }
+                                R.id.dock_2 -> {
+                                    1
+                                }
+                                R.id.dock_3 -> {
+                                    2
+                                }
+                                else -> {
+                                    3
+                                }
+                            }
                             if (v.id == R.id.bot_dock) {
-                                (v as BotDock).addApp(list[positionSource])
+                                (v as BotDock).addApp(position, list[positionSource])
                             } else {
-                                (v.parent as BotDock).addApp(list[positionSource])
+                                (v.parent as BotDock).addApp(position, list[positionSource])
                             }
                         } else if (source is BotDock) {
                             val position = when (v.id) {

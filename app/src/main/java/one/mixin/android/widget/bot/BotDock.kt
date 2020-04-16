@@ -12,7 +12,6 @@ import androidx.collection.arraySetOf
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewPropertyAnimatorCompat
 import androidx.core.view.ViewPropertyAnimatorListener
-import androidx.core.view.get
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import java.lang.Exception
@@ -122,6 +121,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
 
     fun render() {
         val isEmpty = apps.isEmpty()
+        currentShoveIndex = -1
         getChildAt(0).isVisible = isEmpty
         for (animator in animatorSet) {
             try {
@@ -153,9 +153,13 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         requestLayout()
     }
 
-    fun addApp(app: BotInterface) {
+    fun addApp(position: Int, app: BotInterface) {
         if (!apps.contains(app) && apps.size < 4) {
-            apps.add(app)
+            if (position < apps.size) {
+                apps.add(position, app)
+            } else {
+                apps.add(app)
+            }
             render()
             onDockListener?.onDockChange(apps)
         }
@@ -183,6 +187,19 @@ class BotDock : ViewGroup, View.OnLongClickListener {
     }
 
     private var currentShoveIndex = -1
+    fun shove(index: Int) {
+        if (apps.size in 1 until 4 && currentShoveIndex != index) {
+            currentShoveIndex = index
+            for (i in 1..4) {
+                if (i <= index) {
+                    viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).start()
+                } else {
+                    viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).translationX(itemWidth.toFloat()).start()
+                }
+            }
+        }
+    }
+
     fun shove(index: Int, bot: BotInterface) {
         val appIndex = apps.indexOf(bot)
         if (appIndex != -1 && currentShoveIndex != index) {
