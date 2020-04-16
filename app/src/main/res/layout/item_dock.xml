@@ -3,6 +3,8 @@
     android:id="@+id/item"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:foreground="?selectableItemBackground"
     android:gravity="center_horizontal"
     android:orientation="vertical">

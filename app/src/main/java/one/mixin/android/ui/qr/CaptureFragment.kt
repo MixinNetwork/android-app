@@ -18,6 +18,7 @@ import androidx.camera.core.TorchState
 import androidx.camera.core.UseCase
 import androidx.core.view.isVisible
 import com.crashlytics.android.Crashlytics
+import java.io.File
 import kotlinx.android.synthetic.main.fragment_capture.*
 import one.mixin.android.R
 import one.mixin.android.extension.bounce
@@ -33,7 +34,6 @@ import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.widget.CameraOpView
-import java.io.File
 
 class CaptureFragment : BaseCameraxFragment() {
     companion object {

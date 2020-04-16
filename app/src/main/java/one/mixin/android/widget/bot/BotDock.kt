@@ -8,14 +8,20 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.collection.arraySetOf
+import androidx.core.view.ViewCompat
+import androidx.core.view.ViewPropertyAnimatorCompat
+import androidx.core.view.ViewPropertyAnimatorListener
+import androidx.core.view.get
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import java.lang.Exception
 import kotlin.math.max
 import kotlinx.android.synthetic.main.item_dock.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.home.bot.BotInterface
+import timber.log.Timber
 
 class BotDock : ViewGroup, View.OnLongClickListener {
 
@@ -41,12 +47,12 @@ class BotDock : ViewGroup, View.OnLongClickListener {
                 }
             })
         }
+        clipChildren = false
+        clipToPadding = false
         render()
     }
 
-    private val itemSize = 56.dp
-
-    var offset = 0
+    private var itemWidth = 0
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         measureChildren(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.AT_MOST), heightMeasureSpec)
         var height = 0
@@ -58,11 +64,11 @@ class BotDock : ViewGroup, View.OnLongClickListener {
             height = max(child.measuredHeight, height)
         }
         setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), height + paddingBottom + paddingTop)
-        offset = (measuredWidth - itemSize * 4) / 5
+        itemWidth = (measuredWidth - paddingStart - paddingEnd) / 4
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        var itemOffset = offset
+        var itemOffset = paddingStart
         val firstView = getChildAt(0)
         if (firstView.isVisible) {
             val left = (measuredWidth - firstView.measuredWidth) / 2
@@ -71,8 +77,8 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         }
         for (i in 1 until childCount) {
             val child = getChildAt(i)
-            child.layout(itemOffset, paddingTop, itemOffset + child.measuredWidth, paddingTop + child.measuredHeight)
-            itemOffset += (child.measuredWidth + offset)
+            child.layout(itemOffset, paddingTop, itemOffset + itemWidth, paddingTop + child.measuredHeight)
+            itemOffset += itemWidth
         }
     }
 
@@ -93,7 +99,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
             v.startDrag(data, shadowBuilder, v, 0)
         }
         v.context.vibrate(longArrayOf(0, 30L))
-        v.alpha = 0.2f
+        v.alpha = 0f
         return false
     }
 
@@ -115,11 +121,20 @@ class BotDock : ViewGroup, View.OnLongClickListener {
             render()
         }
 
-    private fun render() {
+    fun render() {
         val isEmpty = apps.isEmpty()
         getChildAt(0).isVisible = isEmpty
+        for (animator in animatorSet) {
+            try {
+                animator.cancel()
+            } catch (e: Exception) {
+            }
+        }
         for (i in 1..4) {
-            val avatar = getChildAt(i).avatar
+            val avatar = getChildAt(i).apply {
+                avatar.alpha = 1f
+                avatar.translationX = 0f
+            }.avatar
             if (i - 1 < apps.size) {
                 avatar.isVisible = true
                 val app = apps[i - 1]
@@ -140,7 +155,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
     }
 
     fun addApp(app: BotInterface) {
-        if (!apps.contains(app) && apps.size <= 4) {
+        if (!apps.contains(app) && apps.size < 4) {
             apps.add(app)
             render()
             onDockListener?.onDockChange(apps)
@@ -155,8 +170,70 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         }
     }
 
-    fun float(index: Int, bot: BotInterface) {
-     
+    fun switch(index: Int, app: BotInterface) {
+        if (apps.contains(app)) {
+            apps.remove(app)
+            if (index < apps.size) {
+                apps.add(index, app)
+            } else {
+                apps.add(app)
+            }
+            render()
+            onDockListener?.onDockChange(apps)
+        }
+    }
+
+    private var currentShoveIndex = -1
+    fun shove(index: Int, bot: BotInterface) {
+        val appIndex = apps.indexOf(bot)
+        if (appIndex != -1 && currentShoveIndex != index) {
+            Timber.d("$index")
+            currentShoveIndex = index
+            when {
+                appIndex + 1 > index -> {
+                    for (i in 1..4) { // forward
+                        if (i >= appIndex + 1 || i < index) {
+                            viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).start()
+                        } else {
+                            viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).translationX(itemWidth.toFloat()).start()
+                        }
+                    }
+                }
+                appIndex + 1 < index -> { // backward
+                    for (i in 1..4) {
+                        if (i <= appIndex + 1 || i > index) {
+                            viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).start()
+                        } else {
+                            viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).translationX(-itemWidth.toFloat()).start()
+                        }
+                    }
+                }
+                else -> { // hold
+                    for (i in 1..4) {
+                        viewPropertyAnimator(getChildAt(i).avatar).translationX(0f).start()
+                    }
+                }
+            }
+        }
+    }
+
+    private val animatorSet = arraySetOf<ViewPropertyAnimatorCompat>()
+    private fun viewPropertyAnimator(view: View) = ViewCompat.animate(view).setDuration(120).apply {
+        val animator = this
+        setListener(object : ViewPropertyAnimatorListener {
+            override fun onAnimationStart(view: View) {
+                animatorSet.add(animator)
+            }
+
+            override fun onAnimationEnd(view: View) {
+                animatorSet.remove(animator)
+            }
+
+            override fun onAnimationCancel(view: View) {
+                view.translationX = 0f
+                animatorSet.remove(animator)
+            }
+        })
     }
 
     private var onDockListener: OnDockListener? = null

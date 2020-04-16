@@ -45,8 +45,7 @@
         android:layout_marginEnd="16dp"
         android:background="@drawable/bg_bot_manager"
         android:orientation="horizontal"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp" />
+        android:padding="12dp" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/bot_rv"
