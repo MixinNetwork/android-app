@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.bot
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
@@ -14,10 +15,11 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_bot_manager.view.*
-import kotlinx.android.synthetic.main.fragment_bot_manager.view.bot_dock
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -26,8 +28,10 @@ import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.GsonHelper
@@ -202,13 +206,29 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
                     WalletActivity.show(requireActivity())
                 }
                 INTERNAL_CAMERA_ID -> {
-                    // Todo
+                    openCamera(false)
                 }
                 INTERNAL_SCAN_ID -> {
-                    // Todo
+                    openCamera(true)
                 }
             }
         }
+    }
+
+    private fun openCamera(scan: Boolean) {
+        RxPermissions(requireActivity())
+            .request(Manifest.permission.CAMERA)
+            .autoDispose(stopScope)
+            .subscribe { granted ->
+                if (granted) {
+                    CaptureActivity.show(requireActivity()) { intent ->
+                        intent.putExtra(CaptureActivity.ARGS_SHOW_SCAN, scan)
+                        startActivity(intent)
+                    }
+                } else {
+                    context?.openPermissionSetting()
+                }
+            }
     }
 
     private fun saveTopApps(apps: List<BotInterface>) {

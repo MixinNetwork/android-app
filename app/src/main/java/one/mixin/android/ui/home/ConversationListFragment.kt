@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
@@ -27,6 +28,7 @@ import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
+import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.io.File
@@ -34,7 +36,6 @@ import javax.inject.Inject
 import kotlin.math.min
 import kotlinx.android.synthetic.main.fragment_conversation_list.*
 import kotlinx.android.synthetic.main.item_list_conversation.view.*
-import kotlinx.android.synthetic.main.item_list_conversation.view.avatar_iv
 import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
@@ -58,6 +59,7 @@ import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openNotificationSetting
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.renderConversation
 import one.mixin.android.extension.timeAgo
@@ -78,6 +80,8 @@ import one.mixin.android.ui.home.bot.INTERNAL_SCAN_ID
 import one.mixin.android.ui.home.bot.INTERNAL_WALLET_ID
 import one.mixin.android.ui.home.bot.TOP_BOT
 import one.mixin.android.ui.home.bot.getCategoryIcon
+import one.mixin.android.ui.qr.CaptureActivity
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.util.markdown.MarkwonUtil
@@ -454,14 +458,16 @@ class ConversationListFragment : LinkFragment() {
                         INTERNAL_CAMERA_ID -> {
                             view.isVisible = true
                             view.setImageResource(R.drawable.ic_bot_category_camera)
-                            // Todo
-                            view.setOnClickListener { }
+                            view.setOnClickListener {
+                                openCamera(false)
+                            }
                         }
                         INTERNAL_SCAN_ID -> {
                             view.isVisible = true
                             view.setImageResource(R.drawable.ic_bot_category_scan)
-                            // Todo
-                            view.setOnClickListener { }
+                            view.setOnClickListener {
+                                openCamera(true)
+                            }
                         }
                         else -> {
                             messagesViewModel.findAppById(id)?.notNullWithElse({ app ->
@@ -480,6 +486,22 @@ class ConversationListFragment : LinkFragment() {
                 }
             }
         }
+    }
+
+    private fun openCamera(scan: Boolean) {
+        RxPermissions(requireActivity())
+            .request(Manifest.permission.CAMERA)
+            .autoDispose(stopScope)
+            .subscribe { granted ->
+                if (granted) {
+                    CaptureActivity.show(requireActivity()) { intent ->
+                        intent.putExtra(ARGS_SHOW_SCAN, scan)
+                        startActivity(intent)
+                    }
+                } else {
+                    context?.openPermissionSetting()
+                }
+            }
     }
 
     class MessageAdapter : PagedHeaderAdapter<ConversationItem>(ConversationItem.DIFF_CALLBACK) {

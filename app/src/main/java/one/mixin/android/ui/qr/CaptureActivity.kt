@@ -32,7 +32,11 @@ class CaptureActivity : BlazeBaseActivity() {
                 replaceFragment(ScanFragment.newInstance(forAccountName = true), R.id.container, ScanFragment.TAG)
             intent.hasExtra(ARGS_FOR_MEMO) ->
                 replaceFragment(ScanFragment.newInstance(forMemo = true), R.id.container, ScanFragment.TAG)
-            else -> replaceFragment(CaptureFragment.newInstance(), R.id.container, CaptureFragment.TAG)
+            else -> if (intent.getBooleanExtra(ARGS_SHOW_SCAN, false)) {
+                replaceFragment(ScanFragment.newInstance(), R.id.container, ScanFragment.TAG)
+            } else {
+                replaceFragment(CaptureFragment.newInstance(), R.id.container, CaptureFragment.TAG)
+            }
         }
     }
 
@@ -53,6 +57,7 @@ class CaptureActivity : BlazeBaseActivity() {
     companion object {
         const val SHOW_QR_CODE = "show_qr_code"
 
+        const val ARGS_SHOW_SCAN = "args_show_scan"
         const val ARGS_FOR_ADDRESS = "args_for_address"
         const val ARGS_ADDRESS_RESULT = "args_address_result"
         const val ARGS_FOR_ACCOUNT_NAME = "args_for_account_name"
