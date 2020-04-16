@@ -35,6 +35,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.bot.BotDock
+import org.jetbrains.anko.displayMetrics
 
 class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener, Injectable {
 
@@ -55,8 +56,6 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
 
     override fun getTheme() = R.style.MixinBottomSheet
 
-    private var behavior: BottomSheetBehavior<*>? = null
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return MixinBottomSheetDialog(requireContext(), theme).apply {
             dismissWithAnimation = true
@@ -69,13 +68,16 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         contentView = View.inflate(context, R.layout.fragment_bot_manager, null)
         dialog.setContentView(contentView)
         val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
-        behavior = params.behavior as? BottomSheetBehavior<*>
-        if (behavior != null && behavior is BottomSheetBehavior<*>) {
-            val defaultPeekHeight = getPeekHeight(contentView, behavior!!)
-            behavior?.peekHeight = if (defaultPeekHeight == 0) {
-                500.dp
+        val behavior = params.behavior as? BottomSheetBehavior<*>
+        if (behavior != null) {
+            val defaultPeekHeight = getPeekHeight(contentView, behavior)
+            behavior.peekHeight = if (defaultPeekHeight == 0) {
+                440.dp
             } else defaultPeekHeight
-            behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
+            behavior.addBottomSheetCallback(bottomSheetBehaviorCallback)
+            contentView.bot_rv.apply {
+                layoutParams.height = requireContext().displayMetrics.heightPixels - 166.dp
+            }
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
@@ -160,7 +162,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         BotManagerAdapter(clickAction)
     }
 
-    fun getPeekHeight(contentView: View, behavior: BottomSheetBehavior<*>): Int = 0
+    private fun getPeekHeight(contentView: View, behavior: BottomSheetBehavior<*>): Int = 0
 
     fun onStateChanged(bottomSheet: View, newState: Int) {}
 

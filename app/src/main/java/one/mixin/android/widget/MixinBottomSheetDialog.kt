@@ -26,10 +26,10 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
 
     override fun setContentView(view: View) {
         super.setContentView(view)
-        container = window!!.findViewById<View>(com.google.android.material.R.id.container)
+        container = window!!.findViewById(com.google.android.material.R.id.container)
         container.backgroundDrawable = backDrawable
         backDrawable.alpha = 0
-        sheetContainer = window!!.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+        sheetContainer = window!!.findViewById(com.google.android.material.R.id.design_bottom_sheet)
     }
 
     override fun show() {

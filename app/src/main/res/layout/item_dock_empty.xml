@@ -5,5 +5,5 @@
     android:gravity="center"
     android:text="@string/bot_dock_empty"
     android:textColor="@color/textAssist"
-    android:textSize="12sp" />
+    android:textSize="14sp" />
 

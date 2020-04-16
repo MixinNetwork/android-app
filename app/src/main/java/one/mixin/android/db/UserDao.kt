@@ -111,6 +111,6 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE identity_number IN (:numbers)")
     fun findUserByIdentityNumbers(numbers: Set<String>): List<MentionUser>
 
-    @Query("SELECT * FROM users WHERE user_id = :appId")
+    @Query("SELECT * FROM users WHERE app_id = :appId")
     suspend fun findUserByAppId(appId: String): User?
 }
