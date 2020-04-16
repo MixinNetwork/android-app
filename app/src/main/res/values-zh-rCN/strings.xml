@@ -198,6 +198,7 @@
     <string name="contact_empty">手机联系人</string>
     <string name="contact_empty_tip">Mixin 需要访问你的通讯录来帮助你更快找到你的朋友。</string>
     <string name="contact_item_title">联系人</string>
+    <string name="bot_item_title">机器人</string>
     <string name="contact_sq_scan_title">识别二维码</string>
     <string name="contact_save_image">保存图片</string>
     <string name="contact_my_qr_title">我的二维码</string>

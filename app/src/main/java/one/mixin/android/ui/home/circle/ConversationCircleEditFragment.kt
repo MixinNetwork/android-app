@@ -71,6 +71,7 @@ class ConversationCircleEditFragment : BaseFragment() {
             adapter.selectItem.remove(item)
             selectAdapter.checkedItems.remove(item)
             selectAdapter.notifyDataSetChanged()
+            updateTitleText(adapter.selectItem.size)
         }
     }
 
@@ -174,21 +175,24 @@ class ConversationCircleEditFragment : BaseFragment() {
                 set.add(item.ownerId)
             }
         }
-        val list = chatViewModel.getFriends()
-        val filteredFriends = if (list.isNotEmpty()) {
-            list.filter { item ->
-                !set.contains(item.userId)
-            }
-        } else {
-            list
-        }
-        adapter.sourceFriends = filteredFriends
+
+        val friends = mutableListOf<User>()
+        val bots = mutableListOf<User>()
         val inCircleUsers = mutableListOf<User>()
-        filteredFriends.forEach {
+        chatViewModel.getFriends().filter { item ->
+            !set.contains(item.userId)
+        }.forEach {
             if (inCircleContactId.contains(it.userId)) {
                 inCircleUsers.add(it)
             }
+            if (it.isBot()) {
+                bots.add(it)
+            } else {
+                friends.add(it)
+            }
         }
+        adapter.sourceFriends = friends
+        adapter.sourceBots = bots
         adapter.selectItem.addAll(inCircleUsers)
         selectAdapter.checkedItems.addAll(inCircleUsers)
         selectAdapter.notifyDataSetChanged()

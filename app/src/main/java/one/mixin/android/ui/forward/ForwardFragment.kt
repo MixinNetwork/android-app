@@ -104,7 +104,6 @@ class ForwardFragment : BaseFragment() {
                     if (i != 0) {
                         str.append(getString(R.string.divide))
                     }
-                } else {
                 }
             }
         }
@@ -159,14 +158,21 @@ class ForwardFragment : BaseFragment() {
                 set.add(item.ownerId)
             }
         }
-        val list = chatViewModel.getFriends()
-        if (list.isNotEmpty()) {
-            adapter.sourceFriends = list.filter { item ->
-                !set.contains(item.userId)
+
+        val friends = mutableListOf<User>()
+        val bots = mutableListOf<User>()
+        chatViewModel.getFriends().filter { item ->
+            !set.contains(item.userId)
+        }.forEach {
+            if (it.isBot()) {
+                bots.add(it)
+            } else {
+                friends.add(it)
             }
-        } else {
-            adapter.sourceFriends = list
         }
+        adapter.sourceFriends = friends
+        adapter.sourceBots = bots
+
         adapter.changeData()
     }
 
