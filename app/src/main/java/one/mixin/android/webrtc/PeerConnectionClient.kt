@@ -13,6 +13,7 @@ import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
 import org.webrtc.RtpReceiver
+import org.webrtc.RtpTransceiver
 import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
@@ -302,6 +303,9 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
 
         override fun onRenegotiationNeeded() {
+        }
+
+        override fun onTrack(transceiver: RtpTransceiver?) {
         }
 
         override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
