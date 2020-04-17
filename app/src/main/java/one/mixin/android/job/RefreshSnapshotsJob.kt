@@ -31,7 +31,9 @@ class RefreshSnapshotsJob(
                     jobManager.addJobInBackground(RefreshAssetsJob(item.assetId))
                 }
             }
-            RxBus.publish(RefreshSnapshotEvent(list.last().createdAt))
+            list.lastOrNull()?.let {
+                RxBus.publish(RefreshSnapshotEvent(it.createdAt))
+            }
         }
     }
 }
