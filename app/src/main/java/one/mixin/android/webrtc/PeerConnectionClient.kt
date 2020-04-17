@@ -36,7 +36,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     private val iceServers = arrayListOf<PeerConnection.IceServer>()
     var isInitiator = false
     private var remoteCandidateCache = arrayListOf<IceCandidate>()
-    private var remoteSdpCache: SessionDescription? = null
     private var peerConnection: PeerConnection? = null
     private var audioTrack: AudioTrack? = null
     private var audioSource: AudioSource? = null
@@ -47,13 +46,15 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             reportError("PeerConnectionFactory has already been constructed")
             return
         }
-        executor.execute { createPeerConnectionFactoryInternal(options) }
+        executor.execute {
+            createPeerConnectionFactoryInternal(options)
+        }
     }
 
     fun createOffer(iceServerList: List<PeerConnection.IceServer>) {
         iceServers.addAll(iceServerList)
         executor.execute {
-            val peerConnection = createPeerConnectionInternal()
+            peerConnection = createPeerConnectionInternal()
             isInitiator = true
             val offerSdpObserver = object : SdpObserverWrapper() {
                 override fun onCreateSuccess(sdp: SessionDescription) {
@@ -80,7 +81,9 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     fun createAnswer(iceServerList: List<PeerConnection.IceServer>, remoteSdp: SessionDescription) {
         iceServers.addAll(iceServerList)
         executor.execute {
-            val peerConnection = createPeerConnectionInternal()
+            if (peerConnection == null) {
+                peerConnection = createPeerConnectionInternal()
+            }
             peerConnection?.setRemoteDescription(remoteSdpObserver, remoteSdp)
             isInitiator = false
             val answerSdpObserver = object : SdpObserverWrapper() {
@@ -112,15 +115,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             } else {
                 remoteCandidateCache.add(candidate)
             }
-        }
-    }
-
-    fun removeRemoteIcetCandidate(candidates: Array<IceCandidate>) {
-        executor.execute {
-            if (peerConnection == null || isError) return@execute
-
-            drainCandidatesAndSdp()
-            peerConnection!!.removeIceCandidates(candidates)
         }
     }
 
@@ -197,21 +191,22 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
         val rtcConfig = PeerConnection.RTCConfiguration(iceServers).apply {
             tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.DISABLED
+            iceTransportsType = PeerConnection.IceTransportsType.RELAY
             bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE
             rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE
             sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
             enableDtlsSrtp = true
             continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY
         }
-        peerConnection = factory!!.createPeerConnection(rtcConfig, pcObserver)
+        val peerConnection = factory!!.createPeerConnection(rtcConfig, pcObserver)
         if (peerConnection == null) {
             reportError("PeerConnection is not created")
             return null
         }
-        peerConnection!!.setAudioPlayout(false)
-        peerConnection!!.setAudioRecording(false)
+        peerConnection.setAudioPlayout(false)
+        peerConnection.setAudioRecording(false)
 
-        peerConnection!!.addTrack(createAudioTrack())
+        peerConnection.addTrack(createAudioTrack())
         return peerConnection
     }
 
@@ -219,19 +214,9 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         factory = PeerConnectionFactory.builder()
             .setOptions(options)
             .createPeerConnectionFactory()
-    }
 
-    private fun drainCandidatesAndSdp() {
-        if (peerConnection == null) return
-
-        remoteCandidateCache.forEach {
-            peerConnection!!.addIceCandidate(it)
-            remoteCandidateCache.clear()
-        }
-        if (remoteSdpCache != null && peerConnection!!.remoteDescription == null) {
-            peerConnection!!.setRemoteDescription(remoteSdpObserver, remoteSdpCache)
-            remoteSdpCache = null
-        }
+        sdpConstraint.mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"))
+        sdpConstraint.mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false"))
     }
 
     private fun createAudioTrack(): AudioTrack {
