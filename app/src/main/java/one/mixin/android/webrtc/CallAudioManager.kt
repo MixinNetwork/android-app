@@ -145,6 +145,7 @@ class CallAudioManager(private val context: Context) {
             AudioManager.MODE_NORMAL
         } else AudioManager.MODE_IN_COMMUNICATION
         if (mediaPlayer != null) {
+            mediaPlayer?.stop()
             mediaPlayer?.release()
             mediaPlayer = null
         }
