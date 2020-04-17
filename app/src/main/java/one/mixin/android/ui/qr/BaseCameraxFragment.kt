@@ -51,6 +51,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
     protected var camera: Camera? = null
 
     private var displayId: Int = -1
+    private var surfaceProvider: Preview.SurfaceProvider? = null
     private lateinit var displayManager: DisplayManager
 
     private val displayListener = object : DisplayManager.DisplayListener {
@@ -98,6 +99,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
         view_finder.post {
             displayId = view_finder.display.displayId
+            surfaceProvider = view_finder.createSurfaceProvider(camera?.cameraInfo)
             bindCameraUseCase()
         }
     }
@@ -117,7 +119,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 .setTargetAspectRatioCustom(screenAspectRatio)
                 .setTargetRotation(rotation)
                 .build()
-            preview?.setSurfaceProvider(view_finder.previewSurfaceProvider)
+            preview?.setSurfaceProvider(surfaceProvider)
 
             val otherUseCases = getOtherUseCases(screenAspectRatio, rotation)
 
