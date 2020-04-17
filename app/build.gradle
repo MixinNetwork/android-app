@@ -247,7 +247,7 @@ dependencies {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
     implementation "com.facebook.rebound:rebound:${reboundVersion}"
-    implementation 'com.madgag.spongycastle:core:1.58.0.0'
+    implementation "org.bouncycastle:bcprov-jdk15on:${bouncycastleVersion}"
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
     testImplementation "junit:junit:${junitVersion}"
     androidTestImplementation "junit:junit:${junitVersion}"

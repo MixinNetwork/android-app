@@ -17,9 +17,9 @@ import javax.crypto.spec.PSource
 import javax.crypto.spec.SecretKeySpec
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toLeByteArray
-import org.spongycastle.asn1.pkcs.PrivateKeyInfo
-import org.spongycastle.util.io.pem.PemObject
-import org.spongycastle.util.io.pem.PemWriter
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
+import org.bouncycastle.util.io.pem.PemObject
+import org.bouncycastle.util.io.pem.PemWriter
 
 fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     val kpg = KeyPairGenerator.getInstance("RSA")
