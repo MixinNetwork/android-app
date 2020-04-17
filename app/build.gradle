@@ -247,7 +247,7 @@ dependencies {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
     implementation "com.facebook.rebound:rebound:${reboundVersion}"
-    implementation 'com.madgag.spongycastle:core:1.58.0.0'
+    implementation "org.bouncycastle:bcprov-jdk15on:${bouncycastleVersion}"
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
     testImplementation "junit:junit:${junitVersion}"
     androidTestImplementation "junit:junit:${junitVersion}"
@@ -276,10 +276,10 @@ dependencies {
     implementation "io.noties:prism4j:${prism4jVersion}"
     implementation "io.noties.markwon:syntax-highlight:${markwonVersion}"
     implementation "io.noties.markwon:ext-tasklist:${markwonVersion}"
-    implementation "org.webrtc:google-webrtc:${webrtcVersion}"
     implementation "com.github.SandroMachado:BitcoinPaymentURI:${bitcoinPaymentURI}"
     implementation "com.caverock:androidsvg-aar:${svgVersion}"
 
+//    implementation "org.webrtc:google-webrtc:${webrtcVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

@@ -79,7 +79,7 @@ fun ImageView.loadImage(
     if (!isActivityNotDestroyed()) return
     var requestOptions = RequestOptions().dontTransform()
     if (base64Holder != null) {
-        requestOptions = requestOptions.fallback(base64Holder.toDrawable())
+        requestOptions = requestOptions.fallback(base64Holder.toDrawable(width, height))
     }
     if (overrideWidth != null && overrideHeight != null) {
         requestOptions = requestOptions.override(overrideWidth, overrideHeight)
@@ -110,7 +110,7 @@ fun ImageView.loadGif(
         requestOptions = requestOptions.placeholder(holder)
     }
     if (base64Holder != null) {
-        requestOptions = requestOptions.fallback(base64Holder.toDrawable())
+        requestOptions = requestOptions.fallback(base64Holder.toDrawable(width, height))
     }
     if (overrideWidth != null && overrideHeight != null) {
         requestOptions = requestOptions.override(overrideWidth, overrideHeight)
@@ -128,7 +128,7 @@ fun ImageView.loadGifMark(uri: String?, holder: String?, mark: Int) {
     Glide.with(this).asGif().load(uri).apply(RequestOptions().dontTransform()
         .signature(StringSignature("$uri$mark")).apply {
             if (holder != null) {
-                this.placeholder(holder.toDrawable())
+                this.placeholder(holder.toDrawable(width, height))
             }
         }).into(this)
 }
@@ -171,7 +171,7 @@ fun ImageView.loadImageMark(uri: String?, holder: String?, mark: Int) {
     Glide.with(this).load(uri).apply(RequestOptions().dontAnimate()
         .signature(StringSignature("$uri$mark")).apply {
             if (holder != null) {
-                this.placeholder(holder.toDrawable())
+                this.placeholder(holder.toDrawable(width, height))
             }
         }).into(this)
 }
@@ -230,7 +230,7 @@ fun ImageView.loadLongImageMark(uri: String?, holder: String?, mark: Int) {
         .dontAnimate()
         .signature(StringSignature("$uri$mark")).apply {
             if (holder != null) {
-                this.placeholder(holder.toDrawable())
+                this.placeholder(holder.toDrawable(width, height))
             }
         }).into(this)
 }
@@ -283,7 +283,7 @@ fun ImageView.loadVideoMark(
             .signature(StringSignature("$uri$mark"))
             .centerCrop().dontAnimate().apply {
                 if (holder != null) {
-                    this.placeholder(holder.toDrawable())
+                    this.placeholder(holder.toDrawable(width, height))
                 }
             }).listener(object : RequestListener<Drawable> {
             override fun onLoadFailed(
@@ -293,7 +293,7 @@ fun ImageView.loadVideoMark(
                 isFirstResource: Boolean
             ): Boolean {
                 this@loadVideoMark.context.runOnUiThread {
-                    holder?.toDrawable()?.let {
+                    holder?.toDrawable(width, height)?.let {
                         setImageDrawable(it)
                     }
                 }
@@ -327,7 +327,7 @@ fun ImageView.loadVideo(uri: String?) {
 fun ImageView.loadVideo(uri: String?, holder: String?, width: Int, height: Int) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply {
-        RequestOptions().placeholder(holder?.toDrawable()).override(width, height)
+        RequestOptions().placeholder(holder?.toDrawable(width, height)).override(width, height)
     }.into(this)
 }
 

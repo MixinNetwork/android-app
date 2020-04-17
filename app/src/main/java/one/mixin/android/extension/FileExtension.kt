@@ -31,6 +31,9 @@ import java.util.Date
 import java.util.Locale
 import one.mixin.android.MixinApplication
 import one.mixin.android.util.Session
+import one.mixin.android.util.blurhash.Base83
+import one.mixin.android.util.blurhash.BlurHashDecoder
+import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.widget.gallery.MimeType
 
 private fun isAvailable(): Boolean {
@@ -196,6 +199,7 @@ fun Context.getPublicPicturePath(): File {
 fun Context.getPublicDocumentPath(): File {
     return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "Mixin")
 }
+
 fun Context.getImageCachePath(): File {
     val root = getBestAvailableCacheRoot()
     return File("$root${File.separator}Images")
@@ -408,6 +412,14 @@ fun File.blurThumbnail(size: Size): Bitmap? {
     return blurThumbnail(size.width / scale, size.height / scale)
 }
 
+fun File.encodeBlurHash(): String? {
+    return BlurHashEncoder.encode(inputStream())
+}
+
+fun String.decodeBlurHash(width: Int, height: Int): Bitmap? {
+    return BlurHashDecoder.decode(this, width, height, 1.0)
+}
+
 fun File.moveChileFileToDir(dir: File, eachCallback: ((newFile: File, oldFile: File) -> Unit)? = null) {
     if (!dir.exists()) {
         dir.mkdirs()
@@ -470,7 +482,17 @@ fun ByteArray.encodeBitmap(): Bitmap? {
 
 fun Bitmap.toDrawable(): Drawable = BitmapDrawable(MixinApplication.appContext.resources, this)
 
-fun String.toDrawable() = this.decodeBase64().encodeBitmap()?.toDrawable()
+fun String.toDrawable(width: Int, height: Int): Drawable? {
+    return try {
+        if (!Base83.isValid(this)) {
+            this.decodeBase64().encodeBitmap()?.toDrawable()
+        } else {
+            BlurHashDecoder.decode(this, maxOf(width, 64), maxOf(height, 64), 1.0)?.toDrawable()
+        }
+    } catch (e: Exception) {
+        null
+    }
+}
 
 fun String.getFileNameNoEx(): String {
     val dot = this.lastIndexOf('.')
