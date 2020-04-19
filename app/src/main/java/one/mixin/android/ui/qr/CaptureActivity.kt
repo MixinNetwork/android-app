@@ -1,10 +1,14 @@
 package one.mixin.android.ui.qr
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDispose
 import one.mixin.android.R
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -25,6 +29,21 @@ class CaptureActivity : BlazeBaseActivity() {
         overridePendingTransition(R.anim.slide_in_bottom, 0)
         checkCameraCanUse()
         setContentView(R.layout.activity_contact)
+
+        RxPermissions(this)
+            .request(Manifest.permission.CAMERA)
+            .autoDispose(stopScope)
+            .subscribe { granted ->
+                if (granted) {
+                    initView()
+                } else {
+                    openPermissionSetting()
+                }
+            }
+
+    }
+
+    private fun initView() {
         when {
             intent.hasExtra(ARGS_FOR_ADDRESS) ->
                 replaceFragment(ScanFragment.newInstance(forAddress = true), R.id.container, ScanFragment.TAG)

@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.abs
 import okhttp3.Request
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -124,9 +125,9 @@ class Session {
             val expire = System.currentTimeMillis() / 1000 + 1800
             val iat = System.currentTimeMillis() / 1000
 
-            var content = "${request.method()}${request.url().cutOut()}"
-            if (request.body() != null && request.body()!!.contentLength() > 0) {
-                content += request.body()!!.bodyToString()
+            var content = "${request.method}${request.url.cutOut()}"
+            if (request.body != null && request.body!!.contentLength() > 0) {
+                content += request.body!!.bodyToString()
             }
             return Jwts.builder()
                 .setClaims(ConcurrentHashMap<String, Any>().apply {
@@ -140,6 +141,20 @@ class Session {
                 })
                 .signWith(SignatureAlgorithm.RS512, key)
                 .compact()
+        }
+
+        fun requestDelay(acct: Account?, string: String, offset: Int): Boolean {
+            val token = getToken()
+            if (acct == null || token == null || token.isBlank()) {
+                return false
+            }
+            val key = getRSAPrivateKeyFromString(token)
+            return try {
+                val iat = Jwts.parser().setSigningKey(key).parseClaimsJws(string).body[Claims.ISSUED_AT] as Long
+                abs(System.currentTimeMillis() / 1000 - iat) > offset
+            } catch (e: Exception) {
+                false
+            }
         }
 
         fun getFiatCurrency() = getAccount()?.fiatCurrency ?: "USD"

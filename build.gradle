@@ -26,7 +26,7 @@ buildscript {
         ext.glideVersion = '4.11.0'
         ext.webpdecoderVesion = '1.7.4.11.0'
         ext.timberVersion = '4.7.1'
-        ext.okhttpVersion = '3.13.1'
+        ext.okhttpVersion = '4.4.1'
         ext.rxJavaVersion = '2.2.19'
         ext.rxAndroidVersion = '2.1.1'
         ext.rxbindingVersion = '3.1.0'
@@ -93,7 +93,7 @@ buildscript {
         maven { url "https://jitpack.io" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.2'
+        classpath 'com.android.tools.build:gradle:3.6.3'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta09'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
         classpath 'com.google.gms:google-services:4.3.3'

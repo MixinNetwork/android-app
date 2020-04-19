@@ -150,8 +150,7 @@ class ChatWebSocket(
         client?.send(gson.toJson(blazeMessage).gzip())
     }
 
-    @Synchronized
-    override fun onOpen(webSocket: WebSocket?, response: Response?) {
+    override fun onOpen(webSocket: WebSocket, response: Response) {
         if (client != null) {
             connected = true
             client = webSocket
@@ -166,10 +165,10 @@ class ChatWebSocket(
         }
     }
 
-    override fun onMessage(webSocket: WebSocket?, bytes: ByteString?) {
+    override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
         GlobalScope.launch(SINGLE_DB_THREAD) {
             try {
-                val json = bytes?.ungzip()
+                val json = bytes.ungzip()
                 val blazeMessage = gson.fromJson(json, BlazeMessage::class.java)
                 if (blazeMessage.error == null) {
                     if (transactions[blazeMessage.id] != null) {
@@ -203,7 +202,7 @@ class ChatWebSocket(
 
     @SuppressLint("CheckResult")
     @Synchronized
-    override fun onClosed(webSocket: WebSocket?, code: Int, reason: String?) {
+    override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
         connected = false
         if (code == failCode) {
             closeInternal(code)
@@ -217,22 +216,20 @@ class ChatWebSocket(
                 })
             }
         } else {
-            webSocket?.cancel()
+            webSocket.cancel()
         }
     }
 
     private var connectTimer: Disposable? = null
 
     @Synchronized
-    override fun onFailure(webSocket: WebSocket?, t: Throwable?, response: Response?) {
-        t?.let {
-            if (it is SocketTimeoutException || it is UnknownHostException || it is ConnectException) {
-                hostFlag = !hostFlag
-            }
-            Log.e(TAG, "WebSocket onFailure ", it)
+    override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+        if (t is SocketTimeoutException || t is UnknownHostException || t is ConnectException) {
+            hostFlag = !hostFlag
         }
+        Log.e(TAG, "WebSocket onFailure ", t)
         if (client != null) {
-            if (t != null && (t is ClientErrorException && t.code == AUTHENTICATION)) {
+            if (t is ClientErrorException && t.code == AUTHENTICATION) {
                 closeInternal(quitCode)
             } else {
                 onClosed(webSocket, failCode, "OK")
