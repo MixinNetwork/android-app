@@ -19,15 +19,15 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import kotlin.math.abs
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.SessionProvider
-import okhttp3.internal.http2.Header
+import okhttp3.ResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.service.AccountService
@@ -60,6 +60,7 @@ import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.Session
 import one.mixin.android.vo.CallState
@@ -100,23 +101,17 @@ internal class AppModule {
         builder.readTimeout(10, TimeUnit.SECONDS)
         builder.pingInterval(15, TimeUnit.SECONDS)
         builder.retryOnConnectionFailure(false)
-        builder.sessionProvider(object : SessionProvider {
-            override fun getSession(request: Request): String {
-                return "Authorization: Bearer ${Session.signToken(Session.getAccount(), request)}"
-            }
 
-            override fun getSessionHeader(request: Request): Header {
-                return Header("Authorization", "Bearer ${Session.signToken(Session.getAccount(), request)}")
-            }
-        })
         builder.addInterceptor { chain ->
-            val request = chain.request().newBuilder()
+            val sourceRequest = chain.request()
+            val request = sourceRequest.newBuilder()
                 .addHeader("User-Agent", API_UA)
                 .addHeader("Accept-Language", Locale.getDefault().language)
                 .addHeader("Mixin-Device-Id", getDeviceId(resolver))
+                .addHeader("Authorization", "Bearer ${Session.signToken(Session.getAccount(), sourceRequest)}")
                 .build()
             if (MixinApplication.appContext.networkConnected()) {
-                val response = try {
+                var response = try {
                     chain.proceed(request)
                 } catch (e: Exception) {
                     if (e.message?.contains("502") == true) {
@@ -124,6 +119,23 @@ internal class AppModule {
                     } else throw e.apply {
                         if (this is SocketTimeoutException || this is UnknownHostException || this is ConnectException) {
                             HostSelectionInterceptor.get().switch()
+                        }
+                    }
+                }
+
+                response.body?.run {
+                    val bytes = this.bytes()
+                    val contentType = this.contentType()
+                    val body = ResponseBody.create(contentType, bytes)
+                    response = response.newBuilder().body(body).build()
+                    if (bytes.isEmpty()) return@run
+                    val mixinResponse = GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)
+                    if (mixinResponse.errorCode != 401) return@run
+                    val authorization = response.request.header("Authorization")
+                    if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
+                        val jwt = authorization.substring(7)
+                        if (Session.requestDelay(Session.getAccount(), jwt, Constants.DELAY_SECOND)) {
+                            throw ServerErrorException(500)
                         }
                     }
                 }
@@ -137,7 +149,7 @@ internal class AppModule {
                 }
 
                 if (!response.isSuccessful) {
-                    val code = response.code()
+                    val code = response.code
                     if (code in 500..599) {
                         throw ServerErrorException(code)
                     }

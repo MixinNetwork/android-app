@@ -2,16 +2,17 @@ package one.mixin.android.di
 
 import java.io.IOException
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import one.mixin.android.Constants
 import one.mixin.android.Constants.API.URL
 
 class HostSelectionInterceptor private constructor() : Interceptor {
     @Volatile
-    private var host: HttpUrl? = HttpUrl.parse(URL)
+    private var host: HttpUrl? = URL.toHttpUrlOrNull()
 
     private fun setHost(url: String) {
-        this.host = HttpUrl.parse(url)
+        this.host = url.toHttpUrlOrNull()
     }
 
     private var flag = false
@@ -31,8 +32,8 @@ class HostSelectionInterceptor private constructor() : Interceptor {
             return chain.proceed(request)
         }
         this.host?.let {
-            val newUrl = request.url().newBuilder()
-                .host(it.url().toURI().host)
+            val newUrl = request.url.newBuilder()
+                .host(it.toUrl().toURI().host)
                 .build()
             request = request.newBuilder()
                 .url(newUrl)
