@@ -5,6 +5,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import java.net.SocketTimeoutException
 import one.mixin.android.api.ClientErrorException
+import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.LocalJobException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
@@ -34,6 +35,7 @@ abstract class BaseWork(
             return true
         }
         return (throwable as? ServerErrorException)?.shouldRetry()
+            ?: (throwable as? ExpiredTokenException)?.shouldRetry()
             ?: ((throwable as? ClientErrorException)?.shouldRetry()
                 ?: ((throwable as? NetworkException)?.shouldRetry()
                     ?: ((throwable as? WebSocketException)?.shouldRetry()

@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import kotlin.math.abs
 import okhttp3.OkHttpClient
-import okhttp3.ResponseBody
+import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
@@ -27,6 +27,7 @@ import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
@@ -126,7 +127,7 @@ internal class AppModule {
                 response.body?.run {
                     val bytes = this.bytes()
                     val contentType = this.contentType()
-                    val body = ResponseBody.create(contentType, bytes)
+                    val body = bytes.toResponseBody(contentType)
                     response = response.newBuilder().body(body).build()
                     if (bytes.isEmpty()) return@run
                     val mixinResponse = GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)
@@ -135,7 +136,7 @@ internal class AppModule {
                     if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
                         val jwt = authorization.substring(7)
                         if (Session.requestDelay(Session.getAccount(), jwt, Constants.DELAY_SECOND)) {
-                            throw ServerErrorException(500)
+                            throw ExpiredTokenException()
                         }
                     }
                 }
