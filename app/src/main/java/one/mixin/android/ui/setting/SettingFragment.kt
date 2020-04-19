@@ -121,11 +121,16 @@ class SettingFragment : Fragment() {
             }
             .setPositiveButton(R.string.group_ok) { dialog, _ ->
                 if (newSelectItem != selectItem) {
-                    val selected = when (newSelectItem) {
-                        0 -> Locale.ENGLISH.language
-                        else -> Locale.CHINA.language
+                    val selectedLang = when (newSelectItem) {
+                        0 -> Locale.US.language
+                        else -> Locale.SIMPLIFIED_CHINESE.language
                     }
-                    Lingver.getInstance().setLocale(requireContext(), selected)
+                    val selectedCountry = when (newSelectItem) {
+                        0 -> Locale.US.country
+                        else -> Locale.SIMPLIFIED_CHINESE.country
+                    }
+                    val newLocale = Locale(selectedLang, selectedCountry)
+                    Lingver.getInstance().setLocale(requireContext(), newLocale)
                     TimeCache.singleton.evictAll()
                     activity?.recreate()
                 }
