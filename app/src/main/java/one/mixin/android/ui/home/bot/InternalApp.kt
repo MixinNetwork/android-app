@@ -21,7 +21,7 @@ val InternalScan = Bot(INTERNAL_SCAN_ID, MixinApplication.appContext.getString(R
 
 enum class BotCategory(@DrawableRes val icon: Int) {
     TRADING(R.drawable.ic_bot_category_trading),
-    BUSINESS(R.drawable.ic_bot_category_books), // Todo replace icon
+    BUSINESS(R.drawable.ic_bot_category_business),
     BOOKS(R.drawable.ic_bot_category_books),
     EDUCATION(R.drawable.ic_bot_category_education),
     SOCIAL(R.drawable.ic_bot_category_social),
@@ -32,7 +32,7 @@ enum class BotCategory(@DrawableRes val icon: Int) {
     TOOLS(R.drawable.ic_bot_category_tools),
     VIDEO(R.drawable.ic_bot_category_video),
     WALLET(R.drawable.ic_bot_category_wallet),
-    PHOTO(R.drawable.ic_bot_category_wallet), // Todo replace icon
+    PHOTO(R.drawable.ic_bot_category_photo),
     OTHER(R.drawable.ic_bot_category_other),
 }
 
