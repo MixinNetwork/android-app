@@ -75,8 +75,13 @@ class AppearanceFragment : BaseViewModelFragment<SettingViewModel>() {
                 }
             }
         }
+        val language = Lingver.getInstance().getLanguage()
+        language_desc_tv.text = getString(if (language == Locale.SIMPLIFIED_CHINESE.language) {
+            R.string.simplified_chinese
+        } else {
+            R.string.english
+        })
         language_rl.setOnClickListener { showLanguageAlert() }
-
         current_tv.text = getString(R.string.wallet_setting_currency_desc, Session.getFiatCurrency(), Fiats.getSymbol())
         currency_rl.setOnClickListener {
             val currencyBottom = CurrencyBottomSheetDialogFragment.newInstance()

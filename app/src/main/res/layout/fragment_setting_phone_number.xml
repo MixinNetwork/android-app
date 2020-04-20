@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_window"
+    android:orientation="vertical">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:titleText="@string/setting_phone_number" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:text="@string/setting_phone_number_privacy"
+        android:textColor="?attr/text_minor"
+        android:textSize="12sp" />
+
+    <RelativeLayout
+        android:id="@+id/everybody_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/bg_white"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/everybody_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/setting_conversation_everybody"
+            tools:ignore="RelativeOverlap" />
+
+        <ImageView
+            android:id="@+id/everybody_iv"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:src="@drawable/ic_check_black_24dp"
+            android:visibility="gone"
+            tools:ignore="ContentDescription" />
+
+        <ProgressBar
+            android:id="@+id/everybody_pb"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:theme="@style/AppTheme.BlueAccent" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/my_contacts_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/bg_white"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/my_contacts_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/setting_my_contacts"
+            tools:ignore="RelativeOverlap" />
+
+        <ImageView
+            android:id="@+id/my_contacts_iv"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:src="@drawable/ic_check_black_24dp"
+            android:visibility="gone"
+            tools:ignore="ContentDescription" />
+
+        <ProgressBar
+            android:id="@+id/my_contacts_pb"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:theme="@style/AppTheme.BlueAccent" />
+    </RelativeLayout>
+
+    <RelativeLayout
+            android:id="@+id/nobody_rl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/bg_white"
+            android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+                android:id="@+id/nobody_tv"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:text="@string/nobody"
+                tools:ignore="RelativeOverlap" />
+
+        <ImageView
+                android:id="@+id/nobody_iv"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:src="@drawable/ic_check_black_24dp"
+                android:visibility="gone"
+                tools:ignore="ContentDescription" />
+
+        <ProgressBar
+                android:id="@+id/nobody_pb"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:theme="@style/AppTheme.BlueAccent" />
+    </RelativeLayout>
+</LinearLayout>

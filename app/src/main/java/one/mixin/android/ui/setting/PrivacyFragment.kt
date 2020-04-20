@@ -44,6 +44,9 @@ class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
         blocked_rl.setOnClickListener {
             navTo(SettingBlockedFragment.newInstance(), SettingBlockedFragment.TAG)
         }
+        phone_number_rl.setOnClickListener {
+            navTo(PhoneNumberSettingFragment.newInstance(), PhoneNumberSettingFragment.TAG)
+        }
         conversation_rl.setOnClickListener {
             navTo(SettingConversationFragment.newInstance(), SettingConversationFragment.TAG)
         }
