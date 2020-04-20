@@ -1,7 +1,6 @@
 package one.mixin.android.webrtc
 
 import android.content.Context
-import android.util.Log
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import java.util.concurrent.Executors
 import org.webrtc.AudioSource
