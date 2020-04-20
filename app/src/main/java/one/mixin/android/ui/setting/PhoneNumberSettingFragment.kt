@@ -50,25 +50,25 @@ class PhoneNumberSettingFragment : BaseViewModelFragment<SettingConversationView
             })
     }
 
-    private fun render(pref: Int) {
-        everybody_iv.isVisible = pref == SearchSource.EVERYBODY.ordinal
-        my_contacts_iv.isVisible = pref == SearchSource.CONTACTS.ordinal
-        nobody_iv.isVisible = pref == SearchSource.NOBODY.ordinal
+    private fun render(pref: String) {
+        everybody_iv.isVisible = pref == SearchSource.EVERYBODY.name
+        my_contacts_iv.isVisible = pref == SearchSource.CONTACTS.name
+        nobody_iv.isVisible = pref == SearchSource.NOBODY.name
         everybody_pb.isVisible = false
         my_contacts_pb.isVisible = false
         nobody_pb.isVisible = false
         everybody_rl.setOnClickListener {
-            handleClick(it.id, SearchSource.EVERYBODY.ordinal, pref)
+            handleClick(it.id, SearchSource.EVERYBODY.name, pref)
         }
         my_contacts_rl.setOnClickListener {
-            handleClick(it.id, SearchSource.CONTACTS.ordinal, pref)
+            handleClick(it.id, SearchSource.CONTACTS.name, pref)
         }
         nobody_rl.setOnClickListener {
-            handleClick(it.id, SearchSource.NOBODY.ordinal, pref)
+            handleClick(it.id, SearchSource.NOBODY.name, pref)
         }
     }
 
-    private fun handleClick(viewId: Int, targetPref: Int, curPref: Int) {
+    private fun handleClick(viewId: Int, targetPref: String, curPref: String) {
         if (R.id.everybody_rl == viewId && everybody_iv.isVisible) return
         if (R.id.contact_rl == viewId && my_contacts_iv.isVisible) return
         if (R.id.nobody_rl == viewId && nobody_iv.isVisible) return
@@ -76,20 +76,14 @@ class PhoneNumberSettingFragment : BaseViewModelFragment<SettingConversationView
         everybody_iv.isGone = true
         my_contacts_iv.isGone = true
         nobody_iv.isGone = true
-        everybody_pb.isVisible = targetPref == SearchSource.EVERYBODY.ordinal
-        my_contacts_pb.isVisible = targetPref == SearchSource.CONTACTS.ordinal
-        nobody_pb.isVisible = targetPref == SearchSource.NOBODY.ordinal
+        everybody_pb.isVisible = targetPref == SearchSource.EVERYBODY.name
+        my_contacts_pb.isVisible = targetPref == SearchSource.CONTACTS.name
+        nobody_pb.isVisible = targetPref == SearchSource.NOBODY.name
 
         lifecycleScope.launch {
             handleMixinResponse(
                 invokeNetwork = {
-                    viewModel.savePreferences(AccountUpdateRequest(
-                        acceptSearchSource = when (targetPref) {
-                            SearchSource.EVERYBODY.ordinal -> SearchSource.EVERYBODY.name
-                            SearchSource.CONTACTS.ordinal -> SearchSource.CONTACTS.name
-                            else -> SearchSource.NOBODY.name
-                        }
-                    ))
+                    viewModel.savePreferences(AccountUpdateRequest(acceptSearchSource = targetPref))
                 },
                 switchContext = Dispatchers.IO,
                 successBlock = {
@@ -119,12 +113,12 @@ class PhoneNumberSettingFragment : BaseViewModelFragment<SettingConversationView
         }
     }
 
-    private fun setPref(pref: Int) {
+    private fun setPref(pref: String) {
         when (pref) {
-            SearchSource.EVERYBODY.ordinal -> {
+            SearchSource.EVERYBODY.name -> {
                 viewModel.searchPreference.setEveryBody()
             }
-            SearchSource.CONTACTS.ordinal -> {
+            SearchSource.CONTACTS.name -> {
                 viewModel.searchPreference.setContacts()
             }
             else -> {
@@ -133,12 +127,12 @@ class PhoneNumberSettingFragment : BaseViewModelFragment<SettingConversationView
         }
     }
 
-    private fun resetPb(pref: Int) {
+    private fun resetPb(pref: String) {
         when (pref) {
-            SearchSource.EVERYBODY.ordinal -> {
+            SearchSource.EVERYBODY.name -> {
                 everybody_pb?.isVisible = false
             }
-            SearchSource.CONTACTS.ordinal -> {
+            SearchSource.CONTACTS.name -> {
                 my_contacts_pb?.isVisible = false
             }
             else -> {

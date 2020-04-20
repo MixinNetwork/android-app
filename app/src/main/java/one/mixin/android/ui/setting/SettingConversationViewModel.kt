@@ -8,6 +8,7 @@ import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.putString
 import one.mixin.android.ui.setting.PhoneNumberSettingFragment.Companion.ACCEPT_SEARCH_KEY
 import one.mixin.android.vo.MessageSource
 import one.mixin.android.vo.SearchSource
@@ -75,28 +76,28 @@ internal constructor(private val userService: AccountService) : ViewModel() {
 
     lateinit var searchPreference: SearchSourcePreferences
 
-    class SearchSourcePreferences(val context: Context) : LiveData<Int>() {
+    class SearchSourcePreferences(val context: Context) : LiveData<String>() {
         init {
-            value = context.defaultSharedPreferences.getInt(ACCEPT_SEARCH_KEY,
-                SearchSource.EVERYBODY.ordinal)
+            value = context.defaultSharedPreferences.getString(ACCEPT_SEARCH_KEY,
+                SearchSource.EVERYBODY.name)
         }
 
         fun setEveryBody() {
-            value = SearchSource.EVERYBODY.ordinal
-            context.defaultSharedPreferences.putInt(ACCEPT_SEARCH_KEY,
-                SearchSource.EVERYBODY.ordinal)
+            value = SearchSource.EVERYBODY.name
+            context.defaultSharedPreferences.putString(ACCEPT_SEARCH_KEY,
+                SearchSource.EVERYBODY.name)
         }
 
         fun setContacts() {
-            value = SearchSource.CONTACTS.ordinal
-            context.defaultSharedPreferences.putInt(ACCEPT_SEARCH_KEY,
-                SearchSource.CONTACTS.ordinal)
+            value = SearchSource.CONTACTS.name
+            context.defaultSharedPreferences.putString(ACCEPT_SEARCH_KEY,
+                SearchSource.CONTACTS.name)
         }
 
         fun setNobody() {
-            value = SearchSource.NOBODY.ordinal
-            context.defaultSharedPreferences.putInt(ACCEPT_SEARCH_KEY,
-                SearchSource.NOBODY.ordinal)
+            value = SearchSource.NOBODY.name
+            context.defaultSharedPreferences.putString(ACCEPT_SEARCH_KEY,
+                SearchSource.NOBODY.name)
         }
     }
 }
