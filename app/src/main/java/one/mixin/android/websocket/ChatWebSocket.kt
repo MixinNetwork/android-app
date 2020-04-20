@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.util.Log
 import com.bugsnag.android.Bugsnag
-import com.crashlytics.android.Crashlytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
@@ -41,6 +41,7 @@ import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.GzipException
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageStatus
@@ -186,9 +187,8 @@ class ChatWebSocket(
                     if (blazeMessage.action == ERROR_ACTION && blazeMessage.error.code == AUTHENTICATION) {
                         val errorDescription = "Force logout webSocket.\nblazeMessage: $blazeMessage"
                         val ise = IllegalStateException(errorDescription)
-                        Bugsnag.notify(ise)
-                        Crashlytics.log(Log.ERROR, "401", errorDescription)
-                        Crashlytics.logException(ise)
+                        FirebaseCrashlytics.getInstance().log("401 $errorDescription")
+                        reportException(ise)
                         connected = false
                         closeInternal(quitCode)
                         (app as MixinApplication).closeAndClear()

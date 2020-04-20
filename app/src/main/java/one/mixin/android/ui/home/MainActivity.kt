@@ -22,7 +22,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.work.WorkManager
 import com.bugsnag.android.Bugsnag
-import com.crashlytics.android.Crashlytics
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.safetynet.SafetyNet
@@ -33,6 +32,7 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.uber.autodispose.autoDispose
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -217,7 +217,9 @@ class MainActivity : BlazeBaseActivity() {
 
         val account = Session.getAccount()
         Bugsnag.setUser(account?.userId, account?.identity_number, account?.full_name)
-        Crashlytics.setUserIdentifier(account?.userId)
+        account?.let {
+            FirebaseCrashlytics.getInstance().setUserId(it.userId)
+        }
 
         if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
             jobManager.addJobInBackground(RefreshCircleJob())

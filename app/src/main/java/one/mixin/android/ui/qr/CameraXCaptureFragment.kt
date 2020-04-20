@@ -7,7 +7,6 @@ import android.graphics.BitmapFactory
 import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.util.DisplayMetrics
-import android.util.Log
 import android.util.Rational
 import android.view.LayoutInflater
 import android.view.View
@@ -25,7 +24,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.crashlytics.android.Crashlytics
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
 import java.io.File
@@ -46,6 +44,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ACCOUNT_NAME
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ADDRESS
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_MEMO
+import one.mixin.android.util.reportException
 
 class CameraXCaptureFragment : BaseCaptureFragment() {
     companion object {
@@ -145,7 +144,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
         try {
             bindCameraUseCase()
         } catch (e: Exception) {
-            Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Switch lens and rebind use cases failure, $e")
+            reportException(e)
         }
     }
 
@@ -202,7 +201,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
                     this as LifecycleOwner, cameraSelector, preview, imageCapture, imageAnalysis
                 )
             } catch (e: Exception) {
-                Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Use case binding failed, $e")
+                reportException(e)
             }
         }, mainExecutor)
     }
@@ -221,7 +220,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
 
         override fun onError(exception: ImageCaptureException) {
             context?.toast("Photo capture failed: ${exception.message}")
-            Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Photo capture failed: ${exception.message}")
+            reportException(exception)
         }
     }
 
@@ -318,7 +317,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
                 val byteArray = ImageUtil.imageToJpegByteArray(image)
                 BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
             } catch (e: Exception) {
-                Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "getBitmapFromImage failure, $e")
+                reportException(e)
                 null
             }
         }

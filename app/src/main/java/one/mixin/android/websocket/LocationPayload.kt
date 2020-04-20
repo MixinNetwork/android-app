@@ -2,11 +2,11 @@ package one.mixin.android.websocket
 
 import android.annotation.SuppressLint
 import android.os.Parcelable
-import android.util.Log
-import com.crashlytics.android.Crashlytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.reportException
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -38,8 +38,8 @@ fun toLocationData(content: String?): LocationPayload? {
             this
         }
     } catch (e: java.lang.Exception) {
-        Crashlytics.log(Log.ERROR, "LocationHolder decrypt failed", content)
-        Crashlytics.logException(e)
+        FirebaseCrashlytics.getInstance().log("LocationHolder decrypt failed $content")
+        reportException(e)
         null
     }
 }

@@ -3,8 +3,7 @@ package one.mixin.android.ui.common.biometric
 import android.content.Context
 import android.os.CancellationSignal
 import android.security.keystore.UserNotAuthenticatedException
-import android.util.Log
-import com.crashlytics.android.Crashlytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
 import moe.feng.support.biometricprompt.BiometricPromptCompat
@@ -13,6 +12,7 @@ import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.reportException
 import org.jetbrains.anko.getStackTraceString
 import org.jetbrains.anko.toast
 
@@ -50,7 +50,7 @@ class BiometricDialog(
                     callback?.onCancel()
                 }
                 else ->
-                    Crashlytics.log(Log.ERROR, BiometricUtil.CRASHLYTICS_BIOMETRIC, "getDecryptCipher. ${e.getStackTraceString()}")
+                    FirebaseCrashlytics.getInstance().log(BiometricUtil.CRASHLYTICS_BIOMETRIC + "getDecryptCipher. ${e.getStackTraceString()}")
             }
             return
         }
@@ -83,7 +83,7 @@ class BiometricDialog(
                     val pin = decryptByteArray.toString(Charset.defaultCharset())
                     callback?.onPinComplete(pin)
                 } catch (e: Exception) {
-                    Crashlytics.log(Log.ERROR, BiometricUtil.CRASHLYTICS_BIOMETRIC, "onAuthenticationSucceeded  ${e.getStackTraceString()}")
+                    reportException(e)
                 }
             }
         }
