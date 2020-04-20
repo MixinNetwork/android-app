@@ -502,11 +502,11 @@
     <string name="setting_desktop_confirm"> Confirm login to\nMixin Messenger Desktop</string>
     <string name="setting_desktop_login">Log in</string>
     <string name="setting_privacy_security">Privacy and Security</string>
-    <string name="setting_mobile_contact">Mobile Contacts</string>
+    <string name="setting_mobile_contact">Phone Contacts</string>
     <string name="setting_mobile_contact_desc">Mixin syncs your address book to Mixin servers to help you connect with other Mixin users.</string>
     <string name="setting_mobile_contact_warning">This will remove your contacts from the Mixin servers.</string>
     <string name="setting_mobile_contact_delete">Delete Synced Contacts</string>
-    <string name="setting_mobile_contact_upload">Upload Mobile Contacts</string>
+    <string name="setting_mobile_contact_upload">Upload Phone Contacts</string>
     <string name="setting_mobile_contact_empty">Empty address book</string>
     <string name="setting_notification_transfer">Transfer Notifications</string>
     <string name="setting_notification_system">System options</string>
