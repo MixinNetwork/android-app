@@ -501,7 +501,7 @@
     <string name="setting_notification_confirmation">通知和确认</string>
     <string name="contact_share_apps_no_app">没有应用</string>
     <string name="setting_appearance">外观</string>
-    <string name="setting_theme">黑暗模式</string>
+    <string name="setting_theme">主题</string>
     <string name="setting_transfer_large_summary">当转账金额大于或等于 %1$s 时显示确认弹窗</string>
     <string-array name="setting_night_array">
         <item>浅色</item>
