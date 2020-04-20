@@ -13,7 +13,7 @@
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:titleText="@string/wallet_title"/>
+            app:titleText="@string/pin"/>
 
     <RelativeLayout
             android:id="@+id/biometrics_rl"
@@ -107,70 +107,4 @@
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:foreground="?attr/selectableItemBackground"
             android:background="?attr/bg_white"/>
-
-    <RelativeLayout
-        android:id="@+id/currency_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:layout_marginTop="@dimen/margin20"
-        android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
-
-        <TextView
-            android:id="@+id/currency_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/currency"
-            tools:ignore="RelativeOverlap"/>
-
-        <TextView
-            android:id="@+id/current_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:textColor="?attr/text_minor"/>
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/large_amount_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:layout_marginTop="@dimen/margin20"
-        android:background="?attr/bg_white"
-        android:foreground="?attr/selectableItemBackground">
-
-        <TextView
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/wallet_transaction_tip_title" />
-
-        <TextView
-            android:id="@+id/large_amount_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:textColor="?attr/text_minor"/>
-    </RelativeLayout>
-
-    <TextView
-        android:id="@+id/large_amount_desc_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:text="@string/setting_transfer_large_summary"
-        android:textColor="?attr/text_minor"
-        android:textSize="12sp"/>
 </LinearLayout>
