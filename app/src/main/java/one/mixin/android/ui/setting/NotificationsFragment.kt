@@ -16,7 +16,6 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openNotificationSetting
-import one.mixin.android.extension.removeEnd
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.util.Session
@@ -41,48 +40,76 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
         super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         transfer_rl.setOnClickListener {
-            showDialog(transfer_tv.text.toString().removeEnd(accountSymbol))
+            showDialog(transfer_tv.text.toString().removePrefix(accountSymbol), true)
         }
-        refreshUI(Session.getAccount()!!.transferNotificationThreshold)
+        refreshNotification(Session.getAccount()!!.transferNotificationThreshold)
         system_notification.setOnClickListener {
             context?.openNotificationSetting()
         }
+
+        large_amount_rl.setOnClickListener {
+            showDialog(Session.getAccount()!!.transferConfirmationThreshold.toString(), false)
+        }
+        refreshLargeAmount(Session.getAccount()!!.transferConfirmationThreshold)
     }
 
     @SuppressLint("RestrictedApi")
-    private fun showDialog(amount: String?) {
+    private fun showDialog(amount: String?, isNotification: Boolean) {
         if (context == null || !isAdded) {
             return
         }
         editDialog {
-            titleText = this@NotificationsFragment.getString(R.string.setting_notification_transfer_amount, accountSymbol)
+            titleText = this@NotificationsFragment.getString(if (isNotification) {
+                R.string.setting_notification_transfer_amount
+            } else {
+                R.string.wallet_transaction_tip_title_with_symbol
+            }, accountSymbol)
             editText = amount
-            editHint = this@NotificationsFragment.getString(R.string.wallet_transfer_amount)
+            editHint = this@NotificationsFragment.getString(if (isNotification) {
+                R.string.wallet_transfer_amount
+            } else {
+                R.string.wallet_transaction_tip_title
+            })
             editInputType = InputType.TYPE_NUMBER_FLAG_DECIMAL + InputType.TYPE_CLASS_NUMBER
             allowEmpty = false
             rightAction = {
-                savePreference(it.toDouble())
+                savePreference(it.toDouble(), isNotification)
             }
         }
     }
 
-    private fun savePreference(threshold: Double) = lifecycleScope.launch {
-        val pb = indeterminateProgressDialog(message = R.string.pb_dialog_message,
-            title = R.string.setting_notification_transfer).apply {
+    private fun savePreference(threshold: Double, isNotification: Boolean) = lifecycleScope.launch {
+        val pb = indeterminateProgressDialog(
+            message = R.string.pb_dialog_message,
+            title = if (isNotification) R.string.setting_notification_transfer else R.string.wallet_transaction_tip_title
+        ).apply {
             setCancelable(false)
         }
         pb.show()
 
         handleMixinResponse(
             invokeNetwork = {
-                viewModel.preferences(AccountUpdateRequest(fiatCurrency = Session.getFiatCurrency(),
-                    transferNotificationThreshold = threshold))
+                viewModel.preferences(if (isNotification) {
+                    AccountUpdateRequest(
+                        fiatCurrency = Session.getFiatCurrency(),
+                        transferNotificationThreshold = threshold
+                    )
+                } else {
+                    AccountUpdateRequest(
+                        fiatCurrency = Session.getFiatCurrency(),
+                        transferConfirmationThreshold = threshold
+                    )
+                })
             },
             switchContext = Dispatchers.IO,
             successBlock = {
                 it.data?.let { account ->
                     Session.storeAccount(account)
-                    refreshUI(account.transferNotificationThreshold)
+                    if (isNotification) {
+                        refreshNotification(account.transferNotificationThreshold)
+                    } else {
+                        refreshLargeAmount(account.transferConfirmationThreshold)
+                    }
                 }
             },
             doAfterNetworkSuccess = {
@@ -96,9 +123,18 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun refreshUI(threshold: Double) {
-        transfer_tv.text = "$threshold$accountSymbol"
+    private fun refreshNotification(threshold: Double) {
+        if (!isAdded) return
+        transfer_tv.text = "$accountSymbol$threshold"
         transfer_desc_tv.text = getString(R.string.setting_notification_transfer_desc,
             "$accountSymbol$threshold")
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun refreshLargeAmount(largeAmount: Double) {
+        if (!isAdded) return
+        large_amount_tv.text = "$accountSymbol$largeAmount"
+        large_amount_desc_tv.text = getString(R.string.setting_transfer_large_summary,
+            "$accountSymbol$largeAmount")
     }
 }

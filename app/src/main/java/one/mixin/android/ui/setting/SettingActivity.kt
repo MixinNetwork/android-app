@@ -28,8 +28,8 @@ class SettingActivity : BlazeBaseActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        val walletSettingFragment =
-            supportFragmentManager.findFragmentByTag(WalletSettingFragment.TAG) as? WalletSettingFragment ?: return
-        walletSettingFragment.onActivityResult(requestCode, resultCode, data)
+        val pinSettingFragment =
+            supportFragmentManager.findFragmentByTag(PinSettingFragment.TAG) as? PinSettingFragment ?: return
+        pinSettingFragment.onActivityResult(requestCode, resultCode, data)
     }
 }

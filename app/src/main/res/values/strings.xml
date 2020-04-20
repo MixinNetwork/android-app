@@ -100,6 +100,7 @@
     <string name="call_who">Call %1$s</string>
     <string name="click_lock">Click to lock</string>
     <string name="click_unlock">Click to unlock</string>
+    <string name="pin" translatable="false">PIN</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -511,7 +512,9 @@
     <string name="setting_notification_system">System options</string>
     <string name="setting_notification_transfer_desc">Show notifications when receiving a transfer greater than or equal to %1$s.</string>
     <string name="setting_notification_transfer_amount">Transfer Amount(%1$s)</string>
-    <string name="setting_theme">Appearance</string>
+    <string name="setting_notification_confirmation">Notification and Confirmation</string>
+    <string name="setting_appearance">Appearance</string>
+    <string name="setting_theme">Dark Mode</string>
     <string name="setting_transfer_large_summary">Show confirmation dialog when transfer greater than or equal to %1$s</string>
     <string-array name="setting_night_array">
         <item>Light</item>

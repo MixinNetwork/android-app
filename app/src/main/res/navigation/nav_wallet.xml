@@ -83,7 +83,7 @@
     <fragment
         android:id="@+id/all_transactions_fragment"
         android:name="one.mixin.android.ui.wallet.AllTransactionsFragment"
-        tools:layout="@layout/fragment_wallet_setting">
+        tools:layout="@layout/fragment_pin_setting">
 
         <action
             android:id="@+id/action_all_transactions_fragment_to_transaction_fragment"
