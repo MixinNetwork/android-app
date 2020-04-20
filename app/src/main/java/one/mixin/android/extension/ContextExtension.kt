@@ -15,7 +15,6 @@ import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.media.MediaMetadataRetriever
 import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -154,14 +153,11 @@ fun Context.appCompatActionBarHeight(): Int {
     return resources.getDimensionPixelSize(tv.resourceId)
 }
 
+@Suppress("DEPRECATION")
 fun Context.networkConnected(): Boolean {
     val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    val network = connectivityManager.activeNetwork ?: return false
-    val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
-        ?: return false
-    return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
-        (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
+    val activeNetwork = connectivityManager.activeNetworkInfo ?: return false
+    return activeNetwork.isConnectedOrConnecting
 }
 
 fun Context.realSize(): Point {

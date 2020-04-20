@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.Editable
 import android.view.LayoutInflater
@@ -42,6 +43,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val currencyAdapter = CurrencyAdapter()
     private val currencies = arrayListOf<Currency>()
 
+    @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         val view = View.inflate(context, R.layout.fragment_currency_bottom_sheet, null) as BottomSheetRelativeLayout
@@ -107,7 +109,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val symbols = resources.getStringArray(R.array.currency_symbols)
         val flagArray = resources.obtainTypedArray(R.array.currency_flags)
         val flags = arrayListOf<Int>()
-        for (i in 0 until names.size) {
+        for (i in names.indices) {
             flags.add(flagArray.getResourceId(i, 0))
         }
         flagArray.recycle()

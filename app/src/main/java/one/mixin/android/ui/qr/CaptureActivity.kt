@@ -40,7 +40,6 @@ class CaptureActivity : BlazeBaseActivity() {
                     openPermissionSetting()
                 }
             }
-
     }
 
     private fun initView() {

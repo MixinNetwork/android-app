@@ -6,10 +6,9 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
 import android.security.keystore.UserNotAuthenticatedException
-import android.util.Log
 import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
-import com.crashlytics.android.Crashlytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
 import java.security.KeyStore
@@ -74,7 +73,7 @@ object BiometricUtil {
                     deleteKey(ctx)
                     ctx.toast(R.string.wallet_biometric_invalid)
                 }
-                else -> Crashlytics.log(Log.ERROR, CRASHLYTICS_BIOMETRIC, "getEncryptCipher. ${e.getStackTraceString()}")
+                else -> FirebaseCrashlytics.getInstance().log(CRASHLYTICS_BIOMETRIC + "getEncryptCipher. ${e.getStackTraceString()}")
             }
             return false
         }
@@ -93,7 +92,7 @@ object BiometricUtil {
             }
             ks.deleteEntry(BIOMETRICS_ALIAS)
         } catch (e: Exception) {
-            Crashlytics.log(Log.ERROR, CRASHLYTICS_BIOMETRIC, "delete entry BIOMETRICS_ALIAS failed. ${e.getStackTraceString()}")
+            reportException(e)
         }
 
         ctx.defaultSharedPreferences.apply {
@@ -132,7 +131,7 @@ object BiometricUtil {
         try {
             key = ks.getKey(BIOMETRICS_ALIAS, null) as? SecretKey
         } catch (e: Exception) {
-            Crashlytics.log(Log.ERROR, CRASHLYTICS_BIOMETRIC, "getKey BIOMETRICS_ALIAS failed. ${e.getStackTraceString()}")
+            reportException(e)
         }
         try {
             if (key == null) {
@@ -154,7 +153,7 @@ object BiometricUtil {
                 key = keyGenerator.generateKey()
             }
         } catch (e: Exception) {
-            Crashlytics.log(Log.ERROR, CRASHLYTICS_BIOMETRIC, "keyGenerator init failed. ${e.getStackTraceString()}")
+            reportException(e)
         }
         return key
     }

@@ -1,8 +1,6 @@
 package one.mixin.android.util
 
 import android.content.Context
-import com.bugsnag.android.Bugsnag
-import com.crashlytics.android.Crashlytics
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -60,10 +58,7 @@ open class ErrorHandler {
                     }
                     AUTHENTICATION -> {
                         toast(getString(R.string.error_authentication, AUTHENTICATION))
-                        IllegalStateException("Force logout error code.").let { exception ->
-                            Bugsnag.notify(exception)
-                            Crashlytics.logException(exception)
-                        }
+                        reportException(IllegalStateException("Force logout error code."))
                         MixinApplication.get().closeAndClear()
                     }
                     FORBIDDEN -> {

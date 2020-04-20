@@ -17,7 +17,6 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.TorchState
 import androidx.camera.core.UseCase
 import androidx.core.view.isVisible
-import com.crashlytics.android.Crashlytics
 import java.io.File
 import kotlinx.android.synthetic.main.fragment_capture.*
 import one.mixin.android.R
@@ -111,7 +110,8 @@ class CaptureFragment : BaseCameraxFragment() {
         try {
             bindCameraUseCase()
         } catch (e: Exception) {
-            Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Switch lens and rebind use cases failure, $e")
+            // Todo
+            // Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Switch lens and rebind use cases failure, $e")
         }
     }
 
@@ -137,7 +137,8 @@ class CaptureFragment : BaseCameraxFragment() {
 
         override fun onError(exception: ImageCaptureException) {
             context?.toast("Photo capture failed: ${exception.message}")
-            Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Photo capture failed: ${exception.message}")
+            // Todo
+            // Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Photo capture failed: ${exception.message}")
         }
     }
 

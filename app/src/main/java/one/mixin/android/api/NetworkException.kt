@@ -14,6 +14,11 @@ class WebSocketException : IOException() {
         return true
     }
 }
+class ExpiredTokenException : IOException() {
+    fun shouldRetry(): Boolean {
+        return true
+    }
+}
 
 class ChecksumException : IOException() {
     fun shouldRetry(): Boolean {

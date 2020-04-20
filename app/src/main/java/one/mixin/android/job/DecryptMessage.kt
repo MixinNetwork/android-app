@@ -5,7 +5,7 @@ import android.app.NotificationManager
 import android.util.Log
 import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
-import com.crashlytics.android.Crashlytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
@@ -689,8 +689,8 @@ class DecryptMessage : Injector() {
             }
         } catch (e: Exception) {
             Log.e(TAG, "decrypt failed " + data.messageId, e)
-            Crashlytics.log(Log.ERROR, "Decrypt failed", data.toString() + resendMessageId)
-            Crashlytics.logException(e)
+            FirebaseCrashlytics.getInstance().log("Decrypt failed$data$resendMessageId")
+            FirebaseCrashlytics.getInstance().recordException(e)
             if (e !is NoSessionException) {
                 Bugsnag.beforeNotify {
                     it.addToTab("Decrypt", "conversation", data.conversationId)

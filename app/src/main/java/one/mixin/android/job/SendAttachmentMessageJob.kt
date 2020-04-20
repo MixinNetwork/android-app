@@ -3,8 +3,6 @@ package one.mixin.android.job
 import android.net.Uri
 import android.util.Log
 import com.birbit.android.jobqueue.Params
-import com.bugsnag.android.Bugsnag
-import com.crashlytics.android.Crashlytics
 import io.reactivex.disposables.Disposable
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
@@ -17,6 +15,7 @@ import one.mixin.android.crypto.attachment.PushAttachmentData
 import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.isVideo
@@ -91,8 +90,7 @@ class SendAttachmentMessageJob(
             }
         }, {
             Log.e(TAG, "upload attachment error", it)
-            Bugsnag.notify(it)
-            Crashlytics.logException(it)
+            reportException(it)
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
             removeJob()
         })
@@ -134,8 +132,7 @@ class SendAttachmentMessageJob(
                 uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
             }
         } catch (e: Exception) {
-            Bugsnag.notify(e)
-            Crashlytics.logException(e)
+            reportException(e)
             return false
         }
         if (isCancelled) {

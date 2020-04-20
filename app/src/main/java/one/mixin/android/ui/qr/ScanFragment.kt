@@ -15,7 +15,6 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.TorchState
 import androidx.camera.core.UseCase
 import androidx.lifecycle.lifecycleScope
-import com.crashlytics.android.Crashlytics
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
 import java.util.concurrent.CountDownLatch
@@ -211,7 +210,8 @@ class ScanFragment : BaseCameraxFragment() {
                 val byteArray = ImageUtil.imageToJpegByteArray(image)
                 BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
             } catch (e: Exception) {
-                Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "getBitmapFromImage failure, $e")
+                // Todo
+                // Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "getBitmapFromImage failure, $e")
                 null
             }
         }

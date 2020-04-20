@@ -35,10 +35,13 @@
                     style="@style/NormalTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     android:text="@string/setting_privacy_security"
-                    tools:ignore="RelativeOverlap" />
+                    tools:ignore="RelativeOverlap"
+                    android:drawablePadding="@dimen/margin12"
+                    app:drawableStartCompat="@drawable/ic_setting_privacy" />
             </RelativeLayout>
 
             <RelativeLayout
@@ -53,10 +56,13 @@
                     style="@style/NormalTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/notification"
-                    tools:ignore="RelativeOverlap" />
+                    android:text="@string/setting_notification_confirmation"
+                    tools:ignore="RelativeOverlap"
+                    android:drawablePadding="@dimen/margin12"
+                    app:drawableStartCompat="@drawable/ic_setting_notification" />
             </RelativeLayout>
 
             <RelativeLayout
@@ -71,10 +77,13 @@
                     style="@style/NormalTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     android:text="@string/setting_backup"
-                    tools:ignore="RelativeOverlap" />
+                    tools:ignore="RelativeOverlap"
+                    android:drawablePadding="@dimen/margin12"
+                    app:drawableStartCompat="@drawable/ic_setting_backup" />
             </RelativeLayout>
 
             <RelativeLayout
@@ -89,10 +98,13 @@
                     style="@style/NormalTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     android:text="@string/setting_data_storage"
-                    tools:ignore="RelativeOverlap" />
+                    tools:ignore="RelativeOverlap"
+                    android:drawablePadding="@dimen/margin12"
+                    app:drawableStartCompat="@drawable/ic_setting_data" />
             </RelativeLayout>
 
             <View
@@ -101,81 +113,24 @@
                 android:background="?attr/bg_window" />
 
             <RelativeLayout
-                android:id="@+id/night_mode_rl"
+                android:id="@+id/appearance_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="?attr/bg_white"
                 android:foreground="?attr/selectableItemBackground">
 
                 <TextView
-                    android:id="@+id/night_mode_tv"
+                    android:id="@+id/appearance_tv"
                     style="@style/NormalTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_theme"
-                    tools:ignore="RelativeOverlap" />
-
-                <TextView
-                    android:id="@+id/night_mode_desc_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:textColor="?attr/text_minor" />
-
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/language_rl"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/item_contact_height"
-                android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
-
-                <TextView
-                    android:id="@+id/language_tv"
-                    style="@style/NormalTextStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/language"
-                    tools:ignore="RelativeOverlap" />
-
-                <TextView
-                    android:id="@+id/language_desc_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:textColor="?attr/text_minor" />
-            </RelativeLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/setting_divider"
-                android:background="?attr/bg_window" />
-
-            <RelativeLayout
-                android:id="@+id/wallet_rl"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/item_contact_height"
-                android:background="?attr/bg_white"
-                android:foreground="?attr/selectableItemBackground">
-
-                <TextView
-                    android:id="@+id/wallet_tv"
-                    style="@style/NormalTextStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/wallet_title"
-                    tools:ignore="RelativeOverlap" />
+                    android:text="@string/setting_appearance"
+                    tools:ignore="RelativeOverlap"
+                    android:drawablePadding="@dimen/margin12"
+                    app:drawableStartCompat="@drawable/ic_setting_appearance" />
             </RelativeLayout>
 
             <View
@@ -195,10 +150,13 @@
                     style="@style/NormalTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     android:text="@string/setting_desktop"
-                    tools:ignore="RelativeOverlap" />
+                    tools:ignore="RelativeOverlap"
+                    android:drawablePadding="@dimen/margin12"
+                    app:drawableStartCompat="@drawable/ic_setting_desktop" />
             </RelativeLayout>
 
             <View
@@ -218,10 +176,13 @@
                     style="@style/NormalTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
                     android:text="@string/about"
-                    tools:ignore="RelativeOverlap" />
+                    tools:ignore="RelativeOverlap"
+                    android:drawablePadding="@dimen/margin12"
+                    app:drawableStartCompat="@drawable/ic_setting_about" />
             </RelativeLayout>
         </LinearLayout>
     </ScrollView>

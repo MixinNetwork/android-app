@@ -8,9 +8,9 @@ import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
 import androidx.work.Configuration
 import com.bugsnag.android.Bugsnag
-import com.crashlytics.android.Crashlytics
 import com.facebook.stetho.Stetho
 import com.google.firebase.FirebaseApp
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
@@ -94,7 +94,7 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
     fun gotoTimeWrong(serverTime: Long) {
         if (onlining.compareAndSet(true, false)) {
             val ise = IllegalStateException("Time error: Server-Time $serverTime - Local-Time ${System.currentTimeMillis()}")
-            Crashlytics.logException(ise)
+            FirebaseCrashlytics.getInstance().recordException(ise)
             BlazeMessageService.stopService(this)
             CallService.disconnect(this)
             notificationManager.cancelAll()

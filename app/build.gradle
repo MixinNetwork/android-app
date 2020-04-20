@@ -8,8 +8,8 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'io.fabric'
 apply plugin: 'com.google.firebase.firebase-perf'
+apply plugin: 'com.google.firebase.crashlytics'
 
 android {
     compileSdkVersion 29
@@ -194,13 +194,13 @@ dependencies {
 
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.google.firebase:firebase-analytics:${firebaseVersion}"
+    implementation 'com.google.firebase:firebase-crashlytics:17.0.0-beta04'
     implementation "com.google.firebase:firebase-messaging:${firebaseMessageVersion}"
     implementation "com.google.firebase:firebase-dynamic-links:${firebaseDylinkVersion}"
     implementation "com.google.firebase:firebase-ml-vision:${firebaseMLVersion}"
     implementation("com.google.firebase:firebase-perf:${perfVersion}") {
         exclude group: 'com.google.protobuf', module: 'protobuf-lite'
     }
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
     implementation "com.google.android.play:core:${playVersion}"
     implementation "com.google.android.gms:play-services-safetynet:${google_play_services_version}"
     implementation "com.google.android.gms:play-services-maps:${google_play_services_version}"

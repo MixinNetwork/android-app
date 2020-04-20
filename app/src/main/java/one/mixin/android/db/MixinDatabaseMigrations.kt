@@ -4,7 +4,6 @@ import android.database.sqlite.SQLiteException
 import android.util.Log
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.crashlytics.android.Crashlytics
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 import timber.log.Timber
@@ -209,7 +208,8 @@ abstract class SafeMigration(startVersion: Int, endVersion: Int) : Migration(sta
                 throw e
             }
             Timber.e("Room migration exception, $e")
-            Crashlytics.log(Log.ERROR, MixinDatabaseMigrations.CRASHLYTICS_ROOM_MIGRATION, "Room migration exception, $e")
+            // Todo
+            // Crashlytics.log(Log.ERROR, MixinDatabaseMigrations.CRASHLYTICS_ROOM_MIGRATION, "Room migration exception, $e")
         }
     }
 }

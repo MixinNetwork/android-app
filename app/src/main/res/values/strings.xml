@@ -100,6 +100,7 @@
     <string name="call_who">Call %1$s</string>
     <string name="click_lock">Click to lock</string>
     <string name="click_unlock">Click to unlock</string>
+    <string name="pin" translatable="false">PIN</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -503,17 +504,19 @@
     <string name="setting_desktop_confirm"> Confirm login to\nMixin Messenger Desktop</string>
     <string name="setting_desktop_login">Log in</string>
     <string name="setting_privacy_security">Privacy and Security</string>
-    <string name="setting_mobile_contact">Mobile Contacts</string>
+    <string name="setting_mobile_contact">Phone Contacts</string>
     <string name="setting_mobile_contact_desc">Mixin syncs your address book to Mixin servers to help you connect with other Mixin users.</string>
     <string name="setting_mobile_contact_warning">This will remove your contacts from the Mixin servers.</string>
     <string name="setting_mobile_contact_delete">Delete Synced Contacts</string>
-    <string name="setting_mobile_contact_upload">Upload Mobile Contacts</string>
+    <string name="setting_mobile_contact_upload">Upload Phone Contacts</string>
     <string name="setting_mobile_contact_empty">Empty address book</string>
     <string name="setting_notification_transfer">Transfer Notifications</string>
     <string name="setting_notification_system">System options</string>
     <string name="setting_notification_transfer_desc">Show notifications when receiving a transfer greater than or equal to %1$s.</string>
     <string name="setting_notification_transfer_amount">Transfer Amount(%1$s)</string>
-    <string name="setting_theme">Appearance</string>
+    <string name="setting_notification_confirmation">Notification and Confirmation</string>
+    <string name="setting_appearance">Appearance</string>
+    <string name="setting_theme">Theme</string>
     <string name="setting_transfer_large_summary">Show confirmation dialog when transfer greater than or equal to %1$s</string>
     <string-array name="setting_night_array">
         <item>Light</item>

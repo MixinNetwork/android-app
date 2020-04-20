@@ -18,7 +18,6 @@ import androidx.camera.core.UseCase
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import com.crashlytics.android.Crashlytics
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import java.io.File
@@ -34,6 +33,7 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
+import one.mixin.android.util.reportException
 import one.mixin.android.widget.gallery.ui.GalleryActivity
 
 abstract class BaseCameraxFragment : VisionFragment() {
@@ -130,7 +130,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                     this as LifecycleOwner, cameraSelector, preview, *otherUseCases
                 )
             } catch (e: Exception) {
-                Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Use case binding failed, $e")
+                reportException(e)
             }
         }, mainExecutor)
     }

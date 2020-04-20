@@ -4,6 +4,7 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.setting.AboutFragment
+import one.mixin.android.ui.setting.AppearanceFragment
 import one.mixin.android.ui.setting.AuthenticationsFragment
 import one.mixin.android.ui.setting.BackUpFragment
 import one.mixin.android.ui.setting.BiometricTimeFragment
@@ -17,6 +18,7 @@ import one.mixin.android.ui.setting.OldPasswordFragment
 import one.mixin.android.ui.setting.PermissionListFragment
 import one.mixin.android.ui.setting.PinEmergencyBottomSheetDialog
 import one.mixin.android.ui.setting.PinLogsFragment
+import one.mixin.android.ui.setting.PinSettingFragment
 import one.mixin.android.ui.setting.PrivacyFragment
 import one.mixin.android.ui.setting.SettingBlockedFragment
 import one.mixin.android.ui.setting.SettingConversationFragment
@@ -24,7 +26,6 @@ import one.mixin.android.ui.setting.SettingDataStorageFragment
 import one.mixin.android.ui.setting.SettingStorageFragment
 import one.mixin.android.ui.setting.VerificationEmergencyFragment
 import one.mixin.android.ui.setting.ViewEmergencyContactFragment
-import one.mixin.android.ui.setting.WalletSettingFragment
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 
 @Module
@@ -84,7 +85,7 @@ abstract class SettingActivityModule {
     internal abstract fun contributeWalletOldPasswordFragment(): OldPasswordFragment
 
     @ContributesAndroidInjector
-    internal abstract fun contributeWalletSettingFragment(): WalletSettingFragment
+    internal abstract fun contributePinSettingFragment(): PinSettingFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributePinLogsFragment(): PinLogsFragment
@@ -100,4 +101,7 @@ abstract class SettingActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributePermissionListFragment(): PermissionListFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeAppearanceFragment(): AppearanceFragment
 }
