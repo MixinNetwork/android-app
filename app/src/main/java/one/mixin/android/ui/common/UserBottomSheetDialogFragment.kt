@@ -35,6 +35,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
@@ -178,6 +179,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             if (Session.getAccount()?.hasPin == true) {
                 TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
                     .showNow(parentFragmentManager, TransferFragment.TAG)
+                RxBus.publish(BotCloseEvent())
                 dismiss()
             } else {
                 toast(R.string.transfer_without_pin)
@@ -194,6 +196,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         Session.getAccountId()!!
                     ) != MixinApplication.conversationId
                 ) {
+                    RxBus.publish(BotCloseEvent())
                     ConversationActivity.show(ctx, null, user.userId)
                 }
             }
@@ -263,6 +266,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 if (showUserTransactionAction != null) {
                     showUserTransactionAction?.invoke()
                 } else {
+                    RxBus.publish(BotCloseEvent())
                     activity?.addFragment(
                         this@UserBottomSheetDialogFragment,
                         UserTransactionsFragment.newInstance(u.userId),
@@ -328,6 +332,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                 )
                             )
                         )
+                        RxBus.publish(BotCloseEvent())
                         dismiss()
                     }
                 }
@@ -342,6 +347,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                 Session.getAccountId()!!
                             )
                         )
+                        RxBus.publish(BotCloseEvent())
                         dismiss()
                     }
                 }
@@ -349,6 +355,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     title = getString(R.string.contact_other_search_conversation)
                     action = {
                         startSearchConversation()
+                        RxBus.publish(BotCloseEvent())
                         dismiss()
                     }
                 }
@@ -395,6 +402,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 title = getString(R.string.circle)
                 action = {
                     startCircleManager()
+                    RxBus.publish(BotCloseEvent())
                     dismiss()
                 }
                 this.circleNames = circleNames
@@ -571,6 +579,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     user.userId
                 )
             )
+            RxBus.publish(BotCloseEvent())
             dismiss()
         } else {
             toast(R.string.error_no_connection)
@@ -628,6 +637,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     .throttleFirst(1, TimeUnit.SECONDS)
                     .autoDispose(stopScope).subscribe {
                         dismiss()
+                        RxBus.publish(BotCloseEvent())
                         WebBottomSheetDialogFragment
                             .newInstance(app.homeUri, conversationId, app)
                             .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)

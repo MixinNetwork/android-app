@@ -18,12 +18,14 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
+import io.reactivex.android.schedulers.AndroidSchedulers
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_bot_manager.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.di.Injectable
+import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
@@ -42,7 +44,7 @@ import one.mixin.android.widget.bot.BotDock
 import org.jetbrains.anko.displayMetrics
 
 class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener, Injectable {
-
+    private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
     companion object {
         const val TAG = "BorManagerBottomSheetDialogFragment"
     }
@@ -87,6 +89,12 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         }
         initView()
         loadData()
+        RxBus.listen(BotCloseEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe {
+                dismiss()
+            }
     }
 
     override fun onStart() {
@@ -203,12 +211,15 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         } else if (app is Bot) {
             when (app.id) {
                 INTERNAL_WALLET_ID -> {
+                    dismiss()
                     WalletActivity.show(requireActivity())
                 }
                 INTERNAL_CAMERA_ID -> {
+                    dismiss()
                     openCamera(false)
                 }
                 INTERNAL_SCAN_ID -> {
+                    dismiss()
                     openCamera(true)
                 }
             }
