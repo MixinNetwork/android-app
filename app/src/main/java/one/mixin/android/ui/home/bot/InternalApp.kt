@@ -20,35 +20,37 @@ val InternalCamera = Bot(INTERNAL_CAMERA_ID, MixinApplication.appContext.getStri
 val InternalScan = Bot(INTERNAL_SCAN_ID, MixinApplication.appContext.getString(R.string.bot_internal_scan), R.drawable.ic_bot_scan)
 
 enum class BotCategory(@DrawableRes val icon: Int) {
-    BOOK(R.drawable.ic_bot_category_book),
-    CIRCLE(R.drawable.ic_bot_category_circle),
-    EXCHANGE(R.drawable.ic_bot_category_exchange),
-    GAME(R.drawable.ic_bot_category_game),
+    TRADING(R.drawable.ic_bot_category_trading),
+    BUSINESS(R.drawable.ic_bot_category_books), // Todo replace icon
+    BOOKS(R.drawable.ic_bot_category_books),
+    EDUCATION(R.drawable.ic_bot_category_education),
+    SOCIAL(R.drawable.ic_bot_category_social),
+    GAMES(R.drawable.ic_bot_category_games),
     MUSIC(R.drawable.ic_bot_category_music),
     NEWS(R.drawable.ic_bot_category_news),
-    OTHER(R.drawable.ic_bot_category_other),
     SHOPPING(R.drawable.ic_bot_category_shopping),
-    TEACH(R.drawable.ic_bot_category_teach),
     TOOLS(R.drawable.ic_bot_category_tools),
     VIDEO(R.drawable.ic_bot_category_video),
     WALLET(R.drawable.ic_bot_category_wallet),
-    WEATHER(R.drawable.ic_bot_category_weather),
+    PHOTO(R.drawable.ic_bot_category_wallet), // Todo replace icon
+    OTHER(R.drawable.ic_bot_category_other),
 }
 
 @DrawableRes
 fun App.getCategoryIcon(): Int = when (category) {
-    BotCategory.BOOK.name -> BotCategory.BOOK.icon
-    BotCategory.CIRCLE.name -> BotCategory.CIRCLE.icon
-    BotCategory.EXCHANGE.name -> BotCategory.EXCHANGE.icon
-    BotCategory.GAME.name -> BotCategory.GAME.icon
+    BotCategory.BOOKS.name -> BotCategory.BOOKS.icon
+    BotCategory.BUSINESS.name -> BotCategory.BUSINESS.icon
+    BotCategory.SOCIAL.name -> BotCategory.SOCIAL.icon
+    BotCategory.TRADING.name -> BotCategory.TRADING.icon
+    BotCategory.GAMES.name -> BotCategory.GAMES.icon
     BotCategory.MUSIC.name -> BotCategory.MUSIC.icon
     BotCategory.NEWS.name -> BotCategory.NEWS.icon
     BotCategory.OTHER.name -> BotCategory.OTHER.icon
     BotCategory.SHOPPING.name -> BotCategory.SHOPPING.icon
-    BotCategory.TEACH.name -> BotCategory.TEACH.icon
+    BotCategory.EDUCATION.name -> BotCategory.EDUCATION.icon
     BotCategory.TOOLS.name -> BotCategory.TOOLS.icon
     BotCategory.VIDEO.name -> BotCategory.VIDEO.icon
     BotCategory.WALLET.name -> BotCategory.WALLET.icon
-    BotCategory.WEATHER.name -> BotCategory.WEATHER.icon
+    BotCategory.PHOTO.name -> BotCategory.PHOTO.icon
     else -> BotCategory.OTHER.icon
 }

@@ -285,6 +285,7 @@
     <string name="contact_other_block">屏蔽用户</string>
     <string name="contact_other_unblock">解除屏蔽</string>
     <string name="contact_other_remove">删除联系人</string>
+    <string name="contact_other_remove_bot">删除机器人</string>
     <string name="contact_other_report">举报</string>
     <string name="contact_other_report_warning">确定要举报这个联系人？举报后你们的对话会被立即删除。</string>
     <string name="contact_other_transactions">转账记录</string>
@@ -613,7 +614,7 @@
     <string name="permission_video">要允许拍摄视频吗?</string>
     <string name="permission_camera">要允许拍摄照片吗?</string>
 
-    <string name="extensions">小程序</string>
+    <string name="extensions">机器人</string>
     <string name="camera">相机</string>
     <string name="voice">语音电话</string>
     <string name="document">文件</string>

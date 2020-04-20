@@ -422,10 +422,25 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             UserRelationship.FRIEND.name -> {
                 list.groups.add(menuGroup {
                     menu {
-                        title = getString(R.string.contact_other_remove)
+                        title = getString(
+                            if (user.isBot()) {
+                                R.string.contact_other_remove_bot
+                            } else {
+                                R.string.contact_other_remove
+                            }
+                        )
+
                         style = MenuStyle.Danger
                         action = {
-                            requireContext().showConfirmDialog(getString(R.string.contact_other_remove)) {
+                            requireContext().showConfirmDialog(
+                                getString(
+                                    if (user.isBot()) {
+                                        R.string.contact_other_remove_bot
+                                    } else {
+                                        R.string.contact_other_remove
+                                    }
+                                )
+                            ) {
                                 updateRelationship(UserRelationship.STRANGER.name)
                             }
                         }

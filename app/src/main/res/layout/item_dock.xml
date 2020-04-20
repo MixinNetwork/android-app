@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/item"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipChildren="false"
     android:clipToPadding="false"
     android:foreground="?selectableItemBackground"
-    android:gravity="center_horizontal"
     android:orientation="vertical">
 
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar"
         android:layout_width="56dp"
         android:layout_height="56dp"
+        android:layout_gravity="center"
         android:contentDescription="@null" />
 
-</LinearLayout>
+</FrameLayout>
