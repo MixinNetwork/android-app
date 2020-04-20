@@ -25,6 +25,8 @@ open class Account(
     @SerializedName("has_pin")
     val hasPin: Boolean,
     val accept_conversation_source: String,
+    @SerializedName("accept_search_source")
+    val acceptSearchSource: String,
     @SerializedName("has_emergency_contact")
     var hasEmergencyContact: Boolean,
     @SerializedName("fiat_currency")

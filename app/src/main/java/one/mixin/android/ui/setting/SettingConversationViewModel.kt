@@ -8,7 +8,9 @@ import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
+import one.mixin.android.ui.setting.PhoneNumberSettingFragment.Companion.ACCEPT_SEARCH_KEY
 import one.mixin.android.vo.MessageSource
+import one.mixin.android.vo.SearchSource
 
 class SettingConversationViewModel @Inject
 internal constructor(private val userService: AccountService) : ViewModel() {
@@ -23,6 +25,11 @@ internal constructor(private val userService: AccountService) : ViewModel() {
     fun initGroupPreferences(context: Context): MessageGroupSourcePreferences {
         groupPreferences = MessageGroupSourcePreferences(context)
         return groupPreferences
+    }
+
+    fun initSearchPreference(context: Context): SearchSourcePreferences {
+        searchPreference = SearchSourcePreferences(context)
+        return searchPreference
     }
 
     lateinit var preferences: MessageSourcePreferences
@@ -63,6 +70,33 @@ internal constructor(private val userService: AccountService) : ViewModel() {
             value = MessageSource.CONTACTS.ordinal
             context.defaultSharedPreferences.putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY,
                 MessageSource.CONTACTS.ordinal)
+        }
+    }
+
+    lateinit var searchPreference: SearchSourcePreferences
+
+    class SearchSourcePreferences(val context: Context) : LiveData<Int>() {
+        init {
+            value = context.defaultSharedPreferences.getInt(ACCEPT_SEARCH_KEY,
+                SearchSource.EVERYBODY.ordinal)
+        }
+
+        fun setEveryBody() {
+            value = SearchSource.EVERYBODY.ordinal
+            context.defaultSharedPreferences.putInt(ACCEPT_SEARCH_KEY,
+                SearchSource.EVERYBODY.ordinal)
+        }
+
+        fun setContacts() {
+            value = SearchSource.CONTACTS.ordinal
+            context.defaultSharedPreferences.putInt(ACCEPT_SEARCH_KEY,
+                SearchSource.CONTACTS.ordinal)
+        }
+
+        fun setNobody() {
+            value = SearchSource.NOBODY.ordinal
+            context.defaultSharedPreferences.putInt(ACCEPT_SEARCH_KEY,
+                SearchSource.NOBODY.ordinal)
         }
     }
 }

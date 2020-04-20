@@ -16,6 +16,7 @@ import one.mixin.android.ui.setting.MobileContactFragment
 import one.mixin.android.ui.setting.NotificationsFragment
 import one.mixin.android.ui.setting.OldPasswordFragment
 import one.mixin.android.ui.setting.PermissionListFragment
+import one.mixin.android.ui.setting.PhoneNumberSettingFragment
 import one.mixin.android.ui.setting.PinEmergencyBottomSheetDialog
 import one.mixin.android.ui.setting.PinLogsFragment
 import one.mixin.android.ui.setting.PinSettingFragment
@@ -104,4 +105,7 @@ abstract class SettingActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeAppearanceFragment(): AppearanceFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributePhoneNumberFragment(): PhoneNumberSettingFragment
 }
