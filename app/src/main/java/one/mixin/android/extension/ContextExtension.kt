@@ -157,11 +157,10 @@ fun Context.appCompatActionBarHeight(): Int {
 fun Context.networkConnected(): Boolean {
     val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val network = connectivityManager.activeNetwork ?: return false
+
     val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
         ?: return false
-    return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
-        (networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
+    return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
 }
 
 fun Context.realSize(): Point {
