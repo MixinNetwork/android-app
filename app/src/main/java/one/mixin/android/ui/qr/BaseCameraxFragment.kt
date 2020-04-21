@@ -8,7 +8,6 @@ import android.content.Intent
 import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.util.DisplayMetrics
-import android.util.Log
 import android.util.Rational
 import android.view.View
 import androidx.camera.core.Camera
@@ -161,7 +160,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     protected fun openEdit(path: String, isVideo: Boolean, fromGallery: Boolean = false) {
         activity?.supportFragmentManager?.inTransaction {
-            add(R.id.container, EditFragment.newInstance(path, isVideo, fromGallery), EditFragment.TAG)
+            add(R.id.container, EditFragment.newInstance(path, isVideo, fromGallery, needScan()), EditFragment.TAG)
                 .addToBackStack(null)
         }
     }
@@ -177,4 +176,5 @@ abstract class BaseCameraxFragment : VisionFragment() {
     abstract fun onFlashClick()
     abstract fun getOtherUseCases(screenAspectRatio: Rational, rotation: Int): Array<UseCase>
     abstract fun onDisplayChanged(rotation: Int)
+    abstract fun needScan(): Boolean
 }

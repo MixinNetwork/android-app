@@ -3,7 +3,6 @@ package one.mixin.android.ui.common.biometric
 import android.content.Context
 import android.os.CancellationSignal
 import android.security.keystore.UserNotAuthenticatedException
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
 import moe.feng.support.biometricprompt.BiometricPromptCompat
@@ -12,8 +11,8 @@ import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.BiometricUtil.CRASHLYTICS_BIOMETRIC
 import one.mixin.android.util.reportException
-import org.jetbrains.anko.getStackTraceString
 import org.jetbrains.anko.toast
 
 class BiometricInfo(
@@ -50,7 +49,7 @@ class BiometricDialog(
                     callback?.onCancel()
                 }
                 else ->
-                    FirebaseCrashlytics.getInstance().log(BiometricUtil.CRASHLYTICS_BIOMETRIC + "getDecryptCipher. ${e.getStackTraceString()}")
+                    reportException("$CRASHLYTICS_BIOMETRIC-getDecryptCipher", e)
             }
             return
         }

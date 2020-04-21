@@ -6,7 +6,6 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
-import android.util.Log
 import android.util.Rational
 import android.view.LayoutInflater
 import android.view.View
@@ -32,6 +31,7 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.toast
+import one.mixin.android.util.reportException
 import one.mixin.android.widget.CameraOpView
 
 class CaptureFragment : BaseCameraxFragment() {
@@ -99,6 +99,8 @@ class CaptureFragment : BaseCameraxFragment() {
         imageCapture?.targetRotation = rotation
     }
 
+    override fun needScan() = false
+
     @SuppressLint("RestrictedApi")
     private fun onSwitchClick() {
         lensFacing = if (CameraSelector.LENS_FACING_FRONT == lensFacing) {
@@ -110,8 +112,7 @@ class CaptureFragment : BaseCameraxFragment() {
         try {
             bindCameraUseCase()
         } catch (e: Exception) {
-            // Todo
-            // Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Switch lens and rebind use cases failure, $e")
+            reportException("$CRASHLYTICS_CAMERAX-Switch lens and rebind use cases failure,", e)
         }
     }
 
@@ -137,8 +138,7 @@ class CaptureFragment : BaseCameraxFragment() {
 
         override fun onError(exception: ImageCaptureException) {
             context?.toast("Photo capture failed: ${exception.message}")
-            // Todo
-            // Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "Photo capture failed: ${exception.message}")
+            reportException("$CRASHLYTICS_CAMERAX-Photo capture failed,", exception)
         }
     }
 

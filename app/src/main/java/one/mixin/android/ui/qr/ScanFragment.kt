@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
 import android.util.Rational
 import android.view.LayoutInflater
 import android.view.View
@@ -30,6 +29,7 @@ import one.mixin.android.extension.isFirebaseDecodeAvailable
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.device.ConfirmBottomFragment
+import one.mixin.android.util.reportException
 
 class ScanFragment : BaseCameraxFragment() {
     companion object {
@@ -91,6 +91,8 @@ class ScanFragment : BaseCameraxFragment() {
         imageAnalysis?.targetRotation = rotation
     }
 
+    override fun needScan() = true
+
     private fun handleAnalysis(analysisResult: String) {
         if (!isAdded) return
 
@@ -112,7 +114,7 @@ class ScanFragment : BaseCameraxFragment() {
                 activity?.finish()
             }
         } else {
-            pseudoNotificationView?.addContent(analysisResult)
+            handleResult(analysisResult)
         }
     }
 
@@ -210,8 +212,7 @@ class ScanFragment : BaseCameraxFragment() {
                 val byteArray = ImageUtil.imageToJpegByteArray(image)
                 BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
             } catch (e: Exception) {
-                // Todo
-                // Crashlytics.log(Log.ERROR, CRASHLYTICS_CAMERAX, "getBitmapFromImage failure, $e")
+                reportException("$CRASHLYTICS_CAMERAX-getBitmapFromImage failure", e)
                 null
             }
         }

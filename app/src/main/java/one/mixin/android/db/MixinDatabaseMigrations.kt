@@ -1,11 +1,12 @@
 package one.mixin.android.db
 
 import android.database.sqlite.SQLiteException
-import android.util.Log
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.DataBase.MINI_VERSION
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.CRASHLYTICS_ROOM_MIGRATION
+import one.mixin.android.util.reportException
 import timber.log.Timber
 
 class MixinDatabaseMigrations private constructor() {
@@ -208,8 +209,7 @@ abstract class SafeMigration(startVersion: Int, endVersion: Int) : Migration(sta
                 throw e
             }
             Timber.e("Room migration exception, $e")
-            // Todo
-            // Crashlytics.log(Log.ERROR, MixinDatabaseMigrations.CRASHLYTICS_ROOM_MIGRATION, "Room migration exception, $e")
+            reportException("$CRASHLYTICS_ROOM_MIGRATION-Room migration exception,", e)
         }
     }
 }
