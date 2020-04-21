@@ -140,7 +140,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
             val defaultApps = mutableListOf<BotInterface>(InternalWallet, InternalCamera, InternalScan)
             val topApps = mutableListOf<BotInterface>()
             val topIds = mutableListOf<String>()
-            defaultSharedPreferences.getString(TOP_BOT, null)?.let {
+            defaultSharedPreferences.getString(TOP_BOT, DefaultTopBots)?.let {
                 val ids = GsonHelper.customGson.fromJson(it, Array<String>::class.java)
                 ids.forEach { id ->
                     topIds.add(id)

@@ -47,7 +47,6 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
-import one.mixin.android.Constants.Account.PREF_SET_DEFAULT_TOP_BOT
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
@@ -100,10 +99,6 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.home.bot.BotInterface
-import one.mixin.android.ui.home.bot.InternalScan
-import one.mixin.android.ui.home.bot.InternalWallet
-import one.mixin.android.ui.home.bot.TOP_BOT
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.landing.InitializeActivity
@@ -115,7 +110,6 @@ import one.mixin.android.ui.search.SearchSingleFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
@@ -213,13 +207,6 @@ class MainActivity : BlazeBaseActivity() {
         if (defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
             defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
             delayShowModifyMobile()
-        }
-
-        if (!defaultSharedPreferences.getBoolean(PREF_SET_DEFAULT_TOP_BOT, false)) {
-            listOf<BotInterface>(InternalWallet, InternalScan).map { it.getBotId() }.apply {
-                defaultSharedPreferences.putString(TOP_BOT, GsonHelper.customGson.toJson(this))
-            }
-            defaultSharedPreferences.putBoolean(PREF_SET_DEFAULT_TOP_BOT, true)
         }
 
         setContentView(R.layout.activity_main)

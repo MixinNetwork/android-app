@@ -75,6 +75,7 @@ import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.home.bot.BotManagerBottomSheetDialogFragment
+import one.mixin.android.ui.home.bot.DefaultTopBots
 import one.mixin.android.ui.home.bot.INTERNAL_CAMERA_ID
 import one.mixin.android.ui.home.bot.INTERNAL_SCAN_ID
 import one.mixin.android.ui.home.bot.INTERNAL_WALLET_ID
@@ -437,7 +438,7 @@ class ConversationListFragment : LinkFragment() {
         lifecycleScope.launch {
             shadow_view.right_icon.isInvisible = true
             shadow_view.left_icon.isInvisible = true
-            requireContext().defaultSharedPreferences.getString(TOP_BOT, null)?.let {
+            requireContext().defaultSharedPreferences.getString(TOP_BOT, DefaultTopBots)?.let {
                 GsonHelper.customGson.fromJson(it, Array<String>::class.java).forEachIndexed { index, id ->
                     if (index > 1) return@launch
                     val view: ImageView =

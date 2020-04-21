@@ -9,9 +9,6 @@ import io.reactivex.disposables.Disposable
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.BotEvent
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.ui.home.bot.TOP_BOT
-import one.mixin.android.util.GsonHelper
 
 class ShadowCircleView : RelativeLayout {
 
@@ -33,12 +30,6 @@ class ShadowCircleView : RelativeLayout {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { event ->
                 }
-        }
-    }
-
-    private fun loadData() {
-        context.defaultSharedPreferences.getString(TOP_BOT, null)?.let {
-            val ids = GsonHelper.customGson.fromJson(it, Array<String>::class.java)
         }
     }
 
