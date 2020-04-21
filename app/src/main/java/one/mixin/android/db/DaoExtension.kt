@@ -79,8 +79,25 @@ fun CircleConversationDao.insertUpdate(
         if (c == null) {
             insert(circleConversation)
         } else {
-            update(circleConversation)
+            updateCheckPin(c, circleConversation)
         }
+    }
+}
+
+fun CircleConversationDao.updateCheckPin(
+    oldCircleConversation: CircleConversation,
+    newCircleConversation: CircleConversation
+) {
+    if (oldCircleConversation.pinTime != null) {
+        update(CircleConversation(
+            newCircleConversation.conversationId,
+            newCircleConversation.circleId,
+            newCircleConversation.userId,
+            newCircleConversation.createdAt,
+            oldCircleConversation.pinTime
+        ))
+    } else {
+        update(newCircleConversation)
     }
 }
 
