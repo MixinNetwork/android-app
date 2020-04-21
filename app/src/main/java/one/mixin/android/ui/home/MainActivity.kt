@@ -621,12 +621,16 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     fun selectCircle(name: String?, circleId: String?) {
-        search_bar?.logo?.text = name ?: "Mixin"
+        setCircleName(name)
         defaultSharedPreferences.putString(CIRCLE_NAME, name)
         defaultSharedPreferences.putString(CIRCLE_ID, circleId)
         search_bar?.hideContainer()
         (supportFragmentManager.findFragmentByTag(ConversationListFragment.TAG) as? ConversationListFragment)?.circleId = circleId
         observeOtherCircleUnread(circleId)
+    }
+
+    fun setCircleName(name: String?) {
+        search_bar?.logo?.text = name ?: "Mixin"
     }
 
     fun openCircleEdit(circleId: String) {
