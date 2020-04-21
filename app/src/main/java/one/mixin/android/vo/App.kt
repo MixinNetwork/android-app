@@ -69,6 +69,8 @@ data class App(
             }
         }
     }
+
+    override fun getBotId() = appId
 }
 
 enum class AppCap { GROUP, CONTACT, IMMERSIVE }

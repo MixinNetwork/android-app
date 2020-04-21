@@ -42,6 +42,7 @@ object Constants {
         const val PREF_NOTIFICATION_ON = "pref_notification_on"
         const val PREF_BATTERY_OPTIMIZE = "pref_battery_optimize"
         const val PREF_SYNC_CIRCLE = "pref_sync_circle"
+        const val PREF_SET_DEFAULT_TOP_BOT = "set_default_top_bot"
     }
 
     object Scheme {

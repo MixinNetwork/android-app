@@ -252,13 +252,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
     }
 
     private fun saveTopApps(apps: List<BotInterface>) {
-        apps.map {
-            if (it is App) {
-                it.appId
-            } else {
-                (it as Bot).id
-            }
-        }.apply {
+        apps.map { it.getBotId() }.apply {
             defaultSharedPreferences.putString(TOP_BOT, GsonHelper.customGson.toJson(this))
         }
     }

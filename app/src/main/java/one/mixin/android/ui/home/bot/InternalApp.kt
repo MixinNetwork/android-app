@@ -5,9 +5,13 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.vo.App
 
-interface BotInterface
+interface BotInterface {
+    fun getBotId(): String
+}
 
-data class Bot(val id: String, val name: String, @DrawableRes val icon: Int) : BotInterface
+data class Bot(val id: String, val name: String, @DrawableRes val icon: Int) : BotInterface {
+    override fun getBotId() = id
+}
 
 const val INTERNAL_WALLET_ID = "1462e610-7de1-4865-bc06-d71cfcbd0329"
 const val INTERNAL_CAMERA_ID = "15366a81-077c-414b-8829-552c5c87a2ae"
