@@ -97,6 +97,12 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
             .subscribe {
                 dismiss()
             }
+        RxBus.listen(BotEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe {
+                loadData()
+            }
     }
 
     override fun onStart() {
@@ -195,7 +201,6 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
 
     override fun onDockChange(apps: List<BotInterface>) {
         saveTopApps(apps)
-        loadData()
         RxBus.publish(BotEvent())
     }
 

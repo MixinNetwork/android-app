@@ -36,6 +36,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.event.BotCloseEvent
+import one.mixin.android.event.BotEvent
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
@@ -450,6 +451,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                 )
                             ) {
                                 updateRelationship(UserRelationship.STRANGER.name)
+                                if (user.isBot()) {
+                                    RxBus.publish(BotEvent())
+                                }
                             }
                         }
                     }
@@ -469,6 +473,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                         RelationshipAction.BLOCK.name
                                     )
                                 )
+                                if (user.isBot()) {
+                                    RxBus.publish(BotEvent())
+                                }
                             }
                         }
                     }
@@ -600,6 +607,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         RelationshipAction.BLOCK.name
                     ), conversationId
                 )
+                if (user.isBot()) {
+                    RxBus.publish(BotEvent())
+                }
                 RxBus.publish(ExitEvent(conversationId))
                 dialog.dismiss()
             }
@@ -677,6 +687,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             RelationshipAction.UNBLOCK.name
                         )
                     )
+                    if (user.isBot()) {
+                        RxBus.publish(BotEvent())
+                    }
                 }
             }
             UserRelationship.FRIEND.name -> {
@@ -694,6 +707,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 )
                 contentView.add_tv.setOnClickListener {
                     updateRelationship(UserRelationship.FRIEND.name)
+                    if (user.isBot()) {
+                        RxBus.publish(BotEvent())
+                    }
                 }
             }
         }
