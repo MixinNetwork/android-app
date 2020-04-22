@@ -11,6 +11,8 @@ data class AccountUpdateRequest(
     val receiveMessageSource: String? = null,
     @SerializedName("accept_conversation_source")
     val acceptConversationSource: String? = null,
+    @SerializedName("accept_search_source")
+    val acceptSearchSource: String? = null,
     @SerializedName("biography")
     val biography: String? = null,
     @SerializedName("fiat_currency")

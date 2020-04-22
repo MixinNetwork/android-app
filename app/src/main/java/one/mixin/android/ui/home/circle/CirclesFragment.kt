@@ -263,6 +263,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
             if (response.isSuccess) {
                 response.data?.let { circle ->
                     conversationViewModel.insertCircle(circle)
+                    (requireActivity() as MainActivity).setCircleName(circle.name)
                 }
             } else {
                 ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
