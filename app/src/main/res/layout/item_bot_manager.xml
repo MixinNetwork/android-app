@@ -8,13 +8,13 @@
     android:focusable="true"
     android:gravity="center_horizontal"
     android:foreground="?selectableItemBackground"
-    android:orientation="vertical"
-    android:padding="8dp">
+    android:paddingTop="16dp"
+    android:orientation="vertical">
 
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:contentDescription="@null" />
 
     <TextView
@@ -23,8 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:gravity="center"
-        android:maxWidth="64dp"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="8dp"
         android:maxLines="1"
         android:ellipsize="end"
         android:textAppearance="?android:attr/textAppearanceMedium"

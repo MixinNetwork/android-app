@@ -10,7 +10,7 @@
         android:layout_width="108dp"
         android:layout_height="108dp"
         android:foreground="@drawable/mixin_ripple"
-        android:padding="32dp"
+        android:padding="36dp"
         android:src="@drawable/ic_shadow_bot"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/left_icon"
