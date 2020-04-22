@@ -20,7 +20,10 @@
         <intent
             android:action="android.intent.action.VIEW"
             android:targetPackage="one.mixin.messenger"
-            android:targetClass="one.mixin.android.ui.qr.CaptureActivity" />
+            android:targetClass="one.mixin.android.ui.qr.CaptureActivity" >
+
+            <extra android:name="args_show_scan" android:value="true" />
+        </intent>
         <categories android:name="android.shortcut.conversation" />
     </shortcut>
 </shortcuts>
