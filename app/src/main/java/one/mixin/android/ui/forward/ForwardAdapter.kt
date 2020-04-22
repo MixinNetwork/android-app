@@ -18,6 +18,7 @@ class ForwardAdapter(private val disableCheck: Boolean = false) : RecyclerView.A
     companion object {
         const val TYPE_CONVERSATION = 0
         const val TYPE_FRIEND = 1
+        const val TYPE_BOT = 2
     }
 
     var selectItem = ArrayList<Any>()
@@ -25,9 +26,11 @@ class ForwardAdapter(private val disableCheck: Boolean = false) : RecyclerView.A
     private var listener: ForwardListener? = null
     var conversations: List<ConversationItem>? = null
     var friends: List<User>? = null
+    var bots: List<User>? = null
 
     var sourceConversations: List<ConversationItem>? = null
     var sourceFriends: List<User>? = null
+    var sourceBots: List<User>? = null
 
     var showHeader: Boolean = true
     var keyword: CharSequence? = null
@@ -54,32 +57,43 @@ class ForwardAdapter(private val disableCheck: Boolean = false) : RecyclerView.A
             }?.sortedByDescending {
                 it.fullName == keyword || it.identityNumber == keyword
             }
+            bots = sourceBots?.filter {
+                (it.fullName != null && it.fullName.contains(keyword.toString(), ignoreCase = true)) ||
+                    it.identityNumber.startsWith(keyword.toString(), ignoreCase = true)
+            }?.sortedByDescending {
+                it.fullName == keyword || it.identityNumber == keyword
+            }
             showHeader = false
         } else {
             conversations = sourceConversations
             friends = sourceFriends
+            bots = sourceBots
             showHeader = true
         }
         notifyDataSetChanged()
     }
 
     override fun getItemCount(): Int {
-        return if (conversations == null && friends == null) {
+        return if (conversations == null && friends == null && bots == null) {
             0
         } else if (conversations == null) {
-            friends?.size ?: 0
+            friends?.size?.plus(bots?.size ?: 0) ?: 0
         } else if (friends == null) {
-            conversations?.size ?: 0
+            conversations?.size?.plus(bots?.size ?: 0) ?: 0
+        } else if (bots == null) {
+            friends?.size?.plus(conversations?.size ?: 0) ?: 0
         } else {
-            conversations!!.size + friends!!.size
+            conversations!!.size + friends!!.size + bots!!.size
         }
     }
 
     override fun getItemViewType(position: Int): Int {
         return if (conversations != null && conversations!!.isNotEmpty() && position < conversations!!.size) {
             TYPE_CONVERSATION
-        } else {
+        } else if (friends != null && friends!!.isNotEmpty() && position < conversations!!.size + friends!!.size) {
             TYPE_FRIEND
+        } else {
+            TYPE_BOT
         }
     }
 
@@ -89,20 +103,25 @@ class ForwardAdapter(private val disableCheck: Boolean = false) : RecyclerView.A
         }
         return if (conversations != null && conversations!!.isNotEmpty() && position < conversations!!.size) {
             1
-        } else {
+        } else if (friends != null && friends!!.isNotEmpty() && position < conversations!!.size + friends!!.size) {
             2
+        } else {
+            3
         }
     }
 
     override fun onBindHeaderViewHolder(holder: HeaderViewHolder, position: Int) {
-        if (conversations == null || conversations!!.isEmpty() && friends == null && friends!!.isEmpty()) {
+        if (conversations.isNullOrEmpty() && friends.isNullOrEmpty() && bots.isNullOrEmpty()) {
             return
         }
-        if (conversations != null && conversations!!.isNotEmpty() && position < conversations!!.size) {
-            holder.itemView.header.text = holder.itemView.context.getString(R.string.chat_item_title)
+        holder.itemView.header.text = holder.itemView.context.getString(
+            if (conversations != null && conversations!!.isNotEmpty() && position < conversations!!.size) {
+            R.string.chat_item_title
+        } else if (friends != null && friends!!.isNotEmpty() && position < conversations!!.size + friends!!.size) {
+            R.string.contact_item_title
         } else {
-            holder.itemView.header.text = holder.itemView.context.getString(R.string.contact_item_title)
-        }
+            R.string.bot_item_title
+        })
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): HeaderViewHolder {
@@ -111,36 +130,54 @@ class ForwardAdapter(private val disableCheck: Boolean = false) : RecyclerView.A
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (conversations == null || conversations!!.isEmpty() && friends == null && friends!!.isEmpty()) {
+        if (conversations.isNullOrEmpty() && friends.isNullOrEmpty() && bots.isNullOrEmpty()) {
             return
         }
-        if (holder is ConversationViewHolder) {
-            val conversationItem = conversations!![position]
-            holder.bind(conversationItem, listener, selectItem.contains(conversationItem))
-        } else {
-            holder as FriendViewHolder
-            val pos = if (conversations != null && conversations!!.isNotEmpty())
-                position - conversations!!.size else position
-            val user = friends!![pos]
-            holder.bind(user, listener, selectItem.contains(user))
+        when (holder) {
+            is ConversationViewHolder -> {
+                val conversationItem = conversations!![position]
+                holder.bind(conversationItem, listener, selectItem.contains(conversationItem))
+            }
+            is FriendViewHolder -> {
+                val pos = position - (conversations?.size ?: 0)
+                val user = friends!![pos]
+                holder.bind(user, listener, selectItem.contains(user))
+            }
+            else -> {
+                holder as BotViewHolder
+                val pos = position - (conversations?.size ?: 0) - (friends?.size ?: 0)
+                val user = bots!![pos]
+                holder.bind(user, listener, selectItem.contains(user))
+            }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == TYPE_CONVERSATION) {
-            ConversationViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_forward_conversation,
-                parent, false).apply {
-                if (disableCheck) {
-                    (this as ConversationCheckView).disableCheck()
-                }
-            })
-        } else {
-            FriendViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_friend,
-                parent, false).apply {
-                if (disableCheck) {
-                    (this as ConversationCheckView).disableCheck()
-                }
-            })
+        return when (viewType) {
+            TYPE_CONVERSATION -> {
+                ConversationViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_forward_conversation,
+                    parent, false).apply {
+                    if (disableCheck) {
+                        (this as ConversationCheckView).disableCheck()
+                    }
+                })
+            }
+            TYPE_FRIEND -> {
+                FriendViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_friend,
+                    parent, false).apply {
+                    if (disableCheck) {
+                        (this as ConversationCheckView).disableCheck()
+                    }
+                })
+            }
+            else -> {
+                BotViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_friend,
+                    parent, false).apply {
+                    if (disableCheck) {
+                        (this as ConversationCheckView).disableCheck()
+                    }
+                })
+            }
         }
     }
 
@@ -149,6 +186,15 @@ class ForwardAdapter(private val disableCheck: Boolean = false) : RecyclerView.A
     }
 
     class FriendViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        fun bind(item: User, listener: ForwardListener?, isCheck: Boolean) {
+            (itemView as ConversationCheckView).let {
+                it.isChecked = isCheck
+                it.bind(item, listener)
+            }
+        }
+    }
+
+    class BotViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(item: User, listener: ForwardListener?, isCheck: Boolean) {
             (itemView as ConversationCheckView).let {
                 it.isChecked = isCheck

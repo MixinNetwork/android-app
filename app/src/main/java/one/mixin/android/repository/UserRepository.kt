@@ -49,6 +49,8 @@ constructor(
 
     fun findFriends(): LiveData<List<User>> = userDao.findFriends()
 
+    fun findContacts(): LiveData<List<User>> = userDao.findContacts()
+
     suspend fun getFriends(): List<User> = userDao.getFriends()
 
     suspend fun fuzzySearchUser(query: String): List<User> = userDao.fuzzySearchUser(query, query, Session.getAccountId() ?: "")
@@ -129,6 +131,8 @@ constructor(
 
     fun findAppsByIds(appIds: List<String>) = appDao.findAppsByIds(appIds)
 
+    suspend fun getApps() = appDao.getApps()
+
     suspend fun findMultiUsersByIds(ids: Set<String>) = userDao.findMultiUsersByIds(ids)
 
     suspend fun fetchUser(ids: List<String>) = userService.fetchUsers(ids)
@@ -195,4 +199,8 @@ constructor(
 
     suspend fun getCircleConversationCount(conversationId: String) =
         circleConversationDao.getCircleConversationCount(conversationId)
+
+    suspend fun getNotTopApps(appIds: List<String>): List<App> = appDao.getNotTopApps(appIds)
+
+    suspend fun findUserByAppId(appId: String): User? = userDao.findUserByAppId(appId)
 }

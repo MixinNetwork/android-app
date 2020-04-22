@@ -82,7 +82,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         contentView.badge_view.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         contentView.badge_view.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         contentView.save_iv.setOnClickListener {
-            RxPermissions(activity!!)
+            RxPermissions(requireActivity())
                 .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
                 .subscribe({ granted ->

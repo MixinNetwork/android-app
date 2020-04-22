@@ -9,6 +9,7 @@ class AppItem(
     val appNumber: String,
     val homeUri: String,
     val redirectUri: String,
+    val category: String?,
     val name: String,
     val iconUrl: String,
     val description: String,
@@ -21,5 +22,5 @@ class AppItem(
     val avatarUrl: String? = null
 )
 
-fun AppItem.toApp() = App(appId, appNumber, homeUri, redirectUri, name, iconUrl, description,
+fun AppItem.toApp() = App(appId, appNumber, homeUri, redirectUri, name, iconUrl, category, description,
     appSecret, capabilities, creatorId, resourcePatterns, updatedAt)

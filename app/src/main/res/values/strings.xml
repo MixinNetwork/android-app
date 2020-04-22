@@ -169,6 +169,7 @@
     <string name="qr_code_camera">QR Code Camera</string>
     <string name="qr_code_camera_code">Use the built-in Camera to scan any QR Code. When a code is detected, tap the notification to view more information.</string>
     <string name="conversation_delete_tip">Once deleted, all this chat messages will be cleared</string>
+    <string name="qr_not_found">Qr Code not found</string>
     <!--search-->
     <string name="search_title_assets">ASSETS</string>
     <string name="search_title_chat">CHATS</string>
@@ -215,6 +216,7 @@
     <string name="contact_empty">Phone Contacts</string>
     <string name="contact_empty_tip">Mixin needs access your contacts to help you connect with other people on Mixin.</string>
     <string name="contact_item_title">CONTACTS</string>
+    <string name="bot_item_title">BOTS</string>
     <string name="contact_sq_scan_title">Extract QR Code</string>
     <string name="contact_save_image">Save Image</string>
     <string name="contact_my_qr_title">My QR Code</string>
@@ -223,6 +225,7 @@
     <string name="contact_receive_money">Receive Money</string>
     <string name="contact_receive_tip">Scan the QR Code to pay me</string>
     <string name="add_contact">+ Add Contact</string>
+    <string name="add_bot">+ Add Bot</string>
     <string name="contact_search_hint">Name, Mixin ID</string>
     <string name="contact_share_apps_title">%1$s\'s Shared Apps</string>
     <string name="contact_share_apps_no_app">NO APP</string>
@@ -300,6 +303,7 @@
     <string name="contact_other_block">Block User</string>
     <string name="contact_other_unblock">Unblock User</string>
     <string name="contact_other_remove">Remove Contact</string>
+    <string name="contact_other_remove_bot">Remove Bot</string>
     <string name="contact_other_report">Report</string>
     <string name="contact_other_report_warning">Do you want to report and block this contact? your chat with this conversation will also be deleted.</string>
     <string name="contact_other_transactions">Transactions</string>
@@ -694,6 +698,7 @@
     <string name="deposit_account_attention">Attention: Please try a small amount for the first deposit. Both a Memo and an Address are required to successfully deposit your %1$s to Mixin Messenger.</string>
     <string name="deposit_attention">Please try a small amount for the first deposit.</string>
     <string name="deposit_confirmation">Deposit will arrive after at least %1$d block confirmations</string>
+    <string name="deposit_reserve">Deposit at least %1$s %2$s for the first time.</string>
     <string name="bottom_withdrawal_title">%1$s Withdrawal</string>
     <string name="bottom_withdrawal_change_amount">Change Amount</string>
     <string name="bottom_withdrawal_change_amount_count">Change Amount (%1$d)</string>
@@ -816,5 +821,11 @@
     <string name="circle_empty_info">You can add contacts or group to \n the current circle.</string>
     <string name="circle_empty_start">Add Conversations</string>
     <string name="circle_limit">The number has reached the limit</string>
+    <!--  bot  -->
+    <string name="bot_title">Bots</string>
+    <string name="bot_dock_empty">Long press and drag the bot to the top</string>
+    <string name="bot_internal_scan">Scan QR</string>
+    <string name="bot_internal_camera">Camera</string>
+    <string name="bot_internal_wallet">Wallet</string>
 </resources>
 

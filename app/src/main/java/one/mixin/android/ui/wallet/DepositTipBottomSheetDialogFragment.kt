@@ -14,6 +14,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.needShowReserve
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textColor
 
@@ -44,10 +45,16 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.asset_icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         contentView.tips_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
         contentView.continue_tv.setOnClickListener { dismiss() }
-        contentView.warning_tv.text = if (asset.chainId == EOS_CHAIN_ID) {
-            getString(R.string.deposit_account_attention, asset.symbol)
-        } else {
-            getString(R.string.deposit_attention)
+        val reserveTip = if (asset.needShowReserve()) {
+            getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
+        } else ""
+        contentView.warning_tv.text = when (asset.chainId) {
+            EOS_CHAIN_ID -> {
+                "${getString(R.string.deposit_account_attention, asset.symbol)} $reserveTip"
+            }
+            else -> {
+                "${getString(R.string.deposit_attention, asset.symbol)} $reserveTip"
+            }
         }
 
         startCountDown()

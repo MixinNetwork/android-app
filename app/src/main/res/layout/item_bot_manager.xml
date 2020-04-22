@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/bg_white"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_horizontal"
+    android:foreground="?selectableItemBackground"
+    android:paddingTop="16dp"
+    android:orientation="vertical">
+
+    <one.mixin.android.widget.AvatarView
+        android:id="@+id/avatar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:contentDescription="@null" />
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:layout_marginTop="8dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="?attr/text_primary"
+        android:textSize="12sp" />
+
+</LinearLayout>

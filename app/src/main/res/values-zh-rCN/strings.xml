@@ -161,6 +161,7 @@
     <string name="qr_code_camera">自动识别二维码</string>
     <string name="qr_code_camera_code">打开相机会默认开启二维码识别，当二维码被检测到时会显示一个通知，点击通知识别二维码。</string>
     <string name="conversation_delete_tip">删除后，将同时清空该聊天的消息记录</string>
+    <string name="qr_not_found">未发现二维码</string>
     <!--search-->
     <string name="search_title_assets">资产</string>
     <string name="search_title_chat">会话</string>
@@ -201,6 +202,7 @@
     <string name="contact_empty">手机联系人</string>
     <string name="contact_empty_tip">Mixin 需要访问你的通讯录来帮助你更快找到你的朋友。</string>
     <string name="contact_item_title">联系人</string>
+    <string name="bot_item_title">机器人</string>
     <string name="contact_sq_scan_title">识别二维码</string>
     <string name="contact_save_image">保存图片</string>
     <string name="contact_my_qr_title">我的二维码</string>
@@ -209,6 +211,7 @@
     <string name="contact_receive_money">我的收款码</string>
     <string name="contact_receive_tip">用 Mixin 扫描二维码给我转账</string>
     <string name="add_contact">+ 添加联系人</string>
+    <string name="add_bot">+ 添加机器人</string>
     <string name="contact_search_hint">昵称, Mixin ID</string>
     <string name="contact_share_apps_title">%1$s 分享的应用</string>
     <string name="contact_share_apps_tip">如果您希望分享应用，请先添加联系人。</string>
@@ -286,6 +289,7 @@
     <string name="contact_other_block">屏蔽用户</string>
     <string name="contact_other_unblock">解除屏蔽</string>
     <string name="contact_other_remove">删除联系人</string>
+    <string name="contact_other_remove_bot">删除机器人</string>
     <string name="contact_other_report">举报</string>
     <string name="contact_other_report_warning">确定要举报这个联系人？举报后你们的对话会被立即删除。</string>
     <string name="contact_other_transactions">转账记录</string>
@@ -616,7 +620,7 @@
     <string name="permission_video">要允许拍摄视频吗?</string>
     <string name="permission_camera">要允许拍摄照片吗?</string>
 
-    <string name="extensions">小程序</string>
+    <string name="extensions">机器人</string>
     <string name="camera">相机</string>
     <string name="voice">语音电话</string>
     <string name="document">文件</string>
@@ -681,6 +685,7 @@
     <string name="deposit_account_attention">注意：首次充值请小额尝试！地址 和 Memo（标签）同时使用才能充值 %1$s 到 Mixin Messenger。</string>
     <string name="deposit_attention">首次充值请小额尝试！</string>
     <string name="deposit_confirmation">充值到账至少需要 %1$d 个区块确认。</string>
+    <string name="deposit_reserve">首次充值至少 %1$s %2$s！</string>
     <string name="bottom_withdrawal_title">%1$s 提现</string>
     <string name="bottom_withdrawal_change_amount">修改金额</string>
     <string name="bottom_withdrawal_change_amount_count">修改金额 （%1$d）</string>
@@ -801,4 +806,10 @@
     <string name="circle_empty_info">您可以添加联系人或者群组到当前圈子</string>
     <string name="circle_empty_start">添加会话</string>
     <string name="circle_limit">已达到上限</string>
+    <!--  bot  -->
+    <string name="bot_title">机器人</string>
+    <string name="bot_dock_empty">长按并拖拽机器人置顶</string>
+    <string name="bot_internal_scan">扫一扫</string>
+    <string name="bot_internal_camera">相机</string>
+    <string name="bot_internal_wallet">钱包</string>
 </resources>

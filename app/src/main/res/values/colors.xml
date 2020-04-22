@@ -27,6 +27,7 @@
     <color name="bgGray">#E5E5E5</color>
     <color name="bgMenu">#F5F7FA</color>
     <color name="bgDark">#999999</color>
+    <color name="bgBot">#F5F7FA</color>
     <color name="bgMenuBorder">#E5E7EC</color>
     <color name="bgGrayLight">#F5F7FA</color>
     <color name="bgBubble">#FFFFFF</color>

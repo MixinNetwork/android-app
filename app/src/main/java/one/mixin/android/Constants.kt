@@ -27,7 +27,6 @@ object Constants {
         const val PREF_PIN_CHECK = "pref_pin_check"
         const val PREF_PIN_INTERVAL = "pref_pin_interval"
         const val PREF_PIN_ITERATOR = "pref_pin_iterator"
-        const val PREF_CAMERA_TIP = "pref_camera_tip"
         const val PREF_LAST_USER_ID = "pref_last_user_id"
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_WRONG_TIME = "pref_wrong_time"
@@ -69,7 +68,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 30
+        const val CURRENT_VERSION = 31
     }
 
     object BackUp {

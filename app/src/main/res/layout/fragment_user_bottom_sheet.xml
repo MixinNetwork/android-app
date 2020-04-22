@@ -10,7 +10,8 @@
     <one.mixin.android.widget.RoundTitleView
         android:id="@+id/title"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        app:right_icon="@drawable/ic_circle_close" />
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_view"
@@ -89,12 +90,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="28dp"
                 android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp"
                 android:background="@drawable/bg_round_gray_14dp"
                 android:drawablePadding="4dp"
                 android:gravity="center"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
-                android:layout_marginBottom="16dp"
                 android:text="@string/add_contact"
                 android:textColor="@color/wallet_blue"
                 android:visibility="gone" />
@@ -103,12 +104,12 @@
                 android:id="@+id/detail_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxHeight="300dp"
                 android:layout_gravity="center"
                 android:layout_marginStart="32dp"
                 android:layout_marginEnd="32dp"
                 android:layout_marginBottom="10dp"
                 android:gravity="center"
+                android:maxHeight="300dp"
                 android:maxLength="1024"
                 android:scrollbars="vertical"
                 android:textColor="?attr/text_primary"

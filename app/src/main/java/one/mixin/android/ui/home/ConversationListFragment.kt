@@ -11,10 +11,12 @@ import android.view.View.VISIBLE
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.animation.BounceInterpolator
+import android.widget.ImageView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.view.isGone
+import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.TextViewCompat
@@ -38,12 +40,14 @@ import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
 import kotlinx.android.synthetic.main.view_empty.view.*
+import kotlinx.android.synthetic.main.view_shadow_circle.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_NOTIFICATION_ON
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.event.BotEvent
 import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
@@ -69,7 +73,17 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.home.bot.BotManagerBottomSheetDialogFragment
+import one.mixin.android.ui.home.bot.DefaultTopBots
+import one.mixin.android.ui.home.bot.INTERNAL_CAMERA_ID
+import one.mixin.android.ui.home.bot.INTERNAL_SCAN_ID
+import one.mixin.android.ui.home.bot.INTERNAL_WALLET_ID
+import one.mixin.android.ui.home.bot.TOP_BOT
+import one.mixin.android.ui.home.bot.getCategoryIcon
 import one.mixin.android.ui.qr.CaptureActivity
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
@@ -90,8 +104,10 @@ class ConversationListFragment : LinkFragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
+
     @Inject
     lateinit var navigationController: NavigationController
+
     @Inject
     lateinit var jobManager: MixinJobManager
 
@@ -215,18 +231,11 @@ class ConversationListFragment : LinkFragment() {
                 down_iv.scaleY = 1f
             }
         }
-        shadow_view.setOnClickListener {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.CAMERA)
-                .autoDispose(stopScope)
-                .subscribe { granted ->
-                    if (granted) {
-                        CaptureActivity.show(requireActivity())
-                    } else {
-                        context?.openPermissionSetting()
-                    }
-                }
+        shadow_view.bot.setOnClickListener {
+            BotManagerBottomSheetDialogFragment()
+                .show(parentFragmentManager, BotManagerBottomSheetDialogFragment.TAG)
         }
+
         messageAdapter.onItemListener = object : PagedHeaderAdapter.OnItemListener<ConversationItem> {
             override fun onNormalLongClick(item: ConversationItem): Boolean {
                 showBottomSheet(item)
@@ -281,6 +290,13 @@ class ConversationListFragment : LinkFragment() {
                 if (it.circleId == this.circleId) {
                     (requireActivity() as MainActivity).selectCircle(null, null)
                 }
+            }
+        refreshBot()
+        RxBus.listen(BotEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe {
+                refreshBot()
             }
     }
 
@@ -416,6 +432,77 @@ class ConversationListFragment : LinkFragment() {
         } else {
             messageAdapter.setShowHeader(false, message_rv)
         }
+    }
+
+    private fun refreshBot() {
+        lifecycleScope.launch {
+            shadow_view.right_icon.isInvisible = true
+            shadow_view.left_icon.isInvisible = true
+            requireContext().defaultSharedPreferences.getString(TOP_BOT, DefaultTopBots)?.let {
+                GsonHelper.customGson.fromJson(it, Array<String>::class.java).forEachIndexed { index, id ->
+                    if (index > 1) return@launch
+                    val view: ImageView =
+                        if (index == 0) {
+                            shadow_view.left_icon
+                        } else {
+                            shadow_view.right_icon
+                        }
+
+                    when (id) {
+                        INTERNAL_WALLET_ID -> {
+                            view.isVisible = true
+                            view.setImageResource(R.drawable.ic_bot_category_wallet)
+                            view.setOnClickListener {
+                                (requireActivity() as MainActivity).openWallet()
+                            }
+                        }
+                        INTERNAL_CAMERA_ID -> {
+                            view.isVisible = true
+                            view.setImageResource(R.drawable.ic_bot_category_camera)
+                            view.setOnClickListener {
+                                openCamera(false)
+                            }
+                        }
+                        INTERNAL_SCAN_ID -> {
+                            view.isVisible = true
+                            view.setImageResource(R.drawable.ic_bot_category_scan)
+                            view.setOnClickListener {
+                                openCamera(true)
+                            }
+                        }
+                        else -> {
+                            messagesViewModel.findAppById(id)?.notNullWithElse({ app ->
+                                view.isVisible = true
+                                view.setImageResource(app.getCategoryIcon())
+                                view.setOnClickListener {
+                                    WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app).show(
+                                        parentFragmentManager, WebBottomSheetDialogFragment.TAG
+                                    )
+                                }
+                            }, {
+                                view.isInvisible = true
+                            })
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun openCamera(scan: Boolean) {
+        RxPermissions(requireActivity())
+            .request(Manifest.permission.CAMERA)
+            .autoDispose(stopScope)
+            .subscribe { granted ->
+                if (granted) {
+                    CaptureActivity.show(requireActivity()) { intent ->
+                        intent.putExtra(ARGS_SHOW_SCAN, scan)
+                        startActivity(intent)
+                    }
+                } else {
+                    context?.openPermissionSetting()
+                }
+            }
     }
 
     class MessageAdapter : PagedHeaderAdapter<ConversationItem>(ConversationItem.DIFF_CALLBACK) {

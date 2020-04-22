@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import android.net.Uri
-import android.util.Log
 import com.birbit.android.jobqueue.Params
 import io.reactivex.disposables.Disposable
 import java.net.URL
@@ -20,6 +19,8 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.AttachmentMessagePayload
+import org.jetbrains.anko.getStackTraceString
+import timber.log.Timber
 
 class SendAttachmentMessageJob(
     val message: Message
@@ -89,7 +90,7 @@ class SendAttachmentMessageJob(
                 removeJob()
             }
         }, {
-            Log.e(TAG, "upload attachment error", it)
+            Timber.e("upload attachment error, ${it.getStackTraceString()}")
             reportException(it)
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
             removeJob()

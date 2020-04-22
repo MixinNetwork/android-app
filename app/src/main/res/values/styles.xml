@@ -48,6 +48,7 @@
         <item name="bg_block">@color/bgBlock</item>
         <item name="bg_post">@color/bgPost</item>
         <item name="bg_bubble">@color/bgBubble</item>
+        <item name="bg_bot">@color/bgBot</item>
 
         <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
@@ -78,6 +79,9 @@
     <style name="AppTheme.Capture" parent="AppTheme.FullScreen">
         <item name="android:windowFullscreen">true</item>
         <item name="android:immersive">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsTranslucent">true</item>
     </style>
 
     <style name="AppTheme.Avatar" parent="AppTheme.FullScreen">

@@ -35,6 +35,8 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.event.BotCloseEvent
+import one.mixin.android.event.BotEvent
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
@@ -178,6 +180,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             if (Session.getAccount()?.hasPin == true) {
                 TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
                     .showNow(parentFragmentManager, TransferFragment.TAG)
+                RxBus.publish(BotCloseEvent())
                 dismiss()
             } else {
                 toast(R.string.transfer_without_pin)
@@ -194,6 +197,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         Session.getAccountId()!!
                     ) != MixinApplication.conversationId
                 ) {
+                    RxBus.publish(BotCloseEvent())
                     ConversationActivity.show(ctx, null, user.userId)
                 }
             }
@@ -263,6 +267,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 if (showUserTransactionAction != null) {
                     showUserTransactionAction?.invoke()
                 } else {
+                    RxBus.publish(BotCloseEvent())
                     activity?.addFragment(
                         this@UserBottomSheetDialogFragment,
                         UserTransactionsFragment.newInstance(u.userId),
@@ -328,6 +333,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                 )
                             )
                         )
+                        RxBus.publish(BotCloseEvent())
                         dismiss()
                     }
                 }
@@ -342,6 +348,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                 Session.getAccountId()!!
                             )
                         )
+                        RxBus.publish(BotCloseEvent())
                         dismiss()
                     }
                 }
@@ -349,6 +356,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     title = getString(R.string.contact_other_search_conversation)
                     action = {
                         startSearchConversation()
+                        RxBus.publish(BotCloseEvent())
                         dismiss()
                     }
                 }
@@ -395,6 +403,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 title = getString(R.string.circle)
                 action = {
                     startCircleManager()
+                    RxBus.publish(BotCloseEvent())
                     dismiss()
                 }
                 this.circleNames = circleNames
@@ -422,11 +431,29 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             UserRelationship.FRIEND.name -> {
                 list.groups.add(menuGroup {
                     menu {
-                        title = getString(R.string.contact_other_remove)
+                        title = getString(
+                            if (user.isBot()) {
+                                R.string.contact_other_remove_bot
+                            } else {
+                                R.string.contact_other_remove
+                            }
+                        )
+
                         style = MenuStyle.Danger
                         action = {
-                            requireContext().showConfirmDialog(getString(R.string.contact_other_remove)) {
+                            requireContext().showConfirmDialog(
+                                getString(
+                                    if (user.isBot()) {
+                                        R.string.contact_other_remove_bot
+                                    } else {
+                                        R.string.contact_other_remove
+                                    }
+                                )
+                            ) {
                                 updateRelationship(UserRelationship.STRANGER.name)
+                                if (user.isBot()) {
+                                    RxBus.publish(BotEvent())
+                                }
                             }
                         }
                     }
@@ -446,6 +473,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                         RelationshipAction.BLOCK.name
                                     )
                                 )
+                                if (user.isBot()) {
+                                    RxBus.publish(BotEvent())
+                                }
                             }
                         }
                     }
@@ -536,6 +566,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         } else {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.RECORD_AUDIO)
+                .autoDispose(stopScope)
                 .subscribe({ granted ->
                     if (granted) {
                         callVoice()
@@ -555,6 +586,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     user.userId
                 )
             )
+            RxBus.publish(BotCloseEvent())
             dismiss()
         } else {
             toast(R.string.error_no_connection)
@@ -575,6 +607,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         RelationshipAction.BLOCK.name
                     ), conversationId
                 )
+                if (user.isBot()) {
+                    RxBus.publish(BotEvent())
+                }
                 RxBus.publish(ExitEvent(conversationId))
                 dialog.dismiss()
             }
@@ -612,6 +647,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     .throttleFirst(1, TimeUnit.SECONDS)
                     .autoDispose(stopScope).subscribe {
                         dismiss()
+                        RxBus.publish(BotCloseEvent())
                         WebBottomSheetDialogFragment
                             .newInstance(app.homeUri, conversationId, app)
                             .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
@@ -651,6 +687,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             RelationshipAction.UNBLOCK.name
                         )
                     )
+                    if (user.isBot()) {
+                        RxBus.publish(BotEvent())
+                    }
                 }
             }
             UserRelationship.FRIEND.name -> {
@@ -659,9 +698,18 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             UserRelationship.STRANGER.name -> {
                 contentView.add_tv.visibility = VISIBLE
                 contentView.add_tv.setCompoundDrawables(null, null, null, null)
-                contentView.add_tv.text = getString(R.string.add_contact)
+                contentView.add_tv.text = getString(
+                    if (user.isBot()) {
+                        R.string.add_bot
+                    } else {
+                        R.string.add_contact
+                    }
+                )
                 contentView.add_tv.setOnClickListener {
                     updateRelationship(UserRelationship.FRIEND.name)
+                    if (user.isBot()) {
+                        RxBus.publish(BotEvent())
+                    }
                 }
             }
         }

@@ -1,5 +1,6 @@
 package one.mixin.android.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -17,22 +18,32 @@ import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.isActivityNotDestroyed
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
+import one.mixin.android.ui.home.bot.Bot
+import one.mixin.android.ui.home.bot.BotInterface
+import one.mixin.android.vo.App
 import org.jetbrains.anko.sp
 
 class AvatarView : ViewAnimator {
 
     constructor(context: Context) : this(context, null)
+    @SuppressLint("CustomViewStyleable")
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         LayoutInflater.from(context).inflate(R.layout.view_avatar, this, true)
         val ta = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
         if (ta.hasValue(R.styleable.CircleImageView_border_text_size)) {
-            avatar_tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, ta.getDimension(R.styleable.CircleImageView_border_text_size,
-                sp(20f).toFloat()))
+            avatar_tv.setTextSize(
+                TypedValue.COMPLEX_UNIT_PX, ta.getDimension(
+                    R.styleable.CircleImageView_border_text_size,
+                    sp(20f).toFloat()
+                )
+            )
         }
         if (ta.hasValue(R.styleable.CircleImageView_border_width)) {
             avatar_simple.borderWidth = ta.getDimensionPixelSize(R.styleable.CircleImageView_border_width, 0)
-            avatar_simple.borderColor = ta.getColor(R.styleable.CircleImageView_border_color,
-                ContextCompat.getColor(context, android.R.color.white))
+            avatar_simple.borderColor = ta.getColor(
+                R.styleable.CircleImageView_border_color,
+                ContextCompat.getColor(context, android.R.color.white)
+            )
             avatar_tv.setBorderInfo(avatar_simple.borderWidth.toFloat(), avatar_simple.borderColor)
         }
 
@@ -50,10 +61,9 @@ class AvatarView : ViewAnimator {
 
             val builder = StringBuilder()
             var step = 0
-            for (i in 0 until name.length) {
-                val c = name[i]
-                if (!Character.isLetterOrDigit(c) && !Character.isSpaceChar(c) && !Character.isWhitespace(c)) {
-                    builder.append(c)
+            for (element in name) {
+                if (!Character.isLetterOrDigit(element) && !Character.isSpaceChar(element) && !Character.isWhitespace(element)) {
+                    builder.append(element)
                     step++
                     if (step > 1) {
                         break
@@ -101,6 +111,17 @@ class AvatarView : ViewAnimator {
             POS_AVATAR
         } else {
             POS_TEXT
+        }
+    }
+
+    fun renderApp(app: BotInterface) {
+        if (app is App) {
+            setInfo(app.name, app.iconUrl, app.appId)
+        } else if (app is Bot) {
+            displayedChild = POS_AVATAR
+            avatar_simple.setBackgroundResource(0)
+            avatar_simple.setPadding(0)
+            avatar_simple.setImageResource(app.icon)
         }
     }
 

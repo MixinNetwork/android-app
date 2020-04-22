@@ -27,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.bounce
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.createImageTemp
@@ -46,21 +47,24 @@ import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 
-class EditFragment : CaptureVisionFragment() {
+class EditFragment : VisionFragment() {
 
     companion object {
         const val TAG = "EditFragment"
         const val ARGS_PATH = "args_path"
         const val ARGS_FROM_GALLERY = "args_from_gallery"
+        const val ARGS_FROM_SCAN = "args_need_scan"
         private const val IS_VIDEO: String = "IS_VIDEO"
         fun newInstance(
             path: String,
             isVideo: Boolean = false,
-            fromGallery: Boolean = false
+            fromGallery: Boolean = false,
+            needScan: Boolean = false
         ) = EditFragment().withArgs {
             putString(ARGS_PATH, path)
             putBoolean(IS_VIDEO, isVideo)
             putBoolean(ARGS_FROM_GALLERY, fromGallery)
+            putBoolean(ARGS_FROM_SCAN, needScan)
         }
     }
 
@@ -74,6 +78,10 @@ class EditFragment : CaptureVisionFragment() {
 
     private val fromGallery by lazy {
         requireArguments().getBoolean(ARGS_FROM_GALLERY)
+    }
+
+    private val needScan by lazy {
+        requireArguments().getBoolean(ARGS_FROM_SCAN)
     }
 
     private val mixinPlayer: MixinPlayer by lazy {
@@ -141,6 +149,10 @@ class EditFragment : CaptureVisionFragment() {
                     ForwardCategory.IMAGE.name, mediaUrl = path)), isShare = true)
             }
         }
+        if (needScan) {
+            send_fl.isVisible = false
+            download_iv.isVisible = false
+        }
         if (isVideo) {
             setBg()
             mixinPlayer.loadVideo(path)
@@ -151,7 +163,9 @@ class EditFragment : CaptureVisionFragment() {
             preview_iv.visibility = VISIBLE
             if (fromGallery) {
                 preview_iv.loadImage(path)
-                scan()
+                if (needScan) {
+                    scan()
+                }
                 setBg()
             } else {
                 preview_iv.loadImage(path, requestListener = glideRequestListener)
@@ -169,21 +183,44 @@ class EditFragment : CaptureVisionFragment() {
             detector.use { d ->
                 d.detectInImage(visionImage)
                     .addOnSuccessListener { result ->
-                        result.firstOrNull()?.rawValue?.let {
+                        val content = result.firstOrNull()?.rawValue
+                        if (!content.isNullOrBlank()) {
                             lifecycleScope.launch innerLaunch@{
                                 if (!isAdded) return@innerLaunch
-                                pseudoNotificationView.addContent(it)
+                                handleResult(content)
+                            }
+                        } else {
+                            lifecycleScope.launch innerLaunch@{
+                                if (!isAdded) return@innerLaunch
+                                showNoResultDialog()
                             }
                         }
                     }
             }
         } else {
-            bitmap.decodeQR()?.let {
+            val result = bitmap.decodeQR()
+            if (!result.isNullOrBlank()) {
                 withContext(Dispatchers.Main) {
-                    pseudoNotificationView.addContent(it)
+                    handleResult(result)
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    showNoResultDialog()
                 }
             }
         }
+    }
+
+    private fun showNoResultDialog() {
+        alertDialogBuilder()
+            .setMessage(getString(R.string.qr_not_found))
+            .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setOnDismissListener {
+                activity?.onBackPressed()
+            }
+            .show()
     }
 
     private fun setBg() {

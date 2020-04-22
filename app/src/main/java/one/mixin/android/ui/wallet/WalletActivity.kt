@@ -52,7 +52,7 @@ class WalletActivity : BlazeBaseActivity() {
 
     override fun finish() {
         super.finish()
-        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+        overridePendingTransition(R.anim.stay, R.anim.slide_out_bottom)
     }
 
     companion object {
@@ -69,7 +69,7 @@ class WalletActivity : BlazeBaseActivity() {
             }
             myIntent.putExtras(bundle)
             activity.startActivity(myIntent)
-            activity.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
+            activity.overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
         }
     }
 }
