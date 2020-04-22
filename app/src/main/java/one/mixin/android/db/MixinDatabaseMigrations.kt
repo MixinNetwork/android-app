@@ -206,9 +206,6 @@ abstract class SafeMigration(startVersion: Int, endVersion: Int) : Migration(sta
             safeMigrate(database)
         } catch (e: SQLiteException) {
             Timber.e("Room migration exception, $e")
-            if (BuildConfig.DEBUG) {
-                throw e
-            }
             reportException("$CRASHLYTICS_ROOM_MIGRATION-Room migration exception,", e)
         }
     }
