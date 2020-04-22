@@ -1,5 +1,6 @@
 package one.mixin.android.util
 
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
@@ -12,7 +13,10 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.base64Encode
 
 object GsonHelper {
-    val customGson = GsonBuilder().registerTypeHierarchyAdapter(ByteArray::class.java, ByteArrayToBase64TypeAdapter()).create()
+    val customGson: Gson = GsonBuilder()
+        .setLenient()
+        .registerTypeHierarchyAdapter(ByteArray::class.java, ByteArrayToBase64TypeAdapter())
+        .create()
 
     private class ByteArrayToBase64TypeAdapter : JsonSerializer<ByteArray>, JsonDeserializer<ByteArray> {
         override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): ByteArray {
