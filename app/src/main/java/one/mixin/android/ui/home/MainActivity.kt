@@ -263,7 +263,7 @@ class MainActivity : BlazeBaseActivity() {
     private fun checkBatteryOptimization() {
         val batteryOptimize = defaultSharedPreferences.getLong(PREF_BATTERY_OPTIMIZE, 0)
         val cur = System.currentTimeMillis()
-        if (cur - batteryOptimize > Constants.INTERVAL_48_HOURS) {
+        if (cur - batteryOptimize > Constants.INTERVAL_48_HOURS * 30) {
             getSystemService<PowerManager>()?.let { pm ->
                 if (!pm.isIgnoringBatteryOptimizations(packageName)) {
                     Intent().apply {
