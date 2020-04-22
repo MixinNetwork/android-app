@@ -191,7 +191,7 @@ class MixinDatabaseMigrations private constructor() {
 
         val MIGRATION_30_31: Migration = object : SafeMigration(30, 31) {
             override fun safeMigrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE assets ADD COLUMN reserve TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE assets ADD COLUMN reserve TEXT")
                 database.execSQL("ALTER TABLE apps ADD COLUMN category TEXT")
             }
         }
@@ -205,10 +205,10 @@ abstract class SafeMigration(startVersion: Int, endVersion: Int) : Migration(sta
         try {
             safeMigrate(database)
         } catch (e: SQLiteException) {
+            Timber.e("Room migration exception, $e")
             if (BuildConfig.DEBUG) {
                 throw e
             }
-            Timber.e("Room migration exception, $e")
             reportException("$CRASHLYTICS_ROOM_MIGRATION-Room migration exception,", e)
         }
     }

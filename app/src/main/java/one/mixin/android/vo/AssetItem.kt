@@ -27,7 +27,7 @@ data class AssetItem(
     val chainSymbol: String?,
     val chainName: String?,
     val assetKey: String?,
-    val reserve: String
+    val reserve: String?
 ) : Parcelable {
     fun fiat(): BigDecimal {
         return BigDecimal(balance).multiply(priceFiat())
@@ -65,7 +65,7 @@ fun AssetItem.differentProcess(
 }
 
 fun AssetItem.needShowReserve() =
-    reserve.isNotBlank() && try {
+    !reserve.isNullOrBlank() && try {
         reserve.toInt() > 0
     } catch (e: NumberFormatException) {
         false
