@@ -81,6 +81,18 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         val behavior = params.behavior as? BottomSheetBehavior<*>
         if (behavior != null) {
             behavior.peekHeight = 440.dp
+
+            contentView.title_rl.measure(
+                View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            contentView.dock_cl.measure(
+                View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            contentView.bot_rv.layoutParams.height =
+                440.dp - contentView.title_rl.measuredHeight - contentView.dock_cl.measuredHeight - 12.dp
+
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
