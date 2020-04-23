@@ -10,7 +10,7 @@
         android:layout_width="108dp"
         android:layout_height="108dp"
         android:foreground="@drawable/mixin_ripple"
-        android:padding="36dp"
+        android:padding="37dp"
         android:src="@drawable/ic_shadow_bot"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -23,7 +23,6 @@
         android:layout_height="88dp"
         android:foreground="@drawable/mixin_ripple"
         android:padding="32dp"
-        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@id/bot"
         app:layout_constraintStart_toEndOf="@id/bot"
         app:layout_constraintTop_toTopOf="@id/bot" />
@@ -34,7 +33,6 @@
         android:layout_height="88dp"
         android:foreground="@drawable/mixin_ripple"
         android:padding="32dp"
-        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@id/bot"
         app:layout_constraintEnd_toStartOf="@id/bot"
         app:layout_constraintTop_toTopOf="@id/bot" />
