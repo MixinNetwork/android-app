@@ -13,8 +13,8 @@
         android:padding="36dp"
         android:src="@drawable/ic_shadow_bot"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/left_icon"
-        app:layout_constraintStart_toEndOf="@id/right_icon"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
@@ -25,7 +25,6 @@
         android:padding="32dp"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@id/bot"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/bot"
         app:layout_constraintTop_toTopOf="@id/bot" />
 
@@ -38,7 +37,6 @@
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@id/bot"
         app:layout_constraintEnd_toStartOf="@id/bot"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/bot" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

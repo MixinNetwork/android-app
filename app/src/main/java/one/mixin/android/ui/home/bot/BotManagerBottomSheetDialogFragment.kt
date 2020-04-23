@@ -43,7 +43,6 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.bot.BotDock
-import org.jetbrains.anko.displayMetrics
 
 class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener, Injectable {
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
@@ -78,14 +77,8 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
         val behavior = params.behavior as? BottomSheetBehavior<*>
         if (behavior != null) {
-            val defaultPeekHeight = getPeekHeight(contentView, behavior)
-            behavior.peekHeight = if (defaultPeekHeight == 0) {
-                440.dp
-            } else defaultPeekHeight
+            behavior.peekHeight = 440.dp
             behavior.addBottomSheetCallback(bottomSheetBehaviorCallback)
-            contentView.bot_rv.apply {
-                layoutParams.height = requireContext().displayMetrics.heightPixels - 166.dp
-            }
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
