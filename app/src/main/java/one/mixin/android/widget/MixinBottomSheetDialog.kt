@@ -14,6 +14,7 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlin.math.max
+import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
@@ -159,7 +160,9 @@ fun MixinBottomSheetDialog.getMaxCustomViewHeight(): Int {
     return if (isNotchScreen) {
         val top = lastInsets?.systemWindowInsetTop ?: 0
         val bottom = lastInsets?.systemWindowInsetBottom ?: 0
-        context.realSize().y - max(bottom, context.navigationBarHeight()) - max(top, context.statusBarHeight())
+        context.realSize().y - max(bottom, if (context.hasNavigationBar()) {
+            context.navigationBarHeight()
+        } else 0) - max(top, context.statusBarHeight())
     } else {
         val size = Point()
         val manager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager

@@ -8,6 +8,8 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -79,22 +81,6 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         val behavior = params.behavior as? BottomSheetBehavior<*>
         if (behavior != null) {
             behavior.peekHeight = 440.dp
-
-            val titleRl = contentView.findViewById<View>(R.id.title_rl)
-            val dockCl = contentView.findViewById<View>(R.id.dock_cl)
-            titleRl.measure(
-                View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            dockCl.measure(
-                View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            contentView.post {
-                contentView.bot_rv.layoutParams.height =
-                    (dialog as MixinBottomSheetDialog).getMaxCustomViewHeight() - titleRl.measuredHeight - dockCl.measuredHeight - 12.dp
-            }
-
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
@@ -182,7 +168,21 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
             }
 
             contentView.bot_dock.apps = topApps
-            defaultApps.addAll(botManagerViewModel.getTopApps(topIds))
+            val notTopApps = botManagerViewModel.getNotTopApps(topIds)
+            if (notTopApps.isNullOrEmpty()) {
+                contentView.empty_fl.isVisible = true
+                contentView.bot_rv.updateLayoutParams<ViewGroup.LayoutParams> {
+                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                }
+            } else {
+                contentView.empty_fl.isVisible = false
+                contentView.post {
+                    contentView.bot_rv.layoutParams.height =
+                        (dialog as MixinBottomSheetDialog).getMaxCustomViewHeight() -
+                            contentView.title_rl.height - contentView.dock_cl.height - 12.dp
+                }
+                defaultApps.addAll(notTopApps)
+            }
             bottomListAdapter.list = defaultApps
         }
     }
@@ -204,7 +204,8 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         if (app is App) {
             lifecycleScope.launch {
                 botManagerViewModel.findUserByAppId(app.appId)?.let { user ->
-                    UserBottomSheetDialogFragment.newInstance(user).show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    UserBottomSheetDialogFragment.newInstance(user)
+                        .show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                 }
             }
         } else if (app is Bot) {

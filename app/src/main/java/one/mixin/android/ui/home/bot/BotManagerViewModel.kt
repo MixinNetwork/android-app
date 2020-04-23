@@ -6,7 +6,7 @@ import one.mixin.android.repository.UserRepository
 
 class BotManagerViewModel @Inject internal constructor(val userRepository: UserRepository) : ViewModel() {
 
-    suspend fun getTopApps(appIds: List<String>) = userRepository.getNotTopApps(appIds)
+    suspend fun getNotTopApps(appIds: List<String>) = userRepository.getNotTopApps(appIds)
 
     suspend fun findAppById(appId: String) = userRepository.findAppById(appId)
 
