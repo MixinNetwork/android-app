@@ -5,11 +5,19 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
+import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.view.View
+import android.view.WindowInsets
+import android.view.WindowManager
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import kotlin.math.max
+import one.mixin.android.extension.isNotchScreen
+import one.mixin.android.extension.navigationBarHeight
+import one.mixin.android.extension.realSize
+import one.mixin.android.extension.statusBarHeight
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.displayMetrics
 
@@ -21,12 +29,18 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
     private var isDismissed = false
     private var isShown = false
 
+    var lastInsets: WindowInsets? = null
+
     private lateinit var container: View
     private lateinit var sheetContainer: View
 
     override fun setContentView(view: View) {
         super.setContentView(view)
         container = window!!.findViewById(com.google.android.material.R.id.container)
+        container.setOnApplyWindowInsetsListener { v, insets ->
+            lastInsets = insets
+            insets.consumeSystemWindowInsets()
+        }
         container.backgroundDrawable = backDrawable
         backDrawable.alpha = 0
         sheetContainer = window!!.findViewById(com.google.android.material.R.id.design_bottom_sheet)
@@ -137,5 +151,19 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
     private fun cancelSheetAnimation() {
         curSheetAnimation?.cancel()
         curSheetAnimation = null
+    }
+}
+
+fun MixinBottomSheetDialog.getMaxCustomViewHeight(): Int {
+    val isNotchScreen = this.window?.isNotchScreen() ?: false
+    return if (isNotchScreen) {
+        val top = lastInsets?.systemWindowInsetTop ?: 0
+        val bottom = lastInsets?.systemWindowInsetBottom ?: 0
+        context.realSize().y - max(bottom, context.navigationBarHeight()) - max(top, context.statusBarHeight())
+    } else {
+        val size = Point()
+        val manager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        manager.defaultDisplay.getSize(size)
+        size.y - context.statusBarHeight()
     }
 }

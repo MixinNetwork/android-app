@@ -43,6 +43,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.bot.BotDock
+import one.mixin.android.widget.getMaxCustomViewHeight
 
 class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener, Injectable {
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
@@ -78,7 +79,22 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         val behavior = params.behavior as? BottomSheetBehavior<*>
         if (behavior != null) {
             behavior.peekHeight = 440.dp
-            behavior.addBottomSheetCallback(bottomSheetBehaviorCallback)
+
+            val titleRl = contentView.findViewById<View>(R.id.title_rl)
+            val dockCl = contentView.findViewById<View>(R.id.dock_cl)
+            titleRl.measure(
+                View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            dockCl.measure(
+                View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            contentView.post {
+                contentView.bot_rv.layoutParams.height =
+                    (dialog as MixinBottomSheetDialog).getMaxCustomViewHeight() - titleRl.measuredHeight - dockCl.measuredHeight - 12.dp
+            }
+
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
@@ -173,23 +189,6 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
 
     private val bottomListAdapter by lazy {
         BotManagerAdapter(clickAction)
-    }
-
-    private fun getPeekHeight(contentView: View, behavior: BottomSheetBehavior<*>): Int = 0
-
-    fun onStateChanged(bottomSheet: View, newState: Int) {}
-
-    fun onSlide(bottomSheet: View, slideOffset: Float) {}
-
-    private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
-            this@BotManagerBottomSheetDialogFragment.onStateChanged(bottomSheet, newState)
-        }
-
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {
-            this@BotManagerBottomSheetDialogFragment.onSlide(bottomSheet, slideOffset)
-        }
     }
 
     override fun onDockChange(apps: List<BotInterface>) {

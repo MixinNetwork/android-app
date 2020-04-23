@@ -10,6 +10,7 @@
     android:orientation="vertical">
 
     <RelativeLayout
+        android:id="@+id/title_rl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -40,6 +41,7 @@
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/dock_cl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
