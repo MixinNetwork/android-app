@@ -13,9 +13,9 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.observe
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
@@ -114,17 +114,17 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         assetsAdapter.onItemListener = this
         coins_rv.adapter = assetsAdapter
 
-        walletViewModel.assetItems().observe(viewLifecycleOwner, Observer { r: List<AssetItem>? ->
-            if (r == null || r.isEmpty()) {
+        walletViewModel.assetItems().observe(viewLifecycleOwner) {
+            if (it.isEmpty()) {
                 setEmpty()
             } else {
-                assets = r
-                assetsAdapter.setAssetList(r)
+                assets = it
+                assetsAdapter.setAssetList(it)
                 lifecycleScope.launch(Dispatchers.IO) {
                     renderPie(assets)
                 }
             }
-        })
+        }
         checkPin()
     }
 

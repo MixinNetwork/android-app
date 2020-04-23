@@ -42,6 +42,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.observe
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -1300,49 +1301,47 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
         var oldCount: Int = -1
         chatViewModel.getMessages(conversationId, unreadCount)
-            .observe(viewLifecycleOwner, Observer { data ->
-                data?.let { list ->
-                    if (oldCount == -1) {
-                        oldCount = list.size
-                    } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
-                        unreadTipCount += (list.size - oldCount)
-                        oldCount = list.size
+            .observe(viewLifecycleOwner) { list ->
+                if (oldCount == -1) {
+                    oldCount = list.size
+                } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
+                    unreadTipCount += (list.size - oldCount)
+                    oldCount = list.size
+                }
+                chatViewModel.viewModelScope.launch {
+                    chatAdapter.hasBottomView = ((isBot && list.isEmpty()) ||
+                        (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(conversationId, sender.userId))) &&
+                        recipient?.relationship == UserRelationship.STRANGER.name
+                }
+                if (isFirstLoad && messageId == null && unreadCount > 0) {
+                    chatAdapter.unreadMsgId = unreadMessageId
+                    if (isBottom && unreadCount > 20) {
+                        isBottom = false
+                        flag_layout.bottomFlag = !isBottom
                     }
+                } else if (lastReadMessage != null) {
                     chatViewModel.viewModelScope.launch {
-                        chatAdapter.hasBottomView = ((isBot && list.isEmpty()) ||
-                            (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(conversationId, sender.userId))) &&
-                            recipient?.relationship == UserRelationship.STRANGER.name
-                    }
-                    if (isFirstLoad && messageId == null && unreadCount > 0) {
-                        chatAdapter.unreadMsgId = unreadMessageId
-                        if (isBottom && unreadCount > 20) {
-                            isBottom = false
-                            flag_layout.bottomFlag = !isBottom
-                        }
-                    } else if (lastReadMessage != null) {
-                        chatViewModel.viewModelScope.launch {
-                            lastReadMessage?.let { id ->
-                                val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
-                                    conversationId,
-                                    sender.userId,
-                                    id
-                                )
-                                if (unreadMsgId != null) {
-                                    chatAdapter.unreadMsgId = unreadMsgId
-                                    lastReadMessage = null
-                                }
+                        lastReadMessage?.let { id ->
+                            val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
+                                conversationId,
+                                sender.userId,
+                                id
+                            )
+                            if (unreadMsgId != null) {
+                                chatAdapter.unreadMsgId = unreadMsgId
+                                lastReadMessage = null
                             }
                         }
                     }
-                    if (list.size > 0) {
-                        if (isFirstMessage) {
-                            isFirstMessage = false
-                        }
-                        chatViewModel.markMessageRead(conversationId, sender.userId)
-                    }
                 }
-                chatAdapter.submitList(data)
-            })
+                if (list.size > 0) {
+                    if (isFirstMessage) {
+                        isFirstMessage = false
+                    }
+                    chatViewModel.markMessageRead(conversationId, sender.userId)
+                }
+                chatAdapter.submitList(list)
+            }
     }
 
     private var unreadCount = 0
@@ -1375,7 +1374,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun liveDataAppList() {
         chatViewModel.getApp(conversationId, recipient?.userId)
-            .observe(viewLifecycleOwner, Observer { list ->
+            .observe(viewLifecycleOwner) { list ->
                 appList = list.filter {
                     if (isGroup) {
                         it.capabilities?.contains(AppCap.GROUP.name) == true
@@ -1384,11 +1383,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                 }
                 appList?.let {
-                    (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(
-                        it
-                    )
+                    (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
                 }
-            })
+            }
     }
 
     private var appList: List<AppItem>? = null
