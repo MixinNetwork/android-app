@@ -786,6 +786,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         @SerializedName("currency")
         val currency: String = Session.getFiatCurrency(),
         @SerializedName("locale")
-        val locale: String = "(${Lingver.getInstance().getLocale().language}-${Lingver.getInstance().getLocale().country})"
+        val locale: String = "${Lingver.getInstance().getLocale().language}-${Lingver.getInstance().getLocale().country}"
     )
 }
