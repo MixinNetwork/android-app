@@ -81,6 +81,8 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.util.Session
+import one.mixin.android.util.language.Lingver
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
@@ -780,6 +782,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         @SerializedName("appearance")
         val appearance: String,
         @SerializedName("platform")
-        val platform: String = "Android"
+        val platform: String = "Android",
+        @SerializedName("currency")
+        val currency: String = Session.getFiatCurrency(),
+        @SerializedName("locale")
+        val locale: String = "(${Lingver.getInstance().getLocale().language}-${Lingver.getInstance().getLocale().country})"
     )
 }

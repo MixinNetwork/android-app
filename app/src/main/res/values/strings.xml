@@ -827,5 +827,6 @@
     <string name="bot_internal_scan">Scan QR</string>
     <string name="bot_internal_camera">Camera</string>
     <string name="bot_internal_wallet">Wallet</string>
+    <string name="bot_empty_tip">Please add your favorite bot first.</string>
 </resources>
 
