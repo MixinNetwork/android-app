@@ -70,10 +70,4 @@
             android:src="@drawable/ic_scan_flash"
             tools:ignore="ContentDescription"/>
     </RelativeLayout>
-
-    <ViewStub
-        android:id="@+id/stub"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout="@layout/view_camera_tip"/>
 </RelativeLayout>

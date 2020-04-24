@@ -5,6 +5,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -19,6 +21,8 @@ import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.FocusMeteringResult
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.UseCase
 import androidx.camera.core.impl.utils.futures.FutureCallback
@@ -27,24 +31,37 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import com.google.firebase.ml.vision.common.FirebaseVisionImage
+import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import java.io.File
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.android.synthetic.main.fragment_capture.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.bounce
+import one.mixin.android.extension.decodeQR
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.isFirebaseDecodeAvailable
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
+import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.util.reportException
 import one.mixin.android.widget.gallery.ui.GalleryActivity
 import org.jetbrains.anko.getStackTraceString
@@ -58,9 +75,17 @@ abstract class BaseCameraxFragment : VisionFragment() {
         private const val ZOOM_NOT_SUPPORTED = UNITY_ZOOM_SCALE
     }
 
+    protected var forAddress: Boolean = false
+    protected var forAccountName: Boolean = false
+    protected var forMemo: Boolean = false
+
     protected var videoFile: File? = null
 
     protected var lensFacing = CameraSelector.LENS_FACING_BACK
+
+    private var alreadyDetected = false
+
+    private var imageAnalysis: ImageAnalysis? = null
 
     private var preview: Preview? = null
     protected lateinit var mainExecutor: Executor
@@ -84,6 +109,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
         override fun onDisplayRemoved(displayId: Int) = Unit
         override fun onDisplayChanged(displayId: Int) = view?.let { view ->
             if (displayId == this@BaseCameraxFragment.displayId) {
+                imageAnalysis?.targetRotation = view.display.rotation
                 this@BaseCameraxFragment.onDisplayChanged(view.display.rotation)
             }
         } ?: Unit
@@ -169,13 +195,21 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 .build()
             preview?.setSurfaceProvider(surfaceProvider)
 
+            imageAnalysis = ImageAnalysis.Builder()
+                .setTargetAspectRatioCustom(screenAspectRatio)
+                .setTargetRotation(rotation)
+                .build()
+                .also {
+                    it.setAnalyzer(backgroundExecutor, imageAnalyzer)
+                }
+
             val otherUseCases = getOtherUseCases(screenAspectRatio, rotation)
 
             cameraProvider.unbindAll()
 
             try {
                 camera = cameraProvider.bindToLifecycle(
-                    this as LifecycleOwner, cameraSelector, preview, *otherUseCases
+                    this as LifecycleOwner, cameraSelector, preview, imageAnalysis, *otherUseCases
                 )
             } catch (e: Exception) {
                 reportException(e)
@@ -209,7 +243,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     protected fun openEdit(path: String, isVideo: Boolean, fromGallery: Boolean = false) {
         activity?.supportFragmentManager?.inTransaction {
-            add(R.id.container, EditFragment.newInstance(path, isVideo, fromGallery, needScan()), EditFragment.TAG)
+            add(R.id.container, EditFragment.newInstance(path, isVideo, fromGallery, fromScan()), EditFragment.TAG)
                 .addToBackStack(null)
         }
     }
@@ -293,7 +327,136 @@ abstract class BaseCameraxFragment : VisionFragment() {
     abstract fun onFlashClick()
     abstract fun getOtherUseCases(screenAspectRatio: Rational, rotation: Int): Array<UseCase>
     abstract fun onDisplayChanged(rotation: Int)
-    abstract fun needScan(): Boolean
+    abstract fun fromScan(): Boolean
+
+    private fun handleAnalysis(analysisResult: String) {
+        if (!isAdded) return
+
+        requireContext().defaultSharedPreferences.putBoolean(CaptureActivity.SHOW_QR_CODE, false)
+        if (forAddress || forAccountName || forMemo) {
+            val result = Intent().apply {
+                putExtra(when {
+                    forAddress -> CaptureActivity.ARGS_ADDRESS_RESULT
+                    forAccountName -> CaptureActivity.ARGS_ACCOUNT_NAME_RESULT
+                    else -> CaptureActivity.ARGS_MEMO_RESULT
+                }, analysisResult)
+            }
+            activity?.setResult(CaptureActivity.RESULT_CODE, result)
+            activity?.finish()
+            return
+        }
+        if (analysisResult.startsWith(Constants.Scheme.DEVICE)) {
+            ConfirmBottomFragment.show(requireContext(), parentFragmentManager, analysisResult) {
+                activity?.finish()
+            }
+        } else {
+            if (fromScan()) {
+                handleResult(analysisResult)
+            } else {
+                pseudoNotificationView?.addContent(analysisResult)
+            }
+        }
+    }
+
+    private val isGooglePlayServicesAvailable by lazy {
+        context?.isFirebaseDecodeAvailable() ?: false
+    }
+
+    private val imageAnalyzer = object : ImageAnalysis.Analyzer {
+        private val detecting = AtomicBoolean(false)
+
+        override fun analyze(image: ImageProxy) {
+            if (!alreadyDetected && !image.planes.isNullOrEmpty() &&
+                detecting.compareAndSet(false, true)
+            ) {
+                if (isGooglePlayServicesAvailable) {
+                    decodeWithFirebaseVision(image)
+                } else {
+                    decodeWithZxing(image)
+                }
+            } else {
+                image.close()
+            }
+        }
+
+        @SuppressLint("UnsafeExperimentalUsageError")
+        private fun decodeWithFirebaseVision(image: ImageProxy) {
+            val processImage = image.image
+            if (processImage == null) {
+                image.close()
+                return
+            }
+            val visionImage = FirebaseVisionImage.fromMediaImage(
+                processImage,
+                FirebaseVisionImageMetadata.ROTATION_90
+            )
+            val latch = CountDownLatch(1)
+            detector.use { d ->
+                d.detectInImage(visionImage)
+                    .addOnSuccessListener { result ->
+                        result.firstOrNull()?.rawValue?.let {
+                            alreadyDetected = true
+                            handleAnalysis(it)
+                        }
+                    }
+                    .addOnCompleteListener {
+                        if (!alreadyDetected) {
+                            val bitmap = getBitmapFromImage(image)
+                            if (bitmap == null) {
+                                detecting.set(false)
+                            } else {
+                                decodeBitmapWithZxing(bitmap)
+                            }
+                        } else {
+                            detecting.set(false)
+                        }
+                        image.close()
+                        latch.countDown()
+                    }
+            }
+            latch.await()
+        }
+
+        private fun decodeWithZxing(imageProxy: ImageProxy) {
+            val bitmap = getBitmapFromImage(imageProxy)
+            if (bitmap == null) {
+                detecting.set(false)
+                return
+            }
+            val result = bitmap.decodeQR()
+            if (result != null) {
+                alreadyDetected = true
+                lifecycleScope.launch(Dispatchers.Main) {
+                    if (!isAdded) return@launch
+                    handleAnalysis(result)
+                }
+            }
+            imageProxy.close()
+            detecting.set(false)
+        }
+
+        private fun decodeBitmapWithZxing(bitmap: Bitmap) {
+            val result = bitmap.decodeQR()
+            if (result != null) {
+                alreadyDetected = true
+                lifecycleScope.launch(Dispatchers.Main) {
+                    if (!isAdded) return@launch
+                    handleAnalysis(result)
+                }
+            }
+            detecting.set(false)
+        }
+
+        private fun getBitmapFromImage(image: ImageProxy): Bitmap? {
+            return try {
+                val byteArray = ImageUtil.imageToJpegByteArray(image)
+                BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+            } catch (e: Exception) {
+                reportException("$CRASHLYTICS_CAMERAX-getBitmapFromImage failure", e)
+                null
+            }
+        }
+    }
 
     inner class S : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         lateinit var listener: ScaleGestureDetector.OnScaleGestureListener

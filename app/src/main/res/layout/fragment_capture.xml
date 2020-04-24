@@ -111,6 +111,14 @@
             tools:ignore="ContentDescription"/>
     </RelativeLayout>
 
+    <one.mixin.android.widget.PseudoNotificationView
+        android:id="@+id/pseudo_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"/>
+
     <one.mixin.android.widget.CaptureBorderView
         android:id="@+id/capture_border_view"
         android:layout_width="match_parent"

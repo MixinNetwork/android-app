@@ -103,7 +103,7 @@ class CaptureFragment : BaseCameraxFragment() {
         imageCapture?.targetRotation = rotation
     }
 
-    override fun needScan() = false
+    override fun fromScan() = false
 
     @SuppressLint("RestrictedApi")
     private fun onSwitchClick() {
