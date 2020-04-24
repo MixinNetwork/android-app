@@ -29,10 +29,6 @@ class FocusView(context: Context, attributeSet: AttributeSet) : View(context, at
     private var cy = 0f
     private var lastDownTime = 0L
 
-    init {
-        setWillNotDraw(false)
-    }
-
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (focusProgress != 1f && innerAlpha != 0f && outerAlpha != 0f) {
@@ -52,21 +48,21 @@ class FocusView(context: Context, attributeSet: AttributeSet) : View(context, at
 
             when {
                 focusProgress < 1 -> {
-                    focusProgress += dt / 200f
+                    focusProgress += dt / 300f
                     if (focusProgress > 1) {
                         focusProgress = 1f
                     }
                     invalidate()
                 }
                 innerAlpha != 0f -> {
-                    innerAlpha -= dt / 150f
+                    innerAlpha -= dt / 225f
                     if (innerAlpha < 0) {
                         innerAlpha = 0f
                     }
                     invalidate()
                 }
                 outerAlpha != 0f -> {
-                    outerAlpha -= dt / 150f
+                    outerAlpha -= dt / 225f
                     if (outerAlpha < 0) {
                         outerAlpha = 0f
                     }
