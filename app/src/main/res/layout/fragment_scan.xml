@@ -11,10 +11,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/black_10"/>
+    <one.mixin.android.ui.qr.FocusView
+            android:id="@+id/focus_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
     <RelativeLayout
         android:layout_width="match_parent"

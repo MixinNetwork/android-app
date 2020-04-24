@@ -13,6 +13,8 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.TorchState
 import androidx.camera.core.UseCase
+import androidx.camera.core.impl.utils.futures.FutureCallback
+import androidx.camera.core.impl.utils.futures.Futures
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
@@ -27,9 +29,12 @@ import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isFirebaseDecodeAvailable
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.util.reportException
+import org.jetbrains.anko.getStackTraceString
+import timber.log.Timber
 
 class ScanFragment : BaseCameraxFragment() {
     companion object {
@@ -61,15 +66,27 @@ class ScanFragment : BaseCameraxFragment() {
     ): View? =
         layoutInflater.inflate(R.layout.fragment_scan, container, false)
 
+    @SuppressLint("RestrictedApi")
     override fun onFlashClick() {
+        if (camera?.cameraInfo?.hasFlashUnit() == false) {
+            toast(R.string.no_flash_unit)
+            return
+        }
         val torchState = camera?.cameraInfo?.torchState?.value ?: TorchState.OFF
-        if (torchState == TorchState.ON) {
-            flash.setImageResource(R.drawable.ic_scan_flash)
+        flash.setImageResource(R.drawable.ic_scan_flash)
+        val future = (if (torchState == TorchState.ON) {
             camera?.cameraControl?.enableTorch(false)
         } else {
-            flash.setImageResource(R.drawable.ic_scan_flash)
             camera?.cameraControl?.enableTorch(true)
-        }
+        }) ?: return
+        Futures.addCallback(future, object : FutureCallback<Void> {
+            override fun onSuccess(result: Void?) {
+            }
+
+            override fun onFailure(t: Throwable?) {
+                Timber.d("enableTorch onFailure, ${t?.getStackTraceString()}")
+            }
+        }, mainExecutor)
     }
 
     @SuppressLint("RestrictedApi")

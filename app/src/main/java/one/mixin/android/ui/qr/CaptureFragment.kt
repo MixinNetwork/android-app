@@ -12,8 +12,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCapture.FLASH_MODE_OFF
+import androidx.camera.core.ImageCapture.FLASH_MODE_ON
 import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.TorchState
 import androidx.camera.core.UseCase
 import androidx.core.view.isVisible
 import java.io.File
@@ -75,18 +76,21 @@ class CaptureFragment : BaseCameraxFragment() {
     }
 
     override fun onFlashClick() {
-        val torchState = camera?.cameraInfo?.torchState?.value ?: TorchState.OFF
-        if (torchState == TorchState.ON) {
+        val flashMode = imageCapture?.flashMode ?: FLASH_MODE_OFF
+        if (flashMode == FLASH_MODE_ON) {
             flash.setImageResource(R.drawable.ic_flash_off)
-            camera?.cameraControl?.enableTorch(false)
+            imageCapture?.flashMode = FLASH_MODE_OFF
         } else {
             flash.setImageResource(R.drawable.ic_flash_on)
-            camera?.cameraControl?.enableTorch(true)
+            imageCapture?.flashMode = FLASH_MODE_ON
         }
     }
 
     @SuppressLint("RestrictedApi")
-    override fun getOtherUseCases(screenAspectRatio: Rational, rotation: Int): Array<UseCase> {
+    override fun getOtherUseCases(
+        screenAspectRatio: Rational,
+        rotation: Int
+    ): Array<UseCase> {
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
             .setTargetAspectRatioCustom(screenAspectRatio)
@@ -166,7 +170,9 @@ class CaptureFragment : BaseCameraxFragment() {
                 audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)
             } catch (ignored: SecurityException) {
             }
-            onRecordStart()
+            videoFile?.let {
+//                view_finder.startRecording(it, backgroundExecutor, onVideoSavedCallback)
+            }
         }
 
         override fun onProgressStop(time: Float) {
@@ -176,11 +182,10 @@ class CaptureFragment : BaseCameraxFragment() {
             chronometer_layout.fadeOut()
             chronometer.stop()
             if (time < CaptureActivity.MIN_DURATION) {
-                onStopAndResume()
                 toast(R.string.error_duration_short)
             } else {
                 videoFile?.let {
-                    onStopAndPause()
+//                    view_finder.stopRecording()
                     activity?.supportFragmentManager?.inTransaction {
                         add(R.id.container, EditFragment.newInstance(it.absolutePath, true), EditFragment.TAG)
                             .addToBackStack(null)
@@ -193,14 +198,5 @@ class CaptureFragment : BaseCameraxFragment() {
                 }, 300)
             }
         }
-    }
-
-    private fun onStopAndPause() {
-    }
-
-    private fun onStopAndResume() {
-    }
-
-    private fun onRecordStart() {
     }
 }
