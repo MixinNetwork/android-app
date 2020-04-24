@@ -53,18 +53,18 @@ class EditFragment : VisionFragment() {
         const val TAG = "EditFragment"
         const val ARGS_PATH = "args_path"
         const val ARGS_FROM_GALLERY = "args_from_gallery"
-        const val ARGS_FROM_SCAN = "args_need_scan"
+        const val ARGS_FROM_SCAN = "args_from_scan"
         private const val IS_VIDEO: String = "IS_VIDEO"
         fun newInstance(
             path: String,
             isVideo: Boolean = false,
             fromGallery: Boolean = false,
-            needScan: Boolean = false
+            fromScan: Boolean = false
         ) = EditFragment().withArgs {
             putString(ARGS_PATH, path)
             putBoolean(IS_VIDEO, isVideo)
             putBoolean(ARGS_FROM_GALLERY, fromGallery)
-            putBoolean(ARGS_FROM_SCAN, needScan)
+            putBoolean(ARGS_FROM_SCAN, fromScan)
         }
     }
 
@@ -80,7 +80,7 @@ class EditFragment : VisionFragment() {
         requireArguments().getBoolean(ARGS_FROM_GALLERY)
     }
 
-    private val needScan by lazy {
+    private val fromScan by lazy {
         requireArguments().getBoolean(ARGS_FROM_SCAN)
     }
 
@@ -149,7 +149,7 @@ class EditFragment : VisionFragment() {
                     ForwardCategory.IMAGE.name, mediaUrl = path)), isShare = true)
             }
         }
-        if (needScan) {
+        if (fromScan) {
             send_fl.isVisible = false
             download_iv.isVisible = false
         }
@@ -163,9 +163,7 @@ class EditFragment : VisionFragment() {
             preview_iv.visibility = VISIBLE
             if (fromGallery) {
                 preview_iv.loadImage(path)
-                if (needScan) {
-                    scan()
-                }
+                scan()
                 setBg()
             } else {
                 preview_iv.loadImage(path, requestListener = glideRequestListener)
@@ -187,12 +185,18 @@ class EditFragment : VisionFragment() {
                         if (!content.isNullOrBlank()) {
                             lifecycleScope.launch innerLaunch@{
                                 if (!isAdded) return@innerLaunch
-                                handleResult(content)
+                                if (fromScan) {
+                                    handleResult(content)
+                                } else {
+                                    pseudoNotificationView?.addContent(content)
+                                }
                             }
                         } else {
                             lifecycleScope.launch innerLaunch@{
                                 if (!isAdded) return@innerLaunch
-                                showNoResultDialog()
+                                if (fromScan) {
+                                    showNoResultDialog()
+                                }
                             }
                         }
                     }
@@ -201,11 +205,17 @@ class EditFragment : VisionFragment() {
             val result = bitmap.decodeQR()
             if (!result.isNullOrBlank()) {
                 withContext(Dispatchers.Main) {
-                    handleResult(result)
+                    if (fromScan) {
+                        handleResult(result)
+                    } else {
+                        pseudoNotificationView?.addContent(result)
+                    }
                 }
             } else {
                 withContext(Dispatchers.Main) {
-                    showNoResultDialog()
+                    if (fromScan) {
+                        showNoResultDialog()
+                    }
                 }
             }
         }
