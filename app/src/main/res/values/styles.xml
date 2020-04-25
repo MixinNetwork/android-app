@@ -79,6 +79,7 @@
     <style name="AppTheme.Capture" parent="AppTheme.FullScreen">
         <item name="android:windowFullscreen">true</item>
         <item name="android:immersive">true</item>
+        <item name="android:windowIsTranslucent">true</item>
     </style>
 
     <style name="AppTheme.Avatar" parent="AppTheme.FullScreen">
