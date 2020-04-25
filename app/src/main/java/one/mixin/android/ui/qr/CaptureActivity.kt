@@ -3,6 +3,7 @@ package one.mixin.android.ui.qr
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -26,6 +27,10 @@ class CaptureActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (Build.VERSION.SDK_INT != Build.VERSION_CODES.O) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+
         overridePendingTransition(R.anim.slide_in_bottom, 0)
         checkCameraCanUse()
         setContentView(R.layout.activity_contact)
