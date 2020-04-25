@@ -217,6 +217,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     @Synchronized
     private fun changeOrientation(orientation: Int) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
+            return
+        }
+
         requestedOrientation = when (orientation) {
             270 -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             180 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
