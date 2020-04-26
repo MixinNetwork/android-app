@@ -436,7 +436,7 @@
     <string name="group_participants_count">%1$d Participants</string>
     <string name="group_click_create_tip">Couldn\'t create. Tap to retry.</string>
     <!--setting-->
-    <string name="setting_title">Settings</string>
+    <string name="setting_title">Setting</string>
     <string name="setting_blocked">Blocked</string>
     <string name="setting_conversation">Conversation</string>
     <string name="setting_privacy_tip">Change who can add you to conversation and groups.</string>
@@ -484,7 +484,7 @@
     <string name="setting_auth_access">Approved: %1$s, Last Accessed: %2$s</string>
     <string name="setting_backup">Backup</string>
     <string name="setting_clearing">Clearing…</string>
-    <string name="setting_data_storage">Data and Storage Usage</string>
+    <string name="setting_data_storage">Data and storage usage</string>
     <string name="setting_storage">Storage Usage</string>
     <string name="setting_data_title">Media auto-download</string>
     <string name="setting_data_info">Voice messages are always auto-downloaded for the best communication experience</string>
