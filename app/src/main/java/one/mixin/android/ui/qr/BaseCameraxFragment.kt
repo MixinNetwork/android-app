@@ -370,7 +370,12 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 detecting.compareAndSet(false, true)
             ) {
                 if (isGooglePlayServicesAvailable) {
-                    decodeWithFirebaseVision(image)
+                    try {
+                        decodeWithFirebaseVision(image)
+                    } catch (e: Exception) {
+                        decodeWithZxing(image)
+                        reportException("$CRASHLYTICS_CAMERAX-decodeWithFirebaseVision failure", e)
+                    }
                 } else {
                     decodeWithZxing(image)
                 }

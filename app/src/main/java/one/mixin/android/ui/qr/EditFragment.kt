@@ -2,6 +2,7 @@ package one.mixin.android.ui.qr
 
 import android.Manifest
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.graphics.drawable.Drawable
@@ -177,45 +178,53 @@ class EditFragment : VisionFragment() {
 
         val bitmap = BitmapFactory.decodeFile(path) ?: return@launch
         if (requireContext().isFirebaseDecodeAvailable()) {
-            val visionImage = FirebaseVisionImage.fromBitmap(bitmap)
-            detector.use { d ->
-                d.detectInImage(visionImage)
-                    .addOnSuccessListener { result ->
-                        val content = result.firstOrNull()?.rawValue
-                        if (!content.isNullOrBlank()) {
-                            lifecycleScope.launch innerLaunch@{
-                                if (!isAdded) return@innerLaunch
-                                if (fromScan) {
-                                    handleResult(content)
-                                } else {
-                                    pseudoNotificationView?.addContent(content)
+            try {
+                val visionImage = FirebaseVisionImage.fromBitmap(bitmap)
+                detector.use { d ->
+                    d.detectInImage(visionImage)
+                        .addOnSuccessListener { result ->
+                            val content = result.firstOrNull()?.rawValue
+                            if (!content.isNullOrBlank()) {
+                                lifecycleScope.launch innerLaunch@{
+                                    if (!isAdded) return@innerLaunch
+                                    if (fromScan) {
+                                        handleResult(content)
+                                    } else {
+                                        pseudoNotificationView?.addContent(content)
+                                    }
                                 }
-                            }
-                        } else {
-                            lifecycleScope.launch innerLaunch@{
-                                if (!isAdded) return@innerLaunch
-                                if (fromScan) {
-                                    showNoResultDialog()
+                            } else {
+                                lifecycleScope.launch innerLaunch@{
+                                    if (!isAdded) return@innerLaunch
+                                    if (fromScan) {
+                                        showNoResultDialog()
+                                    }
                                 }
                             }
                         }
-                    }
+                }
+            } catch (e: Exception) {
+                decodeWithZxing(bitmap)
             }
         } else {
-            val result = bitmap.decodeQR()
-            if (!result.isNullOrBlank()) {
-                withContext(Dispatchers.Main) {
-                    if (fromScan) {
-                        handleResult(result)
-                    } else {
-                        pseudoNotificationView?.addContent(result)
-                    }
+            decodeWithZxing(bitmap)
+        }
+    }
+
+    private suspend fun decodeWithZxing(bitmap: Bitmap) {
+        val result = bitmap.decodeQR()
+        if (!result.isNullOrBlank()) {
+            withContext(Dispatchers.Main) {
+                if (fromScan) {
+                    handleResult(result)
+                } else {
+                    pseudoNotificationView?.addContent(result)
                 }
-            } else {
-                withContext(Dispatchers.Main) {
-                    if (fromScan) {
-                        showNoResultDialog()
-                    }
+            }
+        } else {
+            withContext(Dispatchers.Main) {
+                if (fromScan) {
+                    showNoResultDialog()
                 }
             }
         }

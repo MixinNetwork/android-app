@@ -5,17 +5,14 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
-import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.view.View
-import android.view.WindowInsets
-import android.view.WindowManager
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import kotlin.math.max
+import kotlin.math.abs
 import one.mixin.android.extension.hasNavigationBar
-import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
@@ -23,6 +20,9 @@ import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.displayMetrics
 
 class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(context, theme) {
+    companion object {
+        const val BACK_DRAWABLE_ALPHA = 51
+    }
 
     private var startAnimationRunnable: Runnable? = null
     private var curSheetAnimation: AnimatorSet? = null
@@ -30,21 +30,16 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
     private var isDismissed = false
     private var isShown = false
 
-    var lastInsets: WindowInsets? = null
-
     private lateinit var container: View
     private lateinit var sheetContainer: View
 
     override fun setContentView(view: View) {
         super.setContentView(view)
         container = window!!.findViewById(com.google.android.material.R.id.container)
-        container.setOnApplyWindowInsetsListener { v, insets ->
-            lastInsets = insets
-            insets.consumeSystemWindowInsets()
-        }
         container.backgroundDrawable = backDrawable
         backDrawable.alpha = 0
         sheetContainer = window!!.findViewById(com.google.android.material.R.id.design_bottom_sheet)
+        behavior.addBottomSheetCallback(bottomSheetBehaviorCallback)
     }
 
     override fun show() {
@@ -80,7 +75,7 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
             ObjectAnimator.ofFloat(sheetContainer, "translationY", 0f),
-            ObjectAnimator.ofInt(backDrawable, "alpha", 51)
+            ObjectAnimator.ofInt(backDrawable, "alpha", BACK_DRAWABLE_ALPHA)
         )
         animatorSet.duration = 200
         animatorSet.startDelay = 20
@@ -153,20 +148,25 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         curSheetAnimation?.cancel()
         curSheetAnimation = null
     }
+
+    private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
+
+        override fun onStateChanged(bottomSheet: View, newState: Int) {
+        }
+
+        override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            val alpha = if (slideOffset in 0.0..1.0) {
+                BACK_DRAWABLE_ALPHA
+            } else {
+                (BACK_DRAWABLE_ALPHA - abs(slideOffset) * BACK_DRAWABLE_ALPHA).toInt()
+            }
+            backDrawable.alpha = alpha
+        }
+    }
 }
 
 fun MixinBottomSheetDialog.getMaxCustomViewHeight(): Int {
-    val isNotchScreen = this.window?.isNotchScreen() ?: false
-    return if (isNotchScreen) {
-        val top = lastInsets?.systemWindowInsetTop ?: 0
-        val bottom = lastInsets?.systemWindowInsetBottom ?: 0
-        context.realSize().y - max(bottom, if (context.hasNavigationBar()) {
-            context.navigationBarHeight()
-        } else 0) - max(top, context.statusBarHeight())
-    } else {
-        val size = Point()
-        val manager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        manager.defaultDisplay.getSize(size)
-        size.y - context.statusBarHeight()
-    }
+    return context.realSize().y - if (context.hasNavigationBar()) {
+        context.navigationBarHeight()
+    } else 0 - context.statusBarHeight()
 }

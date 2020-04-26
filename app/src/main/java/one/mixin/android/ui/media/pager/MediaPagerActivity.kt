@@ -50,6 +50,7 @@ import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_media_pager.*
 import kotlinx.android.synthetic.main.item_pager_video_layout.view.*
 import kotlinx.android.synthetic.main.layout_player_view.view.*
+import kotlinx.android.synthetic.main.view_drag_image_bottom.*
 import kotlinx.android.synthetic.main.view_drag_image_bottom.view.*
 import kotlinx.android.synthetic.main.view_drag_video_bottom.view.*
 import kotlinx.android.synthetic.main.view_drag_video_bottom.view.cancel
@@ -217,6 +218,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     @Synchronized
     private fun changeOrientation(orientation: Int) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.O) {
+            return
+        }
+
         requestedOrientation = when (orientation) {
             270 -> ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             180 -> ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
@@ -394,26 +399,30 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
         if (bitmap != null) {
             if (isFirebaseDecodeAvailable()) {
-                var url: String? = null
-                val image = FirebaseVisionImage.fromBitmap(bitmap)
-                val detector = FirebaseVision.getInstance().visionBarcodeDetector
-                detector.detectInImage(image)
-                    .addOnSuccessListener { barcodes ->
-                        url = barcodes.firstOrNull()?.rawValue
-                        url?.openAsUrlOrQrScan(supportFragmentManager, lifecycleScope)
-                    }
-                    .addOnFailureListener {
-                        toast(R.string.can_not_recognize)
-                    }
-                    .addOnCompleteListener {
-                        if (url == null) {
-                            decodeWithZxing(imageView, bitmap)
-                        } else {
-                            if (imageView !is ImageView) {
-                                imageView.isDrawingCacheEnabled = false
+                try {
+                    var url: String? = null
+                    val image = FirebaseVisionImage.fromBitmap(bitmap)
+                    val detector = FirebaseVision.getInstance().visionBarcodeDetector
+                    detector.detectInImage(image)
+                        .addOnSuccessListener { barcodes ->
+                            url = barcodes.firstOrNull()?.rawValue
+                            url?.openAsUrlOrQrScan(supportFragmentManager, lifecycleScope)
+                        }
+                        .addOnFailureListener {
+                            toast(R.string.can_not_recognize)
+                        }
+                        .addOnCompleteListener {
+                            if (url == null) {
+                                decodeWithZxing(imageView, bitmap)
+                            } else {
+                                if (imageView !is ImageView) {
+                                    imageView.isDrawingCacheEnabled = false
+                                }
                             }
                         }
-                    }
+                } catch (e: Exception) {
+                    decodeWithZxing(imageView, bitmap)
+                }
             } else {
                 decodeWithZxing(imageView, bitmap)
             }
