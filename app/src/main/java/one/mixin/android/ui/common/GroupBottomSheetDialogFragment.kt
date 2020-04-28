@@ -5,9 +5,6 @@ import android.app.Dialog
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
-import android.view.View.GONE
-import android.view.View.INVISIBLE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
@@ -15,7 +12,6 @@ import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.uber.autodispose.autoDispose
 import java.io.File
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
@@ -25,7 +21,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dpToPx
@@ -41,12 +36,10 @@ import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuGroup
 import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.CODE
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.GroupActivity.Companion.ARGS_EXPAND
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationStatus
@@ -58,12 +51,11 @@ import org.threeten.bp.Instant
 class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
 
     companion object {
-        const val TAG = "ProfileBottomSheetDialogFragment"
+        const val TAG = "GroupBottomSheetDialogFragment"
 
         private var instant: GroupBottomSheetDialogFragment? = null
         fun newInstance(
             conversationId: String,
-            code: String? = null,
             expand: Boolean = false
         ): GroupBottomSheetDialogFragment {
             try {
@@ -74,7 +66,6 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             return GroupBottomSheetDialogFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARGS_CONVERSATION_ID, conversationId)
-                    putString(CODE, code)
                     putBoolean(ARGS_EXPAND, expand)
                 }
                 instant = this
@@ -92,7 +83,6 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     private val conversationId: String by lazy {
         requireArguments().getString(ARGS_CONVERSATION_ID)!!
     }
-    private val code: String? by lazy { requireArguments().getString(CODE) }
     private lateinit var conversation: Conversation
     private var me: Participant? = null
 
@@ -103,33 +93,6 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView.title.right_iv.setOnClickListener { dismiss() }
-        contentView.join_tv.setOnClickListener {
-            if (code == null) return@setOnClickListener
-            contentView.join_tv.visibility = INVISIBLE
-            contentView.join_progress.visibility = VISIBLE
-            bottomViewModel.join(code!!).autoDispose(stopScope).subscribe({
-                if (it.isSuccess) {
-                    val conversationResponse = it.data as ConversationResponse
-                    val accountId = Session.getAccountId()
-                    val result = conversationResponse.participants.any { participant ->
-                        participant.userId == accountId
-                    }
-                    dismiss()
-                    if (result) {
-                        bottomViewModel.refreshConversation(conversationId)
-                        ConversationActivity.show(requireContext(), conversationId)
-                    }
-                } else {
-                    ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
-                }
-                contentView.join_tv.visibility = VISIBLE
-                contentView.join_progress.visibility = GONE
-            }, {
-                contentView.join_tv.visibility = VISIBLE
-                contentView.join_progress.visibility = GONE
-                ErrorHandler.handleError(it)
-            })
-        }
         contentView.member_fl.setOnClickListener {
             GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
             dismiss()
@@ -194,13 +157,11 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         me = localMe
         if (me != null) {
             contentView.ops_ll.isVisible = true
-            contentView.join_fl.isVisible = false
             contentView.scroll_view.isEnabled = true
         } else {
-            val withoutCode = conversation.status == ConversationStatus.QUIT.ordinal && code == null
+            val withoutCode = conversation.status == ConversationStatus.QUIT.ordinal
             contentView.scroll_view.isEnabled = withoutCode
             contentView.ops_ll.isVisible = withoutCode
-            contentView.join_fl.isVisible = code != null
         }
 
         contentView.doOnPreDraw {
