@@ -5,6 +5,7 @@ import android.view.View
 import android.view.View.OnDragListener
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
+import one.mixin.android.vo.BotInterface
 import one.mixin.android.widget.bot.BotDock
 
 class BotManagerDragListener : OnDragListener {

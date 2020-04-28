@@ -19,7 +19,7 @@ import kotlin.math.max
 import kotlinx.android.synthetic.main.item_dock.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.vibrate
-import one.mixin.android.ui.home.bot.BotInterface
+import one.mixin.android.vo.BotInterface
 
 class BotDock : ViewGroup, View.OnLongClickListener {
 

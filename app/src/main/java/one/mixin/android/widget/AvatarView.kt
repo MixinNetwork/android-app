@@ -13,14 +13,15 @@ import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.view_avatar.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.CodeType
+import one.mixin.android.extension.clear
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.isActivityNotDestroyed
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.ui.home.bot.Bot
-import one.mixin.android.ui.home.bot.BotInterface
 import one.mixin.android.vo.App
+import one.mixin.android.vo.BotInterface
 import org.jetbrains.anko.sp
 
 class AvatarView : ViewAnimator {
@@ -121,6 +122,7 @@ class AvatarView : ViewAnimator {
             displayedChild = POS_AVATAR
             avatar_simple.setBackgroundResource(0)
             avatar_simple.setPadding(0)
+            avatar_simple.clear()
             avatar_simple.setImageResource(app.icon)
         }
     }

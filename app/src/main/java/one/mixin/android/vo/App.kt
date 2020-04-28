@@ -10,7 +10,10 @@ import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlin.contracts.contract
 import kotlinx.android.parcel.Parcelize
-import one.mixin.android.ui.home.bot.BotInterface
+
+interface BotInterface {
+    fun getBotId(): String
+}
 
 @SuppressLint("ParcelCreator")
 @Parcelize

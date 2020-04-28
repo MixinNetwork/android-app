@@ -13,6 +13,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.vibrate
 import one.mixin.android.vo.App
+import one.mixin.android.vo.BotInterface
 
 class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : RecyclerView.Adapter<BotManagerAdapter.ListViewHolder>(), View.OnLongClickListener {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
