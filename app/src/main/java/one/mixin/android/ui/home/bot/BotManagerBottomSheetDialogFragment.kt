@@ -45,7 +45,6 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.bot.BotDock
-import one.mixin.android.widget.getMaxCustomViewHeight
 
 class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener, Injectable {
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
@@ -78,24 +77,10 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         contentView = View.inflate(context, R.layout.fragment_bot_manager, null)
         dialog.setContentView(contentView)
         val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
-        val behavior = params.behavior as? BottomSheetBehavior<*>
-        if (behavior != null) {
-            behavior.peekHeight = 440.dp
-
-            contentView.title_rl.measure(
-                View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            contentView.dock_cl.measure(
-                View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            contentView.bot_rv.layoutParams.height =
-                440.dp - contentView.title_rl.measuredHeight - contentView.dock_cl.measuredHeight - 12.dp
-
-            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            dialog.window?.setGravity(Gravity.BOTTOM)
-        }
+        val behavior = params.behavior as BottomSheetBehavior<*>
+        behavior.peekHeight = 440.dp
+        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        dialog.window?.setGravity(Gravity.BOTTOM)
         initView()
         loadData()
         RxBus.listen(BotCloseEvent::class.java)
@@ -188,11 +173,6 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
                 }
             } else {
                 contentView.empty_fl.isVisible = false
-                contentView.post {
-                    contentView.bot_rv.layoutParams.height =
-                        (dialog as MixinBottomSheetDialog).getMaxCustomViewHeight() -
-                            contentView.title_rl.height - contentView.dock_cl.height - 12.dp
-                }
                 defaultApps.addAll(notTopApps)
             }
             bottomListAdapter.list = defaultApps
