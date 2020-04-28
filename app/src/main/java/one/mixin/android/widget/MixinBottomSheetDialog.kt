@@ -12,10 +12,6 @@ import android.view.animation.DecelerateInterpolator
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlin.math.abs
-import one.mixin.android.extension.hasNavigationBar
-import one.mixin.android.extension.navigationBarHeight
-import one.mixin.android.extension.realSize
-import one.mixin.android.extension.statusBarHeight
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.displayMetrics
 
@@ -163,10 +159,4 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
             backDrawable.alpha = alpha
         }
     }
-}
-
-fun MixinBottomSheetDialog.getMaxCustomViewHeight(): Int {
-    return context.realSize().y - if (context.hasNavigationBar()) {
-        context.navigationBarHeight()
-    } else 0 - context.statusBarHeight()
 }
