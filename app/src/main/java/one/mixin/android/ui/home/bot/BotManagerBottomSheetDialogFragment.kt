@@ -43,6 +43,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.App
+import one.mixin.android.vo.BotInterface
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.bot.BotDock
 
