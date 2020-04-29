@@ -30,6 +30,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.linktext.AutoLinkMode
 import one.mixin.android.widget.linktext.AutoLinkTextView
+import timber.log.Timber
 
 abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
@@ -109,6 +110,15 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
             super.dismiss()
         } catch (e: IllegalStateException) {
             reportException(e)
+            Timber.e(e)
+        }
+    }
+
+    override fun dismissAllowingStateLoss() {
+        try {
+            super.dismissAllowingStateLoss()
+        } catch (e: IllegalStateException) {
+            Timber.e(e)
         }
     }
 

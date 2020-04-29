@@ -18,7 +18,9 @@ import com.bumptech.glide.Glide
 import java.io.File
 import java.util.concurrent.TimeUnit
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.LocalJobException
+import one.mixin.android.event.AvatarEvent
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.getGroupAvatarPath
@@ -28,7 +30,10 @@ import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView
 import org.jetbrains.anko.dip
 
-class GenerateAvatarJob(private val groupId: String, val list: List<User>? = null) : BaseJob(
+class GenerateAvatarJob(
+    private val groupId: String,
+    val list: List<User>? = null
+) : BaseJob(
     Params(
         PRIORITY_BACKGROUND
     ).addTags(TAG)
@@ -51,18 +56,14 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
         } else {
             users.addAll(list)
         }
-        val sb = StringBuilder()
-        for (u in users) {
-            sb.append(u.avatarUrl).append("-")
-        }
-        sb.append(groupId)
-        val name = sb.toString().md5()
+        val name = getIconUrlName(groupId, users)
         val f = applicationContext.getGroupAvatarPath(name, false)
         val icon = conversationDao.getGroupIconUrl(groupId)
         if (f.exists()) {
             if (f.absolutePath != name) {
                 conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
             }
+            RxBus.publish(AvatarEvent(groupId, f.absolutePath))
             return
         }
 
@@ -83,6 +84,7 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
             }
         }
         conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
+        RxBus.publish(AvatarEvent(groupId, f.absolutePath))
     }
 
     private fun drawInternal(canvas: Canvas, bitmaps: List<Bitmap>) {
@@ -369,4 +371,13 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
     private val avatarArray by lazy {
         applicationContext.resources.getIntArray(R.array.avatar_colors)
     }
+}
+
+fun getIconUrlName(groupId: String, users: List<User>): String {
+    val sb = StringBuilder()
+    for (u in users) {
+        sb.append(u.avatarUrl).append("-")
+    }
+    sb.append(groupId)
+    return sb.toString().md5()
 }

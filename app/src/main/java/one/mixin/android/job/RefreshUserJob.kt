@@ -10,6 +10,7 @@ import kotlinx.coroutines.runBlocking
 class RefreshUserJob(
     private val userIds: List<String>,
     private val conversationId: String? = null,
+    private val conversationAvatarUserIds: List<String>? = null,
     private val forceRefresh: Boolean = false
 ) : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requireNetwork().persist()) {
 
@@ -32,9 +33,7 @@ class RefreshUserJob(
             !existUsers.contains(it)
         }
         if (queryUsers.isEmpty()) {
-            conversationId?.let {
-                jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
-            }
+            refreshConversationAvatar()
             return@runBlocking
         }
         refreshUsers(queryUsers)
@@ -45,10 +44,17 @@ class RefreshUserJob(
         if (response != null && response.isSuccess) {
             response.data?.let { data ->
                 userRepo.upsertList(data)
-                conversationId?.let {
-                    jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
-                }
+                refreshConversationAvatar()
             }
         }
+    }
+
+    private suspend fun refreshConversationAvatar() {
+        if (conversationId == null) return
+
+        val users = if (!conversationAvatarUserIds.isNullOrEmpty()) {
+            userDao.findMultiUsersByIds(conversationAvatarUserIds.take(4).toSet())
+        } else null
+        jobManager.addJobInBackground(GenerateAvatarJob(conversationId, users))
     }
 }
