@@ -43,7 +43,7 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.title_tv.text = getString(R.string.bottom_deposit_title, asset.symbol)
         contentView.asset_icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         contentView.asset_icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-        contentView.tips_tv.text = getTipsByAsset(asset) + " " +  getString(R.string.deposit_confirmation, asset.confirmations)
+        contentView.tips_tv.text = getTipsByAsset(asset) + " " + getString(R.string.deposit_confirmation, asset.confirmations)
         contentView.continue_tv.setOnClickListener { dismiss() }
         val reserveTip = if (asset.needShowReserve()) {
             getString(R.string.deposit_reserve, asset.reserve, asset.symbol)

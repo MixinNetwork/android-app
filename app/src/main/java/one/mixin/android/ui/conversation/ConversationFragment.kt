@@ -1353,6 +1353,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             flag_layout.mentionCount = mentionMessages.size
             flag_layout.mention_flag_layout.setOnClickListener {
                 lifecycleScope.launch {
+                    if (mentionMessages.isEmpty()) {
+                        return@launch
+                    }
                     val messageId = mentionMessages.first().messageId
                     scrollToMessage(messageId) {
                         lifecycleScope.launch {
