@@ -278,6 +278,7 @@ internal class AppModule {
     fun provideChatWebSocket(
         okHttp: OkHttpClient,
         app: Application,
+        accountService: AccountService,
         @DatabaseCategory(DatabaseCategoryEnum.BASE)
         conversationDao: ConversationDao,
         @DatabaseCategory(DatabaseCategoryEnum.BASE)
@@ -288,7 +289,7 @@ internal class AppModule {
         linkState: LinkState,
         jobDao: JobDao
     ): ChatWebSocket =
-        ChatWebSocket(okHttp, app, conversationDao, messageDao, offsetDao, floodMessageDao, jobManager, linkState, jobDao)
+        ChatWebSocket(okHttp, app, accountService, conversationDao, messageDao, offsetDao, floodMessageDao, jobManager, linkState, jobDao)
 
     @Provides
     @Singleton

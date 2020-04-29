@@ -26,6 +26,7 @@ import one.mixin.android.Constants.API.Mixin_WS_URL
 import one.mixin.android.Constants.API.WS_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
+import one.mixin.android.api.service.AccountService
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
@@ -53,6 +54,7 @@ import org.jetbrains.anko.runOnUiThread
 class ChatWebSocket(
     private val okHttpClient: OkHttpClient,
     val app: Application,
+    val accountService: AccountService,
     val conversationDao: ConversationDao,
     val messageDao: MessageDao,
     private val offsetDao: OffsetDao,
@@ -185,13 +187,20 @@ class ChatWebSocket(
                         transactions.remove(blazeMessage.id)
                     }
                     if (blazeMessage.action == ERROR_ACTION && blazeMessage.error.code == AUTHENTICATION) {
-                        val errorDescription = "Force logout webSocket.\nblazeMessage: $blazeMessage"
-                        val ise = IllegalStateException(errorDescription)
-                        FirebaseCrashlytics.getInstance().log("401 $errorDescription")
-                        reportException(ise)
-                        connected = false
-                        closeInternal(quitCode)
-                        (app as MixinApplication).closeAndClear()
+                        try {
+                            val errorDescription = "Force logout webSocket.\nblazeMessage: $blazeMessage"
+                            val ise = IllegalStateException(errorDescription)
+                            FirebaseCrashlytics.getInstance().log("401 $errorDescription")
+                            reportException(ise)
+                            val response = accountService.ping().execute()
+                            if (response.body()?.errorCode == AUTHENTICATION) {
+                                connected = false
+                                closeInternal(quitCode)
+                                (app as MixinApplication).closeAndClear()
+                            }
+                        } catch (e: Exception) {
+                            reportException(e)
+                        }
                     }
                 }
             } catch (e: GzipException) {
