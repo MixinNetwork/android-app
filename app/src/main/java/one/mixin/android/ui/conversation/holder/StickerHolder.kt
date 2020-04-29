@@ -8,6 +8,7 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.widget.FrameLayout
 import androidx.core.widget.TextViewCompat
+import java.io.File
 import kotlinx.android.synthetic.main.item_chat_sticker.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -15,8 +16,12 @@ import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.util.lottie.LottieHelper
+import one.mixin.android.util.lottie.LottieListener
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isLottieUrl
 import one.mixin.android.vo.isSignal
+import one.mixin.android.widget.RLottieDrawable
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
 
@@ -100,7 +105,19 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
             itemView.chat_time.visibility = VISIBLE
         }
         messageItem.assetUrl?.let { url ->
-            itemView.chat_sticker.loadSticker(url, messageItem.assetType)
+            if (url.isLottieUrl()) {
+                LottieHelper.fromUrl(itemView.context, url).addListener(object : LottieListener<File> {
+                    override fun onResult(result: File) {
+                        val lottieDrawable = RLottieDrawable(result, itemView.chat_sticker.layoutParams.width,
+                            itemView.chat_sticker.layoutParams.height, false, false)
+                        itemView.chat_sticker.setAnimation(lottieDrawable)
+                        itemView.chat_sticker.playAnimation()
+                        itemView.chat_sticker.setAutoRepeat(true)
+                    }
+                })
+            } else {
+                itemView.chat_sticker.loadSticker(url, messageItem.assetType)
+            }
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         if (isFirst && !isMe) {

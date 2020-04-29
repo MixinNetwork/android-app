@@ -39,12 +39,8 @@ public class RLottieImageView extends ImageView {
         }
     }
 
-    public void setAnimation(int resId, int w, int h) {
-        setAnimation(resId, w, h, null);
-    }
-
-    public void setAnimation(int resId, int w, int h, int[] colorReplacement) {
-        drawable = new RLottieDrawable(resId, "" + resId, AndroidUtilities.dp(w), AndroidUtilities.dp(h), false, colorReplacement);
+    public void setAnimation(RLottieDrawable rLottieDrawable) {
+        this.drawable = rLottieDrawable;
         if (autoRepeat) {
             drawable.setAutoRepeat(1);
         }
@@ -57,6 +53,15 @@ public class RLottieImageView extends ImageView {
         }
         drawable.setAllowDecodeSingleFrame(true);
         setImageDrawable(drawable);
+    }
+
+    public void setAnimation(int resId, int w, int h) {
+        setAnimation(resId, w, h, null);
+    }
+
+    public void setAnimation(int resId, int w, int h, int[] colorReplacement) {
+        drawable = new RLottieDrawable(resId, "" + resId, AndroidUtilities.dp(w), AndroidUtilities.dp(h), false, colorReplacement);
+        setAnimation(drawable);
     }
 
     @Override

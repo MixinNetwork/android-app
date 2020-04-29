@@ -11,11 +11,14 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
+import java.io.File
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.DragReleaseEvent
+import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.realSize
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
@@ -24,14 +27,16 @@ import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.T
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.TYPE_RECENT
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.sticker.StickerActivity
+import one.mixin.android.util.lottie.LottieHelper
+import one.mixin.android.util.lottie.LottieListener
 import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.isLottie
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_BOTTOM
+import one.mixin.android.widget.RLottieDrawable
 import one.mixin.android.widget.RLottieImageView
 import org.jetbrains.anko.dip
-import javax.inject.Inject
-import kotlin.random.Random
 
 class StickerFragment : BaseFragment() {
 
@@ -187,10 +192,18 @@ class StickerFragment : BaseFragment() {
                 item.setOnClickListener { listener?.onAddClick() }
             } else {
                 val s = stickers[if (needAdd) position - 1 else position]
-//                item.loadSticker(s.assetUrl, s.assetType)
-                item.setAnimation(R.raw.covid, size, size)
-                item.playAnimation()
-                item.setAutoRepeat(true)
+                if (s.isLottie()) {
+                    LottieHelper.fromUrl(ctx, s.assetUrl).addListener(object : LottieListener<File> {
+                        override fun onResult(result: File) {
+                            val lottieDrawable = RLottieDrawable(result, size, size, false, false)
+                            item.setAnimation(lottieDrawable)
+                            item.playAnimation()
+                            item.setAutoRepeat(true)
+                        }
+                    })
+                } else {
+                    item.loadSticker(s.assetUrl, s.assetType)
+                }
                 item.updateLayoutParams<ViewGroup.LayoutParams> {
                     width = size
                     height = size
@@ -198,8 +211,6 @@ class StickerFragment : BaseFragment() {
                 item.setOnClickListener { listener?.onItemClick(position, s.stickerId) }
             }
         }
-
-        val random = Random(6)
 
         override fun getItemCount(): Int = if (needAdd) stickers.size + 1 else stickers.size
 
