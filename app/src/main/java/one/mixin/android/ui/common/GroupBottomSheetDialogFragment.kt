@@ -204,8 +204,12 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
         }
 
         contentView.doOnPreDraw {
-            behavior?.peekHeight = contentView.title.height + contentView.scroll_content.height -
-                (menuListLayout?.height ?: 0) - if (menuListLayout != null) requireContext().dpToPx(38f) else requireContext().dpToPx(8f)
+            try {
+                behavior?.peekHeight = contentView.title.height + contentView.scroll_content.height -
+                    (menuListLayout?.height
+                        ?: 0) - if (menuListLayout != null) requireContext().dpToPx(38f) else requireContext().dpToPx(8f)
+            } catch (ignored: Exception) {
+            }
         }
     }
 

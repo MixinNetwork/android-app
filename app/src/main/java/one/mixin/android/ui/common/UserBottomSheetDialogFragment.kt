@@ -166,14 +166,15 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             user = u
 
             contentView.doOnPreDraw {
-                if (!isAdded) return@doOnPreDraw
-
-                behavior?.peekHeight =
-                    contentView.title.height +
-                        contentView.scroll_content.height -
-                        (menuListLayout?.height ?: 0) -
-                        if (menuListLayout != null) requireContext().dpToPx(38f)
-                        else requireContext().dpToPx(8f)
+                try {
+                    behavior?.peekHeight =
+                        contentView.title.height +
+                            contentView.scroll_content.height -
+                            (menuListLayout?.height ?: 0) -
+                            if (menuListLayout != null) requireContext().dpToPx(38f)
+                            else requireContext().dpToPx(8f)
+                } catch (ignored: Exception) {
+                }
             }
         })
         contentView.transfer_fl.setOnClickListener {
@@ -220,12 +221,15 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 apps?.let {
                     contentView.avatar_group.setApps(it)
                     contentView.doOnPreDraw {
-                        behavior?.peekHeight =
-                            contentView.title.height + contentView.scroll_content.height -
-                                (menuListLayout?.height
-                                    ?: 0) - if (menuListLayout != null) requireContext().dpToPx(38f) else requireContext().dpToPx(
-                                8f
-                            )
+                        try {
+                            behavior?.peekHeight =
+                                contentView.title.height + contentView.scroll_content.height -
+                                    (menuListLayout?.height
+                                        ?: 0) - if (menuListLayout != null) requireContext().dpToPx(38f) else requireContext().dpToPx(
+                                    8f
+                                )
+                        } catch (ignored: Exception) {
+                        }
                     }
                 }
             }
