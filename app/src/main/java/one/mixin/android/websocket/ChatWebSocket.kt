@@ -192,11 +192,13 @@ class ChatWebSocket(
                             val ise = IllegalStateException(errorDescription)
                             FirebaseCrashlytics.getInstance().log("401 $errorDescription")
                             reportException(ise)
-                            val response = accountService.ping().execute()
+                            val response = accountService.getMe().execute()
                             if (response.body()?.errorCode == AUTHENTICATION) {
                                 connected = false
                                 closeInternal(quitCode)
                                 (app as MixinApplication).closeAndClear()
+                            } else {
+                                closeInternal(failCode)
                             }
                         } catch (e: Exception) {
                             reportException(e)
