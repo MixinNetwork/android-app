@@ -26,6 +26,7 @@ import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.reportException
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.linktext.AutoLinkMode
 import one.mixin.android.widget.linktext.AutoLinkTextView
@@ -108,6 +109,7 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         try {
             super.dismiss()
         } catch (e: IllegalStateException) {
+            reportException(e)
             Timber.e(e)
         }
     }

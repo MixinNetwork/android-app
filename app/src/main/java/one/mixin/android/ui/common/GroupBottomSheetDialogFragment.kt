@@ -23,6 +23,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
@@ -166,7 +167,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
         contentView.doOnPreDraw {
             behavior?.peekHeight = contentView.title.height + contentView.scroll_content.height -
-                (menuListLayout?.height ?: 0) - if (menuListLayout != null) requireContext().dpToPx(38f) else requireContext().dpToPx(8f)
+                (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
         }
     }
 
