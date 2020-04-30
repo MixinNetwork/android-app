@@ -122,7 +122,8 @@ fun getMimeType(
 fun String.isImageSupport(): Boolean {
     return this.equals(MimeType.GIF.toString(), true) ||
         this.equals(MimeType.JPEG.toString(), true) ||
-        this.equals(MimeType.PNG.toString(), true)
+        this.equals(MimeType.PNG.toString(), true) ||
+        this.equals(MimeType.HEIC.toString(), true)
 }
 
 fun String.isStickerSupport(): Boolean {

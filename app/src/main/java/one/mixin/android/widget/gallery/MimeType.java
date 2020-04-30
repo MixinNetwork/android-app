@@ -2,13 +2,16 @@ package one.mixin.android.widget.gallery;
 
 import android.content.ContentResolver;
 import android.net.Uri;
-import androidx.collection.ArraySet;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
+
+import androidx.collection.ArraySet;
+
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Set;
+
 import one.mixin.android.widget.gallery.internal.utils.PhotoMetadataUtils;
 
 public enum MimeType {
@@ -29,6 +32,11 @@ public enum MimeType {
     )),
     WEBP("image/webp", arraySetOf(
             "webp"
+    )),
+    HEIC("image/heic", arraySetOf(
+        "heif",
+            "heifs",
+            "heic"
     )),
 
     // ============== videos ==============

@@ -1,6 +1,8 @@
 package one.mixin.android.ui.conversation.adapter
 
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -75,7 +77,13 @@ class GalleryItemAdapter(
                     holder.itemView.video_iv.isVisible = false
                     holder.itemView.duration_tv.isVisible = false
                 }
-                imageView.loadImageCenterCrop(item.uri, R.drawable.image_holder)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && item.isHeif) {
+                    val source = ImageDecoder.createSource(ctx.contentResolver, item.uri)
+                    val drawable = ImageDecoder.decodeDrawable(source)
+                    imageView.setImageDrawable(drawable)
+                } else {
+                    imageView.loadImageCenterCrop(item.uri, R.drawable.image_holder)
+                }
             }
             if (selectedUri == item.uri) {
                 coverView.isVisible = true
