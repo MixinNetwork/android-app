@@ -65,6 +65,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
             .setContentType(streamType)
             .build()
         this.player.setAudioAttributes(audioAttributes, false)
+        player.volume = 1f
     }
 
     fun isPlaying() = player.playWhenReady
