@@ -1,11 +1,11 @@
 package one.mixin.android.util.lottie
 
-class LottieResult<V>(val value: V? = null, val exception: Throwable? = null) {
+class ImageResult<V>(val value: V? = null, val exception: Throwable? = null) {
 
     override fun equals(other: Any?): Boolean {
         if (other == null) return false
 
-        if (other !is LottieResult<*>) return false
+        if (other !is ImageResult<*>) return false
 
         if (value != null && value == other.value) return true
 
@@ -18,6 +18,6 @@ class LottieResult<V>(val value: V? = null, val exception: Throwable? = null) {
         arrayOf(value, exception).contentHashCode()
 }
 
-interface LottieListener<T> {
+interface ImageListener<T> {
     fun onResult(result: T)
 }

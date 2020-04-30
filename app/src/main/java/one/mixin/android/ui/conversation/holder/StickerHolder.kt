@@ -8,7 +8,6 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.widget.FrameLayout
 import androidx.core.widget.TextViewCompat
-import java.io.File
 import kotlinx.android.synthetic.main.item_chat_sticker.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -16,8 +15,8 @@ import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.lottie.LottieHelper
-import one.mixin.android.util.lottie.LottieListener
+import one.mixin.android.util.lottie.ImageListener
+import one.mixin.android.util.lottie.LottieLoader
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isLottieUrl
 import one.mixin.android.vo.isSignal
@@ -106,11 +105,11 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
         }
         messageItem.assetUrl?.let { url ->
             if (url.isLottieUrl()) {
-                LottieHelper.fromUrl(itemView.context, url).addListener(object : LottieListener<File> {
-                    override fun onResult(result: File) {
-                        val lottieDrawable = RLottieDrawable(result, itemView.chat_sticker.layoutParams.width,
-                            itemView.chat_sticker.layoutParams.height, false, false)
-                        itemView.chat_sticker.setAnimation(lottieDrawable)
+                LottieLoader.fromUrl(itemView.context, url, url,
+                    itemView.chat_sticker.layoutParams.width, itemView.chat_sticker.layoutParams.height)
+                    .addListener(object : ImageListener<RLottieDrawable> {
+                    override fun onResult(result: RLottieDrawable) {
+                        itemView.chat_sticker.setAnimation(result)
                         itemView.chat_sticker.playAnimation()
                         itemView.chat_sticker.setAutoRepeat(true)
                     }

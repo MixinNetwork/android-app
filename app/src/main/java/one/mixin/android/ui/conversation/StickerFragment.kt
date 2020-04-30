@@ -11,7 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
-import java.io.File
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import kotlinx.coroutines.launch
@@ -27,8 +26,8 @@ import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.T
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.TYPE_RECENT
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.sticker.StickerActivity
-import one.mixin.android.util.lottie.LottieHelper
-import one.mixin.android.util.lottie.LottieListener
+import one.mixin.android.util.lottie.ImageListener
+import one.mixin.android.util.lottie.LottieLoader
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.isLottie
 import one.mixin.android.widget.DraggableRecyclerView
@@ -193,13 +192,13 @@ class StickerFragment : BaseFragment() {
             } else {
                 val s = stickers[if (needAdd) position - 1 else position]
                 if (s.isLottie()) {
-                    LottieHelper.fromUrl(ctx, s.assetUrl).addListener(object : LottieListener<File> {
-                        override fun onResult(result: File) {
-                            val lottieDrawable = RLottieDrawable(result, size, size, false, false)
-                            item.setAnimation(lottieDrawable)
-                            item.playAnimation()
-                            item.setAutoRepeat(true)
-                        }
+                    LottieLoader.fromUrl(ctx, s.assetUrl, s.assetUrl, size, size)
+                        .addListener(object : ImageListener<RLottieDrawable> {
+                            override fun onResult(result: RLottieDrawable) {
+                                item.setAnimation(result)
+                                item.playAnimation()
+                                item.setAutoRepeat(true)
+                            }
                     })
                 } else {
                     item.loadSticker(s.assetUrl, s.assetType)

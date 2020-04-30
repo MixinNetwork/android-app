@@ -9,31 +9,31 @@ import java.util.concurrent.Executors
 import java.util.concurrent.FutureTask
 import timber.log.Timber
 
-class LottieTask<T>(
-    runnable: Callable<LottieResult<T>>,
+class ImageTask<T>(
+    runnable: Callable<ImageResult<T>>,
     runNow: Boolean = false
 ) {
     private val executor = Executors.newCachedThreadPool()
-    private val successListeners = LinkedHashSet<LottieListener<T>>(1)
-    private val failureListeners = LinkedHashSet<LottieListener<Throwable>>(1)
+    private val successListeners = LinkedHashSet<ImageListener<T>>(1)
+    private val failureListeners = LinkedHashSet<ImageListener<Throwable>>(1)
     private val handler = Handler(Looper.getMainLooper())
 
     @Volatile
-    private var result: LottieResult<T>? = null
+    private var result: ImageResult<T>? = null
 
     init {
         if (runNow) {
             try {
                 setResult(runnable.call())
             } catch (e: Exception) {
-                setResult(LottieResult(exception = e))
+                setResult(ImageResult(exception = e))
             }
         } else {
             executor.execute(LottieFutureTask(runnable))
         }
     }
 
-    private fun setResult(result: LottieResult<T>) {
+    private fun setResult(result: ImageResult<T>) {
         if (this.result != null) {
             throw IllegalStateException("A task may only be set once.")
         }
@@ -42,27 +42,27 @@ class LottieTask<T>(
     }
 
     @Synchronized
-    fun addListener(listener: LottieListener<T>): LottieTask<T>? {
+    fun addListener(listener: ImageListener<T>): ImageTask<T>? {
         result?.value?.let { listener.onResult(it) }
         successListeners.add(listener)
         return this
     }
 
     @Synchronized
-    fun removeListener(listener: LottieListener<T>?): LottieTask<T>? {
+    fun removeListener(listener: ImageListener<T>?): ImageTask<T>? {
         successListeners.remove(listener)
         return this
     }
 
     @Synchronized
-    fun addFailureListener(listener: LottieListener<Throwable>): LottieTask<T>? {
+    fun addFailureListener(listener: ImageListener<Throwable>): ImageTask<T>? {
         result?.exception?.let { listener.onResult(it) }
         failureListeners.add(listener)
         return this
     }
 
     @Synchronized
-    fun removeFailureListener(listener: LottieListener<Throwable>): LottieTask<T>? {
+    fun removeFailureListener(listener: ImageListener<Throwable>): ImageTask<T>? {
         failureListeners.remove(listener)
         return this
     }
@@ -84,7 +84,7 @@ class LottieTask<T>(
 
     @Synchronized
     private fun notifySuccessListeners(value: T) {
-        val listenersCopy: List<LottieListener<T>> = ArrayList(successListeners)
+        val listenersCopy: List<ImageListener<T>> = ArrayList(successListeners)
         for (l in listenersCopy) {
             l.onResult(value)
         }
@@ -92,7 +92,7 @@ class LottieTask<T>(
 
     @Synchronized
     private fun notifyFailureListeners(e: Throwable) {
-        val listenersCopy: List<LottieListener<Throwable>> = ArrayList(failureListeners)
+        val listenersCopy: List<ImageListener<Throwable>> = ArrayList(failureListeners)
         if (listenersCopy.isEmpty()) {
             Timber.w("Lottie encountered an error but no failure listener was added: $e")
             return
@@ -103,8 +103,8 @@ class LottieTask<T>(
     }
 
     inner class LottieFutureTask(
-        callable: Callable<LottieResult<T>>
-    ) : FutureTask<LottieResult<T>>(callable) {
+        callable: Callable<ImageResult<T>>
+    ) : FutureTask<ImageResult<T>>(callable) {
         override fun done() {
             if (isCancelled) return
 
@@ -113,7 +113,7 @@ class LottieTask<T>(
             } catch (e: Exception) {
                 when (e) {
                     is InterruptedException, is ExecutionException -> {
-                        setResult(LottieResult(exception = e))
+                        setResult(ImageResult(exception = e))
                     }
                     else -> throw e
                 }
