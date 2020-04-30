@@ -26,8 +26,8 @@ import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.T
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.TYPE_RECENT
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.sticker.StickerActivity
-import one.mixin.android.util.lottie.ImageListener
-import one.mixin.android.util.lottie.LottieLoader
+import one.mixin.android.util.image.ImageListener
+import one.mixin.android.util.image.LottieLoader
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.isLottie
 import one.mixin.android.widget.DraggableRecyclerView

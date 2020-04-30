@@ -16,8 +16,8 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.extension.round
-import one.mixin.android.util.lottie.HeicLoader
-import one.mixin.android.util.lottie.ImageListener
+import one.mixin.android.util.image.HeicLoader
+import one.mixin.android.util.image.ImageListener
 import one.mixin.android.widget.gallery.internal.entity.Item
 
 class GalleryItemAdapter(

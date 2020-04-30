@@ -1,4 +1,4 @@
-package one.mixin.android.util.lottie
+package one.mixin.android.util.image
 
 import android.os.Handler
 import android.os.Looper
