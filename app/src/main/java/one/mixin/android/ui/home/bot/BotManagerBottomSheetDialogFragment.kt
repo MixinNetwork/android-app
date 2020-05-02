@@ -88,7 +88,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
             .subscribe {
-                dismiss()
+                dismissAllowingStateLoss()
             }
         RxBus.listen(BotEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
@@ -204,7 +204,6 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
         } else if (app is Bot) {
             when (app.id) {
                 INTERNAL_WALLET_ID -> {
-                    dismiss()
                     if (Session.getAccount()?.hasPin == true) {
                         WalletActivity.show(requireActivity())
                     } else {
@@ -213,14 +212,15 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
                             .addToBackStack(null)
                             .commitAllowingStateLoss()
                     }
+                    dismissAllowingStateLoss()
                 }
                 INTERNAL_CAMERA_ID -> {
-                    dismiss()
                     openCamera(false)
+                    dismiss()
                 }
                 INTERNAL_SCAN_ID -> {
-                    dismiss()
                     openCamera(true)
+                    dismiss()
                 }
             }
         }
