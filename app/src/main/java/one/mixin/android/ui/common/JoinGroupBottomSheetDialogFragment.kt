@@ -2,8 +2,10 @@ package one.mixin.android.ui.common
 
 import android.app.Dialog
 import android.os.Parcelable
+import android.text.method.LinkMovementMethod
 import android.view.View
 import androidx.core.os.bundleOf
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
@@ -16,11 +18,15 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.event.AvatarEvent
+import one.mixin.android.extension.openAsUrlOrWeb
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.CODE
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.widget.linktext.AutoLinkMode
 
 @Parcelize
 data class JoinGroupConversation(
@@ -83,6 +89,16 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
                 ErrorHandler.handleError(it)
             })
         }
+        contentView.detail_tv.movementMethod = LinkMovementMethod()
+        contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
+        contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
+        contentView.detail_tv.setAutoLinkOnClickListener { _, url ->
+            url.openAsUrlOrWeb(c.conversationId, parentFragmentManager, lifecycleScope)
+            dismiss()
+        }
+        contentView.post {
+            contentView.detail_tv.maxHeight = requireContext().screenHeight() / 3
+        }
 
         RxBus.listen(AvatarEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
@@ -109,5 +125,9 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
         contentView.count_tv.text = getString(R.string.group_participants_count, c.participantsCount)
         c.iconUrl?.let { contentView.avatar.setGroup(it) }
         contentView.join_tv.isVisible = true
+
+        contentView.doOnPreDraw {
+            behavior?.peekHeight = contentView.title.height + contentView.scroll_content.height
+        }
     }
 }
