@@ -42,10 +42,12 @@ import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.bot.BotDock
+import timber.log.Timber
 
 class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener, Injectable {
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
@@ -120,6 +122,23 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
             if (realFragmentCount <= 0) {
                 activity?.finish()
             }
+        }
+    }
+
+    override fun dismiss() {
+        try {
+            super.dismiss()
+        } catch (e: IllegalStateException) {
+            reportException(e)
+            Timber.e(e)
+        }
+    }
+
+    override fun dismissAllowingStateLoss() {
+        try {
+            super.dismissAllowingStateLoss()
+        } catch (e: IllegalStateException) {
+            Timber.e(e)
         }
     }
 
