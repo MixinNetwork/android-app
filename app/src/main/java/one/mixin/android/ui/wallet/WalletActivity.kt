@@ -33,7 +33,7 @@ class WalletActivity : BlazeBaseActivity() {
         }
 
         val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.wallet_nav_fragment) as NavHostFragment?
+            .findFragmentById(R.id.container) as NavHostFragment?
         navController = navHostFragment!!.navController
         val navGraph = navController.navInflater.inflate(R.navigation.nav_wallet)
         asset.notNullWithElse({
