@@ -144,7 +144,6 @@ dependencies {
     implementation "androidx.camera:camera-core:${cameraxVersion}"
     implementation "androidx.camera:camera-camera2:${cameraxVersion}"
     implementation "androidx.camera:camera-view:${cameraxviewVersion}"
-    implementation "androidx.camera:camera-extensions:${cameraxviewVersion}"
     implementation "androidx.camera:camera-lifecycle:${cameraxVersion}"
 
     implementation "androidx.work:work-runtime-ktx:${workManagerVersion}"

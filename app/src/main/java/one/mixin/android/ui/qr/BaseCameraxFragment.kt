@@ -39,6 +39,7 @@ import com.uber.autodispose.autoDispose
 import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
@@ -46,6 +47,7 @@ import kotlin.math.min
 import kotlinx.android.synthetic.main.fragment_capture.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -89,11 +91,10 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     private var preview: Preview? = null
     protected lateinit var mainExecutor: Executor
-    protected lateinit var backgroundExecutor: Executor
+    private lateinit var backgroundExecutor: ExecutorService
     protected var camera: Camera? = null
 
     private var displayId: Int = -1
-    private var surfaceProvider: Preview.SurfaceProvider? = null
     private lateinit var displayManager: DisplayManager
     private var downEventTimestamp = 0L
     private var upEvent: MotionEvent? = null
@@ -173,7 +174,6 @@ abstract class BaseCameraxFragment : VisionFragment() {
         }
         view_finder.post {
             displayId = view_finder.display.displayId
-            surfaceProvider = view_finder.createSurfaceProvider(camera?.cameraInfo)
             bindCameraUseCase()
         }
     }
@@ -193,7 +193,6 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 .setTargetAspectRatioCustom(screenAspectRatio)
                 .setTargetRotation(rotation)
                 .build()
-            preview?.setSurfaceProvider(surfaceProvider)
 
             imageAnalysis = ImageAnalysis.Builder()
                 .setTargetAspectRatioCustom(screenAspectRatio)
@@ -211,14 +210,16 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 camera = cameraProvider.bindToLifecycle(
                     this as LifecycleOwner, cameraSelector, preview, imageAnalysis, *otherUseCases
                 )
+                preview?.setSurfaceProvider(view_finder.createSurfaceProvider(camera?.cameraInfo))
             } catch (e: Exception) {
-                reportException(e)
+                reportException("$CRASHLYTICS_CAMERAX-camera bindToLifecycle failure", e)
             }
         }, mainExecutor)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        backgroundExecutor.shutdown()
         displayManager.unregisterDisplayListener(displayListener)
     }
 
@@ -268,7 +269,13 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 }
 
                 override fun onFailure(t: Throwable?) {
-                    Timber.e("setZoomRatio failure, ${t?.getStackTraceString()}")
+                    t?.let { throwable ->
+                        if (BuildConfig.DEBUG) {
+                            Timber.w("$CRASHLYTICS_CAMERAX-setZoomRatio failure, ${throwable.getStackTraceString()}")
+                        } else {
+                            reportException("$CRASHLYTICS_CAMERAX-setZoomRatio failure", throwable)
+                        }
+                    }
                 }
             }, mainExecutor)
         }
@@ -306,7 +313,13 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 }
 
                 override fun onFailure(t: Throwable?) {
-                    Timber.e("focusAndMeter onFailure, ${t?.getStackTraceString()}")
+                    t?.let { throwable ->
+                        if (BuildConfig.DEBUG) {
+                            Timber.w("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure, ${throwable.getStackTraceString()}")
+                        } else {
+                            reportException("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure", throwable)
+                        }
+                    }
                 }
             }, mainExecutor)
         }
