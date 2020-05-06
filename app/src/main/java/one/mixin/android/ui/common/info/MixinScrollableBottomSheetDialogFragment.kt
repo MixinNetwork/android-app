@@ -57,8 +57,8 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, getLayoutId(), null)
         dialog.setContentView(contentView)
-        val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
-        behavior = params.behavior as? BottomSheetBehavior<*>
+        val params = (contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
+        behavior = params?.behavior as? BottomSheetBehavior<*>
         if (behavior != null && behavior is BottomSheetBehavior<*>) {
             val defaultPeekHeight = getPeekHeight(contentView, behavior!!)
             behavior?.peekHeight = if (defaultPeekHeight == 0) {

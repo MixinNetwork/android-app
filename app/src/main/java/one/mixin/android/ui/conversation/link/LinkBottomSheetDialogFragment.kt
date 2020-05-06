@@ -11,6 +11,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.annotation.StringRes
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
@@ -123,9 +124,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
         }
         contentView = View.inflate(context, R.layout.fragment_bottom_sheet, null)
         dialog.setContentView(contentView)
-        val params = (contentView.parent as View).layoutParams as androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams
-        val behavior = params.behavior
-
+        val behavior = ((contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams)?.behavior
         if (behavior != null && behavior is BottomSheetBehavior<*>) {
             behavior.peekHeight = requireContext().dpToPx(300f)
             behavior.addBottomSheetCallback(mBottomSheetBehaviorCallback)
