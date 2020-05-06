@@ -3,8 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?attr/text_primary">
+    android:layout_height="match_parent">
 
     <androidx.camera.view.PreviewView
         android:id="@+id/view_finder"
@@ -12,9 +11,20 @@
         android:layout_height="match_parent"/>
 
     <one.mixin.android.ui.qr.FocusView
-            android:id="@+id/focus_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+        android:id="@+id/focus_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="88dp"
+        android:background="@drawable/camera_cover_top"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="190dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/camera_cover_bottom"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
