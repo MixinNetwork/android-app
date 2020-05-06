@@ -216,11 +216,11 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
                 }
                 INTERNAL_CAMERA_ID -> {
                     openCamera(false)
-                    dismiss()
+                    dismissAllowingStateLoss()
                 }
                 INTERNAL_SCAN_ID -> {
                     openCamera(true)
-                    dismiss()
+                    dismissAllowingStateLoss()
                 }
             }
         }
