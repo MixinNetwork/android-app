@@ -11,7 +11,7 @@
 #include <map>
 #include <sys/stat.h>
 #include <utime.h>
-#include "c_utils.h"
+#include "utils.h"
 
 extern "C" {
 using namespace rlottie;
@@ -44,9 +44,9 @@ typedef struct LottieInfo {
     char *compressBuffer = nullptr;
     const char *buffer = nullptr;
     bool firstFrame = false;
-    int bufferSize;
-    int compressBound;
-    int firstFrameSize;
+    int bufferSize{};
+    int compressBound{};
+    int firstFrameSize{};
     volatile uint32_t framesAvailableInCache = 0;
 };
 
@@ -90,7 +90,7 @@ jlong Java_one_mixin_android_widget_RLottieDrawable_create(JNIEnv *env, jclass c
     info->precache = precache;
     if (info->precache) {
         info->cacheFile = info->path;
-        std::string::size_type index = info->cacheFile.find_last_of("/");
+        std::string::size_type index = info->cacheFile.find_last_of('/');
         if (index != std::string::npos) {
             std::string dir = info->cacheFile.substr(0, index) + "/acache";
             mkdir(dir.c_str(), 0777);
@@ -118,7 +118,7 @@ jlong Java_one_mixin_android_widget_RLottieDrawable_create(JNIEnv *env, jclass c
                 info->maxFrameSize = maxFrameSize;
                 fread(&(info->imageSize), sizeof(uint32_t), 1, precacheFile);
                 info->fileOffset = 9;
-                utimensat(0, info->cacheFile.c_str(), NULL, 0);
+                utimensat(0, info->cacheFile.c_str(), nullptr, 0);
             }
             fclose(precacheFile);
         }
@@ -197,7 +197,7 @@ void Java_one_mixin_android_widget_RLottieDrawable_setLayerColor(JNIEnv *env, jc
 }
 
 void Java_one_mixin_android_widget_RLottieDrawable_replaceColors(JNIEnv *env, jclass clazz, jlong ptr, jintArray colorReplacement) {
-    if (ptr == NULL || colorReplacement == nullptr) {
+    if (ptr == 0 || colorReplacement == nullptr) {
         return;
     }
     LottieInfo *info = (LottieInfo *) (intptr_t) ptr;
@@ -244,7 +244,7 @@ void CacheWriteThreadProc() {
                 task->firstFrameSize = size;
                 task->fileOffset = 9 + sizeof(uint32_t) + task->firstFrameSize;
             }
-            task->maxFrameSize = MAX(task->maxFrameSize, size);
+            task->maxFrameSize = max(task->maxFrameSize, size);
             fwrite(&size, sizeof(uint32_t), 1, task->precacheFile);
             fwrite(task->compressBuffer, sizeof(uint8_t), size, task->precacheFile);
 
