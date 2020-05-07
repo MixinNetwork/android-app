@@ -41,7 +41,7 @@ class HostSelectionInterceptor private constructor() : Interceptor {
         }
         return try {
             chain.proceed(request)
-        } catch (t: Throwable) {
+        } catch (t: Exception) {
             val exception = IOException("Exception due to $t")
             exception.addSuppressed(t)
             throw exception
