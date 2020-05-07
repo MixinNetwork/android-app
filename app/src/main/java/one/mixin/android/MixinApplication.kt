@@ -112,6 +112,7 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
             notificationManager.cancelAll()
             Session.clearAccount()
             defaultSharedPreferences.clear()
+            defaultSharedPreferences.putString(Constants.Account.PREF_LAST_USER_ID, accountId)
             CookieManager.getInstance().removeAllCookies(null)
             CookieManager.getInstance().flush()
             WebStorage.getInstance().deleteAllData()
@@ -120,7 +121,6 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
 
                 uiThread {
                     inject()
-                    defaultSharedPreferences.putString(Constants.Account.PREF_LAST_USER_ID, accountId)
                     LandingActivity.show(this@MixinApplication)
                 }
             }
