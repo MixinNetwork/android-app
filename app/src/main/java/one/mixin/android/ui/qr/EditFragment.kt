@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -167,6 +168,7 @@ class EditFragment : VisionFragment() {
                 scan()
                 setBg()
             } else {
+                preview_iv.scaleType = ImageView.ScaleType.CENTER_CROP
                 preview_iv.loadImage(path, requestListener = glideRequestListener)
             }
         }
