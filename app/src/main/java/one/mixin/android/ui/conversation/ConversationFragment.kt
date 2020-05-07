@@ -1897,7 +1897,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                     MenuType.File -> {
                         RxPermissions(requireActivity())
-                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+                            .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                             .subscribe({ granted ->
                                 if (granted) {
                                     selectDocument()

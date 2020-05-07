@@ -498,7 +498,7 @@ class ChatControlView : FrameLayout {
 
     private val onChatImgClickListener = OnClickListener {
         RxPermissions(activity!! as FragmentActivity)
-            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+            .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
             .subscribe({ granted ->
                 if (granted) {
                     clickGallery()
