@@ -32,6 +32,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:drag_direction="-1"
+        android:scrollbars="vertical"
         app:layoutManager="LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
