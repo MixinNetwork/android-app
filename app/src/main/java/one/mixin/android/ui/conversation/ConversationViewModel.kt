@@ -52,6 +52,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
+import one.mixin.android.job.ConvertDataJobJob
 import one.mixin.android.job.ConvertVideoJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -235,6 +236,7 @@ internal constructor(
             null, attachment.filename, attachment.uri.toString(),
             attachment.mimeType, attachment.fileSize, nowInUtc(), null,
             null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
+        jobManager.addJobInBackground(ConvertDataJobJob(message))
     }
 
     fun sendAudioMessage(

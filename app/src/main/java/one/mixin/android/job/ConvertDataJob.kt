@@ -19,7 +19,7 @@ class ConvertDataJobJob(
 
     companion object {
         private const val serialVersionUID = 1L
-        const val GROUP_ID = "convert_video_group"
+        const val GROUP_ID = "convert_data_group"
     }
 
     override fun onAdded() {
