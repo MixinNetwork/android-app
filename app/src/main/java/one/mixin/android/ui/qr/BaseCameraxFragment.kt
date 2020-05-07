@@ -205,7 +205,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                     it.setAnalyzer(backgroundExecutor, imageAnalyzer)
                 }
 
-            val otherUseCases = getOtherUseCases(metrics, rotation)
+            val otherUseCases = getOtherUseCases(screenAspectRatio, rotation)
 
             cameraProvider.unbindAll()
 
@@ -349,7 +349,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
     }
 
     abstract fun onFlashClick()
-    abstract fun getOtherUseCases(metrics: DisplayMetrics, rotation: Int): Array<UseCase>
+    abstract fun getOtherUseCases(screenAspectRatio: Int, rotation: Int): Array<UseCase>
     abstract fun onDisplayChanged(rotation: Int)
     abstract fun fromScan(): Boolean
 
