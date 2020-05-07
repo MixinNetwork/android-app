@@ -268,7 +268,9 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
         }
         mCountDownTimer?.start()
         verification_resend_tv.isEnabled = false
-        context?.getColor(R.color.colorGray)?.let { verification_resend_tv.setTextColor(it) }
+        context?.let {
+            verification_resend_tv.setTextColor(ContextCompat.getColor(it, R.color.colorGray))
+        }
     }
 
     private fun resetCountDown() {
