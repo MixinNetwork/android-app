@@ -33,6 +33,10 @@ fun ImageView.loadImage(uri: String?, @DrawableRes holder: Int) {
     Glide.with(this).load(uri).apply(RequestOptions.placeholderOf(holder)).into(this)
 }
 
+fun ImageView.clear() {
+    Glide.with(this).clear(this)
+}
+
 fun ImageView.loadImage(uri: String?, width: Int, height: Int) {
     if (!isActivityNotDestroyed()) return
     val multi = MultiTransformation(CropTransformation(width, height))

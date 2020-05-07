@@ -39,7 +39,13 @@ class HostSelectionInterceptor private constructor() : Interceptor {
                 .url(newUrl)
                 .build()
         }
-        return chain.proceed(request)
+        return try {
+            chain.proceed(request)
+        } catch (t: Exception) {
+            val exception = IOException("Exception due to $t")
+            exception.addSuppressed(t)
+            throw exception
+        }
     }
 
     companion object {

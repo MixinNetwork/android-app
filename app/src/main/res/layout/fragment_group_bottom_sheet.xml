@@ -58,36 +58,6 @@
                 android:textColor="?attr/text_minor"
                 android:textSize="12sp" />
 
-            <FrameLayout
-                android:id="@+id/join_fl"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="40dp"
-                android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/join_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="28dp"
-                    android:background="@drawable/bg_round_gray_14dp"
-                    android:drawablePadding="4dp"
-                    android:gravity="center"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"
-                    android:text="@string/group_join"
-                    android:textColor="@color/wallet_blue" />
-
-                <ProgressBar
-                    android:id="@+id/join_progress"
-                    style="?android:attr/progressBarStyleSmall"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_gravity="center"
-                    android:theme="@style/AppTheme.BlueProgress"
-                    android:visibility="gone" />
-            </FrameLayout>
-
             <one.mixin.android.widget.linktext.AutoLinkTextView
                 android:id="@+id/detail_tv"
                 android:layout_width="match_parent"

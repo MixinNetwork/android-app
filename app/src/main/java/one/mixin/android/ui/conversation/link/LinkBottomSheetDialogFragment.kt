@@ -11,6 +11,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.annotation.StringRes
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
@@ -42,14 +43,17 @@ import one.mixin.android.di.Injectable
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.job.getIconUrlName
 import one.mixin.android.repository.QrCodeType
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
-import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
+import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
+import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
@@ -120,9 +124,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
         }
         contentView = View.inflate(context, R.layout.fragment_bottom_sheet, null)
         dialog.setContentView(contentView)
-        val params = (contentView.parent as View).layoutParams as androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams
-        val behavior = params.behavior
-
+        val behavior = ((contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams)?.behavior
         if (behavior != null && behavior is BottomSheetBehavior<*>) {
             behavior.peekHeight = requireContext().dpToPx(300f)
             behavior.addBottomSheetCallback(mBottomSheetBehaviorCallback)
@@ -238,11 +240,44 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                             linkViewModel.refreshConversation(response.conversationId)
                             context?.toast(R.string.group_already_in)
                             context?.let { ConversationActivity.show(it, response.conversationId) }
+                            dismiss()
                         } else {
-                            GroupBottomSheetDialogFragment.newInstance(response.conversationId, code)
-                                .showNow(parentFragmentManager, GroupBottomSheetDialogFragment.TAG)
+                            lifecycleScope.launch {
+                                val avatarUserIds = mutableListOf<String>()
+                                val notExistsUserIdList = mutableListOf<String>()
+                                for (p in response.participants) {
+                                    val u = linkViewModel.suspendFindUserById(p.userId)
+                                    if (u == null) {
+                                        notExistsUserIdList.add(p.userId)
+                                    }
+                                    if (avatarUserIds.size < 4) {
+                                        avatarUserIds.add(p.userId)
+                                    }
+                                }
+                                val avatar4List = avatarUserIds.take(4)
+                                val iconUrl = if (notExistsUserIdList.isNotEmpty()) {
+                                    linkViewModel.refreshUsers(notExistsUserIdList, response.conversationId, avatar4List)
+                                    null
+                                } else {
+                                    val avatarUsers = linkViewModel.findMultiUsersByIds(avatar4List.toSet())
+                                    linkViewModel.startGenerateAvatar(response.conversationId, avatarUsers)
+
+                                    val name = getIconUrlName(response.conversationId, avatarUsers)
+                                    val f = requireContext().getGroupAvatarPath(name, false)
+                                    f.absolutePath
+                                }
+                                val joinGroupConversation = JoinGroupConversation(
+                                    response.conversationId,
+                                    response.name,
+                                    response.announcement,
+                                    response.participants.size,
+                                    iconUrl
+                                )
+                                JoinGroupBottomSheetDialogFragment.newInstance(joinGroupConversation, code)
+                                    .showNow(parentFragmentManager, JoinGroupBottomSheetDialogFragment.TAG)
+                                dismiss()
+                            }
                         }
-                        dismiss()
                     }
                     QrCodeType.user.name -> {
                         val user = result.second as User
@@ -250,7 +285,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                         if (account != null && account.userId == (result.second as User).userId) {
                             context?.toast("It's your QR Code, please try another.")
                         } else {
-                            UserBottomSheetDialogFragment.newInstance(user).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            UserBottomSheetDialogFragment.newInstance(user)
+                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                         }
                         dismiss()
                     }

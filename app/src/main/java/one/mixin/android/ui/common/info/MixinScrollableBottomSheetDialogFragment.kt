@@ -26,9 +26,11 @@ import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.reportException
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.linktext.AutoLinkMode
 import one.mixin.android.widget.linktext.AutoLinkTextView
+import timber.log.Timber
 
 abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
@@ -55,8 +57,8 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, getLayoutId(), null)
         dialog.setContentView(contentView)
-        val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
-        behavior = params.behavior as? BottomSheetBehavior<*>
+        val params = (contentView.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
+        behavior = params?.behavior as? BottomSheetBehavior<*>
         if (behavior != null && behavior is BottomSheetBehavior<*>) {
             val defaultPeekHeight = getPeekHeight(contentView, behavior!!)
             behavior?.peekHeight = if (defaultPeekHeight == 0) {
@@ -106,7 +108,17 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
     override fun dismiss() {
         try {
             super.dismiss()
-        } catch (ignored: IllegalStateException) {
+        } catch (e: IllegalStateException) {
+            reportException(e)
+            Timber.e(e)
+        }
+    }
+
+    override fun dismissAllowingStateLoss() {
+        try {
+            super.dismissAllowingStateLoss()
+        } catch (e: IllegalStateException) {
+            Timber.e(e)
         }
     }
 

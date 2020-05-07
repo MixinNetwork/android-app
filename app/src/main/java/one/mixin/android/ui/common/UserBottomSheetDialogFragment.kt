@@ -40,6 +40,7 @@ import one.mixin.android.event.BotEvent
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.localTime
@@ -171,9 +172,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 behavior?.peekHeight =
                     contentView.title.height +
                         contentView.scroll_content.height -
-                        (menuListLayout?.height ?: 0) -
-                        if (menuListLayout != null) requireContext().dpToPx(38f)
-                        else requireContext().dpToPx(8f)
+                        (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
             }
         })
         contentView.transfer_fl.setOnClickListener {
@@ -213,8 +212,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         AppListBottomSheetDialogFragment.newInstance(
                             apps,
                             getString(R.string.contact_share_apps_title, user.fullName)
-                        )
-                            .showNow(parentFragmentManager, AppListBottomSheetDialogFragment.TAG)
+                        ).showNow(parentFragmentManager, AppListBottomSheetDialogFragment.TAG)
                     }
                 }
                 apps?.let {
@@ -222,10 +220,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     contentView.doOnPreDraw {
                         behavior?.peekHeight =
                             contentView.title.height + contentView.scroll_content.height -
-                                (menuListLayout?.height
-                                    ?: 0) - if (menuListLayout != null) requireContext().dpToPx(38f) else requireContext().dpToPx(
-                                8f
-                            )
+                                (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
                     }
                 }
             }

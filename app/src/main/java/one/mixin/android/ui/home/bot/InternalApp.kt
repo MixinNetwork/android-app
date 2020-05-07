@@ -5,10 +5,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.App
-
-interface BotInterface {
-    fun getBotId(): String
-}
+import one.mixin.android.vo.BotInterface
 
 data class Bot(val id: String, val name: String, @DrawableRes val icon: Int) : BotInterface {
     override fun getBotId() = id

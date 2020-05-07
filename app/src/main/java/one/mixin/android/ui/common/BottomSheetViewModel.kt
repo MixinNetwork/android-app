@@ -209,8 +209,8 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun getUser(id: String) = userRepository.getUser(id)
 
-    fun startGenerateAvatar(conversationId: String) {
-        jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
+    fun startGenerateAvatar(conversationId: String, list: List<User>? = null) {
+        jobManager.addJobInBackground(GenerateAvatarJob(conversationId, list))
     }
 
     fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch {
@@ -250,6 +250,11 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun refreshUser(userId: String, forceRefresh: Boolean) {
         jobManager.addJobInBackground(RefreshUserJob(listOf(userId), forceRefresh = forceRefresh))
+    }
+
+    fun refreshUsers(userIds: List<String>, conversationId: String?, conversationAvatarUserIds: List<String>?) {
+        jobManager.addJobInBackground(RefreshUserJob(userIds, conversationId,
+            conversationAvatarUserIds = conversationAvatarUserIds))
     }
 
     suspend fun verifyPin(code: String): MixinResponse<Account> = accountRepository.verifyPin(code)
@@ -508,4 +513,6 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun findCirclesNameByConversationId(conversationId: String) =
         userRepository.findCirclesNameByConversationId(conversationId)
+
+    suspend fun findMultiUsersByIds(userIds: Set<String>) = userRepository.findMultiUsersByIds(userIds)
 }

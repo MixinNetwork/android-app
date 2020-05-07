@@ -1,5 +1,6 @@
 package one.mixin.android.ui.qr
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioManager
@@ -17,6 +18,8 @@ import androidx.camera.core.ImageCapture.FLASH_MODE_ON
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.UseCase
 import androidx.core.view.isVisible
+import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDispose
 import java.io.File
 import kotlinx.android.synthetic.main.fragment_capture.*
 import one.mixin.android.R
@@ -31,6 +34,7 @@ import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigationBarHeight
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.util.reportException
 import one.mixin.android.widget.CameraOpView
@@ -150,11 +154,21 @@ class CaptureFragment : BaseCameraxFragment() {
         val audioManager by lazy { requireContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager }
         var oldStreamVolume = 0
         override fun onClick() {
-            onTakePicture()
-            capture_border_view?.isVisible = true
-            capture_border_view?.postDelayed({
-                capture_border_view?.isVisible = false
-            }, 100)
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDispose(stopScope)
+                .subscribe({ granted ->
+                    if (granted) {
+                        onTakePicture()
+                        capture_border_view?.isVisible = true
+                        capture_border_view?.postDelayed({
+                            capture_border_view?.isVisible = false
+                        }, 100)
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }, {
+                })
         }
 
         override fun onProgressStart() {
