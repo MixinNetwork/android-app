@@ -10,13 +10,13 @@ import android.graphics.BitmapFactory
 import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.util.DisplayMetrics
-import android.util.Rational
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_UP
 import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.ViewConfiguration
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.FocusMeteringAction
@@ -42,6 +42,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.android.synthetic.main.fragment_capture.*
@@ -75,6 +76,8 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
         private const val UNITY_ZOOM_SCALE = 1f
         private const val ZOOM_NOT_SUPPORTED = UNITY_ZOOM_SCALE
+        private const val RATIO_4_3_VALUE = 4.0 / 3.0
+        private const val RATIO_16_9_VALUE = 16.0 / 9.0
     }
 
     protected var forAddress: Boolean = false
@@ -181,7 +184,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
     @SuppressLint("RestrictedApi")
     protected fun bindCameraUseCase() {
         val metrics = DisplayMetrics().also { view_finder.display.getRealMetrics(it) }
-        val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
+        val screenAspectRatio = aspectRatio(metrics.widthPixels, metrics.heightPixels)
         val rotation = view_finder.display.rotation
 
         val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
@@ -190,12 +193,12 @@ abstract class BaseCameraxFragment : VisionFragment() {
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
             preview = Preview.Builder()
-                .setTargetAspectRatioCustom(screenAspectRatio)
+                .setTargetAspectRatio(screenAspectRatio)
                 .setTargetRotation(rotation)
                 .build()
 
             imageAnalysis = ImageAnalysis.Builder()
-                .setTargetAspectRatioCustom(screenAspectRatio)
+                .setTargetAspectRatio(screenAspectRatio)
                 .setTargetRotation(rotation)
                 .build()
                 .also {
@@ -337,8 +340,16 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     private fun delta() = System.currentTimeMillis() - downEventTimestamp
 
+    private fun aspectRatio(width: Int, height: Int): Int {
+        val previewRatio = max(width, height).toDouble() / min(width, height)
+        if (abs(previewRatio - RATIO_4_3_VALUE) <= abs(previewRatio - RATIO_16_9_VALUE)) {
+            return AspectRatio.RATIO_4_3
+        }
+        return AspectRatio.RATIO_16_9
+    }
+
     abstract fun onFlashClick()
-    abstract fun getOtherUseCases(screenAspectRatio: Rational, rotation: Int): Array<UseCase>
+    abstract fun getOtherUseCases(screenAspectRatio: Int, rotation: Int): Array<UseCase>
     abstract fun onDisplayChanged(rotation: Int)
     abstract fun fromScan(): Boolean
 
