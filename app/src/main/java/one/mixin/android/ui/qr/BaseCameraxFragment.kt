@@ -298,14 +298,18 @@ abstract class BaseCameraxFragment : VisionFragment() {
         upEvent = null
         focus_view.focusAndMeter(x, y)
 
-        val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
-        val pointFactory = v.createMeteringPointFactory(cameraSelector)
-        val afPointWidth = 1.0f / 6.0f
-        val aePointWidth = afPointWidth * 1.5f
-        val afPoint = pointFactory.createPoint(x, y, afPointWidth)
-        val aePoint = pointFactory.createPoint(x, y, aePointWidth)
-
         camera?.let { c ->
+            val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+            val pointFactory = try {
+                v.createMeteringPointFactory(cameraSelector)
+            } catch (e: NullPointerException) {
+                return false
+            }
+            val afPointWidth = 1.0f / 6.0f
+            val aePointWidth = afPointWidth * 1.5f
+            val afPoint = pointFactory.createPoint(x, y, afPointWidth)
+            val aePoint = pointFactory.createPoint(x, y, aePointWidth)
+
             val future = c.cameraControl.startFocusAndMetering(
                 FocusMeteringAction.Builder(afPoint,
                     FocusMeteringAction.FLAG_AF).addPoint(aePoint,
