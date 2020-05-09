@@ -178,7 +178,15 @@ class ConversationCircleEditFragment : BaseFragment() {
         val circleConversations = chatViewModel.findCircleConversationByCircleId(circle.circleId)
         val inCircleContactId = mutableListOf<String>()
         circleConversations.forEach { cc ->
-            oldCircleConversationPayloadSet.add(CircleConversationPayload(cc.conversationId, cc.userId))
+            oldCircleConversationPayloadSet.add(
+                CircleConversationPayload(
+                    cc.conversationId, if (cc.userId.isNullOrEmpty()) {
+                        null
+                    } else {
+                        cc.userId
+                    }
+                )
+            )
             if (cc.userId != null) {
                 inCircleContactId.add(cc.userId)
             }
