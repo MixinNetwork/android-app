@@ -1,11 +1,3 @@
-/*
- * This is the source code of Telegram for Android v. 5.x.x.
- * It is licensed under GNU GPL v. 2 or later.
- * You should have received a copy of the license in this archive (see LICENSE).
- *
- * Copyright Nikolai Kudashov, 2013-2018.
- */
-
 package one.mixin.android.widget;
 
 import android.graphics.Bitmap;
@@ -34,7 +26,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import one.mixin.android.MixinApplication;
-import one.mixin.android.R;
 import timber.log.Timber;
 
 public class RLottieDrawable extends BitmapDrawable implements Animatable {
@@ -62,8 +53,6 @@ public class RLottieDrawable extends BitmapDrawable implements Animatable {
     private int screenRefreshRate = 60;
 
     private View currentParentView;
-
-    private int isDice;
 
     private int autoRepeat = 1;
     private int autoRepeatPlayCount;
@@ -237,16 +226,7 @@ public class RLottieDrawable extends BitmapDrawable implements Animatable {
                 }
                 try {
                     long ptrToUse;
-                    if (isDice == 1) {
-                        ptrToUse = nativePtr;
-                    } else if (isDice == 2) {
-                        ptrToUse = secondNativePtr;
-                        if (setLastFrame) {
-                            currentFrame = 179;
-                        }
-                    } else {
-                        ptrToUse = nativePtr;
-                    }
+                    ptrToUse = nativePtr;
                     int result = getFrame(ptrToUse, currentFrame, backgroundBitmap, width, height, backgroundBitmap.getRowBytes());
                     if (result == -1) {
                         uiHandler.post(uiRunnableNoFrame);
@@ -258,42 +238,23 @@ public class RLottieDrawable extends BitmapDrawable implements Animatable {
                     }
                     nextRenderingBitmap = backgroundBitmap;
                     int framesPerUpdates = shouldLimitFps ? 2 : 1;
-                    if (isDice == 1) {
-                        if (currentFrame + framesPerUpdates < 60) {
-                            currentFrame += framesPerUpdates;
-                        } else {
-                            currentFrame = 0;
-                            nextFrameIsLast = false;
-                            if (secondNativePtr != 0) {
-                                isDice = 2;
-                            }
-                        }
-                    } else if (isDice == 2) {
-                        if (currentFrame + framesPerUpdates < 180) {
-                            currentFrame += framesPerUpdates;
-                        } else {
+                    if (currentFrame + framesPerUpdates < metaData[0]) {
+                        if (autoRepeat == 3) {
                             nextFrameIsLast = true;
                             autoRepeatPlayCount++;
+                        } else {
+                            currentFrame += framesPerUpdates;
+                            nextFrameIsLast = false;
                         }
+                    } else if (autoRepeat == 1) {
+                        currentFrame = 0;
+                        nextFrameIsLast = false;
+                    } else if (autoRepeat == 2) {
+                        currentFrame = 0;
+                        nextFrameIsLast = true;
+                        autoRepeatPlayCount++;
                     } else {
-                        if (currentFrame + framesPerUpdates < metaData[0]) {
-                            if (autoRepeat == 3) {
-                                nextFrameIsLast = true;
-                                autoRepeatPlayCount++;
-                            } else {
-                                currentFrame += framesPerUpdates;
-                                nextFrameIsLast = false;
-                            }
-                        } else if (autoRepeat == 1) {
-                            currentFrame = 0;
-                            nextFrameIsLast = false;
-                        } else if (autoRepeat == 2) {
-                            currentFrame = 0;
-                            nextFrameIsLast = true;
-                            autoRepeatPlayCount++;
-                        } else {
-                            nextFrameIsLast = true;
-                        }
+                        nextFrameIsLast = true;
                     }
                 } catch (Exception e) {
                     Timber.e(e);
@@ -328,54 +289,6 @@ public class RLottieDrawable extends BitmapDrawable implements Animatable {
 
     public RLottieDrawable(int rawRes, String name, int w, int h) {
         this(rawRes, name, w, h, true, null);
-    }
-
-    public RLottieDrawable(int diceBaseRes, int w, int h) {
-        width = w;
-        height = h;
-        isDice = 1;
-        String jsonString = readRes(diceBaseRes);
-        if (TextUtils.isEmpty(jsonString)) {
-            return;
-        }
-        getPaint().setFlags(Paint.FILTER_BITMAP_FLAG);
-        nativePtr = createWithJson(jsonString, "dice", metaData, null);
-        timeBetweenFrames = Math.max(16, (int) (1000.0f / metaData[1]));
-    }
-
-    public void setDiceNumber(int number, boolean instant) {
-        int rawRes;
-        switch (number) {
-            case 1:
-                rawRes = R.raw.dice1;
-                break;
-            case 2:
-                rawRes = R.raw.dice2;
-                break;
-            case 3:
-                rawRes = R.raw.dice3;
-                break;
-            case 4:
-                rawRes = R.raw.dice4;
-                break;
-            case 5:
-                rawRes = R.raw.dice5;
-                break;
-            case 6:
-                rawRes = R.raw.dice6;
-                break;
-            default:
-                return;
-        }
-        String jsonString = readRes(rawRes);
-        if (TextUtils.isEmpty(jsonString)) {
-            return;
-        }
-        if (instant && nextRenderingBitmap == null && renderingBitmap == null && loadFrameTask == null) {
-            isDice = 2;
-            setLastFrame = true;
-        }
-        secondNativePtr = createWithJson(jsonString, "dice", metaData, null);
     }
 
     public RLottieDrawable(int rawRes, String name, int w, int h, boolean startDecode, int[] colorReplacement) {
