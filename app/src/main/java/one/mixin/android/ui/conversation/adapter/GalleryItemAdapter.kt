@@ -1,6 +1,8 @@
 package one.mixin.android.ui.conversation.adapter
 
+import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.Build
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +16,8 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.extension.round
+import one.mixin.android.util.image.HeicLoader
+import one.mixin.android.util.image.ImageListener
 import one.mixin.android.widget.gallery.internal.entity.Item
 
 class GalleryItemAdapter(
@@ -75,7 +79,16 @@ class GalleryItemAdapter(
                     holder.itemView.video_iv.isVisible = false
                     holder.itemView.duration_tv.isVisible = false
                 }
-                imageView.loadImageCenterCrop(item.uri, R.drawable.image_holder)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && item.isHeif) {
+                    imageView.setImageDrawable(null)
+                    HeicLoader.fromUrl(ctx, item.uri).addListener(object : ImageListener<Drawable> {
+                        override fun onResult(result: Drawable) {
+                            imageView.setImageDrawable(result)
+                        }
+                    })
+                } else {
+                    imageView.loadImageCenterCrop(item.uri, R.drawable.image_holder)
+                }
             }
             if (selectedUri == item.uri) {
                 coverView.isVisible = true

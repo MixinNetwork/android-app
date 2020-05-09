@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -27,10 +26,15 @@ import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.T
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.TYPE_RECENT
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.sticker.StickerActivity
+import one.mixin.android.util.image.ImageListener
+import one.mixin.android.util.image.LottieLoader
 import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.isLottie
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_BOTTOM
+import one.mixin.android.widget.RLottieDrawable
+import one.mixin.android.widget.RLottieImageView
 import org.jetbrains.anko.dip
 
 class StickerFragment : BaseFragment() {
@@ -177,7 +181,7 @@ class StickerFragment : BaseFragment() {
             params.height = size
             holder.itemView.layoutParams = params
             val ctx = holder.itemView.context
-            val item = (holder.itemView as ViewGroup).getChildAt(0) as ImageView
+            val item = (holder.itemView as ViewGroup).getChildAt(0) as RLottieImageView
             if (position == 0 && needAdd) {
                 item.updateLayoutParams<ViewGroup.LayoutParams> {
                     width = size - ctx.dip(50)
@@ -187,7 +191,18 @@ class StickerFragment : BaseFragment() {
                 item.setOnClickListener { listener?.onAddClick() }
             } else {
                 val s = stickers[if (needAdd) position - 1 else position]
-                item.loadSticker(s.assetUrl, s.assetType)
+                if (s.isLottie()) {
+                    LottieLoader.fromUrl(ctx, s.assetUrl, s.assetUrl, size, size)
+                        .addListener(object : ImageListener<RLottieDrawable> {
+                            override fun onResult(result: RLottieDrawable) {
+                                item.setAnimation(result)
+                                item.playAnimation()
+                                item.setAutoRepeat(true)
+                            }
+                    })
+                } else {
+                    item.loadSticker(s.assetUrl, s.assetType)
+                }
                 item.updateLayoutParams<ViewGroup.LayoutParams> {
                     width = size
                     height = size

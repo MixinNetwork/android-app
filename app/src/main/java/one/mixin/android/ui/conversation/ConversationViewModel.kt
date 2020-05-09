@@ -5,7 +5,9 @@ import android.app.NotificationManager
 import android.content.ContentResolver.SCHEME_CONTENT
 import android.content.SharedPreferences
 import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,6 +20,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.io.FileInputStream
+import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -447,45 +450,59 @@ internal constructor(
 
         val temp = MixinApplication.get().getImagePath().createImageTemp(type = ".jpg")
 
-        return Compressor()
-            .setCompressFormat(Bitmap.CompressFormat.JPEG)
-            .compressToFileAsFlowable(
-                File(uri.getFilePath(MixinApplication.get())),
-                temp.absolutePath
-            )
-            .map { imageFile ->
-                val imageUrl = Uri.fromFile(temp).toString()
-                val length = imageFile.length()
-                if (length <= 0) {
-                    return@map -1
-                }
-                val size = getImageSize(imageFile)
-                val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mimeType)
-                val message = createMediaMessage(
-                    UUID.randomUUID().toString(),
-                    conversationId,
-                    sender.userId,
-                    category,
-                    null,
-                    imageUrl,
-                    MimeType.JPEG.toString(),
-                    length,
-                    size.width,
-                    size.height,
-                    thumbnail,
-                    null,
-                    null,
-                    nowInUtc(),
-                    MediaStatus.PENDING,
-                    MessageStatus.SENDING.name,
-                    replyMessage?.messageId,
-                    replyMessage?.toQuoteMessageItem()
-                )
-                jobManager.addJobInBackground(SendAttachmentMessageJob(message))
-                return@map -0
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && mimeType == MimeType.HEIC.toString()) {
+            val source = ImageDecoder.createSource(File(uri.getFilePath(MixinApplication.get())))
+            val bitmap = ImageDecoder.decodeBitmap(source)
+            temp.outputStream().use {
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
             }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+            Flowable.defer {
+                try {
+                    Flowable.just<File>(temp)
+                } catch (e: IOException) {
+                    Flowable.error<File>(e)
+                }
+            }
+        } else {
+            Compressor()
+                .setCompressFormat(Bitmap.CompressFormat.JPEG)
+                .compressToFileAsFlowable(
+                    File(uri.getFilePath(MixinApplication.get())),
+                    temp.absolutePath
+                )
+        }.map { imageFile ->
+            val imageUrl = Uri.fromFile(temp).toString()
+            val length = imageFile.length()
+            if (length <= 0) {
+                return@map -1
+            }
+            val size = getImageSize(imageFile)
+            val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mimeType)
+            val message = createMediaMessage(
+                UUID.randomUUID().toString(),
+                conversationId,
+                sender.userId,
+                category,
+                null,
+                imageUrl,
+                MimeType.JPEG.toString(),
+                length,
+                size.width,
+                size.height,
+                thumbnail,
+                null,
+                null,
+                nowInUtc(),
+                MediaStatus.PENDING,
+                MessageStatus.SENDING.name,
+                replyMessage?.messageId,
+                replyMessage?.toQuoteMessageItem()
+            )
+            jobManager.addJobInBackground(SendAttachmentMessageJob(message))
+            return@map -0
+        }
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
     }
 
     fun sendFordMessage(conversationId: String, sender: User, id: String, isPlain: Boolean) =

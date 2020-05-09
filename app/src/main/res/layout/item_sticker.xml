@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:id="@+id/bg">
 
-    <ImageView
+    <one.mixin.android.widget.RLottieImageView
         android:id="@+id/sticker_iv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
