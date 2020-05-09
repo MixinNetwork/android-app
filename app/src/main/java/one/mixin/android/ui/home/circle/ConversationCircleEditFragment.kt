@@ -24,6 +24,7 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationPayload
 import one.mixin.android.api.request.CircleConversationRequest
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
@@ -143,7 +144,7 @@ class ConversationCircleEditFragment : BaseFragment() {
     }
 
     private fun updateTitleText(size: Int) {
-        if (adapter.selectItem.isEmpty()) {
+        if (!hasChanged()) {
             title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
             title_view.right_animator.isEnabled = false
         } else {
@@ -151,6 +152,23 @@ class ConversationCircleEditFragment : BaseFragment() {
             title_view.right_animator.isEnabled = true
         }
         title_view.setSubTitle(circle.name, getString(R.string.circle_subtitle, size))
+    }
+
+    private fun hasChanged(): Boolean {
+        return oldCircleConversationPayloadSet.size != adapter.selectItem.size || oldCircleConversationPayloadSet.map { it.conversationId }.sorted() !=
+            adapter.selectItem.map { item ->
+                when (item) {
+                    is User -> {
+                        generateConversationId(Session.getAccountId()!!, item.userId)
+                    }
+                    is ConversationItem -> {
+                        item.conversationId
+                    }
+                    else -> {
+                        ""
+                    }
+                }
+            }.sorted()
     }
 
     private fun loadData() = lifecycleScope.launch {
@@ -208,8 +226,9 @@ class ConversationCircleEditFragment : BaseFragment() {
             setCancelable(false)
         }
         dialog.show()
+        search_et.hideKeyboard()
 
-        val conversationRequests = mutableListOf<CircleConversationPayload>()
+        val conversationRequests = mutableSetOf<CircleConversationPayload>()
         adapter.selectItem.forEach { item ->
             if (item is User) {
                 conversationRequests.add(
