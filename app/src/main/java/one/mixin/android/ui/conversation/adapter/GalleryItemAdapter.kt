@@ -7,6 +7,7 @@ import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
@@ -43,6 +44,7 @@ class GalleryItemAdapter(
         val imageView = holder.itemView.thumbnail_iv
         val coverView = holder.itemView.cover_view
         if (position == 0 && needCamera) {
+            holder.itemView.thumbnail_iv.scaleType = ImageView.ScaleType.FIT_CENTER
             holder.itemView.gif_tv.isVisible = false
             holder.itemView.video_iv.isVisible = false
             holder.itemView.duration_tv.isVisible = false
@@ -80,6 +82,7 @@ class GalleryItemAdapter(
                     holder.itemView.duration_tv.isVisible = false
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && item.isHeif) {
+                    holder.itemView.thumbnail_iv.scaleType = ImageView.ScaleType.CENTER_CROP
                     imageView.setImageDrawable(null)
                     HeicLoader.fromUrl(ctx, item.uri).addListener(object : ImageListener<Drawable> {
                         override fun onResult(result: Drawable) {
