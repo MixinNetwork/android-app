@@ -871,6 +871,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private var isCling: Boolean = false
     override fun onSensorChanged(event: SensorEvent?) {
+        if (!callState.isIdle()) return
+
         val values = event?.values ?: return
         if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
             isCling =
@@ -2359,6 +2361,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun resetAudioMode() {
+        if (!callState.isIdle()) return
+
         if (!audioManager.isHeadsetOn()) {
             if (isCling) {
                 changeToReceiver()
