@@ -240,6 +240,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     @Inject
     lateinit var jobManager: MixinJobManager
+
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val chatViewModel: ConversationViewModel by viewModels { viewModelFactory }
@@ -588,10 +589,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 quoteMessageId?.let { quoteMsg ->
                     scrollToMessage(quoteMsg) { index ->
                         positionBeforeClickQuote = messageId
-                        val lastPosition = (chat_rv.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()
-                        if (index > lastPosition) {
-                            flag_layout.bottomFlag = true
-                        }
                     }
                 }
             }
@@ -707,6 +704,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var isFirstMessage = false
     private var isFirstLoad = true
     private var isBottom = true
+        set(value) {
+            field = value
+            flag_layout.bottomFlag = !value
+        }
     private var positionBeforeClickQuote: String? = null
 
     private var botWebBottomSheet: WebBottomSheetDialogFragment? = null
@@ -1051,12 +1052,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (firstPosition > 0) {
                     if (isBottom) {
                         isBottom = false
-                        flag_layout.bottomFlag = !isBottom
                     }
                 } else {
                     if (!isBottom) {
                         isBottom = true
-                        flag_layout.bottomFlag = !isBottom
                     }
                     unreadTipCount = 0
                     flag_layout.bottomCountFlag = false
@@ -1317,7 +1316,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     chatAdapter.unreadMsgId = unreadMessageId
                     if (isBottom && unreadCount > 20) {
                         isBottom = false
-                        flag_layout.bottomFlag = !isBottom
                     }
                 } else if (lastReadMessage != null) {
                     chatViewModel.viewModelScope.launch {
