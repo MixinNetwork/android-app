@@ -2,6 +2,7 @@ package one.mixin.android.ui.qr
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Rational
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -70,7 +71,7 @@ class ScanFragment : BaseCameraxFragment() {
 
     @SuppressLint("RestrictedApi")
     override fun getOtherUseCases(
-        screenAspectRatio: Int,
+        screenAspectRatio: Rational,
         rotation: Int
     ): Array<UseCase> {
         return arrayOf()

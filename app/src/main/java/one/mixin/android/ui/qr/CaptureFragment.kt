@@ -7,6 +7,7 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
+import android.util.Rational
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -91,12 +92,12 @@ class CaptureFragment : BaseCameraxFragment() {
 
     @SuppressLint("RestrictedApi")
     override fun getOtherUseCases(
-        screenAspectRatio: Int,
+        screenAspectRatio: Rational,
         rotation: Int
     ): Array<UseCase> {
         imageCapture = ImageCapture.Builder()
             .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-            .setTargetAspectRatio(screenAspectRatio)
+            .setTargetAspectRatioCustom(screenAspectRatio)
             .setTargetRotation(rotation)
             .build()
         return arrayOf(imageCapture!!)
