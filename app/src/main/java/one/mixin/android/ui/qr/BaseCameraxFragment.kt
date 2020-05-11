@@ -10,7 +10,7 @@ import android.graphics.BitmapFactory
 import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.util.DisplayMetrics
-import android.util.Rational
+import android.util.Size
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_UP
@@ -96,6 +96,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     private var displayId: Int = -1
     private lateinit var displayManager: DisplayManager
+    lateinit var metrics: DisplayMetrics
     private var downEventTimestamp = 0L
     private var upEvent: MotionEvent? = null
 
@@ -180,8 +181,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     @SuppressLint("RestrictedApi")
     protected fun bindCameraUseCase() {
-        val metrics = DisplayMetrics().also { view_finder.display.getRealMetrics(it) }
-        val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
+        metrics = DisplayMetrics().also { view_finder.display.getRealMetrics(it) }
         val rotation = view_finder.display.rotation
 
         val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
@@ -190,19 +190,19 @@ abstract class BaseCameraxFragment : VisionFragment() {
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
             preview = Preview.Builder()
-                .setTargetAspectRatioCustom(screenAspectRatio)
+                .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
                 .setTargetRotation(rotation)
                 .build()
 
             imageAnalysis = ImageAnalysis.Builder()
-                .setTargetAspectRatioCustom(screenAspectRatio)
+                .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
                 .setTargetRotation(rotation)
                 .build()
                 .also {
                     it.setAnalyzer(backgroundExecutor, imageAnalyzer)
                 }
 
-            val otherUseCases = getOtherUseCases(screenAspectRatio, rotation)
+            val otherUseCases = getOtherUseCases(rotation)
 
             cameraProvider.unbindAll()
 
@@ -342,7 +342,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
     private fun delta() = System.currentTimeMillis() - downEventTimestamp
 
     abstract fun onFlashClick()
-    abstract fun getOtherUseCases(screenAspectRatio: Rational, rotation: Int): Array<UseCase>
+    abstract fun getOtherUseCases(rotation: Int): Array<UseCase>
     abstract fun onDisplayChanged(rotation: Int)
     abstract fun fromScan(): Boolean
 
