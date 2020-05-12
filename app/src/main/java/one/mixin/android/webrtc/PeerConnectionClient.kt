@@ -188,7 +188,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             return null
         }
         val rtcConfig = PeerConnection.RTCConfiguration(iceServers).apply {
-            tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.DISABLED
+            tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.ENABLED
             iceTransportsType = PeerConnection.IceTransportsType.RELAY
             bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE
             rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE
@@ -201,6 +201,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             reportError("PeerConnection is not created")
             return null
         }
+        // Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO);
         peerConnection.setAudioPlayout(false)
         peerConnection.setAudioRecording(false)
 
@@ -252,15 +253,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
         override fun onIceConnectionChange(newState: PeerConnection.IceConnectionState) {
             Timber.d("onIceConnectionChange: $newState")
-            executor.execute {
-                when (newState) {
-                    PeerConnection.IceConnectionState.CONNECTED -> events.onIceConnected()
-                    PeerConnection.IceConnectionState.DISCONNECTED -> events.onIceDisconnected()
-                    PeerConnection.IceConnectionState.FAILED -> events.onIceConnectedFailed()
-                    else -> {
-                    }
-                }
-            }
         }
 
         override fun onIceGatheringChange(newState: PeerConnection.IceGatheringState?) {
@@ -292,6 +284,10 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
 
         override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
+            Timber.d("onAddTrack=" +receiver.toString())
+            executor.execute {
+                events.onIceConnected()
+            }
         }
     }
 
