@@ -162,6 +162,7 @@ class StickerAddFragment : BaseFragment() {
         if (r.isSuccess) {
             doAfterStickerAdded(r)
         } else {
+            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
             handleBack(R.string.error_image)
         }
     }

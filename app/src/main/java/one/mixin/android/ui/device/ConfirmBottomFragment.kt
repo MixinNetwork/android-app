@@ -104,6 +104,7 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
             dismiss()
         } else {
             context?.toast(R.string.setting_desktop_sigin_failed)
+            ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
             dismiss()
         }
     }

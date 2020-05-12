@@ -1234,9 +1234,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 requireContext().toast(R.string.add_success)
             }
         } else {
-            withContext(Dispatchers.Main) {
-                requireContext().toast(R.string.sticker_add_failed)
-            }
+            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
         }
     }
 

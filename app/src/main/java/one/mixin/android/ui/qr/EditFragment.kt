@@ -13,7 +13,6 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.load.DataSource
@@ -36,7 +35,6 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.getPublicPicturePath
-import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.isFirebaseDecodeAvailable
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigationBarHeight
@@ -119,14 +117,9 @@ class EditFragment : VisionFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         send_fl.post {
-            val params = send_fl.layoutParams as RelativeLayout.LayoutParams
-            val b = send_fl.bottom + params.bottomMargin
-            val hasNavigationBar = requireContext().hasNavigationBar(b)
-            if (hasNavigationBar) {
-                val navigationBarHeight = requireContext().navigationBarHeight()
-                send_fl.translationY = -navigationBarHeight.toFloat()
-                download_iv.translationY = -navigationBarHeight.toFloat()
-            }
+            val navigationBarHeight = requireContext().navigationBarHeight()
+            send_fl.translationY = -navigationBarHeight.toFloat()
+            download_iv.translationY = -navigationBarHeight.toFloat()
         }
         close_iv.setOnClickListener { activity?.onBackPressed() }
         download_iv.setOnClickListener {
