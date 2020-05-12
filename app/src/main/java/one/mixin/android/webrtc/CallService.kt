@@ -107,10 +107,11 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        supportsOreo {
+            updateNotification()
+        }
+
         if (intent == null || intent.action == null) {
-            supportsOreo {
-                updateNotification()
-            }
             return START_NOT_STICKY
         }
 
@@ -134,10 +135,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
                 ACTION_CHECK_TIMEOUT -> handleCheckTimeout()
             }
         }
-        supportsOreo {
-            updateNotification()
-        }
-
         return START_NOT_STICKY
     }
 
@@ -177,7 +174,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (callState.callInfo.callState == CallState.STATE_RINGING) return
 
         callState.setCallState(CallState.STATE_RINGING)
-        audioManager.start(false)
         blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
         user = intent.getParcelableExtra(ARGS_USER)
 
@@ -197,13 +193,13 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         peerConnectionClient.isInitiator = false
         callState.isInitiator = false
         CallActivity.show(this, user)
+        audioManager.start(false)
     }
 
     private fun handleCallOutgoing(intent: Intent) {
         if (callState.callInfo.callState == CallState.STATE_DIALING) return
 
         callState.setCallState(CallState.STATE_DIALING)
-        audioManager.start(true)
         val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
         require(cid != null)
         conversationId = cid
@@ -214,6 +210,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         peerConnectionClient.isInitiator = true
         callState.isInitiator = true
         CallActivity.show(this, user)
+        audioManager.start(true)
         getTurnServer { peerConnectionClient.createOffer(it) }
     }
 
