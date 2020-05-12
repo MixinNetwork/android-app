@@ -1306,6 +1306,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
                     unreadTipCount += (list.size - oldCount)
                     oldCount = list.size
+                } else if (isBottom) {
+                    unreadTipCount = 0
+                    oldCount = list.size
                 }
                 chatViewModel.viewModelScope.launch {
                     chatAdapter.hasBottomView = ((isBot && list.isEmpty()) ||
