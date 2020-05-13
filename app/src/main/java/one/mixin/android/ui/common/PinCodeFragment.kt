@@ -86,7 +86,7 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
         }
 
         val lastUserId = requireContext().defaultSharedPreferences.getString(PREF_LAST_USER_ID, null)
-        val sameUser = lastUserId == null || lastUserId == account.userId
+        val sameUser = lastUserId != null && lastUserId == account.userId
         if (!sameUser) {
             showLoading()
 
