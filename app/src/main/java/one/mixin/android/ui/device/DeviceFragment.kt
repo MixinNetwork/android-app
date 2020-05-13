@@ -100,8 +100,8 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
                         updateUI(false)
                     } else {
                         loadOuting.dismiss()
-                        toast(R.string.setting_desktop_logout_failed)
-                        ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+                        ErrorHandler.handleMixinError(response.errorCode, response.errorDescription,
+                            getString(R.string.setting_desktop_logout_failed))
                     }
                 }
             } else {

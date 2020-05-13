@@ -162,8 +162,8 @@ class StickerAddFragment : BaseFragment() {
         if (r.isSuccess) {
             doAfterStickerAdded(r)
         } else {
-            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-            handleBack(R.string.error_image)
+            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription, getString(R.string.error_image))
+            handleBack()
         }
     }
 
@@ -247,11 +247,11 @@ class StickerAddFragment : BaseFragment() {
         }
     }
 
-    private fun handleBack(toastRes: Int) = lifecycleScope.launch {
+    private fun handleBack(toastRes: Int? = null) = lifecycleScope.launch {
         if (!isAdded) return@launch
 
         dialog?.dismiss()
-        requireContext().toast(toastRes)
+        toastRes?.let { requireContext().toast(it) }
         if (fromManagement) {
             parentFragmentManager.popBackStackImmediate()
         } else {
