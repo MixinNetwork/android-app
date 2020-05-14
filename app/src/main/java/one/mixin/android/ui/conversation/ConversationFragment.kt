@@ -299,7 +299,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 chat_rv.measuredHeight * 3 / 4
                             )
                         }
-                        chat_rv.visibility = VISIBLE
+                        chat_rv.isVisible = true
                     }
                     isBottom -> {
                         if (chatAdapter.currentList != null && chatAdapter.currentList!!.size > oldSize) {
@@ -1318,9 +1318,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 if (isFirstLoad && messageId == null && unreadCount > 0) {
                     chatAdapter.unreadMsgId = unreadMessageId
-                    if (isBottom && unreadCount > 20) {
-                        isBottom = false
-                    }
                 } else if (lastReadMessage != null) {
                     chatViewModel.viewModelScope.launch {
                         lastReadMessage?.let { id ->
