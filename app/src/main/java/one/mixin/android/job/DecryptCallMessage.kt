@@ -50,14 +50,6 @@ class DecryptCallMessage(
 
     fun onRun(data: BlazeMessageData) {
         if (data.category.startsWith("WEBRTC_") && !isExistMessage(data.messageId)) {
-            if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name && messageDao.findMessageIdById(data.messageId) != null) {
-                notifyServer(data)
-                return
-            } else if (data.category != MessageCategory.WEBRTC_AUDIO_OFFER.name && (data.quoteMessageId == null ||
-                    messageDao.findMessageIdById(data.quoteMessageId) != null)) {
-                notifyServer(data)
-                return
-            }
             try {
                 syncConversation(data)
                 processWebRTC(data)
