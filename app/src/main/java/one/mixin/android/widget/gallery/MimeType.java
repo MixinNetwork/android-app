@@ -21,6 +21,10 @@ public enum MimeType {
             "jpg",
             "jpeg"
     )),
+    JPG("image/jpg", arraySetOf(
+            "jpg",
+            "jpeg"
+    )),
     PNG("image/png", arraySetOf(
             "png"
     )),
@@ -89,15 +93,15 @@ public enum MimeType {
     }
 
     public static Set<MimeType> ofMedia() {
-        return EnumSet.of(JPEG, PNG, GIF, BMP, MPEG, MP4, QUICKTIME, THREEGPP, THREEGPP2, MKV, WEBM, TS, AVI);
+        return EnumSet.of(JPEG, JPG, PNG, GIF, BMP, WEBP, HEIC, MPEG, MP4, QUICKTIME, THREEGPP, THREEGPP2, MKV, WEBM, TS, AVI);
     }
 
     public static Set<MimeType> ofImage() {
-        return EnumSet.of(JPEG, PNG, GIF, BMP);
+        return EnumSet.of(JPEG, JPG, PNG, GIF, BMP, WEBP, HEIC);
     }
 
     public static Set<MimeType> ofSticker() {
-        return EnumSet.of(JPEG, PNG, GIF, BMP, WEBP);
+        return EnumSet.of(JPEG, JPG, PNG, GIF, BMP, WEBP);
     }
 
     public static Set<MimeType> ofVideo() {
