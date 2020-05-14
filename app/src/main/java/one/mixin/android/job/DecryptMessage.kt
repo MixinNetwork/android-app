@@ -158,7 +158,8 @@ class DecryptMessage : Injector() {
             }
         } catch (e: Exception) {
             Timber.e("Process error: $e")
-            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            insertInvalidMessage(data)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
 
@@ -175,14 +176,9 @@ class DecryptMessage : Injector() {
     private fun processAppButton(data: BlazeMessageData) {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
             String(Base64.decode(data.data)), data.createdAt, data.status)
-        try {
-            val appButton = gson.fromJson(message.content, Array<AppButtonData>::class.java)
-            for (item in appButton) {
-                ColorUtil.parseColor(item.color.trim())
-            }
-        } catch (e: Exception) {
-            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-            return
+        val appButton = gson.fromJson(message.content, Array<AppButtonData>::class.java)
+        for (item in appButton) {
+            ColorUtil.parseColor(item.color.trim())
         }
         database.insertAndNotifyConversation(message)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
@@ -192,12 +188,7 @@ class DecryptMessage : Injector() {
     private fun processAppCard(data: BlazeMessageData) {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
             String(Base64.decode(data.data)), data.createdAt, data.status)
-        val appCardData = try {
-            gson.fromJson(message.content, AppCardData::class.java)
-        } catch (e: Exception) {
-            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-            return
-        }
+        val appCardData = gson.fromJson(message.content, AppCardData::class.java)
         appCardData.appId?.let { id ->
             runBlocking {
                 var app = appDao.findAppById(id)
@@ -220,7 +211,7 @@ class DecryptMessage : Injector() {
             }
         }
         database.insertAndNotifyConversation(message)
-        updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+        updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         sendNotificationJob(message, data.source)
     }
 
@@ -419,6 +410,7 @@ class DecryptMessage : Injector() {
                 val decoded = Base64.decode(plainText)
                 val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
                 if (mediaData.invalidData()) {
+                    insertInvalidMessage(data)
                     return
                 }
 
@@ -725,6 +717,10 @@ class DecryptMessage : Injector() {
                 }
             }
         }
+    }
+
+    private fun insertInvalidMessage(data: BlazeMessageData) {
+
     }
 
     private fun insertFailedMessage(data: BlazeMessageData) {
