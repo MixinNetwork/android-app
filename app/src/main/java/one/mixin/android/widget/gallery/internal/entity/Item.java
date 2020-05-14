@@ -87,6 +87,7 @@ public class Item implements Parcelable {
     public boolean isImage() {
         if (mimeType == null) return false;
         return mimeType.equals(MimeType.JPEG.toString())
+                || mimeType.equals(MimeType.JPG.toString())
                 || mimeType.equals(MimeType.PNG.toString())
                 || mimeType.equals(MimeType.GIF.toString())
                 || mimeType.equals(MimeType.BMP.toString())
