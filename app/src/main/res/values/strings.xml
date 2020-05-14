@@ -103,6 +103,7 @@
     <string name="pin" translatable="false">PIN</string>
     <string name="simplified_chinese">Simplified Chinese</string>
     <string name="english">English</string>
+    <string name="follow_system">Follow System</string>
     <string name="nobody">Nobody</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>

@@ -6,11 +6,13 @@ import android.os.Bundle
 import one.mixin.android.extension.getCurrentThemeId
 import one.mixin.android.ui.common.BaseActivity
 
-internal class LingverActivityLifecycleCallbacks(private val lingver: Lingver) : ActivityLifecycleCallbacks {
+internal class LingverActivityLifecycleCallbacks(
+    private val lingver: Lingver,
+    private val callback: (Activity) -> Unit
+) : ActivityLifecycleCallbacks {
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        lingver.setLocaleInternal(activity)
-        lingver.resetActivityTitle(activity)
+        callback.invoke(activity)
         if (activity is BaseActivity) {
             activity.lastLang = lingver.getLanguage()
             activity.lastThemeId = activity.getCurrentThemeId()

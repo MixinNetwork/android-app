@@ -1,6 +1,6 @@
 package one.mixin.android.util.language
 
-import java.util.*
+import java.util.Locale
 
 /**
  *  Interface to be used by [Lingver] for storing a Locale.
@@ -8,4 +8,7 @@ import java.util.*
 interface LocaleStore {
     fun getLocale(): Locale
     fun persistLocale(locale: Locale)
+
+    fun setFollowSystemLocale(value: Boolean)
+    fun isFollowingSystemLocale(): Boolean
 }

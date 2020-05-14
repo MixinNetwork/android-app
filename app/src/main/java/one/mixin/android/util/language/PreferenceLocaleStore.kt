@@ -2,7 +2,7 @@ package one.mixin.android.util.language
 
 import android.content.Context
 import android.content.SharedPreferences
-import java.util.*
+import java.util.Locale
 import org.json.JSONObject
 
 /**
@@ -38,8 +38,17 @@ class PreferenceLocaleStore @JvmOverloads constructor(
         prefs.edit().putString(LANGUAGE_KEY, json.toString()).apply()
     }
 
+    override fun setFollowSystemLocale(value: Boolean) {
+        prefs.edit().putBoolean(FOLLOW_SYSTEM_LOCALE_KEY, value).apply()
+    }
+
+    override fun isFollowingSystemLocale(): Boolean {
+        return prefs.getBoolean(FOLLOW_SYSTEM_LOCALE_KEY, true)
+    }
+
     companion object {
         private const val LANGUAGE_KEY = "language_key"
+        private const val FOLLOW_SYSTEM_LOCALE_KEY = "follow_system_locale_key"
         private const val DEFAULT_PREFERENCE_NAME = "lingver_preference"
         private const val LANGUAGE_JSON_KEY = "language"
         private const val COUNTRY_JSON_KEY = "country"
