@@ -66,7 +66,7 @@ class DecryptCallMessage(
                 updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             }
         } else {
-            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
 

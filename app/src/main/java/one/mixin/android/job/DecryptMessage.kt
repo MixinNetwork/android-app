@@ -123,7 +123,7 @@ class DecryptMessage : Injector() {
         if (!isExistMessage(data.messageId)) {
             processMessage(data)
         } else {
-            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
 
