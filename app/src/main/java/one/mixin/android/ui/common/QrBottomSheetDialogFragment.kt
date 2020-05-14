@@ -126,7 +126,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.save.setOnClickListener {
-            RxPermissions(activity!!)
+            RxPermissions(requireActivity())
                 .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
                 .subscribe({ granted ->

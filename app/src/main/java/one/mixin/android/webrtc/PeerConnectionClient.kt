@@ -284,7 +284,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
 
         override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
-            Timber.d("onAddTrack=" +receiver.toString())
+            Timber.d("onAddTrack=" + receiver.toString())
             executor.execute {
                 events.onIceConnected()
             }
