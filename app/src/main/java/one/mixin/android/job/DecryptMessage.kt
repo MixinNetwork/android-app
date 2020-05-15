@@ -720,7 +720,6 @@ class DecryptMessage : Injector() {
     }
 
     private fun insertInvalidMessage(data: BlazeMessageData) {
-
     }
 
     private fun insertFailedMessage(data: BlazeMessageData) {

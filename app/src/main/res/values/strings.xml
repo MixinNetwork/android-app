@@ -312,6 +312,7 @@
     <string name="contact_less_invite">Invite to Mixin</string>
     <string name="contact_less_invite_content">Hey, I\'m using Mixin Messenger to chat. Download it here: https://mixin.one/messenger .</string>
     <string name="contact_mute_title">Mute notifications for…</string>
+    <string name="contact_mute_1hour">1 Hour</string>
     <string name="contact_mute_8hours">8 Hours</string>
     <string name="contact_mute_1week">1 Week</string>
     <string name="contact_mute_1year">1 Year</string>

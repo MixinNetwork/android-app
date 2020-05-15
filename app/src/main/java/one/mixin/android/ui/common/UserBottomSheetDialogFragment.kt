@@ -30,6 +30,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.Constants.ARGS_USER
+import one.mixin.android.Constants.Mute.MUTE_1_HOUR
+import one.mixin.android.Constants.Mute.MUTE_1_WEEK
+import one.mixin.android.Constants.Mute.MUTE_1_YEAR
+import one.mixin.android.Constants.Mute.MUTE_8_HOURS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -82,9 +86,6 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     companion object {
         const val TAG = "UserBottomSheetDialogFragment"
 
-        const val MUTE_8_HOURS = 8 * 60 * 60
-        const val MUTE_1_WEEK = 7 * 24 * 60 * 60
-        const val MUTE_1_YEAR = 365 * 24 * 60 * 60
         private var instant: UserBottomSheetDialogFragment? = null
         fun newInstance(user: User, conversationId: String? = null): UserBottomSheetDialogFragment {
             try {
@@ -734,6 +735,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     private fun showMuteDialog() {
         val choices = arrayOf(
+            getString(R.string.contact_mute_1hour),
             getString(R.string.contact_mute_8hours),
             getString(R.string.contact_mute_1week),
             getString(R.string.contact_mute_1year)
@@ -756,9 +758,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             .setSingleChoiceItems(choices, 0) { _, which ->
                 whichItem = which
                 when (which) {
-                    0 -> duration = MUTE_8_HOURS
-                    1 -> duration = MUTE_1_WEEK
-                    2 -> duration = MUTE_1_YEAR
+                    0 -> duration = MUTE_1_HOUR
+                    1 -> duration = MUTE_8_HOURS
+                    2 -> duration = MUTE_1_WEEK
+                    3 -> duration = MUTE_1_YEAR
                 }
             }
             .show()

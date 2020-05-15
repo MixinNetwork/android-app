@@ -298,6 +298,7 @@
     <string name="contact_less_invite">邀请至 Mixin</string>
     <string name="contact_less_invite_content">我正在使用 Mixin 聊天。\n 下载：https://mixin.one</string>
     <string name="contact_mute_title">静音通知</string>
+    <string name="contact_mute_1hour">1 小时</string>
     <string name="contact_mute_8hours">8 小时</string>
     <string name="contact_mute_1week">1 星期</string>
     <string name="contact_mute_1year">1 年</string>

@@ -116,6 +116,13 @@ object Constants {
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
     }
 
+    object Mute {
+        const val MUTE_1_HOUR = 1 * 60 * 60
+        const val MUTE_8_HOURS = 8 * 60 * 60
+        const val MUTE_1_WEEK = 7 * 24 * 60 * 60
+        const val MUTE_1_YEAR = 365 * 24 * 60 * 60
+    }
+
     const val SLEEP_MILLIS: Long = 1000
     const val INTERVAL_24_HOURS: Long = 1000 * 60 * 60 * 24
     const val INTERVAL_48_HOURS: Long = 1000 * 60 * 60 * 48
