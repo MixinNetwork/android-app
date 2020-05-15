@@ -1548,7 +1548,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             createConversation {
                 chatViewModel.sendFordMessage(conversationId, sender, it, isPlainMessage())
                     .autoDispose(stopScope).subscribe({
-                        if (it == 0) {
+                        if (it == -1) {
                             toast(R.string.error_file_exists)
                         }
                     }, {
