@@ -11,15 +11,14 @@
         android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="4dp"
         android:layout_marginStart="4dp"
         android:layout_marginTop="1.5dp"
+        android:layout_marginEnd="4dp"
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0"
-        app:layout_constraintWidth_max="300dp"
         app:layout_goneMarginBottom="0dp">
 
         <TextView
@@ -29,7 +28,6 @@
             android:ellipsize="end"
             android:lines="1"
             android:minWidth="30dp"
-            android:maxWidth="280dp"
             android:textColor="#19BEF1"
             android:textSize="14sp" />
 
@@ -38,55 +36,56 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:maxWidth="280dp"
             android:textColor="?attr/text_primary"
             android:textSize="14sp"
             tools:text="message" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/hyperlink"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp">
 
             <View
                 android:id="@+id/line"
-                android:background="@color/colorBlue"
                 android:layout_width="2dp"
                 android:layout_height="0dp"
+                android:background="@color/colorBlue"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/chat_name_tv"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginStart="8dp"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_toEndOf="@id/line"
-                android:maxWidth="270dp"
                 android:singleLine="true"
                 android:textColor="?attr/text_primary"
                 android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0"
                 app:layout_constraintStart_toEndOf="@id/line"
                 app:layout_constraintTop_toTopOf="@id/line"
                 tools:text="GitHub" />
 
             <TextView
                 android:id="@+id/chat_description_tv"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_alignStart="@id/chat_name_tv"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
+                android:maxLines="3"
+                android:textColor="?attr/text_minor"
+                android:textStyle="italic"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintStart_toEndOf="@id/line"
                 app:layout_constraintStart_toStartOf="@id/chat_name_tv"
                 app:layout_constraintTop_toBottomOf="@id/chat_name_tv"
-                app:layout_constraintStart_toEndOf="@id/line"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="4dp"
-                android:maxLines="3"
-                android:maxWidth="270dp"
-                android:textStyle="italic"
-                android:textColor="?attr/text_minor"
                 tools:text="When we do automatic pings it’d be nice to fail the connection if the peer isn’t ponging back. As-is a server that blackholes pings is not sufficient to consider the connection healthy. See also #3197" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 

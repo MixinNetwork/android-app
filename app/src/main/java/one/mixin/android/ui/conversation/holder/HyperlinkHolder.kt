@@ -33,10 +33,7 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
     init {
         itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         itemView.chat_tv.setUrlModeColor(LINK_COLOR)
-        itemView.chat_tv.maxWidth = itemView.context.maxItemWidth() - dp24
-        itemView.chat_name.maxWidth = itemView.context.maxItemWidth() - dp24
-        itemView.chat_name_tv.maxWidth = itemView.context.maxItemWidth() - dp24
-        itemView.chat_description_tv.maxWidth = itemView.context.maxItemWidth() - dp24
+        (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).matchConstraintMaxWidth = itemView.context.maxItemWidth()
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
