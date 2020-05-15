@@ -102,13 +102,13 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             }
         }
         supportsOreo {
-            updateNotification()
+            updateForegroundNotification()
         }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         supportsOreo {
-            updateNotification()
+            updateForegroundNotification()
         }
 
         if (intent == null || intent.action == null) {
@@ -186,7 +186,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         }
 
         callState.user = user
-        updateNotification()
+        updateForegroundNotification()
         quoteMessageId = blazeMessageData!!.messageId
         callState.setMessageId(quoteMessageId!!)
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
@@ -205,7 +205,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         conversationId = cid
         user = intent.getParcelableExtra(ARGS_USER)
         callState.user = user
-        updateNotification()
+        updateForegroundNotification()
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         peerConnectionClient.isInitiator = true
         callState.isInitiator = true
@@ -218,7 +218,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (callState.callInfo.callState == CallState.STATE_ANSWERING) return
 
         callState.setCallState(CallState.STATE_ANSWERING)
-        updateNotification()
+        updateForegroundNotification()
         audioManager.stop()
         if (peerConnectionClient.isInitiator) {
             val bmd = intent.getSerializableExtra(EXTRA_BLAZE) ?: return
@@ -238,7 +238,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         ices.forEach {
             peerConnectionClient.addRemoteIceCandidate(it)
         }
-        updateNotification()
+        updateForegroundNotification()
     }
 
     private fun handleIceConnected() {
@@ -246,7 +246,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
         callState.connectedTime = System.currentTimeMillis()
         callState.setCallState(CallState.STATE_CONNECTED)
-        updateNotification()
+        updateForegroundNotification()
         timeoutFuture?.cancel(true)
         vibrate(longArrayOf(0, 30))
         peerConnectionClient.setAudioEnable(audioEnable)
@@ -266,7 +266,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         } else {
             callState.setCallState(CallState.STATE_IDLE)
         }
-        updateNotification()
+        updateForegroundNotification()
         disconnect()
     }
 
@@ -279,7 +279,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             val category = MessageCategory.WEBRTC_AUDIO_DECLINE.name
             sendCallMessage(category)
         }
-        updateNotification()
+        updateForegroundNotification()
         disconnect()
     }
 
@@ -292,7 +292,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (toIdle != null && toIdle) {
             callState.setCallState(CallState.STATE_IDLE)
         }
-        updateNotification()
+        updateForegroundNotification()
         disconnect()
     }
 
@@ -300,13 +300,13 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (callState.callInfo.callState == CallState.STATE_IDLE) return
 
         callState.setCallState(CallState.STATE_IDLE)
-        updateNotification()
+        updateForegroundNotification()
         disconnect()
     }
 
     private fun handleCallBusy() {
         callState.setCallState(CallState.STATE_BUSY)
-        updateNotification()
+        updateForegroundNotification()
         disconnect()
     }
 
@@ -324,12 +324,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             callState.setCallState(CallState.STATE_IDLE)
             disconnect()
         }
-        updateNotification()
+        updateForegroundNotification()
     }
 
     private fun handleCallRemoteFailed() {
         callState.setCallState(CallState.STATE_IDLE)
-        updateNotification()
+        updateForegroundNotification()
         disconnect()
     }
 
@@ -338,7 +338,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
         audioEnable = !extras.getBoolean(EXTRA_MUTE)
         peerConnectionClient.setAudioEnable(audioEnable)
-        updateNotification()
+        updateForegroundNotification()
     }
 
     private fun handleSpeakerphone(intent: Intent) {
@@ -346,17 +346,17 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
         val speakerphone = extras.getBoolean(EXTRA_SPEAKERPHONE)
         audioManager.isSpeakerOn = speakerphone
-        updateNotification()
+        updateForegroundNotification()
     }
 
     private fun handleCheckTimeout() {
         if (callState.callInfo.callState == CallState.STATE_IDLE && callState.callInfo.callState == CallState.STATE_CONNECTED) return
 
-        updateNotification()
+        updateForegroundNotification()
         handleCallCancel()
     }
 
-    private fun updateNotification() {
+    private fun updateForegroundNotification() {
         startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION,
             CallNotificationBuilder.getCallNotification(this, callState, user))
     }
