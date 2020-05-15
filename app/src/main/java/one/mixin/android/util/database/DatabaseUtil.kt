@@ -3,12 +3,14 @@ package one.mixin.android.util.database
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 
-suspend fun getLastUserId(context: Context): String? {
+suspend fun getLastUserId(context: Context): String? = withContext(Dispatchers.IO) {
     val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
     if (!dbFile.exists()) {
-        return null
+        return@withContext null
     }
     var c: Cursor? = null
     var db: SQLiteDatabase? = null
@@ -23,9 +25,9 @@ suspend fun getLastUserId(context: Context): String? {
         if (c.moveToFirst()) {
             userId = c.getString(0)
         }
-        return userId
+        return@withContext userId
     } catch (e: Exception) {
-        return null
+        return@withContext null
     } finally {
         c?.close()
         db?.close()
