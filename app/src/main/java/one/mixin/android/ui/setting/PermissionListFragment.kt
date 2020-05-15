@@ -65,7 +65,7 @@ class PermissionListFragment : BaseViewModelFragment<SettingViewModel>() {
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         permission_rv.layoutManager = LinearLayoutManager(requireContext())
         val foot = layoutInflater.inflate(R.layout.layout_permission_list_foot, permission_rv, false)
-        foot.deauthorize_rl.setOnClickListener { showDialog(app) }
+        foot.revoke_rl.setOnClickListener { showDialog(app) }
         foot.time_tv.text = getString(R.string.setting_auth_access, auth.createAt.fullDate(), auth.accessedAt.fullDate())
         val adapter = PermissionListAdapter()
         permission_rv.adapter = adapter
