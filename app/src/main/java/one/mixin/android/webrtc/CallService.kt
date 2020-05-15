@@ -475,17 +475,17 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         } else {
             callState.user!!.userId
         }
-        when {
-            m.category == MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
+        when (m.category) {
+            MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
                 val status = if (declineTriggeredByUser) MessageStatus.READ else MessageStatus.DELIVERED
                 database.insertAndNotifyConversation(createNewReadMessage(m, uId, status))
             }
-            m.category == MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
+            MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
                 val msg = createCallMessage(m.id, m.conversationId, uId, m.category, m.content,
                     m.createdAt, MessageStatus.READ.name, m.quoteMessageId, m.mediaDuration)
                 database.insertAndNotifyConversation(msg)
             }
-            m.category == MessageCategory.WEBRTC_AUDIO_END.name || m.category == MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
+            MessageCategory.WEBRTC_AUDIO_END.name, MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
                 val msg = createNewReadMessage(m, uId, MessageStatus.READ)
                 database.insertAndNotifyConversation(msg)
             }
