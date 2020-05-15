@@ -25,7 +25,6 @@ import one.mixin.android.di.AppInjector
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.putString
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.landing.InitializeActivity
@@ -112,7 +111,6 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
             notificationManager.cancelAll()
             Session.clearAccount()
             defaultSharedPreferences.clear()
-            defaultSharedPreferences.putString(Constants.Account.PREF_LAST_USER_ID, accountId)
             CookieManager.getInstance().removeAllCookies(null)
             CookieManager.getInstance().flush()
             WebStorage.getInstance().deleteAllData()
