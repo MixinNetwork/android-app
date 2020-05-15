@@ -29,7 +29,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.GlideException
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import io.reactivex.disposables.Disposable
 import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.TimeUnit
@@ -54,8 +53,6 @@ import one.mixin.android.widget.CallButton
 import timber.log.Timber
 
 class CallActivity : BaseActivity(), SensorEventListener {
-
-    private var disposable: Disposable? = null
 
     @Inject
     lateinit var callState: CallState
@@ -188,11 +185,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 }
             }
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        disposable?.dispose()
     }
 
     override fun onBackPressed() {

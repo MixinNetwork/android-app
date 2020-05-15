@@ -170,6 +170,7 @@ class CallAudioManager(private val context: Context) {
         bluetoothState = State.UNINITIALIZED
     }
 
+    @Synchronized
     private fun updateMediaPlayer() {
         if (mediaPlayerStoped) return
 
