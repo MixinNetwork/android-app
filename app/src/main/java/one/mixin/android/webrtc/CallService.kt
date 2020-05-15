@@ -256,6 +256,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun handleCallCancel(intent: Intent? = null) {
         if (callState.callInfo.callState == CallState.STATE_IDLE) return
 
+        audioManager.stop()
         if (peerConnectionClient.isInitiator) {
             val category = MessageCategory.WEBRTC_AUDIO_CANCEL.name
             sendCallMessage(category)
@@ -273,6 +274,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun handleCallDecline() {
         if (callState.callInfo.callState == CallState.STATE_IDLE) return
 
+        audioManager.stop()
         if (peerConnectionClient.isInitiator) {
             callState.setCallState(CallState.STATE_IDLE)
         } else {
