@@ -5,6 +5,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityOptions
 import android.content.ContentResolver
@@ -50,7 +51,6 @@ import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_media_pager.*
 import kotlinx.android.synthetic.main.item_pager_video_layout.view.*
 import kotlinx.android.synthetic.main.layout_player_view.view.*
-import kotlinx.android.synthetic.main.view_drag_image_bottom.*
 import kotlinx.android.synthetic.main.view_drag_image_bottom.view.*
 import kotlinx.android.synthetic.main.view_drag_video_bottom.view.*
 import kotlinx.android.synthetic.main.view_drag_video_bottom.view.cancel
@@ -234,6 +234,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
     }
 
+    @SuppressLint("RestrictedApi")
     private fun loadData() = lifecycleScope.launch {
         val messageItem = viewModel.getMediaMessage(conversationId, messageId)
         val pagedConfig = PagedList.Config.Builder()
