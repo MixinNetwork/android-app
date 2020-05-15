@@ -97,6 +97,7 @@
     <string name="click_unlock">点击解锁</string>
     <string name="simplified_chinese">简体中文</string>
     <string name="english">英语</string>
+    <string name="follow_system">跟随系统</string>
     <string name="nobody">没有人</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
