@@ -135,7 +135,7 @@ class DecryptMessage : Injector() {
                         data.data, data.createdAt, data.status)
                     database.insertAndNotifyConversation(message)
                 }
-                updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+                updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
                 return
             }
 
