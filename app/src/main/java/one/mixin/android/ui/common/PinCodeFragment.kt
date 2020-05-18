@@ -22,6 +22,7 @@ import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.util.database.clearDatabase
 import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
@@ -90,7 +91,7 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
             showLoading()
 
             withContext(Dispatchers.IO) {
-                MixinDatabase.getDatabase(requireContext()).clearAllTables()
+                clearDatabase(requireContext())
             }
         }
         Session.storeAccount(account)
