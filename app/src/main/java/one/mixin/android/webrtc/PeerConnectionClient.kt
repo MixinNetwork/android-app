@@ -255,6 +255,15 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             Timber.d("onIceConnectionChange: $newState")
         }
 
+        override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
+            Timber.d("onConnectionChange: $newState")
+            if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
+                executor.execute {
+                    events.onConnected()
+                }
+            }
+        }
+
         override fun onIceGatheringChange(newState: PeerConnection.IceGatheringState?) {
             Timber.d("onIceGatheringChange: $newState")
         }
@@ -285,9 +294,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
         override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
             Timber.d("onAddTrack=" + receiver.toString())
-            executor.execute {
-                events.onIceConnected()
-            }
         }
     }
 
@@ -337,10 +343,16 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         fun onIceDisconnected()
 
         /**
-         * Callback fired once connection is closed (IceConnectionState is
-         * FAILED).
+         * Callback fired once DTLS connection is established (PeerConnectionState
+         * is CONNECTED).
          */
-        fun onIceConnectedFailed()
+        fun onConnected()
+
+        /**
+         * Callback fired once DTLS connection is disconnected (PeerConnectionState
+         * is DISCONNECTED).
+         */
+        fun onDisconnected()
 
         /**
          * Callback fired once peer connection is closed.

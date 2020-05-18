@@ -241,7 +241,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         updateForegroundNotification()
     }
 
-    private fun handleIceConnected() {
+    private fun handleConnected() {
         if (callState.callInfo.callState == CallState.STATE_CONNECTED) return
 
         callState.connectedTime = System.currentTimeMillis()
@@ -405,14 +405,16 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     override fun onIceConnected() {
-        callExecutor.execute { handleIceConnected() }
+    }
+
+    override fun onConnected() {
+        callExecutor.execute { handleConnected() }
+    }
+
+    override fun onDisconnected() {
     }
 
     override fun onIceDisconnected() {
-    }
-
-    override fun onIceConnectedFailed() {
-        callExecutor.execute { handleCallLocalFailed() }
     }
 
     override fun onPeerConnectionClosed() {
