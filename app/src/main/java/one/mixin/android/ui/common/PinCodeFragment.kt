@@ -84,9 +84,7 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
             saveQrCode(account)
         }
 
-        val lastUserId = withContext(Dispatchers.IO) {
-            getLastUserId(requireContext())
-        }
+        val lastUserId = getLastUserId(requireContext())
         val sameUser = lastUserId != null && lastUserId == account.userId
         if (!sameUser) {
             showLoading()
