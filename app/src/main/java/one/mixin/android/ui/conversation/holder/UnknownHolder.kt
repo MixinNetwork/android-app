@@ -1,38 +1,76 @@
 package one.mixin.android.ui.conversation.holder
 
+import android.view.Gravity
 import android.view.View
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.view.isVisible
-import kotlinx.android.synthetic.main.item_chat_unknown.view.*
+import android.widget.FrameLayout
+import kotlinx.android.synthetic.main.item_chat_unknown.view.chat_layout
+import kotlinx.android.synthetic.main.item_chat_unknown.view.chat_name
+import kotlinx.android.synthetic.main.item_chat_unknown.view.chat_time
+import kotlinx.android.synthetic.main.item_chat_unknown.view.chat_tv
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
 
 class UnknownHolder constructor(containerView: View) : BaseViewHolder(containerView) {
 
-    fun bind(messageItem: MessageItem, isFirst: Boolean, isLast: Boolean, onItemListener: ConversationAdapter.OnItemListener) {
-        val isMe = messageItem.userId == Session.getAccountId()
-        val lp = (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams)
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
-            lp.horizontalBias = 1f
+            (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
             if (isLast) {
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_unknown_me_last)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_me_last,
+                    R.drawable.chat_bubble_me_last_night
+                )
             } else {
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_unknown_me)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_me,
+                    R.drawable.chat_bubble_me_night
+                )
             }
         } else {
-            lp.horizontalBias = 0f
+            (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
             if (isLast) {
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_unknown_other_last)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_other_last,
+                    R.drawable.chat_bubble_other_last_night
+                )
             } else {
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_unknown_other)
+                setItemBackgroundResource(
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_other,
+                    R.drawable.chat_bubble_other_night
+                )
             }
         }
-        if (isFirst && !isMe) {
+    }
+
+    fun bind(
+        messageItem: MessageItem,
+        isLast: Boolean,
+        isFirst: Boolean,
+        onItemListener: ConversationAdapter.OnItemListener
+    ) {
+        val isMe = meId == messageItem.userId
+        itemView.chat_time.timeAgoClock(messageItem.createdAt)
+
+        val learn: String = MixinApplication.get().getString(R.string.chat_learn)
+        val info = MixinApplication.get().getString(R.string.chat_not_support)
+        val learnUrl = MixinApplication.get().getString(R.string.chat_not_support_url)
+        itemView.chat_tv.highlightLinkText(
+            info,
+            arrayOf(learn),
+            arrayOf(learnUrl)
+        )
+
+        if (isFirst) {
             itemView.chat_name.visibility = View.VISIBLE
             itemView.chat_name.text = messageItem.userFullName
             if (messageItem.appId != null) {
@@ -41,12 +79,11 @@ class UnknownHolder constructor(containerView: View) : BaseViewHolder(containerV
             } else {
                 itemView.chat_name.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
             itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
         } else {
             itemView.chat_name.visibility = View.GONE
         }
-        itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        itemView.chat_secret.isVisible = messageItem.isSignal()
+        chatLayout(isMe, isLast)
     }
 }

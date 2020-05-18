@@ -240,6 +240,7 @@
     <string name="chat_waiting">等待%1$s上线后建立加密会话。%2$s。</string>
     <string name="chat_waiting_desktop">桌面端</string>
     <string name="chat_learn">了解更多</string>
+    <string name="chat_not_support">不支持此类型消息。请升级 Mixin 查看。</string>
     <string name="week_monday">星期一</string>
     <string name="week_tuesday">星期二</string>
     <string name="week_wednesday">星期三</string>
@@ -539,7 +540,6 @@
     <string name="chat_you">您</string>
     <string name="chat_group_checking">正在检查链接</string>
     <string name="chat_expired">已过期</string>
-    <string name="unknown_update_app">不支持此类型消息。请升级 Mixin 查看。</string>
     <string name="group_ok">好</string>
     <string name="link_error">无效链接</string>
     <string name="bottom_sheet_check_payment_info">请检查支付信息</string>

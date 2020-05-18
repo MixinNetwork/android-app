@@ -720,6 +720,8 @@ class DecryptMessage : Injector() {
     }
 
     private fun insertInvalidMessage(data: BlazeMessageData) {
+        val message = createMessage(data.messageId, data.conversationId, data.userId, data.category, data.data, data.createdAt, MessageStatus.UNKNOWN.name)
+        messageDao.insert(message)
     }
 
     private fun insertFailedMessage(data: BlazeMessageData) {
