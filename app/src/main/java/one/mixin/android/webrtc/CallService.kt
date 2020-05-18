@@ -412,6 +412,9 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     override fun onDisconnected() {
+        callExecutor.execute {
+            handleCallLocalEnd()
+        }
     }
 
     override fun onIceDisconnected() {

@@ -257,9 +257,11 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
         override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
             Timber.d("onConnectionChange: $newState")
-            if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
-                executor.execute {
+            executor.execute {
+                if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
                     events.onConnected()
+                } else if (newState == PeerConnection.PeerConnectionState.DISCONNECTED) {
+                    events.onDisconnected()
                 }
             }
         }
@@ -290,6 +292,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
 
         override fun onTrack(transceiver: RtpTransceiver?) {
+            Timber.d("onTrack=" + transceiver.toString())
         }
 
         override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
