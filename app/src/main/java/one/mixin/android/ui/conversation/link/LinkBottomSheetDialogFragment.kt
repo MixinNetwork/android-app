@@ -596,7 +596,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
         override fun onStateChanged(bottomSheet: View, newState: Int) {
             if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                dismiss()
+                dismissAllowingStateLoss()
             }
         }
 
