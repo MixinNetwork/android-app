@@ -37,7 +37,7 @@ suspend fun getLastUserId(context: Context): String? = withContext(Dispatchers.I
 }
 
 @SuppressLint("ObsoleteSdkInt")
-suspend fun clearDatabase(context: Context)= withContext(Dispatchers.IO)  {
+suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
     val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
     val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
     if (!dbFile.exists()) {

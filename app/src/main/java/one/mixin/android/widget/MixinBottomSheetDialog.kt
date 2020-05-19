@@ -12,6 +12,7 @@ import android.view.animation.DecelerateInterpolator
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlin.math.abs
+import one.mixin.android.util.reportException
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.displayMetrics
 
@@ -117,15 +118,14 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
             override fun onAnimationEnd(animation: Animator) {
                 if (curSheetAnimation != null && curSheetAnimation == animation) {
                     curSheetAnimation = null
-                    sheetContainer.post {
-                        superDismiss()
-                    }
+                    ensureDismiss()
                 }
             }
 
             override fun onAnimationCancel(animation: Animator) {
                 if (curSheetAnimation != null && curSheetAnimation == animation) {
                     curSheetAnimation = null
+                    ensureDismiss()
                 }
             }
         })
@@ -133,16 +133,23 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         curSheetAnimation = animatorSet
     }
 
-    private fun superDismiss() {
-        try {
-            super.dismiss()
-        } catch (e: Exception) {
-        }
-    }
-
     private fun cancelSheetAnimation() {
         curSheetAnimation?.cancel()
         curSheetAnimation = null
+    }
+
+    private fun ensureDismiss() {
+        if (!sheetContainer.post(dismissRunnable)) {
+            dismissRunnable.run()
+        }
+    }
+
+    private val dismissRunnable = Runnable {
+        try {
+            super.dismiss()
+        } catch (e: Exception) {
+            reportException(e)
+        }
     }
 
     private val bottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
