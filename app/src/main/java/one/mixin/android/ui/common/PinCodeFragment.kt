@@ -14,7 +14,6 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.crypto.getPrivateKeyPem
 import one.mixin.android.crypto.rsaDecrypt
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.vibrate
