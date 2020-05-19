@@ -11,10 +11,10 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import kotlin.math.abs
 import one.mixin.android.util.reportException
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.displayMetrics
+import kotlin.math.abs
 
 class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(context, theme) {
     companion object {
@@ -45,6 +45,7 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         } catch (ignored: Exception) {
         }
 
+        cancelSheetAnimation()
         sheetContainer.measure(View.MeasureSpec.makeMeasureSpec(context.displayMetrics.widthPixels, View.MeasureSpec.AT_MOST),
             View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, View.MeasureSpec.AT_MOST))
         if (isShown) return
@@ -116,17 +117,13 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         animatorSet.interpolator = AccelerateInterpolator()
         animatorSet.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
-                if (curSheetAnimation != null && curSheetAnimation == animation) {
-                    curSheetAnimation = null
-                    ensureDismiss()
-                }
+                curSheetAnimation = null
+                ensureDismiss()
             }
 
             override fun onAnimationCancel(animation: Animator) {
-                if (curSheetAnimation != null && curSheetAnimation == animation) {
-                    curSheetAnimation = null
-                    ensureDismiss()
-                }
+                curSheetAnimation = null
+                ensureDismiss()
             }
         })
         animatorSet.start()
