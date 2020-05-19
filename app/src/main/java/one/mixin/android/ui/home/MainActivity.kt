@@ -2,18 +2,19 @@ package one.mixin.android.ui.home
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Dialog
 import android.app.NotificationManager
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.net.Uri
+import android.net.UrlQuerySanitizer
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.KeyEvent
 import android.view.View
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
@@ -37,6 +38,7 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.util.UUID
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.view_search.view.*
@@ -58,9 +60,12 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.SessionRequest
+import one.mixin.android.api.request.TransferRequest
+import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
+import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
@@ -71,6 +76,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
@@ -95,10 +101,12 @@ import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
 import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.landing.InitializeActivity
@@ -146,6 +154,10 @@ class MainActivity : BlazeBaseActivity() {
     lateinit var accountRepo: AccountRepository
     @Inject
     lateinit var participantDao: ParticipantDao
+    @Inject
+    lateinit var assetDao: AssetDao
+    @Inject
+    lateinit var assetService: AssetService
 
     private val appUpdateManager by lazy { AppUpdateManagerFactory.create(this) }
     private val updatedListener = InstallStateUpdatedListener { state ->
@@ -406,14 +418,104 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private var bottomSheet: DialogFragment? = null
-    private var alertDialog: AlertDialog? = null
+    private var alertDialog: Dialog? = null
 
     private fun handlerCode(intent: Intent) {
+        if (intent.hasExtra(DONATE)) {
+            val text = intent.getStringExtra(DONATE)!!
+            bottomSheet?.dismiss()
+
+            val sanitizer = UrlQuerySanitizer(text)
+            val amount = try {
+                sanitizer.getValue("amount").toDouble()
+            } catch (e: Exception) {
+                showScanBottom(text)
+                return
+            }.toString()
+            val userId = sanitizer.getValue("user")
+            if (userId == null || !userId.isUUID()) {
+                showScanBottom(text)
+                return
+            }
+            val trace = sanitizer.getValue("trace") ?: UUID.randomUUID().toString()
+            val memo = sanitizer.getValue("memo")
+
+            lifecycleScope.launch {
+                alertDialog?.dismiss()
+                alertDialog = indeterminateProgressDialog(
+                    message = R.string.pb_dialog_message,
+                    title = R.string.analyzing
+                )
+
+                var asset = assetDao.simpleAssetItem(Constants.AssetId.BITCOIN_ASSET_ID)
+                if (asset == null) {
+                    asset = handleMixinResponse(
+                        invokeNetwork = {
+                            assetService.getAssetByIdSuspend(Constants.AssetId.BITCOIN_ASSET_ID)
+                        },
+                        switchContext = Dispatchers.IO,
+                        successBlock = { response ->
+                            response.data?.let {
+                                assetDao.insert(it)
+                                return@handleMixinResponse assetDao.findAssetItemById(it.assetId)
+                            }
+                        },
+                        failureBlock = {
+                            alertDialog?.dismiss()
+                            showScanBottom(text)
+                            return@handleMixinResponse false
+                        },
+                        exceptionBlock = {
+                            alertDialog?.dismiss()
+                            showScanBottom(text)
+                            return@handleMixinResponse false
+                        }
+                    )
+                }
+                if (asset == null) {
+                    alertDialog?.dismiss()
+                    showScanBottom(text)
+                    return@launch
+                }
+
+                val transferRequest = TransferRequest(Constants.AssetId.BITCOIN_ASSET_ID,
+                    userId, amount, null, trace, memo)
+                handleMixinResponse(
+                    invokeNetwork = {
+                        assetService.paySuspend(transferRequest)
+                    },
+                    switchContext = Dispatchers.IO,
+                    successBlock = { r ->
+                        val response = r.data
+                        if (response == null) {
+                            showScanBottom(text)
+                        } else {
+                            bottomSheet = TransferBottomSheetDialogFragment
+                                .newInstance(TransferBiometricItem(response.recipient, asset, amount,
+                                    null, trace, memo, response.status))
+                            bottomSheet?.showNow(supportFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                        }
+                    },
+                    doAfterNetworkSuccess = {
+                        alertDialog?.dismiss()
+                    },
+                    failureBlock = {
+                        alertDialog?.dismiss()
+                        showScanBottom(text)
+                        return@handleMixinResponse false
+                    },
+                    exceptionBlock = {
+                        alertDialog?.dismiss()
+                        showScanBottom(text)
+                        return@handleMixinResponse false
+                    }
+                )
+            }
+        }
         if (intent.hasExtra(SCAN)) {
             val scan = intent.getStringExtra(SCAN)!!
             bottomSheet?.dismiss()
-            bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
-            bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+            showScanBottom(scan)
         } else if (intent.hasExtra(URL)) {
             val url = intent.getStringExtra(URL)!!
             bottomSheet?.dismiss()
@@ -536,6 +638,11 @@ class MainActivity : BlazeBaseActivity() {
                     ErrorHandler.handleError(it)
                 })
         }
+    }
+
+    private fun showScanBottom(scan: String) {
+        bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
+        bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
     }
 
     private fun initView() {
@@ -734,6 +841,8 @@ class MainActivity : BlazeBaseActivity() {
         private const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
 
+        private const val DONATE = "donate"
+
         fun showWallet(context: Context) {
             Intent(context, MainActivity::class.java).apply {
                 putExtra(WALLET, true)
@@ -759,6 +868,18 @@ class MainActivity : BlazeBaseActivity() {
                 url?.let {
                     putExtra(URL, it)
                 }
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+            }.run {
+                activity.startActivity(this)
+            }
+        }
+
+        fun showDonate(
+            activity: Activity,
+            text: String
+        ) {
+            Intent(activity, MainActivity::class.java).apply {
+                putExtra(DONATE, text)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             }.run {
                 activity.startActivity(this)

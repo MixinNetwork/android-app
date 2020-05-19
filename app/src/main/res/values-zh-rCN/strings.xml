@@ -99,6 +99,7 @@
     <string name="english">英语</string>
     <string name="follow_system">跟随系统</string>
     <string name="nobody">没有人</string>
+    <string name="analyzing">解析中…</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
