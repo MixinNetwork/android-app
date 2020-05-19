@@ -105,6 +105,10 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         }
     }
 
+    override fun dismiss() {
+        dismissAllowingStateLoss()
+    }
+
     override fun dismissAllowingStateLoss() {
         try {
             super.dismissAllowingStateLoss()
