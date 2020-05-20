@@ -238,7 +238,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         ices.forEach {
             peerConnectionClient.addRemoteIceCandidate(it)
         }
-        updateForegroundNotification()
     }
 
     private fun handleConnected() {
@@ -267,7 +266,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         } else {
             callState.setCallState(CallState.STATE_IDLE)
         }
-        updateForegroundNotification()
         disconnect()
     }
 
@@ -281,7 +279,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             val category = MessageCategory.WEBRTC_AUDIO_DECLINE.name
             sendCallMessage(category)
         }
-        updateForegroundNotification()
         disconnect()
     }
 
@@ -294,7 +291,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (toIdle != null && toIdle) {
             callState.setCallState(CallState.STATE_IDLE)
         }
-        updateForegroundNotification()
         disconnect()
     }
 
@@ -302,13 +298,11 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (callState.callInfo.callState == CallState.STATE_IDLE) return
 
         callState.setCallState(CallState.STATE_IDLE)
-        updateForegroundNotification()
         disconnect()
     }
 
     private fun handleCallBusy() {
         callState.setCallState(CallState.STATE_BUSY)
-        updateForegroundNotification()
         disconnect()
     }
 
@@ -326,12 +320,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             callState.setCallState(CallState.STATE_IDLE)
             disconnect()
         }
-        updateForegroundNotification()
     }
 
     private fun handleCallRemoteFailed() {
         callState.setCallState(CallState.STATE_IDLE)
-        updateForegroundNotification()
         disconnect()
     }
 
@@ -340,7 +332,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
         audioEnable = !extras.getBoolean(EXTRA_MUTE)
         peerConnectionClient.setAudioEnable(audioEnable)
-        updateForegroundNotification()
     }
 
     private fun handleSpeakerphone(intent: Intent) {
@@ -348,19 +339,18 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
         val speakerphone = extras.getBoolean(EXTRA_SPEAKERPHONE)
         audioManager.isSpeakerOn = speakerphone
-        updateForegroundNotification()
     }
 
     private fun handleCheckTimeout() {
         if (callState.callInfo.callState == CallState.STATE_IDLE && callState.callInfo.callState == CallState.STATE_CONNECTED) return
 
-        updateForegroundNotification()
         handleCallCancel()
     }
 
     private fun updateForegroundNotification() {
-        startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION,
-            CallNotificationBuilder.getCallNotification(this, callState, user))
+        CallNotificationBuilder.getCallNotification(this, callState, user)?.let {
+            startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION, it)
+        }
     }
 
     private fun getRemoteSdp(json: ByteArray): SessionDescription {
