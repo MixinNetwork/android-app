@@ -70,7 +70,6 @@ class ScanFragment : BaseCameraxFragment() {
 
     @SuppressLint("RestrictedApi")
     override fun getOtherUseCases(
-        screenAspectRatio: Int,
         rotation: Int
     ): Array<UseCase> {
         return arrayOf()

@@ -10,13 +10,13 @@ import android.graphics.BitmapFactory
 import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.util.DisplayMetrics
+import android.util.Size
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_UP
 import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.ViewConfiguration
-import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.FocusMeteringAction
@@ -42,7 +42,6 @@ import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.android.synthetic.main.fragment_capture.*
@@ -76,8 +75,6 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
         private const val UNITY_ZOOM_SCALE = 1f
         private const val ZOOM_NOT_SUPPORTED = UNITY_ZOOM_SCALE
-        private const val RATIO_4_3_VALUE = 4.0 / 3.0
-        private const val RATIO_16_9_VALUE = 16.0 / 9.0
     }
 
     protected var forAddress: Boolean = false
@@ -99,6 +96,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     private var displayId: Int = -1
     private lateinit var displayManager: DisplayManager
+    lateinit var metrics: DisplayMetrics
     private var downEventTimestamp = 0L
     private var upEvent: MotionEvent? = null
 
@@ -183,8 +181,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     @SuppressLint("RestrictedApi")
     protected fun bindCameraUseCase() {
-        val metrics = DisplayMetrics().also { view_finder.display.getRealMetrics(it) }
-        val screenAspectRatio = aspectRatio(metrics.widthPixels, metrics.heightPixels)
+        metrics = DisplayMetrics().also { view_finder.display.getRealMetrics(it) }
         val rotation = view_finder.display.rotation
 
         val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
@@ -193,19 +190,19 @@ abstract class BaseCameraxFragment : VisionFragment() {
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
             preview = Preview.Builder()
-                .setTargetAspectRatio(screenAspectRatio)
+                .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
                 .setTargetRotation(rotation)
                 .build()
 
             imageAnalysis = ImageAnalysis.Builder()
-                .setTargetAspectRatio(screenAspectRatio)
+                .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
                 .setTargetRotation(rotation)
                 .build()
                 .also {
                     it.setAnalyzer(backgroundExecutor, imageAnalyzer)
                 }
 
-            val otherUseCases = getOtherUseCases(screenAspectRatio, rotation)
+            val otherUseCases = getOtherUseCases(rotation)
 
             cameraProvider.unbindAll()
 
@@ -298,14 +295,18 @@ abstract class BaseCameraxFragment : VisionFragment() {
         upEvent = null
         focus_view.focusAndMeter(x, y)
 
-        val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
-        val pointFactory = v.createMeteringPointFactory(cameraSelector)
-        val afPointWidth = 1.0f / 6.0f
-        val aePointWidth = afPointWidth * 1.5f
-        val afPoint = pointFactory.createPoint(x, y, afPointWidth)
-        val aePoint = pointFactory.createPoint(x, y, aePointWidth)
-
         camera?.let { c ->
+            val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
+            val pointFactory = try {
+                v.createMeteringPointFactory(cameraSelector)
+            } catch (e: NullPointerException) {
+                return false
+            }
+            val afPointWidth = 1.0f / 6.0f
+            val aePointWidth = afPointWidth * 1.5f
+            val afPoint = pointFactory.createPoint(x, y, afPointWidth)
+            val aePoint = pointFactory.createPoint(x, y, aePointWidth)
+
             val future = c.cameraControl.startFocusAndMetering(
                 FocusMeteringAction.Builder(afPoint,
                     FocusMeteringAction.FLAG_AF).addPoint(aePoint,
@@ -340,16 +341,8 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
     private fun delta() = System.currentTimeMillis() - downEventTimestamp
 
-    private fun aspectRatio(width: Int, height: Int): Int {
-        val previewRatio = max(width, height).toDouble() / min(width, height)
-        if (abs(previewRatio - RATIO_4_3_VALUE) <= abs(previewRatio - RATIO_16_9_VALUE)) {
-            return AspectRatio.RATIO_4_3
-        }
-        return AspectRatio.RATIO_16_9
-    }
-
     abstract fun onFlashClick()
-    abstract fun getOtherUseCases(screenAspectRatio: Int, rotation: Int): Array<UseCase>
+    abstract fun getOtherUseCases(rotation: Int): Array<UseCase>
     abstract fun onDisplayChanged(rotation: Int)
     abstract fun fromScan(): Boolean
 

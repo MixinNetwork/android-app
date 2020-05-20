@@ -103,6 +103,7 @@
     <string name="pin" translatable="false">PIN</string>
     <string name="simplified_chinese">Simplified Chinese</string>
     <string name="english">English</string>
+    <string name="follow_system">Follow System</string>
     <string name="nobody">Nobody</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
@@ -312,6 +313,7 @@
     <string name="contact_less_invite">Invite to Mixin</string>
     <string name="contact_less_invite_content">Hey, I\'m using Mixin Messenger to chat. Download it here: https://mixin.one/messenger .</string>
     <string name="contact_mute_title">Mute notifications for…</string>
+    <string name="contact_mute_1hour">1 Hour</string>
     <string name="contact_mute_8hours">8 Hours</string>
     <string name="contact_mute_1week">1 Week</string>
     <string name="contact_mute_1year">1 Year</string>
@@ -459,8 +461,8 @@
     <string name="conversation_status_live">Live</string>
     <string name="setting_no_blocked">No blocked users</string>
     <string name="setting_no_auth_app">No auth app</string>
-    <string name="setting_authentications">Authentications</string>
-    <string name="setting_permissions">Permission list</string>
+    <string name="setting_authentications">Authorizations</string>
+    <string name="setting_permissions">Permissions</string>
     <string name="setting_no_authentications">No RESULT</string>
     <string name="setting_emergency">Emergency Contact</string>
     <string name="setting_emergency_content">The emergency contact is designed to help you log in to your account if you are lost and can not retrieve your mobile number.</string>
@@ -480,7 +482,7 @@
     <string name="setting_emergency_change_mobile">Do you want to change your mobile number now?</string>
     <string name="setting_emergency_pin_tip">Your emergency contact is protected by PIN</string>
     <string name="setting_emergency_enable">Enable Emergency Contact</string>
-    <string name="setting_deauthorize">Deauthorize</string>
+    <string name="setting_revoke">Revoke access</string>
     <string name="setting_auth_access">Approved: %1$s, Last Accessed: %2$s</string>
     <string name="setting_backup">Backup</string>
     <string name="setting_clearing">Clearing…</string>
@@ -499,7 +501,7 @@
     <string name="setting_desktop">Mixin Messenger Desktop</string>
     <string name="setting_storage_clear">Clear %1$d messages (%2$s)?</string>
     <string name="setting_storage_bn_clear">Clear</string>
-    <string name="setting_auth_cancel_msg">Deauthorize %1$s?</string>
+    <string name="setting_auth_cancel_msg">Revoke access %1$s?</string>
     <string name="setting_logout_desktop">Logout of desktop</string>
     <string name="setting_scan_qr_code">Scan QR Code</string>
     <string name="setting_desktop_logout">Logout…</string>

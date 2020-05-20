@@ -44,10 +44,13 @@ open class ErrorHandler {
             }
         }
 
-        fun handleMixinError(code: Int, message: String) {
+        fun handleMixinError(code: Int, message: String, extraMgs: String? = null) {
             val ctx = MixinApplication.appContext
             ctx.runOnUiThread {
-                toast(getMixinErrorStringByCode(code, message))
+                val extra = if (!extraMgs.isNullOrBlank()) {
+                    "$extraMgs\n"
+                } else ""
+                toast("$extra${getMixinErrorStringByCode(code, message)}")
             }
         }
 

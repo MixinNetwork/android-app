@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.util.image.JSON_EXTENSION
 
 @Entity(tableName = "stickers")
 data class Sticker(
@@ -35,3 +36,7 @@ data class Sticker(
     @ColumnInfo(name = "last_use_at")
     var lastUseAt: String?
 )
+
+fun Sticker.isLottie() = assetUrl.isLottieUrl()
+
+fun String.isLottieUrl() = endsWith(JSON_EXTENSION)

@@ -19,6 +19,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
+import one.mixin.android.Constants.Mute.MUTE_1_HOUR
+import one.mixin.android.Constants.Mute.MUTE_1_WEEK
+import one.mixin.android.Constants.Mute.MUTE_1_YEAR
+import one.mixin.android.Constants.Mute.MUTE_8_HOURS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
@@ -353,10 +357,12 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
     private fun showMuteDialog() {
         val choices = arrayOf(
+            getString(R.string.contact_mute_1hour),
             getString(R.string.contact_mute_8hours),
-            getString(R.string.contact_mute_1week), getString(R.string.contact_mute_1year)
+            getString(R.string.contact_mute_1week),
+            getString(R.string.contact_mute_1year)
         )
-        var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
+        var duration = MUTE_8_HOURS
         var whichItem = 0
         alertDialogBuilder()
             .setTitle(getString(R.string.contact_mute_title))
@@ -374,9 +380,10 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             .setSingleChoiceItems(choices, 0) { _, which ->
                 whichItem = which
                 when (which) {
-                    0 -> duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
-                    1 -> duration = UserBottomSheetDialogFragment.MUTE_1_WEEK
-                    2 -> duration = UserBottomSheetDialogFragment.MUTE_1_YEAR
+                    0 -> duration = MUTE_1_HOUR
+                    1 -> duration = MUTE_8_HOURS
+                    2 -> duration = MUTE_1_WEEK
+                    3 -> duration = MUTE_1_YEAR
                 }
             }
             .show()
@@ -384,7 +391,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
     override fun onStateChanged(bottomSheet: View, newState: Int) {
         when (newState) {
-            BottomSheetBehavior.STATE_HIDDEN -> dismiss()
+            BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
             BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.rotationX = 0f
             BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.rotationX = 180f
         }

@@ -76,11 +76,16 @@ class AppearanceFragment : BaseViewModelFragment<SettingViewModel>() {
             }
         }
         val language = Lingver.getInstance().getLanguage()
-        language_desc_tv.text = getString(if (language == Locale.SIMPLIFIED_CHINESE.language) {
-            R.string.simplified_chinese
-        } else {
-            R.string.english
-        })
+        language_desc_tv.text = getString(
+            if (Lingver.getInstance().isFollowingSystemLocale()) {
+                R.string.follow_system
+            } else {
+                if (language == Locale.SIMPLIFIED_CHINESE.language) {
+                    R.string.simplified_chinese
+                } else {
+                    R.string.english
+                }
+            })
         language_rl.setOnClickListener { showLanguageAlert() }
         current_tv.text = getString(R.string.wallet_setting_currency_desc, Session.getFiatCurrency(), Fiats.getSymbol())
         currency_rl.setOnClickListener {
@@ -96,12 +101,16 @@ class AppearanceFragment : BaseViewModelFragment<SettingViewModel>() {
 
     private fun showLanguageAlert() {
         val choice = resources.getStringArray(R.array.language_names)
-        val language = Lingver.getInstance().getLanguage()
-        val selectItem = if (language == Locale.SIMPLIFIED_CHINESE.language) {
-            1
-        } else {
-            0
-        }
+        val selectItem = if (Lingver.getInstance().isFollowingSystemLocale()) {
+                0
+            } else {
+                val language = Lingver.getInstance().getLanguage()
+                if (language == Locale.SIMPLIFIED_CHINESE.language) {
+                    2
+                } else {
+                    1
+                }
+            }
         var newSelectItem = selectItem
         alertDialogBuilder()
             .setTitle(R.string.language)
@@ -110,16 +119,20 @@ class AppearanceFragment : BaseViewModelFragment<SettingViewModel>() {
             }
             .setPositiveButton(R.string.group_ok) { dialog, _ ->
                 if (newSelectItem != selectItem) {
-                    val selectedLang = when (newSelectItem) {
-                        0 -> Locale.US.language
-                        else -> Locale.SIMPLIFIED_CHINESE.language
+                    if (newSelectItem == 0) {
+                        Lingver.getInstance().setFollowSystemLocale(requireContext())
+                    } else {
+                        val selectedLang = when (newSelectItem) {
+                            1 -> Locale.US.language
+                            else -> Locale.SIMPLIFIED_CHINESE.language
+                        }
+                        val selectedCountry = when (newSelectItem) {
+                            1 -> Locale.US.country
+                            else -> Locale.SIMPLIFIED_CHINESE.country
+                        }
+                        val newLocale = Locale(selectedLang, selectedCountry)
+                        Lingver.getInstance().setLocale(requireContext(), newLocale)
                     }
-                    val selectedCountry = when (newSelectItem) {
-                        0 -> Locale.US.country
-                        else -> Locale.SIMPLIFIED_CHINESE.country
-                    }
-                    val newLocale = Locale(selectedLang, selectedCountry)
-                    Lingver.getInstance().setLocale(requireContext(), newLocale)
                     TimeCache.singleton.evictAll()
                     requireActivity().onBackPressed()
                     requireActivity().recreate()

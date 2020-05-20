@@ -27,7 +27,6 @@ object Constants {
         const val PREF_PIN_CHECK = "pref_pin_check"
         const val PREF_PIN_INTERVAL = "pref_pin_interval"
         const val PREF_PIN_ITERATOR = "pref_pin_iterator"
-        const val PREF_LAST_USER_ID = "pref_last_user_id"
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_WRONG_TIME = "pref_wrong_time"
         const val PREF_FTS4_UPGRADE = "pref_fts4_upgrade"
@@ -125,6 +124,13 @@ object Constants {
         const val ETHEREUM_CHAIN_ID = "43d61dcd-e413-450d-80b8-101d5e903357"
         const val EOS_CHAIN_ID = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
+    }
+
+    object Mute {
+        const val MUTE_1_HOUR = 1 * 60 * 60
+        const val MUTE_8_HOURS = 8 * 60 * 60
+        const val MUTE_1_WEEK = 7 * 24 * 60 * 60
+        const val MUTE_1_YEAR = 365 * 24 * 60 * 60
     }
 
     const val SLEEP_MILLIS: Long = 1000

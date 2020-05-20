@@ -17,20 +17,19 @@
         android:textSize="12sp"/>
 
     <RelativeLayout
-        android:id="@+id/deauthorize_rl"
+        android:id="@+id/revoke_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:background="?attr/bg_white"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
-            android:id="@+id/deauthorize_tv"
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_deauthorize"
+            android:text="@string/setting_revoke"
             android:textColor="@color/colorRed"
             tools:ignore="RelativeOverlap" />
     </RelativeLayout>

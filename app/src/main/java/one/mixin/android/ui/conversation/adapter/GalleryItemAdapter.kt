@@ -1,10 +1,13 @@
 package one.mixin.android.ui.conversation.adapter
 
+import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.Build
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
@@ -14,6 +17,8 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.extension.round
+import one.mixin.android.util.image.HeicLoader
+import one.mixin.android.util.image.ImageListener
 import one.mixin.android.widget.gallery.internal.entity.Item
 
 class GalleryItemAdapter(
@@ -39,6 +44,7 @@ class GalleryItemAdapter(
         val imageView = holder.itemView.thumbnail_iv
         val coverView = holder.itemView.cover_view
         if (position == 0 && needCamera) {
+            holder.itemView.thumbnail_iv.scaleType = ImageView.ScaleType.FIT_CENTER
             holder.itemView.gif_tv.isVisible = false
             holder.itemView.video_iv.isVisible = false
             holder.itemView.duration_tv.isVisible = false
@@ -75,7 +81,17 @@ class GalleryItemAdapter(
                     holder.itemView.video_iv.isVisible = false
                     holder.itemView.duration_tv.isVisible = false
                 }
-                imageView.loadImageCenterCrop(item.uri, R.drawable.image_holder)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && item.isHeif) {
+                    holder.itemView.thumbnail_iv.scaleType = ImageView.ScaleType.CENTER_CROP
+                    imageView.setImageDrawable(null)
+                    HeicLoader.fromUrl(ctx, item.uri).addListener(object : ImageListener<Drawable> {
+                        override fun onResult(result: Drawable) {
+                            imageView.setImageDrawable(result)
+                        }
+                    })
+                } else {
+                    imageView.loadImageCenterCrop(item.uri, R.drawable.image_holder)
+                }
             }
             if (selectedUri == item.uri) {
                 coverView.isVisible = true

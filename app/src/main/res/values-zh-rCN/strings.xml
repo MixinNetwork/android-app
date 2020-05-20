@@ -97,6 +97,7 @@
     <string name="click_unlock">点击解锁</string>
     <string name="simplified_chinese">简体中文</string>
     <string name="english">英语</string>
+    <string name="follow_system">跟随系统</string>
     <string name="nobody">没有人</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
@@ -298,6 +299,7 @@
     <string name="contact_less_invite">邀请至 Mixin</string>
     <string name="contact_less_invite_content">我正在使用 Mixin 聊天。\n 下载：https://mixin.one</string>
     <string name="contact_mute_title">静音通知</string>
+    <string name="contact_mute_1hour">1 小时</string>
     <string name="contact_mute_8hours">8 小时</string>
     <string name="contact_mute_1week">1 星期</string>
     <string name="contact_mute_1year">1 年</string>
@@ -466,7 +468,7 @@
     <string name="setting_emergency_change_mobile">立即修改手机号？</string>
     <string name="setting_emergency_pin_tip">紧急联系人经支付密码加密保护</string>
     <string name="setting_emergency_enable">启用紧急联系人</string>
-    <string name="setting_deauthorize">取消授权</string>
+    <string name="setting_revoke">取消授权</string>
     <string name="setting_auth_access">授权时间：%1$s, 上次访问：%2$s</string>
     <string name="setting_backup">备份</string>
     <string name="setting_clearing">正在清理…</string>

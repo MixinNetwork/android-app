@@ -240,6 +240,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     @Inject
     lateinit var jobManager: MixinJobManager
+
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val chatViewModel: ConversationViewModel by viewModels { viewModelFactory }
@@ -298,7 +299,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 chat_rv.measuredHeight * 3 / 4
                             )
                         }
-                        chat_rv.visibility = VISIBLE
+                        chat_rv.isVisible = true
                     }
                     isBottom -> {
                         if (chatAdapter.currentList != null && chatAdapter.currentList!!.size > oldSize) {
@@ -610,10 +611,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 quoteMessageId?.let { quoteMsg ->
                     scrollToMessage(quoteMsg) { index ->
                         positionBeforeClickQuote = messageId
-                        val lastPosition = (chat_rv.layoutManager as LinearLayoutManager).findLastCompletelyVisibleItemPosition()
-                        if (index > lastPosition) {
-                            flag_layout.bottomFlag = true
-                        }
                     }
                 }
             }
@@ -734,6 +731,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var isFirstMessage = false
     private var isFirstLoad = true
     private var isBottom = true
+        set(value) {
+            field = value
+            flag_layout.bottomFlag = !value
+        }
     private var positionBeforeClickQuote: String? = null
 
     private var botWebBottomSheet: WebBottomSheetDialogFragment? = null
@@ -898,6 +899,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private var isCling: Boolean = false
     override fun onSensorChanged(event: SensorEvent?) {
+        if (!callState.isIdle()) return
+
         val values = event?.values ?: return
         if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
             isCling =
@@ -1078,12 +1081,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (firstPosition > 0) {
                     if (isBottom) {
                         isBottom = false
-                        flag_layout.bottomFlag = !isBottom
                     }
                 } else {
                     if (!isBottom) {
                         isBottom = true
-                        flag_layout.bottomFlag = !isBottom
                     }
                     unreadTipCount = 0
                     flag_layout.bottomCountFlag = false
@@ -1260,9 +1261,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 requireContext().toast(R.string.add_success)
             }
         } else {
-            withContext(Dispatchers.Main) {
-                requireContext().toast(R.string.sticker_add_failed)
-            }
+            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription,
+                getString(R.string.sticker_add_failed))
         }
     }
 
@@ -1334,6 +1334,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
                     unreadTipCount += (list.size - oldCount)
                     oldCount = list.size
+                } else if (isBottom) {
+                    unreadTipCount = 0
+                    oldCount = list.size
                 }
                 chatViewModel.viewModelScope.launch {
                     chatAdapter.hasBottomView = ((isBot && list.isEmpty()) ||
@@ -1342,10 +1345,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 if (isFirstLoad && messageId == null && unreadCount > 0) {
                     chatAdapter.unreadMsgId = unreadMessageId
-                    if (isBottom && unreadCount > 20) {
-                        isBottom = false
-                        flag_layout.bottomFlag = !isBottom
-                    }
                 } else if (lastReadMessage != null) {
                     chatViewModel.viewModelScope.launch {
                         lastReadMessage?.let { id ->
@@ -1576,7 +1575,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             createConversation {
                 chatViewModel.sendFordMessage(conversationId, sender, it, isPlainMessage())
                     .autoDispose(stopScope).subscribe({
-                        if (it == 0) {
+                        if (it == -1) {
                             toast(R.string.error_file_exists)
                         }
                     }, {
@@ -2386,6 +2385,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun resetAudioMode() {
+        if (!callState.isIdle()) return
+
         if (!audioManager.isHeadsetOn()) {
             if (isCling) {
                 changeToReceiver()

@@ -8,15 +8,12 @@ import java.security.KeyPair
 import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.Account.PREF_LAST_USER_ID
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.crypto.getPrivateKeyPem
 import one.mixin.android.crypto.rsaDecrypt
-import one.mixin.android.db.MixinDatabase
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.vibrate
@@ -24,6 +21,8 @@ import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.util.database.clearDatabase
+import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
@@ -85,13 +84,13 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
             saveQrCode(account)
         }
 
-        val lastUserId = requireContext().defaultSharedPreferences.getString(PREF_LAST_USER_ID, null)
-        val sameUser = lastUserId == null || lastUserId == account.userId
+        val lastUserId = getLastUserId(requireContext())
+        val sameUser = lastUserId != null && lastUserId == account.userId
         if (!sameUser) {
             showLoading()
 
             withContext(Dispatchers.IO) {
-                MixinDatabase.getDatabase(requireContext()).clearAllTables()
+                clearDatabase(requireContext())
             }
         }
         Session.storeAccount(account)

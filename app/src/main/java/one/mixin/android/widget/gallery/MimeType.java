@@ -2,19 +2,26 @@ package one.mixin.android.widget.gallery;
 
 import android.content.ContentResolver;
 import android.net.Uri;
-import androidx.collection.ArraySet;
 import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
+
+import androidx.collection.ArraySet;
+
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Set;
+
 import one.mixin.android.widget.gallery.internal.utils.PhotoMetadataUtils;
 
 public enum MimeType {
 
     // ============== images ==============
     JPEG("image/jpeg", arraySetOf(
+            "jpg",
+            "jpeg"
+    )),
+    JPG("image/jpg", arraySetOf(
             "jpg",
             "jpeg"
     )),
@@ -29,6 +36,11 @@ public enum MimeType {
     )),
     WEBP("image/webp", arraySetOf(
             "webp"
+    )),
+    HEIC("image/heic", arraySetOf(
+        "heif",
+            "heifs",
+            "heic"
     )),
 
     // ============== videos ==============
@@ -81,15 +93,15 @@ public enum MimeType {
     }
 
     public static Set<MimeType> ofMedia() {
-        return EnumSet.of(JPEG, PNG, GIF, BMP, MPEG, MP4, QUICKTIME, THREEGPP, THREEGPP2, MKV, WEBM, TS, AVI);
+        return EnumSet.of(JPEG, JPG, PNG, GIF, BMP, WEBP, HEIC, MPEG, MP4, QUICKTIME, THREEGPP, THREEGPP2, MKV, WEBM, TS, AVI);
     }
 
     public static Set<MimeType> ofImage() {
-        return EnumSet.of(JPEG, PNG, GIF, BMP);
+        return EnumSet.of(JPEG, JPG, PNG, GIF, BMP, WEBP, HEIC);
     }
 
     public static Set<MimeType> ofSticker() {
-        return EnumSet.of(JPEG, PNG, GIF, BMP, WEBP);
+        return EnumSet.of(JPEG, JPG, PNG, GIF, BMP, WEBP);
     }
 
     public static Set<MimeType> ofVideo() {

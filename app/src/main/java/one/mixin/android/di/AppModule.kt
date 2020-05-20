@@ -88,20 +88,30 @@ internal class AppModule {
 
     @Singleton
     @Provides
-    fun provideOkHttp(resolver: ContentResolver): OkHttpClient {
+    fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor? {
+        if (!BuildConfig.DEBUG) {
+            return null
+        }
+        return HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BASIC
+        }
+    }
+
+    @Singleton
+    @Provides
+    fun provideOkHttp(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?): OkHttpClient {
         val builder = OkHttpClient.Builder()
         builder.addInterceptor(HostSelectionInterceptor.get())
         if (BuildConfig.DEBUG) {
-            val logging = HttpLoggingInterceptor()
-            logging.level = HttpLoggingInterceptor.Level.BODY
-            builder.addNetworkInterceptor(logging)
             builder.addNetworkInterceptor(StethoInterceptor())
+        }
+        if (httpLoggingInterceptor != null) {
+            builder.addNetworkInterceptor(httpLoggingInterceptor)
         }
         builder.connectTimeout(10, TimeUnit.SECONDS)
         builder.writeTimeout(10, TimeUnit.SECONDS)
         builder.readTimeout(10, TimeUnit.SECONDS)
         builder.pingInterval(15, TimeUnit.SECONDS)
-        builder.retryOnConnectionFailure(false)
 
         builder.addInterceptor { chain ->
             val sourceRequest = chain.request()

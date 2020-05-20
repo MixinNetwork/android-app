@@ -30,7 +30,14 @@ class ShareHelper {
         if (Intent.ACTION_SEND == action) {
             if ("text/plain" == type) {
                 val text = intent.getStringExtra(Intent.EXTRA_TEXT)
-                ForwardMessage(ForwardCategory.TEXT.name, content = text).addTo(result)
+                if (text.isNullOrEmpty()) {
+                    intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let {
+                        ForwardMessage(ForwardCategory.DATA.name,
+                            mediaUrl = it.getFilePath(MixinApplication.appContext)).addTo(result)
+                    }
+                } else {
+                    ForwardMessage(ForwardCategory.TEXT.name, content = text).addTo(result)
+                }
             } else if (type.startsWith("image/")) {
                 val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
                 val fm = generateShareMessage(imageUri)

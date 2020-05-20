@@ -91,11 +91,10 @@
         <item name="android:navigationBarColor">?attr/text_primary</item>
     </style>
 
-    <style name="AppTheme.Photo" parent="AppTheme.NoActionBar">
+    <style name="AppTheme.Photo" parent="AppTheme.FullScreen">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:navigationBarColor">?attr/text_primary</item>
     </style>
 
 

@@ -6,7 +6,9 @@ import android.app.NotificationManager
 import android.content.ContentResolver.SCHEME_CONTENT
 import android.content.SharedPreferences
 import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -20,6 +22,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.io.FileInputStream
+import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -434,62 +437,77 @@ internal constructor(
                     replyMessage?.toQuoteMessageItem()
                 )
                 jobManager.addJobInBackground(SendAttachmentMessageJob(message))
-                return@map -0
+                return@map 0
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
         }
 
         val temp = MixinApplication.get().getImagePath().createImageTemp(conversationId, messageId, type = ".jpg")
 
-        return Compressor()
-            .setCompressFormat(Bitmap.CompressFormat.JPEG)
-            .compressToFileAsFlowable(
-                File(uri.getFilePath(MixinApplication.get())),
-                temp.absolutePath
-            )
-            .map { imageFile ->
-                val imageUrl = Uri.fromFile(temp).toString()
-                val length = imageFile.length()
-                if (length <= 0) {
-                    return@map -1
-                }
-                val size = getImageSize(imageFile)
-                val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mimeType)
-                val message = createMediaMessage(
-                    messageId,
-                    conversationId,
-                    sender.userId,
-                    category,
-                    null,
-                    imageUrl,
-                    MimeType.JPEG.toString(),
-                    length,
-                    size.width,
-                    size.height,
-                    thumbnail,
-                    null,
-                    null,
-                    nowInUtc(),
-                    MediaStatus.PENDING,
-                    MessageStatus.SENDING.name,
-                    replyMessage?.messageId,
-                    replyMessage?.toQuoteMessageItem()
-                )
-                jobManager.addJobInBackground(SendAttachmentMessageJob(message))
-                return@map -0
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && mimeType == MimeType.HEIC.toString()) {
+            val source = ImageDecoder.createSource(File(uri.getFilePath(MixinApplication.get())))
+            val bitmap = ImageDecoder.decodeBitmap(source)
+            temp.outputStream().use {
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
             }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+            Flowable.defer {
+                try {
+                    Flowable.just<File>(temp)
+                } catch (e: IOException) {
+                    Flowable.error<File>(e)
+                }
+            }
+        } else {
+            Compressor()
+                .setCompressFormat(Bitmap.CompressFormat.JPEG)
+                .compressToFileAsFlowable(
+                    File(uri.getFilePath(MixinApplication.get())),
+                    temp.absolutePath
+                )
+        }.map { imageFile ->
+            val imageUrl = Uri.fromFile(temp).toString()
+            val length = imageFile.length()
+            if (length <= 0) {
+                return@map -1
+            }
+            val size = getImageSize(imageFile)
+            val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mimeType)
+            val message = createMediaMessage(
+                messageId,
+                conversationId,
+                sender.userId,
+                category,
+                null,
+                imageUrl,
+                MimeType.JPEG.toString(),
+                length,
+                size.width,
+                size.height,
+                thumbnail,
+                null,
+                null,
+                nowInUtc(),
+                MediaStatus.PENDING,
+                MessageStatus.SENDING.name,
+                replyMessage?.messageId,
+                replyMessage?.toQuoteMessageItem()
+            )
+            jobManager.addJobInBackground(SendAttachmentMessageJob(message))
+            return@map 0
+        }
+        .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
     }
 
-    fun sendFordMessage(conversationId: String, sender: User, id: String, isPlain: Boolean) =
+    fun sendFordMessage(conversationId: String, sender: User, id: String, isPlain: Boolean): Flowable<Int> =
         Flowable.just(id).observeOn(Schedulers.io()).map {
-            conversationRepository.findMessageById(id)?.let { message ->
+            val message = conversationRepository.findMessageById(id)
+            if (message != null) {
                 when {
                     message.category.endsWith("_IMAGE") -> {
                         val category =
                             if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
                         if (message.mediaUrl?.fileExists() != true) {
-                            return@let 0
+                            return@map -1
                         }
                         jobManager.addJobInBackground(
                             SendAttachmentMessageJob(
@@ -519,16 +537,15 @@ internal constructor(
                             message.mediaWidth == 0 ||
                             message.mediaHeight == null ||
                             message.mediaHeight == 0 ||
-                            message.thumbUrl.isNullOrBlank() ||
                             message.mediaUrl.isNullOrBlank()
                         ) {
-                            return@let 1
+                            return@map -1
                         }
                         sendLiveMessage(
                             conversationId, sender, LiveMessagePayload(
                                 message.mediaWidth,
                                 message.mediaHeight,
-                                message.thumbUrl,
+                                message.thumbUrl ?: "",
                                 message.mediaUrl
                             ), isPlain
                         )
@@ -537,7 +554,7 @@ internal constructor(
                         val category =
                             if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
                         if (message.mediaUrl?.fileExists() != true) {
-                            return@let 0
+                            return@map -1
                         }
                         val mediaDuration = try {
                             message.mediaDuration?.toLong()
@@ -604,7 +621,7 @@ internal constructor(
                         val category =
                             if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
                         if (message.mediaUrl?.fileExists() != true) {
-                            return@let 0
+                            return@map -1
                         }
                         jobManager.addJobInBackground(
                             SendAttachmentMessageJob(
@@ -628,7 +645,9 @@ internal constructor(
                         )
                     }
                 }
-                return@let 1
+                return@map 0
+            } else {
+                return@map -1
             }
         }.observeOn(AndroidSchedulers.mainThread())!!
 
@@ -808,14 +827,19 @@ internal constructor(
     private fun sendForwardMessages(
         conversationId: String,
         messages: List<ForwardMessage>?,
-        isPlainMessage: Boolean
+        isPlainMessage: Boolean,
+        showSuccess: Boolean
     ) {
         messages?.let { forwardMessages ->
             val sender = Session.getAccount()!!.toUser()
             for (item in forwardMessages) {
                 if (item.id != null) {
-                    sendFordMessage(conversationId, sender, item.id, isPlainMessage).subscribe({}, {
-                        Timber.e("")
+                    sendFordMessage(conversationId, sender, item.id, isPlainMessage).subscribe({
+                        if (it == 0) {
+                            showForwardSuccessToast(showSuccess)
+                        }
+                    }, {
+                        Timber.e(it)
                     })
                 } else {
                     when (item.type) {
@@ -826,6 +850,7 @@ internal constructor(
                                 item.sharedUserId!!,
                                 isPlainMessage
                             )
+                            showForwardSuccessToast(showSuccess)
                         }
                         ForwardCategory.IMAGE.name -> {
                             sendImageMessage(
@@ -833,8 +858,10 @@ internal constructor(
                                 sender,
                                 Uri.parse(item.mediaUrl),
                                 isPlainMessage
-                            )
-                                ?.subscribe({
+                            )?.subscribe({
+                                if (it == 0) {
+                                    showForwardSuccessToast(showSuccess)
+                                }
                                 }, {
                                     Timber.e(it)
                                 })
@@ -842,6 +869,7 @@ internal constructor(
                         ForwardCategory.DATA.name -> {
                             MixinApplication.get().getAttachment(Uri.parse(item.mediaUrl))?.let {
                                 sendAttachmentMessage(conversationId, sender, it, isPlainMessage)
+                                showForwardSuccessToast(showSuccess)
                             }
                         }
                         ForwardCategory.VIDEO.name -> {
@@ -851,31 +879,44 @@ internal constructor(
                                 Uri.parse(item.mediaUrl),
                                 isPlainMessage
                             )
+                            showForwardSuccessToast(showSuccess)
                         }
                         ForwardCategory.TEXT.name -> {
                             item.content?.let {
                                 sendTextMessage(conversationId, sender, it, isPlainMessage)
+                                showForwardSuccessToast(showSuccess)
                             }
                         }
                         ForwardCategory.POST.name -> {
                             item.content?.let {
                                 sendPostMessage(conversationId, sender, it, isPlainMessage)
+                                showForwardSuccessToast(showSuccess)
                             }
                         }
                         ForwardCategory.LOCATION.name -> {
                             item.content?.let {
                                 toLocationData(it)?.let {
                                     sendLocationMessage(conversationId, sender.userId, it, isPlainMessage)
+                                    showForwardSuccessToast(showSuccess)
                                 }
                             }
                         }
                         ForwardCategory.APP_CARD.name -> {
                             item.content?.let {
                                 sendAppCardMessage(conversationId, sender, it)
+                                showForwardSuccessToast(showSuccess)
                             }
                         }
                     }
                 }
+            }
+        }
+    }
+
+    private fun showForwardSuccessToast(showSuccess: Boolean) {
+        if (showSuccess) {
+            viewModelScope.launch {
+                MixinApplication.get().toast(R.string.forward_success)
             }
         }
     }
@@ -896,17 +937,12 @@ internal constructor(
                             generateConversationId(Session.getAccountId()!!, item.userId)
                         initConversation(conversationId, item, Session.getAccount()!!.toUser())
                     }
-                    sendForwardMessages(conversationId, messages, item.isBot())
+                    sendForwardMessages(conversationId, messages, item.isBot(), showSuccess)
                 } else if (item is ConversationItem) {
                     conversationId = item.conversationId
-                    sendForwardMessages(item.conversationId, messages, item.isBot())
+                    sendForwardMessages(item.conversationId, messages, item.isBot(), showSuccess)
                 }
 
-                if (showSuccess) {
-                    withContext(Dispatchers.Main) {
-                        MixinApplication.get().toast(R.string.forward_success)
-                    }
-                }
                 findUnreadMessagesSync(conversationId!!)?.let { list ->
                     if (list.isNotEmpty()) {
                         conversationRepository.batchMarkReadAndTake(

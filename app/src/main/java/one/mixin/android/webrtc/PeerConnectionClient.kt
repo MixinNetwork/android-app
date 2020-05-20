@@ -188,19 +188,20 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             return null
         }
         val rtcConfig = PeerConnection.RTCConfiguration(iceServers).apply {
-            tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.DISABLED
+            tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.ENABLED
             iceTransportsType = PeerConnection.IceTransportsType.RELAY
             bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE
             rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE
             sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
             enableDtlsSrtp = true
-            continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY
+            continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
         }
         val peerConnection = factory!!.createPeerConnection(rtcConfig, pcObserver)
         if (peerConnection == null) {
             reportError("PeerConnection is not created")
             return null
         }
+        // Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO);
         peerConnection.setAudioPlayout(false)
         peerConnection.setAudioRecording(false)
 
@@ -252,13 +253,15 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
         override fun onIceConnectionChange(newState: PeerConnection.IceConnectionState) {
             Timber.d("onIceConnectionChange: $newState")
+        }
+
+        override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
+            Timber.d("onConnectionChange: $newState")
             executor.execute {
-                when (newState) {
-                    PeerConnection.IceConnectionState.CONNECTED -> events.onIceConnected()
-                    PeerConnection.IceConnectionState.DISCONNECTED -> events.onIceDisconnected()
-                    PeerConnection.IceConnectionState.FAILED -> events.onIceConnectedFailed()
-                    else -> {
-                    }
+                if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
+                    events.onConnected()
+                } else if (newState == PeerConnection.PeerConnectionState.DISCONNECTED) {
+                    events.onDisconnected()
                 }
             }
         }
@@ -289,9 +292,11 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
 
         override fun onTrack(transceiver: RtpTransceiver?) {
+            Timber.d("onTrack=" + transceiver.toString())
         }
 
         override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
+            Timber.d("onAddTrack=" + receiver.toString())
         }
     }
 
@@ -341,10 +346,16 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         fun onIceDisconnected()
 
         /**
-         * Callback fired once connection is closed (IceConnectionState is
-         * FAILED).
+         * Callback fired once DTLS connection is established (PeerConnectionState
+         * is CONNECTED).
          */
-        fun onIceConnectedFailed()
+        fun onConnected()
+
+        /**
+         * Callback fired once DTLS connection is disconnected (PeerConnectionState
+         * is DISCONNECTED).
+         */
+        fun onDisconnected()
 
         /**
          * Callback fired once peer connection is closed.

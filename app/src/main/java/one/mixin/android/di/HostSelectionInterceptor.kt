@@ -4,6 +4,7 @@ import java.io.IOException
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
+import okhttp3.Request
 import one.mixin.android.Constants
 import one.mixin.android.Constants.API.URL
 
@@ -29,7 +30,7 @@ class HostSelectionInterceptor private constructor() : Interceptor {
     override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
         var request = chain.request()
         if (request.header("Upgrade") == "websocket") {
-            return chain.proceed(request)
+            return safeProceed(chain, request)
         }
         this.host?.let {
             val newUrl = request.url.newBuilder()
@@ -39,14 +40,21 @@ class HostSelectionInterceptor private constructor() : Interceptor {
                 .url(newUrl)
                 .build()
         }
-        return try {
+        return safeProceed(chain, request)
+    }
+
+    private fun safeProceed(chain: Interceptor.Chain, request: Request) =
+        try {
             chain.proceed(request)
         } catch (t: Exception) {
-            val exception = IOException("Exception due to $t")
-            exception.addSuppressed(t)
-            throw exception
+            if (t is IOException) {
+                throw t
+            } else {
+                val exception = IOException("Exception due to $t")
+                exception.addSuppressed(t)
+                throw exception
+            }
         }
-    }
 
     companion object {
         @Synchronized

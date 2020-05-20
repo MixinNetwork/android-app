@@ -140,6 +140,8 @@ class CallAudioManager(private val context: Context) {
     }
 
     fun stop() {
+        if (mediaPlayerStoped) return
+
         mediaPlayerStoped = true
         audioManager.mode = if (bluetoothState == State.SCO_CONNECTED) {
             AudioManager.MODE_NORMAL
@@ -170,6 +172,7 @@ class CallAudioManager(private val context: Context) {
         bluetoothState = State.UNINITIALIZED
     }
 
+    @Synchronized
     private fun updateMediaPlayer() {
         if (mediaPlayerStoped) return
 
