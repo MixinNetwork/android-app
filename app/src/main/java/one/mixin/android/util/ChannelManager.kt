@@ -11,6 +11,7 @@ import androidx.annotation.RequiresApi
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.remove
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.supportsQ
 import org.jetbrains.anko.notificationManager
@@ -22,7 +23,7 @@ class ChannelManager {
         private const val CHANNEL_GROUP = "channel_group"
         const val CHANNEL_MESSAGE = "channel_message"
         private const val CHANNEL_UPDATED_WITH_VERSION = "channel_updated_with_version"
-        const val CHANNEL_VERSION = 2
+        const val CHANNEL_VERSION = 3
 
         fun create(context: Context, channelVersion: Int) {
             supportsOreo {
@@ -74,6 +75,16 @@ class ChannelManager {
             }
         }
 
+        fun resetChannelSound(context: Context){
+            supportsOreo {
+                val channelUpdatedWithVersion = "$CHANNEL_UPDATED_WITH_VERSION$CHANNEL_VERSION"
+                deleteChannels(context)
+
+                create(context, CHANNEL_VERSION)
+                context.defaultSharedPreferences.putBoolean(channelUpdatedWithVersion, true)
+            }
+        }
+
         @RequiresApi(Build.VERSION_CODES.O)
         fun deleteChannels(context: Context) {
             val existingChannels =
@@ -83,6 +94,7 @@ class ChannelManager {
                     if (it.id.startsWith(CHANNEL_GROUP) || it.id.startsWith(CHANNEL_MESSAGE)) {
                         context.notificationManager.deleteNotificationChannel(it.id)
                     }
+                    Timber.d(it.id)
                 }
             } catch (e: Exception) {
                 Timber.e(e)
@@ -93,7 +105,7 @@ class ChannelManager {
             if (isGroup) {
                 "$CHANNEL_GROUP$channelVersion"
             } else {
-                "$CHANNEL_MESSAGE$channelVersion}"
+                "$CHANNEL_MESSAGE$channelVersion"
             }
 
         @RequiresApi(Build.VERSION_CODES.O)

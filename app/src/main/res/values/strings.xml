@@ -520,6 +520,7 @@
     <string name="setting_mobile_contact_empty">Empty address book</string>
     <string name="setting_notification_transfer">Transfer Notifications</string>
     <string name="setting_notification_system">System options</string>
+    <string name="setting_notification_reset">Reset notifications</string>
     <string name="setting_notification_transfer_desc">Show notifications when receiving a transfer greater than or equal to %1$s.</string>
     <string name="setting_notification_transfer_amount">Transfer Amount(%1$s)</string>
     <string name="setting_notification_confirmation">Notification and Confirmation</string>
