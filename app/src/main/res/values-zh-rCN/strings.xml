@@ -409,6 +409,7 @@
     <string name="group_pop_menu_view">查看 %1$s</string>
     <string name="group_pop_menu_remove">移除 %1$s</string>
     <string name="group_pop_menu_make_admin">设定为群组管理员</string>
+    <string name="group_pop_menu_dismiss_admin">撤销管理员身份</string>
     <string name="group_info_remove_tip">将 %1$s 自 \"%2$s\" 群组移除?</string>
     <string name="group_adding">正在添加…</string>
     <string name="group_removing">正在移除…</string>
