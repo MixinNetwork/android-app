@@ -42,6 +42,7 @@ class ConversationJob(
         const val TYPE_EXIT = 5
         const val TYPE_DELETE = 6
         const val TYPE_MUTE = 7
+        const val TYPE_DISMISS_ADMIN = 8
 
         const val CREATE_TIMEOUT_MILLIS = 10000L
     }
@@ -105,6 +106,13 @@ class ConversationJob(
                     conversationApi.exit(conversationId!!).execute().body()
                 TYPE_MUTE ->
                     conversationApi.mute(request!!.conversationId, request).execute().body()
+                TYPE_DISMISS_ADMIN ->
+                    conversationApi.participants(
+                        conversationId!!,
+                        ParticipantAction.ROLE.name,
+                        participantRequests!!
+                    )
+                        .execute().body()
                 else -> null
             }
             handleResult(response)

@@ -423,6 +423,7 @@
     <string name="group_pop_menu_view">View %1$s</string>
     <string name="group_pop_menu_remove">Remove %1$s</string>
     <string name="group_pop_menu_make_admin">Make group admin</string>
+    <string name="group_pop_menu_dismiss_admin">Dismiss as admin</string>
     <string name="group_info_remove_tip">Remove %1$s from \"%2$s\" group?</string>
     <string name="group_adding">Adding…</string>
     <string name="group_removing">Removing…</string>
