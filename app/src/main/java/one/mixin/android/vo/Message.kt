@@ -229,7 +229,7 @@ enum class MessageCategory {
     WEBRTC_AUDIO_DECLINE,
     WEBRTC_AUDIO_END,
     WEBRTC_AUDIO_BUSY,
-    WEBRTC_AUDIO_FAILED
+    WEBRTC_AUDIO_FAILED,
 }
 
 fun String.isIllegalMessageCategory(): Boolean {

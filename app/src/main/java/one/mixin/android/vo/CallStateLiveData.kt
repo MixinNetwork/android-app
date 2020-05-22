@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import one.mixin.android.webrtc.CallService
 
-class CallState : LiveData<CallState.CallInfo>() {
+class CallStateLiveData : LiveData<CallStateLiveData.CallInfo>() {
     var callInfo: CallInfo = CallInfo()
     var user: User? = null
     var connectedTime: Long? = null

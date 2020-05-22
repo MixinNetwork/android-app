@@ -34,6 +34,7 @@ import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.CallNotificationBuilder
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
@@ -75,7 +76,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     @Inject
     lateinit var accountService: AccountService
     @Inject
-    lateinit var callState: one.mixin.android.vo.CallState
+    lateinit var callState: CallStateLiveData
     @Inject
     lateinit var conversationRepo: ConversationRepository
 
@@ -194,7 +195,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         quoteMessageId = blazeMessageData!!.messageId
         callState.setMessageId(quoteMessageId!!)
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-        peerConnectionClient.isInitiator = false
         callState.isInitiator = false
         CallActivity.show(this, user)
         audioManager.start(false)
@@ -209,10 +209,9 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         conversationId = cid
         user = intent.getParcelableExtra(ARGS_USER)
         callState.user = user
+        callState.isInitiator = true
         updateForegroundNotification()
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-        peerConnectionClient.isInitiator = true
-        callState.isInitiator = true
         CallActivity.show(this, user)
         audioManager.start(true)
         getTurnServer { peerConnectionClient.createOffer(it) }
@@ -225,7 +224,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         callState.setCallState(CallState.STATE_ANSWERING)
         updateForegroundNotification()
         audioManager.stop()
-        if (peerConnectionClient.isInitiator) {
+        if (callState.isInitiator) {
             val bmd = intent.getSerializableExtra(EXTRA_BLAZE) ?: return
             blazeMessageData = bmd as BlazeMessageData
             peerConnectionClient.setAnswerSdp(getRemoteSdp(Base64.decode(blazeMessageData!!.data)))
@@ -261,7 +260,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (callState.isIdle()) return
 
         audioManager.stop()
-        if (peerConnectionClient.isInitiator) {
+        if (callState.isInitiator) {
             val category = MessageCategory.WEBRTC_AUDIO_CANCEL.name
             sendCallMessage(category)
             val toIdle = intent?.getBooleanExtra(EXTRA_TO_IDLE, false)
@@ -279,7 +278,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
         audioManager.stop()
         callState.setCallState(CallState.STATE_IDLE)
-        if (!peerConnectionClient.isInitiator) {
+        if (!callState.isInitiator) {
             val category = MessageCategory.WEBRTC_AUDIO_DECLINE.name
             sendCallMessage(category)
         }
@@ -383,7 +382,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     // PeerConnectionEvents
     override fun onLocalDescription(sdp: SessionDescription) {
         callExecutor.execute {
-            val category = if (peerConnectionClient.isInitiator) {
+            val category = if (callState.isInitiator) {
                 MessageCategory.WEBRTC_AUDIO_OFFER.name
             } else {
                 MessageCategory.WEBRTC_AUDIO_ANSWER.name
@@ -430,7 +429,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun sendCallMessage(category: String, content: String? = null) {
-        val message = if (peerConnectionClient.isInitiator) {
+        val message = if (callState.isInitiator) {
             val messageId = UUID.randomUUID().toString()
             if (category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
                 quoteMessageId = messageId
@@ -466,7 +465,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (quoteMessageId != null || message.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
         }
-
         saveMessage(message)
     }
 

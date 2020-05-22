@@ -7,7 +7,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import one.mixin.android.R
-import one.mixin.android.vo.CallState
+import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.User
 import one.mixin.android.webrtc.CallService
 
@@ -18,7 +18,7 @@ class CallNotificationBuilder {
         const val WEBRTC_NOTIFICATION = 313388
         const val ACTION_EXIT = "action_exit"
 
-        fun getCallNotification(context: Context, state: CallState, user: User?): Notification? {
+        fun getCallNotification(context: Context, state: CallStateLiveData, user: User?): Notification? {
             if (state.callInfo.callState == CallService.CallState.STATE_IDLE) return null
 
             val callIntent = Intent(context, CallActivity::class.java)
