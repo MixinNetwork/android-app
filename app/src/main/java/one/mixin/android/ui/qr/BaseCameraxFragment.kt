@@ -78,6 +78,10 @@ abstract class BaseCameraxFragment : VisionFragment() {
         private const val ZOOM_NOT_SUPPORTED = UNITY_ZOOM_SCALE
     }
 
+    private val donateSupported = arrayOf("bitcoin:", "bitcoincash:", "bitcoinsv:", "ethereum:",
+        "litecoin:", "dash:", "ripple:", "zcash:", "horizen:", "monero:", "binancecoin:",
+        "stellar:", "dogecoin:")
+
     protected var forAddress: Boolean = false
     protected var forAccountName: Boolean = false
     protected var forMemo: Boolean = false
@@ -368,7 +372,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 activity?.finish()
             }
         } else {
-            if (analysisResult.startsWith(Constants.Scheme.DONATE_BITCOIN)) {
+            if (donateSupported.any { analysisResult.startsWith(it) }) {
                 MainActivity.showDonate(requireActivity(), analysisResult)
                 activity?.finish()
             }

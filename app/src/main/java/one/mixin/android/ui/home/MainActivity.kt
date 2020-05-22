@@ -437,6 +437,11 @@ class MainActivity : BlazeBaseActivity() {
                 showScanBottom(text)
                 return
             }
+            val assetId = sanitizer.getValue("asset")
+            if (assetId == null || !assetId.isUUID()) {
+                showScanBottom(text)
+                return
+            }
             val trace = sanitizer.getValue("trace") ?: UUID.randomUUID().toString()
             val memo = sanitizer.getValue("memo")
 
@@ -447,11 +452,11 @@ class MainActivity : BlazeBaseActivity() {
                     title = R.string.analyzing
                 )
 
-                var asset = assetDao.simpleAssetItem(Constants.AssetId.BITCOIN_ASSET_ID)
+                var asset = assetDao.simpleAssetItem(assetId)
                 if (asset == null) {
                     asset = handleMixinResponse(
                         invokeNetwork = {
-                            assetService.getAssetByIdSuspend(Constants.AssetId.BITCOIN_ASSET_ID)
+                            assetService.getAssetByIdSuspend(assetId)
                         },
                         switchContext = Dispatchers.IO,
                         successBlock = { response ->
@@ -478,7 +483,7 @@ class MainActivity : BlazeBaseActivity() {
                     return@launch
                 }
 
-                val transferRequest = TransferRequest(Constants.AssetId.BITCOIN_ASSET_ID,
+                val transferRequest = TransferRequest(assetId,
                     userId, amount, null, trace, memo)
                 handleMixinResponse(
                     invokeNetwork = {

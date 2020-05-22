@@ -62,8 +62,6 @@ object Constants {
         const val HTTPS_ADDRESS = "https://mixin.one/address"
         const val HTTPS_WITHDRAWAL = "https://mixin.one/withdrawal"
         const val HTTPS_APPS = "https://mixin.one/apps"
-
-        const val DONATE_BITCOIN = "bitcoin:"
     }
 
     object DataBase {
@@ -115,10 +113,6 @@ object Constants {
         const val ETHEREUM_CHAIN_ID = "43d61dcd-e413-450d-80b8-101d5e903357"
         const val EOS_CHAIN_ID = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
-    }
-
-    object AssetId {
-        const val BITCOIN_ASSET_ID = "c6d0c728-2624-429b-8e0d-d9d19b6592fa"
     }
 
     object Mute {
