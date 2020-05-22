@@ -6,6 +6,7 @@ import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_notifications.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -16,8 +17,11 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openNotificationSetting
+import one.mixin.android.extension.supportsOreo
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.common.editDialog
+import one.mixin.android.util.ChannelManager
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Fiats
 
@@ -51,6 +55,13 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
             showDialog(Session.getAccount()!!.transferConfirmationThreshold.toString(), false)
         }
         refreshLargeAmount(Session.getAccount()!!.transferConfirmationThreshold)
+        supportsOreo {
+            notification_reset.isVisible = true
+            notification_reset.setOnClickListener {
+                ChannelManager.resetChannelSound(requireContext())
+                toast(R.string.successful)
+            }
+        }
     }
 
     @SuppressLint("RestrictedApi")
