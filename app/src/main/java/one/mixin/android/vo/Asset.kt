@@ -57,6 +57,6 @@ data class Asset(
 ) : Parcelable
 
 fun Asset.toAssetItem(): AssetItem = AssetItem(assetId, symbol, name, iconUrl, balance, destination, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,
-    confirmations, null, null, null, assetKey, reserve)
+    confirmations, null, null, null, null, assetKey, reserve)
 
 fun Asset.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl)
