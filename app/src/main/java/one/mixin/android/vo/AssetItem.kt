@@ -26,6 +26,7 @@ data class AssetItem(
     val chainIconUrl: String?,
     val chainSymbol: String?,
     val chainName: String?,
+    val chainPriceUsd: String?,
     val assetKey: String?,
     val reserve: String?
 ) : Parcelable {
@@ -36,6 +37,10 @@ data class AssetItem(
     fun priceFiat(): BigDecimal = if (priceUsd == "0") {
         BigDecimal.ZERO
     } else BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
+
+    fun chainPriceFiat(): BigDecimal = if (chainPriceUsd == null || chainPriceUsd == "0") {
+        BigDecimal.ZERO
+    } else BigDecimal(chainPriceUsd).multiply(BigDecimal(Fiats.getRate()))
 
     fun btc(): BigDecimal = if (priceBtc == "0") {
         BigDecimal.ZERO
