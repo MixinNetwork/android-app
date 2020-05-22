@@ -8,9 +8,11 @@ import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.supportsQ
 import org.jetbrains.anko.notificationManager
@@ -21,14 +23,15 @@ class ChannelManager {
     companion object {
         private const val CHANNEL_GROUP = "channel_group"
         const val CHANNEL_MESSAGE = "channel_message"
-        private const val CHANNEL_UPDATED_WITH_VERSION = "channel_updated_with_version"
-        const val CHANNEL_VERSION = 2
+        private const val CHANNEL_CURRENT_VERSION = "channel_current_version"
+        private const val CHANNEL_CURRENT_USER_VERSION = "channel_current_user_version"
+        private const val CHANNEL_VERSION = 0
 
         fun create(context: Context, channelVersion: Int) {
             supportsOreo {
                 val messageChannel =
                     NotificationChannel(
-                        getChannelId(false, channelVersion),
+                        getChannelId(false),
                         context.getString(R.string.notification_message),
                         NotificationManager.IMPORTANCE_HIGH
                     )
@@ -43,7 +46,7 @@ class ChannelManager {
                 )
                 messageChannel.enableVibration(true)
                 messageChannel.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-                val groupChannel = copyChannel(messageChannel, getChannelId(true, channelVersion))
+                val groupChannel = copyChannel(messageChannel, getChannelId(true))
                 groupChannel.name = context.getString(R.string.notification_group)
 
                 supportsQ {
@@ -59,7 +62,7 @@ class ChannelManager {
         @Synchronized
         fun updateChannelSound(context: Context) {
             supportsOreo {
-                val channelUpdatedWithVersion = "$CHANNEL_UPDATED_WITH_VERSION$CHANNEL_VERSION"
+                val channelUpdatedWithVersion = "$CHANNEL_CURRENT_VERSION$CHANNEL_VERSION"
                 // first check current version channel is already updated
                 if (context.defaultSharedPreferences.getBoolean(channelUpdatedWithVersion, false)) {
                     return
@@ -71,6 +74,15 @@ class ChannelManager {
                 // finally create new channel and update SP
                 create(context, CHANNEL_VERSION)
                 context.defaultSharedPreferences.putBoolean(channelUpdatedWithVersion, true)
+            }
+        }
+
+        fun resetChannelSound(context: Context) {
+            supportsOreo {
+                val currentUserVersion = context.defaultSharedPreferences.getInt(CHANNEL_CURRENT_USER_VERSION, 0)
+                deleteChannels(context)
+                context.defaultSharedPreferences.putInt(CHANNEL_CURRENT_USER_VERSION, currentUserVersion + 1)
+                create(context, CHANNEL_VERSION)
             }
         }
 
@@ -89,12 +101,14 @@ class ChannelManager {
             }
         }
 
-        fun getChannelId(isGroup: Boolean, channelVersion: Int) =
-            if (isGroup) {
-                "$CHANNEL_GROUP$channelVersion"
+        fun getChannelId(isGroup: Boolean): String {
+            val currentUserVersion = MixinApplication.appContext.defaultSharedPreferences.getInt(CHANNEL_CURRENT_USER_VERSION, 0)
+            return if (isGroup) {
+                "${CHANNEL_GROUP}_$CHANNEL_VERSION.$currentUserVersion"
             } else {
-                "$CHANNEL_MESSAGE$channelVersion}"
+                "${CHANNEL_MESSAGE}_$CHANNEL_VERSION.$currentUserVersion"
             }
+        }
 
         @RequiresApi(Build.VERSION_CODES.O)
         private fun copyChannel(original: NotificationChannel, id: String): NotificationChannel {

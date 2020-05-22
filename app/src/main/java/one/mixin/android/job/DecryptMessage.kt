@@ -604,7 +604,7 @@ class DecryptMessage : Injector() {
             }
             return
         } else if (systemMessage.action == SystemConversationAction.ROLE.name) {
-            participantDao.updateParticipantRole(data.conversationId, systemMessage.participantId!!, systemMessage.role!!)
+            participantDao.updateParticipantRole(data.conversationId, systemMessage.participantId!!, systemMessage.role ?: "")
             if (message.participantId != accountId) {
                 return
             }

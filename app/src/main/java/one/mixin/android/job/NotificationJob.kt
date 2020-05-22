@@ -28,7 +28,6 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ChannelManager
 import one.mixin.android.util.ChannelManager.Companion.CHANNEL_MESSAGE
-import one.mixin.android.util.ChannelManager.Companion.CHANNEL_VERSION
 import one.mixin.android.util.ChannelManager.Companion.getChannelId
 import one.mixin.android.util.mention.rendMentionContent
 import one.mixin.android.vo.Message
@@ -79,9 +78,9 @@ class NotificationJob(val message: Message, private val userMap: Map<String, Str
 
         notificationBuilder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (conversation.isGroup()) {
-                NotificationCompat.Builder(context, getChannelId(true, CHANNEL_VERSION))
+                NotificationCompat.Builder(context, getChannelId(true))
             } else {
-                NotificationCompat.Builder(context, getChannelId(false, CHANNEL_VERSION))
+                NotificationCompat.Builder(context, getChannelId(false))
             }
         } else {
             NotificationCompat.Builder(context, CHANNEL_MESSAGE)

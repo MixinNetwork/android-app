@@ -32,6 +32,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
 import one.mixin.android.job.ConversationJob.Companion.TYPE_DELETE
+import one.mixin.android.job.ConversationJob.Companion.TYPE_DISMISS_ADMIN
 import one.mixin.android.job.ConversationJob.Companion.TYPE_EXIT
 import one.mixin.android.job.ConversationJob.Companion.TYPE_MAKE_ADMIN
 import one.mixin.android.job.ConversationJob.Companion.TYPE_REMOVE
@@ -109,16 +110,16 @@ class GroupInfoFragment : BaseFragment() {
                     val p = participantsMap[it.userId]
                     p?.let { role = p.role }
                 }
+                val userRole = (participantsMap[user.userId] as Participant).role
                 if (role == ParticipantRole.OWNER.name) {
-                    val userRole = (participantsMap[user.userId] as Participant).role
                     if (userRole == ParticipantRole.ADMIN.name) {
                         choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
+                        choices.add(getString(R.string.group_pop_menu_dismiss_admin))
                     } else {
                         choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
                         choices.add(getString(R.string.group_pop_menu_make_admin))
                     }
                 } else if (role == ParticipantRole.ADMIN.name) {
-                    val userRole = (participantsMap[user.userId] as Participant).role
                     if (userRole != ParticipantRole.OWNER.name && userRole != ParticipantRole.ADMIN.name) {
                         choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
                     }
@@ -137,8 +138,7 @@ class GroupInfoFragment : BaseFragment() {
                                     user.fullName, adapter.conversation?.name), TYPE_REMOVE, user = user)
                             }
                             3 -> {
-                                showPb()
-                                groupViewModel.makeAdmin(conversationId, user)
+                                handleAdminRole(userRole, user)
                             }
                         }
                     }.show()
@@ -155,16 +155,15 @@ class GroupInfoFragment : BaseFragment() {
                     val p = participantsMap[it.userId]
                     p?.let { role = p.role }
                 }
+                val userRole = (participantsMap[user.userId] as Participant).role
                 if (role == ParticipantRole.OWNER.name) {
-                    val userRole = (participantsMap[user.userId] as Participant).role
                     if (userRole == ParticipantRole.ADMIN.name) {
-                        popMenu.menuInflater.inflate(R.menu.group_item_admin, popMenu.menu)
+                        popMenu.menuInflater.inflate(R.menu.group_item_owner_dismiss, popMenu.menu)
                     } else {
                         popMenu.menuInflater.inflate(R.menu.group_item_owner, popMenu.menu)
                     }
                     popMenu.menu.findItem(R.id.remove).title = getString(R.string.group_pop_menu_remove, user.fullName)
                 } else if (role == ParticipantRole.ADMIN.name) {
-                    val userRole = (participantsMap[user.userId] as Participant).role
                     if (userRole == ParticipantRole.OWNER.name || userRole == ParticipantRole.ADMIN.name) {
                         popMenu.menuInflater.inflate(R.menu.group_item_simple, popMenu.menu)
                     } else {
@@ -192,8 +191,7 @@ class GroupInfoFragment : BaseFragment() {
                                 TYPE_REMOVE, user = user)
                         }
                         R.id.admin -> {
-                            showPb()
-                            groupViewModel.makeAdmin(conversationId, user)
+                            handleAdminRole(userRole, user)
                         }
                     }
                     return@setOnMenuItemClickListener true
@@ -206,8 +204,8 @@ class GroupInfoFragment : BaseFragment() {
         groupViewModel.getGroupParticipantsLiveData(conversationId).observe(viewLifecycleOwner, Observer { u ->
             u?.let {
                 var role: String? = null
-                self?.let {
-                    val p = participantsMap[it.userId]
+                self?.let { u ->
+                    val p = participantsMap[u.userId]
                     p?.let { role = p.role }
                 }
                 users.clear()
@@ -223,9 +221,9 @@ class GroupInfoFragment : BaseFragment() {
                     val participants = groupViewModel.getRealParticipants(conversationId)
                     participantsMap.clear()
                     for (item in it) {
-                        participants.forEach {
-                            if (item.userId == it.userId) {
-                                participantsMap[item.userId] = it
+                        participants.forEach { p ->
+                            if (item.userId == p.userId) {
+                                participantsMap[item.userId] = p
                                 return@forEach
                             }
                         }
@@ -251,7 +249,8 @@ class GroupInfoFragment : BaseFragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(stopScope)
             .subscribe {
-                if (it.type == TYPE_MAKE_ADMIN || it.type == TYPE_REMOVE || it.type == TYPE_EXIT) {
+                if (it.type == TYPE_MAKE_ADMIN || it.type == TYPE_REMOVE ||
+                    it.type == TYPE_EXIT || it.type == TYPE_DISMISS_ADMIN) {
                     dialog?.dismiss()
                 }
             }
@@ -282,6 +281,15 @@ class GroupInfoFragment : BaseFragment() {
             }.sortedByDescending { it.fullName == keyword || it.identityNumber == keyword }
         } else {
             users
+        }
+    }
+
+    private fun handleAdminRole(userRole: String, user: User) {
+        showPb()
+        if (userRole == ParticipantRole.ADMIN.name) {
+            groupViewModel.dismissAdmin(conversationId, user)
+        } else {
+            groupViewModel.makeAdmin(conversationId, user)
         }
     }
 

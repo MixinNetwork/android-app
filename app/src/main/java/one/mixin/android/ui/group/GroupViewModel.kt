@@ -10,6 +10,7 @@ import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
+import one.mixin.android.job.ConversationJob.Companion.TYPE_DISMISS_ADMIN
 import one.mixin.android.job.ConversationJob.Companion.TYPE_EXIT
 import one.mixin.android.job.ConversationJob.Companion.TYPE_MAKE_ADMIN
 import one.mixin.android.job.MixinJobManager
@@ -82,6 +83,10 @@ internal constructor(
 
     fun makeAdmin(conversationId: String, user: User) {
         startGroupJob(conversationId, listOf(user), TYPE_MAKE_ADMIN, "ADMIN")
+    }
+
+    fun dismissAdmin(conversationId: String, user: User) {
+        startGroupJob(conversationId, listOf(user), TYPE_DISMISS_ADMIN, "")
     }
 
     private fun startGroupJob(conversationId: String, users: List<User>, type: Int, role: String = "") {

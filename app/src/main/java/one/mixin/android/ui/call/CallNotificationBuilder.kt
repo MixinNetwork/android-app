@@ -18,7 +18,9 @@ class CallNotificationBuilder {
         const val WEBRTC_NOTIFICATION = 313388
         const val ACTION_EXIT = "action_exit"
 
-        fun getCallNotification(context: Context, state: CallState, user: User?): Notification {
+        fun getCallNotification(context: Context, state: CallState, user: User?): Notification? {
+            if (state.callInfo.callState == CallService.CallState.STATE_IDLE) return null
+
             val callIntent = Intent(context, CallActivity::class.java)
             callIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             user?.let {
@@ -76,7 +78,7 @@ class CallNotificationBuilder {
             val intent = Intent(context, CallService::class.java)
             intent.action = action
             putExtra?.invoke(intent)
-            val pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+            val pendingIntent = PendingIntent.getService(context, 0, intent, FLAG_UPDATE_CURRENT)
             return NotificationCompat.Action(iconResId, context.getString(titleResId), pendingIntent)
         }
     }

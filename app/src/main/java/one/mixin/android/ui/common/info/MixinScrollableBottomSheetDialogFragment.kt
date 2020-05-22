@@ -106,18 +106,14 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
     }
 
     override fun dismiss() {
-        try {
-            super.dismiss()
-        } catch (e: IllegalStateException) {
-            reportException(e)
-            Timber.e(e)
-        }
+        dismissAllowingStateLoss()
     }
 
     override fun dismissAllowingStateLoss() {
         try {
             super.dismissAllowingStateLoss()
         } catch (e: IllegalStateException) {
+            reportException(e)
             Timber.e(e)
         }
     }

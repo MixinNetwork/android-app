@@ -410,6 +410,7 @@
     <string name="group_pop_menu_view">查看 %1$s</string>
     <string name="group_pop_menu_remove">移除 %1$s</string>
     <string name="group_pop_menu_make_admin">设定为群组管理员</string>
+    <string name="group_pop_menu_dismiss_admin">撤销管理员身份</string>
     <string name="group_info_remove_tip">将 %1$s 自 \"%2$s\" 群组移除?</string>
     <string name="group_adding">正在添加…</string>
     <string name="group_removing">正在移除…</string>
@@ -507,6 +508,7 @@
     <string name="setting_mobile_contact_empty">通讯录内容为空</string>
     <string name="setting_notification_transfer">转账通知</string>
     <string name="setting_notification_system">管理通知</string>
+    <string name="setting_notification_reset">重置通知设置</string>
     <string name="setting_notification_transfer_desc">当收到不少于%1$s的转账时显示通知。</string>
     <string name="setting_notification_transfer_amount">转账金额(%1$s)</string>
     <string name="setting_notification_confirmation">通知和确认</string>
