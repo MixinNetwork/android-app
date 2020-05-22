@@ -132,7 +132,7 @@ class DecryptMessage : Injector() {
             if (data.category.isIllegalMessageCategory()) {
                 if (data.conversationId != SYSTEM_USER && data.conversationId != Session.getAccountId()) {
                     val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
-                        data.data, data.createdAt, data.status)
+                        data.data, data.createdAt, MessageStatus.UNKNOWN.name)
                     database.insertAndNotifyConversation(message)
                 }
                 updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)

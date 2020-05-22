@@ -254,7 +254,7 @@
     <string name="chat_waiting_url" translatable="false">https://mixin.one/pages/1000007</string>
     <string name="chat_waiting_desktop">desktop</string>
     <string name="chat_not_support_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
-    <string name="chat_not_support">This type of message is not supported, please upgrade Mixin to the latest version.</string>
+    <string name="chat_not_support">This type of message is not supported, please upgrade Mixin to the latest version. %1$s.</string>
     <string name="chat_learn">Learn more</string>
     <string name="week_monday">Monday</string>
     <string name="week_tuesday">Tuesday</string>

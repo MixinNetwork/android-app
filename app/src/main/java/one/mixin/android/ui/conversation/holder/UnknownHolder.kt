@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.holder
 
+import android.graphics.Color
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
@@ -56,13 +57,36 @@ class UnknownHolder constructor(containerView: View) : BaseViewHolder(containerV
         messageItem: MessageItem,
         isLast: Boolean,
         isFirst: Boolean,
+        hasSelect: Boolean,
+        isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        if (hasSelect && isSelect) {
+            itemView.setBackgroundColor(SELECT_COLOR)
+        } else {
+            itemView.setBackgroundColor(Color.TRANSPARENT)
+        }
+
+        itemView.setOnLongClickListener {
+            if (!hasSelect) {
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
+            } else {
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+                true
+            }
+        }
+
+        itemView.setOnClickListener {
+            if (hasSelect) {
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+            }
+        }
+
         val isMe = meId == messageItem.userId
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
 
         val learn: String = MixinApplication.get().getString(R.string.chat_learn)
-        val info = MixinApplication.get().getString(R.string.chat_not_support)
+        val info = MixinApplication.get().getString(R.string.chat_not_support, learn)
         val learnUrl = MixinApplication.get().getString(R.string.chat_not_support_url)
         itemView.chat_tv.highlightLinkText(
             info,

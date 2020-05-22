@@ -276,6 +276,8 @@ class ConversationAdapter(
                     (holder as UnknownHolder).bind(it,
                         isLast(position),
                         isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
                         onItemListener
                     )
                 }
