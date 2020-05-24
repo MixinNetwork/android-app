@@ -391,7 +391,6 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
 
     override fun onStateChanged(bottomSheet: View, newState: Int) {
         when (newState) {
-            BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
             BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.rotationX = 0f
             BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.rotationX = 180f
         }
