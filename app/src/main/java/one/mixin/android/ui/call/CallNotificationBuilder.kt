@@ -58,7 +58,7 @@ class CallNotificationBuilder {
                 }
                 else -> {
                     builder.setContentText(context.getString(R.string.call_connecting))
-                    val action = if (state.isInitiator) CallService.ACTION_CALL_CANCEL else CallService.ACTION_CALL_DECLINE
+                    val action = if (state.isOffer) CallService.ACTION_CALL_CANCEL else CallService.ACTION_CALL_DECLINE
                     builder.addAction(getAction(context, action, R.drawable.ic_close_black, R.string
                         .call_notification_action_hang_up) {
                         it.putExtra(CallService.EXTRA_TO_IDLE, true)

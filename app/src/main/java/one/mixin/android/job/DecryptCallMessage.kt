@@ -222,7 +222,7 @@ class DecryptCallMessage(
     }
 
     private fun getUserId(): String {
-        return if (callState.isInitiator) {
+        return if (callState.isOffer) {
             Session.getAccountId()!!
         } else {
             callState.user!!.userId
