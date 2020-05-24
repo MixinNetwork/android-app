@@ -89,7 +89,13 @@ class TransactionFragment : BaseFragment() {
 
     @SuppressLint("SetTextI18n")
     private fun updateUI(asset: AssetItem, snapshot: SnapshotItem) {
-        val isPositive = snapshot.amount.toFloat() > 0
+        if (!isAdded) return
+
+        val isPositive = try {
+            snapshot.amount.toFloat() > 0
+        } catch (e: NumberFormatException) {
+            false
+        }
         avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         value_tv.text = if (isPositive) "+${snapshot.amount.numberFormat()}"
@@ -102,14 +108,14 @@ class TransactionFragment : BaseFragment() {
         transaction_type_tv.text = getSnapshotType(snapshot.type)
         memo_tv.text = snapshot.memo
         date_tv.text = snapshot.createdAt.fullDate()
-        when {
-            snapshot.type == SnapshotType.deposit.name -> {
+        when (snapshot.type) {
+            SnapshotType.deposit.name -> {
                 sender_title.text = getString(R.string.sender)
                 sender_tv.text = snapshot.sender
                 receiver_title.text = getString(R.string.transaction_hash)
                 receiver_tv.text = snapshot.transactionHash
             }
-            snapshot.type == SnapshotType.transfer.name -> {
+            SnapshotType.transfer.name -> {
                 if (isPositive) {
                     sender_tv.text = snapshot.opponentFullName
                     receiver_tv.text = Session.getAccount()!!.full_name
