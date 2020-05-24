@@ -6,5 +6,5 @@ open class OneTimePreKey(
     @SerializedName("key_id")
     val keyId: Int,
     @SerializedName("pub_key")
-    val pubKey: String
+    val pubKey: String?
 )
