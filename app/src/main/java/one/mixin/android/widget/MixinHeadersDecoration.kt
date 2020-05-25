@@ -126,12 +126,31 @@ class MixinHeadersDecoration private constructor(
                 continue
             }
             if (mAdapter.hasAttachView(position)) {
-                getAttachView(parent).let { view ->
-                    val top = (itemView.y - view.measuredHeight).toInt()
-                    canvas.save()
-                    canvas.translate(0f, top.toFloat())
-                    view.draw(canvas)
-                    canvas.restore()
+                val hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(
+                    itemView,
+                    mOrientationProvider.getOrientation(parent), position
+                )
+                if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(position, mOrientationProvider.isReverseLayout(parent))) {
+                    var headerOffset: Rect? = mHeaderRects.get(position)
+                    if (headerOffset == null) {
+                        headerOffset = Rect()
+                        mHeaderRects.put(position, headerOffset)
+                    }
+                    getAttachView(parent).let { view ->
+                        val top = (headerOffset.top - view.measuredHeight)
+                        canvas.save()
+                        canvas.translate(0f, top.toFloat())
+                        view.draw(canvas)
+                        canvas.restore()
+                    }
+                } else {
+                    getAttachView(parent).let { view ->
+                        val top = (itemView.y - view.measuredHeight).toInt()
+                        canvas.save()
+                        canvas.translate(0f, top.toFloat())
+                        view.draw(canvas)
+                        canvas.restore()
+                    }
                 }
             }
         }

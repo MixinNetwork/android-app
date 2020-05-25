@@ -18,7 +18,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.call.CallActivity
-import one.mixin.android.vo.CallState
+import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
 import one.mixin.android.webrtc.CallService
 import org.jetbrains.anko.runOnUiThread
@@ -28,7 +28,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     @Inject
     lateinit var linkState: LinkState
     @Inject
-    lateinit var callState: CallState
+    lateinit var callState: CallStateLiveData
     @Inject
     lateinit var floodMessageDao: FloodMessageDao
 

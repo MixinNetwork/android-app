@@ -68,7 +68,7 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.util.Session
-import one.mixin.android.vo.CallState
+import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -117,7 +117,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     @Inject
     lateinit var linkState: LinkState
     @Inject
-    lateinit var callState: CallState
+    lateinit var callState: CallStateLiveData
 
     private var menuListLayout: ViewGroup? = null
 
@@ -793,7 +793,6 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     override fun onStateChanged(bottomSheet: View, newState: Int) {
         when (newState) {
-            BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
             BottomSheetBehavior.STATE_COLLAPSED -> contentView.more_iv.rotationX = 0f
             BottomSheetBehavior.STATE_EXPANDED -> contentView.more_iv.rotationX = 180f
         }

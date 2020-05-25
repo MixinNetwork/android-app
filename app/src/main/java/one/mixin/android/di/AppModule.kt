@@ -64,7 +64,7 @@ import one.mixin.android.job.MyJobService
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.Session
-import one.mixin.android.vo.CallState
+import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
 import retrofit2.Retrofit
@@ -93,7 +93,7 @@ internal class AppModule {
             return null
         }
         return HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC
+            level = HttpLoggingInterceptor.Level.BODY
         }
     }
 
@@ -343,5 +343,5 @@ internal class AppModule {
 
     @Provides
     @Singleton
-    fun provideCallState() = CallState()
+    fun provideCallState() = CallStateLiveData()
 }

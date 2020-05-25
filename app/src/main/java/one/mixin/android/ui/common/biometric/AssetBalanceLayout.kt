@@ -13,8 +13,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.util.Session
-import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Fiats
 
 class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearLayout(context, attributeSet) {
     init {
@@ -24,11 +23,23 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
     }
 
     @SuppressLint("SetTextI18n")
-    fun setInfo(asset: AssetItem, amount: String) {
+    fun setInfo(t: BiometricItem) {
+        val asset = t.asset
+        val amount = t.amount
         asset_icon.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         asset_icon.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-        balance.text = amount.numberFormat() + " " + asset.symbol
-        balance_as.text = "≈ ${(BigDecimal(amount) *
-            asset.priceFiat()).numberFormat2()} ${Session.getFiatCurrency()}"
+        val balanceText = amount.numberFormat() + " " + asset.symbol
+        balance.text = balanceText
+        if (t is WithdrawBiometricItem) {
+            val amountText = "${context.getString(R.string.amount)} $balanceText"
+            val feeText = "${context.getString(R.string.fee)} ${t.fee.numberFormat()} ${asset.chainSymbol}"
+            balance_as.text = "$amountText ${getValueText(amount, asset.priceFiat())}\n$feeText ${getValueText(t.fee, asset.chainPriceFiat())}"
+        } else {
+            balance_as.text = getValueText(amount, asset.priceFiat())
+        }
     }
+
+    private fun getValueText(value: String, assetPrice: BigDecimal) =
+        "≈ ${Fiats.getSymbol()}${(BigDecimal(value) *
+            assetPrice).numberFormat2()}"
 }

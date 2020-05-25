@@ -38,7 +38,7 @@ import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
-import one.mixin.android.vo.CallState
+import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
@@ -87,7 +87,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     @Inject
     lateinit var jobManager: MixinJobManager
     @Inject
-    lateinit var callState: CallState
+    lateinit var callState: CallStateLiveData
     @Inject
     lateinit var messageService: MessageService
 

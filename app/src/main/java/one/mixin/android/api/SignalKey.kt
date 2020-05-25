@@ -4,8 +4,11 @@ import com.google.gson.annotations.SerializedName
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.getDeviceId
 import org.whispersystems.libsignal.IdentityKey
+import org.whispersystems.libsignal.InvalidKeyException
 import org.whispersystems.libsignal.ecc.Curve
+import org.whispersystems.libsignal.ecc.ECPublicKey
 import org.whispersystems.libsignal.state.PreKeyBundle
+import java.io.IOException
 
 data class SignalKey(
     @SerializedName("identity_key")
@@ -21,11 +24,33 @@ data class SignalKey(
     @SerializedName("session_id")
     val sessionId: String?
 ) {
-    fun getPreKeyPublic() = Curve.decodePoint(Base64.decode(preKey.pubKey), 0)!!
+    fun getPreKeyPublic(): ECPublicKey? {
+        if (preKey.pubKey.isNullOrEmpty()) {
+            return null
+        }
+        return try {
+            Curve.decodePoint(Base64.decode(preKey.pubKey), 0)
+        } catch (e: InvalidKeyException) {
+            null
+        } catch (e: IOException) {
+            null
+        }
+    }
 
     fun getIdentity() = IdentityKey(Base64.decode(identityKey), 0)
 
-    fun getSignedPreKeyPublic() = Curve.decodePoint(Base64.decode(signedPreKey.pubKey), 0)!!
+    fun getSignedPreKeyPublic(): ECPublicKey? {
+        if (signedPreKey.pubKey.isNullOrEmpty()) {
+            return null
+        }
+        return try {
+            Curve.decodePoint(Base64.decode(signedPreKey.pubKey), 0)
+        } catch (e: InvalidKeyException) {
+            null
+        } catch (e: IOException) {
+            null
+        }
+    }
 
     fun getSignedSignature() = Base64.decode(signedPreKey.signature)!!
 }

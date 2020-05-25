@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import androidx.collection.ArrayMap
-import com.google.gson.Gson
 import java.util.UUID
 import java.util.concurrent.Executors
 import kotlinx.coroutines.CoroutineScope
@@ -14,8 +13,9 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
-import one.mixin.android.vo.CallState
+import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
@@ -30,7 +30,7 @@ import org.webrtc.IceCandidate
 import timber.log.Timber
 
 class DecryptCallMessage(
-    private val callState: CallState,
+    private val callState: CallStateLiveData,
     private val lifecycleScope: CoroutineScope
 ) : Injector() {
     companion object {
@@ -39,7 +39,6 @@ class DecryptCallMessage(
         var listPendingOfferHandled = false
     }
 
-    private val gson = Gson()
     private val listPendingDispatcher by lazy {
         Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     }
@@ -112,7 +111,7 @@ class DecryptCallMessage(
                 if (pendingCandidateList == null || pendingCandidateList.isEmpty()) {
                     CallService.incoming(ctx, user, data)
                 } else {
-                    CallService.incoming(ctx, user, data, gson.toJson(pendingCandidateList.toArray()))
+                    CallService.incoming(ctx, user, data, GsonHelper.customGson.toJson(pendingCandidateList.toArray()))
                     pendingCandidateList.clear()
                     listPendingCandidateMap.remove(data.messageId, pendingCandidateList)
                 }
@@ -122,7 +121,7 @@ class DecryptCallMessage(
             listPendingJobMap[data.quoteMessageId]?.let { pair ->
                 if (data.source == LIST_PENDING_MESSAGES && data.category == MessageCategory.WEBRTC_ICE_CANDIDATE.name) {
                     val json = String(Base64.decode(data.data))
-                    val ices = gson.fromJson(json, Array<IceCandidate>::class.java)
+                    val ices = GsonHelper.customGson.fromJson(json, Array<IceCandidate>::class.java)
                     var list = listPendingCandidateMap[data.quoteMessageId]
                     if (list == null) {
                         list = arrayListOf()
@@ -223,7 +222,7 @@ class DecryptCallMessage(
     }
 
     private fun getUserId(): String {
-        return if (callState.isInitiator) {
+        return if (callState.isOffer) {
             Session.getAccountId()!!
         } else {
             callState.user!!.userId

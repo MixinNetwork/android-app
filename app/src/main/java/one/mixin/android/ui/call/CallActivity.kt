@@ -46,7 +46,7 @@ import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.fastBlur
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.vo.CallState
+import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.User
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.widget.CallButton
@@ -55,7 +55,7 @@ import timber.log.Timber
 class CallActivity : BaseActivity(), SensorEventListener {
 
     @Inject
-    lateinit var callState: CallState
+    lateinit var callState: CallStateLiveData
 
     private var sensorManager: SensorManager? = null
     private var powerManager: PowerManager? = null

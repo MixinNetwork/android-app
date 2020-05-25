@@ -4,11 +4,11 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import one.mixin.android.webrtc.CallService
 
-class CallState : LiveData<CallState.CallInfo>() {
+class CallStateLiveData : LiveData<CallStateLiveData.CallInfo>() {
     var callInfo: CallInfo = CallInfo()
     var user: User? = null
     var connectedTime: Long? = null
-    var isInitiator: Boolean = true
+    var isOffer: Boolean = true
 
     fun setCallState(callState: CallService.CallState) {
         if (callInfo.callState == callState) return
@@ -28,7 +28,7 @@ class CallState : LiveData<CallState.CallInfo>() {
         callInfo = CallInfo()
         user = null
         connectedTime = null
-        isInitiator = true
+        isOffer = true
         postValue(callInfo)
     }
 
@@ -39,7 +39,7 @@ class CallState : LiveData<CallState.CallInfo>() {
             CallService.CallState.STATE_DIALING -> CallService.cancel(ctx)
             CallService.CallState.STATE_RINGING -> CallService.decline(ctx)
             CallService.CallState.STATE_ANSWERING -> {
-                if (isInitiator) {
+                if (isOffer) {
                     CallService.cancel(ctx)
                 } else {
                     CallService.decline(ctx)

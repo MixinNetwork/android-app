@@ -523,8 +523,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                     else -> {
                                         val biometricItem =
                                             WithdrawBiometricItem(
-                                                address.destination, address.addressId,
-                                                address.label, asset!!, amount, null, traceId, memo, paymentResponse.status
+                                                address.destination, address.addressId, address.label, address.fee,
+                                                asset!!, amount, null, traceId, memo, paymentResponse.status
                                             )
                                         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
                                         bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)

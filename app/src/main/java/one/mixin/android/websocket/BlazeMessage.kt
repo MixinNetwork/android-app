@@ -4,7 +4,6 @@ import com.google.gson.JsonElement
 import java.io.Serializable
 import java.util.UUID
 import one.mixin.android.api.ResponseError
-import one.mixin.android.vo.MessageStatus
 
 data class BlazeMessage(
     val id: String,
@@ -29,17 +28,10 @@ const val ACKNOWLEDGE_MESSAGE_RECEIPTS = "ACKNOWLEDGE_MESSAGE_RECEIPTS"
 const val LIST_PENDING_MESSAGES = "LIST_PENDING_MESSAGES"
 const val ERROR_ACTION = "ERROR"
 const val COUNT_SIGNAL_KEYS = "COUNT_SIGNAL_KEYS"
-const val CONSUME_SIGNAL_KEYS = "CONSUME_SIGNAL_KEYS"
 const val CONSUME_SESSION_SIGNAL_KEYS = "CONSUME_SESSION_SIGNAL_KEYS"
 const val SYNC_SIGNAL_KEYS = "SYNC_SIGNAL_KEYS"
 const val CREATE_SIGNAL_KEY_MESSAGES = "CREATE_SIGNAL_KEY_MESSAGES"
 const val CREATE_CALL = "CREATE_CALL"
-
-fun createAckParamBlazeMessage(messageId: String, status: MessageStatus) =
-    BlazeMessage(UUID.randomUUID().toString(), ACKNOWLEDGE_MESSAGE_RECEIPT, createAckParam(messageId, status.name))
-
-fun createAckListParamBlazeMessage(messages: List<BlazeAckMessage>) =
-    BlazeMessage(UUID.randomUUID().toString(), ACKNOWLEDGE_MESSAGE_RECEIPTS, createAckListParam(messages))
 
 fun createParamBlazeMessage(param: BlazeMessageParam) =
     BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, param)

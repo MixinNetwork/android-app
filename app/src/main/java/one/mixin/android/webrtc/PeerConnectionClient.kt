@@ -33,7 +33,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
     private val pcObserver = PCObserver()
     private val iceServers = arrayListOf<PeerConnection.IceServer>()
-    var isInitiator = false
     private var remoteCandidateCache = arrayListOf<IceCandidate>()
     private var peerConnection: PeerConnection? = null
     private var audioTrack: AudioTrack? = null
@@ -54,14 +53,12 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         iceServers.addAll(iceServerList)
         executor.execute {
             peerConnection = createPeerConnectionInternal()
-            isInitiator = true
             val offerSdpObserver = object : SdpObserverWrapper() {
                 override fun onCreateSuccess(sdp: SessionDescription) {
                     peerConnection?.setLocalDescription(object : SdpObserverWrapper() {
                         override fun onSetFailure(error: String?) {
                             reportError("createOffer setLocalSdp onSetFailure error: $error")
                         }
-
                         override fun onSetSuccess() {
                             Timber.d("createOffer setLocalSdp onSetSuccess")
                             events.onLocalDescription(sdp)
@@ -84,14 +81,12 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
                 peerConnection = createPeerConnectionInternal()
             }
             peerConnection?.setRemoteDescription(remoteSdpObserver, remoteSdp)
-            isInitiator = false
             val answerSdpObserver = object : SdpObserverWrapper() {
                 override fun onCreateSuccess(sdp: SessionDescription) {
                     peerConnection?.setLocalDescription(object : SdpObserverWrapper() {
                         override fun onSetFailure(error: String?) {
                             reportError("createAnswer setLocalSdp onSetFailure error: $error")
                         }
-
                         override fun onSetSuccess() {
                             Timber.d("createAnswer setLocalSdp onSetSuccess")
                             events.onLocalDescription(sdp)
@@ -292,11 +287,11 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
 
         override fun onTrack(transceiver: RtpTransceiver?) {
-            Timber.d("onTrack=" + transceiver.toString())
+            Timber.d("onTrack=%s", transceiver.toString())
         }
 
         override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
-            Timber.d("onAddTrack=" + receiver.toString())
+            Timber.d("onAddTrack=%s", receiver.toString())
         }
     }
 
