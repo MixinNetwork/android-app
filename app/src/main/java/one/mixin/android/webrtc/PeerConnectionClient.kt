@@ -272,8 +272,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
 
         override fun onAddStream(stream: MediaStream) {
-            Timber.d("onAddStream")
-            stream.audioTracks.forEach { it.setEnabled(false) }
         }
 
         override fun onRemoveStream(stream: MediaStream) {
@@ -288,6 +286,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
         override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
             Timber.d("onAddTrack=%s", receiver.toString())
+            receiver?.track()?.setEnabled(true)
         }
     }
 
