@@ -659,6 +659,7 @@
     <string name="camera">Camera</string>
     <string name="document">File</string>
     <string name="voice">Voice</string>
+    <string name="group_call">Group Call</string>
     <string name="contact">Contact</string>
     <string name="location">Location</string>
     <string name="sticker">Sticker</string>

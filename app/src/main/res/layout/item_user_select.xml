@@ -22,20 +22,6 @@
         android:layout_height="wrap_content"
         android:contentDescription="@null"
         android:src="@drawable/ic_group_select_close"
-        app:layout_constraintBottom_toBottomOf="@id/avatar_view"
-        app:layout_constraintEnd_toEndOf="@id/avatar_view" />
-
-    <TextView
-        android:id="@+id/name_tv"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/avatar_view"
-        android:layout_marginTop="3dp"
-        android:gravity="center"
-        android:singleLine="true"
-        android:textColor="?attr/text_primary"
-        android:textSize="12sp" />
-
+        app:layout_constraintEnd_toEndOf="@id/avatar_view"
+        app:layout_constraintTop_toTopOf="@id/avatar_view" />
 </androidx.constraintlayout.widget.ConstraintLayout>

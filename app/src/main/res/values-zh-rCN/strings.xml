@@ -645,6 +645,7 @@
     <string name="extensions">机器人</string>
     <string name="camera">相机</string>
     <string name="voice">语音电话</string>
+    <string name="group_call">群组语音</string>
     <string name="document">文件</string>
     <string name="contact">联系人</string>
     <string name="location">位置</string>

@@ -7,8 +7,8 @@
 
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar_view"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="76dp"
+        android:layout_height="76dp"
         android:layout_gravity="center"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
@@ -21,21 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@null"
-        android:src="@drawable/ic_group_select_close"
-        app:layout_constraintBottom_toBottomOf="@id/avatar_view"
-        app:layout_constraintEnd_toEndOf="@id/avatar_view" />
-
-    <TextView
-        android:id="@+id/name_tv"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/avatar_view"
-        android:layout_marginTop="3dp"
-        android:gravity="center"
-        android:singleLine="true"
-        android:textColor="?attr/text_primary"
-        android:textSize="12sp" />
-
+        android:src="@drawable/ic_call_user_mute"
+        app:layout_constraintEnd_toEndOf="@id/avatar_view"
+        app:layout_constraintBottom_toBottomOf="@id/avatar_view" />
 </androidx.constraintlayout.widget.ConstraintLayout>
