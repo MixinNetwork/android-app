@@ -388,6 +388,12 @@
     <string name="pin_update_pin">修改支付密码</string>
     <string name="pin_log_multisig_sign">签名多重签名交易</string>
     <string name="pin_log_multisig_unlock">撤销多重签名交易</string>
+    <string name="pin_log_modification">你的密码已修改</string>
+    <string name="pin_log_emergency_modification">你的紧急联系人已修改</string>
+    <string name="pin_log_phone_modification">你的手机号已变更</string>
+    <string name="pin_log_login_phone">通过手机号登录</string>
+    <string name="pin_log_login_emergency">通过紧急联系人登录</string>
+    <string name="pin_log_login_desktop">你的桌面端已登录</string>
     <!--group-->
     <string name="group_add">添加成员</string>
     <string name="group_new_title">新建群组</string>
@@ -436,6 +442,7 @@
     <string name="setting_conversation_tip">你可以限制谁给你发消息。</string>
     <string name="setting_conversation_group_tip">你可以限制谁邀请你加入群聊。</string>
     <string name="setting_conversation_everybody">任何人</string>
+    <string name="setting_logs_empty">没有日志</string>
     <string name="conversation_status_pic">照片</string>
     <string name="conversation_status_video">视频</string>
     <string name="conversation_status_file">文件</string>

@@ -402,6 +402,12 @@
     <string name="pin_update_pin">Change PIN</string>
     <string name="pin_log_multisig_sign">Multisig Transaction</string>
     <string name="pin_log_multisig_unlock">Revoke Multisig Transaction</string>
+    <string name="pin_log_modification">Your PIN has been changed</string>
+    <string name="pin_log_emergency_modification">Your emergency contact has been changed</string>
+    <string name="pin_log_phone_modification">Your phone number has been changed</string>
+    <string name="pin_log_login_phone">Sign in with phone number</string>
+    <string name="pin_log_login_emergency">Sign in with emergency contact</string>
+    <string name="pin_log_login_desktop">Your desktop is already logged in</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
     <string name="group_new_title">New Group</string>
@@ -450,6 +456,7 @@
     <string name="setting_conversation_tip">You can restrict who can send message to me.</string>
     <string name="setting_conversation_group_tip">You can restrict who can add me to group chats.</string>
     <string name="setting_conversation_everybody">Everybody</string>
+    <string name="setting_logs_empty">No logs</string>
     <string name="conversation_status_pic">Photo</string>
     <string name="conversation_status_video">Video</string>
     <string name="conversation_status_file">File</string>
