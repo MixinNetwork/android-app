@@ -94,19 +94,16 @@ class MixinHeadersDecoration private constructor(
             if (position == RecyclerView.NO_POSITION) {
                 continue
             }
-            val hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(itemView,
-                mOrientationProvider.getOrientation(parent), position)
-            if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(position,
-                    mOrientationProvider.isReverseLayout(parent))) {
+            val hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(
+                itemView,
+                mOrientationProvider.getOrientation(parent), position
+            )
+            if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(position, mOrientationProvider.isReverseLayout(parent))) {
                 val header = mHeaderProvider.getHeader(parent, position)
-                var headerOffset: Rect? = mHeaderRects.get(position)
-                if (headerOffset == null) {
-                    headerOffset = Rect()
-                    mHeaderRects.put(position, headerOffset)
+                val headerOffset: Rect? = mHeaderRects.get(position)
+                if (headerOffset != null) {
+                    mRenderer.drawHeader(parent, canvas, header, headerOffset)
                 }
-
-                mHeaderPositionCalculator.initHeaderBounds(headerOffset, parent, header, itemView, hasStickyHeader)
-                mRenderer.drawHeader(parent, canvas, header, headerOffset)
             }
         }
     }
@@ -125,17 +122,22 @@ class MixinHeadersDecoration private constructor(
             if (position == RecyclerView.NO_POSITION) {
                 continue
             }
-            if (mAdapter.hasAttachView(position)) {
-                val hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(
-                    itemView,
-                    mOrientationProvider.getOrientation(parent), position
-                )
-                if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(position, mOrientationProvider.isReverseLayout(parent))) {
-                    var headerOffset: Rect? = mHeaderRects.get(position)
-                    if (headerOffset == null) {
-                        headerOffset = Rect()
-                        mHeaderRects.put(position, headerOffset)
-                    }
+            val hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(
+                itemView,
+                mOrientationProvider.getOrientation(parent), position
+            )
+            if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(position, mOrientationProvider.isReverseLayout(parent))) {
+                val header = mHeaderProvider.getHeader(parent, position)
+                var headerOffset: Rect? = mHeaderRects.get(position)
+                if (headerOffset == null) {
+                    headerOffset = Rect()
+                    mHeaderRects.put(position, headerOffset)
+                }
+
+                mHeaderPositionCalculator.initHeaderBounds(headerOffset, parent, header, itemView, hasStickyHeader)
+                mRenderer.drawHeader(parent, canvas, header, headerOffset)
+                if (mAdapter.hasAttachView(position)) {
+
                     getAttachView(parent).let { view ->
                         val top = (headerOffset.top - view.measuredHeight)
                         canvas.save()
@@ -143,14 +145,14 @@ class MixinHeadersDecoration private constructor(
                         view.draw(canvas)
                         canvas.restore()
                     }
-                } else {
-                    getAttachView(parent).let { view ->
-                        val top = (itemView.y - view.measuredHeight).toInt()
-                        canvas.save()
-                        canvas.translate(0f, top.toFloat())
-                        view.draw(canvas)
-                        canvas.restore()
-                    }
+                }
+            } else if (mAdapter.hasAttachView(position)) {
+                getAttachView(parent).let { view ->
+                    val top = (itemView.y - view.measuredHeight).toInt()
+                    canvas.save()
+                    canvas.translate(0f, top.toFloat())
+                    view.draw(canvas)
+                    canvas.restore()
                 }
             }
         }
