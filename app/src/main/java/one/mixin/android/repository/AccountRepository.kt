@@ -180,10 +180,10 @@ constructor(
 
     suspend fun getFiats() = accountService.getFiats()
 
-    suspend fun getPinLogs(offset: Int? = null, limit: Int? = null) = accountService.getPinLogs(offset, limit)
+    suspend fun getPinLogs(category: String?=null, offset: Int? = null, limit: Int? = null) = accountService.getPinLogs(category, offset, limit)
 
     suspend fun errorCount(): Int = PIN_ERROR_MAX - withContext(Dispatchers.IO) {
-        val response = getPinLogs(limit = PIN_ERROR_MAX)
+        val response = getPinLogs("PIN_INCORRECT", limit = PIN_ERROR_MAX)
         if (response.isSuccess) {
             val list = response.data ?: return@withContext 0
             for ((index, item) in list.withIndex()) {

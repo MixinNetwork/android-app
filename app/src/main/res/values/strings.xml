@@ -388,7 +388,12 @@
     <string name="wallet_setting_currency_desc" translatable="false">%1$s (%2$s)</string>
     <string name="wallet_transactions_asset_key_warning">Asset key is NOT a deposit address!</string>
     <!--pin logs-->
-    <string name="pin_logs">View PIN Incorrect Logs</string>
+    <string name="log_category_pin_incorrect">PIN incorrect</string>
+    <string name="log_category_login">Sign in</string>
+    <string name="log_category_emergency">Emergency contact</string>
+    <string name="log_category_pin_change">PIN change</string>
+    <string name="log_category_phone_change">Phone number change</string>
+    <string name="logs">Logs</string>
     <string name="pin_verification">Verify</string>
     <string name="pin_raw_transfer">Transfer to mixin address</string>
     <string name="pin_user_transfer">Transfer to user or bot</string>
