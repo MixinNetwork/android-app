@@ -181,7 +181,7 @@ class DecryptMessage : Injector() {
             ColorUtil.parseColor(item.color.trim())
         }
         database.insertAndNotifyConversation(message)
-        updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+        updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         sendNotificationJob(message, data.source)
     }
 

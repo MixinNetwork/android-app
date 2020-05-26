@@ -105,7 +105,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     fun addRemoteIceCandidate(candidate: IceCandidate) {
         executor.execute {
             if (peerConnection != null && peerConnection!!.remoteDescription != null) {
-                peerConnection!!.addIceCandidate(candidate)
+                peerConnection?.addIceCandidate(candidate)
             } else {
                 remoteCandidateCache.add(candidate)
             }
@@ -114,9 +114,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
     fun setAnswerSdp(sdp: SessionDescription) {
         executor.execute {
-            if (peerConnection != null) {
-                peerConnection!!.setRemoteDescription(remoteSdpObserver, sdp)
-            }
+            peerConnection?.setRemoteDescription(remoteSdpObserver, sdp)
         }
     }
 
@@ -124,7 +122,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         executor.execute {
             if (peerConnection == null || audioTrack == null || isError) return@execute
 
-            audioTrack!!.setEnabled(enable)
+            audioTrack?.setEnabled(enable)
         }
     }
 
@@ -132,8 +130,8 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         executor.execute {
             if (peerConnection == null || isError) return@execute
 
-            peerConnection!!.setAudioPlayout(true)
-            peerConnection!!.setAudioRecording(true)
+            peerConnection?.setAudioPlayout(true)
+            peerConnection?.setAudioRecording(true)
         }
     }
 
@@ -265,11 +263,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             Timber.d("onIceGatheringChange: $newState")
         }
 
-        override fun onAddStream(stream: MediaStream) {
-            Timber.d("onAddStream")
-            stream.audioTracks.forEach { it.setEnabled(true) }
-        }
-
         override fun onSignalingChange(newState: PeerConnection.SignalingState) {
             Timber.d("SignalingState: $newState")
         }
@@ -279,8 +272,10 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             executor.execute { events.onIceCandidatesRemoved(candidates) }
         }
 
+        override fun onAddStream(stream: MediaStream) {
+        }
+
         override fun onRemoveStream(stream: MediaStream) {
-            stream.videoTracks[0].dispose()
         }
 
         override fun onRenegotiationNeeded() {
@@ -292,6 +287,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
         override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
             Timber.d("onAddTrack=%s", receiver.toString())
+            receiver?.track()?.setEnabled(true)
         }
     }
 
