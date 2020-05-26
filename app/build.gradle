@@ -108,7 +108,7 @@ android {
             signingConfig signingConfigs.debug
             jniDebuggable false
             ndk {
-                abiFilters "x86", "arm64-v8a"
+                abiFilters "arm64-v8a"
             }
         }
     }
