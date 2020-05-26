@@ -73,7 +73,7 @@ class PinLogsFragment : BaseViewModelFragment<SettingViewModel>() {
         }
         isLoading = true
         viewModel.viewModelScope.launch {
-            val result = viewModel.getPinLogs((page + 1) * PAGE_COUNT)
+            val result = viewModel.getPinLogs(adapter.data.last().createdAt)
             if (result.isSuccess && result.data?.isNotEmpty() == true) {
                 page += 1
                 hasMore = result.data?.size!! >= PAGE_COUNT

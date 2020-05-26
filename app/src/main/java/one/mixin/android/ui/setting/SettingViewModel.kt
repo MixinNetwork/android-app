@@ -45,7 +45,7 @@ internal constructor(
     suspend fun syncContacts(contactRequests: List<ContactRequest>) =
         contactService.syncContacts(contactRequests)
 
-    suspend fun getPinLogs(offset: Int? = null): MixinResponse<List<LogResponse>> {
+    suspend fun getPinLogs(offset: String? = null): MixinResponse<List<LogResponse>> {
         return withContext(Dispatchers.IO) {
             accountRepository.getPinLogs(offset = offset)
         }
