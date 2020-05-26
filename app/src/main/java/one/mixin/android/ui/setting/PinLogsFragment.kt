@@ -23,7 +23,6 @@ class PinLogsFragment : BaseViewModelFragment<SettingViewModel>() {
 
     companion object {
         const val TAG = "PinLogsFragment"
-        private const val PAGE_COUNT = 100
         fun newInstance() = PinLogsFragment()
     }
 
@@ -49,7 +48,7 @@ class PinLogsFragment : BaseViewModelFragment<SettingViewModel>() {
             isLoading = true
             val result = viewModel.getPinLogs()
             if (result.isSuccess && result.data?.isNotEmpty() == true) {
-                hasMore = result.data?.size!! >= PAGE_COUNT
+                hasMore = result.data?.isNotEmpty() == true
                 empty.isVisible = false
                 list.isVisible = true
                 adapter.data.addAll(result.data!!)
@@ -66,18 +65,16 @@ class PinLogsFragment : BaseViewModelFragment<SettingViewModel>() {
 
     private var hasMore = false
     private var isLoading = false
-    private var page = 0
     private fun loadMore() {
-        if (isLoading && !hasMore) {
+        if (isLoading || !hasMore) {
             return
         }
         isLoading = true
         viewModel.viewModelScope.launch {
             val result = viewModel.getPinLogs(adapter.data.last().createdAt)
             if (result.isSuccess && result.data?.isNotEmpty() == true) {
-                page += 1
-                hasMore = result.data?.size!! >= PAGE_COUNT
                 adapter.data.addAll(result.data!!)
+                adapter.notifyDataSetChanged()
             } else {
                 hasMore = false
             }
