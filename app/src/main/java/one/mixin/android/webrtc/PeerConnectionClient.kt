@@ -214,6 +214,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     private fun createAudioTrack(): AudioTrack {
         audioSource = factory!!.createAudioSource(MediaConstraints())
         audioTrack = factory!!.createAudioTrack(AUDIO_TRACK_ID, audioSource)
+        audioTrack!!.setEnabled(true)
         return audioTrack!!
     }
 
