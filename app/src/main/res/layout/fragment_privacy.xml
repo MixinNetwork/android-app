@@ -159,25 +159,49 @@
     </RelativeLayout>
 
     <View
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/setting_divider"
-            android:background="?attr/bg_window"/>
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/setting_divider"
+        android:background="?attr/bg_window" />
 
     <RelativeLayout
-            android:id="@+id/auth_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:background="?attr/bg_white"
-            android:foreground="?attr/selectableItemBackground">
+        android:id="@+id/auth_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="?attr/bg_white"
+        android:foreground="?attr/selectableItemBackground">
 
         <TextView
-                android:id="@+id/auth_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_authentications"
-                tools:ignore="RelativeOverlap"/>
+            android:id="@+id/auth_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/setting_authentications"
+            tools:ignore="RelativeOverlap" />
     </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/setting_divider"
+        android:background="?attr/bg_window" />
+
+    <RelativeLayout
+        android:id="@+id/logs_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="?attr/bg_white"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/logs"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/logs"
+            tools:ignore="RelativeOverlap" />
+    </RelativeLayout>
+
 </LinearLayout>

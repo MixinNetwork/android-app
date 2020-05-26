@@ -96,15 +96,4 @@
             android:foreground="?attr/selectableItemBackground"
             android:background="?attr/bg_white"/>
 
-    <TextView
-            style="@style/NormalTextStyle"
-            android:id="@+id/pin_log_tv"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:text="@string/logs"
-            android:gravity="center_vertical"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingEnd="@dimen/activity_horizontal_margin"
-            android:foreground="?attr/selectableItemBackground"
-            android:background="?attr/bg_white"/>
 </LinearLayout>
