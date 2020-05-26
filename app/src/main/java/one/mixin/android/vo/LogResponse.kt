@@ -2,7 +2,7 @@ package one.mixin.android.vo
 
 import com.google.gson.annotations.SerializedName
 
-class PINLogResponse(
+class LogResponse(
     val type: String,
     @SerializedName("log_id")
     val logId: String,

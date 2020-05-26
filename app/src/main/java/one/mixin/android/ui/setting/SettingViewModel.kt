@@ -15,7 +15,7 @@ import one.mixin.android.api.service.ContactService
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.vo.PINLogResponse
+import one.mixin.android.vo.LogResponse
 import one.mixin.android.vo.UserRelationship
 
 class SettingViewModel @Inject
@@ -45,9 +45,9 @@ internal constructor(
     suspend fun syncContacts(contactRequests: List<ContactRequest>) =
         contactService.syncContacts(contactRequests)
 
-    suspend fun getPinLogs(offset: Int? = null): MixinResponse<List<PINLogResponse>> {
-       return withContext(Dispatchers.IO) {
-            accountRepository.getPinLogs(offset)
+    suspend fun getPinLogs(offset: Int? = null): MixinResponse<List<LogResponse>> {
+        return withContext(Dispatchers.IO) {
+            accountRepository.getPinLogs(offset = offset)
         }
     }
 

@@ -53,6 +53,9 @@ class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
         auth_rl.setOnClickListener {
             navTo(AuthenticationsFragment.newInstance(), AuthenticationsFragment.TAG)
         }
+        logs_rl.setOnClickListener {
+            navTo(PinLogsFragment.newInstance(), PinLogsFragment.TAG)
+        }
         emergency_rl.setOnClickListener {
             navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
         }

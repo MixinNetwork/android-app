@@ -12,7 +12,7 @@
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/pin_logs" />
+        app:titleText="@string/logs" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -36,7 +36,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin16"
-                android:text="@string/no_result"
+                android:text="@string/setting_logs_empty"
                 android:textColor="?attr/text_minor" />
         </LinearLayout>
 
