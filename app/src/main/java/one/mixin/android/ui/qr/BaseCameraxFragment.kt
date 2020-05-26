@@ -375,6 +375,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
             if (donateSupported.any { analysisResult.startsWith(it) }) {
                 MainActivity.showDonate(requireActivity(), analysisResult)
                 activity?.finish()
+                return
             }
 
             if (fromScan()) {

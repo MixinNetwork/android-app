@@ -425,96 +425,11 @@ class MainActivity : BlazeBaseActivity() {
             val text = intent.getStringExtra(DONATE)!!
             bottomSheet?.dismiss()
 
-            val sanitizer = UrlQuerySanitizer(text)
-            val amount = try {
-                sanitizer.getValue("amount").toDouble()
-            } catch (e: Exception) {
-                showScanBottom(text)
-                return
-            }.toString()
-            val userId = sanitizer.getValue("user")
-            if (userId == null || !userId.isUUID()) {
-                showScanBottom(text)
-                return
-            }
-            val assetId = sanitizer.getValue("asset")
-            if (assetId == null || !assetId.isUUID()) {
-                showScanBottom(text)
-                return
-            }
-            val trace = sanitizer.getValue("trace") ?: UUID.randomUUID().toString()
-            val memo = sanitizer.getValue("memo")
-
             lifecycleScope.launch {
-                alertDialog?.dismiss()
-                alertDialog = indeterminateProgressDialog(
-                    message = R.string.pb_dialog_message,
-                    title = R.string.analyzing
-                )
-
-                var asset = assetDao.simpleAssetItem(assetId)
-                if (asset == null) {
-                    asset = handleMixinResponse(
-                        invokeNetwork = {
-                            assetService.getAssetByIdSuspend(assetId)
-                        },
-                        switchContext = Dispatchers.IO,
-                        successBlock = { response ->
-                            response.data?.let {
-                                assetDao.insert(it)
-                                return@handleMixinResponse assetDao.findAssetItemById(it.assetId)
-                            }
-                        },
-                        failureBlock = {
-                            alertDialog?.dismiss()
-                            showScanBottom(text)
-                            return@handleMixinResponse false
-                        },
-                        exceptionBlock = {
-                            alertDialog?.dismiss()
-                            showScanBottom(text)
-                            return@handleMixinResponse false
-                        }
-                    )
-                }
-                if (asset == null) {
-                    alertDialog?.dismiss()
+                if (!showDonate(text)) {
                     showScanBottom(text)
-                    return@launch
                 }
-
-                val transferRequest = TransferRequest(assetId,
-                    userId, amount, null, trace, memo)
-                handleMixinResponse(
-                    invokeNetwork = {
-                        assetService.paySuspend(transferRequest)
-                    },
-                    switchContext = Dispatchers.IO,
-                    successBlock = { r ->
-                        val response = r.data
-                        if (response == null) {
-                            showScanBottom(text)
-                        } else {
-                            bottomSheet = TransferBottomSheetDialogFragment
-                                .newInstance(TransferBiometricItem(response.recipient, asset, amount,
-                                    null, trace, memo, response.status))
-                            bottomSheet?.showNow(supportFragmentManager, TransferBottomSheetDialogFragment.TAG)
-                        }
-                    },
-                    doAfterNetworkSuccess = {
-                        alertDialog?.dismiss()
-                    },
-                    failureBlock = {
-                        alertDialog?.dismiss()
-                        showScanBottom(text)
-                        return@handleMixinResponse false
-                    },
-                    exceptionBlock = {
-                        alertDialog?.dismiss()
-                        showScanBottom(text)
-                        return@handleMixinResponse false
-                    }
-                )
+                alertDialog?.dismiss()
             }
         }
         if (intent.hasExtra(SCAN)) {
@@ -643,6 +558,63 @@ class MainActivity : BlazeBaseActivity() {
                     ErrorHandler.handleError(it)
                 })
         }
+    }
+
+    private suspend fun showDonate(text: String): Boolean {
+        val sanitizer = UrlQuerySanitizer(text)
+        val amount = try {
+            sanitizer.getValue("amount").toDouble()
+        } catch (e: Exception) {
+            return false
+        }.toString()
+        val userId = sanitizer.getValue("recipient")
+        if (userId == null || !userId.isUUID()) {
+            return false
+        }
+        val assetId = sanitizer.getValue("asset")
+        if (assetId == null || !assetId.isUUID()) {
+            return false
+        }
+        val trace = sanitizer.getValue("trace") ?: UUID.randomUUID().toString()
+        val memo = sanitizer.getValue("memo")
+
+        alertDialog?.dismiss()
+        alertDialog = indeterminateProgressDialog(
+            message = R.string.pb_dialog_message,
+            title = R.string.analyzing
+        )
+
+        var asset = assetDao.simpleAssetItem(assetId)
+        if (asset == null) {
+            asset = handleMixinResponse(
+                invokeNetwork = {
+                    assetService.getAssetByIdSuspend(assetId)
+                },
+                switchContext = Dispatchers.IO,
+                successBlock = { response ->
+                    response.data?.let {
+                        assetDao.insertSuspend(it)
+                        return@handleMixinResponse assetDao.findAssetItemById(it.assetId)
+                    }
+                }
+            ) ?: return false
+        }
+        val transferRequest = TransferRequest(assetId, userId, amount, null, trace, memo)
+        return handleMixinResponse(
+            invokeNetwork = {
+                assetService.paySuspend(transferRequest)
+            },
+            switchContext = Dispatchers.IO,
+            successBlock = { r ->
+                val response = r.data ?: return@handleMixinResponse false
+
+                bottomSheet = TransferBottomSheetDialogFragment
+                    .newInstance(TransferBiometricItem(response.recipient, asset, amount,
+                        null, trace, memo, response.status))
+                bottomSheet?.showNow(supportFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                return@handleMixinResponse true
+            }
+        ) ?: false
     }
 
     private fun showScanBottom(scan: String) {
