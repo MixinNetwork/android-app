@@ -102,43 +102,43 @@ class PinLogsFragment : BaseViewModelFragment<SettingViewModel>() {
         private fun getLogDescription(context: Context, code: String): Pair<String, String> {
             when (code) {
                 "VERIFICATION" ->
-                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.pin_verification))
+                    return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_verification))
                 "RAW_TRANSFER" ->
-                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.pin_raw_transfer))
+                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_raw_transfer))
                 "USER_TRANSFER" ->
-                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.pin_user_transfer))
+                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_user_transfer))
                 "WITHDRAWAL" ->
-                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.pin_withdrawal))
+                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_withdrawal))
                 "ADD_ADDRESS" ->
-                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.pin_add_address))
+                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_add_address))
                 "DELETE_ADDRESS" ->
-                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.pin_delete_address))
+                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_delete_address))
                 "ADD_EMERGENCY" ->
-                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.pin_add_emergency))
+                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_add_emergency))
                 "DELETE_EMERGENCY" ->
-                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.pin_delete_emergency))
+                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_delete_emergency))
                 "READ_EMERGENCY" ->
-                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.pin_read_emergency))
+                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_read_emergency))
                 "UPDATE_PHONE" ->
-                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.pin_update_phone))
+                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_update_phone))
                 "UPDATE_PIN" ->
-                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.pin_update_pin))
+                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_update_pin))
                 "MULTISIG_SIGN" ->
-                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.pin_log_multisig_sign))
+                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_multisig_sign))
                 "MULTISIG_UNLOCK" ->
-                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.pin_log_multisig_unlock))
+                     return Pair(context.getString(R.string.log_category_pin_incorrect), context.getString(R.string.log_pin_multisig_unlock))
                 "ACTIVITY_PIN_MODIFICATION" ->
-                     return Pair(context.getString(R.string.log_category_pin_change), context.getString(R.string.pin_log_modification))
+                     return Pair(context.getString(R.string.log_category_pin_change), context.getString(R.string.log_pin_modification))
                 "ACTIVITY_EMERGENCY_CONTACT_MODIFICATION" ->
-                     return Pair(context.getString(R.string.log_category_emergency), context.getString(R.string.pin_log_emergency_modification))
+                     return Pair(context.getString(R.string.log_category_emergency), context.getString(R.string.log_emergency_modification))
                 "ACTIVITY_PHONE_MODIFICATION" ->
-                     return Pair(context.getString(R.string.log_category_phone_change), context.getString(R.string.pin_log_phone_modification))
+                     return Pair(context.getString(R.string.log_category_phone_change), context.getString(R.string.log_phone_modification))
                 "ACTIVITY_LOGIN_BY_PHONE" ->
-                     return Pair(context.getString(R.string.log_category_login), context.getString(R.string.pin_log_login_phone))
+                     return Pair(context.getString(R.string.log_category_login), context.getString(R.string.log_login_phone))
                 "ACTIVITY_LOGIN_BY_EMERGENCY_CONTACT" ->
-                     return Pair(context.getString(R.string.log_category_login), context.getString(R.string.pin_log_login_emergency))
+                     return Pair(context.getString(R.string.log_category_login), context.getString(R.string.log_login_emergency))
                 "ACTIVITY_LOGIN_FROM_DESKTOP" ->
-                     return Pair(context.getString(R.string.log_category_login), context.getString(R.string.pin_log_login_desktop))
+                     return Pair(context.getString(R.string.log_category_login), context.getString(R.string.log_login_desktop))
                 else ->
                     return Pair(code, code)
             }
