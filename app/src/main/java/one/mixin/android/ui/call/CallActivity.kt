@@ -16,11 +16,11 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.view.View
-import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.WindowManager
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.getSystemService
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.transition.AutoTransition
@@ -236,17 +236,17 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     private fun handleDialingConnecting() {
-        voice_cb.visibility = INVISIBLE
-        mute_cb.visibility = INVISIBLE
-        answer_cb.visibility = INVISIBLE
+        voice_cb.isVisible = true
+        mute_cb.isVisible = true
+        answer_cb.isVisible = false
         moveHangup(true, 0)
         action_tv.text = getString(R.string.call_notification_outgoing)
     }
 
     private fun handleRinging() {
-        voice_cb.visibility = INVISIBLE
-        mute_cb.visibility = INVISIBLE
-        answer_cb.visibility = VISIBLE
+        voice_cb.isVisible = false
+        mute_cb.isVisible = false
+        answer_cb.isVisible = true
         answer_cb.text.text = getString(R.string.call_accept)
         hangup_cb.text.text = getString(R.string.call_decline)
         moveHangup(false, 0)
@@ -254,17 +254,23 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     private fun handleAnswering() {
-        voice_cb.visibility = INVISIBLE
-        mute_cb.visibility = INVISIBLE
+        voice_cb.fadeIn()
+        mute_cb.fadeIn()
         answer_cb.fadeOut()
         moveHangup(true, 250)
         action_tv.text = getString(R.string.call_connecting)
     }
 
     private fun handleConnected() {
-        voice_cb.fadeIn()
-        mute_cb.fadeIn()
-        answer_cb.fadeOut()
+        if (!voice_cb.isVisible) {
+            voice_cb.fadeIn()
+        }
+        if (!mute_cb.isVisible) {
+            mute_cb.fadeIn()
+        }
+        if (answer_cb.isVisible) {
+            answer_cb.fadeOut()
+        }
         moveHangup(true, 250)
         startTimer()
     }
