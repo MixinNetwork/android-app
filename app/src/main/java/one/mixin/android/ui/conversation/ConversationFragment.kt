@@ -330,11 +330,19 @@ class ConversationFragment :
             }
         }
 
-    private fun callVoice() {
+    private fun voiceCall() {
         if (LinkState.isOnline(linkState.state)) {
             createConversation {
-                CallService.outgoing(requireContext(), recipient!!, conversationId)
+                CallService.outgoing(requireContext(), conversationId, recipient!!)
             }
+        } else {
+            toast(R.string.error_no_connection)
+        }
+    }
+
+    private fun groupVoiceCall(users: ArrayList<User>) {
+        if (LinkState.isOnline(linkState.state)) {
+            CallService.outgoing(requireContext(), conversationId, users = users)
         } else {
             toast(R.string.error_no_connection)
         }
@@ -687,7 +695,7 @@ class ConversationFragment :
                         .subscribe(
                             { granted ->
                                 if (granted) {
-                                    callVoice()
+                                    voiceCall()
                                 } else {
                                     context?.openPermissionSetting()
                                 }
@@ -2050,7 +2058,7 @@ class ConversationFragment :
                                 .subscribe(
                                     { granted ->
                                         if (granted) {
-                                            callVoice()
+                                            voiceCall()
                                         } else {
                                             context?.openPermissionSetting()
                                         }

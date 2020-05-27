@@ -86,9 +86,11 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private var quoteMessageId: String? = null
     private lateinit var self: User
     private var user: User? = null
+    private var users: ArrayList<User>? = null
     private lateinit var conversationId: String
 
-    private var declineTriggeredByUser: Boolean = true
+    private var declineTriggeredByUser = true
+    private var isGroupCall = false
 
     private var isDestroyed = AtomicBoolean(false)
 
@@ -212,6 +214,14 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         require(cid != null)
         conversationId = cid
         user = intent.getParcelableExtra(ARGS_USER)
+        users = intent.getParcelableExtra(EXTRA_USERS)
+        if (user != null) {
+            isGroupCall = false
+        }
+        if (users != null) {
+            isGroupCall = true
+        }
+
         callState.user = user
         callState.isOffer = true
         updateForegroundNotification()
@@ -267,7 +277,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         audioManager.stop()
         if (callState.isOffer) {
             val category = MessageCategory.WEBRTC_AUDIO_CANCEL.name
-            sendCallMessage(category)
+            sendVoiceCallMessage(category)
             val toIdle = intent?.getBooleanExtra(EXTRA_TO_IDLE, false)
             if (toIdle != null && toIdle) {
                 callState.setCallState(CallState.STATE_IDLE)
@@ -285,7 +295,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         callState.setCallState(CallState.STATE_IDLE)
         if (!callState.isOffer) {
             val category = MessageCategory.WEBRTC_AUDIO_DECLINE.name
-            sendCallMessage(category)
+            sendVoiceCallMessage(category)
         }
         disconnect()
     }
@@ -294,7 +304,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (callState.isIdle()) return
 
         val category = MessageCategory.WEBRTC_AUDIO_END.name
-        sendCallMessage(category)
+        sendVoiceCallMessage(category)
         val toIdle = intent?.getBooleanExtra(EXTRA_TO_IDLE, false)
         if (toIdle != null && toIdle) {
             callState.setCallState(CallState.STATE_IDLE)
@@ -328,7 +338,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             database.insertAndNotifyConversation(m)
             disconnect()
         } else if (state != CallState.STATE_CONNECTED) {
-            sendCallMessage(MessageCategory.WEBRTC_AUDIO_FAILED.name)
+            sendVoiceCallMessage(MessageCategory.WEBRTC_AUDIO_FAILED.name)
             disconnect()
         }
     }
@@ -387,22 +397,38 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         return callState.callInfo.callState != CallState.STATE_IDLE || tm?.callState != TelephonyManager.CALL_STATE_IDLE
     }
 
-    // PeerConnectionEvents
-    override fun onLocalDescription(sdp: SessionDescription) {
-        callExecutor.execute {
-            val category = if (callState.isOffer) {
+    private fun getCategory(): String {
+        return if (callState.isOffer) {
+            if (isGroupCall) {
+                MessageCategory.KRAKEN_PUBLISH.name
+            } else {
                 MessageCategory.WEBRTC_AUDIO_OFFER.name
+            }
+        } else {
+            if (isGroupCall) {
+                MessageCategory.KRAKEN_ANSWER.name
             } else {
                 MessageCategory.WEBRTC_AUDIO_ANSWER.name
             }
-            sendCallMessage(category, gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())))
+        }
+    }
+
+    // PeerConnectionEvents
+    override fun onLocalDescription(sdp: SessionDescription) {
+        callExecutor.execute {
+            val category = getCategory()
+            if (isGroupCall) {
+                sendGroupCallMessage(category, gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())))
+            } else {
+                sendVoiceCallMessage(category, gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())))
+            }
         }
     }
 
     override fun onIceCandidate(candidate: IceCandidate) {
         callExecutor.execute {
             val arr = arrayListOf(candidate)
-            sendCallMessage(MessageCategory.WEBRTC_ICE_CANDIDATE.name, gson.toJson(arr))
+            sendVoiceCallMessage(MessageCategory.WEBRTC_ICE_CANDIDATE.name, gson.toJson(arr))
         }
     }
 
@@ -436,7 +462,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         callExecutor.execute { handleCallLocalFailed() }
     }
 
-    private fun sendCallMessage(category: String, content: String? = null) {
+    private fun sendGroupCallMessage(category: String, content: String? = null) {
+        val message = createCallMessage(UUID.randomUUID().toString(), conversationId, self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name)
+        jobManager.addJobInBackground(SendMessageJob(message))
+    }
+
+    private fun sendVoiceCallMessage(category: String, content: String? = null) {
         val message = if (callState.isOffer) {
             val messageId = UUID.randomUUID().toString()
             if (category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
@@ -593,6 +624,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
         const val EXTRA_TO_IDLE = "from_notification"
         private const val EXTRA_CONVERSATION_ID = "conversation_id"
+        private const val EXTRA_USERS = "users"
         private const val EXTRA_BLAZE = "blaze"
         private const val EXTRA_MUTE = "mute"
         private const val EXTRA_SPEAKERPHONE = "speakerphone"
@@ -606,8 +638,9 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             }
         }
 
-        fun outgoing(ctx: Context, user: User, conversationId: String) = startService(ctx, ACTION_CALL_OUTGOING) {
+        fun outgoing(ctx: Context, conversationId: String, user: User? = null, users: ArrayList<User>? = null) = startService(ctx, ACTION_CALL_OUTGOING) {
             it.putExtra(ARGS_USER, user)
+            it.putExtra(EXTRA_USERS, users)
             it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         }
 

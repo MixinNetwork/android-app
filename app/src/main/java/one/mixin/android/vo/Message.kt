@@ -176,7 +176,9 @@ fun Message.isRepresentativeMessage(conversation: ConversationItem): Boolean {
     return conversation.category == ConversationCategory.CONTACT.name && conversation.ownerId != userId
 }
 
-fun Message.isCall() = category.startsWith("WEBRTC_")
+fun Message.isCall() = category.startsWith("WEBRTC_") || category.startsWith("KRAKEN_")
+
+fun Message.isKraken() = category.startsWith("KRAKEN_")
 
 fun Message.isRecall() = category == MessageCategory.MESSAGE_RECALL.name
 
@@ -239,6 +241,12 @@ enum class MessageCategory {
     WEBRTC_AUDIO_END,
     WEBRTC_AUDIO_BUSY,
     WEBRTC_AUDIO_FAILED,
+    KRAKEN_INVITE,
+    KRAKEN_PUBLISH,
+    KRAKEN_SUBSCRIBE,
+    KRAKEN_ANSWER,
+    KRAKEN_TRICKLE,
+    KRAKEN_END
 }
 
 fun String.isIllegalMessageCategory(): Boolean {

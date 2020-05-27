@@ -85,13 +85,13 @@ class CallActivity : BaseActivity(), SensorEventListener {
         sensorManager = getSystemService()
         powerManager = getSystemService()
         wakeLock = powerManager?.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
-        val answer = intent.getParcelableExtra<User?>(ARGS_ANSWER)
-        if (answer != null) {
-            name_tv.text = answer.fullName
-            avatar.setInfo(answer.fullName, answer.avatarUrl, answer.userId)
+        val callee = intent.getParcelableExtra<User?>(ARGS_ANSWER)
+        if (callee != null) {
+            name_tv.text = callee.fullName
+            avatar.setInfo(callee.fullName, callee.avatarUrl, callee.userId)
             avatar.setTextSize(48f)
-            if (answer.avatarUrl != null) {
-                setBlurBg(answer.avatarUrl)
+            if (callee.avatarUrl != null) {
+                setBlurBg(callee.avatarUrl)
             }
         }
         hangup_cb.setOnClickListener {
@@ -327,10 +327,10 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
         const val ARGS_ANSWER = "answer"
 
-        fun show(context: Context, answer: User? = null) {
+        fun show(context: Context, callee: User? = null) {
             Intent(context, CallActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                putExtra(ARGS_ANSWER, answer)
+                putExtra(ARGS_ANSWER, callee)
             }.run {
                 context.startActivity(this)
             }
