@@ -102,6 +102,8 @@ class BottomSheetViewModel @Inject internal constructor(
     fun pay(request: TransferRequest): Observable<MixinResponse<PaymentResponse>> =
         assetRepository.pay(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
+    suspend fun paySuspend(request: TransferRequest) = assetRepository.paySuspend(request)
+
     suspend fun withdrawal(
         addressId: String,
         amount: String,

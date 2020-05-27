@@ -3,6 +3,7 @@ package one.mixin.android.ui.conversation.link
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.net.Uri
+import android.net.UrlQuerySanitizer
 import android.os.Build
 import android.view.Gravity
 import android.view.View
@@ -26,6 +27,7 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.util.UUID
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +35,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
@@ -64,6 +67,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.qr.donateSupported
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment
@@ -544,6 +548,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                     ErrorHandler.handleError(it)
                 })
             }
+        } else if (donateSupported.any { url.startsWith(it) }) {
+            lifecycleScope.launch {
+                if (!showDonate(url)) {
+                    error(R.string.link_invalid_donate)
+                } else {
+                    dismiss()
+                }
+            }
         } else {
             error()
         }
@@ -578,6 +590,46 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                 activity?.finish()
             }
         }
+    }
+
+    private suspend fun showDonate(text: String): Boolean {
+        val sanitizer = UrlQuerySanitizer(text)
+        val amount = try {
+            sanitizer.getValue("amount").toDouble()
+        } catch (e: Exception) {
+            return false
+        }.toString()
+        val userId = sanitizer.getValue("recipient")
+        if (userId == null || !userId.isUUID()) {
+            return false
+        }
+        val assetId = sanitizer.getValue("asset")
+        if (assetId == null || !assetId.isUUID()) {
+            return false
+        }
+        val trace = sanitizer.getValue("trace") ?: UUID.randomUUID().toString()
+        val memo = sanitizer.getValue("memo")
+
+        var asset = linkViewModel.findAssetItemById(assetId)
+        if (asset == null) {
+            asset = linkViewModel.refreshAsset(assetId) ?: return false
+        }
+        val transferRequest = TransferRequest(assetId, userId, amount, null, trace, memo)
+        return handleMixinResponse(
+            invokeNetwork = {
+                linkViewModel.paySuspend(transferRequest)
+            },
+            switchContext = Dispatchers.IO,
+            successBlock = { r ->
+                val response = r.data ?: return@handleMixinResponse false
+
+                val bottomSheet = TransferBottomSheetDialogFragment
+                    .newInstance(TransferBiometricItem(response.recipient, asset, amount,
+                        null, trace, memo, response.status))
+                bottomSheet.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                return@handleMixinResponse true
+            }
+        ) ?: false
     }
 
     private fun error(@StringRes errorRes: Int = R.string.link_error) {
