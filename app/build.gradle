@@ -1,6 +1,6 @@
 def versionMajor = 0
 def versionMinor = 24
-def versionPatch = 9
+def versionPatch = 10
 def versionBuild = 0
 
 apply plugin: 'com.android.application'
