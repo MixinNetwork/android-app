@@ -157,50 +157,45 @@ class DecryptCallMessage(
         } else {
             when (data.category) {
                 MessageCategory.WEBRTC_AUDIO_ANSWER.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
-                        data.quoteMessageId != callState.callInfo.messageId
-                    ) {
+                    if (callState.isIdle() || data.quoteMessageId != callState.trackId) {
                         notifyServer(data)
                         return
                     }
                     CallService.answer(ctx, data)
                 }
                 MessageCategory.WEBRTC_ICE_CANDIDATE.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
-                        data.quoteMessageId != callState.callInfo.messageId
-                    ) {
+                    if (callState.isIdle() || data.quoteMessageId != callState.trackId) {
                         notifyServer(data)
                         return
                     }
                     CallService.candidate(ctx, data)
                 }
                 MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) {
+                    if (callState.isIdle()) {
                         notifyServer(data)
                         return
                     }
                     saveCallMessage(data)
-                    if (data.quoteMessageId != callState.callInfo.messageId) {
+                    if (data.quoteMessageId != callState.trackId) {
                         return
                     }
                     CallService.cancel(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) {
+                    if (callState.isIdle()) {
                         notifyServer(data)
                         return
                     }
 
                     val uId = getUserId()
                     saveCallMessage(data, userId = uId)
-                    if (data.quoteMessageId != callState.callInfo.messageId) {
+                    if (data.quoteMessageId != callState.trackId) {
                         return
                     }
                     CallService.decline(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
-                        data.quoteMessageId != callState.callInfo.messageId ||
+                    if (callState.isIdle() || data.quoteMessageId != callState.trackId ||
                         callState.user == null
                     ) {
                         notifyServer(data)
@@ -211,7 +206,7 @@ class DecryptCallMessage(
                     CallService.busy(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_END.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) {
+                    if (callState.isIdle()) {
                         notifyServer(data)
                         return
                     }
@@ -221,7 +216,7 @@ class DecryptCallMessage(
                     CallService.remoteEnd(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) {
+                    if (callState.isIdle()) {
                         notifyServer(data)
                         return
                     }

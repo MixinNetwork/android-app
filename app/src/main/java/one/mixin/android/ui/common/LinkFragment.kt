@@ -17,7 +17,6 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
-import one.mixin.android.webrtc.CallService
 import org.jetbrains.anko.runOnUiThread
 import java.util.Timer
 import java.util.TimerTask
@@ -68,7 +67,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
 
     @Synchronized
     private fun check(state: Int?) {
-        if (callState.callInfo.callState != CallService.CallState.STATE_IDLE) {
+        if (!callState.isIdle()) {
             setCalling()
             showBar()
             return
@@ -85,7 +84,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     }
 
     override fun onChanged(t: Int?) {
-        if (callState.callInfo.callState != CallService.CallState.STATE_IDLE) return
+        if (!callState.isIdle()) return
 
         t.notNullWithElse(
             {

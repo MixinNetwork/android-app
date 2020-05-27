@@ -21,6 +21,5 @@ class CallUserAdapter : ListAdapter<User, CallUserHolder>(User.DIFF_CALLBACK) {
 
 class CallUserHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     fun bind(user: User) {
-
     }
 }

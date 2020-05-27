@@ -1272,12 +1272,18 @@ class ConversationFragment :
             group_flag.isVisible = false
             driver.isVisible = false
         }
+<<<<<<< HEAD
         callState.observe(
             viewLifecycleOwner,
             Observer { info ->
                 chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
             }
         )
+=======
+        callState.observe(viewLifecycleOwner, Observer { state ->
+            chat_control.calling = state != CallService.CallState.STATE_IDLE
+        })
+>>>>>>> 87b63320f... Tweak CallStateLiveData
         bindData()
     }
 

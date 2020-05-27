@@ -83,14 +83,9 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private val gson = Gson()
 
     private var blazeMessageData: BlazeMessageData? = null
-    private var quoteMessageId: String? = null
     private lateinit var self: User
-    private var user: User? = null
-    private var users: ArrayList<User>? = null
-    private lateinit var conversationId: String
 
     private var declineTriggeredByUser = true
-    private var isGroupCall = false
 
     private var isDestroyed = AtomicBoolean(false)
 
@@ -182,11 +177,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             }
             return
         }
-        if (callState.callInfo.callState == CallState.STATE_RINGING) return
+        if (callState.state == CallState.STATE_RINGING) return
 
-        callState.setCallState(CallState.STATE_RINGING)
+        callState.state = CallState.STATE_RINGING
         blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
-        user = intent.getParcelableExtra(ARGS_USER)
+        val user = intent.getParcelableExtra<User>(ARGS_USER)
+        val users = intent.getParcelableArrayListExtra<User>(EXTRA_USERS)
 
         val pendingCandidateData = intent.getStringExtra(EXTRA_PENDING_CANDIDATES)
         if (pendingCandidateData != null && pendingCandidateData.isNotEmpty()) {
@@ -197,32 +193,26 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         }
 
         callState.user = user
-        updateForegroundNotification()
-        quoteMessageId = blazeMessageData!!.messageId
-        callState.setMessageId(quoteMessageId!!)
-        timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+        callState.users = users
         callState.isOffer = false
+        callState.trackId = blazeMessageData!!.messageId
+        updateForegroundNotification()
+        timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         CallActivity.show(this, user)
         audioManager.start(false)
     }
 
     private fun handleCallOutgoing(intent: Intent) {
-        if (callState.callInfo.callState == CallState.STATE_DIALING) return
+        if (callState.state == CallState.STATE_DIALING) return
 
-        callState.setCallState(CallState.STATE_DIALING)
+        callState.state = CallState.STATE_DIALING
         val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
         require(cid != null)
-        conversationId = cid
-        user = intent.getParcelableExtra(ARGS_USER)
-        users = intent.getParcelableExtra(EXTRA_USERS)
-        if (user != null) {
-            isGroupCall = false
-        }
-        if (users != null) {
-            isGroupCall = true
-        }
-
+        val user = intent.getParcelableExtra<User>(ARGS_USER)
+        val users = intent.getParcelableArrayListExtra<User>(EXTRA_USERS)
         callState.user = user
+        callState.users = users
+        callState.conversationId = cid
         callState.isOffer = true
         updateForegroundNotification()
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
@@ -232,16 +222,17 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleAnswerCall(intent: Intent) {
-        if (callState.callInfo.callState == CallState.STATE_ANSWERING ||
+        if (callState.state == CallState.STATE_ANSWERING ||
             callState.isIdle()
         ) return
 
-        callState.setCallState(CallState.STATE_ANSWERING)
+        callState.state = CallState.STATE_ANSWERING
         updateForegroundNotification()
         audioManager.stop()
+
+        val bmd = intent.getSerializableExtra(EXTRA_BLAZE) ?: return
+        blazeMessageData = bmd as BlazeMessageData
         if (callState.isOffer) {
-            val bmd = intent.getSerializableExtra(EXTRA_BLAZE) ?: return
-            blazeMessageData = bmd as BlazeMessageData
             peerConnectionClient.setAnswerSdp(getRemoteSdp(Base64.decode(blazeMessageData!!.data)))
         } else {
             getTurnServer {
@@ -260,10 +251,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleConnected() {
-        if (callState.callInfo.callState == CallState.STATE_CONNECTED) return
+        if (callState.isConnected()) return
 
         callState.connectedTime = System.currentTimeMillis()
-        callState.setCallState(CallState.STATE_CONNECTED)
+        callState.state = CallState.STATE_CONNECTED
         updateForegroundNotification()
         timeoutFuture?.cancel(true)
         vibrate(longArrayOf(0, 30))
@@ -280,10 +271,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             sendVoiceCallMessage(category)
             val toIdle = intent?.getBooleanExtra(EXTRA_TO_IDLE, false)
             if (toIdle != null && toIdle) {
-                callState.setCallState(CallState.STATE_IDLE)
+                callState.state = CallState.STATE_IDLE
             }
         } else {
-            callState.setCallState(CallState.STATE_IDLE)
+            callState.state = CallState.STATE_IDLE
         }
         disconnect()
     }
@@ -292,7 +283,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (callState.isIdle()) return
 
         audioManager.stop()
-        callState.setCallState(CallState.STATE_IDLE)
+        callState.state = CallState.STATE_IDLE
         if (!callState.isOffer) {
             val category = MessageCategory.WEBRTC_AUDIO_DECLINE.name
             sendVoiceCallMessage(category)
@@ -307,7 +298,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         sendVoiceCallMessage(category)
         val toIdle = intent?.getBooleanExtra(EXTRA_TO_IDLE, false)
         if (toIdle != null && toIdle) {
-            callState.setCallState(CallState.STATE_IDLE)
+            callState.state = CallState.STATE_IDLE
         }
         disconnect()
     }
@@ -315,24 +306,24 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun handleCallRemoteEnd() {
         if (callState.isIdle()) return
 
-        callState.setCallState(CallState.STATE_IDLE)
+        callState.state = CallState.STATE_IDLE
         disconnect()
     }
 
     private fun handleCallBusy() {
-        callState.setCallState(CallState.STATE_BUSY)
+        callState.state = CallState.STATE_BUSY
         disconnect()
     }
 
     private fun handleCallLocalFailed() {
         if (callState.isIdle()) return
 
-        val state = callState.callInfo.callState
-        callState.setCallState(CallState.STATE_IDLE)
+        val state = callState.state
+        callState.state = CallState.STATE_IDLE
         if (state == CallState.STATE_DIALING && peerConnectionClient.hasLocalSdp()) {
             val mId = UUID.randomUUID().toString()
             val m = createCallMessage(
-                mId, conversationId, self.userId, MessageCategory.WEBRTC_AUDIO_FAILED.name,
+                mId, callState.conversationId!!, self.userId, MessageCategory.WEBRTC_AUDIO_FAILED.name,
                 null, nowInUtc(), MessageStatus.READ.name, mId
             )
             database.insertAndNotifyConversation(m)
@@ -346,7 +337,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun handleCallRemoteFailed() {
         if (callState.isIdle()) return
 
-        callState.setCallState(CallState.STATE_IDLE)
+        callState.state = CallState.STATE_IDLE
         disconnect()
     }
 
@@ -365,15 +356,13 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleCheckTimeout() {
-        if (callState.callInfo.callState == CallState.STATE_IDLE ||
-            callState.callInfo.callState == CallState.STATE_CONNECTED
-        ) return
+        if (callState.isIdle() || callState.isConnected()) return
 
         handleCallCancel()
     }
 
     private fun updateForegroundNotification() {
-        CallNotificationBuilder.getCallNotification(this, callState, user)?.let {
+        CallNotificationBuilder.getCallNotification(this, callState)?.let {
             startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION, it)
         }
     }
@@ -394,18 +383,18 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private fun isBusy(): Boolean {
         val tm = getSystemService<TelephonyManager>()
-        return callState.callInfo.callState != CallState.STATE_IDLE || tm?.callState != TelephonyManager.CALL_STATE_IDLE
+        return callState.state != CallState.STATE_IDLE || tm?.callState != TelephonyManager.CALL_STATE_IDLE
     }
 
     private fun getCategory(): String {
         return if (callState.isOffer) {
-            if (isGroupCall) {
+            if (callState.isGroupCall()) {
                 MessageCategory.KRAKEN_PUBLISH.name
             } else {
                 MessageCategory.WEBRTC_AUDIO_OFFER.name
             }
         } else {
-            if (isGroupCall) {
+            if (callState.isGroupCall()) {
                 MessageCategory.KRAKEN_ANSWER.name
             } else {
                 MessageCategory.WEBRTC_AUDIO_ANSWER.name
@@ -417,7 +406,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     override fun onLocalDescription(sdp: SessionDescription) {
         callExecutor.execute {
             val category = getCategory()
-            if (isGroupCall) {
+            if (callState.isGroupCall()) {
                 sendGroupCallMessage(category, gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())))
             } else {
                 sendVoiceCallMessage(category, gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())))
@@ -463,17 +452,24 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun sendGroupCallMessage(category: String, content: String? = null) {
-        val message = createCallMessage(UUID.randomUUID().toString(), conversationId, self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name)
+        val message = createCallMessage(
+            UUID.randomUUID().toString(), callState.conversationId!!,
+            self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name
+        )
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
     private fun sendVoiceCallMessage(category: String, content: String? = null) {
+        val quoteMessageId = callState.trackId
         val message = if (callState.isOffer) {
             val messageId = UUID.randomUUID().toString()
+            val conversationId = callState.conversationId!!
             if (category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
-                quoteMessageId = messageId
-                callState.setMessageId(messageId)
-                createCallMessage(messageId, conversationId, self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name)
+                callState.trackId = messageId
+                createCallMessage(
+                    messageId, conversationId, self.userId, category, content,
+                    nowInUtc(), MessageStatus.SENDING.name
+                )
             } else {
                 if (category == MessageCategory.WEBRTC_AUDIO_END.name) {
                     val duration = System.currentTimeMillis() - callState.connectedTime!!
@@ -508,7 +504,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
                 )
             }
         }
-        val recipientId = user?.userId
+        val recipientId = callState.user?.userId
         if (quoteMessageId != null || message.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
         }
@@ -544,7 +540,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private fun createNewReadMessage(m: Message, userId: String, status: MessageStatus) =
         createCallMessage(
-            quoteMessageId ?: blazeMessageData?.quoteMessageId ?: blazeMessageData?.messageId
+            callState.trackId ?: blazeMessageData?.quoteMessageId ?: blazeMessageData?.messageId
                 ?: UUID.randomUUID().toString(),
             m.conversationId, userId, m.category, m.content, m.createdAt, status.name, m.quoteMessageId, m.mediaDuration
         )

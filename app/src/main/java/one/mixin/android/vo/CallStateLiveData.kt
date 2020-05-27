@@ -4,38 +4,38 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import one.mixin.android.webrtc.CallService
 
-class CallStateLiveData : LiveData<CallStateLiveData.CallInfo>() {
-    var callInfo: CallInfo = CallInfo()
+class CallStateLiveData : LiveData<CallService.CallState>() {
+    var state: CallService.CallState = CallService.CallState.STATE_IDLE
+        set(value) {
+            if (field == value) return
+
+            field = value
+            postValue(value)
+        }
+    var conversationId: String? = null
+    var trackId: String? = null
     var user: User? = null
+    var users: ArrayList<User>? = null
     var connectedTime: Long? = null
     var isOffer: Boolean = true
 
-    fun setCallState(callState: CallService.CallState) {
-        if (callInfo.callState == callState) return
-
-        callInfo = CallInfo(callState, callInfo.messageId)
-        postValue(callInfo)
-    }
-
-    fun setMessageId(messageId: String) {
-        if (callInfo.messageId == messageId) return
-
-        callInfo = CallInfo(callInfo.callState, messageId)
-        postValue(callInfo)
-    }
-
     fun reset() {
-        callInfo = CallInfo()
+        conversationId = null
+        trackId = null
         user = null
+        users = null
         connectedTime = null
         isOffer = true
-        postValue(callInfo)
+        state = CallService.CallState.STATE_IDLE
     }
 
-    fun isIdle() = callInfo.callState == CallService.CallState.STATE_IDLE
+    fun isGroupCall() = user == null
+
+    fun isIdle() = state == CallService.CallState.STATE_IDLE
+    fun isConnected() = state == CallService.CallState.STATE_CONNECTED
 
     fun handleHangup(ctx: Context) {
-        when (callInfo.callState) {
+        when (state) {
             CallService.CallState.STATE_DIALING -> CallService.cancel(ctx)
             CallService.CallState.STATE_RINGING -> CallService.decline(ctx)
             CallService.CallState.STATE_ANSWERING -> {
@@ -49,9 +49,4 @@ class CallStateLiveData : LiveData<CallStateLiveData.CallInfo>() {
             else -> CallService.cancel(ctx)
         }
     }
-
-    class CallInfo(
-        val callState: CallService.CallState = CallService.CallState.STATE_IDLE,
-        val messageId: String? = null
-    )
 }

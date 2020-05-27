@@ -73,16 +73,21 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         selectAdapter.checkedUsers = checkedUsers
 
         bottomViewModel.getGroupParticipantsLiveData(conversationId)
-            .observe(viewLifecycleOwner, Observer {
-                users = it
-                filter(search_et.text.toString().trim(), it)
-            })
+            .observe(
+                viewLifecycleOwner,
+                Observer {
+                    users = it
+                    filter(search_et.text.toString().trim(), it)
+                }
+            )
     }
 
     private fun filter(keyword: String, users: List<User>?) {
-        groupUserAdapter.submitList(users?.filter {
-            it.fullName!!.contains(keyword, true) ||
-                it.identityNumber.contains(keyword, true)
-        }?.sortedByDescending { it.fullName == keyword || it.identityNumber == keyword })
+        groupUserAdapter.submitList(
+            users?.filter {
+                it.fullName!!.contains(keyword, true) ||
+                    it.identityNumber.contains(keyword, true)
+            }?.sortedByDescending { it.fullName == keyword || it.identityNumber == keyword }
+        )
     }
 }

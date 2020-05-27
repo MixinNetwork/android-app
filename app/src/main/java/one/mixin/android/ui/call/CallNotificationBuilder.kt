@@ -8,7 +8,6 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import one.mixin.android.R
 import one.mixin.android.vo.CallStateLiveData
-import one.mixin.android.vo.User
 import one.mixin.android.webrtc.CallService
 
 class CallNotificationBuilder {
@@ -18,11 +17,12 @@ class CallNotificationBuilder {
         const val WEBRTC_NOTIFICATION = 313388
         const val ACTION_EXIT = "action_exit"
 
-        fun getCallNotification(context: Context, state: CallStateLiveData, user: User?): Notification? {
-            if (state.callInfo.callState == CallService.CallState.STATE_IDLE) return null
+        fun getCallNotification(context: Context, callState: CallStateLiveData): Notification? {
+            if (callState.isIdle()) return null
 
             val callIntent = Intent(context, CallActivity::class.java)
             callIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+            val user = callState.user
             user?.let {
                 callIntent.putExtra(CallActivity.ARGS_ANSWER, it)
             }
@@ -34,7 +34,7 @@ class CallNotificationBuilder {
                 .setOngoing(true)
                 .setContentTitle(user?.fullName)
 
-            when (state.callInfo.callState) {
+            when (callState.state) {
                 CallService.CallState.STATE_DIALING -> {
                     builder.setContentText(context.getString(R.string.call_notification_outgoing))
                     builder.addAction(
@@ -78,7 +78,7 @@ class CallNotificationBuilder {
                 }
                 else -> {
                     builder.setContentText(context.getString(R.string.call_connecting))
-                    val action = if (state.isOffer) CallService.ACTION_CALL_CANCEL else CallService.ACTION_CALL_DECLINE
+                    val action = if (callState.isOffer) CallService.ACTION_CALL_CANCEL else CallService.ACTION_CALL_DECLINE
                     builder.addAction(
                         getAction(
                             context, action, R.drawable.ic_close_black,
