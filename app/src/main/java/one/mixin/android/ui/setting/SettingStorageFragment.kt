@@ -144,7 +144,7 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
                 for (item in selectSet) {
                     when (item.type) {
                         IMAGE, VIDEO, AUDIO, DATA -> {
-                            viewModel.clear(item.conversationId, item.type)
+                            viewModel.clear(item.conversationId, item.type, requireContext())
                         }
                         else -> {
                             Timber.e("Unknown type")

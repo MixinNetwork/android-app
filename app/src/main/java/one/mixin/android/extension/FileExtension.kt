@@ -240,12 +240,12 @@ fun Context.getConversationDocumentPath(conversationId: String): File {
 
 fun Context.getConversationVideoPath(conversationId: String): File {
     val root = getMediaPath()
-    return File("$root${File.separator}Video${File.separator}$conversationId")
+    return File("$root${File.separator}Videos${File.separator}$conversationId")
 }
 
 fun Context.getConversationAudioPath(conversationId: String): File {
     val root = getMediaPath()
-    return File("$root${File.separator}Audio${File.separator}$conversationId")
+    return File("$root${File.separator}Audios${File.separator}$conversationId")
 }
 
 fun Context.getConversationMediaSize(conversationId: String): Long {
