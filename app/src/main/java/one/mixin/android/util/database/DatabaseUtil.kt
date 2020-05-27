@@ -8,6 +8,7 @@ import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.util.reportException
 
 suspend fun getLastUserId(context: Context): String? = withContext(Dispatchers.IO) {
     val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
@@ -84,12 +85,14 @@ suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
         db.execSQL("DELETE FROM `circles`")
         db.execSQL("DELETE FROM `circle_conversations`")
         db.setTransactionSuccessful()
+    } catch (e: Exception) {
+        reportException(e)
     } finally {
         db?.endTransaction()
         if (!supportsDeferForeignKeys) {
             db?.execSQL("PRAGMA foreign_keys = TRUE")
         }
-        db?.execSQL("PRAGMA wal_checkpoint(FULL)")
+        db?.query("PRAGMA wal_checkpoint(FULL)", null, null, null, null, null, null)?.close()
         if (db?.inTransaction() == false) {
             db.execSQL("VACUUM")
         }

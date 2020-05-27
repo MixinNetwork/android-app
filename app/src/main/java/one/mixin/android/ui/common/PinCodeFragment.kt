@@ -88,10 +88,7 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
         val sameUser = lastUserId != null && lastUserId == account.userId
         if (!sameUser) {
             showLoading()
-
-            withContext(Dispatchers.IO) {
-                clearDatabase(requireContext())
-            }
+            clearDatabase(requireContext())
         }
         Session.storeAccount(account)
         Session.storeToken(sessionKey.getPrivateKeyPem())
