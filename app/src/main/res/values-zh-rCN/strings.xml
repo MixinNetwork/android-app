@@ -99,6 +99,7 @@
     <string name="english">英语</string>
     <string name="follow_system">跟随系统</string>
     <string name="nobody">没有人</string>
+    <string name="analyzing">解析中…</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -558,6 +559,7 @@
     <string name="link_error">无效链接</string>
     <string name="bottom_sheet_check_payment_info">请检查支付信息</string>
     <string name="bottom_sheet_invalid_payment">无效支付信息</string>
+    <string name="link_invalid_donate">无效捐赠链接</string>
     <string name="group_wait">请稍等</string>
     <string name="group_invite">群邀请链接</string>
     <!-- invite -->

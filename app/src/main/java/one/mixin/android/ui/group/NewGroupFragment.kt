@@ -90,7 +90,7 @@ class NewGroupFragment : BaseFragment() {
         }
         enableCreate(false)
         photo_rl.setOnClickListener {
-            RxPermissions(activity!!)
+            RxPermissions(requireActivity())
                 .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
                 .subscribe { granted ->

@@ -64,6 +64,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.device.ConfirmBottomFragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.reportException
 import one.mixin.android.widget.gallery.ui.GalleryActivity
 import org.jetbrains.anko.getStackTraceString
@@ -367,6 +368,12 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 activity?.finish()
             }
         } else {
+            if (donateSupported.any { analysisResult.startsWith(it) }) {
+                MainActivity.showFromScan(requireActivity(), url = analysisResult)
+                activity?.finish()
+                return
+            }
+
             if (fromScan()) {
                 handleResult(analysisResult)
             } else {
@@ -517,3 +524,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
         }
     }
 }
+
+val donateSupported = arrayOf("bitcoin:", "bitcoincash:", "bitcoinsv:", "ethereum:",
+    "litecoin:", "dash:", "ripple:", "zcash:", "horizen:", "monero:", "binancecoin:",
+    "stellar:", "dogecoin:")
