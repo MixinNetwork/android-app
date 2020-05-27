@@ -395,7 +395,7 @@
     <string name="log_category_pin_change">PIN change</string>
     <string name="log_category_phone_change">Phone number change</string>
     <string name="log_pin_verification">Verify</string>
-    <string name="log_pin_raw_transfer">Transfer to mixin address</string>
+    <string name="log_pin_raw_transfer">Transfer to Mixin address</string>
     <string name="log_pin_user_transfer">Transfer to user or bot</string>
     <string name="log_pin_withdrawal">Withdrawal</string>
     <string name="log_pin_add_address">Add address</string>
@@ -404,15 +404,15 @@
     <string name="log_pin_delete_emergency">Delete emergency contact</string>
     <string name="log_pin_read_emergency">View emergency contact</string>
     <string name="log_pin_update_phone">Change phone number</string>
-    <string name="log_pin_update_pin">Change PIN</string>
+    <string name="log_pin_update_pin">Update PIN</string>
     <string name="log_pin_multisig_sign">Multisig Transaction</string>
     <string name="log_pin_multisig_unlock">Revoke Multisig Transaction</string>
-    <string name="log_pin_modification">Your PIN has been changed</string>
-    <string name="log_emergency_modification">Your emergency contact has been changed</string>
-    <string name="log_phone_modification">Your phone number has been changed</string>
+    <string name="log_pin_modification">PIN modification</string>
+    <string name="log_emergency_modification">Emergency contact modification</string>
+    <string name="log_phone_modification">Phone number modification</string>
     <string name="log_login_phone">Sign in with phone number</string>
     <string name="log_login_emergency">Sign in with emergency contact</string>
-    <string name="log_login_desktop">Your desktop is already logged in</string>
+    <string name="log_login_desktop">Sign in desktop app</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
     <string name="group_new_title">New Group</string>
