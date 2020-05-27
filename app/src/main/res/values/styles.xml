@@ -33,6 +33,9 @@
         <item name="icon_gray">@color/colorIconGray</item>
 
         <item name="badger">@color/badger</item>
+        <item name="badger_mute">@color/badgerMute</item>
+        <item name="badger_text">@color/badgerText</item>
+        <item name="badger_text_mute">@color/badgerTextMute</item>
 
         <item name="bg_input">@color/bgInput</item>
         <item name="bg_white">@color/bgWhite</item>
