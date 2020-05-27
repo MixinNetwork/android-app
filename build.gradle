@@ -64,7 +64,7 @@ buildscript {
         ext.perfVersion = '19.0.7'
         ext.markwonVersion = '4.4.0'
         ext.prism4jVersion = '2.0.0'
-        ext.bouncycastleVersion = '1.65'
+        ext.bouncycastleVersion = '1.65.01'
 
         ext.junitVersion = '4.13'
         ext.androidxJunitVersion = '1.1.1'
