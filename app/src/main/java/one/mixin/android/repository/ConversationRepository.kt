@@ -6,6 +6,7 @@ import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.Single
 import javax.inject.Inject
@@ -254,7 +255,7 @@ internal constructor(
     fun getParticipantsCount(conversationId: String) =
         participantDao.getParticipantsCount(conversationId)
 
-    fun getConversationStorageUsage(): Single<List<ConversationStorageUsage>> = readConversationDao.getConversationStorageUsage()
+    fun getConversationStorageUsage(): Flowable<List<ConversationStorageUsage>> = readConversationDao.getConversationStorageUsage()
 
     fun getMediaByConversationIdAndCategory(conversationId: String, signalCategory: String, plainCategory: String) =
         readMessageDao.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory)

@@ -3,6 +3,7 @@ package one.mixin.android.ui.setting
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import com.google.protobuf.Mixin
+import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -55,7 +56,7 @@ internal constructor(
             result.toList()
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    fun getConversationStorageUsage(): Single<List<ConversationStorageUsage>> = conversationRepository.getConversationStorageUsage()
+    fun getConversationStorageUsage(): Flowable<List<ConversationStorageUsage>> = conversationRepository.getConversationStorageUsage()
         .map { list ->
             list.asSequence().map { item ->
                 val context = MixinApplication.appContext

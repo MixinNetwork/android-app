@@ -5,6 +5,7 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Single
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
@@ -154,7 +155,7 @@ interface ConversationDao : BaseDao<Conversation> {
         SELECT c.conversation_id, c.owner_id, c.category, c.icon_url, c.name, u.identity_number,u.full_name, u.avatar_url, u.is_verified 
         FROM conversations c INNER JOIN users u ON u.user_id = c.owner_id 
     """)
-    fun getConversationStorageUsage(): Single<List<ConversationStorageUsage>>
+    fun getConversationStorageUsage(): Flowable<List<ConversationStorageUsage>>
 
     @Query("""select c.conversation_id from conversations c
         inner join users u on c.owner_id = u.user_id
