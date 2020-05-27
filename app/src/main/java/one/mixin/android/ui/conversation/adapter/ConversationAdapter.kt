@@ -273,7 +273,13 @@ class ConversationAdapter(
                     (holder as StrangerHolder).bind(onItemListener, isBot)
                 }
                 UNKNOWN_TYPE -> {
-                    (holder as UnknownHolder).bind(it, isFirst(position), isLast(position), onItemListener)
+                    (holder as UnknownHolder).bind(it,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
                 }
                 STICKER_TYPE -> {
                     (holder as StickerHolder).bind(
@@ -677,6 +683,7 @@ class ConversationAdapter(
     private fun getItemType(messageItem: MessageItem?): Int =
         messageItem.notNullWithElse({ item ->
             when {
+                item.status == MessageStatus.UNKNOWN.name -> UNKNOWN_TYPE
                 item.type == MessageCategory.STRANGER.name -> STRANGER_TYPE
                 item.type == MessageCategory.SECRET.name -> SECRET_TYPE
                 item.status == MessageStatus.FAILED.name -> WAITING_TYPE

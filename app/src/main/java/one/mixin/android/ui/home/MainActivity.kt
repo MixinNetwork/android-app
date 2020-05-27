@@ -2,6 +2,7 @@ package one.mixin.android.ui.home
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Dialog
 import android.app.NotificationManager
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -13,7 +14,6 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.view.KeyEvent
 import android.view.View
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
@@ -417,14 +417,13 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private var bottomSheet: DialogFragment? = null
-    private var alertDialog: AlertDialog? = null
+    private var alertDialog: Dialog? = null
 
     private fun handlerCode(intent: Intent) {
         if (intent.hasExtra(SCAN)) {
             val scan = intent.getStringExtra(SCAN)!!
             bottomSheet?.dismiss()
-            bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
-            bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+            showScanBottom(scan)
         } else if (intent.hasExtra(URL)) {
             val url = intent.getStringExtra(URL)!!
             bottomSheet?.dismiss()
@@ -547,6 +546,11 @@ class MainActivity : BlazeBaseActivity() {
                     ErrorHandler.handleError(it)
                 })
         }
+    }
+
+    private fun showScanBottom(scan: String) {
+        bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
+        bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
     }
 
     private fun initView() {

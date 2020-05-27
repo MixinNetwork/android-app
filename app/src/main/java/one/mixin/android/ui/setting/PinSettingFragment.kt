@@ -43,9 +43,6 @@ class PinSettingFragment : BaseViewModelFragment<SettingViewModel>() {
         change_tv.setOnClickListener {
             navTo(OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
         }
-        pin_log_tv.setOnClickListener {
-            navTo(PinLogsFragment.newInstance(), PinLogsFragment.TAG)
-        }
         time_rl.setOnClickListener {
             navTo(BiometricTimeFragment.newInstance(), BiometricTimeFragment.TAG)
         }

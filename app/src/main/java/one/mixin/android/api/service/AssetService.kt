@@ -50,6 +50,9 @@ interface AssetService {
     @POST("payments")
     fun pay(@Body request: TransferRequest): Observable<MixinResponse<PaymentResponse>>
 
+    @POST("payments")
+    suspend fun paySuspend(@Body request: TransferRequest): MixinResponse<PaymentResponse>
+
     @GET("assets/{id}/fee")
     fun assetsFee(@Path("id") id: String): Observable<MixinResponse<AssetFee>>
 

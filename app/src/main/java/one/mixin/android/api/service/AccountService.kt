@@ -16,7 +16,7 @@ import one.mixin.android.api.response.DeviceCheckResponse
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Fiat
-import one.mixin.android.vo.PINLogResponse
+import one.mixin.android.vo.LogResponse
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.TurnServer
@@ -89,8 +89,8 @@ interface AccountService {
     @GET("fiats")
     suspend fun getFiats(): MixinResponse<List<Fiat>>
 
-    @GET("pin_logs")
-    suspend fun getPinLogs(@Query("offset") offset: Int? = null, @Query("limit") limit: Int? = null): MixinResponse<List<PINLogResponse>>
+    @GET("logs")
+    suspend fun getPinLogs(@Query("category") category: String? = null, @Query("offset") offset: String? = null, @Query("limit") limit: Int? = null): MixinResponse<List<LogResponse>>
 
     @POST("multisigs/{id}/cancel")
     suspend fun cancelMultisigs(@Path("id") id: String): MixinResponse<Void>

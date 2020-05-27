@@ -53,9 +53,6 @@ class MarkwonUtil {
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(TableEntryPlugin.create(context))
                 .usePlugin(GlideImagesPlugin.create(context))
-                .usePlugin(ImagesPlugin.create {
-                    it.addMediaDecoder(SvgMediaDecoder.create())
-                })
                 .usePlugin(object : AbstractMarkwonPlugin() {
                     override fun configureTheme(builder: MarkwonTheme.Builder) {
                         builder.headingBreakHeight(0)
@@ -114,9 +111,6 @@ class MarkwonUtil {
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(TablePlugin.create(context))
                 .usePlugin(GlideImagesPlugin.create(context))
-                .usePlugin(ImagesPlugin.create {
-                    it.addMediaDecoder(SvgMediaDecoder.create())
-                })
                 .usePlugin(object : AbstractMarkwonPlugin() {
                     override fun configureTheme(builder: MarkwonTheme.Builder) {
                         builder.headingBreakHeight(0)
