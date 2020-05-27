@@ -201,7 +201,6 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     ConversationActivity.show(ctx, null, user.userId)
                 }
             }
-            dismiss()
         }
         setDetailsTv(contentView.detail_tv, contentView.scroll_view, conversationId)
         bottomViewModel.refreshUser(user.userId, true)
