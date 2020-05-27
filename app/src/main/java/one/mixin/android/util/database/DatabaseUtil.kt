@@ -92,7 +92,7 @@ suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
         if (!supportsDeferForeignKeys) {
             db?.execSQL("PRAGMA foreign_keys = TRUE")
         }
-        db?.query("PRAGMA wal_checkpoint(FULL)", null, null, null, null, null, null)?.close()
+        db?.execSQL("PRAGMA wal_checkpoint(FULL)")
         if (db?.inTransaction() == false) {
             db.execSQL("VACUUM")
         }
