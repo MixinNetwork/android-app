@@ -113,7 +113,6 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         try {
             super.dismissAllowingStateLoss()
         } catch (e: IllegalStateException) {
-            reportException(e)
             Timber.e(e)
         }
     }
