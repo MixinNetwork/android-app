@@ -30,6 +30,7 @@ import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment
+import one.mixin.android.ui.wallet.TransferOutViewFragment
 
 @Module
 abstract class CommonModule {
@@ -116,4 +117,7 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeJoinGroupBottomSheetDialogFragment(): JoinGroupBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeTransferOutViewFragment(): TransferOutViewFragment
 }
