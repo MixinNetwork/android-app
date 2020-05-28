@@ -30,7 +30,7 @@ class MenuAdapter(
             if (isSelfCreatedBot) {
                 add(transferMenu)
             }
-        } else if (!isGroup) {
+        } else {
             add(transferMenu)
             add(voiceMenu)
         }

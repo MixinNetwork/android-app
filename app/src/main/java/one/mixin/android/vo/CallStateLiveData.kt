@@ -31,6 +31,24 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
 
     fun isGroupCall() = user == null
 
+    fun addUser(user: User) {
+        if (users == null) {
+            users = arrayListOf()
+        }
+        users?.let { us ->
+            val existsUser = us.find { u -> u.userId == user.userId }
+            if (existsUser != null) return
+
+            us.add(user)
+        }
+    }
+
+    fun removeUser(user: User) {
+        if (users.isNullOrEmpty()) return
+
+        users?.remove(user) ?: false
+    }
+
     fun isIdle() = state == CallService.CallState.STATE_IDLE
     fun isConnected() = state == CallService.CallState.STATE_CONNECTED
 

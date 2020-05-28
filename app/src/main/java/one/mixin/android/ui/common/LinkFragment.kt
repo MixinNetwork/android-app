@@ -142,7 +142,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
         progressBar.visibility = GONE
         state_tv.setText(R.string.state_calling)
         state_layout.setOnClickListener {
-            CallActivity.show(requireContext(), callState.user)
+            CallActivity.show(requireContext())
         }
     }
 

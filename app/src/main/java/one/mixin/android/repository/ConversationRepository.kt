@@ -191,6 +191,9 @@ internal constructor(
     fun getGroupParticipants(conversationId: String) =
         participantDao.getParticipants(conversationId)
 
+    suspend fun getParticipantsWithoutBot(conversationId: String) =
+        participantDao.getParticipantsWithoutBot(conversationId)
+
     fun getGroupParticipantsLiveData(conversationId: String) =
         participantDao.getGroupParticipantsLiveData(conversationId)
 

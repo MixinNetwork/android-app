@@ -598,7 +598,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     private fun startVoiceCall() {
         if (!callState.isIdle()) {
             if (callState.user?.userId == user.userId) {
-                CallActivity.show(requireContext(), user)
+                CallActivity.show(requireContext())
             } else {
                 alertDialogBuilder()
                     .setMessage(getString(R.string.chat_call_warning_call))

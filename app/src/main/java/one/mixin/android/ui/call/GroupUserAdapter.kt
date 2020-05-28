@@ -11,7 +11,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
 class GroupUserAdapter : ListAdapter<User, GroupUserViewHolder>(User.DIFF_CALLBACK) {
-    private var listener: GroupUserListener? = null
+    var listener: GroupUserListener? = null
     private val mCheckedMap: HashMap<String, Boolean> = HashMap()
     var alreadyUserIds: List<String>? = null
 

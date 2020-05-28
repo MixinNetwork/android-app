@@ -23,9 +23,6 @@ class CallNotificationBuilder {
             val callIntent = Intent(context, CallActivity::class.java)
             callIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             val user = callState.user
-            user?.let {
-                callIntent.putExtra(CallActivity.ARGS_ANSWER, it)
-            }
             val pendingCallIntent = PendingIntent.getActivity(context, 0, callIntent, FLAG_UPDATE_CURRENT)
 
             val builder = NotificationCompat.Builder(context, CHANNEL_NODE)

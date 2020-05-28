@@ -122,6 +122,7 @@ import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -332,8 +333,13 @@ class ConversationFragment :
 
     private fun voiceCall() {
         if (LinkState.isOnline(linkState.state)) {
-            createConversation {
-                CallService.outgoing(requireContext(), conversationId, recipient!!)
+            if (isGroup) {
+                GroupUsersBottomSheetDialogFragment.newInstance(conversationId)
+                    .showNow(parentFragmentManager, GroupUsersBottomSheetDialogFragment.TAG)
+            } else {
+                createConversation {
+                    CallService.outgoing(requireContext(), conversationId, recipient!!)
+                }
             }
         } else {
             toast(R.string.error_no_connection)
@@ -679,7 +685,7 @@ class ConversationFragment :
             override fun onCallClick(messageItem: MessageItem) {
                 if (!callState.isIdle()) {
                     if (recipient != null && callState.user?.userId == recipient?.userId) {
-                        CallActivity.show(requireContext(), recipient)
+                        CallActivity.show(requireContext())
                     } else {
                         alertDialogBuilder()
                             .setMessage(getString(R.string.chat_call_warning_call))
@@ -1272,18 +1278,12 @@ class ConversationFragment :
             group_flag.isVisible = false
             driver.isVisible = false
         }
-<<<<<<< HEAD
         callState.observe(
             viewLifecycleOwner,
-            Observer { info ->
-                chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
+            Observer { state ->
+                chat_control.calling = state != CallService.CallState.STATE_IDLE
             }
         )
-=======
-        callState.observe(viewLifecycleOwner, Observer { state ->
-            chat_control.calling = state != CallService.CallState.STATE_IDLE
-        })
->>>>>>> 87b63320f... Tweak CallStateLiveData
         bindData()
     }
 
@@ -2049,7 +2049,7 @@ class ConversationFragment :
                         chat_control.reset()
                         if (!callState.isIdle()) {
                             if (recipient != null && callState.user?.userId == recipient?.userId) {
-                                CallActivity.show(requireContext(), recipient)
+                                CallActivity.show(requireContext())
                             } else {
                                 alertDialogBuilder()
                                     .setMessage(getString(R.string.chat_call_warning_call))

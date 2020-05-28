@@ -23,6 +23,7 @@ import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
@@ -42,7 +43,6 @@ import one.mixin.android.extension.fastBlur
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.vo.CallStateLiveData
-import one.mixin.android.vo.User
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.widget.CallButton
 import timber.log.Timber
@@ -60,6 +60,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
     private var sensorManager: SensorManager? = null
     private var powerManager: PowerManager? = null
     private var wakeLock: PowerManager.WakeLock? = null
+
+    private var userAdapter: CallUserAdapter? = null
 
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_Call
@@ -85,13 +87,38 @@ class CallActivity : BaseActivity(), SensorEventListener {
         sensorManager = getSystemService()
         powerManager = getSystemService()
         wakeLock = powerManager?.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
-        val callee = intent.getParcelableExtra<User?>(ARGS_ANSWER)
-        if (callee != null) {
-            name_tv.text = callee.fullName
-            avatar.setInfo(callee.fullName, callee.avatarUrl, callee.userId)
-            avatar.setTextSize(48f)
-            if (callee.avatarUrl != null) {
-                setBlurBg(callee.avatarUrl)
+        if (callState.isGroupCall()) {
+            avatar.isVisible = false
+            name_tv.isVisible = false
+            users_rv.isVisible = true
+            add_iv.isVisible = true
+            val callees = callState.users
+            if (userAdapter == null) {
+                userAdapter = CallUserAdapter()
+            }
+            users_rv.layoutManager = GridLayoutManager(this, getSpanCount(callees?.size ?: 3))
+            users_rv.adapter = userAdapter
+            userAdapter?.submitList(callees)
+        } else {
+            avatar.isVisible = true
+            name_tv.isVisible = true
+            users_rv.isVisible = false
+            add_iv.isVisible = false
+            val callee = callState.user
+            if (callee != null) {
+                name_tv.text = callee.fullName
+                avatar.setInfo(callee.fullName, callee.avatarUrl, callee.userId)
+                avatar.setTextSize(48f)
+                if (callee.avatarUrl != null) {
+                    setBlurBg(callee.avatarUrl)
+                }
+            }
+        }
+        pip_iv.setOnClickListener { onBackPressed() }
+        add_iv.setOnClickListener {
+            if (callState.isGroupCall() && callState.conversationId != null) {
+                GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
+                    .showNow(supportFragmentManager, GroupUsersBottomSheetDialogFragment.TAG)
             }
         }
         hangup_cb.setOnClickListener {
@@ -322,15 +349,14 @@ class CallActivity : BaseActivity(), SensorEventListener {
         timer = null
     }
 
+    private fun getSpanCount(size: Int) = if (size <= 9) 3 else 4
+
     companion object {
         const val TAG = "CallActivity"
 
-        const val ARGS_ANSWER = "answer"
-
-        fun show(context: Context, callee: User? = null) {
+        fun show(context: Context) {
             Intent(context, CallActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                putExtra(ARGS_ANSWER, callee)
             }.run {
                 context.startActivity(this)
             }

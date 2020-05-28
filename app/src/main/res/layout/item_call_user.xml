@@ -7,19 +7,19 @@
 
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar_view"
-        android:layout_width="76dp"
-        android:layout_height="76dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:minWidth="64dp"
+        android:minHeight="64dp"
         android:layout_gravity="center"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         app:border_width="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:contentDescription="@null"
         android:src="@drawable/ic_call_user_mute"
         app:layout_constraintEnd_toEndOf="@id/avatar_view"

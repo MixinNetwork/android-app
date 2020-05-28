@@ -21,6 +21,17 @@ interface ParticipantDao : BaseDao<Participant> {
     fun getParticipants(conversationId: String): List<User>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("""
+        SELECT u.user_id, u.identity_number, u.full_name, u.avatar_url, u.relationship, u.biography 
+        FROM participants p, users u 
+        WHERE p.conversation_id = :conversationId 
+        AND p.user_id = u.user_id
+        AND u.app_id IS NULL
+        AND u.relationship != 'ME'
+        """)
+    suspend fun getParticipantsWithoutBot(conversationId: String): List<User>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship, u.app_id, u.is_verified FROM participants p, users u " +
             "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at DESC"
