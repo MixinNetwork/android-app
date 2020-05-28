@@ -199,7 +199,10 @@ class CallAudioManager(private val context: Context) {
             .build()
         mediaPlayer?.setAudioAttributes(audioAttributes)
 
-        val uri = Uri.parse("android.resource://${context.packageName}/${R.raw.call}")
+        val sound = if (isInitiator) {
+            R.raw.call_outgoing
+        } else R.raw.call_incoming
+        val uri = Uri.parse("android.resource://${context.packageName}/$sound")
         try {
             mediaPlayer?.setDataSource(context, uri)
             mediaPlayer?.prepare()
