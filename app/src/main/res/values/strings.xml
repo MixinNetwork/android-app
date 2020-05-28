@@ -254,6 +254,8 @@
     <string name="chat_waiting">Waiting for %1$s to get online and establish an encrypted session. %2$s.</string>
     <string name="chat_waiting_url" translatable="false">https://mixin.one/pages/1000007</string>
     <string name="chat_waiting_desktop">desktop</string>
+    <string name="chat_not_support_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/360043776071</string>
+    <string name="chat_not_support">This type of message is not supported, please upgrade Mixin to the latest version. %1$s.</string>
     <string name="chat_learn">Learn more</string>
     <string name="week_monday">Monday</string>
     <string name="week_tuesday">Tuesday</string>
@@ -567,7 +569,6 @@
     <string name="chat_you">you</string>
     <string name="chat_group_checking">Checking link</string>
     <string name="chat_expired">Expired</string>
-    <string name="unknown_update_app">This type of message is not supported, please upgrade Mixin to the latest version.</string>
     <string name="group_ok">OK</string>
     <string name="link_error">This link is invalid</string>
     <string name="bottom_sheet_check_payment_info">Checking payment info</string>

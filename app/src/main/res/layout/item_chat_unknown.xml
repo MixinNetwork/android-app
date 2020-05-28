@@ -1,63 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:clickable="true"
-    android:focusable="true">
+    android:layout_height="wrap_content">
 
-    <one.mixin.android.widget.MessageLayout
+    <RelativeLayout
         android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="1.5dp"
+        android:layout_gravity="start"
         android:layout_marginEnd="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0"
-        app:layout_goneMarginBottom="0dp">
-
-        <TextView
-            android:id="@+id/chat_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:text="@string/unknown_update_app"
-            android:textColor="@color/text_white"
-            android:textSize="14sp"
-            tools:text="message" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end|bottom"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:id="@+id/chat_secret"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_marginBottom="2dp"
-                android:layout_marginEnd="3dp"
-                android:visibility="gone"
-                android:src="@drawable/ic_secret_white"
-                tools:ignore="ContentDescription"/>
-
-            <TextView
-                android:id="@+id/chat_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="@font/sf_pro_light"
-                android:gravity="bottom"
-                android:textColor="@color/text_white"
-                android:textSize="@dimen/chat_date_size"
-                tools:ignore="SmallSp"/>
-
-        </LinearLayout>
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="1.5dp">
 
         <TextView
             android:id="@+id/chat_name"
@@ -65,12 +19,38 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:lines="1"
-            android:minWidth="30dp"
             android:textColor="#19BEF1"
-            android:textSize="14sp" />
+            android:textSize="15sp"
+            android:maxWidth="280dp"
+            android:minWidth="30dp"
+            android:visibility="gone" />
 
-    </one.mixin.android.widget.MessageLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/chat_name"
+            android:orientation="vertical">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                android:id="@+id/chat_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:maxWidth="300dp"
+                android:text="@string/chat_waiting"
+                android:textColor="?attr/text_primary"
+                android:textSize="14sp" />
 
-
+            <TextView
+                android:id="@+id/chat_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:drawableEnd="@drawable/ic_status_fail"
+                android:drawablePadding="3dp"
+                android:textColor="#9B9B9B"
+                android:textSize="@dimen/chat_date_size"
+                tools:ignore="SmallSp" />
+        </LinearLayout>
+    </RelativeLayout>
+</FrameLayout>
