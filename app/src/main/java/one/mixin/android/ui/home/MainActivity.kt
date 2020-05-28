@@ -46,6 +46,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_ATTACHMENT
+import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
@@ -76,7 +78,9 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
+import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
+import one.mixin.android.job.BackupMigrationJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshCircleJob
@@ -227,6 +231,13 @@ class MainActivity : BlazeBaseActivity() {
         }
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
         jobManager.addJobInBackground(BackupJob())
+        if (!defaultSharedPreferences.getBoolean(PREF_ATTACHMENT, false)) {
+            jobManager.addJobInBackground(AttachmentMigrationJob())
+        }
+
+        if (!defaultSharedPreferences.getBoolean(PREF_BACKUP, false)) {
+            jobManager.addJobInBackground(BackupMigrationJob())
+        }
 
         doAsync {
             jobManager.addJobInBackground(RefreshAccountJob())

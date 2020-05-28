@@ -12,6 +12,7 @@ import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
 import java.io.File
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.Constants
 import one.mixin.android.Constants.BackUp.BACKUP_LAST_TIME
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.MixinApplication
@@ -26,11 +27,15 @@ import one.mixin.android.util.backup.BackupLiveData
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
 
-class BackupJob(private val force: Boolean = false) : BaseJob(Params(if (force) {
-    PRIORITY_UI_HIGH
-} else {
-    PRIORITY_BACKGROUND
-}).addTags(GROUP).requireNetwork().persist()) {
+class BackupJob(private val force: Boolean = false) : BaseJob(
+    Params(
+        if (force) {
+            PRIORITY_UI_HIGH
+        } else {
+            PRIORITY_BACKGROUND
+        }
+    ).addTags(GROUP).requireNetwork().persist()
+) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -45,7 +50,7 @@ class BackupJob(private val force: Boolean = false) : BaseJob(Params(if (force) 
         }
         if (force) {
             backup(context)
-        } else {
+        } else if (context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BACKUP, false)) {
             val option = context.defaultSharedPreferences.getInt(BACKUP_PERIOD, 0)
             if (option in 1..3) {
                 val currentTime = System.currentTimeMillis()
@@ -56,7 +61,8 @@ class BackupJob(private val force: Boolean = false) : BaseJob(Params(if (force) 
                         2 -> WEEK_IN_MILLIS
                         3 -> DAY_IN_MILLIS * 30
                         else -> Long.MAX_VALUE
-                    }) {
+                    }
+                ) {
                     backup(context)
                 }
             }
@@ -64,8 +70,8 @@ class BackupJob(private val force: Boolean = false) : BaseJob(Params(if (force) 
     }
 
     private fun cleanMedia() {
+        val mediaPath = MixinApplication.appContext.getMediaPath()?.absolutePath ?: return
         val mediaCachePath = MixinApplication.appContext.getCacheMediaPath()
-        val mediaPath = MixinApplication.appContext.getMediaPath().absolutePath
         if (!mediaCachePath.exists()) {
             return
         }

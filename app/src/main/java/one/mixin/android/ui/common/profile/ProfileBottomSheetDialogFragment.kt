@@ -30,7 +30,7 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dayTime
-import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
@@ -82,7 +82,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
     }
 
     private val imageUri: Uri by lazy {
-        Uri.fromFile(requireContext().getImagePath().createImageTemp())
+        Uri.fromFile(requireContext().getOtherPath().createImageTemp())
     }
 
     private var menuListLayout: ViewGroup? = null

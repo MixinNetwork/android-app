@@ -4,7 +4,7 @@ import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.util.MessageFts4Helper
 
-class SyncFts4Job : BaseJob(Params(PRIORITY_SYNC_FTS).groupBy(GROUP_ID).persist()) {
+class SyncFts4Job : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
     companion object {
         private const val GROUP_ID = "sync_fts_group"
     }

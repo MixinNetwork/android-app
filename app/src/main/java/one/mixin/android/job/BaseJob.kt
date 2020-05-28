@@ -241,6 +241,7 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
         const val PRIORITY_BACKGROUND = 10
         const val PRIORITY_DELIVERED_ACK_MESSAGE = 7
         const val PRIORITY_ACK_MESSAGE = 5
-        const val PRIORITY_SYNC_FTS = 3
+        const val PRIORITY_LOWER = 3
+        const val PRIORITY_LOWEST = 0
     }
 }

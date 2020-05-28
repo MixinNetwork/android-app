@@ -6,7 +6,9 @@ import androidx.lifecycle.map
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import io.reactivex.Flowable
 import io.reactivex.Observable
+import io.reactivex.Single
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +43,7 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMentionStatus
@@ -252,13 +255,10 @@ internal constructor(
     fun getParticipantsCount(conversationId: String) =
         participantDao.getParticipantsCount(conversationId)
 
-    fun getStorageUsage(conversationId: String) =
-        readConversationDao.getStorageUsage(conversationId)
+    fun getConversationStorageUsage(): Flowable<List<ConversationStorageUsage>> = readConversationDao.getConversationStorageUsage()
 
-    fun getConversationStorageUsage() = readConversationDao.getConversationStorageUsage()
-
-    fun getMediaByConversationIdAndCategory(conversationId: String, category: String) =
-        readMessageDao.getMediaByConversationIdAndCategory(conversationId, category)
+    fun getMediaByConversationIdAndCategory(conversationId: String, signalCategory: String, plainCategory: String) =
+        readMessageDao.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory)
 
     suspend fun findMessageIndex(conversationId: String, messageId: String) =
         readMessageDao.findMessageIndex(conversationId, messageId)
@@ -365,4 +365,8 @@ internal constructor(
     }
 
     fun observeAllConversationUnread() = conversationDao.observeAllConversationUnread()
+
+    fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String) {
+        messageDao.deleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory)
+    }
 }

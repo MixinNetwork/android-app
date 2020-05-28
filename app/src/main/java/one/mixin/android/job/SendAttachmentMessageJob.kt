@@ -17,6 +17,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.isData
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.AttachmentMessagePayload
 import org.jetbrains.anko.getStackTraceString
@@ -54,6 +55,11 @@ class SendAttachmentMessageJob(
             if (mId != null) {
                 messageDao.updateMediaSize(message.mediaSize ?: 0, mId)
             } else {
+                messageDao.insert(message)
+            }
+        } else if (message.isData()) {
+            val mId = messageDao.findMessageIdById(message.id)
+            if (mId == null) {
                 messageDao.insert(message)
             }
         } else {
@@ -149,8 +155,10 @@ class SendAttachmentMessageJob(
         val mimeType = message.mediaMimeType!!
         val duration = if (message.mediaDuration == null) null else message.mediaDuration.toLong()
         val waveform = message.mediaWaveform
-        val transferMediaData = AttachmentMessagePayload(key, digest, attachmentId,
-            mimeType, size, name, width, height, thumbnail, duration, waveform)
+        val transferMediaData = AttachmentMessagePayload(
+            key, digest, attachmentId,
+            mimeType, size, name, width, height, thumbnail, duration, waveform
+        )
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = plainText.base64Encode()
         message.content = encoded
@@ -164,14 +172,18 @@ class SendAttachmentMessageJob(
 
     private fun uploadPlainAttachment(url: String, size: Long, attachment: PushAttachmentData) {
         connection = URL(url).openConnection() as HttpsURLConnection
-        Util.uploadAttachment("PUT", connection, attachment.data,
-            size, attachment.outputStreamFactory, attachment.listener)
+        Util.uploadAttachment(
+            "PUT", connection, attachment.data,
+            size, attachment.outputStreamFactory, attachment.listener
+        )
     }
 
     private fun uploadAttachment(url: String, attachment: PushAttachmentData): ByteArray {
         val dataSize = attachment.outputStreamFactory.getCipherTextLength(attachment.dataSize)
         connection = URL(url).openConnection() as HttpsURLConnection
-        return Util.uploadAttachment("PUT", connection, attachment.data,
-            dataSize, attachment.outputStreamFactory, attachment.listener)
+        return Util.uploadAttachment(
+            "PUT", connection, attachment.data,
+            dataSize, attachment.outputStreamFactory, attachment.listener
+        )
     }
 }

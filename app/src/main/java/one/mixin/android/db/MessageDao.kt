@@ -6,6 +6,7 @@ import androidx.room.Query
 import androidx.room.RoomWarnings
 import one.mixin.android.util.QueryMessage
 import one.mixin.android.util.Session
+import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
@@ -243,6 +244,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("DELETE FROM messages WHERE id = :id")
     fun deleteMessage(id: String)
 
+    @Query("DELETE FROM messages WHERE media_status = 'DONE' AND conversation_id = :conversationId AND category IN (:signalCategory, :plainCategory)")
+    fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String)
+
     @Query("DELETE FROM messages WHERE conversation_id = :conversationId")
     suspend fun deleteMessageByConversationId(conversationId: String)
 
@@ -382,12 +386,12 @@ interface MessageDao : BaseDao<Message> {
     fun findFailedMessages(conversationId: String, userId: String): List<String>
 
     @Query(
-        "SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE conversation_id = :conversationId " +
-            "AND category = :category ORDER BY created_at ASC"
+        "SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE conversation_id = :conversationId AND category IN (:signalCategory, :plainCategory) ORDER BY created_at ASC"
     )
     fun getMediaByConversationIdAndCategory(
         conversationId: String,
-        category: String
+        signalCategory: String,
+        plainCategory: String
     ): List<MediaMessageMinimal>?
 
     @Query(
@@ -424,7 +428,8 @@ interface MessageDao : BaseDao<Message> {
         messageId: String
     ): Message?
 
-    @Query("""
+    @Query(
+        """
         SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY created_at DESC, rowid DESC LIMIT 1 OFFSET :offset
         """
     )
@@ -456,4 +461,7 @@ interface MessageDao : BaseDao<Message> {
         LIMIT :limit OFFSET :offset
         """)
     suspend fun batchQueryMessages(limit: Int, offset: Int, after: Long): List<QueryMessage>
+
+    @Query("SELECT id, conversation_id, name, category, media_url, media_mine_type FROM messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' AND  :end > created_at LIMIT :limit OFFSET :offset")
+    fun findAttachmentMigration(end: String, limit: Int, offset: Long): List<AttachmentMigration>
 }

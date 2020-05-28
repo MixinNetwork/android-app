@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation
 
+import android.Manifest
 import android.app.Activity
 import android.app.NotificationManager
 import android.content.ContentResolver.SCHEME_CONTENT
@@ -8,6 +9,7 @@ import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
+import androidx.annotation.RequiresPermission
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -53,6 +55,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
+import one.mixin.android.job.ConvertDataJobJob
 import one.mixin.android.job.ConvertVideoJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -235,13 +238,13 @@ internal constructor(
             UUID.randomUUID().toString(), conversationId, sender.userId, category,
             null, attachment.filename, attachment.uri.toString(),
             attachment.mimeType, attachment.fileSize, nowInUtc(), null,
-            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
-        )
-        jobManager.addJobInBackground(SendAttachmentMessageJob(message))
+            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
+        jobManager.addJobInBackground(ConvertDataJobJob(message))
     }
 
     fun sendAudioMessage(
         conversationId: String,
+        messageId: String,
         sender: User,
         file: File,
         duration: Long,
@@ -250,8 +253,7 @@ internal constructor(
         replyMessage: MessageItem? = null
     ) {
         val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
-        val message = createAudioMessage(
-            UUID.randomUUID().toString(), conversationId, sender.userId, null, category,
+        val message = createAudioMessage(messageId, conversationId, sender.userId, null, category,
             file.length(), Uri.fromFile(file).toString(), duration.toString(), nowInUtc(), waveForm, null, null,
             MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
         )
@@ -305,17 +307,7 @@ internal constructor(
         replyMessage: MessageItem? = null
     ) {
         val mid = messageId ?: UUID.randomUUID().toString()
-        jobManager.addJobInBackground(
-            ConvertVideoJob(
-                conversationId,
-                senderId,
-                uri,
-                isPlain,
-                mid,
-                createdAt,
-                replyMessage
-            )
-        )
+        jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, isPlain, mid, createdAt, replyMessage))
     }
 
     fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
@@ -415,16 +407,17 @@ internal constructor(
                 return null
             }
         }
+        val messageId = UUID.randomUUID().toString()
         if (mimeType == MimeType.GIF.toString()) {
             return Flowable.just(uri).map {
-                val gifFile = MixinApplication.get().getImagePath().createGifTemp()
+                val gifFile = MixinApplication.get().getImagePath().createGifTemp(conversationId, messageId)
                 val path = uri.getFilePath(MixinApplication.get()) ?: return@map -1
                 gifFile.copyFromInputStream(FileInputStream(path))
                 val size = getImageSize(gifFile)
                 val thumbnail = gifFile.blurThumbnail(size)?.bitmap2String(mimeType)
 
                 val message = createMediaMessage(
-                    UUID.randomUUID().toString(),
+                    messageId,
                     conversationId,
                     sender.userId,
                     category,
@@ -448,7 +441,7 @@ internal constructor(
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
         }
 
-        val temp = MixinApplication.get().getImagePath().createImageTemp(type = ".jpg")
+        val temp = MixinApplication.get().getImagePath().createImageTemp(conversationId, messageId, type = ".jpg")
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && mimeType == MimeType.HEIC.toString()) {
             val source = ImageDecoder.createSource(File(uri.getFilePath(MixinApplication.get())))
@@ -479,7 +472,7 @@ internal constructor(
             val size = getImageSize(imageFile)
             val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mimeType)
             val message = createMediaMessage(
-                UUID.randomUUID().toString(),
+                messageId,
                 conversationId,
                 sender.userId,
                 category,
@@ -689,7 +682,7 @@ internal constructor(
             }
         }
     }
-
+    @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun retryUpload(id: String, onError: () -> Unit) {
         doAsync {
             conversationRepository.findMessageById(id)?.let {
@@ -725,6 +718,7 @@ internal constructor(
         }
     }
 
+    @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun retryDownload(id: String) {
         doAsync {
             conversationRepository.findMessageById(id)?.let {

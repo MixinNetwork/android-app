@@ -157,19 +157,19 @@ class AttachmentDownloadJob(
                 }
                 val imageFile = when {
                     message.mediaMimeType?.isImageSupport() == false -> {
-                        MixinApplication.get().getImagePath().createEmptyTemp(true)
+                        MixinApplication.get().getImagePath().createEmptyTemp(message.conversationId, message.id)
                     }
                     message.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
-                        MixinApplication.get().getImagePath().createImageTemp("REC", ".png")
+                        MixinApplication.get().getImagePath().createImageTemp(message.conversationId, message.id, ".png")
                     }
                     message.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
-                        MixinApplication.get().getImagePath().createGifTemp()
+                        MixinApplication.get().getImagePath().createGifTemp(message.conversationId, message.id)
                     }
                     message.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
-                        MixinApplication.get().getImagePath().createWebpTemp()
+                        MixinApplication.get().getImagePath().createWebpTemp(message.conversationId, message.id)
                     }
                     else -> {
-                        MixinApplication.get().getImagePath().createImageTemp("REC", ".jpg")
+                        MixinApplication.get().getImagePath().createImageTemp(message.conversationId, message.id, ".jpg")
                     }
                 }
                 imageFile.copyFromInputStream(attachmentCipherInputStream)
@@ -184,7 +184,7 @@ class AttachmentDownloadJob(
                 }
                 val extensionName = message.name?.getExtensionName()
                 val dataFile = MixinApplication.get().getDocumentPath()
-                    .createDocumentTemp(extensionName)
+                    .createDocumentTemp(message.conversationId, message.id, extensionName)
                 dataFile.copyFromInputStream(attachmentCipherInputStream)
                 messageDao.updateMediaMessageUrl(MixinApplication.appContext.getUriForFile(dataFile).toString(), message.id)
                 messageDao.updateMediaSize(dataFile.length(), message.id)
@@ -199,7 +199,7 @@ class AttachmentDownloadJob(
                     it ?: "mp4"
                 }
                 val videoFile = MixinApplication.get().getVideoPath()
-                    .createVideoTemp(extensionName)
+                    .createVideoTemp(message.conversationId, message.id, extensionName)
                 videoFile.copyFromInputStream(attachmentCipherInputStream)
                 messageDao.updateMediaMessageUrl(Uri.fromFile(videoFile).toString(), message.id)
                 messageDao.updateMediaSize(videoFile.length(), message.id)
@@ -211,7 +211,7 @@ class AttachmentDownloadJob(
                     FileInputStream(destination)
                 }
                 val audioFile = MixinApplication.get().getAudioPath()
-                    .createAudioTemp("ogg")
+                    .createAudioTemp(message.conversationId, message.id, "ogg")
                 audioFile.copyFromInputStream(attachmentCipherInputStream)
                 messageDao.updateMediaMessageUrl(Uri.fromFile(audioFile).toString(), message.id)
                 messageDao.updateMediaSize(audioFile.length(), message.id)

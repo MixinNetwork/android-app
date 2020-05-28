@@ -94,8 +94,8 @@ import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getMimeType
+import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isGooglePlayServicesAvailable
@@ -414,14 +414,36 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 return b
             }
 
+            @SuppressLint("MissingPermission")
             override fun onRetryDownload(messageId: String) {
-                chatViewModel.retryDownload(messageId)
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe({ granted ->
+                        if (granted) {
+                            chatViewModel.retryDownload(messageId)
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    }, {
+                    })
             }
 
+            @SuppressLint("MissingPermission")
             override fun onRetryUpload(messageId: String) {
-                chatViewModel.retryUpload(messageId) {
-                    toast(R.string.error_retry_upload)
-                }
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe({ granted ->
+                        if (granted) {
+                            chatViewModel.retryUpload(messageId) {
+                                toast(R.string.error_retry_upload)
+                            }
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    }, {
+                    })
             }
 
             override fun onCancel(id: String) {
@@ -611,7 +633,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     LocationActivity.show(requireContext(), location)
                 } else {
                     try {
-                        requireActivity().startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")))
+                        requireActivity().startActivity(
+                            Intent(
+                                Intent.ACTION_VIEW,
+                                Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")
+                            )
+                        )
                     } catch (e: ActivityNotFoundException) {
                         toast(R.string.error_open_location)
                     }
@@ -665,7 +692,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private var imageUri: Uri? = null
-    private fun createImageUri() = Uri.fromFile(context?.getImagePath()?.createImageTemp())
+    private fun createImageUri() = Uri.fromFile(context?.getOtherPath()?.createImageTemp())
 
     private val conversationId: String by lazy<String> {
         var cid = requireArguments().getString(CONVERSATION_ID)
@@ -906,7 +933,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chatViewModel.saveDraft(conversationId, draftText.toString())
         }
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
-            OpusAudioRecorder.get().stop()
+            OpusAudioRecorder.get(conversationId).stop()
         }
         if (chat_control?.isRecording == true) {
             chat_control?.cancelExternal()
@@ -978,7 +1005,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 true
             }
             chat_control.isRecording -> {
-                OpusAudioRecorder.get().stopRecording(false)
+                OpusAudioRecorder.get(conversationId).stopRecording(false)
                 chat_control.cancelExternal()
                 true
             }
@@ -1181,7 +1208,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 reply_view.fadeIn()
                 chat_control.reset()
                 if (chat_control.isRecording) {
-                    OpusAudioRecorder.get().stopRecording(false)
+                    OpusAudioRecorder.get(conversationId).stopRecording(false)
                     chat_control.cancelExternal()
                 }
                 chat_control.chat_et.showKeyboard()
@@ -1508,14 +1535,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chat_control?.cancelExternal()
     }
 
-    override fun sendAudio(file: File, duration: Long, waveForm: ByteArray) {
+    override fun sendAudio(messageId: String, file: File, duration: Long, waveForm: ByteArray) {
         if (duration < 500) {
             file.deleteOnExit()
         } else {
-
             createConversation {
                 chatViewModel.sendAudioMessage(
                     conversationId,
+                    messageId,
                     sender,
                     file,
                     duration,
@@ -1869,7 +1896,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                     MenuType.File -> {
                         RxPermissions(requireActivity())
-                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+                            .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                             .subscribe({ granted ->
                                 if (granted) {
                                     selectDocument()
@@ -2396,7 +2423,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         override fun onRecordStart(audio: Boolean) {
             AudioPlayer.get().pause()
-            OpusAudioRecorder.get().startRecording(this@ConversationFragment)
+            OpusAudioRecorder.get(conversationId).startRecording(this@ConversationFragment)
             if (!isCling) {
                 if (!aodWakeLock.isHeld) {
                     aodWakeLock.acquire()
@@ -2409,14 +2436,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         override fun onRecordEnd() {
-            OpusAudioRecorder.get().stopRecording(true)
+            OpusAudioRecorder.get(conversationId).stopRecording(true)
             if (!isCling && aodWakeLock.isHeld) {
                 aodWakeLock.release()
             }
         }
 
         override fun onRecordCancel() {
-            OpusAudioRecorder.get().stopRecording(false)
+            OpusAudioRecorder.get(conversationId).stopRecording(false)
             if (!isCling && aodWakeLock.isHeld) {
                 aodWakeLock.release()
             }

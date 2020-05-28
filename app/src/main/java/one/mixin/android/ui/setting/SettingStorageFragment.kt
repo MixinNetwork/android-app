@@ -11,9 +11,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.CompoundButton
 import androidx.appcompat.app.AlertDialog
-import androidx.collection.ArrayMap
 import androidx.collection.ArraySet
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
 import io.reactivex.Observable
@@ -23,16 +21,18 @@ import kotlinx.android.synthetic.main.fragment_storage.*
 import kotlinx.android.synthetic.main.item_contact_storage.view.*
 import kotlinx.android.synthetic.main.item_storage_check.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import one.mixin.android.Constants.Storage.AUDIO
+import one.mixin.android.Constants.Storage.DATA
+import one.mixin.android.Constants.Storage.IMAGE
+import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStorageUsage
-import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
 import timber.log.Timber
 
@@ -59,74 +59,29 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         b_rv.adapter = adapter
         menuView.adapter = menuAdapter
-        viewModel.getConversationStorageUsage().observe(viewLifecycleOwner, Observer {
-            if (progress.visibility != View.GONE) {
-                progress.visibility = View.GONE
-            }
-            adapter.setData(it)
-        })
+        viewModel.getConversationStorageUsage().autoDispose(stopScope)
+            .subscribe({ list ->
+                if (progress.visibility != View.GONE) {
+                    progress.visibility = View.GONE
+                }
+                adapter.setData(list)
+            }, { error ->
+                Timber.e(error)
+            })
     }
 
     private val dialog: Dialog by lazy {
-        indeterminateProgressDialog(message = R.string.pb_dialog_message,
-            title = R.string.setting_clearing).apply {
+        indeterminateProgressDialog(
+            message = R.string.pb_dialog_message,
+            title = R.string.setting_clearing
+        ).apply {
             setCancelable(false)
         }
     }
 
     private val selectSet: ArraySet<StorageUsage> = ArraySet()
-    private val unknownSet: ArraySet<String> = ArraySet()
     private fun showMenu(conversationId: String) {
-        viewModel.getStorageUsage(conversationId).map { list ->
-            val map = ArrayMap<String, StorageUsage>()
-            unknownSet.clear()
-            list.forEach { item ->
-                when {
-                    item.category.endsWith("_IMAGE") -> {
-                        map["IMAGE"].notNullWithElse({ obj ->
-                            obj.mediaSize += item.mediaSize
-                            obj.count += item.count
-                        }, {
-                            map["IMAGE"] = item
-                        })
-                    }
-                    item.category.endsWith("_DATA") -> {
-                        map["DATA"].notNullWithElse({ obj ->
-                            obj.mediaSize += item.mediaSize
-                            obj.count += item.count
-                        }, {
-                            map["DATA"] = item
-                        })
-                    }
-                    item.category.endsWith("_VIDEO") -> {
-                        map["VIDEO"].notNullWithElse({ obj ->
-                            obj.mediaSize += item.mediaSize
-                            obj.count += item.count
-                        }, {
-                            map["VIDEO"] = item
-                        })
-                    }
-                    item.category.endsWith("_AUDIO") -> {
-                        map["AUDIO"].notNullWithElse({ obj ->
-                            obj.mediaSize += item.mediaSize
-                            obj.count += item.count
-                        }, {
-                            map["AUDIO"] = item
-                        })
-                    }
-                    else -> {
-                        map["UNKNOWN"].notNullWithElse({ obj ->
-                            obj.mediaSize += item.mediaSize
-                            obj.count += item.count
-                        }, {
-                            map["UNKNOWN"] = item
-                        })
-                        unknownSet.add(item.category)
-                    }
-                }
-            }
-            map.values.toMutableList()
-        }.autoDispose(stopScope).subscribe({
+        viewModel.getStorageUsage(conversationId).autoDispose(stopScope).subscribe({
             menuAdapter.setData(it)
             selectSet.clear()
             it?.let {
@@ -157,7 +112,8 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
                 setOnShowListener {
                     val states = arrayOf(
                         intArrayOf(android.R.attr.state_enabled),
-                        intArrayOf(-android.R.attr.state_enabled))
+                        intArrayOf(-android.R.attr.state_enabled)
+                    )
                     val colors = intArrayOf(Color.RED, Color.GRAY)
                     getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(ColorStateList(states, colors))
                 }
@@ -186,27 +142,12 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
             .observeOn(Schedulers.io()).subscribeOn(Schedulers.io())
             .map {
                 for (item in selectSet) {
-                    when {
-                        item.category.endsWith("_IMAGE") -> {
-                            viewModel.clear(item.conversationId, MessageCategory.PLAIN_IMAGE.name)
-                            viewModel.clear(item.conversationId, MessageCategory.SIGNAL_IMAGE.name)
-                        }
-                        item.category.endsWith("_DATA") -> {
-                            viewModel.clear(item.conversationId, MessageCategory.PLAIN_DATA.name)
-                            viewModel.clear(item.conversationId, MessageCategory.SIGNAL_DATA.name)
-                        }
-                        item.category.endsWith("_VIDEO") -> {
-                            viewModel.clear(item.conversationId, MessageCategory.PLAIN_VIDEO.name)
-                            viewModel.clear(item.conversationId, MessageCategory.SIGNAL_VIDEO.name)
-                        }
-                        item.category.endsWith("_AUDIO") -> {
-                            viewModel.clear(item.conversationId, MessageCategory.PLAIN_AUDIO.name)
-                            viewModel.clear(item.conversationId, MessageCategory.SIGNAL_AUDIO.name)
+                    when (item.type) {
+                        IMAGE, VIDEO, AUDIO, DATA -> {
+                            viewModel.clear(item.conversationId, item.type, requireContext())
                         }
                         else -> {
-                            unknownSet.forEach { category ->
-                                viewModel.clear(item.conversationId, category)
-                            }
+                            Timber.e("Unknown type")
                         }
                     }
                 }
@@ -284,13 +225,15 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
 
     class CheckHolder(itemView: View, private val checkAction: (Boolean, StorageUsage) -> Unit) : RecyclerView.ViewHolder(itemView) {
         fun bind(storageUsage: StorageUsage) {
-            itemView.check_view.setName(when {
-                storageUsage.category.endsWith("_IMAGE") -> R.string.conversation_status_pic
-                storageUsage.category.endsWith("_DATA") -> R.string.conversation_status_file
-                storageUsage.category.endsWith("_VIDEO") -> R.string.conversation_status_video
-                storageUsage.category.endsWith("_AUDIO") -> R.string.conversation_status_audio
-                else -> R.string.unknown
-            })
+            itemView.check_view.setName(
+                when (storageUsage.type) {
+                    IMAGE -> R.string.conversation_status_pic
+                    DATA -> R.string.conversation_status_file
+                    VIDEO -> R.string.conversation_status_video
+                    AUDIO -> R.string.conversation_status_audio
+                    else -> R.string.unknown
+                }
+            )
             itemView.check_view.setSize(storageUsage.mediaSize)
             itemView.check_view.isChecked = true
             itemView.check_view.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, checked ->

@@ -5,6 +5,7 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import io.reactivex.Flowable
 import io.reactivex.Maybe
 import io.reactivex.Single
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
@@ -12,7 +13,6 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStorageUsage
-import one.mixin.android.vo.StorageUsage
 
 @Dao
 interface ConversationDao : BaseDao<Conversation> {
@@ -151,18 +151,11 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT icon_url FROM conversations WHERE conversation_id = :conversationId")
     fun getGroupIconUrl(conversationId: String): String?
 
-    @Query("SELECT   c.conversation_id as conversationId, c.owner_id as ownerId, c.category, c.icon_url as groupIconUrl, c.name as groupName, " +
-        "u.identity_number as ownerIdentityNumber,u.full_name as name, u.avatar_url as avatarUrl, u.is_verified as ownerIsVerified, m.mediaSize " +
-        "FROM conversations c " +
-        "INNER JOIN (SELECT conversation_id, sum(media_size) as mediaSize FROM messages WHERE IFNULL(media_size,'') != '' GROUP BY conversation_id) m " +
-        "ON m.conversation_id = c.conversation_id " +
-        "INNER JOIN users u ON u.user_id = c.owner_id " +
-        "ORDER BY m.mediaSize DESC")
-    fun getConversationStorageUsage(): LiveData<List<ConversationStorageUsage>?>
-
-    @Query("SELECT category, sum(media_size) as mediaSize ,conversation_id as conversationId, count(id) as count FROM messages " +
-        "WHERE conversation_id = :conversationId AND IFNULL(media_size,'') != '' GROUP BY category")
-    fun getStorageUsage(conversationId: String): Single<List<StorageUsage>?>
+    @Query("""
+        SELECT c.conversation_id, c.owner_id, c.category, c.icon_url, c.name, u.identity_number,u.full_name, u.avatar_url, u.is_verified 
+        FROM conversations c INNER JOIN users u ON u.user_id = c.owner_id 
+    """)
+    fun getConversationStorageUsage(): Flowable<List<ConversationStorageUsage>>
 
     @Query("""select c.conversation_id from conversations c
         inner join users u on c.owner_id = u.user_id
