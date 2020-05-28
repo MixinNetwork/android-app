@@ -16,10 +16,9 @@
 
     <color name="colorIcon">#FF000000</color>
     <color name="colorIconWhite">#FFFFFF</color>
-    <color name="colorIconGray">#E5E7EC</color>
+    <color name="colorIconGray">#D2D4DA</color>
 
     <color name="badger">#3D75E3</color>
-    <color name="badgerMute">#C6C9CC</color>
 
     <color name="bgInput">#F5F5F5</color>
     <color name="bgWhite">#FFFFFF</color>

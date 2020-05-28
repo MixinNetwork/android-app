@@ -21,7 +21,6 @@
         <item name="icon_black">@color/colorIconBlackNight</item>
 
         <item name="badger">@color/badger</item>
-        <item name="badger_mute">@color/badgerNightMute</item>
 
         <item name="bg_input">@color/bgInputNight</item>
         <item name="bg_white">@color/bgWhiteNight</item>
