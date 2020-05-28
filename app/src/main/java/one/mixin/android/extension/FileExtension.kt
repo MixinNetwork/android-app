@@ -82,6 +82,16 @@ fun Context.getMediaPath(): File? {
     return File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Media")
 }
 
+
+fun Context.getOldMediaPath(): File? {
+    val path = getAppPath() ?: return null
+    val f = File("${path.absolutePath}${File.separator}Media")
+    if (f.exists()){
+        return f
+    }
+    return null
+}
+
 fun Context.getBackupPath(create: Boolean = false): File? {
     val path = getAppPath() ?: return null
     val identityNumber = Session.getAccount()?.identity_number ?: return null

@@ -21,6 +21,7 @@ import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getOldMediaPath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
@@ -98,6 +99,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
         preferences.putLong(PREF_ATTACHMENT_OFFSET, offset + list.size)
         Timber.d("Attachment migration handle $offset file cost: ${System.currentTimeMillis() - startTime} ms")
         if (list.size < EACH) {
+            MixinApplication.appContext.getOldMediaPath()?.deleteRecursively()
             preferences.putBoolean(Constants.Account.PREF_ATTACHMENT, true)
         } else {
             jobManager.addJobInBackground(AttachmentMigrationJob())

@@ -55,6 +55,7 @@ suspend fun backup(
             MixinDatabase.checkPoint()
             result = dbFile.copyTo(File(copyPath), overwrite = true)
         }
+        context.getOldBackupPath(false)?.deleteRecursively()
     } catch (e: Exception) {
         result?.delete()
         withContext(Dispatchers.Main) {
