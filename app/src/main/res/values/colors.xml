@@ -3,7 +3,7 @@
     <color name="colorPrimary">#FFFFFF</color>
     <color name="colorPrimaryDark">#FFFFFF</color>
     <color name="colorAccent">@color/colorBlue</color>
-    <color name="colorBlue">#397EE4</color>
+    <color name="colorBlue">#3D75E3</color>
     <color name="colorDarkBlue">#1987FF</color>
     <color name="colorLightBlue">#0D94FC</color>
     <color name="colorGray">#9B9B9B</color>
@@ -16,9 +16,9 @@
 
     <color name="colorIcon">#FF000000</color>
     <color name="colorIconWhite">#FFFFFF</color>
-    <color name="colorIconGray">#E5E7EC</color>
+    <color name="colorIconGray">#D2D4DA</color>
 
-    <color name="badger">#397EE4</color>
+    <color name="badger">#3D75E3</color>
 
     <color name="bgInput">#F5F5F5</color>
     <color name="bgWhite">#FFFFFF</color>
