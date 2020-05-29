@@ -77,10 +77,13 @@ class ContactsFragment : BaseFragment() {
         contact_recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(contactAdapter))
         val header = LayoutInflater.from(context).inflate(R.layout.view_contact_header, contact_recycler_view, false)
         contactAdapter.setHeader(header)
+        val footer = LayoutInflater.from(context)
+            .inflate(R.layout.view_contact_list_empty, contact_recycler_view, false)
+        contactAdapter.setFooter(footer)
         if (!hasContactPermission()) {
-            val footer = LayoutInflater.from(context)
-                .inflate(R.layout.view_contact_list_empty, contact_recycler_view, false)
-            contactAdapter.setFooter(footer)
+            contactAdapter.showEmptyFooter()
+        } else {
+            contactAdapter.hideEmptyFooter()
         }
         contactAdapter.setContactListener(mContactListener)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
@@ -166,7 +169,7 @@ class ContactsFragment : BaseFragment() {
                 .autoDispose(stopScope)
                 .subscribe { granted ->
                     if (granted) {
-                        contactAdapter.removeFooter()
+                        contactAdapter.hideEmptyFooter()
                         jobManager.addJobInBackground(UploadContactsJob())
                         fetchContacts()
                         context?.let { context ->

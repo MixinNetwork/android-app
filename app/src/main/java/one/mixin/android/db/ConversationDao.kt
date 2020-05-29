@@ -7,7 +7,6 @@ import androidx.room.Query
 import androidx.room.RoomWarnings
 import io.reactivex.Flowable
 import io.reactivex.Maybe
-import io.reactivex.Single
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation

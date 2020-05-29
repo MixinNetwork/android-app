@@ -305,6 +305,7 @@
     <string name="contact_mute_8hours">8 小时</string>
     <string name="contact_mute_1week">1 星期</string>
     <string name="contact_mute_1year">1 年</string>
+    <string name="contact_count">%1$d位联系人</string>
     <!--Add people-->
     <string name="add_people_title">添加朋友</string>
     <string name="add_people_search_hint">Mixin ID 或手机号</string>
