@@ -8,7 +8,6 @@ import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import io.reactivex.Flowable
 import io.reactivex.Observable
-import io.reactivex.Single
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers

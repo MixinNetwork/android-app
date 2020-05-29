@@ -233,6 +233,7 @@
     <string name="contact_share_apps_title">%1$s\'s Shared Apps</string>
     <string name="contact_share_apps_no_app">NO APP</string>
     <string name="contact_share_apps_tip">If you want to share apps, please add it as contact first.</string>
+    <string name="contact_count">%1$d contacts</string>
     <!--profile-->
     <string name="profile_my_title">My Profile</string>
     <string name="profile_photo">Profile Photo</string>

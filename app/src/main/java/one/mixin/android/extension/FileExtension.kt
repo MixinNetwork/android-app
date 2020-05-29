@@ -82,11 +82,10 @@ fun Context.getMediaPath(): File? {
     return File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Media")
 }
 
-
 fun Context.getOldMediaPath(): File? {
     val path = getAppPath() ?: return null
     val f = File("${path.absolutePath}${File.separator}Media")
-    if (f.exists()){
+    if (f.exists()) {
         return f
     }
     return null

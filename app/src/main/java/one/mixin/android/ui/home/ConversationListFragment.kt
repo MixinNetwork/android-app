@@ -802,7 +802,7 @@ class ConversationListFragment : LinkFragment() {
             itemView.mute_iv.visibility = if (conversationItem.isMute()) VISIBLE else GONE
             itemView.unread_tv.setBackgroundResource(if (conversationItem.isMute()) {
                 R.drawable.bg_unread_mute
-            }else{
+            } else {
                 R.drawable.bg_unread
             })
             conversationItem.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)

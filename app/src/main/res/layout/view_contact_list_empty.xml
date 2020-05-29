@@ -6,6 +6,23 @@
     android:orientation="vertical">
 
     <RelativeLayout
+        android:id="@+id/count_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:foreground="?attr/selectableItemBackground"
+        android:background="?attr/bg_white">
+
+        <TextView
+            android:id="@+id/count_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="@string/contact_count"
+            android:textColor="?text_primary"
+            tools:ignore="RelativeOverlap" />
+    </RelativeLayout>
+
+    <RelativeLayout
         android:id="@+id/empty_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
@@ -24,6 +41,7 @@
     </RelativeLayout>
 
     <TextView
+        android:id="@+id/empty_tip_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"

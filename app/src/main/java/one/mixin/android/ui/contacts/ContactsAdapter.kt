@@ -3,6 +3,7 @@ package one.mixin.android.ui.contacts
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import kotlinx.android.synthetic.main.item_contact_contact.view.*
@@ -118,7 +119,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
                 holder.bind(me, mContactListener)
             }
             is FootViewHolder -> {
-                holder.bind(mContactListener)
+                holder.bind(mContactListener, friendSize)
             }
             is ContactViewHolder -> {
                 val user: User = users[getPosition(position)]
@@ -146,6 +147,20 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
 
     fun setFooter(view: View) {
         mFooterView = view
+    }
+
+    fun showEmptyFooter() {
+        mFooterView?.apply {
+            empty_rl.isVisible = true
+            empty_tip_tv.isVisible = true
+        }
+    }
+
+    fun hideEmptyFooter() {
+        mFooterView?.apply {
+            empty_rl.isVisible = false
+            empty_tip_tv.isVisible = false
+        }
     }
 
     fun removeFooter() {
@@ -200,9 +215,10 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
     }
 
     class FootViewHolder(itemView: View) : ViewHolder(itemView) {
-        fun bind(listener: ContactListener?) {
+        fun bind(listener: ContactListener?, friendSize: Int) {
             if (listener != null) {
                 itemView.empty_rl.setOnClickListener { listener.onEmptyRl() }
+                itemView.count_tv.text = itemView.context.getString(R.string.contact_count, friendSize)
             }
         }
     }
