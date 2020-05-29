@@ -815,7 +815,7 @@
     <string name="circle_subtitle">%1$dの会話</string>
     <string name="circle_all_conversation">すべての会話</string>
     <string name="circle_mixin">Mixin</string>
-    <string name="circle_menu_edit_name"サークル名を編集</string>
+    <string name="circle_menu_edit_name">サークル名を編集</string>
     <string name="circle_menu_edit_conversation">会話を編集</string>
     <string name="circle_menu_delete">削除</string>
     <string name="circle_menu_sort">ソート</string>
