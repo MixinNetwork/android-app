@@ -27,11 +27,7 @@ data class BlazeMessageData(
     @SerializedName("quote_message_id")
     val quoteMessageId: String?,
     @SerializedName("session_id")
-    val sessionId: String,
-    @SerializedName("jsep")
-    var jsep: String? = null,
-    @SerializedName("track_id")
-    var trackId: String? = null
+    val sessionId: String
 
 ) : Serializable {
     companion object {

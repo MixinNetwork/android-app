@@ -18,6 +18,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.vibrate
@@ -29,6 +30,7 @@ import one.mixin.android.ui.call.CallNotificationBuilder
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.vo.KrakenData
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
@@ -36,6 +38,7 @@ import one.mixin.android.vo.Sdp
 import one.mixin.android.vo.TurnServer
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createCallMessage
+import one.mixin.android.vo.getSdp
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.KrakenParam
@@ -116,7 +119,11 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         }
 
         callExecutor.execute {
+            blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as? BlazeMessageData
+
             when (intent.action) {
+                ACTION_KRAKEN_PUBLISH -> handlePublish(intent)
+                ACTION_KRAKEN_SUBSCRIBE -> handleSubscribe(intent)
                 ACTION_CALL_INCOMING -> handleCallIncoming(intent)
                 ACTION_CALL_OUTGOING -> handleCallOutgoing(intent)
                 ACTION_CALL_ANSWER -> handleAnswerCall(intent)
@@ -159,20 +166,38 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         timeoutFuture?.cancel(true)
     }
 
+    private fun handlePublish(intent: Intent) {
+        val user = intent.getParcelableExtra<User>(ARGS_USER)
+        callState.user = user
+        val data = getKrakenData(blazeMessageData!!.data.decodeBase64())
+        if (data.getSessionDescription().type == SessionDescription.Type.ANSWER) {
+            peerConnectionClient.setAnswerSdp(data.getSessionDescription())
+            callState.trackId = data.trackId
+            sendSubscribe(data.trackId)
+        }
+    }
+
+    private fun sendSubscribe(trackId: String) {
+        sendGroupCallMessage(MessageCategory.KRAKEN_SUBSCRIBE.name, trackId = trackId)
+    }
+
+    private fun handleSubscribe(intent: Intent) {
+        val data = getKrakenData(blazeMessageData!!.data.decodeBase64())
+        if (data.getSessionDescription().type == SessionDescription.Type.OFFER) {
+            callState.isOffer = false
+            peerConnectionClient.createAnswer(data.getSessionDescription())
+        }
+    }
+
     private fun handleCallIncoming(intent: Intent) {
         if (!callState.isIdle() || isBusy()) {
             val category = MessageCategory.WEBRTC_AUDIO_BUSY.name
-            val bmd = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
-            val m = createCallMessage(
-                UUID.randomUUID().toString(), bmd.conversationId, self.userId, category, null,
-                nowInUtc(), MessageStatus.SENDING.name, bmd.messageId
-            )
-            jobManager.addJobInBackground(SendMessageJob(m, recipientId = bmd.userId))
+            val m = createCallMessage(UUID.randomUUID().toString(), blazeMessageData!!.conversationId, self.userId, category, null,
+                nowInUtc(), MessageStatus.SENDING.name, blazeMessageData!!.messageId)
+            jobManager.addJobInBackground(SendMessageJob(m, recipientId = blazeMessageData!!.userId))
 
-            val savedMessage = createCallMessage(
-                bmd.messageId, m.conversationId, bmd.userId, m.category, m.content,
-                m.createdAt, bmd.status, bmd.messageId
-            )
+            val savedMessage = createCallMessage(blazeMessageData!!.messageId, m.conversationId, blazeMessageData!!.userId, m.category, m.content,
+                m.createdAt, blazeMessageData!!.status, blazeMessageData!!.messageId)
             if (checkConversation(m)) {
                 database.insertAndNotifyConversation(savedMessage)
             }
@@ -181,7 +206,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (callState.state == CallState.STATE_RINGING) return
 
         callState.state = CallState.STATE_RINGING
-        blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
         val user = intent.getParcelableExtra<User>(ARGS_USER)
         val users = intent.getParcelableArrayListExtra<User>(EXTRA_USERS)
 
@@ -220,6 +244,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         CallActivity.show(this)
         audioManager.start(true)
         getTurnServer { peerConnectionClient.createOffer(it) }
+
+        if (users != null && users.size > 0) {
+            sendGroupCallMessage(MessageCategory.KRAKEN_INVITE.name, recipientId = users[0].userId)
+        }
     }
 
     private fun handleAnswerCall(intent: Intent) {
@@ -232,19 +260,16 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         audioManager.stop()
 
         if (callState.isOffer) {
-            val bmd = intent.getSerializableExtra(EXTRA_BLAZE) ?: return
-            blazeMessageData = bmd as BlazeMessageData
-            peerConnectionClient.setAnswerSdp(getRemoteSdp(Base64.decode(blazeMessageData!!.data)))
+            peerConnectionClient.setAnswerSdp(getSdp(blazeMessageData!!.data.decodeBase64()))
         } else {
             getTurnServer {
-                peerConnectionClient.createAnswer(it, getRemoteSdp(Base64.decode(blazeMessageData!!.data)))
+                peerConnectionClient.createAnswerWithIceServer(it, getSdp(blazeMessageData!!.data.decodeBase64()))
             }
         }
     }
 
     private fun handleCandidate(intent: Intent) {
-        val blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
-        val json = String(Base64.decode(blazeMessageData.data))
+        val json = String(Base64.decode(blazeMessageData!!.data))
         val ices = gson.fromJson(json, Array<IceCandidate>::class.java)
         ices.forEach {
             peerConnectionClient.addRemoteIceCandidate(it)
@@ -368,18 +393,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         }
     }
 
-    private fun getRemoteSdp(json: ByteArray): SessionDescription {
-        val sdp = gson.fromJson(String(json), Sdp::class.java)
-        return SessionDescription(getType(sdp.type), sdp.sdp)
-    }
-
-    private fun getType(type: String): SessionDescription.Type {
-        return when (type) {
-            SessionDescription.Type.OFFER.canonicalForm() -> SessionDescription.Type.OFFER
-            SessionDescription.Type.ANSWER.canonicalForm() -> SessionDescription.Type.ANSWER
-            SessionDescription.Type.PRANSWER.canonicalForm() -> SessionDescription.Type.PRANSWER
-            else -> SessionDescription.Type.OFFER
-        }
+    private fun getKrakenData(json: ByteArray): KrakenData {
+        return gson.fromJson(String(json), KrakenData::class.java)
     }
 
     private fun isBusy(): Boolean {
@@ -408,7 +423,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         callExecutor.execute {
             val category = getCategory()
             if (callState.isGroupCall()) {
-                sendGroupCallMessage(category, jsep = gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())))
+                sendGroupCallMessage(category, jsep = gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())), trackId = callState.trackId)
             } else {
                 sendVoiceCallMessage(category, gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())))
             }
@@ -452,11 +467,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         callExecutor.execute { handleCallLocalFailed() }
     }
 
-    private fun sendGroupCallMessage(category: String, jsep: String? = null, candidate: String? = null, traceId: String? = null) {
+    private fun sendGroupCallMessage(category: String, jsep: String? = null, candidate: String? = null, trackId: String? = null, recipientId: String? = null) {
         val message = createCallMessage(UUID.randomUUID().toString(), callState.conversationId!!,
             self.userId, category, "", nowInUtc(), MessageStatus.SENDING.name)
-
-        jobManager.addJobInBackground(SendMessageJob(message, krakenParam = KrakenParam(jsep, candidate, traceId)))
+        jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId, krakenParam = KrakenParam(jsep, candidate, trackId)))
     }
 
     private fun sendVoiceCallMessage(category: String, content: String? = null) {
@@ -601,6 +615,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
         const val DEFAULT_TIMEOUT_MINUTES = 1L
 
+        private const val ACTION_KRAKEN_PUBLISH = "kraken_publish"
+        private const val ACTION_KRAKEN_SUBSCRIBE = "kraken_subscribe"
         private const val ACTION_CALL_INCOMING = "call_incoming"
         private const val ACTION_CALL_OUTGOING = "call_outgoing"
         const val ACTION_CALL_ANSWER = "call_answer"
@@ -625,6 +641,15 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         private const val EXTRA_MUTE = "mute"
         private const val EXTRA_SPEAKERPHONE = "speakerphone"
         private const val EXTRA_PENDING_CANDIDATES = "pending_candidates"
+
+        fun publish(ctx: Context, user: User, data: BlazeMessageData) = startService(ctx, ACTION_KRAKEN_PUBLISH) {
+            it.putExtra(ARGS_USER, user)
+            it.putExtra(EXTRA_BLAZE, data)
+        }
+
+        fun subscribe(ctx: Context, data: BlazeMessageData) = startService(ctx, ACTION_KRAKEN_SUBSCRIBE) {
+            it.putExtra(EXTRA_BLAZE, data)
+        }
 
         fun incoming(ctx: Context, user: User, data: BlazeMessageData, pendingCandidateData: String? = null) = startService(ctx, ACTION_CALL_INCOMING) {
             it.putExtra(ARGS_USER, user)

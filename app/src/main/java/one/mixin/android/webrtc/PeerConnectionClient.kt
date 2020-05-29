@@ -80,8 +80,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
     }
 
-    fun createAnswer(iceServerList: List<PeerConnection.IceServer>, remoteSdp: SessionDescription) {
-        iceServers.addAll(iceServerList)
+    fun createAnswer(remoteSdp: SessionDescription) {
         executor.execute {
             if (peerConnection == null) {
                 peerConnection = createPeerConnectionInternal()
@@ -109,6 +108,11 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             }
             peerConnection?.createAnswer(answerSdpObserver, sdpConstraint)
         }
+    }
+
+    fun createAnswerWithIceServer(iceServerList: List<PeerConnection.IceServer>, remoteSdp: SessionDescription) {
+        iceServers.addAll(iceServerList)
+        createAnswer(remoteSdp)
     }
 
     fun addRemoteIceCandidate(candidate: IceCandidate) {

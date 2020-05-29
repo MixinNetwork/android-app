@@ -48,16 +48,31 @@ class DecryptCallMessage(
     private val listPendingCandidateMap = ArrayMap<String, ArrayList<IceCandidate>>()
 
     fun onRun(data: BlazeMessageData) {
-        if (data.category.startsWith("WEBRTC_") && !isExistMessage(data.messageId)) {
-            try {
-                syncConversation(data)
+        try {
+            syncConversation(data)
+            if (isExistMessage(data.messageId)) {
+                updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+            } else if (data.category.startsWith("WEBRTC_")) {
                 processWebRTC(data)
-            } catch (e: Exception) {
-                Timber.e("DecryptCallMessage failure, $e")
-                updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            } else if (data.category.startsWith("KRAKEN_")) {
+                processKraken(data)
+            } else {
+                updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
             }
-        } else {
+        } catch (e: Exception) {
+            Timber.e("DecryptCallMessage failure, $e")
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+        }
+    }
+
+    private fun processKraken(data: BlazeMessageData) {
+        val ctx = MixinApplication.appContext
+        if (data.category == MessageCategory.KRAKEN_PUBLISH.name) {
+            syncUser(data.userId)?.let { user ->
+                CallService.publish(ctx, user, data)
+            }
+        } else if (data.category == MessageCategory.KRAKEN_SUBSCRIBE.name) {
+            CallService.subscribe(ctx, data)
         }
     }
 
