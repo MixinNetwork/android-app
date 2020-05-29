@@ -20,6 +20,7 @@ import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isText
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
+import one.mixin.android.websocket.KrakenParam
 import one.mixin.android.websocket.ResendData
 import one.mixin.android.websocket.createCallMessage
 import one.mixin.android.websocket.createKrakenMessage
@@ -32,6 +33,7 @@ open class SendMessageJob(
     private val alreadyExistMessage: Boolean = false,
     private var recipientId: String? = null,
     private val recallMessageId: String? = null,
+    private val krakenParam: KrakenParam? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(messagePriority).groupBy("send_message_group").requireWebSocketConnected().persist(), message.id) {
 
@@ -143,6 +145,9 @@ open class SendMessageJob(
         )
         val blazeMessage = if (message.isCall()) {
             if (message.isKraken()) {
+                blazeParam.jsep = krakenParam?.jsep?.base64Encode()
+                blazeParam.candidate = krakenParam?.candidate?.base64Encode()
+                blazeParam.track_id = krakenParam?.track_id
                 createKrakenMessage(blazeParam)
             } else {
                 createCallMessage(blazeParam)

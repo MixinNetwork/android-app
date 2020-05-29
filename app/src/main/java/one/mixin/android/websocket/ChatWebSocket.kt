@@ -277,7 +277,7 @@ class ChatWebSocket(
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
             makeMessageStatus(data.status, data.messageId)
             offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))
-        } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL) {
+        } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL || blazeMessage.action == CREATE_KRAKEN) {
             if (data.userId == accountId && data.category.isEmpty()) {
                 makeMessageStatus(data.status, data.messageId)
             } else {

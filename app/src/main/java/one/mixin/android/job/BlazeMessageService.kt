@@ -280,7 +280,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         if (!messages.isNullOrEmpty()) {
             messages.forEach { message ->
                 val data = gson.fromJson(message.data, BlazeMessageData::class.java)
-                if (data.category.startsWith("WEBRTC_")) {
+                if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
                     callMessageDecrypt.onRun(data)
                 } else {
                     messageDecrypt.onRun(data)

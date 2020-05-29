@@ -18,7 +18,7 @@ data class BlazeMessage(
     }
 
     fun isReceiveMessageAction(): Boolean {
-        return action == CREATE_MESSAGE || action == ACKNOWLEDGE_MESSAGE_RECEIPT || action == CREATE_CALL
+        return action == CREATE_MESSAGE || action == ACKNOWLEDGE_MESSAGE_RECEIPT || action == CREATE_CALL || action == CREATE_KRAKEN
     }
 }
 

@@ -38,6 +38,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.BlazeMessageData
+import one.mixin.android.websocket.KrakenParam
 import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
@@ -407,7 +408,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         callExecutor.execute {
             val category = getCategory()
             if (callState.isGroupCall()) {
-                sendGroupCallMessage(category, gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())))
+                sendGroupCallMessage(category, jsep = gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())))
             } else {
                 sendVoiceCallMessage(category, gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())))
             }
@@ -451,12 +452,11 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         callExecutor.execute { handleCallLocalFailed() }
     }
 
-    private fun sendGroupCallMessage(category: String, content: String? = null) {
-        val message = createCallMessage(
-            UUID.randomUUID().toString(), callState.conversationId!!,
-            self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name
-        )
-        jobManager.addJobInBackground(SendMessageJob(message))
+    private fun sendGroupCallMessage(category: String, jsep: String? = null, candidate: String? = null, traceId: String? = null) {
+        val message = createCallMessage(UUID.randomUUID().toString(), callState.conversationId!!,
+            self.userId, category, "", nowInUtc(), MessageStatus.SENDING.name)
+
+        jobManager.addJobInBackground(SendMessageJob(message, krakenParam = KrakenParam(jsep, candidate, traceId)))
     }
 
     private fun sendVoiceCallMessage(category: String, content: String? = null) {

@@ -30,6 +30,16 @@ data class BlazeMessageParam(
     }
 }
 
+data class KrakenParam(
+    var jsep: String? = null,
+    var candidate: String? = null,
+    var track_id: String? = null
+) : Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 6L
+    }
+}
+
 data class BlazeMessageParamSession(
     val user_id: String,
     val session_id: String? = null

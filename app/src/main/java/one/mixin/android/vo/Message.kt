@@ -246,7 +246,9 @@ enum class MessageCategory {
     KRAKEN_SUBSCRIBE,
     KRAKEN_ANSWER,
     KRAKEN_TRICKLE,
-    KRAKEN_END
+    KRAKEN_END,
+    KRAKEN_CANCEL,
+    KRAKEN_DECLINE,
 }
 
 fun String.isIllegalMessageCategory(): Boolean {
