@@ -7,6 +7,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
@@ -93,6 +94,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment() {
             return
         }
         isLoading = true
+
         walletViewModel.viewModelScope.launch(errorHandler) {
             val result = walletViewModel.getSnapshots(
                 assetId,
@@ -109,11 +111,11 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment() {
                 adapter.list.addAll(result.data!!.map {
                     fromSnapshot(it, avatarUrl)
                 })
-                showEmpty(adapter.list.isEmpty())
                 adapter.notifyDataSetChanged()
             } else {
                 hasMore = false
             }
+            showEmpty(adapter.list.isEmpty())
             isLoading = false
         }
     }
@@ -164,6 +166,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showEmpty(show: Boolean) {
+        contentView.progress.visibility = GONE
         if (show) {
             if (contentView.empty_rl.visibility == GONE) {
                 contentView.empty_rl.visibility = VISIBLE

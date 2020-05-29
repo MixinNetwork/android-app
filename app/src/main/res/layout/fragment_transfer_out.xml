@@ -32,6 +32,21 @@
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
         <include layout="@layout/layout_empty_transaction" />
+
+        <FrameLayout
+            android:id="@+id/progress"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/bg_white">
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:theme="@style/AppTheme.BlueProgress" />
+        </FrameLayout>
+
     </FrameLayout>
 
 </RelativeLayout>
