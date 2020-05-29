@@ -6,7 +6,6 @@ import java.io.File
 import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
@@ -63,7 +62,6 @@ open class SendMessageJob(
                     message.content?.let { content ->
                         parseMentionData(content, message.id, message.conversationId, userDao, messageMentionDao, message.userId)
                     }
-                    parseHyperlink()
                 }
 
                 messageDao.insert(message)
@@ -96,12 +94,6 @@ open class SendMessageJob(
                 )
             }
             jobManager.cancelJobByMixinJobId(msg.id)
-        }
-    }
-
-    private fun parseHyperlink() {
-        message.content?.findLastUrl()?.let {
-            jobManager.addJobInBackground(ParseHyperlinkJob(it, message.id))
         }
     }
 

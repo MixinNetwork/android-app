@@ -29,7 +29,6 @@ import one.mixin.android.extension.autoDownloadPhoto
 import one.mixin.android.extension.autoDownloadVideo
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.nowInUtc
@@ -372,9 +371,7 @@ class DecryptMessage : Injector() {
                 var quoteMe = false
                 val message = generateMessage(data) { quoteMessageItem ->
                     if (quoteMessageItem == null) {
-                        createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status).apply {
-                            this.content?.findLastUrl()?.let { jobManager.addJobInBackground(ParseHyperlinkJob(it, data.messageId)) }
-                        }
+                        createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status)
                     } else {
                         if (quoteMessageItem.userId == Session.getAccountId() && data.userId != Session.getAccountId()) {
                             quoteMe = true
