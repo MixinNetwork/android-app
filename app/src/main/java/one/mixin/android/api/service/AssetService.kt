@@ -44,6 +44,16 @@ interface AssetService {
         @Query("opponent") opponent: String? = null
     ): MixinResponse<List<Snapshot>>
 
+    @GET("snapshots")
+    suspend fun getSnapshots(
+        @Query("asset") assetId: String,
+        @Query("offset") offset: String? = null,
+        @Query("limit") limit: Int = LIMIT,
+        @Query("opponent") opponent: String? = null,
+        @Query("destination") destination: String? = null,
+        @Query("tag") tag: String? = null
+    ): MixinResponse<List<Snapshot>>
+
     @POST("transfers")
     suspend fun transfer(@Body request: TransferRequest): MixinResponse<Void>
 

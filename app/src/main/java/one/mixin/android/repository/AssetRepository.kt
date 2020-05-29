@@ -160,4 +160,7 @@ constructor(
     suspend fun getSnapshotById(snapshotId: String) = assetService.getSnapshotById(snapshotId)
 
     suspend fun getSnapshotByTraceId(traceId: String) = assetService.getSnapshotByTraceId(traceId)
+
+    suspend fun getSnapshots(assetId: String, offset: String?, limit: Int, opponent: String?, destination: String?, tag: String?) =
+        assetService.getSnapshots(assetId, offset, limit, opponent, destination, tag)
 }

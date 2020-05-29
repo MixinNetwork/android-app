@@ -71,6 +71,7 @@ import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.REQUEST_CODE
 import one.mixin.android.ui.qr.CaptureActivity.Companion.RESULT_CODE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.wallet.TransferOutViewFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
@@ -205,10 +206,17 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             }
         }
 
+        contentView.title_view.right_animator.isVisible = true
+        contentView.title_view.right_ib.setImageResource(R.drawable.ic_transaction)
         if (isInnerTransfer()) {
             handleInnerTransfer()
         } else {
             handleAddressTransfer()
+        }
+        contentView.title_view.right_ib.setOnClickListener {
+            currentAsset?.let { asset ->
+                TransferOutViewFragment.newInstance(asset.assetId, userId, user?.avatarUrl, address).show(parentFragmentManager, TransferOutViewFragment.TAG)
+            }
         }
 
         contentView.continue_tv.setOnClickListener {
@@ -286,8 +294,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             }
             val ssb = SpannableStringBuilder(str)
             val start = str.indexOf(bold)
-            ssb.setSpan(StyleSpan(Typeface.BOLD), start,
-                start + bold.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            ssb.setSpan(
+                StyleSpan(Typeface.BOLD), start,
+                start + bold.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
             contentView.fee_tv?.visibility = VISIBLE
             contentView.fee_tv?.text = ssb
         })
@@ -482,8 +492,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         val biometricItem = if (user != null) {
             TransferBiometricItem(user!!, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo, PaymentStatus.pending.name)
         } else {
-            WithdrawBiometricItem(address!!.displayAddress(), address!!.addressId, address!!.label,
-                address!!.fee, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo, "")
+            WithdrawBiometricItem(
+                address!!.displayAddress(), address!!.addressId, address!!.label,
+                address!!.fee, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo, ""
+            )
         }
 
         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)

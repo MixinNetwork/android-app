@@ -68,5 +68,23 @@ data class SnapshotItem(
             override fun areContentsTheSame(oldItem: SnapshotItem, newItem: SnapshotItem) =
                 oldItem == newItem
         }
+
+        fun fromSnapshot(snapshot: Snapshot, avatarUrl: String? = null) = SnapshotItem(
+            snapshotId = snapshot.snapshotId,
+            type = snapshot.type,
+            assetId = snapshot.assetId,
+            amount = snapshot.amount,
+            createdAt = snapshot.createdAt,
+            opponentId = snapshot.opponentId,
+            opponentFullName = null,
+            transactionHash = snapshot.transactionHash,
+            sender = snapshot.sender,
+            receiver = snapshot.receiver,
+            memo = snapshot.memo,
+            assetSymbol = null,
+            confirmations = snapshot.confirmations,
+            avatarUrl = avatarUrl,
+            assetConfirmations = 0
+        )
     }
 }

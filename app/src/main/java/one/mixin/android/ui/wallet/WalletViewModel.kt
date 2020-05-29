@@ -57,11 +57,13 @@ internal constructor(
         initialLoadKey: Int? = 0,
         orderByAmount: Boolean = false
     ): LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(assetRepository.snapshotsFromDb(id, type, otherType, orderByAmount), PagedList.Config.Builder()
-            .setPrefetchDistance(PAGE_SIZE)
-            .setPageSize(PAGE_SIZE)
-            .setEnablePlaceholders(true)
-            .build())
+        LivePagedListBuilder(
+            assetRepository.snapshotsFromDb(id, type, otherType, orderByAmount), PagedList.Config.Builder()
+                .setPrefetchDistance(PAGE_SIZE)
+                .setPageSize(PAGE_SIZE)
+                .setEnablePlaceholders(true)
+                .build()
+        )
             .setInitialLoadKey(initialLoadKey)
             .build()
 
@@ -69,11 +71,13 @@ internal constructor(
         opponentId: String,
         initialLoadKey: Int? = 0
     ): LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(assetRepository.snapshotsByUserId(opponentId), PagedList.Config.Builder()
-            .setPrefetchDistance(PAGE_SIZE)
-            .setPageSize(PAGE_SIZE)
-            .setEnablePlaceholders(true)
-            .build())
+        LivePagedListBuilder(
+            assetRepository.snapshotsByUserId(opponentId), PagedList.Config.Builder()
+                .setPrefetchDistance(PAGE_SIZE)
+                .setPageSize(PAGE_SIZE)
+                .setEnablePlaceholders(true)
+                .build()
+        )
             .setInitialLoadKey(initialLoadKey)
             .build()
 
@@ -111,11 +115,13 @@ internal constructor(
 
     fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0, orderByAmount: Boolean = false):
         LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(assetRepository.allSnapshots(type, otherType, orderByAmount = orderByAmount), PagedList.Config.Builder()
-            .setPrefetchDistance(PAGE_SIZE * 2)
-            .setPageSize(PAGE_SIZE)
-            .setEnablePlaceholders(true)
-            .build())
+        LivePagedListBuilder(
+            assetRepository.allSnapshots(type, otherType, orderByAmount = orderByAmount), PagedList.Config.Builder()
+                .setPrefetchDistance(PAGE_SIZE * 2)
+                .setPageSize(PAGE_SIZE)
+                .setEnablePlaceholders(true)
+                .build()
+        )
             .setInitialLoadKey(initialLoadKey)
             .build()
 
@@ -209,4 +215,13 @@ internal constructor(
     ) {
         jobManager.addJobInBackground(RefreshSnapshotsJob(assetId, offset, opponent))
     }
+
+    suspend fun getSnapshots(assetId: String, offset: String?, limit: Int, opponent: String?, destination: String?, tag: String?) =
+        assetRepository.getSnapshots(
+            assetId, offset, limit, opponent, destination, if (tag?.isEmpty() == true) {
+                null
+            } else {
+                tag
+            }
+        )
 }
