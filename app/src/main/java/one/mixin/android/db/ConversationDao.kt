@@ -152,7 +152,7 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query("""
         SELECT c.conversation_id, c.owner_id, c.category, c.icon_url, c.name, u.identity_number,u.full_name, u.avatar_url, u.is_verified 
-        FROM conversations c INNER JOIN users u ON u.user_id = c.owner_id 
+        FROM conversations c INNER JOIN users u ON u.user_id = c.owner_id WHERE c.category IS NOT NULL 
     """)
     fun getConversationStorageUsage(): Flowable<List<ConversationStorageUsage>>
 

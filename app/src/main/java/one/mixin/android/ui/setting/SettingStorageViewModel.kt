@@ -1,6 +1,5 @@
 package one.mixin.android.ui.setting
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import io.reactivex.Flowable
 import io.reactivex.Single
