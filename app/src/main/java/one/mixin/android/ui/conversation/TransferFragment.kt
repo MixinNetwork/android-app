@@ -215,7 +215,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.title_view.right_ib.setOnClickListener {
             currentAsset?.let { asset ->
-                TransferOutViewFragment.newInstance(asset.assetId, userId, user?.avatarUrl, address).show(parentFragmentManager, TransferOutViewFragment.TAG)
+                TransferOutViewFragment.newInstance(asset.assetId, userId, user?.avatarUrl, asset.symbol, address).show(parentFragmentManager, TransferOutViewFragment.TAG)
             }
         }
 

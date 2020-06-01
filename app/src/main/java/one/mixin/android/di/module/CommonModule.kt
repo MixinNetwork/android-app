@@ -29,6 +29,7 @@ import one.mixin.android.ui.home.bot.BotManagerBottomSheetDialogFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.TransferOutViewFragment
 
@@ -120,4 +121,7 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeTransferOutViewFragment(): TransferOutViewFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeTransactionBottomSheetDialogFragment(): TransactionBottomSheetDialogFragment
 }

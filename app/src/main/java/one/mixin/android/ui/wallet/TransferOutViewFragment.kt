@@ -7,18 +7,20 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
+import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import kotlin.math.abs
-import kotlinx.android.synthetic.main.fragment_pin_logs.*
 import kotlinx.android.synthetic.main.fragment_transfer_out.view.*
 import kotlinx.android.synthetic.main.layout_empty_transaction.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.hashForDate
@@ -28,6 +30,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.address.AddressAddFragment
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.LIMIT
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotHeaderViewHolder
@@ -38,20 +41,23 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotItem.Companion.fromSnapshot
 import one.mixin.android.widget.BottomSheet
 
-class TransferOutViewFragment : MixinBottomSheetDialogFragment() {
+class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotListener {
 
     companion object {
         const val TAG = "TransferOutViewController"
         private const val ARGS_USER_AVATAR_URL = "args_user_avatar_url"
+        private const val ARGS_SYMBOL = "args_symbol"
         fun newInstance(
-            assetId:String,
+            assetId: String,
             userId: String? = null,
             userAvatarUrl: String? = null,
+            symbol: String? = null,
             address: Address? = null
         ) = TransferOutViewFragment().withArgs {
             putString(Constants.ARGS_ASSET_ID, assetId)
             userId?.let { putString(Constants.ARGS_USER_ID, it) }
             userAvatarUrl?.let { putString(ARGS_USER_AVATAR_URL, it) }
+            symbol?.let { putString(ARGS_SYMBOL, it) }
             address?.let { putParcelable(AddressAddFragment.ARGS_ADDRESS, it) }
         }
     }
@@ -59,6 +65,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment() {
     private val assetId: String by lazy { requireArguments().getString(Constants.ARGS_ASSET_ID)!! }
     private val userId: String? by lazy { requireArguments().getString(Constants.ARGS_USER_ID) }
     private val avatarUrl: String? by lazy { requireArguments().getString(ARGS_USER_AVATAR_URL) }
+    private val symbol: String? by lazy { requireArguments().getString(ARGS_SYMBOL) }
     private val address: Address? by lazy { requireArguments().getParcelable<Address>(AddressAddFragment.ARGS_ADDRESS) }
     private val adapter = SnapshotPagedAdapter()
 
@@ -73,6 +80,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.title_view.left_ib.setOnClickListener { dismiss() }
         contentView.transactions_rv.adapter = adapter
+        contentView.transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         contentView.transactions_rv.setOnScrollChangeListener { list, _, _, _, _ ->
             if (isAdded) {
                 if (!list.canScrollVertically(1)) {
@@ -84,6 +92,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment() {
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
         }
+        adapter.listener = this
         loadMore()
     }
 
@@ -109,7 +118,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment() {
                     hasMore = false
                 }
                 adapter.list.addAll(result.data!!.map {
-                    fromSnapshot(it, avatarUrl)
+                    fromSnapshot(it, avatarUrl, symbol)
                 })
                 adapter.notifyDataSetChanged()
             } else {
@@ -180,6 +189,26 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment() {
             }
             if (contentView.transactions_rv.visibility == GONE) {
                 contentView.transactions_rv.visibility = VISIBLE
+            }
+        }
+    }
+
+    override fun <T> onNormalItemClick(item: T) {
+                 lifecycleScope.launch(Dispatchers.IO) {
+            val snapshot = item as SnapshotItem
+            walletViewModel.simpleAssetItem(snapshot.assetId)?.let { assetItem ->
+                TransactionBottomSheetDialogFragment.newInstance(snapshot, assetItem).show(parentFragmentManager, TransactionBottomSheetDialogFragment.TAG)
+            }
+        }
+    }
+
+    override fun onUserClick(userId: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            walletViewModel.getUser(userId)?.let {
+                withContext(Dispatchers.Main) {
+                    val f = UserBottomSheetDialogFragment.newInstance(it)
+                    f.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                }
             }
         }
     }
