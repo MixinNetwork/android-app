@@ -237,44 +237,48 @@ fun Context.getAudioPath(): File {
     return File("$root${File.separator}Audios")
 }
 
-fun Context.getConversationImagePath(conversationId: String): File {
-    val root = getMediaPath()
+fun Context.getConversationImagePath(conversationId: String): File? {
+    if (conversationId.isBlank()) return null
+    val root = getMediaPath() ?: return null
     return File("$root${File.separator}Images${File.separator}$conversationId")
 }
 
-fun Context.getConversationDocumentPath(conversationId: String): File {
-    val root = getMediaPath()
+fun Context.getConversationDocumentPath(conversationId: String): File? {
+    if (conversationId.isBlank()) return null
+    val root = getMediaPath() ?: return null
     return File("$root${File.separator}Files${File.separator}$conversationId")
 }
 
-fun Context.getConversationVideoPath(conversationId: String): File {
-    val root = getMediaPath()
+fun Context.getConversationVideoPath(conversationId: String): File? {
+    if (conversationId.isBlank()) return null
+    val root = getMediaPath() ?: return null
     return File("$root${File.separator}Videos${File.separator}$conversationId")
 }
 
-fun Context.getConversationAudioPath(conversationId: String): File {
-    val root = getMediaPath()
+fun Context.getConversationAudioPath(conversationId: String): File? {
+    if (conversationId.isBlank()) return null
+    val root = getMediaPath() ?: return null
     return File("$root${File.separator}Audios${File.separator}$conversationId")
 }
 
 fun Context.getConversationMediaSize(conversationId: String): Long {
     var mediaSize = 0L
-    getConversationImagePath(conversationId).apply {
+    getConversationImagePath(conversationId)?.apply {
         if (exists()) {
             mediaSize += dirSize() ?: 0
         }
     }
-    getConversationVideoPath(conversationId).apply {
+    getConversationVideoPath(conversationId)?.apply {
         if (exists()) {
             mediaSize += dirSize() ?: 0
         }
     }
-    getConversationAudioPath(conversationId).apply {
+    getConversationAudioPath(conversationId)?.apply {
         if (exists()) {
             mediaSize += dirSize() ?: 0
         }
     }
-    getConversationDocumentPath(conversationId).apply {
+    getConversationDocumentPath(conversationId)?.apply {
         if (exists()) {
             mediaSize += dirSize() ?: 0
         }
