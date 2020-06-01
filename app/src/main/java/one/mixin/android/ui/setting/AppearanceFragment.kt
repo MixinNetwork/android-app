@@ -80,10 +80,16 @@ class AppearanceFragment : BaseViewModelFragment<SettingViewModel>() {
             if (Lingver.getInstance().isFollowingSystemLocale()) {
                 R.string.follow_system
             } else {
-                if (language == Locale.SIMPLIFIED_CHINESE.language) {
-                    R.string.simplified_chinese
-                } else {
-                    R.string.english
+                when (language) {
+                    Locale.SIMPLIFIED_CHINESE.language -> {
+                        R.string.simplified_chinese
+                    }
+                    Locale.JAPANESE.language -> {
+                        R.string.japanese
+                    }
+                    else -> {
+                        R.string.english
+                    }
                 }
             })
         language_rl.setOnClickListener { showLanguageAlert() }
@@ -104,12 +110,17 @@ class AppearanceFragment : BaseViewModelFragment<SettingViewModel>() {
         val selectItem = if (Lingver.getInstance().isFollowingSystemLocale()) {
                 0
             } else {
-                val language = Lingver.getInstance().getLanguage()
-                if (language == Locale.SIMPLIFIED_CHINESE.language) {
+            when (Lingver.getInstance().getLanguage()) {
+                Locale.SIMPLIFIED_CHINESE.language -> {
                     2
-                } else {
+                }
+                Locale.JAPANESE.language -> {
+                    3
+                }
+                else -> {
                     1
                 }
+            }
             }
         var newSelectItem = selectItem
         alertDialogBuilder()
@@ -123,12 +134,14 @@ class AppearanceFragment : BaseViewModelFragment<SettingViewModel>() {
                         Lingver.getInstance().setFollowSystemLocale(requireContext())
                     } else {
                         val selectedLang = when (newSelectItem) {
-                            1 -> Locale.US.language
-                            else -> Locale.SIMPLIFIED_CHINESE.language
+                            2 -> Locale.SIMPLIFIED_CHINESE.language
+                            3 -> Locale.JAPANESE.language
+                            else -> Locale.US.language
                         }
                         val selectedCountry = when (newSelectItem) {
-                            1 -> Locale.US.country
-                            else -> Locale.SIMPLIFIED_CHINESE.country
+                            2 -> Locale.SIMPLIFIED_CHINESE.country
+                            3 -> Locale.JAPANESE.country
+                            else -> Locale.US.country
                         }
                         val newLocale = Locale(selectedLang, selectedCountry)
                         Lingver.getInstance().setLocale(requireContext(), newLocale)
