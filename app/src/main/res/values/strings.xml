@@ -574,7 +574,6 @@
     <string name="link_error">This link is invalid</string>
     <string name="bottom_sheet_check_payment_info">Checking payment info</string>
     <string name="bottom_sheet_invalid_payment">Invalid payment</string>
-    <string name="link_invalid_donate">Invalid donate link</string>
     <string name="group_wait">Please wait a moment</string>
     <string name="group_invite">Invite to Group via Link</string>
     <!-- invite -->

@@ -15,6 +15,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.qr.donateSupported
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.ForwardCategory
@@ -48,7 +49,8 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.ADDRESS, true) ||
         startsWith(Constants.Scheme.WITHDRAWAL, true) ||
         startsWith(Constants.Scheme.APPS, true) ||
-        startsWith(Constants.Scheme.SNAPSHOTS, true)
+        startsWith(Constants.Scheme.SNAPSHOTS, true) ||
+        donateSupported.any { startsWith(it) }
     ) {
         true
     } else {

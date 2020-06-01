@@ -74,7 +74,6 @@ import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.SystemUIManager
-import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 
 class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
@@ -187,47 +186,22 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                     dismiss()
                 })
             }
-        } else if (url.startsWith(Scheme.HTTPS_PAY, true) || url.startsWith(Scheme.PAY, true)) {
+        } else if (url.startsWith(Scheme.HTTPS_PAY, true) ||
+            url.startsWith(Scheme.PAY, true) ||
+            donateSupported.any { url.startsWith(it) }
+        ) {
             if (Session.getAccount()?.hasPin == false) {
                 MainActivity.showWallet(requireContext())
                 dismiss()
                 return
             }
-            val uri = Uri.parse(url)
-            val userId = uri.getQueryParameter("recipient")
-            val assetId = uri.getQueryParameter("asset")
-            val amount = uri.getQueryParameter("amount")
-            val trace = uri.getQueryParameter("trace")
-            val memo = uri.getQueryParameter("memo")
-            if (userId == null || assetId == null || amount == null) {
-                error(R.string.link_error)
-                return
-            }
-            val transferRequest = TransferRequest(assetId, userId, amount, null, trace, memo)
-            linkViewModel.pay(transferRequest).autoDispose(scopeProvider).subscribe({ r ->
-                if (r.isSuccess) {
-                    lifecycleScope.launch {
-                        var asset = linkViewModel.findAssetItemById(assetId)
-                        if (asset == null) {
-                            asset = linkViewModel.refreshAsset(assetId)
-                        }
-                        val paymentResponse = r.data!!
-                        if (asset != null) {
-                            authOrPay = true
-                            showTransferBottom(paymentResponse.recipient, amount, asset, trace, memo, paymentResponse.status)
-                            dismiss()
-                        } else {
-                            error()
-                        }
-                    }
-                } else {
-                    ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+            lifecycleScope.launch {
+                if (!showTransfer(url)) {
                     error(R.string.bottom_sheet_invalid_payment)
+                } else {
+                    dismiss()
                 }
-            }, {
-                error(R.string.bottom_sheet_check_payment_info)
-                ErrorHandler.handleError(it)
-            })
+            }
         } else if (url.startsWith(Scheme.HTTPS_CODES, true) || url.startsWith(Scheme.CODES, true)) {
             val segments = Uri.parse(url).pathSegments
             code = if (segments.size >= 2) {
@@ -322,7 +296,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                     action = multisigs.action,
                                     senders = multisigs.senders,
                                     receivers = multisigs.receivers,
-                                    asset = asset!!,
+                                    asset = asset,
                                     amount = multisigs.amount,
                                     pin = null,
                                     trace = null,
@@ -548,14 +522,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                     ErrorHandler.handleError(it)
                 })
             }
-        } else if (donateSupported.any { url.startsWith(it) }) {
-            lifecycleScope.launch {
-                if (!showDonate(url)) {
-                    error(R.string.link_invalid_donate)
-                } else {
-                    dismiss()
-                }
-            }
         } else {
             error()
         }
@@ -592,7 +558,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
         }
     }
 
-    private suspend fun showDonate(text: String): Boolean {
+    private suspend fun showTransfer(text: String): Boolean {
         val sanitizer = UrlQuerySanitizer(text)
         val amount = try {
             sanitizer.getValue("amount").toDouble()
@@ -636,12 +602,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
         contentView.link_error_info.setText(errorRes)
         contentView.link_loading.visibility = GONE
         contentView.link_error_info.visibility = VISIBLE
-    }
-
-    private fun showTransferBottom(user: User, amount: String, asset: AssetItem, trace: String?, memo: String?, state: String) {
-        TransferBottomSheetDialogFragment
-            .newInstance(TransferBiometricItem(user, asset, amount, null, trace, memo, state))
-            .showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
     }
 
     private val mBottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {

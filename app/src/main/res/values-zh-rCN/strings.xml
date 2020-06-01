@@ -560,7 +560,6 @@
     <string name="link_error">无效链接</string>
     <string name="bottom_sheet_check_payment_info">请检查支付信息</string>
     <string name="bottom_sheet_invalid_payment">无效支付信息</string>
-    <string name="link_invalid_donate">无效捐赠链接</string>
     <string name="group_wait">请稍等</string>
     <string name="group_invite">群邀请链接</string>
     <!-- invite -->
