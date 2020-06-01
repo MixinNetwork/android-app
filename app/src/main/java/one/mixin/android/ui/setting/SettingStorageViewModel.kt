@@ -34,16 +34,16 @@ internal constructor(
         Single.just(conversationId).map { cid ->
             val result = mutableListOf<StorageUsage>()
             val context = MixinApplication.appContext
-            context.getStorageUsageByConversationAndType(conversationId, IMAGE)?.apply {
+            context.getStorageUsageByConversationAndType(cid, IMAGE)?.apply {
                 result.add(this)
             }
-            context.getStorageUsageByConversationAndType(conversationId, VIDEO)?.apply {
+            context.getStorageUsageByConversationAndType(cid, VIDEO)?.apply {
                 result.add(this)
             }
-            context.getStorageUsageByConversationAndType(conversationId, AUDIO)?.apply {
+            context.getStorageUsageByConversationAndType(cid, AUDIO)?.apply {
                 result.add(this)
             }
-            context.getStorageUsageByConversationAndType(conversationId, DATA)?.apply {
+            context.getStorageUsageByConversationAndType(cid, DATA)?.apply {
                 result.add(this)
             }
             result.toList()
@@ -56,29 +56,29 @@ internal constructor(
                 item.mediaSize = context.getConversationMediaSize(item.conversationId)
                 item
             }.filter { conversationStorageUsage ->
-                conversationStorageUsage.mediaSize != 0L
+                conversationStorageUsage.mediaSize != 0L && conversationStorageUsage.conversationId.isNotEmpty()
             }.sortedByDescending { conversationStorageUsage ->
                 conversationStorageUsage.mediaSize
             }.toList()
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    fun clear(conversationId: String, type: String, context: Context) {
+    fun clear(conversationId: String, type: String) {
         if (MixinApplication.appContext.defaultSharedPreferences.getBoolean(Constants.Account.PREF_ATTACHMENT, false)) {
             when (type) {
                 IMAGE -> {
-                    MixinApplication.get().getConversationImagePath(conversationId).deleteRecursively()
+                    MixinApplication.get().getConversationImagePath(conversationId)?.deleteRecursively()
                     conversationRepository.deleteMediaMessageByConversationAndCategory(conversationId, MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name)
                 }
                 VIDEO -> {
-                    MixinApplication.get().getConversationVideoPath(conversationId).deleteRecursively()
+                    MixinApplication.get().getConversationVideoPath(conversationId)?.deleteRecursively()
                     conversationRepository.deleteMediaMessageByConversationAndCategory(conversationId, MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name)
                 }
                 AUDIO -> {
-                    MixinApplication.get().getConversationAudioPath(conversationId).deleteRecursively()
+                    MixinApplication.get().getConversationAudioPath(conversationId)?.deleteRecursively()
                     conversationRepository.deleteMediaMessageByConversationAndCategory(conversationId, MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name)
                 }
                 DATA -> {
-                    MixinApplication.get().getConversationDocumentPath(conversationId).deleteRecursively()
+                    MixinApplication.get().getConversationDocumentPath(conversationId)?.deleteRecursively()
                     conversationRepository.deleteMediaMessageByConversationAndCategory(conversationId, MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name)
                 }
             }
