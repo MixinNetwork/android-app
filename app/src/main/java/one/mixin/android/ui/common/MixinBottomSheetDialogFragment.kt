@@ -10,11 +10,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.uber.autodispose.android.lifecycle.scope
+import java.lang.Exception
 import javax.inject.Inject
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 
 abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
 
@@ -73,11 +75,19 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
         }
     }
 
+    override fun show(manager: FragmentManager, tag: String?) {
+        try {
+            super.show(manager, tag)
+        } catch (e: Exception) {
+            Timber.w(e)
+        }
+    }
+
     override fun showNow(manager: FragmentManager, tag: String?) {
         try {
             super.showNow(manager, tag)
-        } catch (e: IllegalStateException) {
-        } catch (e: IllegalArgumentException) {
+        } catch (e: Exception) {
+            Timber.w(e)
         }
     }
 }

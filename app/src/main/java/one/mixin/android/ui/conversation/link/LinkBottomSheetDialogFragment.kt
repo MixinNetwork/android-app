@@ -47,6 +47,7 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
+import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
@@ -58,6 +59,7 @@ import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.JoinGroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
+import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.One2MultiBiometricItem
@@ -67,7 +69,6 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.qr.donateSupported
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment
@@ -75,6 +76,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.User
+import timber.log.Timber
 
 class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
@@ -187,9 +189,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                 })
             }
         } else if (url.startsWith(Scheme.HTTPS_PAY, true) ||
-            url.startsWith(Scheme.PAY, true) ||
-            donateSupported.any { url.startsWith(it) }
-        ) {
+            url.startsWith(Scheme.PAY, true)) {
             if (Session.getAccount()?.hasPin == false) {
                 MainActivity.showWallet(requireContext())
                 dismiss()
@@ -522,6 +522,19 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                     ErrorHandler.handleError(it)
                 })
             }
+        } else if (url.isDonateUrl()) {
+            if (Session.getAccount()?.hasPin == false) {
+                MainActivity.showWallet(requireContext())
+                dismiss()
+                return
+            }
+            lifecycleScope.launch {
+                if (!showTransfer(url)) {
+                    QrScanBottomSheetDialogFragment.newInstance(url)
+                        .show(parentFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+                }
+                dismiss()
+            }
         } else {
             error()
         }
@@ -532,6 +545,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
             try {
                 super.dismiss()
             } catch (e: IllegalStateException) {
+                Timber.w(e)
             }
         }
     }
@@ -540,6 +554,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
         try {
             super.showNow(manager, tag)
         } catch (e: IllegalStateException) {
+            Timber.w(e)
         }
     }
 

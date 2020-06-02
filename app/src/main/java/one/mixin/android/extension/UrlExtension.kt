@@ -49,8 +49,7 @@ fun String.isMixinUrl(): Boolean {
         startsWith(Constants.Scheme.ADDRESS, true) ||
         startsWith(Constants.Scheme.WITHDRAWAL, true) ||
         startsWith(Constants.Scheme.APPS, true) ||
-        startsWith(Constants.Scheme.SNAPSHOTS, true) ||
-        donateSupported.any { startsWith(it) }
+        startsWith(Constants.Scheme.SNAPSHOTS, true)
     ) {
         true
     } else {
@@ -108,9 +107,8 @@ fun String.openAsUrl(
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(supportFragmentManager, scope)
     } else {
-        if (isMixinUrl()) {
-            LinkBottomSheetDialogFragment
-                .newInstance(this)
+        if (isMixinUrl() || isDonateUrl()) {
+            LinkBottomSheetDialogFragment.newInstance(this)
                 .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else {
             extraAction()
@@ -164,6 +162,8 @@ fun String.checkUserOrApp(
         }
     }
 }
+
+fun String.isDonateUrl() = donateSupported.any { startsWith(it) }
 
 private fun String.isUserScheme() = startsWith(Constants.Scheme.USERS, true) ||
     startsWith(Constants.Scheme.HTTPS_USERS, true)
