@@ -153,7 +153,6 @@
                 android:layout_marginStart="8dp"
                 android:layout_gravity="center_vertical"
                 android:background="@drawable/bg_unread"
-                android:textColor="@color/white"
                 android:fontFamily="monospace"
                 android:textSize="12sp"
                 android:visibility="gone"/>

@@ -19,6 +19,9 @@
     <color name="colorIconGray">#D2D4DA</color>
 
     <color name="badger">#3D75E3</color>
+    <color name="badgerMute">#B8BDC7</color>
+    <color name="badgerText">#FFFFFF</color>
+    <color name="badgerTextMute">#FFFFFF</color>
 
     <color name="bgInput">#F5F5F5</color>
     <color name="bgWhite">#FFFFFF</color>

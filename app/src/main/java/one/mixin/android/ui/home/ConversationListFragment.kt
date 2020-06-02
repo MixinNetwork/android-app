@@ -55,6 +55,7 @@ import one.mixin.android.event.BotEvent
 import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.inflate
@@ -800,11 +801,14 @@ class ConversationListFragment : LinkFragment() {
             }
 
             itemView.mute_iv.visibility = if (conversationItem.isMute()) VISIBLE else GONE
-            itemView.unread_tv.setBackgroundResource(if (conversationItem.isMute()) {
-                R.drawable.bg_unread_mute
+            if (conversationItem.isMute()) {
+                itemView.unread_tv.setBackgroundResource( R.drawable.bg_unread_mute)
+                itemView.unread_tv.setTextColor(context.colorFromAttribute(R.attr.badger_text_mute))
             } else {
-                R.drawable.bg_unread
-            })
+                itemView.unread_tv.setBackgroundResource (R.drawable.bg_unread)
+                itemView.unread_tv.setTextColor(context.colorFromAttribute(R.attr.badger_text))
+            }
+
             conversationItem.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
 
             if (conversationItem.isGroup()) {

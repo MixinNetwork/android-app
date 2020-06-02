@@ -24,6 +24,9 @@
     <attr name="icon_black" format="color|reference" />
 
     <attr name="badger" format="color|reference" />
+    <attr name="badger_mute" format="color|reference" />
+    <attr name="badger_text" format="color|reference" />
+    <attr name="badger_text_mute" format="color|reference" />
 
     <attr name="bg_input" format="color|reference" />
     <attr name="bg_window" format="color|reference" />

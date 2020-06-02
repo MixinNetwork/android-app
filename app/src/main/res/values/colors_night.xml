@@ -16,7 +16,10 @@
     <color name="colorIconGrayNight">#808691</color>
     <color name="colorIconBlackNight">#FFFFFF</color>
 
-    <color name="badgerNight">#4E93F3</color>
+    <color name="badgerNight">#4191FF</color>
+    <color name="badgeMuteNight">#808691</color>
+    <color name="badgerTextNight">#E6FFFFFF</color>
+    <color name="badgerTextMuteNight">#2C3136</color>
 
     <color name="bgInputNight">#414D5A</color>
     <color name="bgWhiteNight">#2c3136</color>
