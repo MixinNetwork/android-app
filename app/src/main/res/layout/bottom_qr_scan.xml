@@ -6,7 +6,8 @@
 
     <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="150dp"
+            android:layout_height="wrap_content"
+            android:minHeight="150dp"
             android:background="@drawable/bg_upper_round">
 
         <one.mixin.android.widget.linktext.AutoLinkTextView
@@ -19,7 +20,7 @@
                 android:layout_marginTop="@dimen/activity_vertical_margin"
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
                 android:layout_height="wrap_content"
-                android:maxLines="3"
+                android:maxLines="10"
                 android:ellipsize="end"
                 android:gravity="center_horizontal"/>
     </FrameLayout>

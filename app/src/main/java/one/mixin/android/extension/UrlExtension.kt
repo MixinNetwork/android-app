@@ -15,6 +15,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.qr.donateSupported
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.ForwardCategory
@@ -106,9 +107,8 @@ fun String.openAsUrl(
     } else if (isUserScheme() || isAppScheme()) {
         checkUserOrApp(supportFragmentManager, scope)
     } else {
-        if (isMixinUrl()) {
-            LinkBottomSheetDialogFragment
-                .newInstance(this)
+        if (isMixinUrl() || isDonateUrl()) {
+            LinkBottomSheetDialogFragment.newInstance(this)
                 .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else {
             extraAction()
@@ -162,6 +162,8 @@ fun String.checkUserOrApp(
         }
     }
 }
+
+fun String.isDonateUrl() = donateSupported.any { startsWith(it) }
 
 private fun String.isUserScheme() = startsWith(Constants.Scheme.USERS, true) ||
     startsWith(Constants.Scheme.HTTPS_USERS, true)

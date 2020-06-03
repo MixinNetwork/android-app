@@ -57,6 +57,7 @@ import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isFirebaseDecodeAvailable
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openGallery
@@ -368,7 +369,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 activity?.finish()
             }
         } else {
-            if (donateSupported.any { analysisResult.startsWith(it) }) {
+            if (analysisResult.isDonateUrl()) {
                 MainActivity.showFromScan(requireActivity(), url = analysisResult)
                 activity?.finish()
                 return
