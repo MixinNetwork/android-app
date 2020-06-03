@@ -73,7 +73,16 @@ class DecryptCallMessage(
             }
         } else if (data.category == MessageCategory.KRAKEN_SUBSCRIBE.name) {
             CallService.subscribe(ctx, data)
+        } else if (data.category == MessageCategory.KRAKEN_INVITE.name) {
+            syncUser(data.userId)?.let { user ->
+                CallService.receiveInvite(ctx, data, arrayListOf(user))
+            }
+        } else if (data.category == MessageCategory.KRAKEN_ANSWER.name) {
+            CallService.krakenAnswer(ctx, data)
+        } else if (data.category == MessageCategory.KRAKEN_TRICKLE.name) {
+            CallService.trickle(ctx, data)
         }
+        notifyServer(data)
     }
 
     private fun processWebRTC(data: BlazeMessageData) {

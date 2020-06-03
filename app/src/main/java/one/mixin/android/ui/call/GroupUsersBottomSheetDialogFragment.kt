@@ -96,7 +96,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 action_iv.setImageResource(R.drawable.ic_menu_call)
             }
             action_iv.setOnClickListener {
-                CallService.outgoing(requireContext(), conversationId,
+                CallService.invite(requireContext(), conversationId,
                     users = arrayListOf<User>().apply { addAll(checkedUsers) })
                 dismiss()
             }

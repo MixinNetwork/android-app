@@ -346,14 +346,6 @@ class ConversationFragment :
         }
     }
 
-    private fun groupVoiceCall(users: ArrayList<User>) {
-        if (LinkState.isOnline(linkState.state)) {
-            CallService.outgoing(requireContext(), conversationId, users = users)
-        } else {
-            toast(R.string.error_no_connection)
-        }
-    }
-
     private val onItemListener: ConversationAdapter.OnItemListener by lazy {
         object : ConversationAdapter.OnItemListener() {
             override fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {

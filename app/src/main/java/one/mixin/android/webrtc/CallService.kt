@@ -124,6 +124,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             when (intent.action) {
                 ACTION_KRAKEN_PUBLISH -> handlePublish(intent)
                 ACTION_KRAKEN_SUBSCRIBE -> handleSubscribe(intent)
+                ACTION_KRAKEN_INVITE -> handleInvite(intent)
+                ACTION_KRAKEN_RECEIVE_INVITE -> handleReceiveInvite(intent)
+                ACTION_KRAKEN_ACCEPT_INVITE -> handleAcceptInvite()
+                ACTION_KRAKEN_ANSWER -> handleKrakenAnswer(intent)
+                ACTION_KRAKEN_TRICKLE -> handleKrakenTrickle()
+
                 ACTION_CALL_INCOMING -> handleCallIncoming(intent)
                 ACTION_CALL_OUTGOING -> handleCallOutgoing(intent)
                 ACTION_CALL_ANSWER -> handleAnswerCall(intent)
@@ -167,9 +173,20 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handlePublish(intent: Intent) {
-        val user = intent.getParcelableExtra<User>(ARGS_USER)
-        callState.user = user
-        val data = getKrakenData(blazeMessageData!!.data.decodeBase64())
+//        if (callState.state == CallState.STATE_DIALING) return
+//
+//        callState.state = CallState.STATE_DIALING
+        val users = intent.getParcelableArrayListExtra<User>(EXTRA_USERS)
+        if (!users.isNullOrEmpty()) {
+            callState.users = users
+        }
+        callState.conversationId = blazeMessageData!!.conversationId
+        val krakenDataString = String(blazeMessageData!!.data.decodeBase64())
+        Timber.d("@@@ krakenDataString: $krakenDataString")
+        if (krakenDataString == PUBLISH_PLACEHOLDER) {
+            return
+        }
+        val data = getKrakenData(krakenDataString)
         if (data.getSessionDescription().type == SessionDescription.Type.ANSWER) {
             peerConnectionClient.setAnswerSdp(data.getSessionDescription())
             callState.trackId = data.trackId
@@ -181,12 +198,84 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         sendGroupCallMessage(MessageCategory.KRAKEN_SUBSCRIBE.name, trackId = trackId)
     }
 
+    private fun sendInvite(recipientId: String) {
+        sendGroupCallMessage(MessageCategory.KRAKEN_INVITE.name, recipientId = recipientId)
+    }
+
     private fun handleSubscribe(intent: Intent) {
-        val data = getKrakenData(blazeMessageData!!.data.decodeBase64())
+        val krakenDataString = String(blazeMessageData!!.data.decodeBase64())
+        val data = getKrakenData(krakenDataString)
+        Timber.d("@@@ handleSubscribe, data: $data")
         if (data.getSessionDescription().type == SessionDescription.Type.OFFER) {
             callState.isOffer = false
+            callState.trackId = data.trackId
             peerConnectionClient.createAnswer(data.getSessionDescription())
         }
+    }
+
+    private fun handleInvite(intent: Intent) {
+        Timber.d("@@@ handleInvite")
+        if (callState.state == CallState.STATE_DIALING) return
+
+        callState.state = CallState.STATE_DIALING
+        val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
+        require(cid != null)
+        val user = intent.getParcelableExtra<User>(ARGS_USER)
+        val users = intent.getParcelableArrayListExtra<User>(EXTRA_USERS)
+        callState.user = user
+        callState.users = users
+        callState.conversationId = cid
+        callState.isOffer = true
+        timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+        CallActivity.show(this)
+        audioManager.start(true)
+        sendInvite(users!![0].userId)
+
+        getTurnServer { peerConnectionClient.createOffer(it) }
+    }
+
+    private fun handleReceiveInvite(intent: Intent) {
+        Timber.d("@@@ handleReceiveInvite")
+        if (callState.state == CallState.STATE_RINGING) return
+
+        callState.state = CallState.STATE_RINGING
+        val user = intent.getParcelableExtra<User>(ARGS_USER)
+        val users = intent.getParcelableArrayListExtra<User>(EXTRA_USERS)
+        callState.user = user
+        callState.users = users
+        callState.conversationId = blazeMessageData?.conversationId
+        callState.isOffer = false
+        timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+        CallActivity.show(this)
+        audioManager.start(false)
+    }
+
+    private fun handleAcceptInvite() {
+        Timber.d("@@@ handleAcceptInvite")
+        callState.isOffer = true
+        getTurnServer { peerConnectionClient.createOffer(it) }
+    }
+
+    private fun handleKrakenAnswer(intent: Intent) {
+        Timber.d("@@@ handleKrakenAnswer")
+        if (callState.state == CallState.STATE_ANSWERING ||
+            callState.isIdle()) return
+
+        callState.state = CallState.STATE_ANSWERING
+        updateForegroundNotification()
+        audioManager.stop()
+
+        callState.isOffer = false
+
+        getTurnServer {
+            peerConnectionClient.createAnswerWithIceServer(it, getSdp(blazeMessageData!!.data.decodeBase64()))
+        }
+    }
+
+    private fun handleKrakenTrickle() {
+        val json = String(Base64.decode(blazeMessageData!!.data))
+        val ice = gson.fromJson(json, IceCandidate::class.java)
+        peerConnectionClient.addRemoteIceCandidate(ice)
     }
 
     private fun handleCallIncoming(intent: Intent) {
@@ -244,10 +333,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         CallActivity.show(this)
         audioManager.start(true)
         getTurnServer { peerConnectionClient.createOffer(it) }
-
-        if (users != null && users.size > 0) {
-            sendGroupCallMessage(MessageCategory.KRAKEN_INVITE.name, recipientId = users[0].userId)
-        }
     }
 
     private fun handleAnswerCall(intent: Intent) {
@@ -284,6 +369,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         updateForegroundNotification()
         timeoutFuture?.cancel(true)
         vibrate(longArrayOf(0, 30))
+        audioManager.stop()
         peerConnectionClient.setAudioEnable(audioEnable)
         peerConnectionClient.enableCommunication()
     }
@@ -393,8 +479,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         }
     }
 
-    private fun getKrakenData(json: ByteArray): KrakenData {
-        return gson.fromJson(String(json), KrakenData::class.java)
+    private fun getKrakenData(json: String): KrakenData {
+        return gson.fromJson(json, KrakenData::class.java)
     }
 
     private fun isBusy(): Boolean {
@@ -402,28 +488,28 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         return callState.state != CallState.STATE_IDLE || tm?.callState != TelephonyManager.CALL_STATE_IDLE
     }
 
-    private fun getCategory(): String {
-        return if (callState.isOffer) {
-            if (callState.isGroupCall()) {
+    private fun getCategory(): String =
+        if (callState.isGroupCall()) {
+            if (callState.isOffer) {
                 MessageCategory.KRAKEN_PUBLISH.name
             } else {
-                MessageCategory.WEBRTC_AUDIO_OFFER.name
+                MessageCategory.KRAKEN_ANSWER.name
             }
         } else {
-            if (callState.isGroupCall()) {
-                MessageCategory.KRAKEN_ANSWER.name
+            if (callState.isOffer) {
+                MessageCategory.WEBRTC_AUDIO_OFFER.name
             } else {
                 MessageCategory.WEBRTC_AUDIO_ANSWER.name
             }
         }
-    }
 
     // PeerConnectionEvents
     override fun onLocalDescription(sdp: SessionDescription) {
         callExecutor.execute {
             val category = getCategory()
             if (callState.isGroupCall()) {
-                sendGroupCallMessage(category, jsep = gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())), trackId = callState.trackId)
+                Timber.d("@@@ onLocalDescription category: $category, sdp: $sdp")
+                sendGroupCallMessage(category, jsep = gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())), trackId = callState.trackId, recipientId = callState.users!![0].userId)
             } else {
                 sendVoiceCallMessage(category, gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())))
             }
@@ -432,8 +518,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     override fun onIceCandidate(candidate: IceCandidate) {
         callExecutor.execute {
-            val arr = arrayListOf(candidate)
-            sendVoiceCallMessage(MessageCategory.WEBRTC_ICE_CANDIDATE.name, gson.toJson(arr))
+            if (callState.isGroupCall()) {
+//                sendGroupCallMessage(MessageCategory.KRAKEN_TRICKLE.name, candidate = gson.toJson(candidate))
+            } else {
+                val arr = arrayListOf(candidate)
+                sendVoiceCallMessage(MessageCategory.WEBRTC_ICE_CANDIDATE.name, gson.toJson(arr))
+            }
         }
     }
 
@@ -501,7 +591,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         } else {
             if (blazeMessageData == null) {
                 Timber.e("Answer's blazeMessageData can not be null!")
-                handleCallLocalFailed()
+//                handleCallLocalFailed()
                 return
             }
             if (category == MessageCategory.WEBRTC_AUDIO_END.name) {
@@ -531,7 +621,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         val uId = if (callState.isOffer) {
             self.userId
         } else {
-            callState.user!!.userId
+            callState.user?.userId ?: ""
         }
         when (m.category) {
             MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
@@ -617,6 +707,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
         private const val ACTION_KRAKEN_PUBLISH = "kraken_publish"
         private const val ACTION_KRAKEN_SUBSCRIBE = "kraken_subscribe"
+        private const val ACTION_KRAKEN_INVITE = "kraken_invite"
+        private const val ACTION_KRAKEN_RECEIVE_INVITE = "kraken_receive_invite"
+        private const val ACTION_KRAKEN_ACCEPT_INVITE = "kraken_accept_invite"
+        private const val ACTION_KRAKEN_ANSWER = "kraken_answer"
+        private const val ACTION_KRAKEN_TRICKLE = "kraken_trackle"
+
         private const val ACTION_CALL_INCOMING = "call_incoming"
         private const val ACTION_CALL_OUTGOING = "call_outgoing"
         const val ACTION_CALL_ANSWER = "call_answer"
@@ -642,12 +738,34 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         private const val EXTRA_SPEAKERPHONE = "speakerphone"
         private const val EXTRA_PENDING_CANDIDATES = "pending_candidates"
 
+        const val PUBLISH_PLACEHOLDER = "PLACEHOLDER"
+
         fun publish(ctx: Context, user: User, data: BlazeMessageData) = startService(ctx, ACTION_KRAKEN_PUBLISH) {
             it.putExtra(ARGS_USER, user)
             it.putExtra(EXTRA_BLAZE, data)
         }
 
         fun subscribe(ctx: Context, data: BlazeMessageData) = startService(ctx, ACTION_KRAKEN_SUBSCRIBE) {
+            it.putExtra(EXTRA_BLAZE, data)
+        }
+
+        fun invite(ctx: Context, conversationId: String, users: ArrayList<User>? = null) = startService(ctx, ACTION_KRAKEN_INVITE) {
+            it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+            it.putExtra(EXTRA_USERS, users)
+        }
+
+        fun receiveInvite(ctx: Context, data: BlazeMessageData, users: ArrayList<User>? = null) = startService(ctx, ACTION_KRAKEN_RECEIVE_INVITE) {
+            it.putExtra(EXTRA_BLAZE, data)
+            it.putExtra(EXTRA_USERS, users)
+        }
+
+        fun acceptInvite(ctx: Context) = startService(ctx, ACTION_KRAKEN_ACCEPT_INVITE)
+
+        fun krakenAnswer(ctx: Context, data: BlazeMessageData) = startService(ctx, ACTION_KRAKEN_ANSWER) {
+            it.putExtra(EXTRA_BLAZE, data)
+        }
+
+        fun trickle(ctx: Context, data: BlazeMessageData) = startService(ctx, ACTION_KRAKEN_TRICKLE) {
             it.putExtra(EXTRA_BLAZE, data)
         }
 
@@ -659,9 +777,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             }
         }
 
-        fun outgoing(ctx: Context, conversationId: String, user: User? = null, users: ArrayList<User>? = null) = startService(ctx, ACTION_CALL_OUTGOING) {
+        fun outgoing(ctx: Context, conversationId: String, user: User? = null) = startService(ctx, ACTION_CALL_OUTGOING) {
             it.putExtra(ARGS_USER, user)
-            it.putExtra(EXTRA_USERS, users)
             it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         }
 

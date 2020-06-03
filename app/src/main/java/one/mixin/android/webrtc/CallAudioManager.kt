@@ -43,7 +43,7 @@ class CallAudioManager(private val context: Context) {
     private val vibrator: Vibrator? = context.getSystemService()
 
     private var mediaPlayer: MediaPlayer? = null
-    private var mediaPlayerStoped = false
+    private var mediaPlayerStopped = false
     private var hasStarted = false
 
     var isSpeakerOn = false
@@ -145,9 +145,9 @@ class CallAudioManager(private val context: Context) {
     }
 
     fun stop() {
-        if (mediaPlayerStoped) return
+        if (mediaPlayerStopped) return
 
-        mediaPlayerStoped = true
+        mediaPlayerStopped = true
         audioManager.mode = if (bluetoothState == State.SCO_CONNECTED) {
             AudioManager.MODE_NORMAL
         } else AudioManager.MODE_IN_COMMUNICATION
@@ -176,13 +176,12 @@ class CallAudioManager(private val context: Context) {
             context.unregisterReceiver(wiredHeadsetReceiver)
             context.unregisterReceiver(bluetoothHeadsetReceiver)
         }
-        hasStarted = false
         bluetoothState = State.UNINITIALIZED
     }
 
     @Synchronized
     private fun updateMediaPlayer() {
-        if (mediaPlayerStoped) return
+        if (mediaPlayerStopped) return
 
         if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer()

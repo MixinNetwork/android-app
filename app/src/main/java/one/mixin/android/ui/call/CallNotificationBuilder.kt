@@ -18,7 +18,7 @@ class CallNotificationBuilder {
         const val ACTION_EXIT = "action_exit"
 
         fun getCallNotification(context: Context, callState: CallStateLiveData): Notification? {
-            if (callState.isIdle()) return null
+//            if (callState.isIdle()) return null
 
             val callIntent = Intent(context, CallActivity::class.java)
             callIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP

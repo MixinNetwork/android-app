@@ -8,7 +8,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
@@ -47,6 +46,7 @@ import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
 import org.jetbrains.anko.notificationManager
 import javax.inject.Inject
+import timber.log.Timber
 
 class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
 
@@ -219,7 +219,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             messageService.acknowledgements(ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) })
             jobDao.deleteListSuspend(ackMessages)
         } catch (e: Exception) {
-            Log.e(BlazeMessageService.TAG, "Send ack exception", e)
+            Timber.e(e, "Send ack exception")
         }
         return processAck()
     }
@@ -277,7 +277,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private tailrec suspend fun processFloodMessage(): Boolean {
         val messages = floodMessageDao.findFloodMessages()
-        if (!messages.isNullOrEmpty()) {
+        return if (!messages.isNullOrEmpty()) {
             messages.forEach { message ->
                 val data = gson.fromJson(message.data, BlazeMessageData::class.java)
                 if (data.category.startsWith("WEBRTC_") || data.category.startsWith("KRAKEN_")) {
@@ -287,9 +287,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 }
                 floodMessageDao.delete(message)
             }
-            return processFloodMessage()
+            processFloodMessage()
         } else {
-            return false
+            false
         }
     }
 }

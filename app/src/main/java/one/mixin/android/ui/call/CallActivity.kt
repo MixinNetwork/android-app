@@ -257,7 +257,11 @@ class CallActivity : BaseActivity(), SensorEventListener {
             .subscribe { granted ->
                 if (granted) {
                     handleAnswering()
-                    CallService.answer(this@CallActivity)
+                    if (callState.isGroupCall()) {
+                        CallService.acceptInvite(this@CallActivity)
+                    } else {
+                        CallService.answer(this@CallActivity)
+                    }
                 } else {
                     callState.handleHangup(this@CallActivity)
                     handleDisconnected()
