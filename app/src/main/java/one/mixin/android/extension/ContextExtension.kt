@@ -34,6 +34,7 @@ import android.view.KeyEvent
 import android.view.ViewConfiguration
 import android.view.Window
 import android.view.WindowManager
+import androidx.appcompat.app.AlertDialog
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -46,9 +47,11 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.receiver.ShareBroadcastReceiver
 import one.mixin.android.util.Attachment
+import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.AssetItem
@@ -691,4 +694,48 @@ val defaultThemeId = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
     Constants.Theme.THEME_DEFAULT_ID
 } else {
     Constants.Theme.THEME_AUTO_ID
+}
+
+fun Context.checkInlinePermissions(): Boolean {
+    if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+        var intent = XiaomiUtilities.getPermissionManagerIntent()
+        if (intent != null) {
+            try {
+                startActivity(intent)
+            } catch (x: Exception) {
+                try {
+                    intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    intent.data =
+                        Uri.parse("package:" + MixinApplication.appContext.packageName)
+                    startActivity(intent)
+                } catch (xx: Exception) {
+                    Timber.e(xx)
+                }
+            }
+        }
+        toast(R.string.need_background_permission)
+        return false
+    }
+    if (Settings.canDrawOverlays(this)) {
+        return true
+    } else {
+        this.let { activity ->
+            AlertDialog.Builder(activity)
+                .setTitle(R.string.app_name)
+                .setMessage(R.string.live_permission)
+                .setPositiveButton(R.string.live_setting) { _, _ ->
+                    try {
+                        activity.startActivity(
+                            Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:" + activity.packageName)
+                            )
+                        )
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                    }
+                }.show()
+        }
+    }
+    return false
 }

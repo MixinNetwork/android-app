@@ -94,6 +94,7 @@
     <color name="gray_black_50">#AA3A3C3E</color>
     <color name="camera_notification_bg">#D8D8D8</color>
     <color name="text_color_error_tip">#F67070</color>
+    <color name="call_light_green">#5DBC7A</color>
 
     <array name="name_colors">
         <item>#8C8DFF</item>

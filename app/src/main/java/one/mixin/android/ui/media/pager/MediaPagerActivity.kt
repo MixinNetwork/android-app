@@ -18,7 +18,6 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View
@@ -28,7 +27,6 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.core.net.toUri
@@ -50,8 +48,8 @@ import kotlinx.android.synthetic.main.view_drag_video_bottom.view.*
 import kotlinx.android.synthetic.main.view_drag_video_bottom.view.cancel
 import kotlinx.android.synthetic.main.view_player_control.view.*
 import kotlinx.coroutines.launch
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
@@ -77,7 +75,6 @@ import one.mixin.android.util.SensorOrientationChangeNotifier
 import one.mixin.android.util.Session
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
-import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.vo.FixedMessageDataSource
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
@@ -94,7 +91,6 @@ import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
-import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import javax.inject.Inject
@@ -544,50 +540,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         view_pager.visibility = View.INVISIBLE
         overridePendingTransition(0, 0)
         super.finish()
-    }
-
-    private fun checkInlinePermissions(): Boolean {
-        if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
-            var intent = XiaomiUtilities.getPermissionManagerIntent()
-            if (intent != null) {
-                try {
-                    startActivity(intent)
-                } catch (x: Exception) {
-                    try {
-                        intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                        intent.data =
-                            Uri.parse("package:" + MixinApplication.appContext.packageName)
-                        startActivity(intent)
-                    } catch (xx: Exception) {
-                        Timber.e(xx)
-                    }
-                }
-            }
-            toast(R.string.need_background_permission)
-            return false
-        }
-        if (Settings.canDrawOverlays(this)) {
-            return true
-        } else {
-            this.let { activity ->
-                AlertDialog.Builder(activity)
-                    .setTitle(R.string.app_name)
-                    .setMessage(R.string.live_permission)
-                    .setPositiveButton(R.string.live_setting) { _, _ ->
-                        try {
-                            activity.startActivity(
-                                Intent(
-                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                    Uri.parse("package:" + activity.packageName)
-                                )
-                            )
-                        } catch (e: Exception) {
-                            Timber.e(e)
-                        }
-                    }.show()
-            }
-        }
-        return false
     }
 
     private fun setStartPostTransition(sharedView: View) {

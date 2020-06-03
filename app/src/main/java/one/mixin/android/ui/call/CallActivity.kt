@@ -1,6 +1,10 @@
 package one.mixin.android.ui.call
 
 import android.Manifest
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -18,6 +22,7 @@ import android.os.PowerManager
 import android.view.View
 import android.view.View.VISIBLE
 import android.view.WindowManager
+import android.view.animation.DecelerateInterpolator
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
@@ -37,14 +42,20 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.belowOreo
+import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.fastBlur
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.isLandscape
+import one.mixin.android.extension.realSize
+import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.widget.CallButton
+import one.mixin.android.widget.PipCallView
 import timber.log.Timber
 import java.util.Timer
 import java.util.TimerTask
@@ -62,6 +73,10 @@ class CallActivity : BaseActivity(), SensorEventListener {
     private var wakeLock: PowerManager.WakeLock? = null
 
     private var userAdapter: CallUserAdapter? = null
+
+    private val pipCallView by lazy {
+        PipCallView.get()
+    }
 
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_Call
@@ -114,7 +129,9 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 }
             }
         }
-        pip_iv.setOnClickListener { onBackPressed() }
+        pip_iv.setOnClickListener {
+            switch2Pip()
+        }
         add_iv.setOnClickListener {
             if (callState.isGroupCall() && callState.conversationId != null) {
                 GroupUsersBottomSheetDialogFragment.newInstance(callState.conversationId!!)
@@ -176,6 +193,10 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
             }
         window.statusBarColor = Color.TRANSPARENT
+
+        if (pipCallView.shown) {
+            pipCallView.close()
+        }
     }
 
     override fun onResume() {
@@ -267,6 +288,65 @@ class CallActivity : BaseActivity(), SensorEventListener {
                     handleDisconnected()
                 }
             }
+    }
+
+    private var pipAnimationInProgress = false
+    private fun switch2Pip() {
+        if (!checkInlinePermissions() || pipAnimationInProgress) {
+            return
+        }
+        pipAnimationInProgress = true
+        val rect = PipCallView.getPipRect()
+        val windowView = call_cl
+        val isLandscape = isLandscape()
+        if (isLandscape) {
+            val screenHeight = realSize().y
+            if (rect.width > screenHeight) {
+                val ratio = rect.width / rect.height
+                rect.height = screenHeight / ratio
+                rect.width = screenHeight.toFloat()
+            }
+        }
+        val width = if (isLandscape) windowView.height else windowView.width
+        val scale = (if (isLandscape) rect.height else rect.width) / width
+        window.decorView.systemUiVisibility =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            } else {
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            }
+        pipCallView.show(this)
+        AnimatorSet().apply {
+            playTogether(
+                ObjectAnimator.ofFloat(windowView, View.SCALE_X, scale),
+                ObjectAnimator.ofFloat(windowView, View.SCALE_Y, scale),
+                ObjectAnimator.ofFloat(
+                    windowView, View.TRANSLATION_X,
+                    rect.x - realSize().x * (1f - scale) / 2
+                ),
+                ObjectAnimator.ofFloat(
+                    windowView, View.TRANSLATION_Y,
+                    rect.y - statusBarHeight() - (windowView.height - rect.height) / 2
+                )
+            )
+            interpolator = DecelerateInterpolator()
+            duration = 250
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator?) {
+                    if (!SystemUIManager.hasCutOut(window)) {
+                        SystemUIManager.clearStyle(window)
+                    }
+                }
+
+                override fun onAnimationEnd(animation: Animator?) {
+                    pipAnimationInProgress = false
+
+                    overridePendingTransition(0, 0)
+                    finish()
+                }
+            })
+            start()
+        }
     }
 
     private fun handleDialingConnecting() {
