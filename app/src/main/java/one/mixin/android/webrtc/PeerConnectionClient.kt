@@ -52,24 +52,21 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
     }
 
-    fun createOffer(iceServerList: List<PeerConnection.IceServer>) {
+    fun createOffer(iceServerList: List<PeerConnection.IceServer>, setLocalSuccess: ((sdp: SessionDescription) -> Unit)) {
         iceServers.addAll(iceServerList)
         executor.execute {
             peerConnection = createPeerConnectionInternal()
             val offerSdpObserver = object : SdpObserverWrapper() {
                 override fun onCreateSuccess(sdp: SessionDescription) {
-                    peerConnection?.setLocalDescription(
-                        object : SdpObserverWrapper() {
-                            override fun onSetFailure(error: String?) {
-                                reportError("createOffer setLocalSdp onSetFailure error: $error")
-                            }
-                            override fun onSetSuccess() {
-                                Timber.d("createOffer setLocalSdp onSetSuccess")
-                                events.onLocalDescription(sdp)
-                            }
-                        },
-                        sdp
-                    )
+                    peerConnection?.setLocalDescription(object : SdpObserverWrapper() {
+                        override fun onSetFailure(error: String?) {
+                            reportError("createOffer setLocalSdp onSetFailure error: $error")
+                        }
+                        override fun onSetSuccess() {
+                            Timber.d("createOffer setLocalSdp onSetSuccess")
+                            setLocalSuccess(sdp)
+                        }
+                    }, sdp)
                 }
 
                 override fun onCreateFailure(error: String?) {
@@ -80,7 +77,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
     }
 
-    fun createAnswer(remoteSdp: SessionDescription) {
+    fun createAnswer(remoteSdp: SessionDescription, setLocalSuccess: (sdp: SessionDescription) -> Unit) {
         executor.execute {
             if (peerConnection == null) {
                 peerConnection = createPeerConnectionInternal()
@@ -88,18 +85,15 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             peerConnection?.setRemoteDescription(remoteSdpObserver, remoteSdp)
             val answerSdpObserver = object : SdpObserverWrapper() {
                 override fun onCreateSuccess(sdp: SessionDescription) {
-                    peerConnection?.setLocalDescription(
-                        object : SdpObserverWrapper() {
-                            override fun onSetFailure(error: String?) {
-                                reportError("createAnswer setLocalSdp onSetFailure error: $error")
-                            }
-                            override fun onSetSuccess() {
-                                Timber.d("createAnswer setLocalSdp onSetSuccess")
-                                events.onLocalDescription(sdp)
-                            }
-                        },
-                        sdp
-                    )
+                    peerConnection?.setLocalDescription(object : SdpObserverWrapper() {
+                        override fun onSetFailure(error: String?) {
+                            reportError("createAnswer setLocalSdp onSetFailure error: $error")
+                        }
+                        override fun onSetSuccess() {
+                            Timber.d("createAnswer setLocalSdp onSetSuccess")
+                            setLocalSuccess(sdp)
+                        }
+                    }, sdp)
                 }
 
                 override fun onCreateFailure(error: String?) {
@@ -110,9 +104,9 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
     }
 
-    fun createAnswerWithIceServer(iceServerList: List<PeerConnection.IceServer>, remoteSdp: SessionDescription) {
+    fun createAnswerWithIceServer(iceServerList: List<PeerConnection.IceServer>, remoteSdp: SessionDescription, setLocalSuccess: (sdp: SessionDescription) -> Unit) {
         iceServers.addAll(iceServerList)
-        createAnswer(remoteSdp)
+        createAnswer(remoteSdp, setLocalSuccess)
     }
 
     fun addRemoteIceCandidate(candidate: IceCandidate) {
@@ -326,10 +320,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
      * Peer connection events.
      */
     interface PeerConnectionEvents {
-        /**
-         * Callback fired once local SDP is created and set.
-         */
-        fun onLocalDescription(sdp: SessionDescription)
 
         /**
          * Callback fired once local Ice candidate is generated.

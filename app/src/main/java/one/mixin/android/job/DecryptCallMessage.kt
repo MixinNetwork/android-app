@@ -70,18 +70,12 @@ class DecryptCallMessage(
         Timber.d("@@@ processKraken category: ${data.category}")
         if (data.category == MessageCategory.KRAKEN_PUBLISH.name) {
             syncUser(data.userId)?.let { user ->
-                CallService.publish(ctx, user, data)
+                CallService.receivePublish(ctx, user, data)
             }
-        } else if (data.category == MessageCategory.KRAKEN_SUBSCRIBE.name) {
-            CallService.subscribe(ctx, data)
         } else if (data.category == MessageCategory.KRAKEN_INVITE.name) {
             syncUser(data.userId)?.let { user ->
                 CallService.receiveInvite(ctx, data, arrayListOf(user))
             }
-        } else if (data.category == MessageCategory.KRAKEN_ANSWER.name) {
-            CallService.krakenAnswer(ctx, data)
-        } else if (data.category == MessageCategory.KRAKEN_TRICKLE.name) {
-            CallService.trickle(ctx, data)
         }
         notifyServer(data)
     }

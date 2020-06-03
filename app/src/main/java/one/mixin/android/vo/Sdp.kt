@@ -25,6 +25,6 @@ fun getType(type: String): SessionDescription.Type {
         SessionDescription.Type.OFFER.canonicalForm() -> SessionDescription.Type.OFFER
         SessionDescription.Type.ANSWER.canonicalForm() -> SessionDescription.Type.ANSWER
         SessionDescription.Type.PRANSWER.canonicalForm() -> SessionDescription.Type.PRANSWER
-        else -> SessionDescription.Type.OFFER
+        else -> SessionDescription.Type.PRANSWER
     }
 }

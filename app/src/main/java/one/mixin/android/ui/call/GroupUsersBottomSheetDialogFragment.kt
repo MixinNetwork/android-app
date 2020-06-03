@@ -14,15 +14,22 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SendMessageJob
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.vo.MessageCategory
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
+import one.mixin.android.vo.createCallMessage
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetRelativeLayout
 import one.mixin.android.widget.SearchView
+import java.util.UUID
 
 class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
@@ -36,6 +43,9 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
     }
+
+    @Inject
+    lateinit var jobManager: MixinJobManager
     @Inject
     lateinit var callState: CallStateLiveData
 
@@ -96,8 +106,13 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 action_iv.setImageResource(R.drawable.ic_menu_call)
             }
             action_iv.setOnClickListener {
-                CallService.invite(requireContext(), conversationId,
-                    users = arrayListOf<User>().apply { addAll(checkedUsers) })
+                val users = checkedUsers.toList()
+                // TODO
+                val recipientId = users[0].userId
+                val message = createCallMessage(UUID.randomUUID().toString(), conversationId,
+                    "", MessageCategory.KRAKEN_INVITE.name, "", nowInUtc(), MessageStatus.SENDING.name)
+                // jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
+                CallService.publish(requireContext(), conversationId)
                 dismiss()
             }
         }
