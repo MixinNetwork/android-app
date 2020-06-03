@@ -93,6 +93,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private var isDestroyed = AtomicBoolean(false)
 
+    private var localCandidateCache = arrayListOf<IceCandidate>()
+
     override fun onCreate() {
         AndroidInjection.inject(this)
         super.onCreate()
@@ -173,9 +175,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handlePublish(intent: Intent) {
-//        if (callState.state == CallState.STATE_DIALING) return
-//
-//        callState.state = CallState.STATE_DIALING
         val users = intent.getParcelableArrayListExtra<User>(EXTRA_USERS)
         if (!users.isNullOrEmpty()) {
             callState.users = users
@@ -190,6 +189,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (data.getSessionDescription().type == SessionDescription.Type.ANSWER) {
             peerConnectionClient.setAnswerSdp(data.getSessionDescription())
             callState.trackId = data.trackId
+            Timber.d("@@@ handlePublish localCandidateCache size: ${localCandidateCache.size}")
+            if (localCandidateCache.isNotEmpty()) {
+                localCandidateCache.forEach { c ->
+                    sendGroupCallMessage(MessageCategory.KRAKEN_TRICKLE.name, candidate = gson.toJson(c), trackId = callState.trackId)
+                }
+            }
             sendSubscribe(data.trackId)
         }
     }
@@ -519,7 +524,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     override fun onIceCandidate(candidate: IceCandidate) {
         callExecutor.execute {
             if (callState.isGroupCall()) {
-//                sendGroupCallMessage(MessageCategory.KRAKEN_TRICKLE.name, candidate = gson.toJson(candidate))
+                Timber.d("@@@ onIceCandidate callState.trackId: ${callState.trackId}")
+                if (callState.trackId != null) {
+                    sendGroupCallMessage(MessageCategory.KRAKEN_TRICKLE.name, candidate = gson.toJson(candidate), trackId = callState.trackId)
+                } else {
+                    localCandidateCache.add(candidate)
+                }
             } else {
                 val arr = arrayListOf(candidate)
                 sendVoiceCallMessage(MessageCategory.WEBRTC_ICE_CANDIDATE.name, gson.toJson(arr))

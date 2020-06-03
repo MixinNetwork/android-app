@@ -67,6 +67,7 @@ class DecryptCallMessage(
 
     private fun processKraken(data: BlazeMessageData) {
         val ctx = MixinApplication.appContext
+        Timber.d("@@@ processKraken category: ${data.category}")
         if (data.category == MessageCategory.KRAKEN_PUBLISH.name) {
             syncUser(data.userId)?.let { user ->
                 CallService.publish(ctx, user, data)
