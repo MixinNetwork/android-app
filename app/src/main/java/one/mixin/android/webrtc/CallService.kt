@@ -1,16 +1,18 @@
 package one.mixin.android.webrtc
 
-import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.os.IBinder
 import android.os.SystemClock
 import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.Observer
 import com.google.gson.Gson
+import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDispose
 import dagger.android.AndroidInjection
-import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -62,6 +64,7 @@ import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.KrakenParam
 import one.mixin.android.websocket.createKrakenMessage
+import one.mixin.android.widget.PipCallView
 import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
@@ -69,7 +72,9 @@ import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
 import timber.log.Timber
 
-class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
+class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvents {
+
+    private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     private val callExecutor = Executors.newSingleThreadExecutor()
     private val timeoutExecutor = Executors.newScheduledThreadPool(1)
@@ -79,8 +84,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         CallAudioManager(this)
     }
     private var audioEnable = true
-
-    private var disposable: Disposable? = null
 
     private val peerConnectionClient: PeerConnectionClient by lazy {
         PeerConnectionClient(this, this)
@@ -118,6 +121,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private var localCandidateCache = arrayListOf<IceCandidate>()
 
+    private val pipCallView by lazy {
+        PipCallView.get()
+    }
+
     override fun onCreate() {
         AndroidInjection.inject(this)
         super.onCreate()
@@ -129,12 +136,21 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
                 self = user
             }
         }
+        callState.observe(this, Observer { state ->
+            if (state == CallState.STATE_CONNECTED && callState.isGroupCall() && pipCallView.timer == null) {
+                callState.connectedTime?.let { pipCallView.startTimer(it) }
+            } else if (state != CallState.STATE_CONNECTED && callState.isGroupCall() && pipCallView.timer != null) {
+                pipCallView.stopTimer()
+            }
+        })
+
         supportsOreo {
             updateForegroundNotification()
         }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
         supportsOreo {
             updateForegroundNotification()
         }
@@ -176,12 +192,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         return START_NOT_STICKY
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
-    }
-
     override fun onDestroy() {
+        super.onDestroy()
         if (isDestroyed.compareAndSet(false, true)) {
+            pipCallView.close()
             audioManager.release()
             callState.reset()
         }
@@ -193,7 +207,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         stopForeground(true)
         audioManager.stop()
         peerConnectionClient.close()
-        disposable?.dispose()
         timeoutFuture?.cancel(true)
     }
 
@@ -718,8 +731,9 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun getTurnServer(action: (List<PeerConnection.IceServer>) -> Unit) {
-        disposable = accountService.getTurn().subscribeOn(Schedulers.io()).subscribe(
-            {
+        accountService.getTurn().subscribeOn(Schedulers.io())
+            .autoDispose(destroyScope)
+            .subscribe({
                 if (it.isSuccess) {
                     val array = it.data as Array<TurnServer>
                     action.invoke(genIceServerList(array))

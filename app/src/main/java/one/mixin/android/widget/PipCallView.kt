@@ -14,13 +14,17 @@ import android.view.MotionEvent
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.annotation.Keep
+import java.util.Timer
+import java.util.TimerTask
 import kotlin.math.abs
 import kotlin.math.round
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.getPixelsInCM
 import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.navigationBarHeight
@@ -28,6 +32,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.Rect
 import one.mixin.android.ui.call.CallActivity
+import org.jetbrains.anko.runOnUiThread
 import timber.log.Timber
 
 class PipCallView {
@@ -96,6 +101,8 @@ class PipCallView {
     private lateinit var windowView: FrameLayout
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
 
+    private var timeView: TextView? = null
+
     private val windowManager: WindowManager by lazy {
         appContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     }
@@ -156,6 +163,7 @@ class PipCallView {
         view.setOnClickListener {
             CallActivity.show(appContext)
         }
+        timeView = view.findViewById(R.id.time_tv)
 
         val sp = appContext.defaultSharedPreferences
         val sideX = sp.getInt(CALL_SIDE_X, 1)
@@ -192,7 +200,30 @@ class PipCallView {
         if (shown) {
             shown = false
             windowManager.removeView(windowView)
+            stopTimer()
         }
+    }
+
+    var timer: Timer? = null
+        private set
+
+    fun startTimer(connectedTime: Long) {
+        timer = Timer(true)
+        val timerTask = object : TimerTask() {
+            override fun run() {
+                appContext.runOnUiThread {
+                    val duration = System.currentTimeMillis() - connectedTime
+                    timeView?.text = duration.formatMillis()
+                }
+            }
+        }
+        timer?.schedule(timerTask, 0, 1000)
+    }
+
+    fun stopTimer() {
+        timer?.cancel()
+        timer?.purge()
+        timer = null
     }
 
     private var decelerateInterpolator: DecelerateInterpolator? = null
@@ -209,25 +240,33 @@ class PipCallView {
         var animatorX: Animator? = null
         var animatorY: Animator? = null
         val editor = appContext.defaultSharedPreferences.edit()
-        if (windowLayoutParams.x < startX) {
-            editor.putInt(CALL_SIDE_X, 0)
-            animatorX = ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, startX)
-        } else if (windowLayoutParams.x > endX) {
-            editor.putInt(CALL_SIDE_X, 1)
-            animatorX = ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX)
-        } else {
-            editor.putInt(CALL_SIDE_X, 2)
-            editor.putFloat(CALL_PX, (windowLayoutParams.x - startX) / (endX - startX).toFloat())
+        when {
+            windowLayoutParams.x < startX -> {
+                editor.putInt(CALL_SIDE_X, 0)
+                animatorX = ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, startX)
+            }
+            windowLayoutParams.x > endX -> {
+                editor.putInt(CALL_SIDE_X, 1)
+                animatorX = ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX)
+            }
+            else -> {
+                editor.putInt(CALL_SIDE_X, 2)
+                editor.putFloat(CALL_PX, (windowLayoutParams.x - startX) / (endX - startX).toFloat())
+            }
         }
-        if (windowLayoutParams.y < startY) {
-            editor.putInt(CALL_SIDE_Y, 0)
-            animatorY = ObjectAnimator.ofInt(this, "y", windowLayoutParams.y, startY)
-        } else if (windowLayoutParams.y > endY) {
-            editor.putInt(CALL_SIDE_Y, 1)
-            animatorY = ObjectAnimator.ofInt(this, "y", windowLayoutParams.y, endY)
-        } else {
-            editor.putInt(CALL_SIDE_Y, 2)
-            editor.putFloat(CALL_PY, (windowLayoutParams.y - startY) / (endY - startY).toFloat())
+        when {
+            windowLayoutParams.y < startY -> {
+                editor.putInt(CALL_SIDE_Y, 0)
+                animatorY = ObjectAnimator.ofInt(this, "y", windowLayoutParams.y, startY)
+            }
+            windowLayoutParams.y > endY -> {
+                editor.putInt(CALL_SIDE_Y, 1)
+                animatorY = ObjectAnimator.ofInt(this, "y", windowLayoutParams.y, endY)
+            }
+            else -> {
+                editor.putInt(CALL_SIDE_Y, 2)
+                editor.putFloat(CALL_PY, (windowLayoutParams.y - startY) / (endY - startY).toFloat())
+            }
         }
         editor.apply()
         val animators = mutableListOf<Animator>()
