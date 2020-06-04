@@ -1,7 +1,10 @@
 package one.mixin.android.util.markdown
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.view.View
+import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestBuilder
 import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.LinkResolverDef
 import io.noties.markwon.Markwon
@@ -14,7 +17,9 @@ import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.ext.tasklist.TaskListPlugin
 import io.noties.markwon.html.HtmlPlugin
+import io.noties.markwon.image.AsyncDrawable
 import io.noties.markwon.image.glide.GlideImagesPlugin
+import io.noties.markwon.image.glide.GlideImagesPlugin.GlideStore
 import io.noties.markwon.syntax.Prism4jThemeDarkula
 import io.noties.markwon.syntax.Prism4jThemeDefault
 import io.noties.markwon.syntax.SyntaxHighlightPlugin
@@ -22,6 +27,7 @@ import io.noties.prism4j.Prism4j
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.isActivityNotDestroyed
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.postOptimize
@@ -50,7 +56,7 @@ class MarkwonUtil {
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(TableEntryPlugin.create(context))
-                .usePlugin(GlideImagesPlugin.create(context))
+                .usePlugin(createGlidePlugin(context))
                 .usePlugin(object : AbstractMarkwonPlugin() {
                     override fun configureTheme(builder: MarkwonTheme.Builder) {
                         builder.headingBreakHeight(0)
@@ -108,7 +114,7 @@ class MarkwonUtil {
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(TablePlugin.create(context))
-                .usePlugin(GlideImagesPlugin.create(context))
+                .usePlugin(createGlidePlugin(context))
                 .usePlugin(object : AbstractMarkwonPlugin() {
                     override fun configureTheme(builder: MarkwonTheme.Builder) {
                         builder.headingBreakHeight(0)
@@ -156,5 +162,17 @@ class MarkwonUtil {
             content ?: return ""
             return markwon.toMarkdown(content.postOptimize()).toString()
         }
+
+        private fun createGlidePlugin(context: Context): GlideImagesPlugin = GlideImagesPlugin.create(object : GlideStore {
+            override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
+                if (context.isActivityNotDestroyed()) {
+                    Glide.with(context).clear(target)
+                }
+            }
+
+            override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
+                return Glide.with(context).load(drawable.destination)
+            }
+        })
     }
 }
