@@ -104,7 +104,11 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
     }
 
-    fun createAnswerWithIceServer(iceServerList: List<PeerConnection.IceServer>, remoteSdp: SessionDescription, setLocalSuccess: (sdp: SessionDescription) -> Unit) {
+    fun createAnswerWithIceServer(
+        iceServerList: List<PeerConnection.IceServer>,
+        remoteSdp: SessionDescription,
+        setLocalSuccess: (sdp: SessionDescription) -> Unit
+    ) {
         iceServers.addAll(iceServerList)
         createAnswer(remoteSdp, setLocalSuccess)
     }

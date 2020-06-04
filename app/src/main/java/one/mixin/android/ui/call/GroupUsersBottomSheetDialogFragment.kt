@@ -8,6 +8,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import java.util.UUID
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_group_users_bottom_sheet.view.*
 import kotlinx.coroutines.launch
@@ -18,7 +19,6 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.SendMessageJob
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.MessageCategory
@@ -29,7 +29,6 @@ import one.mixin.android.webrtc.CallService
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetRelativeLayout
 import one.mixin.android.widget.SearchView
-import java.util.UUID
 
 class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {

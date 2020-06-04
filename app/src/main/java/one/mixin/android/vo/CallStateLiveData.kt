@@ -54,8 +54,18 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
 
     fun handleHangup(ctx: Context) {
         when (state) {
-            CallService.CallState.STATE_DIALING -> CallService.cancel(ctx)
-            CallService.CallState.STATE_RINGING -> CallService.decline(ctx)
+            CallService.CallState.STATE_DIALING ->
+                if (isGroupCall()) {
+                    CallService.krakenCancel(ctx)
+                } else {
+                    CallService.cancel(ctx)
+                }
+            CallService.CallState.STATE_RINGING ->
+                if (isGroupCall()) {
+                    CallService.krakenDecline(ctx)
+                } else {
+                    CallService.decline(ctx)
+                }
             CallService.CallState.STATE_ANSWERING -> {
                 if (isOffer) {
                     CallService.cancel(ctx)
@@ -63,7 +73,12 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
                     CallService.decline(ctx)
                 }
             }
-            CallService.CallState.STATE_CONNECTED -> CallService.localEnd(ctx)
+            CallService.CallState.STATE_CONNECTED ->
+                if (isGroupCall()) {
+                    CallService.krakenEnd(ctx)
+                } else {
+                    CallService.localEnd(ctx)
+                }
             else -> CallService.cancel(ctx)
         }
     }

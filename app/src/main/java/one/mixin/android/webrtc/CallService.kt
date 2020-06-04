@@ -12,17 +12,20 @@ import com.google.gson.Gson
 import dagger.android.AndroidInjection
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import one.mixin.android.Constants
 import java.util.UUID
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
+import one.mixin.android.Constants
 import one.mixin.android.Constants.ARGS_USER
+import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.AccountService
+import one.mixin.android.api.service.ConversationService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.di.type.DatabaseCategory
@@ -44,6 +47,8 @@ import one.mixin.android.vo.KrakenData
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.Sdp
 import one.mixin.android.vo.TurnServer
 import one.mixin.android.vo.User
@@ -96,8 +101,11 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     @Transient
     lateinit var chatWebSocket: ChatWebSocket
     @Inject
-    @Transient
     lateinit var participantSessionDao: ParticipantSessionDao
+    @Inject
+    lateinit var participantDao: ParticipantDao
+    @Inject
+    lateinit var conversationApi: ConversationService
 
     private val gson = Gson()
 
@@ -142,6 +150,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
                 ACTION_KRAKEN_PUBLISH -> handlePublish(intent)
                 ACTION_KRAKEN_RECEIVE_PUBLISH -> handleReceivePublish(intent)
                 ACTION_KRAKEN_RECEIVE_INVITE -> handleReceiveInvite(intent)
+                ACTION_KRAKEN_ACCEPT_INVITE -> handleAcceptInvite()
+                ACTION_KRAKEN_END -> handleKrakenEnd()
+                ACTION_KRAKEN_CANCEL -> handleKrakenCancel()
+                ACTION_KRAKEN_DECLINE -> handleKrakenDecline()
 
                 ACTION_CALL_INCOMING -> handleCallIncoming(intent)
                 ACTION_CALL_OUTGOING -> handleCallOutgoing(intent)
@@ -267,10 +279,67 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private fun handleAcceptInvite() {
         Timber.d("@@@ handleAcceptInvite")
-        callState.isOffer = true
-        getTurnServer { peerConnectionClient.createOffer(it, setLocalSuccess = {
+//        callState.isOffer = true
+        getTurnServer { turns ->
+            peerConnectionClient.createOffer(turns, setLocalSuccess = {
+                val blazeMessageParam = BlazeMessageParam(conversation_id = callState.conversationId, category = MessageCategory.KRAKEN_PUBLISH.name,
+                    message_id = UUID.randomUUID().toString(), jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode())
+                val bm = createKrakenMessage(blazeMessageParam)
+                val data = websocketChannel(bm) ?: return@createOffer
+                val krakenData = gson.fromJson(String(data.data.decodeBase64()), KrakenData::class.java)
+                subscribe(krakenData)
+            })
+        }
+    }
 
-        })}
+    private fun handleKrakenEnd() {
+        if (callState.isIdle()) return
+
+        val blazeMessageParam = BlazeMessageParam(
+            conversation_id = callState.conversationId,
+            category = MessageCategory.KRAKEN_END.name,
+            message_id = UUID.randomUUID().toString(),
+            track_id = callState.trackId
+        )
+        val bm = createKrakenMessage(blazeMessageParam)
+        val bmData = websocketChannel(bm) ?: return
+        val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
+        callState.state = CallState.STATE_IDLE
+        disconnect()
+    }
+
+    private fun handleKrakenCancel() {
+        if (callState.isIdle()) return
+
+        audioManager.stop()
+        val blazeMessageParam = BlazeMessageParam(
+            conversation_id = callState.conversationId,
+            category = MessageCategory.KRAKEN_CANCEL.name,
+            message_id = UUID.randomUUID().toString(),
+            track_id = callState.trackId
+        )
+        val bm = createKrakenMessage(blazeMessageParam)
+        val bmData = websocketChannel(bm) ?: return
+        val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
+        callState.state = CallState.STATE_IDLE
+        disconnect()
+    }
+
+    private fun handleKrakenDecline() {
+        if (callState.isIdle()) return
+
+        audioManager.stop()
+        val blazeMessageParam = BlazeMessageParam(
+            conversation_id = callState.conversationId,
+            category = MessageCategory.KRAKEN_DECLINE.name,
+            message_id = UUID.randomUUID().toString(),
+            track_id = callState.trackId
+        )
+        val bm = createKrakenMessage(blazeMessageParam)
+        val bmData = websocketChannel(bm) ?: return
+        val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
+        callState.state = CallState.STATE_IDLE
+        disconnect()
     }
 
     private fun handleCallIncoming(intent: Intent) {
@@ -701,11 +770,20 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             SystemClock.sleep(Constants.SLEEP_MILLIS)
             return websocketChannel(blazeMessage)
         } else if (bm.error != null) {
-            return if (bm.error.code == ErrorHandler.FORBIDDEN) {
-                null
-            } else {
-                SystemClock.sleep(Constants.SLEEP_MILLIS)
-                return websocketChannel(blazeMessage)
+            return when (bm.error.code) {
+                ErrorHandler.CONVERSATION_CHECKSUM_INVALID_ERROR -> {
+                    blazeMessage.params?.conversation_id?.let {
+                        syncConversation(it)
+                    }
+                    websocketChannel(blazeMessage)
+                }
+                ErrorHandler.FORBIDDEN -> {
+                    null
+                }
+                else -> {
+                    SystemClock.sleep(Constants.SLEEP_MILLIS)
+                    websocketChannel(blazeMessage)
+                }
             }
         }
         return gson.fromJson(bm.data, BlazeMessageData::class.java)
@@ -720,6 +798,47 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         }
     }
 
+    private fun syncConversation(conversationId: String) {
+        val response = conversationApi.getConversation(conversationId).execute().body()
+        if (response != null && response.isSuccess) {
+            response.data?.let { data ->
+                val remote = data.participants.map {
+                    Participant(conversationId, it.userId, it.role, it.createdAt!!)
+                }
+                participantDao.replaceAll(conversationId, remote)
+
+                data.participantSessions?.let {
+                    syncParticipantSession(conversationId, it)
+                }
+            }
+        }
+    }
+
+    private fun syncParticipantSession(conversationId: String, data: List<UserSession>) {
+        participantSessionDao.deleteByStatus(conversationId)
+        val remote = data.map {
+            ParticipantSession(conversationId, it.userId, it.sessionId)
+        }
+        if (remote.isEmpty()) {
+            participantSessionDao.deleteByConversationId(conversationId)
+            return
+        }
+        val local = participantSessionDao.getParticipantSessionsByConversationId(conversationId)
+        if (local.isEmpty()) {
+            participantSessionDao.insertList(remote)
+            return
+        }
+        val common = remote.intersect(local)
+        val remove = local.minus(common)
+        val add = remote.minus(common)
+        if (remove.isNotEmpty()) {
+            participantSessionDao.deleteList(remove)
+        }
+        if (add.isNotEmpty()) {
+            participantSessionDao.insertList(add)
+        }
+    }
+
     companion object {
         const val TAG = "CallService"
 
@@ -728,6 +847,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         private const val ACTION_KRAKEN_PUBLISH = "kraken_publish"
         private const val ACTION_KRAKEN_RECEIVE_PUBLISH = "kraken_receive_publish"
         private const val ACTION_KRAKEN_RECEIVE_INVITE = "kraken_receive_invite"
+        private const val ACTION_KRAKEN_ACCEPT_INVITE = "kraken_accept_invite"
+        private const val ACTION_KRAKEN_END = "kraken_end"
+        private const val ACTION_KRAKEN_CANCEL = "kraken_cancel"
+        private const val ACTION_KRAKEN_DECLINE = "kraken_decline"
 
         private const val ACTION_CALL_INCOMING = "call_incoming"
         private const val ACTION_CALL_OUTGOING = "call_outgoing"
@@ -769,6 +892,14 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             it.putExtra(EXTRA_BLAZE, data)
             it.putExtra(EXTRA_USERS, users)
         }
+
+        fun acceptInvite(ctx: Context) = startService(ctx, ACTION_KRAKEN_ACCEPT_INVITE)
+
+        fun krakenEnd(ctx: Context) = startService(ctx, ACTION_KRAKEN_END)
+
+        fun krakenCancel(ctx: Context) = startService(ctx, ACTION_KRAKEN_CANCEL)
+
+        fun krakenDecline(ctx: Context) = startService(ctx, ACTION_KRAKEN_DECLINE)
 
         fun incoming(ctx: Context, user: User, data: BlazeMessageData, pendingCandidateData: String? = null) = startService(ctx, ACTION_CALL_INCOMING) {
             it.putExtra(ARGS_USER, user)

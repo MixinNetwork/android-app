@@ -189,8 +189,10 @@ class PipCallView {
     var shown = false
 
     fun close() {
-        shown = false
-        windowManager.removeView(windowView)
+        if (shown) {
+            shown = false
+            windowManager.removeView(windowView)
+        }
     }
 
     private var decelerateInterpolator: DecelerateInterpolator? = null
