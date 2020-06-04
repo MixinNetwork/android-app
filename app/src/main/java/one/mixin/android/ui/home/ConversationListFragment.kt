@@ -802,10 +802,10 @@ class ConversationListFragment : LinkFragment() {
 
             itemView.mute_iv.visibility = if (conversationItem.isMute()) VISIBLE else GONE
             if (conversationItem.isMute()) {
-                itemView.unread_tv.setBackgroundResource( R.drawable.bg_unread_mute)
+                itemView.unread_tv.setBackgroundResource(R.drawable.bg_unread_mute)
                 itemView.unread_tv.setTextColor(context.colorFromAttribute(R.attr.badger_text_mute))
             } else {
-                itemView.unread_tv.setBackgroundResource (R.drawable.bg_unread)
+                itemView.unread_tv.setBackgroundResource(R.drawable.bg_unread)
                 itemView.unread_tv.setTextColor(context.colorFromAttribute(R.attr.badger_text))
             }
 
