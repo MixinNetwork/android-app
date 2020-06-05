@@ -214,10 +214,11 @@ class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvent
         val krakenDataString = String(blazeMessageData!!.data.decodeBase64())
         Timber.d("@@@ krakenDataString: $krakenDataString")
         if (krakenDataString == PUBLISH_PLACEHOLDER) {
-            return
+            if (!callState.trackId.isNullOrEmpty()) {
+                sendSubscribe(callState.trackId!!)
+            }
+            // TODO
         }
-        val data = getKrakenData(krakenDataString)
-        subscribe(data)
     }
 
     private fun handlePublish(intent: Intent) {
@@ -231,6 +232,10 @@ class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvent
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         CallActivity.show(this)
         audioManager.start(true)
+        publish()
+    }
+
+    private fun publish() {
         getTurnServer { turns ->
             peerConnectionClient.createOffer(turns, setLocalSuccess = {
                 val blazeMessageParam = BlazeMessageParam(conversation_id = callState.conversationId, category = MessageCategory.KRAKEN_PUBLISH.name,
@@ -253,13 +258,17 @@ class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvent
                     sendGroupCallMessage(MessageCategory.KRAKEN_TRICKLE.name, candidate = gson.toJson(c), trackId = callState.trackId)
                 }
             }
-            val blazeMessageParam = BlazeMessageParam(conversation_id = callState.conversationId, category = MessageCategory.KRAKEN_SUBSCRIBE.name,
-                message_id = UUID.randomUUID().toString(), track_id = data.trackId)
-            val bm = createKrakenMessage(blazeMessageParam)
-            val bmData = websocketChannel(bm) ?: return
-            val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
-            answer(krakenData)
+            sendSubscribe(data.trackId)
         }
+    }
+
+    private fun sendSubscribe(trackId: String) {
+        val blazeMessageParam = BlazeMessageParam(conversation_id = callState.conversationId, category = MessageCategory.KRAKEN_SUBSCRIBE.name,
+            message_id = UUID.randomUUID().toString(), track_id = trackId)
+        val bm = createKrakenMessage(blazeMessageParam)
+        val bmData = websocketChannel(bm) ?: return
+        val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
+        answer(krakenData)
     }
 
     private fun answer(krakenData: KrakenData) {
@@ -291,17 +300,7 @@ class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvent
 
     private fun handleAcceptInvite() {
         Timber.d("@@@ handleAcceptInvite")
-//        callState.isOffer = true
-        getTurnServer { turns ->
-            peerConnectionClient.createOffer(turns, setLocalSuccess = {
-                val blazeMessageParam = BlazeMessageParam(conversation_id = callState.conversationId, category = MessageCategory.KRAKEN_PUBLISH.name,
-                    message_id = UUID.randomUUID().toString(), jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode())
-                val bm = createKrakenMessage(blazeMessageParam)
-                val data = websocketChannel(bm) ?: return@createOffer
-                val krakenData = gson.fromJson(String(data.data.decodeBase64()), KrakenData::class.java)
-                subscribe(krakenData)
-            })
-        }
+        publish()
     }
 
     private fun handleKrakenEnd() {
@@ -345,6 +344,7 @@ class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvent
             conversation_id = callState.conversationId,
             category = MessageCategory.KRAKEN_DECLINE.name,
             message_id = UUID.randomUUID().toString(),
+            recipient_id = callState.users!![0].userId,
             track_id = callState.trackId
         )
         val bm = createKrakenMessage(blazeMessageParam)
@@ -780,6 +780,7 @@ class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvent
         val bm = chatWebSocket.sendMessage(blazeMessage)
         if (bm == null) {
             SystemClock.sleep(Constants.SLEEP_MILLIS)
+            blazeMessage.id = UUID.randomUUID().toString()
             return websocketChannel(blazeMessage)
         } else if (bm.error != null) {
             return when (bm.error.code) {
@@ -787,6 +788,7 @@ class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvent
                     blazeMessage.params?.conversation_id?.let {
                         syncConversation(it)
                     }
+                    blazeMessage.id = UUID.randomUUID().toString()
                     websocketChannel(blazeMessage)
                 }
                 ErrorHandler.FORBIDDEN -> {
@@ -794,6 +796,7 @@ class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvent
                 }
                 else -> {
                     SystemClock.sleep(Constants.SLEEP_MILLIS)
+                    blazeMessage.id = UUID.randomUUID().toString()
                     websocketChannel(blazeMessage)
                 }
             }

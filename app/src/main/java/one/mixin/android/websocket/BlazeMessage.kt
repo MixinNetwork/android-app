@@ -6,7 +6,7 @@ import java.io.Serializable
 import java.util.UUID
 
 data class BlazeMessage(
-    val id: String,
+    var id: String,
     val action: String,
     val params: BlazeMessageParam?,
     val data: JsonElement? = null,
