@@ -17,7 +17,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_group_info.*
 import kotlinx.android.synthetic.main.view_group_info_header.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -48,6 +47,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroup
+import javax.inject.Inject
 
 class GroupInfoFragment : BaseFragment() {
     companion object {
@@ -134,8 +134,13 @@ class GroupInfoFragment : BaseFragment() {
                                 UserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                             }
                             2 -> {
-                                showConfirmDialog(getString(R.string.group_info_remove_tip,
-                                    user.fullName, adapter.conversation?.name), TYPE_REMOVE, user = user)
+                                showConfirmDialog(
+                                    getString(
+                                        R.string.group_info_remove_tip,
+                                        user.fullName, adapter.conversation?.name
+                                    ),
+                                    TYPE_REMOVE, user = user
+                                )
                             }
                             3 -> {
                                 handleAdminRole(userRole, user)
@@ -186,9 +191,13 @@ class GroupInfoFragment : BaseFragment() {
                                 .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                         }
                         R.id.remove -> {
-                            showConfirmDialog(getString(R.string.group_info_remove_tip,
-                                user.fullName, adapter.conversation?.name),
-                                TYPE_REMOVE, user = user)
+                            showConfirmDialog(
+                                getString(
+                                    R.string.group_info_remove_tip,
+                                    user.fullName, adapter.conversation?.name
+                                ),
+                                TYPE_REMOVE, user = user
+                            )
                         }
                         R.id.admin -> {
                             handleAdminRole(userRole, user)
@@ -201,56 +210,67 @@ class GroupInfoFragment : BaseFragment() {
             }
         })
 
-        groupViewModel.getGroupParticipantsLiveData(conversationId).observe(viewLifecycleOwner, Observer { u ->
-            u?.let {
-                var role: String? = null
-                self?.let { u ->
-                    val p = participantsMap[u.userId]
-                    p?.let { role = p.role }
-                }
-                users.clear()
-                users.addAll(u)
+        groupViewModel.getGroupParticipantsLiveData(conversationId).observe(
+            viewLifecycleOwner,
+            Observer { u ->
+                u?.let {
+                    var role: String? = null
+                    self?.let { u ->
+                        val p = participantsMap[u.userId]
+                        p?.let { role = p.role }
+                    }
+                    users.clear()
+                    users.addAll(u)
 
-                header.add_rl.visibility = if (it.isEmpty() || it.size >= MAX_USER || role == null ||
-                    (role != ParticipantRole.OWNER.name && role != ParticipantRole.ADMIN.name))
-                    GONE else VISIBLE
+                    header.add_rl.visibility = if (it.isEmpty() || it.size >= MAX_USER || role == null ||
+                        (role != ParticipantRole.OWNER.name && role != ParticipantRole.ADMIN.name)
+                    )
+                        GONE else VISIBLE
 
-                lifecycleScope.launch {
-                    if (!isAdded) return@launch
+                    lifecycleScope.launch {
+                        if (!isAdded) return@launch
 
-                    val participants = groupViewModel.getRealParticipants(conversationId)
-                    participantsMap.clear()
-                    for (item in it) {
-                        participants.forEach { p ->
-                            if (item.userId == p.userId) {
-                                participantsMap[item.userId] = p
-                                return@forEach
+                        val participants = groupViewModel.getRealParticipants(conversationId)
+                        participantsMap.clear()
+                        for (item in it) {
+                            participants.forEach { p ->
+                                if (item.userId == p.userId) {
+                                    participantsMap[item.userId] = p
+                                    return@forEach
+                                }
                             }
                         }
+                        adapter.participantsMap = participantsMap
+                        filter()
                     }
-                    adapter.participantsMap = participantsMap
-                    filter()
                 }
             }
-        })
+        )
 
-        groupViewModel.getConversationById(conversationId).observe(viewLifecycleOwner, Observer {
-            it?.let {
-                adapter.conversation = it
+        groupViewModel.getConversationById(conversationId).observe(
+            viewLifecycleOwner,
+            Observer {
+                it?.let {
+                    adapter.conversation = it
+                }
             }
-        })
+        )
 
-        groupViewModel.findSelf().observe(viewLifecycleOwner, Observer {
-            self = it
-            adapter.self = it
-        })
+        groupViewModel.findSelf().observe(
+            viewLifecycleOwner,
+            Observer {
+                self = it
+                adapter.self = it
+            }
+        )
 
         RxBus.listen(ConversationEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(stopScope)
             .subscribe {
                 if (it.type == TYPE_MAKE_ADMIN || it.type == TYPE_REMOVE ||
-                    it.type == TYPE_EXIT || it.type == TYPE_DISMISS_ADMIN) {
+                    it.type == TYPE_EXIT || it.type == TYPE_DISMISS_ADMIN
+                ) {
                     dialog?.dismiss()
                 }
             }
@@ -338,7 +358,9 @@ class GroupInfoFragment : BaseFragment() {
         adapter.data.let {
             list += it!!
         }
-        activity?.addFragment(this@GroupInfoFragment,
-            GroupFragment.newInstance(if (isAdd) TYPE_ADD else TYPE_REMOVE, list, conversationId), GroupFragment.TAG)
+        activity?.addFragment(
+            this@GroupInfoFragment,
+            GroupFragment.newInstance(if (isAdd) TYPE_ADD else TYPE_REMOVE, list, conversationId), GroupFragment.TAG
+        )
     }
 }

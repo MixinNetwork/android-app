@@ -29,9 +29,11 @@ class PercentView : View {
     private val colorPurpleDark by lazy { context.getColor(R.color.wallet_purple_dark) }
 
     private val shadowPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        colorFilter = ColorMatrixColorFilter(ColorMatrix().apply {
-            setScale(SHADOW_SCALE_RGB, SHADOW_SCALE_RGB, SHADOW_SCALE_RGB, SHADOW_SCALE_ALPHA)
-        })
+        colorFilter = ColorMatrixColorFilter(
+            ColorMatrix().apply {
+                setScale(SHADOW_SCALE_RGB, SHADOW_SCALE_RGB, SHADOW_SCALE_RGB, SHADOW_SCALE_ALPHA)
+            }
+        )
     }
     private val strokeHeight = context.dpToPx(4f)
     private val radius = context.dpToPx(2f).toFloat()
@@ -116,7 +118,8 @@ class PercentView : View {
         shadowBounds.set(radius / 2, 0f, width.toFloat(), height.toFloat())
         if (blurShadow == null) {
             blurShadow = Bitmap.createBitmap(
-                shadowBounds.width().toInt(), (shadowBounds.height() * 1.5f).toInt(), Bitmap.Config.ARGB_8888)
+                shadowBounds.width().toInt(), (shadowBounds.height() * 1.5f).toInt(), Bitmap.Config.ARGB_8888
+            )
         } else {
             blurShadow?.eraseColor(Color.TRANSPARENT)
         }

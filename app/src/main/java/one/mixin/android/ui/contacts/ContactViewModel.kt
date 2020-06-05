@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
@@ -22,6 +21,7 @@ import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import javax.inject.Inject
 
 class ContactViewModel
 @Inject
@@ -55,9 +55,15 @@ internal constructor(
                 conversationId = generateConversationId(senderId, recipientId)
             }
             val participantRequest = ParticipantRequest(recipientId, "")
-            jobManager.addJobInBackground(ConversationJob(ConversationRequest(conversationId,
-                ConversationCategory.CONTACT.name, duration = duration, participants = listOf(participantRequest)),
-                recipientId = recipientId, type = TYPE_MUTE))
+            jobManager.addJobInBackground(
+                ConversationJob(
+                    ConversationRequest(
+                        conversationId,
+                        ConversationCategory.CONTACT.name, duration = duration, participants = listOf(participantRequest)
+                    ),
+                    recipientId = recipientId, type = TYPE_MUTE
+                )
+            )
         }
     }
 }

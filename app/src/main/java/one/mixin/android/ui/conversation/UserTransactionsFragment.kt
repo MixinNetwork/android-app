@@ -79,11 +79,13 @@ class UserTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem
             assetItem.let {
                 try {
                     view?.findNavController()
-                        ?.navigate(R.id.action_user_transactions_to_transaction,
+                        ?.navigate(
+                            R.id.action_user_transactions_to_transaction,
                             Bundle().apply {
                                 putParcelable(TransactionFragment.ARGS_SNAPSHOT, snapshot)
                                 putParcelable(TransactionsFragment.ARGS_ASSET, it)
-                            })
+                            }
+                        )
                 } catch (e: IllegalStateException) {
                     val fragment = TransactionFragment.newInstance(snapshot, it)
                     activity?.addFragment(

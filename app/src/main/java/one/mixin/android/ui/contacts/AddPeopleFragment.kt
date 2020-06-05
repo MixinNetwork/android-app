@@ -12,8 +12,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.uber.autodispose.autoDispose
-import java.util.Locale
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_add_people.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -26,6 +24,8 @@ import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.widget.Keyboard
+import java.util.Locale
+import javax.inject.Inject
 
 class AddPeopleFragment : BaseFragment() {
 
@@ -69,28 +69,32 @@ class AddPeopleFragment : BaseFragment() {
         search_tv.setOnClickListener {
             search_animator.displayedChild = POS_PROGRESS
             search_tv.isEnabled = false
-            contactsViewModel.search(search_et.text.toString()).autoDispose(stopScope).subscribe({ r ->
-                search_animator.displayedChild = POS_SEARCH
-                search_tv.isEnabled = true
-                when {
-                    r.isSuccess -> r.data?.let { data ->
-                        if (data.userId == Session.getAccountId()) {
-                            ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager,
-                                UserBottomSheetDialogFragment.TAG
-                            )
-                        } else {
-                            contactsViewModel.insertUser(user = data)
-                            UserBottomSheetDialogFragment.newInstance(data).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+            contactsViewModel.search(search_et.text.toString()).autoDispose(stopScope).subscribe(
+                { r ->
+                    search_animator.displayedChild = POS_SEARCH
+                    search_tv.isEnabled = true
+                    when {
+                        r.isSuccess -> r.data?.let { data ->
+                            if (data.userId == Session.getAccountId()) {
+                                ProfileBottomSheetDialogFragment.newInstance().showNow(
+                                    parentFragmentManager,
+                                    UserBottomSheetDialogFragment.TAG
+                                )
+                            } else {
+                                contactsViewModel.insertUser(user = data)
+                                UserBottomSheetDialogFragment.newInstance(data).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            }
                         }
+                        r.errorCode == ErrorHandler.NOT_FOUND -> context?.toast(R.string.error_user_not_found)
+                        else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                     }
-                    r.errorCode == ErrorHandler.NOT_FOUND -> context?.toast(R.string.error_user_not_found)
-                    else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                },
+                { t: Throwable ->
+                    search_animator.displayedChild = POS_SEARCH
+                    search_tv.isEnabled = true
+                    ErrorHandler.handleError(t)
                 }
-            }, { t: Throwable ->
-                search_animator.displayedChild = POS_SEARCH
-                search_tv.isEnabled = true
-                ErrorHandler.handleError(t)
-            })
+            )
         }
     }
 

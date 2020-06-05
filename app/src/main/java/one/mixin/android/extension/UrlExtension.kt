@@ -80,7 +80,8 @@ fun String.openAsUrl(
     extraAction: () -> Unit
 ) {
     if (startsWith(Constants.Scheme.TRANSFER, true) ||
-        startsWith(Constants.Scheme.HTTPS_TRANSFER, true)) {
+        startsWith(Constants.Scheme.HTTPS_TRANSFER, true)
+    ) {
         val segments = Uri.parse(this).pathSegments
         val data = when {
             segments.size >= 2 -> segments[1]

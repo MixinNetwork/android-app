@@ -53,19 +53,25 @@ class ScanFragment : BaseCameraxFragment() {
         }
         val torchState = camera?.cameraInfo?.torchState?.value ?: TorchState.OFF
         flash.setImageResource(R.drawable.ic_scan_flash)
-        val future = (if (torchState == TorchState.ON) {
-            camera?.cameraControl?.enableTorch(false)
-        } else {
-            camera?.cameraControl?.enableTorch(true)
-        }) ?: return
-        Futures.addCallback(future, object : FutureCallback<Void> {
-            override fun onSuccess(result: Void?) {
+        val future = (
+            if (torchState == TorchState.ON) {
+                camera?.cameraControl?.enableTorch(false)
+            } else {
+                camera?.cameraControl?.enableTorch(true)
             }
+            ) ?: return
+        Futures.addCallback(
+            future,
+            object : FutureCallback<Void> {
+                override fun onSuccess(result: Void?) {
+                }
 
-            override fun onFailure(t: Throwable?) {
-                Timber.d("enableTorch onFailure, ${t?.getStackTraceString()}")
-            }
-        }, mainExecutor)
+                override fun onFailure(t: Throwable?) {
+                    Timber.d("enableTorch onFailure, ${t?.getStackTraceString()}")
+                }
+            },
+            mainExecutor
+        )
     }
 
     @SuppressLint("RestrictedApi")

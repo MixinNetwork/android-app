@@ -11,15 +11,21 @@ import java.io.Serializable
 
 @Entity(
     tableName = "messages",
-    indices = [Index(value = arrayOf("conversation_id", "created_at")),
+    indices = [
+        Index(value = arrayOf("conversation_id", "created_at")),
         Index(value = arrayOf("conversation_id", "user_id", "status", "created_at")),
-        Index(value = arrayOf("user_id"))],
-    foreignKeys = [(ForeignKey(
-        entity = Conversation::class,
-        onDelete = CASCADE,
-        parentColumns = arrayOf("conversation_id"),
-        childColumns = arrayOf("conversation_id")
-    ))]
+        Index(value = arrayOf("user_id"))
+    ],
+    foreignKeys = [
+        (
+            ForeignKey(
+                entity = Conversation::class,
+                onDelete = CASCADE,
+                parentColumns = arrayOf("conversation_id"),
+                childColumns = arrayOf("conversation_id")
+            )
+            )
+    ]
 )
 class Message(
     @PrimaryKey

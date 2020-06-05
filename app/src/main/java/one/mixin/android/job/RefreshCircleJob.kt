@@ -6,8 +6,10 @@ import one.mixin.android.vo.Circle
 
 class RefreshCircleJob(
     val circleId: String? = null
-) : BaseJob(Params(PRIORITY_UI_HIGH)
-    .groupBy("refresh_circles").requireNetwork().persist()) {
+) : BaseJob(
+    Params(PRIORITY_UI_HIGH)
+        .groupBy("refresh_circles").requireNetwork().persist()
+) {
 
     companion object {
         const val REFRESH_CIRCLE_CONVERSATION_LIMIT = 500
@@ -43,7 +45,8 @@ class RefreshCircleJob(
 
     private fun handleCircle(c: Circle, offset: String? = null) {
         val ccResponse = circleService.getCircleConversations(
-            c.circleId, offset, REFRESH_CIRCLE_CONVERSATION_LIMIT).execute().body()
+            c.circleId, offset, REFRESH_CIRCLE_CONVERSATION_LIMIT
+        ).execute().body()
         if (ccResponse?.isSuccess == true) {
             ccResponse.data?.let { ccList ->
                 ccList.forEach { cc ->

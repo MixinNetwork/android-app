@@ -32,15 +32,15 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
             itemView.chat_msg_layout.gravity = Gravity.END
             if (isLast) {
                 setItemBackgroundResource(
-                        itemView.chat_layout,
-                        R.drawable.chat_bubble_reply_me_last,
-                        R.drawable.chat_bubble_reply_me_last_night
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_reply_me_last,
+                    R.drawable.chat_bubble_reply_me_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                        itemView.chat_layout,
-                        R.drawable.chat_bubble_reply_me,
-                        R.drawable.chat_bubble_reply_me_night
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_reply_me,
+                    R.drawable.chat_bubble_reply_me_night
                 )
             }
         } else {
@@ -48,15 +48,15 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
 
             if (isLast) {
                 setItemBackgroundResource(
-                        itemView.chat_layout,
-                        R.drawable.chat_bubble_reply_other_last,
-                        R.drawable.chat_bubble_reply_other_last_night
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_reply_other_last,
+                    R.drawable.chat_bubble_reply_other_last_night
                 )
             } else {
                 setItemBackgroundResource(
-                        itemView.chat_layout,
-                        R.drawable.chat_bubble_reply_other,
-                        R.drawable.chat_bubble_reply_other_night
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_reply_other,
+                    R.drawable.chat_bubble_reply_other_night
                 )
             }
         }
@@ -99,21 +99,26 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
             secretIcon?.setBounds(0, 0, dp8, dp8)
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
         }
-        keyword.notNullWithElse({ k ->
-            messageItem.mediaName?.let { str ->
-                val start = str.indexOf(k, 0, true)
-                if (start >= 0) {
-                    val sp = SpannableString(str)
-                    sp.setSpan(BackgroundColorSpan(HIGHLIGHTED), start,
-                            start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    itemView.file_name_tv.text = sp
-                } else {
-                    itemView.file_name_tv.text = messageItem.mediaName
+        keyword.notNullWithElse(
+            { k ->
+                messageItem.mediaName?.let { str ->
+                    val start = str.indexOf(k, 0, true)
+                    if (start >= 0) {
+                        val sp = SpannableString(str)
+                        sp.setSpan(
+                            BackgroundColorSpan(HIGHLIGHTED), start,
+                            start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        itemView.file_name_tv.text = sp
+                    } else {
+                        itemView.file_name_tv.text = messageItem.mediaName
+                    }
                 }
+            },
+            {
+                itemView.file_name_tv.text = messageItem.mediaName
             }
-        }, {
-            itemView.file_name_tv.text = messageItem.mediaName
-        })
+        )
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
             itemView.file_size_tv.textResource = R.string.chat_expired
         } else {
@@ -129,7 +134,8 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
 
             override fun onStopTrackingTouch(seekBar: SeekBar) {
                 if (MimeTypes.isAudio(messageItem.mediaMimeType) &&
-                        AudioPlayer.get().isPlay(messageItem.messageId)) {
+                    AudioPlayer.get().isPlay(messageItem.messageId)
+                ) {
                     AudioPlayer.get().seekTo(seekBar.progress)
                 }
             }

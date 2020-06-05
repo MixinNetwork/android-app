@@ -30,9 +30,12 @@ class PostFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     }
 
     private val adapter by lazy {
-        PostAdapter(requireContext(), fun(messageItem: MessageItem) {
-            MarkdownActivity.show(requireActivity(), messageItem.content!!, conversationId)
-        })
+        PostAdapter(
+            requireContext(),
+            fun(messageItem: MessageItem) {
+                MarkdownActivity.show(requireActivity(), messageItem.content!!, conversationId)
+            }
+        )
     }
 
     override fun getModelClass() = SharedMediaViewModel::class.java
@@ -50,13 +53,16 @@ class PostFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         recycler_view.layoutManager = LinearLayoutManager(requireContext())
         recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         recycler_view.adapter = adapter
-        viewModel.getPostMessages(conversationId).observe(viewLifecycleOwner, Observer {
-            if (it.size <= 0) {
-                (view as ViewAnimator).displayedChild = 1
-            } else {
-                (view as ViewAnimator).displayedChild = 0
+        viewModel.getPostMessages(conversationId).observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it.size <= 0) {
+                    (view as ViewAnimator).displayedChild = 1
+                } else {
+                    (view as ViewAnimator).displayedChild = 0
+                }
+                adapter.submitList(it)
             }
-            adapter.submitList(it)
-        })
+        )
     }
 }

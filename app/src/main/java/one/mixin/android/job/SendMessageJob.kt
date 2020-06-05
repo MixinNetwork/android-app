@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
-import java.io.File
 import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
@@ -23,6 +22,7 @@ import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.ResendData
 import one.mixin.android.websocket.createCallMessage
 import one.mixin.android.websocket.createParamBlazeMessage
+import java.io.File
 
 open class SendMessageJob(
     val message: Message,
@@ -124,7 +124,8 @@ open class SendMessageJob(
             message.category == MessageCategory.PLAIN_POST.name ||
             message.category == MessageCategory.PLAIN_LOCATION.name ||
             message.isCall() ||
-            message.category == MessageCategory.APP_CARD.name) {
+            message.category == MessageCategory.APP_CARD.name
+        ) {
             if (message.content != null) {
                 content = message.content!!.base64Encode()
             }

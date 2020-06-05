@@ -329,7 +329,8 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET shared_user_id = :sharedUserId, status = :status WHERE id = :messageId AND category != 'MESSAGE_RECALL'")
     fun updateContactMessage(sharedUserId: String, status: String, messageId: String)
 
-    @Query("""
+    @Query(
+        """
         UPDATE messages SET media_width = :width, media_height = :height, media_url=:url, thumb_url = :thumbUrl, status = :status 
         WHERE id = :messageId AND category != 'SIGNAL_LIVE'
         """
@@ -369,7 +370,8 @@ interface MessageDao : BaseDao<Message> {
     fun findConversationsByMessages(messages: List<String>): List<String>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("""
+    @Query(
+        """
             SELECT id, conversation_id, user_id, status, created_at FROM messages WHERE conversation_id = :conversationId 
             AND user_id != :userId AND status IN ('SENT', 'DELIVERED') ORDER BY created_at ASC
         """
@@ -438,10 +440,12 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages WHERE conversation_id =:conversationId ORDER BY created_at DESC LIMIT 1")
     suspend fun findLastMessage(conversationId: String): String?
 
-    @Query("""
+    @Query(
+        """
         SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND messages.rowid > 
         (SELECT rowid FROM messages WHERE id = :messageId) ORDER BY rowid ASC LIMIT 1
-        """)
+        """
+    )
     suspend fun findUnreadMessageByMessageId(
         conversationId: String,
         userId: String,
@@ -454,12 +458,14 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT * FROM messages WHERE id IN (:messageIds) ORDER BY created_at, rowid")
     suspend fun getSortMessagesByIds(messageIds: List<String>): List<Message>
 
-    @Query("""
+    @Query(
+        """
         SELECT id as message_id, content, name FROM messages 
         WHERE category IN ('SIGNAL_TEXT', 'SIGNAL_DATA', 'SIGNAL_POST')
         AND created_at > :after
         LIMIT :limit OFFSET :offset
-        """)
+        """
+    )
     suspend fun batchQueryMessages(limit: Int, offset: Int, after: Long): List<QueryMessage>
 
     @Query("SELECT id, conversation_id, name, category, media_url, media_mine_type FROM messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' AND  :end > created_at LIMIT :limit OFFSET :offset")

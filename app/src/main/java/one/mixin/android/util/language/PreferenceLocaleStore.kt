@@ -2,8 +2,8 @@ package one.mixin.android.util.language
 
 import android.content.Context
 import android.content.SharedPreferences
-import java.util.Locale
 import org.json.JSONObject
+import java.util.Locale
 
 /**
  * Default implementation of [LocaleStore] using [SharedPreferences].

@@ -178,7 +178,8 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
 
         fun bind(user: User) {
             itemView.header.text = if (user.fullName != null &&
-                user.fullName.isNotEmpty()) user.fullName[0].toString() else ""
+                user.fullName.isNotEmpty()
+            ) user.fullName[0].toString() else ""
         }
     }
 

@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.uber.autodispose.autoDispose
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadGif
@@ -31,6 +30,7 @@ import one.mixin.android.widget.DraggableRecyclerView
 import org.jetbrains.anko.dip
 import retrofit2.HttpException
 import timber.log.Timber
+import javax.inject.Inject
 
 class GiphyFragment : BaseFragment() {
     companion object {
@@ -98,18 +98,21 @@ class GiphyFragment : BaseFragment() {
         sticker_progress.visibility = View.VISIBLE
         stickerViewModel.trendingGifs(26, 0)
             .autoDispose(stopScope)
-            .subscribe({ list ->
-                if (!isAdded) return@subscribe
-                giphyAdapter.data = list
-                giphyAdapter.notifyDataSetChanged()
-                sticker_progress.visibility = View.GONE
-            }, { t ->
-                Timber.d("Trending gifs failed, t: ${t.printStackTrace()}")
-                if (t is HttpException && t.code() == 429) {
-                    toast("Giphy API rate limit exceeded")
+            .subscribe(
+                { list ->
+                    if (!isAdded) return@subscribe
+                    giphyAdapter.data = list
+                    giphyAdapter.notifyDataSetChanged()
+                    sticker_progress.visibility = View.GONE
+                },
+                { t ->
+                    Timber.d("Trending gifs failed, t: ${t.printStackTrace()}")
+                    if (t is HttpException && t.code() == 429) {
+                        toast("Giphy API rate limit exceeded")
+                    }
+                    sticker_progress.visibility = View.GONE
                 }
-                sticker_progress.visibility = View.GONE
-            })
+            )
     }
 
     private class GiphyAdapter : FooterAdapter<Gif>() {
@@ -153,9 +156,12 @@ class GiphyFragment : BaseFragment() {
             return NormalHolder(view)
         }
 
-        override fun getItemCount(): Int = data.notNullWithElse({
-            if (footerView != null) it.size + 2 else it.size + 1
-        }, 0)
+        override fun getItemCount(): Int = data.notNullWithElse(
+            {
+                if (footerView != null) it.size + 2 else it.size + 1
+            },
+            0
+        )
 
         fun setOnGiphyListener(giphyListener: GiphyListener) {
             listener = giphyListener

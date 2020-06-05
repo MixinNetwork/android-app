@@ -6,8 +6,6 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.widget.EditText
 import androidx.collection.arraySetOf
-import java.util.Stack
-import java.util.regex.Pattern
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.util.GsonHelper
@@ -17,6 +15,8 @@ import one.mixin.android.util.mention.syntax.parser.Parser
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.User
+import java.util.Stack
+import java.util.regex.Pattern
 
 fun mentionDisplay(string: CharSequence): Boolean {
     val matcher = mentionEndPattern.matcher(string)

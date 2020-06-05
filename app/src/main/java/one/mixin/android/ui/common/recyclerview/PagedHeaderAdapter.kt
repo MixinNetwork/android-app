@@ -65,11 +65,13 @@ abstract class PagedHeaderAdapter<T>(diffCallback: DiffUtil.ItemCallback<T>) :
 
     @Suppress("UNCHECKED_CAST")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return (if (viewType == TYPE_HEADER) {
-            getHeaderViewHolder(parent.context, parent)
-        } else {
-            getNormalViewHolder(parent.context, parent)
-        })
+        return (
+            if (viewType == TYPE_HEADER) {
+                getHeaderViewHolder(parent.context, parent)
+            } else {
+                getNormalViewHolder(parent.context, parent)
+            }
+            )
     }
 
     open fun getHeaderViewHolder(context: Context, parent: ViewGroup) = HeadHolder(headerView!!)

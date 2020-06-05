@@ -5,9 +5,6 @@ import com.google.gson.reflect.TypeToken
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
-import kotlin.math.abs
 import okhttp3.Request
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -23,6 +20,9 @@ import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
 import one.mixin.android.vo.Account
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.abs
 
 object Session {
     private var self: Account? = null
@@ -128,15 +128,17 @@ object Session {
             content += request.body!!.bodyToString()
         }
         return Jwts.builder()
-            .setClaims(ConcurrentHashMap<String, Any>().apply {
-                put(Claims.ID, UUID.randomUUID().toString())
-                put(Claims.EXPIRATION, expire)
-                put(Claims.ISSUED_AT, iat)
-                put("uid", acct.userId)
-                put("sid", acct.session_id)
-                put("sig", content.sha256().toHex())
-                put("scp", "FULL")
-            })
+            .setClaims(
+                ConcurrentHashMap<String, Any>().apply {
+                    put(Claims.ID, UUID.randomUUID().toString())
+                    put(Claims.EXPIRATION, expire)
+                    put(Claims.ISSUED_AT, iat)
+                    put("uid", acct.userId)
+                    put("sid", acct.session_id)
+                    put("sig", content.sha256().toHex())
+                    put("scp", "FULL")
+                }
+            )
             .signWith(SignatureAlgorithm.RS512, key)
             .compact()
     }

@@ -40,9 +40,9 @@ class PermissionListFragment : BaseViewModelFragment<SettingViewModel>() {
             app: App,
             authorization: AuthorizationResponse
         ) = PermissionListFragment().withArgs {
-                putParcelable(ARGS_APP, app)
-                putParcelable(ARGS_AUTHORIZATION, authorization)
-            }
+            putParcelable(ARGS_APP, app)
+            putParcelable(ARGS_AUTHORIZATION, authorization)
+        }
     }
 
     private val app: App by lazy {
@@ -86,12 +86,15 @@ class PermissionListFragment : BaseViewModelFragment<SettingViewModel>() {
             }
             .setMessage(getString(R.string.setting_auth_cancel_msg, app.name))
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                viewModel.deauthApp(app.appId).autoDispose(stopScope).subscribe({
-                    deauthCallback?.onSuccess()
-                    activity?.onBackPressed()
-                }, {
-                    ErrorHandler.handleError(it)
-                })
+                viewModel.deauthApp(app.appId).autoDispose(stopScope).subscribe(
+                    {
+                        deauthCallback?.onSuccess()
+                        activity?.onBackPressed()
+                    },
+                    {
+                        ErrorHandler.handleError(it)
+                    }
+                )
                 dialog.dismiss()
             }.create().apply {
                 setOnShowListener {

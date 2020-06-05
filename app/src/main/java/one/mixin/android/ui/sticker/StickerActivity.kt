@@ -32,11 +32,15 @@ class StickerActivity : BaseActivity() {
         if (intent.hasExtra(ARGS_SHOW_ADD) && intent.getBooleanExtra(ARGS_SHOW_ADD, false)) {
             val url = intent.getStringExtra(ARGS_URL)
             require(url != null)
-            replaceFragment(StickerAddFragment.newInstance(url), R.id.container,
-                StickerAddFragment.TAG)
+            replaceFragment(
+                StickerAddFragment.newInstance(url), R.id.container,
+                StickerAddFragment.TAG
+            )
         } else {
-            replaceFragment(StickerManagementFragment.newInstance(intent.getStringExtra(ARGS_PERSONAL_ALBUM_ID)),
-                R.id.container, StickerManagementFragment.TAG)
+            replaceFragment(
+                StickerManagementFragment.newInstance(intent.getStringExtra(ARGS_PERSONAL_ALBUM_ID)),
+                R.id.container, StickerManagementFragment.TAG
+            )
         }
     }
 }

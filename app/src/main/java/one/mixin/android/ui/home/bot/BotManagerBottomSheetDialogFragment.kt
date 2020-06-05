@@ -21,7 +21,6 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_bot_manager.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -46,6 +45,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.bot.BotDock
+import javax.inject.Inject
 
 class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener, Injectable {
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)

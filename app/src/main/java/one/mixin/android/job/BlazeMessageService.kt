@@ -17,7 +17,6 @@ import androidx.room.InvalidationTracker
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
 import dagger.android.AndroidInjection
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -47,6 +46,7 @@ import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
 import org.jetbrains.anko.notificationManager
+import javax.inject.Inject
 
 class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
 
@@ -167,8 +167,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         builder.setContentIntent(pendingIntent)
 
         supportsOreo {
-            val channel = NotificationChannel(CHANNEL_NODE,
-                MixinApplication.get().getString(R.string.notification_node), NotificationManager.IMPORTANCE_LOW)
+            val channel = NotificationChannel(
+                CHANNEL_NODE,
+                MixinApplication.get().getString(R.string.notification_node), NotificationManager.IMPORTANCE_LOW
+            )
             channel.lockscreenVisibility = Notification.VISIBILITY_SECRET
             channel.setSound(null, null)
             channel.setShowBadge(false)
@@ -231,7 +233,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             val plainText = gson.toJson(
                 PlainJsonMessagePayload(
                     action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
-                    ackMessages = it)
+                    ackMessages = it
+                )
             )
             val encoded = plainText.toByteArray().base64Encode()
             val bm = createParamBlazeMessage(createPlainJsonParam(participantDao.joinedConversationId(accountId), accountId, encoded, sessionId))

@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CONVERSATION_PAGE_SIZE
 import one.mixin.android.api.request.CircleConversationPayload
@@ -30,6 +29,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import javax.inject.Inject
 
 class ConversationListViewModel @Inject
 internal constructor(
@@ -41,11 +41,12 @@ internal constructor(
 
     fun observeConversations(circleId: String?): LiveData<PagedList<ConversationItem>> {
         return LivePagedListBuilder(
-            messageRepository.conversations(circleId), PagedList.Config.Builder()
-            .setPrefetchDistance(CONVERSATION_PAGE_SIZE * 2)
-            .setPageSize(CONVERSATION_PAGE_SIZE)
-            .setEnablePlaceholders(true)
-            .build()
+            messageRepository.conversations(circleId),
+            PagedList.Config.Builder()
+                .setPrefetchDistance(CONVERSATION_PAGE_SIZE * 2)
+                .setPageSize(CONVERSATION_PAGE_SIZE)
+                .setEnablePlaceholders(true)
+                .build()
         ).build()
     }
 
@@ -56,17 +57,21 @@ internal constructor(
             val mutableList = mutableListOf<Participant>()
             val createAt = nowInUtc()
             participants.mapTo(mutableList) { Participant(conversationId, it.userId, "", createAt) }
-            val conversation = Conversation(c.conversationId, c.ownerId, c.category, c.name, c.iconUrl,
+            val conversation = Conversation(
+                c.conversationId, c.ownerId, c.category, c.name, c.iconUrl,
                 c.announcement, null, c.payType, createAt, null, null,
-                null, 0, ConversationStatus.START.ordinal, null)
+                null, 0, ConversationStatus.START.ordinal, null
+            )
             viewModelScope.launch {
                 messageRepository.insertConversation(conversation, mutableList)
             }
 
             val participantRequestList = mutableListOf<ParticipantRequest>()
             mutableList.mapTo(participantRequestList) { ParticipantRequest(it.userId, it.role) }
-            val request = ConversationRequest(conversationId, it.category!!, it.name, it.iconUrl,
-                it.announcement, participantRequestList)
+            val request = ConversationRequest(
+                conversationId, it.category!!, it.name, it.iconUrl,
+                it.announcement, participantRequestList
+            )
             jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))
         }
     }

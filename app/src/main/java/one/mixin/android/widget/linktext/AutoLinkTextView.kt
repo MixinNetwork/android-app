@@ -73,7 +73,8 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
                 clickableSpan,
                 autoLinkItem.startPoint,
                 autoLinkItem.endPoint,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
         }
 
         return spannableString
@@ -95,19 +96,25 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
             if (anAutoLinkMode == AutoLinkMode.MODE_PHONE) {
                 while (matcher.find()) {
                     if (matcher.group().length > MIN_PHONE_NUMBER_LENGTH)
-                        autoLinkItems.add(AutoLinkItem(
-                            matcher.start(),
-                            matcher.end(),
-                            matcher.group(),
-                            anAutoLinkMode))
+                        autoLinkItems.add(
+                            AutoLinkItem(
+                                matcher.start(),
+                                matcher.end(),
+                                matcher.group(),
+                                anAutoLinkMode
+                            )
+                        )
                 }
             } else {
                 while (matcher.find()) {
-                    autoLinkItems.add(AutoLinkItem(
-                        matcher.start(),
-                        matcher.end(),
-                        matcher.group(),
-                        anAutoLinkMode))
+                    autoLinkItems.add(
+                        AutoLinkItem(
+                            matcher.start(),
+                            matcher.end(),
+                            matcher.group(),
+                            anAutoLinkMode
+                        )
+                    )
                 }
             }
         }

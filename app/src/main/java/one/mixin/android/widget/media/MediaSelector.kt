@@ -99,8 +99,10 @@ class MediaSelector(
 
     private fun animateButtonIn(button: View, delay: Int) {
         val animation = AnimationSet(true)
-        val scale = ScaleAnimation(0.0f, 1.0f, 0.0f, 1.0f,
-            Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.0f)
+        val scale = ScaleAnimation(
+            0.0f, 1.0f, 0.0f, 1.0f,
+            Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.0f
+        )
 
         animation.addAnimation(scale)
         animation.interpolator = OvershootInterpolator(1f)
@@ -120,22 +122,26 @@ class MediaSelector(
 
     private fun animateWindowInCircular(anchor: View?, contentView: View) {
         val coordinates = getClickOrigin(anchor, contentView)
-        val animator = ViewAnimationUtils.createCircularReveal(contentView,
+        val animator = ViewAnimationUtils.createCircularReveal(
+            contentView,
             coordinates.first,
             coordinates.second,
             0f,
-            Math.max(contentView.width, contentView.height).toFloat())
+            Math.max(contentView.width, contentView.height).toFloat()
+        )
         animator.duration = ANIMATION_DURATION.toLong()
         animator.start()
     }
 
     private fun animateWindowOutCircular(anchor: View?, contentView: View) {
         val coordinates = getClickOrigin(anchor, contentView)
-        val animator = ViewAnimationUtils.createCircularReveal(getContentView(),
+        val animator = ViewAnimationUtils.createCircularReveal(
+            getContentView(),
             coordinates.first,
             coordinates.second,
             Math.max(getContentView().width, getContentView().height).toFloat(),
-            0f)
+            0f
+        )
 
         animator.duration = ANIMATION_DURATION.toLong()
         animator.addListener(object : Animator.AnimatorListener {

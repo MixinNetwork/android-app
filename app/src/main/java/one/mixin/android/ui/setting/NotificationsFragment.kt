@@ -70,17 +70,22 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
             return
         }
         editDialog {
-            titleText = this@NotificationsFragment.getString(if (isNotification) {
-                R.string.setting_notification_transfer_amount
-            } else {
-                R.string.wallet_transaction_tip_title_with_symbol
-            }, accountSymbol)
+            titleText = this@NotificationsFragment.getString(
+                if (isNotification) {
+                    R.string.setting_notification_transfer_amount
+                } else {
+                    R.string.wallet_transaction_tip_title_with_symbol
+                },
+                accountSymbol
+            )
             editText = amount
-            editHint = this@NotificationsFragment.getString(if (isNotification) {
-                R.string.wallet_transfer_amount
-            } else {
-                R.string.wallet_transaction_tip_title
-            })
+            editHint = this@NotificationsFragment.getString(
+                if (isNotification) {
+                    R.string.wallet_transfer_amount
+                } else {
+                    R.string.wallet_transaction_tip_title
+                }
+            )
             editInputType = InputType.TYPE_NUMBER_FLAG_DECIMAL + InputType.TYPE_CLASS_NUMBER
             allowEmpty = false
             rightAction = {
@@ -100,17 +105,19 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
 
         handleMixinResponse(
             invokeNetwork = {
-                viewModel.preferences(if (isNotification) {
-                    AccountUpdateRequest(
-                        fiatCurrency = Session.getFiatCurrency(),
-                        transferNotificationThreshold = threshold
-                    )
-                } else {
-                    AccountUpdateRequest(
-                        fiatCurrency = Session.getFiatCurrency(),
-                        transferConfirmationThreshold = threshold
-                    )
-                })
+                viewModel.preferences(
+                    if (isNotification) {
+                        AccountUpdateRequest(
+                            fiatCurrency = Session.getFiatCurrency(),
+                            transferNotificationThreshold = threshold
+                        )
+                    } else {
+                        AccountUpdateRequest(
+                            fiatCurrency = Session.getFiatCurrency(),
+                            transferConfirmationThreshold = threshold
+                        )
+                    }
+                )
             },
             switchContext = Dispatchers.IO,
             successBlock = {
@@ -137,15 +144,19 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
     private fun refreshNotification(threshold: Double) {
         if (!isAdded) return
         transfer_tv.text = "$accountSymbol$threshold"
-        transfer_desc_tv.text = getString(R.string.setting_notification_transfer_desc,
-            "$accountSymbol$threshold")
+        transfer_desc_tv.text = getString(
+            R.string.setting_notification_transfer_desc,
+            "$accountSymbol$threshold"
+        )
     }
 
     @SuppressLint("SetTextI18n")
     private fun refreshLargeAmount(largeAmount: Double) {
         if (!isAdded) return
         large_amount_tv.text = "$accountSymbol$largeAmount"
-        large_amount_desc_tv.text = getString(R.string.setting_transfer_large_summary,
-            "$accountSymbol$largeAmount")
+        large_amount_desc_tv.text = getString(
+            R.string.setting_transfer_large_summary,
+            "$accountSymbol$largeAmount"
+        )
     }
 }

@@ -20,16 +20,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.os.EnvironmentCompat
 import androidx.exifinterface.media.ExifInterface
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.LinkedList
-import java.util.Locale
 import one.mixin.android.Constants.Storage.AUDIO
 import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
@@ -41,6 +31,16 @@ import one.mixin.android.util.blurhash.BlurHashDecoder
 import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.vo.StorageUsage
 import one.mixin.android.widget.gallery.MimeType
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.LinkedList
+import java.util.Locale
 
 private fun isAvailable(): Boolean {
     val state = Environment.getExternalStorageState()
@@ -397,11 +397,13 @@ fun File.createEmptyTemp(conversationId: String, messageId: String, noMedia: Boo
 fun File.createDocumentTemp(conversationId: String, messageId: String, type: String?, noMedia: Boolean = true): File {
     val path = generateConversationPath(conversationId)
     return path.newTempFile(
-        messageId, if (type == null) {
+        messageId,
+        if (type == null) {
             ""
         } else {
             ".$type"
-        }, noMedia
+        },
+        noMedia
     )
 }
 

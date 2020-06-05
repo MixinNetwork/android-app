@@ -11,7 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -36,6 +35,7 @@ import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_
 import one.mixin.android.widget.RLottieDrawable
 import one.mixin.android.widget.RLottieImageView
 import org.jetbrains.anko.dip
+import javax.inject.Inject
 
 class StickerFragment : BaseFragment() {
 
@@ -95,14 +95,20 @@ class StickerFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (type == TYPE_NORMAL && albumId != null) {
-            stickerViewModel.observeStickers(albumId!!).observe(viewLifecycleOwner, Observer { list ->
-                list?.let { updateStickers(it) }
-            })
+            stickerViewModel.observeStickers(albumId!!).observe(
+                viewLifecycleOwner,
+                Observer { list ->
+                    list?.let { updateStickers(it) }
+                }
+            )
         } else {
             if (type == TYPE_RECENT) {
-                stickerViewModel.recentStickers().observe(viewLifecycleOwner, Observer { r ->
-                    r?.let { updateStickers(r) }
-                })
+                stickerViewModel.recentStickers().observe(
+                    viewLifecycleOwner,
+                    Observer { r ->
+                        r?.let { updateStickers(r) }
+                    }
+                )
             } else {
                 lifecycleScope.launch {
                     if (!isAdded) return@launch
@@ -110,14 +116,20 @@ class StickerFragment : BaseFragment() {
                     personalAlbumId = stickerViewModel.getPersonalAlbums()?.albumId
                     if (personalAlbumId == null) { // not add any personal sticker yet
                         stickerViewModel.observePersonalStickers()
-                            .observe(viewLifecycleOwner, Observer { list ->
-                                list?.let { updateStickers(it) }
-                            })
+                            .observe(
+                                viewLifecycleOwner,
+                                Observer { list ->
+                                    list?.let { updateStickers(it) }
+                                }
+                            )
                     } else {
                         stickerViewModel.observeStickers(personalAlbumId!!)
-                            .observe(viewLifecycleOwner, Observer { list ->
-                                list?.let { updateStickers(it) }
-                            })
+                            .observe(
+                                viewLifecycleOwner,
+                                Observer { list ->
+                                    list?.let { updateStickers(it) }
+                                }
+                            )
                     }
                 }
             }
@@ -199,7 +211,7 @@ class StickerFragment : BaseFragment() {
                                 item.playAnimation()
                                 item.setAutoRepeat(true)
                             }
-                    })
+                        })
                 } else {
                     item.loadSticker(s.assetUrl, s.assetType)
                 }

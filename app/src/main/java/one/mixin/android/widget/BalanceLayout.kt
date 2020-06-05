@@ -68,10 +68,14 @@ class BalanceLayout : ViewGroup {
         } else {
             balanceTv.layout.width
         }
-        measureChild(balanceTv, MeasureSpec.makeMeasureSpec(maxBalanceWidth, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(balanceTv.layout.height, MeasureSpec.UNSPECIFIED))
-        measureChild(symbolTv, MeasureSpec.makeMeasureSpec(symbolMeasureWidth, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(symbolTv.layout.height, MeasureSpec.EXACTLY))
+        measureChild(
+            balanceTv, MeasureSpec.makeMeasureSpec(maxBalanceWidth, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(balanceTv.layout.height, MeasureSpec.UNSPECIFIED)
+        )
+        measureChild(
+            symbolTv, MeasureSpec.makeMeasureSpec(symbolMeasureWidth, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(symbolTv.layout.height, MeasureSpec.EXACTLY)
+        )
         setMeasuredDimension(widthMeasureSpec, MeasureSpec.makeMeasureSpec(balanceTv.measuredHeight, MeasureSpec.EXACTLY))
     }
 

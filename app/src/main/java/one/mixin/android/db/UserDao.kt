@@ -53,23 +53,27 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
     suspend fun suspendFindContactByConversationId(conversationId: String): User?
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM users 
         WHERE user_id != :id 
         AND relationship = 'FRIEND' 
         AND (full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
         ORDER BY 
             full_name = :username COLLATE NOCASE OR identity_number = :identityNumber COLLATE NOCASE DESC
-        """)
+        """
+    )
     suspend fun fuzzySearchUser(username: String, identityNumber: String, id: String): List<User>
 
-    @Query("""
+    @Query(
+        """
         SELECT u.* FROM participants p, users u
         WHERE u.user_id != :id 
         AND p.conversation_id = :conversationId AND p.user_id = u.user_id
         AND (u.full_name LIKE '%' || :username || '%' $ESCAPE_SUFFIX OR u.identity_number like '%' || :identityNumber || '%' $ESCAPE_SUFFIX)
         ORDER BY u.full_name = :username COLLATE NOCASE OR u.identity_number = :identityNumber COLLATE NOCASE DESC
-        """)
+        """
+    )
     suspend fun fuzzySearchGroupUser(conversationId: String, username: String, identityNumber: String, id: String): List<User>
 
     @Query("SELECT u.* FROM participants p, users u WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id AND u.user_id != :id")
@@ -79,8 +83,10 @@ interface UserDao : BaseDao<User> {
     fun updateUserRelationship(id: String, relationship: String)
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.relationship FROM participants p, users u " +
-        "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id")
+    @Query(
+        "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.relationship FROM participants p, users u " +
+            "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id"
+    )
     fun getGroupParticipants(conversationId: String): LiveData<List<User>>
 
     @Query("UPDATE users SET mute_until = :muteUntil WHERE user_id = :id")
@@ -93,10 +99,12 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT u.* FROM users u INNER JOIN conversations c ON c.owner_id = u.user_id WHERE c.category = 'CONTACT' AND u.app_id IS NULL")
     fun findContactUsers(): LiveData<List<User>>
 
-    @Query("""
+    @Query(
+        """
         SELECT u.user_id FROM users u INNER JOIN participants p ON p.user_id = u.user_id 
         WHERE p.conversation_id = :conversationId AND u.identity_number = :appNumber
-        """)
+        """
+    )
     suspend fun findUserIdByAppNumber(conversationId: String, appNumber: String): String?
 
     @Query("SELECT * FROM users WHERE user_id IN (:userIds)")

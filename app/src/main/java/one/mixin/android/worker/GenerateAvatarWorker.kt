@@ -18,8 +18,6 @@ import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
-import java.io.File
-import java.util.concurrent.TimeUnit
 import one.mixin.android.R
 import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.extension.CodeType
@@ -28,6 +26,8 @@ import one.mixin.android.extension.saveGroupAvatar
 import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView
 import org.jetbrains.anko.dip
+import java.io.File
+import java.util.concurrent.TimeUnit
 
 class GenerateAvatarWorker @AssistedInject constructor(
     @Assisted context: Context,

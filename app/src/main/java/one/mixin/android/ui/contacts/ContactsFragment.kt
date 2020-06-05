@@ -18,8 +18,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
-import java.util.Collections
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_contacts.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
@@ -42,6 +40,8 @@ import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.worker.RefreshContactWorker
+import java.util.Collections
+import javax.inject.Inject
 
 class ContactsFragment : BaseFragment() {
 
@@ -90,36 +90,43 @@ class ContactsFragment : BaseFragment() {
         title_view.right_animator.setOnClickListener { SettingActivity.show(requireContext()) }
 
         if (hasContactPermission() &&
-            !defaultSharedPreferences.getBoolean(PREF_DELETE_MOBILE_CONTACTS, false)) {
+            !defaultSharedPreferences.getBoolean(PREF_DELETE_MOBILE_CONTACTS, false)
+        ) {
             fetchContacts()
         }
 
-        contactsViewModel.findContacts().observe(viewLifecycleOwner, Observer { users ->
-            if (users != null && users.isNotEmpty()) {
-                if (!hasContactPermission()) {
-                    contactAdapter.friendSize = users.size
-                    contactAdapter.users = users
-                } else {
-                    val newList = arrayListOf<User>().apply {
-                        addAll(users)
-                        addAll(contactAdapter.users.filter { it.relationship != UserRelationship.FRIEND.name })
+        contactsViewModel.findContacts().observe(
+            viewLifecycleOwner,
+            Observer { users ->
+                if (users != null && users.isNotEmpty()) {
+                    if (!hasContactPermission()) {
+                        contactAdapter.friendSize = users.size
+                        contactAdapter.users = users
+                    } else {
+                        val newList = arrayListOf<User>().apply {
+                            addAll(users)
+                            addAll(contactAdapter.users.filter { it.relationship != UserRelationship.FRIEND.name })
+                        }
+                        contactAdapter.friendSize = users.size
+                        contactAdapter.users = newList
                     }
-                    contactAdapter.friendSize = users.size
-                    contactAdapter.users = newList
+                } else {
+                    if (!hasContactPermission()) {
+                        contactAdapter.users = Collections.emptyList()
+                    }
                 }
-            } else {
-                if (!hasContactPermission()) {
-                    contactAdapter.users = Collections.emptyList()
-                }
-            }
-            contactAdapter.notifyDataSetChanged()
-        })
-        contactsViewModel.findSelf().observe(viewLifecycleOwner, Observer { self ->
-            if (self != null) {
-                contactAdapter.me = self
                 contactAdapter.notifyDataSetChanged()
             }
-        })
+        )
+        contactsViewModel.findSelf().observe(
+            viewLifecycleOwner,
+            Observer { self ->
+                if (self != null) {
+                    contactAdapter.me = self
+                    contactAdapter.notifyDataSetChanged()
+                }
+            }
+        )
     }
 
     private fun hasContactPermission() =
@@ -131,26 +138,32 @@ class ContactsFragment : BaseFragment() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(Schedulers.io())
             .autoDispose(stopScope)
-            .subscribe({ contacts ->
-                val mutableList = mutableListOf<User>()
-                for (item in contacts) {
-                    item.phoneNumbers.mapTo(mutableList) {
-                        User("",
-                            "", "contact", "", item.displayName,
-                            "", it, false, "", null)
+            .subscribe(
+                { contacts ->
+                    val mutableList = mutableListOf<User>()
+                    for (item in contacts) {
+                        item.phoneNumbers.mapTo(mutableList) {
+                            User(
+                                "",
+                                "", "contact", "", item.displayName,
+                                "", it, false, "", null
+                            )
+                        }
                     }
-                }
-                mutableList.addAll(0, contactAdapter.users)
-                contactAdapter.users = mutableList
-                contactAdapter.notifyDataSetChanged()
-            }, { })
+                    mutableList.addAll(0, contactAdapter.users)
+                    contactAdapter.users = mutableList
+                    contactAdapter.notifyDataSetChanged()
+                },
+                { }
+            )
         jobManager.addJobInBackground(UploadContactsJob())
     }
 
     private val mContactListener: ContactsAdapter.ContactListener = object : ContactsAdapter.ContactListener {
 
         override fun onHeaderRl() {
-            ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager,
+            ProfileBottomSheetDialogFragment.newInstance().showNow(
+                parentFragmentManager,
                 UserBottomSheetDialogFragment.TAG
             )
         }

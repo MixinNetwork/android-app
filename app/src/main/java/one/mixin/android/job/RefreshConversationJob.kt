@@ -10,7 +10,8 @@ import one.mixin.android.vo.SYSTEM_USER
 class RefreshConversationJob(val conversationId: String) :
     MixinJob(
         Params(PRIORITY_UI_HIGH).groupBy("refresh_conversation")
-            .requireNetwork().persist(), conversationId
+            .requireNetwork().persist(),
+        conversationId
     ) {
 
     override fun cancel() {

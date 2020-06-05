@@ -3,8 +3,6 @@ package one.mixin.android.job
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
-import java.io.FileInputStream
-import java.util.concurrent.TimeUnit
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
@@ -16,6 +14,8 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.widget.gallery.MimeType
+import java.io.FileInputStream
+import java.util.concurrent.TimeUnit
 
 class SendGiphyJob(
     private val conversationId: String,
@@ -35,9 +35,11 @@ class SendGiphyJob(
     }
 
     override fun onAdded() {
-        val message = createMediaMessage(messageId, conversationId, senderId, category, null, url,
+        val message = createMediaMessage(
+            messageId, conversationId, senderId, category, null, url,
             MimeType.GIF.toString(), 0, width, height, previewUrl, null, null,
-            time, MediaStatus.PENDING, MessageStatus.SENDING.name)
+            time, MediaStatus.PENDING, MessageStatus.SENDING.name
+        )
         messageDao.insert(message)
     }
 
@@ -48,9 +50,11 @@ class SendGiphyJob(
         file.copyFromInputStream(FileInputStream(f))
         val size = getImageSize(file)
         val thumbnail = file.blurThumbnail(size)?.bitmap2String()
-        val message = createMediaMessage(messageId, conversationId, senderId, category, null, Uri.fromFile(file).toString(),
+        val message = createMediaMessage(
+            messageId, conversationId, senderId, category, null, Uri.fromFile(file).toString(),
             MimeType.GIF.toString(), file.length(), width, height, thumbnail, null, null,
-            time, MediaStatus.PENDING, MessageStatus.SENDING.name)
+            time, MediaStatus.PENDING, MessageStatus.SENDING.name
+        )
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 }

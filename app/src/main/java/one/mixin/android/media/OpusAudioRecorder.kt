@@ -8,8 +8,6 @@ import android.media.MediaRecorder
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import androidx.core.content.getSystemService
-import java.io.File
-import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -18,6 +16,8 @@ import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.vibrate
 import one.mixin.android.util.DispatchQueue
+import java.io.File
+import java.util.UUID
 
 class OpusAudioRecorder private constructor(private val ctx: Context) {
     companion object {
@@ -135,16 +135,18 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                     } catch (e: Exception) {
                     }
 
-                    fileEncodingQueue.postRunnable(Runnable encodingRunnable@{
-                        if (callStop) return@encodingRunnable
+                    fileEncodingQueue.postRunnable(
+                        Runnable encodingRunnable@{
+                            if (callStop) return@encodingRunnable
 
-                        writeFrame(shortArray, len)
-                        recordTimeCount += len / 16
+                            writeFrame(shortArray, len)
+                            recordTimeCount += len / 16
 
-                        if (recordTimeCount >= MAX_RECORD_DURATION) {
-                            stopRecording(true, false)
+                            if (recordTimeCount >= MAX_RECORD_DURATION) {
+                                stopRecording(true, false)
+                            }
                         }
-                    })
+                    )
                     recordQueue.postRunnable(recordRunnable)
                 } else {
                     stopRecordingInternal(sendAfterDone)
@@ -212,19 +214,21 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
         if (vibrate) {
             ctx.vibrate(longArrayOf(0, 10))
         }
-        recordQueue.postRunnable(Runnable {
-            audioRecord?.let { audioRecord ->
-                try {
-                    sendAfterDone = send
-                    if (audioRecord.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
-                        audioRecord.stop()
+        recordQueue.postRunnable(
+            Runnable {
+                audioRecord?.let { audioRecord ->
+                    try {
+                        sendAfterDone = send
+                        if (audioRecord.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
+                            audioRecord.stop()
+                        }
+                    } catch (e: Exception) {
+                        recordingAudioFile?.delete()
                     }
-                } catch (e: Exception) {
-                    recordingAudioFile?.delete()
+                    stopRecordingInternal(send)
                 }
-                stopRecordingInternal(send)
             }
-        })
+        )
     }
 
     fun stop() {
@@ -236,18 +240,20 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
         callStop = true
         // if not send no need to stopping record after all encoding runnable run completed.
         if (send) {
-            fileEncodingQueue.postRunnable(Runnable {
-                stopRecord()
-                val duration = recordTimeCount
-                val waveForm = getWaveform2(recordSamples, recordSamples.size)
-                GlobalScope.launch(Dispatchers.Main) {
-                    if (recordingAudioFile != null) {
-                        callback?.sendAudio(messageId!!, recordingAudioFile!!, duration, waveForm)
+            fileEncodingQueue.postRunnable(
+                Runnable {
+                    stopRecord()
+                    val duration = recordTimeCount
+                    val waveForm = getWaveform2(recordSamples, recordSamples.size)
+                    GlobalScope.launch(Dispatchers.Main) {
+                        if (recordingAudioFile != null) {
+                            callback?.sendAudio(messageId!!, recordingAudioFile!!, duration, waveForm)
+                        }
+                        callback = null
+                        recordingAudioFile = null
                     }
-                    callback = null
-                    recordingAudioFile = null
                 }
-            })
+            )
         }
         state = STATE_IDLE
         try {

@@ -6,8 +6,6 @@ import android.util.Log
 import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import java.io.File
-import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -107,6 +105,8 @@ import org.whispersystems.libsignal.DuplicateMessageException
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
+import java.io.File
+import java.util.UUID
 
 class DecryptMessage : Injector() {
 
@@ -130,8 +130,10 @@ class DecryptMessage : Injector() {
         try {
             if (data.category.isIllegalMessageCategory()) {
                 if (data.conversationId != SYSTEM_USER && data.conversationId != Session.getAccountId()) {
-                    val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
-                        data.data, data.createdAt, MessageStatus.UNKNOWN.name)
+                    val message = createMessage(
+                        data.messageId, data.conversationId, data.userId, data.category,
+                        data.data, data.createdAt, MessageStatus.UNKNOWN.name
+                    )
                     database.insertAndNotifyConversation(message)
                 }
                 updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
@@ -173,8 +175,10 @@ class DecryptMessage : Injector() {
     }
 
     private fun processAppButton(data: BlazeMessageData) {
-        val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
-            String(Base64.decode(data.data)), data.createdAt, data.status)
+        val message = createMessage(
+            data.messageId, data.conversationId, data.userId, data.category,
+            String(Base64.decode(data.data)), data.createdAt, data.status
+        )
         val appButton = gson.fromJson(message.content, Array<AppButtonData>::class.java)
         for (item in appButton) {
             ColorUtil.parseColor(item.color.trim())
@@ -185,8 +189,10 @@ class DecryptMessage : Injector() {
     }
 
     private fun processAppCard(data: BlazeMessageData) {
-        val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
-            String(Base64.decode(data.data)), data.createdAt, data.status)
+        val message = createMessage(
+            data.messageId, data.conversationId, data.userId, data.category,
+            String(Base64.decode(data.data)), data.createdAt, data.status
+        )
         val appCardData = gson.fromJson(message.content, AppCardData::class.java)
         appCardData.appId?.let { id ->
             runBlocking {
@@ -296,8 +302,12 @@ class DecryptMessage : Injector() {
                         val needResendMessage = messageDao.findMessageById(id)
                         if (needResendMessage != null && needResendMessage.category != MessageCategory.MESSAGE_RECALL.name) {
                             needResendMessage.id = UUID.randomUUID().toString()
-                            jobManager.addJobInBackground(SendMessageJob(needResendMessage,
-                                ResendData(data.userId, id, data.sessionId), true, messagePriority = PRIORITY_SEND_ATTACHMENT_MESSAGE))
+                            jobManager.addJobInBackground(
+                                SendMessageJob(
+                                    needResendMessage,
+                                    ResendData(data.userId, id, data.sessionId), true, messagePriority = PRIORITY_SEND_ATTACHMENT_MESSAGE
+                                )
+                            )
                             resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId, 1, nowInUtc()))
                         } else {
                             resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId, 0, nowInUtc()))
@@ -377,8 +387,10 @@ class DecryptMessage : Injector() {
                             quoteMe = true
                             messageMentionDao.insert(MessageMention(data.messageId, data.conversationId, "", false))
                         }
-                        createReplyTextMessage(data.messageId, data.conversationId, data.userId, data.category,
-                            plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson())
+                        createReplyTextMessage(
+                            data.messageId, data.conversationId, data.userId, data.category,
+                            plain, data.createdAt, data.status, quoteMessageItem.messageId, quoteMessageItem.toJson()
+                        )
                     }
                 }
                 val (mentions, mentionMe) = parseMentionData(plain, data.messageId, data.conversationId, userDao, messageMentionDao, data.userId)
@@ -389,8 +401,10 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_POST") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
-                val message = createPostMessage(data.messageId, data.conversationId, data.userId, data.category, plain,
-                    plain.postOptimize(), data.createdAt, data.status)
+                val message = createPostMessage(
+                    data.messageId, data.conversationId, data.userId, data.category, plain,
+                    plain.postOptimize(), data.createdAt, data.status
+                )
                 database.insertAndNotifyConversation(message)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
                 sendNotificationJob(message, data.source)
@@ -434,11 +448,13 @@ class DecryptMessage : Injector() {
                 }
 
                 val message = generateMessage(data) { quoteMessageItem ->
-                    createVideoMessage(data.messageId, data.conversationId, data.userId,
+                    createVideoMessage(
+                        data.messageId, data.conversationId, data.userId,
                         data.category, mediaData.attachmentId, mediaData.name, mediaData.mimeType, mediaData.duration,
                         mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.mimeType,
                         mediaData.size, data.createdAt, mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
-                        quoteMessageItem?.messageId, quoteMessageItem.toJson())
+                        quoteMessageItem?.messageId, quoteMessageItem.toJson()
+                    )
                 }
 
                 database.insertAndNotifyConversation(message)
@@ -451,11 +467,13 @@ class DecryptMessage : Injector() {
                 val decoded = Base64.decode(plainText)
                 val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
                 val message = generateMessage(data) { quoteMessageItem ->
-                    createAttachmentMessage(data.messageId, data.conversationId, data.userId,
+                    createAttachmentMessage(
+                        data.messageId, data.conversationId, data.userId,
                         data.category, mediaData.attachmentId, mediaData.name, null,
                         mediaData.mimeType, mediaData.size, data.createdAt,
                         mediaData.key, mediaData.digest, MediaStatus.CANCELED, data.status,
-                        quoteMessageItem?.messageId, quoteMessageItem.toJson())
+                        quoteMessageItem?.messageId, quoteMessageItem.toJson()
+                    )
                 }
 
                 database.insertAndNotifyConversation(message)
@@ -469,10 +487,12 @@ class DecryptMessage : Injector() {
                 val decoded = Base64.decode(plainText)
                 val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
                 val message = generateMessage(data) { quoteMessageItem ->
-                    createAudioMessage(data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
+                    createAudioMessage(
+                        data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
                         data.category, mediaData.size, null, mediaData.duration.toString(), data.createdAt, mediaData.waveform,
                         mediaData.key, mediaData.digest, MediaStatus.PENDING, data.status,
-                        quoteMessageItem?.messageId, quoteMessageItem.toJson())
+                        quoteMessageItem?.messageId, quoteMessageItem.toJson()
+                    )
                 }
                 database.insertAndNotifyConversation(message)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -484,8 +504,10 @@ class DecryptMessage : Injector() {
                 val message = if (mediaData.stickerId == null) {
                     val sticker = stickerDao.getStickerByAlbumIdAndName(mediaData.albumId!!, mediaData.name!!)
                     if (sticker != null) {
-                        createStickerMessage(data.messageId, data.conversationId, data.userId, data.category, null,
-                            mediaData.albumId, sticker.stickerId, mediaData.name, data.status, data.createdAt)
+                        createStickerMessage(
+                            data.messageId, data.conversationId, data.userId, data.category, null,
+                            mediaData.albumId, sticker.stickerId, mediaData.name, data.status, data.createdAt
+                        )
                     } else {
                         return
                     }
@@ -494,8 +516,10 @@ class DecryptMessage : Injector() {
                     if (sticker == null) {
                         jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
                     }
-                    createStickerMessage(data.messageId, data.conversationId, data.userId, data.category, null,
-                        mediaData.albumId, mediaData.stickerId, mediaData.name, data.status, data.createdAt)
+                    createStickerMessage(
+                        data.messageId, data.conversationId, data.userId, data.category, null,
+                        mediaData.albumId, mediaData.stickerId, mediaData.name, data.status, data.createdAt
+                    )
                 }
                 database.insertAndNotifyConversation(message)
                 sendNotificationJob(message, data.source)
@@ -504,9 +528,11 @@ class DecryptMessage : Injector() {
                 val decoded = Base64.decode(plainText)
                 val contactData = gson.fromJson(String(decoded), ContactMessagePayload::class.java)
                 val message = generateMessage(data) { quoteMessageItem ->
-                    createContactMessage(data.messageId, data.conversationId, data.userId, data.category,
+                    createContactMessage(
+                        data.messageId, data.conversationId, data.userId, data.category,
                         plainText, contactData.userId, data.status, data.createdAt,
-                        quoteMessageItem?.messageId, quoteMessageItem.toJson())
+                        quoteMessageItem?.messageId, quoteMessageItem.toJson()
+                    )
                 }
                 database.insertAndNotifyConversation(message)
                 syncUser(contactData.userId)
@@ -519,8 +545,10 @@ class DecryptMessage : Injector() {
                     updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
                     return
                 }
-                val message = createLiveMessage(data.messageId, data.conversationId, data.userId, data.category, null,
-                    liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, data.createdAt)
+                val message = createLiveMessage(
+                    data.messageId, data.conversationId, data.userId, data.category, null,
+                    liveData.width, liveData.height, liveData.url, liveData.thumbUrl, data.status, data.createdAt
+                )
                 database.insertAndNotifyConversation(message)
                 sendNotificationJob(message, data.source)
             }
@@ -549,8 +577,10 @@ class DecryptMessage : Injector() {
     }
 
     private fun processSystemSnapshotMessage(data: BlazeMessageData, snapshot: Snapshot) {
-        val message = createMessage(data.messageId, data.conversationId, data.userId, data.category, "",
-            data.createdAt, data.status, snapshot.type, null, snapshot.snapshotId)
+        val message = createMessage(
+            data.messageId, data.conversationId, data.userId, data.category, "",
+            data.createdAt, data.status, snapshot.type, null, snapshot.snapshotId
+        )
         snapshot.transactionHash?.let {
             snapshotDao.deletePendingSnapshotByHash(it)
         }
@@ -571,8 +601,10 @@ class DecryptMessage : Injector() {
         if (userId == SYSTEM_USER && userDao.findUser(userId) == null) {
             userDao.insert(createSystemUser())
         }
-        val message = createMessage(data.messageId, data.conversationId, userId, data.category, "",
-            data.createdAt, data.status, systemMessage.action, systemMessage.participantId)
+        val message = createMessage(
+            data.messageId, data.conversationId, userId, data.category, "",
+            data.createdAt, data.status, systemMessage.action, systemMessage.participantId
+        )
 
         val accountId = Session.getAccountId()
         if (systemMessage.action == SystemConversationAction.ADD.name || systemMessage.action == SystemConversationAction.JOIN.name) {
@@ -658,18 +690,21 @@ class DecryptMessage : Injector() {
         val deviceId = data.sessionId.getDeviceId()
         val (keyType, cipherText, resendMessageId) = SignalProtocol.decodeMessageData(data.data)
         try {
-            signalProtocol.decrypt(data.conversationId, data.userId, keyType, cipherText, data.category, data.sessionId, DecryptionCallback {
-                if (data.category != MessageCategory.SIGNAL_KEY.name) {
-                    val plaintext = String(it)
-                    if (resendMessageId != null) {
-                        processRedecryptMessage(data, resendMessageId, plaintext)
-                        updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-                        messageHistoryDao.insert(MessageHistory(data.messageId))
-                    } else {
-                        processDecryptSuccess(data, plaintext)
+            signalProtocol.decrypt(
+                data.conversationId, data.userId, keyType, cipherText, data.category, data.sessionId,
+                DecryptionCallback {
+                    if (data.category != MessageCategory.SIGNAL_KEY.name) {
+                        val plaintext = String(it)
+                        if (resendMessageId != null) {
+                            processRedecryptMessage(data, resendMessageId, plaintext)
+                            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+                            messageHistoryDao.insert(MessageHistory(data.messageId))
+                        } else {
+                            processDecryptSuccess(data, plaintext)
+                        }
                     }
                 }
-            })
+            )
 
             val address = SignalProtocolAddress(data.userId, deviceId)
             val status = ratchetSenderKeyDao.getRatchetSenderKey(data.conversationId, address.toString())?.status
@@ -730,9 +765,14 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.SIGNAL_STICKER.name ||
             data.category == MessageCategory.SIGNAL_CONTACT.name ||
             data.category == MessageCategory.SIGNAL_LOCATION.name ||
-            data.category == MessageCategory.SIGNAL_POST.name) {
-            database.insertAndNotifyConversation(createMessage(data.messageId, data.conversationId,
-                data.userId, data.category, data.data, data.createdAt, MessageStatus.FAILED.name))
+            data.category == MessageCategory.SIGNAL_POST.name
+        ) {
+            database.insertAndNotifyConversation(
+                createMessage(
+                    data.messageId, data.conversationId,
+                    data.userId, data.category, data.data, data.createdAt, MessageStatus.FAILED.name
+                )
+            )
         }
     }
 
@@ -749,13 +789,16 @@ class DecryptMessage : Injector() {
         } else if (data.category == MessageCategory.SIGNAL_IMAGE.name ||
             data.category == MessageCategory.SIGNAL_VIDEO.name ||
             data.category == MessageCategory.SIGNAL_AUDIO.name ||
-            data.category == MessageCategory.SIGNAL_DATA.name) {
+            data.category == MessageCategory.SIGNAL_DATA.name
+        ) {
             val decoded = Base64.decode(plainText)
             val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
             val duration = if (mediaData.duration == null) null else mediaData.duration.toString()
-            messageDao.updateAttachmentMessage(messageId, mediaData.attachmentId, mediaData.mimeType, mediaData.size,
+            messageDao.updateAttachmentMessage(
+                messageId, mediaData.attachmentId, mediaData.mimeType, mediaData.size,
                 mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name, mediaData.waveform, duration,
-                mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, data.status)
+                mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, data.status
+            )
             if (data.category == MessageCategory.SIGNAL_IMAGE.name || data.category == MessageCategory.SIGNAL_AUDIO.name) {
                 val message = messageDao.findMessageById(messageId)!!
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
@@ -788,10 +831,12 @@ class DecryptMessage : Injector() {
     }
 
     private fun requestResendKey(conversationId: String, recipientId: String, messageId: String, sessionId: String?) {
-        val plainText = gson.toJson(PlainJsonMessagePayload(
-            action = PlainDataAction.RESEND_KEY.name,
-            messageId = messageId
-        ))
+        val plainText = gson.toJson(
+            PlainJsonMessagePayload(
+                action = PlainDataAction.RESEND_KEY.name,
+                messageId = messageId
+            )
+        )
         val encoded = plainText.toByteArray().base64Encode()
         val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, recipientId, encoded, sessionId))
         jobManager.addJobInBackground(SendPlaintextJob(bm))

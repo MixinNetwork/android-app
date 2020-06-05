@@ -33,13 +33,15 @@ class GroupActivity : BlazeBaseActivity() {
         const val INFO = 1
 
         fun show(context: Context, type: Int = CREATE, conversationId: String? = null, expand: Boolean = false) {
-            context.startActivity(Intent(context, GroupActivity::class.java).apply {
-                putExtra(ARGS_TYPE, type)
-                putExtra(ARGS_EXPAND, expand)
-                conversationId?.let {
-                    putExtra(ARGS_CONVERSATION_ID, it)
+            context.startActivity(
+                Intent(context, GroupActivity::class.java).apply {
+                    putExtra(ARGS_TYPE, type)
+                    putExtra(ARGS_EXPAND, expand)
+                    conversationId?.let {
+                        putExtra(ARGS_CONVERSATION_ID, it)
+                    }
                 }
-            })
+            )
         }
     }
 

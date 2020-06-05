@@ -12,10 +12,10 @@ import androidx.core.view.marginBottom
 import androidx.core.view.marginTop
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
-import kotlin.math.abs
-import kotlin.math.min
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
+import kotlin.math.abs
+import kotlin.math.min
 
 class FloatingLayout @JvmOverloads constructor(
     context: Context,
@@ -59,7 +59,8 @@ class FloatingLayout @JvmOverloads constructor(
             MotionEvent.ACTION_MOVE -> {
                 val moveY = ev.y - lastY
                 if ((moveY > 0 && mode == Mode.MAX && child.canScrollVertically(-1)) ||
-                    (moveY < 0 && mode == Mode.MAX)) {
+                    (moveY < 0 && mode == Mode.MAX)
+                ) {
                     return false
                 }
                 if (abs(moveY) > 0) {

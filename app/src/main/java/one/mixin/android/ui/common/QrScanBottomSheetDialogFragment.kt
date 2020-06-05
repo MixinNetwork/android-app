@@ -11,7 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.bottom_qr_scan.view.*
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
@@ -23,6 +22,7 @@ import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
+import java.util.concurrent.TimeUnit
 
 class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {

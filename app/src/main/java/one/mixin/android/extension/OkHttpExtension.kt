@@ -17,33 +17,37 @@ fun HttpUrl.cutOut(): String {
 }
 
 fun Request.show(): String {
-    return ("Request{method=" +
-        this.method +
-        ", url=" +
-        this.url +
-        ", tags=" +
-        this.tag() +
-        ", headers=" +
-        this.headers +
-        ", body=" +
-        this.body +
-        '}'.toString())
+    return (
+        "Request{method=" +
+            this.method +
+            ", url=" +
+            this.url +
+            ", tags=" +
+            this.tag() +
+            ", headers=" +
+            this.headers +
+            ", body=" +
+            this.body +
+            '}'.toString()
+        )
 }
 
 fun Response.show(): String {
-    return ("Response{protocol=" +
-        this.protocol +
-        ", code=" +
-        this.code +
-        ", message=" +
-        this.message +
-        ", headers=" +
-        this.headers +
-        ", networkResponse=" +
-        this.networkResponse +
-        ", cacheResponse=" +
-        this.cacheResponse +
-        ", priorResponse=" +
-        this.priorResponse +
-        '}'.toString())
+    return (
+        "Response{protocol=" +
+            this.protocol +
+            ", code=" +
+            this.code +
+            ", message=" +
+            this.message +
+            ", headers=" +
+            this.headers +
+            ", networkResponse=" +
+            this.networkResponse +
+            ", cacheResponse=" +
+            this.cacheResponse +
+            ", priorResponse=" +
+            this.priorResponse +
+            '}'.toString()
+        )
 }

@@ -5,7 +5,6 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import javax.inject.Inject
 import one.mixin.android.R
 import one.mixin.android.extension.checkUserOrApp
 import one.mixin.android.extension.toast
@@ -17,6 +16,7 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import javax.inject.Inject
 
 class UrlInterpreterActivity : BaseActivity() {
     companion object {

@@ -11,7 +11,6 @@ import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_confirm.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,6 +32,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.util.UnescapeIgnorePlusUrlQuerySanitizer
 import one.mixin.android.widget.BottomSheet
 import org.whispersystems.libsignal.ecc.Curve
+import javax.inject.Inject
 
 class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
 
@@ -103,8 +103,10 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
             }
             dismiss()
         } else {
-            ErrorHandler.handleMixinError(response.errorCode, response.errorDescription,
-                getString(R.string.setting_desktop_sigin_failed))
+            ErrorHandler.handleMixinError(
+                response.errorCode, response.errorDescription,
+                getString(R.string.setting_desktop_sigin_failed)
+            )
             dismiss()
         }
     }

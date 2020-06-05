@@ -62,21 +62,26 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
             itemView.chat_name.visibility = View.GONE
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        keyword.notNullWithElse({ k ->
-            messageItem.mediaName?.let { str ->
-                val start = str.indexOf(k, 0, true)
-                if (start >= 0) {
-                    val sp = SpannableString(str)
-                    sp.setSpan(BackgroundColorSpan(HIGHLIGHTED), start,
-                        start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    itemView.file_name_tv.text = sp
-                } else {
-                    itemView.file_name_tv.text = messageItem.mediaName
+        keyword.notNullWithElse(
+            { k ->
+                messageItem.mediaName?.let { str ->
+                    val start = str.indexOf(k, 0, true)
+                    if (start >= 0) {
+                        val sp = SpannableString(str)
+                        sp.setSpan(
+                            BackgroundColorSpan(HIGHLIGHTED), start,
+                            start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        itemView.file_name_tv.text = sp
+                    } else {
+                        itemView.file_name_tv.text = messageItem.mediaName
+                    }
                 }
+            },
+            {
+                itemView.file_name_tv.text = messageItem.mediaName
             }
-        }, {
-            itemView.file_name_tv.text = messageItem.mediaName
-        })
+        )
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
             itemView.file_size_tv.textResource = R.string.chat_expired
         } else {
@@ -96,7 +101,8 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
 
             override fun onStopTrackingTouch(seekBar: SeekBar) {
                 if (MimeTypes.isAudio(messageItem.mediaMimeType) &&
-                    AudioPlayer.get().isPlay(messageItem.messageId)) {
+                    AudioPlayer.get().isPlay(messageItem.messageId)
+                ) {
                     AudioPlayer.get().seekTo(seekBar.progress)
                 }
             }

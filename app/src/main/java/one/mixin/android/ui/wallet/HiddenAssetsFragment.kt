@@ -13,7 +13,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_hidden_assets.*
 import kotlinx.android.synthetic.main.view_title.*
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +24,7 @@ import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.vo.AssetItem
+import javax.inject.Inject
 
 class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
@@ -50,44 +50,51 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         super.onViewCreated(view, savedInstanceState)
         left_ib.setOnClickListener { activity?.onBackPressed() }
         assetsAdapter.onItemListener = this
-        ItemTouchHelper(AssetItemCallback(object : AssetItemCallback.ItemCallbackListener {
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
-                val hiddenPos = viewHolder.absoluteAdapterPosition
-                val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
-                val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
-                lifecycleScope.launch(Dispatchers.IO) {
-                    walletViewModel.updateAssetHidden(asset.assetId, false)
+        ItemTouchHelper(
+            AssetItemCallback(object : AssetItemCallback.ItemCallbackListener {
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
+                    val hiddenPos = viewHolder.absoluteAdapterPosition
+                    val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
+                    val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        walletViewModel.updateAssetHidden(asset.assetId, false)
+                    }
+                    Snackbar.make(assets_rv, getString(R.string.wallet_already_shown, asset.symbol), Snackbar.LENGTH_LONG)
+                        .setAction(R.string.undo_capital) {
+                            assetsAdapter.restoreItem(deleteItem, hiddenPos)
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                walletViewModel.updateAssetHidden(asset.assetId, true)
+                            }
+                        }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                            this.view.setBackgroundResource(R.color.call_btn_icon_checked)
+                            (this.view.findViewById(R.id.snackbar_text) as TextView)
+                                .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                        }.show()
                 }
-                Snackbar.make(assets_rv, getString(R.string.wallet_already_shown, asset.symbol), Snackbar.LENGTH_LONG)
-                    .setAction(R.string.undo_capital) {
-                        assetsAdapter.restoreItem(deleteItem, hiddenPos)
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            walletViewModel.updateAssetHidden(asset.assetId, true)
-                        }
-                    }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                        this.view.setBackgroundResource(R.color.call_btn_icon_checked)
-                        (this.view.findViewById(R.id.snackbar_text) as TextView)
-                            .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                    }.show()
-            }
-        })).apply { attachToRecyclerView(assets_rv) }
+            })
+        ).apply { attachToRecyclerView(assets_rv) }
         assetsAdapter.onItemListener = this
         assets_rv.adapter = assetsAdapter
 
-        walletViewModel.hiddenAssets().observe(viewLifecycleOwner, Observer {
-            if (it != null && it.isNotEmpty()) {
-                assets_va.displayedChild = POS_ASSET
-                assets = it
-                assetsAdapter.setAssetList(it)
-            } else {
-                assets_va.displayedChild = POS_EMPTY
+        walletViewModel.hiddenAssets().observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it != null && it.isNotEmpty()) {
+                    assets_va.displayedChild = POS_ASSET
+                    assets = it
+                    assetsAdapter.setAssetList(it)
+                } else {
+                    assets_va.displayedChild = POS_EMPTY
+                }
             }
-        })
+        )
     }
 
     override fun <T> onNormalItemClick(item: T) {
         item as AssetItem
-        view?.navigate(R.id.action_hidden_assets_to_transactions,
-            Bundle().apply { putParcelable(TransactionsFragment.ARGS_ASSET, item) })
+        view?.navigate(
+            R.id.action_hidden_assets_to_transactions,
+            Bundle().apply { putParcelable(TransactionsFragment.ARGS_ASSET, item) }
+        )
     }
 }

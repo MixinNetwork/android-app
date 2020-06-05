@@ -20,9 +20,6 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import java.io.File
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_add_sticker.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +47,9 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.textColor
+import java.io.File
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 class StickerAddFragment : BaseFragment() {
     companion object {
@@ -93,8 +93,10 @@ class StickerAddFragment : BaseFragment() {
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         title_view.right_animator.setOnClickListener {
             if (dialog == null) {
-                dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message,
-                    title = R.string.group_adding).apply {
+                dialog = indeterminateProgressDialog(
+                    message = R.string.pb_dialog_message,
+                    title = R.string.group_adding
+                ).apply {
                     setCancelable(false)
                 }
             }
@@ -242,8 +244,11 @@ class StickerAddFragment : BaseFragment() {
             }
 
             bitmap = bitmap.maxSizeScale(MAX_SIZE, MAX_SIZE)
-            StickerAddRequest(Base64.encodeToString(
-                if (mimeType == MimeType.PNG.toString()) bitmap.toPNGBytes() else bitmap.toBytes(), Base64.NO_WRAP))
+            StickerAddRequest(
+                Base64.encodeToString(
+                    if (mimeType == MimeType.PNG.toString()) bitmap.toPNGBytes() else bitmap.toBytes(), Base64.NO_WRAP
+                )
+            )
         }
     }
 

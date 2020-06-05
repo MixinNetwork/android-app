@@ -8,12 +8,6 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
-import java.net.ConnectException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
@@ -50,6 +44,12 @@ import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
 import one.mixin.android.vo.createAckJob
 import org.jetbrains.anko.runOnUiThread
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class ChatWebSocket(
     private val okHttpClient: OkHttpClient,
@@ -111,7 +111,8 @@ class ChatWebSocket(
     fun sendMessage(blazeMessage: BlazeMessage): BlazeMessage? {
         var bm: BlazeMessage? = null
         val latch = CountDownLatch(1)
-        val transaction = WebSocketTransaction(blazeMessage.id,
+        val transaction = WebSocketTransaction(
+            blazeMessage.id,
             object : TransactionCallbackSuccess {
                 override fun success(data: BlazeMessage) {
                     bm = data
@@ -123,7 +124,8 @@ class ChatWebSocket(
                     bm = data
                     latch.countDown()
                 }
-            })
+            }
+        )
         if (client != null && connected) {
             transactions[blazeMessage.id] = transaction
             val result = client!!.send(gson.toJson(blazeMessage).gzip())
@@ -138,7 +140,8 @@ class ChatWebSocket(
 
     private fun sendPendingMessage() {
         val blazeMessage = createListPendingMessage()
-        val transaction = WebSocketTransaction(blazeMessage.id,
+        val transaction = WebSocketTransaction(
+            blazeMessage.id,
             object : TransactionCallbackSuccess {
                 override fun success(data: BlazeMessage) {
                     listPendingOfferHandled = false
@@ -148,7 +151,8 @@ class ChatWebSocket(
                 override fun error(data: BlazeMessage?) {
                     sendPendingMessage()
                 }
-            })
+            }
+        )
         transactions[blazeMessage.id] = transaction
         client?.send(gson.toJson(blazeMessage).gzip())
     }
@@ -219,12 +223,15 @@ class ChatWebSocket(
             closeInternal(code)
             jobManager.stop()
             if (connectTimer == null || connectTimer?.isDisposed == true) {
-                connectTimer = Observable.interval(2000, TimeUnit.MILLISECONDS).subscribe({
-                    if (MixinApplication.appContext.networkConnected() && Session.checkToken()) {
-                        connect()
+                connectTimer = Observable.interval(2000, TimeUnit.MILLISECONDS).subscribe(
+                    {
+                        if (MixinApplication.appContext.networkConnected() && Session.checkToken()) {
+                            connect()
+                        }
+                    },
+                    {
                     }
-                }, {
-                })
+                )
             }
         } else {
             webSocket.cancel()

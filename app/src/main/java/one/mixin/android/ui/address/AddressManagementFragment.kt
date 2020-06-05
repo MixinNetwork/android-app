@@ -12,7 +12,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_address_management.*
 import kotlinx.android.synthetic.main.item_address.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -32,6 +31,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.SearchView
+import javax.inject.Inject
 
 class AddressManagementFragment : BaseFragment() {
 
@@ -56,29 +56,36 @@ class AddressManagementFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         title_view.right_animator.setOnClickListener {
-            view.navigate(R.id.action_address_management_to_address_add,
+            view.navigate(
+                R.id.action_address_management_to_address_add,
                 Bundle().apply {
                     putParcelable(ARGS_ASSET, asset)
-                })
+                }
+            )
         }
         empty_tv.setOnClickListener {
-            view.navigate(R.id.action_address_management_to_address_add,
+            view.navigate(
+                R.id.action_address_management_to_address_add,
                 Bundle().apply {
                     putParcelable(ARGS_ASSET, asset)
-                })
+                }
+            )
         }
-        addressViewModel.addresses(asset.assetId).observe(viewLifecycleOwner, Observer {
-            val list = it?.toMutableList()
-            if (list.isNullOrEmpty()) {
-                empty_tv.isVisible = true
-                content_ll.isGone = true
-            } else {
-                empty_tv.isVisible = false
-                content_ll.isGone = false
+        addressViewModel.addresses(asset.assetId).observe(
+            viewLifecycleOwner,
+            Observer {
+                val list = it?.toMutableList()
+                if (list.isNullOrEmpty()) {
+                    empty_tv.isVisible = true
+                    content_ll.isGone = true
+                } else {
+                    empty_tv.isVisible = false
+                    content_ll.isGone = false
+                }
+                addresses = list
+                adapter.addresses = list
             }
-            addresses = list
-            adapter.addresses = list
-        })
+        )
         val addrListener = object : AddressAdapter.SimpleAddressListener() {
             override fun onAddrLongClick(view: View, addr: Address) {
                 val popMenu = PopupMenu(activity!!, view.addr_tv)
@@ -106,21 +113,23 @@ class AddressManagementFragment : BaseFragment() {
                 }
             }
         }
-        ItemTouchHelper(ItemCallback(object : ItemCallback.ItemCallbackListener {
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val deletePos = viewHolder.bindingAdapterPosition
-                val addr = adapter.addresses!![deletePos]
-                val deleteItem = adapter.removeItem(viewHolder.bindingAdapterPosition)!!
-                val bottomSheet = showBottomSheet(addr, asset)
-                parentFragmentManager.executePendingTransactions()
-                bottomSheet.dialog?.setOnDismissListener {
-                    bottomSheet.dismiss()
-                    if (!deleteSuccess) {
-                        adapter.restoreItem(deleteItem, deletePos)
+        ItemTouchHelper(
+            ItemCallback(object : ItemCallback.ItemCallbackListener {
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                    val deletePos = viewHolder.bindingAdapterPosition
+                    val addr = adapter.addresses!![deletePos]
+                    val deleteItem = adapter.removeItem(viewHolder.bindingAdapterPosition)!!
+                    val bottomSheet = showBottomSheet(addr, asset)
+                    parentFragmentManager.executePendingTransactions()
+                    bottomSheet.dialog?.setOnDismissListener {
+                        bottomSheet.dismiss()
+                        if (!deleteSuccess) {
+                            adapter.restoreItem(deleteItem, deletePos)
+                        }
                     }
                 }
-            }
-        })).apply { attachToRecyclerView(addr_rv) }
+            })
+        ).apply { attachToRecyclerView(addr_rv) }
         addr_rv.adapter = adapter
         adapter.setAddrListener(addrListener)
         search_et.listener = object : SearchView.OnSearchViewListener {
@@ -137,13 +146,15 @@ class AddressManagementFragment : BaseFragment() {
     }
 
     private fun showBottomSheet(addr: Address, asset: AssetItem): MixinBottomSheetDialogFragment {
-        val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(addressId = addr.addressId,
+        val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(
+            addressId = addr.addressId,
             assetUrl = asset.iconUrl,
             chainIconUrl = asset.chainIconUrl,
             destination = addr.destination,
             label = addr.label,
             tag = addr.tag,
-            assetName = asset.name, type = DELETE)
+            assetName = asset.name, type = DELETE
+        )
         bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
         bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {
             override fun onSuccess() {

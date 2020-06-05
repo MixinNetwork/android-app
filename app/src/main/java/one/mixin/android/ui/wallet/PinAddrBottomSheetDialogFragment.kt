@@ -119,23 +119,30 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         return true
     }
 
-    private fun getTitle() = getString(when (type) {
-        ADD -> R.string.withdrawal_addr_add
-        MODIFY -> R.string.withdrawal_addr_modify
-        else -> R.string.withdrawal_addr_delete
-    }, assetName)
+    private fun getTitle() = getString(
+        when (type) {
+            ADD -> R.string.withdrawal_addr_add
+            MODIFY -> R.string.withdrawal_addr_modify
+            else -> R.string.withdrawal_addr_delete
+        },
+        assetName
+    )
 
-    private fun getTipText() = getString(when (type) {
-        ADD -> R.string.withdrawal_addr_pin_add
-        DELETE -> R.string.withdrawal_addr_pin_delete
-        MODIFY -> R.string.withdrawal_addr_pin_modify
-        else -> R.string.withdrawal_addr_pin_add
-    })
+    private fun getTipText() = getString(
+        when (type) {
+            ADD -> R.string.withdrawal_addr_pin_add
+            DELETE -> R.string.withdrawal_addr_pin_delete
+            MODIFY -> R.string.withdrawal_addr_pin_modify
+            else -> R.string.withdrawal_addr_pin_add
+        }
+    )
 
-    private fun getBiometricText() = getString(when (type) {
-        ADD -> R.string.withdrawal_addr_biometric_add
-        DELETE -> R.string.withdrawal_addr_biometric_delete
-        MODIFY -> R.string.withdrawal_addr_biometric_modify
-        else -> R.string.withdrawal_addr_biometric_add
-    })
+    private fun getBiometricText() = getString(
+        when (type) {
+            ADD -> R.string.withdrawal_addr_biometric_add
+            DELETE -> R.string.withdrawal_addr_biometric_delete
+            MODIFY -> R.string.withdrawal_addr_biometric_modify
+            else -> R.string.withdrawal_addr_biometric_add
+        }
+    )
 }

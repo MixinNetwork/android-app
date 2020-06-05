@@ -89,13 +89,15 @@ fun CircleConversationDao.updateCheckPin(
     newCircleConversation: CircleConversation
 ) {
     if (oldCircleConversation.pinTime != null) {
-        update(CircleConversation(
-            newCircleConversation.conversationId,
-            newCircleConversation.circleId,
-            newCircleConversation.userId,
-            newCircleConversation.createdAt,
-            oldCircleConversation.pinTime
-        ))
+        update(
+            CircleConversation(
+                newCircleConversation.conversationId,
+                newCircleConversation.circleId,
+                newCircleConversation.userId,
+                newCircleConversation.createdAt,
+                oldCircleConversation.pinTime
+            )
+        )
     } else {
         update(newCircleConversation)
     }

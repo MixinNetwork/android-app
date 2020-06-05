@@ -72,44 +72,50 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.title.title_tv.text = getString(R.string.contact_receive_money)
             contentView.tip_tv.text = getString(R.string.contact_receive_tip)
         }
-        bottomViewModel.findUserById(userId).observe(this, Observer { user ->
-            if (user == null) {
-                bottomViewModel.refreshUser(userId, true)
-            } else {
-                contentView.badge_view.bg.setInfo(user.fullName, user.avatarUrl, user.userId)
-                if (type == TYPE_RECEIVE_QR) {
-                    contentView.badge_view.badge.setImageResource(R.drawable.ic_contacts_receive_blue)
-                    contentView.badge_view.pos = END_BOTTOM
-                }
-
-                val name = getName(user)
-                if (requireContext().isQRCodeFileExists(name)) {
-                    contentView.qr.setImageBitmap(BitmapFactory.decodeFile(requireContext().getQRCodePath(name).absolutePath))
+        bottomViewModel.findUserById(userId).observe(
+            this,
+            Observer { user ->
+                if (user == null) {
+                    bottomViewModel.refreshUser(userId, true)
                 } else {
-                    contentView.qr.post {
-                        Observable.create<Bitmap> { e ->
-                            val account = Session.getAccount() ?: return@create
-                            val code = when (type) {
-                                TYPE_MY_QR -> account.code_url
-                                TYPE_RECEIVE_QR -> "$TRANSFER/${user.userId}"
-                                else -> ""
-                            }
-                            val b = code.generateQRCode(contentView.qr.width)
-                            if (b != null) {
-                                b.saveQRCode(requireContext(), name)
-                                e.onNext(b)
-                            }
-                        }.subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .autoDispose(stopScope)
-                            .subscribe({ r ->
-                                contentView.qr.setImageBitmap(r)
-                            }, {
-                            })
+                    contentView.badge_view.bg.setInfo(user.fullName, user.avatarUrl, user.userId)
+                    if (type == TYPE_RECEIVE_QR) {
+                        contentView.badge_view.badge.setImageResource(R.drawable.ic_contacts_receive_blue)
+                        contentView.badge_view.pos = END_BOTTOM
+                    }
+
+                    val name = getName(user)
+                    if (requireContext().isQRCodeFileExists(name)) {
+                        contentView.qr.setImageBitmap(BitmapFactory.decodeFile(requireContext().getQRCodePath(name).absolutePath))
+                    } else {
+                        contentView.qr.post {
+                            Observable.create<Bitmap> { e ->
+                                val account = Session.getAccount() ?: return@create
+                                val code = when (type) {
+                                    TYPE_MY_QR -> account.code_url
+                                    TYPE_RECEIVE_QR -> "$TRANSFER/${user.userId}"
+                                    else -> ""
+                                }
+                                val b = code.generateQRCode(contentView.qr.width)
+                                if (b != null) {
+                                    b.saveQRCode(requireContext(), name)
+                                    e.onNext(b)
+                                }
+                            }.subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .autoDispose(stopScope)
+                                .subscribe(
+                                    { r ->
+                                        contentView.qr.setImageBitmap(r)
+                                    },
+                                    {
+                                    }
+                                )
+                        }
                     }
                 }
             }
-        })
+        )
     }
 
     private fun getName(user: User): String {
@@ -129,21 +135,24 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             RxPermissions(requireActivity())
                 .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
-                .subscribe({ granted ->
-                    if (granted) {
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            if (!isAdded) return@launch
-                            val path = contentView.bottom_ll.capture(requireContext()) ?: return@launch
-                            withContext(Dispatchers.Main) {
-                                context?.toast(getString(R.string.save_to, path))
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                if (!isAdded) return@launch
+                                val path = contentView.bottom_ll.capture(requireContext()) ?: return@launch
+                                withContext(Dispatchers.Main) {
+                                    context?.toast(getString(R.string.save_to, path))
+                                }
                             }
+                        } else {
+                            requireContext().openPermissionSetting()
                         }
-                    } else {
-                        requireContext().openPermissionSetting()
+                    },
+                    {
+                        context?.toast(R.string.save_failure)
                     }
-                }, {
-                    context?.toast(R.string.save_failure)
-                })
+                )
             bottomSheet.dismiss()
         }
         view.cancel.setOnClickListener { bottomSheet.dismiss() }

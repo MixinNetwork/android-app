@@ -56,8 +56,10 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
         return true
     }
 
-    override fun getBiometricInfo() = BiometricInfo(getString(R.string.verify_by_biometric),
-        "", "", getString(R.string.verify_by_PIN))
+    override fun getBiometricInfo() = BiometricInfo(
+        getString(R.string.verify_by_biometric),
+        "", "", getString(R.string.verify_by_PIN)
+    )
 
     private fun getTipTextRes(): Int =
         if (fromWalletSetting) R.string.wallet_pin_open_biometrics else R.string.wallet_pin_modify_biometrics

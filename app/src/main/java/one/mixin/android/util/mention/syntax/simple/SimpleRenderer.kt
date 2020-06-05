@@ -7,26 +7,26 @@ import one.mixin.android.util.mention.syntax.parser.Rule
 
 object SimpleRenderer {
 
-  @JvmStatic
-  fun <R> render(source: CharSequence, rules: Collection<Rule<R, Node<R>>>, renderContext: R): SpannableStringBuilder {
-    val parser = Parser<R, Node<R>>()
-    for (rule in rules) {
-      parser.addRule(rule)
+    @JvmStatic
+    fun <R> render(source: CharSequence, rules: Collection<Rule<R, Node<R>>>, renderContext: R): SpannableStringBuilder {
+        val parser = Parser<R, Node<R>>()
+        for (rule in rules) {
+            parser.addRule(rule)
+        }
+
+        return render(SpannableStringBuilder(), parser.parse(source), renderContext)
     }
 
-    return render(SpannableStringBuilder(), parser.parse(source), renderContext)
-  }
-
-  @JvmStatic
-  fun <R> render(source: CharSequence, parser: Parser<R, Node<R>>, renderContext: R): SpannableStringBuilder {
-    return render(SpannableStringBuilder(), parser.parse(source), renderContext)
-  }
-
-  @JvmStatic
-  fun <T : SpannableStringBuilder, R> render(builder: T, ast: Collection<Node<R>>, renderContext: R): T {
-    for (node in ast) {
-      node.render(builder, renderContext)
+    @JvmStatic
+    fun <R> render(source: CharSequence, parser: Parser<R, Node<R>>, renderContext: R): SpannableStringBuilder {
+        return render(SpannableStringBuilder(), parser.parse(source), renderContext)
     }
-    return builder
-  }
+
+    @JvmStatic
+    fun <T : SpannableStringBuilder, R> render(builder: T, ast: Collection<Node<R>>, renderContext: R): T {
+        for (node in ast) {
+            node.render(builder, renderContext)
+        }
+        return builder
+    }
 }

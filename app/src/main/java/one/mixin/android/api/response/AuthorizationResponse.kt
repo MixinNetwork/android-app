@@ -39,7 +39,8 @@ fun AuthorizationResponse.getScopes(
             SCOPES[0] ->
                 scopes.add(
                     Scope(
-                        s, ctx.getString(
+                        s,
+                        ctx.getString(
                             R.string.auth_profile_content,
                             user.full_name, user.identity_number
                         )

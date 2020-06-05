@@ -3,8 +3,8 @@ package one.mixin.android.di.worker
 import androidx.work.WorkManager
 import dagger.Module
 import dagger.Provides
-import javax.inject.Singleton
 import one.mixin.android.MixinApplication
+import javax.inject.Singleton
 
 @Module(includes = [WorkerAssistedModule::class, WorkersModuleBinds::class])
 class WorkerModule {

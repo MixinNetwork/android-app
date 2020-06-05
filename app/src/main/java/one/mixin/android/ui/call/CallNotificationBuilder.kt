@@ -37,32 +37,57 @@ class CallNotificationBuilder {
             when (state.callInfo.callState) {
                 CallService.CallState.STATE_DIALING -> {
                     builder.setContentText(context.getString(R.string.call_notification_outgoing))
-                    builder.addAction(getAction(context, CallService.ACTION_CALL_CANCEL, R.drawable.ic_close_black, R.string
-                        .call_notification_action_cancel) {
-                        it.putExtra(CallService.EXTRA_TO_IDLE, true)
-                    })
+                    builder.addAction(
+                        getAction(
+                            context, CallService.ACTION_CALL_CANCEL, R.drawable.ic_close_black,
+                            R.string
+                                .call_notification_action_cancel
+                        ) {
+                            it.putExtra(CallService.EXTRA_TO_IDLE, true)
+                        }
+                    )
                 }
                 CallService.CallState.STATE_RINGING -> {
                     builder.setContentText(context.getString(R.string.call_notification_incoming_voice))
-                    builder.addAction(getAction(context, CallService.ACTION_CALL_ANSWER, R.drawable.ic_close_black, R.string
-                        .call_notification_action_answer))
-                    builder.addAction(getAction(context, CallService.ACTION_CALL_DECLINE, R.drawable.ic_close_black, R.string
-                        .call_notification_action_decline))
+                    builder.addAction(
+                        getAction(
+                            context, CallService.ACTION_CALL_ANSWER, R.drawable.ic_close_black,
+                            R.string
+                                .call_notification_action_answer
+                        )
+                    )
+                    builder.addAction(
+                        getAction(
+                            context, CallService.ACTION_CALL_DECLINE, R.drawable.ic_close_black,
+                            R.string
+                                .call_notification_action_decline
+                        )
+                    )
                 }
                 CallService.CallState.STATE_CONNECTED -> {
                     builder.setContentText(context.getString(R.string.call_notification_connected))
-                    builder.addAction(getAction(context, CallService.ACTION_CALL_LOCAL_END, R.drawable.ic_close_black, R.string
-                        .call_notification_action_hang_up) {
-                        it.putExtra(CallService.EXTRA_TO_IDLE, true)
-                    })
+                    builder.addAction(
+                        getAction(
+                            context, CallService.ACTION_CALL_LOCAL_END, R.drawable.ic_close_black,
+                            R.string
+                                .call_notification_action_hang_up
+                        ) {
+                            it.putExtra(CallService.EXTRA_TO_IDLE, true)
+                        }
+                    )
                 }
                 else -> {
                     builder.setContentText(context.getString(R.string.call_connecting))
                     val action = if (state.isOffer) CallService.ACTION_CALL_CANCEL else CallService.ACTION_CALL_DECLINE
-                    builder.addAction(getAction(context, action, R.drawable.ic_close_black, R.string
-                        .call_notification_action_hang_up) {
-                        it.putExtra(CallService.EXTRA_TO_IDLE, true)
-                    })
+                    builder.addAction(
+                        getAction(
+                            context, action, R.drawable.ic_close_black,
+                            R.string
+                                .call_notification_action_hang_up
+                        ) {
+                            it.putExtra(CallService.EXTRA_TO_IDLE, true)
+                        }
+                    )
                 }
             }
             return builder.build()

@@ -75,25 +75,35 @@ class DescriptionLayout : ViewGroup {
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         val firstView = getChildAt(0) as TextView
         val secondView = getChildAt(1)
-        firstView.layout(paddingStart, paddingTop, firstView.measuredWidth + paddingStart,
-            firstView.measuredHeight + paddingTop)
+        firstView.layout(
+            paddingStart, paddingTop, firstView.measuredWidth + paddingStart,
+            firstView.measuredHeight + paddingTop
+        )
         when (type) {
             EXPAND, DEFAULT -> {
                 secondView.layout(0, 0, 0, 0)
-                firstView.layout(paddingStart, paddingTop, firstView.measuredWidth + paddingStart, firstView
-                    .measuredHeight + paddingTop)
+                firstView.layout(
+                    paddingStart, paddingTop, firstView.measuredWidth + paddingStart,
+                    firstView
+                        .measuredHeight + paddingTop
+                )
             }
             TAIL -> {
                 val left = paddingStart + lineWidth
                 val top = lineHeight * 3 + paddingTop - lineHeight
-                firstView.layout(paddingStart, paddingTop, firstView.measuredWidth + paddingStart, firstView
-                    .measuredHeight + paddingTop)
+                firstView.layout(
+                    paddingStart, paddingTop, firstView.measuredWidth + paddingStart,
+                    firstView
+                        .measuredHeight + paddingTop
+                )
                 secondView.layout(left, top, left + secondView.measuredWidth, top + lineHeight)
             }
             BOTTOM -> {
                 val top = lineHeight * 3 + paddingTop - lineHeight
-                firstView.layout(paddingStart, paddingTop, firstView.measuredWidth + paddingStart,
-                    paddingTop + lineHeight * 2)
+                firstView.layout(
+                    paddingStart, paddingTop, firstView.measuredWidth + paddingStart,
+                    paddingTop + lineHeight * 2
+                )
                 secondView.layout(paddingStart, top, firstView.measuredWidth + paddingStart, top + lineHeight)
             }
         }

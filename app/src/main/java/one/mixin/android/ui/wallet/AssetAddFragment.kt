@@ -10,7 +10,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_asset_add.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Job
@@ -23,6 +22,7 @@ import one.mixin.android.ui.wallet.adapter.AssetAddAdapter
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.widget.SearchView
 import org.jetbrains.anko.textColor
+import javax.inject.Inject
 
 class AssetAddFragment : BaseFragment() {
     companion object {
@@ -102,12 +102,15 @@ class AssetAddFragment : BaseFragment() {
             }
         }
 
-        walletViewModel.observeTopAssets().observe(viewLifecycleOwner, Observer {
-            topAssets = it
-            if (search_et.text.isNullOrBlank()) {
-                showHot()
+        walletViewModel.observeTopAssets().observe(
+            viewLifecycleOwner,
+            Observer {
+                topAssets = it
+                if (search_et.text.isNullOrBlank()) {
+                    showHot()
+                }
             }
-        })
+        )
         walletViewModel.refreshHotAssets()
     }
 

@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
-import java.util.Locale
 import kotlinx.android.synthetic.main.fragment_appearance.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
@@ -20,6 +19,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.vo.Fiats
+import java.util.Locale
 
 class AppearanceFragment : BaseViewModelFragment<SettingViewModel>() {
     companion object {
@@ -44,20 +44,23 @@ class AppearanceFragment : BaseViewModelFragment<SettingViewModel>() {
         }
         night_mode_tv.setText(R.string.setting_theme)
         val currentId = defaultSharedPreferences.getInt(
-            Constants.Theme.THEME_CURRENT_ID, if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            Constants.Theme.THEME_DEFAULT_ID
-        } else {
-            Constants.Theme.THEME_AUTO_ID
-        }
+            Constants.Theme.THEME_CURRENT_ID,
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                Constants.Theme.THEME_DEFAULT_ID
+            } else {
+                Constants.Theme.THEME_AUTO_ID
+            }
         )
         night_mode_desc_tv.text = resources.getStringArray(R.array.setting_night_array_oreo)[currentId]
         night_mode_rl.setOnClickListener {
             singleChoice(
-                resources.getString(R.string.setting_theme), if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                R.array.setting_night_array
-            } else {
-                R.array.setting_night_array_oreo
-            }, currentId
+                resources.getString(R.string.setting_theme),
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    R.array.setting_night_array
+                } else {
+                    R.array.setting_night_array_oreo
+                },
+                currentId
             ) { _, index ->
                 val changed = index != currentId
                 defaultSharedPreferences.putInt(Constants.Theme.THEME_CURRENT_ID, index)
@@ -91,7 +94,8 @@ class AppearanceFragment : BaseViewModelFragment<SettingViewModel>() {
                         R.string.english
                     }
                 }
-            })
+            }
+        )
         language_rl.setOnClickListener { showLanguageAlert() }
         current_tv.text = getString(R.string.wallet_setting_currency_desc, Session.getFiatCurrency(), Fiats.getSymbol())
         currency_rl.setOnClickListener {
@@ -108,8 +112,8 @@ class AppearanceFragment : BaseViewModelFragment<SettingViewModel>() {
     private fun showLanguageAlert() {
         val choice = resources.getStringArray(R.array.language_names)
         val selectItem = if (Lingver.getInstance().isFollowingSystemLocale()) {
-                0
-            } else {
+            0
+        } else {
             when (Lingver.getInstance().getLanguage()) {
                 Locale.SIMPLIFIED_CHINESE.language -> {
                     2
@@ -121,7 +125,7 @@ class AppearanceFragment : BaseViewModelFragment<SettingViewModel>() {
                     1
                 }
             }
-            }
+        }
         var newSelectItem = selectItem
         alertDialogBuilder()
             .setTitle(R.string.language)

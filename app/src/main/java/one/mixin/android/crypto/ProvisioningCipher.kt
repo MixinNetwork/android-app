@@ -1,5 +1,9 @@
 package one.mixin.android.crypto
 
+import org.whispersystems.libsignal.InvalidKeyException
+import org.whispersystems.libsignal.ecc.Curve
+import org.whispersystems.libsignal.ecc.ECPublicKey
+import org.whispersystems.libsignal.kdf.HKDFv3
 import java.security.NoSuchAlgorithmException
 import javax.crypto.BadPaddingException
 import javax.crypto.Cipher
@@ -7,10 +11,6 @@ import javax.crypto.IllegalBlockSizeException
 import javax.crypto.Mac
 import javax.crypto.NoSuchPaddingException
 import javax.crypto.spec.SecretKeySpec
-import org.whispersystems.libsignal.InvalidKeyException
-import org.whispersystems.libsignal.ecc.Curve
-import org.whispersystems.libsignal.ecc.ECPublicKey
-import org.whispersystems.libsignal.kdf.HKDFv3
 
 class ProvisioningCipher(private val theirPublicKey: ECPublicKey) {
 

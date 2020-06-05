@@ -8,8 +8,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
-import kotlin.contracts.contract
 import kotlinx.android.parcel.Parcelize
+import kotlin.contracts.contract
 
 interface BotInterface {
     fun getBotId(): String

@@ -24,15 +24,18 @@ abstract class HeaderFooterAdapter<T> : HeaderAdapter<T>() {
         }
     }
 
-    override fun getItemCount(): Int = data.notNullWithElse({
-        if (headerView != null && footerView != null) {
-            it.size + 2
-        } else if (headerView != null || footerView != null) {
-            it.size + 1
-        } else {
-            it.size
-        }
-    }, 0)
+    override fun getItemCount(): Int = data.notNullWithElse(
+        {
+            if (headerView != null && footerView != null) {
+                it.size + 2
+            } else if (headerView != null || footerView != null) {
+                it.size + 1
+            } else {
+                it.size
+            }
+        },
+        0
+    )
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return if (viewType == TYPE_HEADER) {

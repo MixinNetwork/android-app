@@ -70,8 +70,10 @@ class VerificationEmergencyIdFragment : FabLoadingFragment<EmergencyViewModel>()
                     VerificationEmergencyFragment.newInstance(
                         verificationId = (response.data as VerificationResponse).id,
                         from = FROM_SESSION,
-                        userIdentityNumber = mixinID),
-                    VerificationEmergencyFragment.TAG)
+                        userIdentityNumber = mixinID
+                    ),
+                    VerificationEmergencyFragment.TAG
+                )
             },
             doAfterNetworkSuccess = { hideLoading() },
             defaultExceptionHandle = {
@@ -90,7 +92,8 @@ class VerificationEmergencyIdFragment : FabLoadingFragment<EmergencyViewModel>()
     private fun buildEmergencyRequest(mixinID: String) = EmergencyRequest(
         phone = phone,
         identityNumber = mixinID,
-        purpose = EmergencyPurpose.SESSION.name)
+        purpose = EmergencyPurpose.SESSION.name
+    )
 
     private fun handleEditView(str: String) {
         id_et.setSelection(id_et.text.toString().length)

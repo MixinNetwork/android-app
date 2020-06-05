@@ -4,11 +4,11 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
-import java.util.UUID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.websocket.BlazeAckMessage
+import java.util.UUID
 
 @Entity(tableName = "jobs")
 data class Job(
@@ -46,5 +46,7 @@ data class Job(
 )
 
 fun createAckJob(action: String, ackMessage: BlazeAckMessage, conversationId: String? = null) =
-    Job(UUID.randomUUID().toString(), action, nowInUtc(), null, PRIORITY_ACK_MESSAGE, null,
-        GsonHelper.customGson.toJson(ackMessage), conversationId, null, 0)
+    Job(
+        UUID.randomUUID().toString(), action, nowInUtc(), null, PRIORITY_ACK_MESSAGE, null,
+        GsonHelper.customGson.toJson(ackMessage), conversationId, null, 0
+    )

@@ -29,8 +29,10 @@ object SensorOrientationChangeNotifier {
     }
 
     fun resume() {
-        sensorManager?.registerListener(notifierSensorEventListener,
-            sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager?.registerListener(
+            notifierSensorEventListener,
+            sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL
+        )
     }
 
     fun pause() {
@@ -60,7 +62,8 @@ object SensorOrientationChangeNotifier {
                 newOrientation = 270
 
             if (orientation != newOrientation &&
-                System.currentTimeMillis() - lastOrientationChangeTime >= ORIENTATION_CHANGE_INTERVAL) {
+                System.currentTimeMillis() - lastOrientationChangeTime >= ORIENTATION_CHANGE_INTERVAL
+            ) {
                 val oldOrientation = orientation
                 orientation = newOrientation
                 listener?.onOrientationChange(oldOrientation, newOrientation)

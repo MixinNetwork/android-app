@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import java.math.BigDecimal
 import kotlinx.android.synthetic.main.fragment_transaction_bottom.view.*
 import kotlinx.android.synthetic.main.fragment_transaction_bottom.view.ph
 import kotlinx.android.synthetic.main.fragment_transaction_bottom.view.title_view
@@ -31,6 +30,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textColorResource
+import java.math.BigDecimal
 
 class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {

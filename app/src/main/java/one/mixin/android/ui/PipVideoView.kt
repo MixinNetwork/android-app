@@ -28,8 +28,6 @@ import com.google.android.exoplayer2.Player.STATE_BUFFERING
 import com.google.android.exoplayer2.Player.STATE_ENDED
 import com.google.android.exoplayer2.Player.STATE_IDLE
 import com.google.android.exoplayer2.Player.STATE_READY
-import kotlin.math.abs
-import kotlin.math.round
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -53,6 +51,8 @@ import one.mixin.android.widget.PlayView.Companion.STATUS_PAUSE
 import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
 import org.jetbrains.anko.dip
 import timber.log.Timber
+import kotlin.math.abs
+import kotlin.math.round
 
 @SuppressLint("InvalidWakeLockTag")
 class PipVideoView {
@@ -182,9 +182,9 @@ class PipVideoView {
                     startY = y
                 } else if (event.action == MotionEvent.ACTION_MOVE) {
                     if (abs(startX - x) >= appContext.getPixelsInCM(
-                            0.3f,
-                            true
-                        ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
+                        0.3f,
+                        true
+                    ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
                     ) {
                         startX = x
                         startY = y

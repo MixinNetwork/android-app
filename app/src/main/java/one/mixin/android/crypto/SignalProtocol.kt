@@ -194,7 +194,8 @@ class SignalProtocol(ctx: Context) {
             data,
             quote_message_id = message.quoteMessageId,
             session_id = sessionId,
-            mentions = mentionData)
+            mentions = mentionData
+        )
         return createParamBlazeMessage(blazeParam)
     }
 
@@ -217,7 +218,8 @@ class SignalProtocol(ctx: Context) {
             message.category,
             data,
             quote_message_id = message.quoteMessageId,
-            mentions = mentionData)
+            mentions = mentionData
+        )
         return createParamBlazeMessage(blazeParam)
     }
 

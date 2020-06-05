@@ -30,35 +30,40 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
         val photoViewAttacher = imageView.attacher
         val circleProgress = itemView.findViewById<CircleProgress>(R.id.circle_progress)
         if (messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
-            imageView.loadGif(messageItem.mediaUrl, object : RequestListener<GifDrawable?> {
-                override fun onResourceReady(
-                    resource: GifDrawable?,
-                    model: Any?,
-                    target: Target<GifDrawable?>?,
-                    dataSource: DataSource?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    photoViewAttacher.isZoomable = true
-                    if (needPostTransition) {
-                        ViewCompat.setTransitionName(imageView, "transition")
-                        mediaPagerAdapterListener.onReadyPostTransition(imageView)
+            imageView.loadGif(
+                messageItem.mediaUrl,
+                object : RequestListener<GifDrawable?> {
+                    override fun onResourceReady(
+                        resource: GifDrawable?,
+                        model: Any?,
+                        target: Target<GifDrawable?>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        photoViewAttacher.isZoomable = true
+                        if (needPostTransition) {
+                            ViewCompat.setTransitionName(imageView, "transition")
+                            mediaPagerAdapterListener.onReadyPostTransition(imageView)
+                        }
+                        return false
                     }
-                    return false
-                }
 
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: Target<GifDrawable?>?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    return false
-                }
-            }, base64Holder = messageItem.thumbImage,
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<GifDrawable?>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
+                },
+                base64Holder = messageItem.thumbImage,
                 overrideWidth = Target.SIZE_ORIGINAL,
-                overrideHeight = Target.SIZE_ORIGINAL)
+                overrideHeight = Target.SIZE_ORIGINAL
+            )
         } else {
-            imageView.loadImage(messageItem.mediaUrl, messageItem.thumbImage,
+            imageView.loadImage(
+                messageItem.mediaUrl, messageItem.thumbImage,
                 object : RequestListener<Drawable?> {
                     override fun onResourceReady(
                         resource: Drawable?,
@@ -85,7 +90,8 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                     }
                 },
                 overrideWidth = Target.SIZE_ORIGINAL,
-                overrideHeight = Target.SIZE_ORIGINAL)
+                overrideHeight = Target.SIZE_ORIGINAL
+            )
         }
         if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
             circleProgress.isVisible = false

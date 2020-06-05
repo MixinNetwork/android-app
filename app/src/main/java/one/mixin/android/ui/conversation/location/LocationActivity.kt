@@ -34,9 +34,6 @@ import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import javax.inject.Inject
-import kotlin.math.max
-import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_location.*
 import kotlinx.android.synthetic.main.mention_location.*
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -60,6 +57,9 @@ import one.mixin.android.util.distanceFormat
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.getImageUrl
 import timber.log.Timber
+import javax.inject.Inject
+import kotlin.math.max
+import kotlin.math.min
 
 class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
@@ -90,13 +90,16 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     }
 
     private val locationAdapter by lazy {
-        LocationAdapter({
-            currentPosition?.let { currentPosition ->
-                setResult(LocationPayload(currentPosition.latitude, currentPosition.longitude, null, null))
+        LocationAdapter(
+            {
+                currentPosition?.let { currentPosition ->
+                    setResult(LocationPayload(currentPosition.latitude, currentPosition.longitude, null, null))
+                }
+            },
+            {
+                setResult(it)
             }
-        }, {
-            setResult(it)
-        })
+        )
     }
 
     private val locationSearchAdapter by lazy {
@@ -176,35 +179,41 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             }
         })
 
-        location.notNullWithElse({ location ->
-            location_title.text = location.name ?: getString(R.string.location_unnamed)
-            location.address?.let { address ->
-                location_sub_title.text = address
-            }
-            location.getImageUrl().notNullWithElse({
-                location_icon.loadImage(it)
-            }, {
-                location_icon.setBackgroundResource(R.drawable.ic_current_location)
-            })
-            ic_location_shared.setOnClickListener {
-                try {
-                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")))
-                } catch (e: ActivityNotFoundException) {
-                    toast(R.string.error_open_location)
+        location.notNullWithElse(
+            { location ->
+                location_title.text = location.name ?: getString(R.string.location_unnamed)
+                location.address?.let { address ->
+                    location_sub_title.text = address
                 }
-            }
-            location_go_iv.setOnClickListener {
-                selfPosition?.let { selfPosition ->
+                location.getImageUrl().notNullWithElse(
+                    {
+                        location_icon.loadImage(it)
+                    },
+                    {
+                        location_icon.setBackgroundResource(R.drawable.ic_current_location)
+                    }
+                )
+                ic_location_shared.setOnClickListener {
                     try {
-                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("http://maps.google.com/maps?saddr=${selfPosition.latitude},${selfPosition.longitude}&daddr=${location.latitude},${location.longitude}")))
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")))
                     } catch (e: ActivityNotFoundException) {
                         toast(R.string.error_open_location)
                     }
                 }
+                location_go_iv.setOnClickListener {
+                    selfPosition?.let { selfPosition ->
+                        try {
+                            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("http://maps.google.com/maps?saddr=${selfPosition.latitude},${selfPosition.longitude}&daddr=${location.latitude},${location.longitude}")))
+                        } catch (e: ActivityNotFoundException) {
+                            toast(R.string.error_open_location)
+                        }
+                    }
+                }
+            },
+            {
+                location_recycler.adapter = locationAdapter
             }
-        }, {
-            location_recycler.adapter = locationAdapter
-        })
+        )
     }
 
     override fun onBackPressed() {
@@ -460,21 +469,24 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     private val textWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
-            s.notEmptyWithElse({ charSequence ->
-                location_recycler.adapter = locationSearchAdapter
-                val content = charSequence.toString()
-                locationSearchAdapter.keyword = content
-                search(content)
-            }, {
-                location_recycler.adapter = locationAdapter
-                if (lastSearchQueryJob?.isActive == true) {
-                    lastSearchQueryJob?.cancel()
+            s.notEmptyWithElse(
+                { charSequence ->
+                    location_recycler.adapter = locationSearchAdapter
+                    val content = charSequence.toString()
+                    locationSearchAdapter.keyword = content
+                    search(content)
+                },
+                {
+                    location_recycler.adapter = locationAdapter
+                    if (lastSearchQueryJob?.isActive == true) {
+                        lastSearchQueryJob?.cancel()
+                    }
+                    locationSearchAdapter.keyword = null
+                    locationSearchAdapter.venues = null
+                    locationSearchAdapter.setMark()
+                    googleMap?.clear()
                 }
-                locationSearchAdapter.keyword = null
-                locationSearchAdapter.venues = null
-                locationSearchAdapter.setMark()
-                googleMap?.clear()
-            })
+            )
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}

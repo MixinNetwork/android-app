@@ -11,9 +11,9 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import kotlin.math.abs
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.displayMetrics
+import kotlin.math.abs
 
 class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(context, theme) {
     companion object {
@@ -44,8 +44,10 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         } catch (ignored: Exception) {
         }
 
-        sheetContainer.measure(View.MeasureSpec.makeMeasureSpec(context.displayMetrics.widthPixels, View.MeasureSpec.AT_MOST),
-            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, View.MeasureSpec.AT_MOST))
+        sheetContainer.measure(
+            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.widthPixels, View.MeasureSpec.AT_MOST),
+            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, View.MeasureSpec.AT_MOST)
+        )
         if (isShown) return
         backDrawable.alpha = 0
         sheetContainer.translationY = sheetContainer.measuredHeight.toFloat()

@@ -2,12 +2,12 @@ package one.mixin.android.util.image
 
 import android.os.Handler
 import android.os.Looper
+import timber.log.Timber
 import java.util.ArrayList
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
 import java.util.concurrent.FutureTask
-import timber.log.Timber
 
 class ImageTask<T>(
     runnable: Callable<ImageResult<T>>,
@@ -68,18 +68,20 @@ class ImageTask<T>(
     }
 
     private fun notifyListeners() {
-        handler.post(Runnable {
-            if (result == null) {
-                return@Runnable
-            }
-            result?.let { r ->
-                if (r.value != null) {
-                    notifySuccessListeners(r.value)
-                } else {
-                    r.exception?.let { notifyFailureListeners(it) }
+        handler.post(
+            Runnable {
+                if (result == null) {
+                    return@Runnable
+                }
+                result?.let { r ->
+                    if (r.value != null) {
+                        notifySuccessListeners(r.value)
+                    } else {
+                        r.exception?.let { notifyFailureListeners(it) }
+                    }
                 }
             }
-        })
+        )
     }
 
     @Synchronized

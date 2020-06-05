@@ -60,18 +60,21 @@ class PseudoNotificationView : RelativeLayout {
         visible = false
     }
 
-    private val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
-        override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-            hide()
-            return super.onFling(e1, e2, velocityX, velocityY)
-        }
+    private val gestureDetector = GestureDetector(
+        context,
+        object : GestureDetector.SimpleOnGestureListener() {
+            override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
+                hide()
+                return super.onFling(e1, e2, velocityX, velocityY)
+            }
 
-        override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
-            currContent?.let { callback.onClick(it) }
-            hide()
-            return super.onSingleTapConfirmed(e)
+            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+                currContent?.let { callback.onClick(it) }
+                hide()
+                return super.onSingleTapConfirmed(e)
+            }
         }
-    })
+    )
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         gestureDetector.onTouchEvent(event)

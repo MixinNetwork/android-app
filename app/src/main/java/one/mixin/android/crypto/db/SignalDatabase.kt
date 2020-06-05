@@ -13,14 +13,17 @@ import one.mixin.android.crypto.vo.SenderKey
 import one.mixin.android.crypto.vo.Session
 import one.mixin.android.crypto.vo.SignedPreKey
 
-@Database(entities = [
-    (SenderKey::class),
-    (Identity::class),
-    (PreKey::class),
-    (SignedPreKey::class),
-    (Session::class),
-    (RatchetSenderKey::class)
-], version = 3)
+@Database(
+    entities = [
+        (SenderKey::class),
+        (Identity::class),
+        (PreKey::class),
+        (SignedPreKey::class),
+        (Session::class),
+        (RatchetSenderKey::class)
+    ],
+    version = 3
+)
 abstract class SignalDatabase : RoomDatabase() {
 
     abstract fun senderKeyDao(): SenderKeyDao

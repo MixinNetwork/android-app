@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -54,6 +53,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
+import javax.inject.Inject
 
 class BottomSheetViewModel @Inject internal constructor(
     private val accountRepository: AccountRepository,
@@ -255,8 +255,12 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     fun refreshUsers(userIds: List<String>, conversationId: String?, conversationAvatarUserIds: List<String>?) {
-        jobManager.addJobInBackground(RefreshUserJob(userIds, conversationId,
-            conversationAvatarUserIds = conversationAvatarUserIds))
+        jobManager.addJobInBackground(
+            RefreshUserJob(
+                userIds, conversationId,
+                conversationAvatarUserIds = conversationAvatarUserIds
+            )
+        )
     }
 
     suspend fun verifyPin(code: String): MixinResponse<Account> = accountRepository.verifyPin(code)

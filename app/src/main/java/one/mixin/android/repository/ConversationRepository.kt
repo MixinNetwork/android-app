@@ -8,8 +8,6 @@ import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import io.reactivex.Flowable
 import io.reactivex.Observable
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -53,6 +51,8 @@ import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ConversationRepository

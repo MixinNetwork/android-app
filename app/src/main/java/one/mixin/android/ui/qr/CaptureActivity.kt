@@ -57,11 +57,12 @@ class CaptureActivity : BlazeBaseActivity() {
                 replaceFragment(ScanFragment.newInstance(forAccountName = true), R.id.container, ScanFragment.TAG)
             intent.hasExtra(ARGS_FOR_MEMO) ->
                 replaceFragment(ScanFragment.newInstance(forMemo = true), R.id.container, ScanFragment.TAG)
-            else -> if (intent.getBooleanExtra(ARGS_SHOW_SCAN, false)) {
-                replaceFragment(ScanFragment.newInstance(), R.id.container, ScanFragment.TAG)
-            } else {
-                replaceFragment(CaptureFragment.newInstance(), R.id.container, CaptureFragment.TAG)
-            }
+            else ->
+                if (intent.getBooleanExtra(ARGS_SHOW_SCAN, false)) {
+                    replaceFragment(ScanFragment.newInstance(), R.id.container, ScanFragment.TAG)
+                } else {
+                    replaceFragment(CaptureFragment.newInstance(), R.id.container, CaptureFragment.TAG)
+                }
         }
     }
 

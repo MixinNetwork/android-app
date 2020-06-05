@@ -43,11 +43,14 @@ class PhoneNumberSettingFragment : BaseViewModelFragment<SettingConversationView
             activity?.onBackPressed()
         }
         viewModel.initSearchPreference(requireContext())
-            .observe(viewLifecycleOwner, Observer {
-                it?.let {
-                    render(it)
+            .observe(
+                viewLifecycleOwner,
+                Observer {
+                    it?.let {
+                        render(it)
+                    }
                 }
-            })
+            )
     }
 
     private fun render(pref: String) {

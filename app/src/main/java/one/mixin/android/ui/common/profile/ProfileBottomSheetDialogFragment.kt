@@ -346,19 +346,22 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             else -> AccountUpdateRequest(content, null)
         }
         bottomViewModel.update(accountUpdateRequest)
-            .autoDispose(stopScope).subscribe({ r: MixinResponse<Account> ->
-                if (!isAdded) return@subscribe
-                if (!r.isSuccess) {
-                    ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                    return@subscribe
+            .autoDispose(stopScope).subscribe(
+                { r: MixinResponse<Account> ->
+                    if (!isAdded) return@subscribe
+                    if (!r.isSuccess) {
+                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                        return@subscribe
+                    }
+                    r.data?.let { data ->
+                        Session.storeAccount(data)
+                        bottomViewModel.insertUser(data.toUser())
+                        refreshInfo(data)
+                    }
+                },
+                { t: Throwable ->
+                    ErrorHandler.handleError(t)
                 }
-                r.data?.let { data ->
-                    Session.storeAccount(data)
-                    bottomViewModel.insertUser(data.toUser())
-                    refreshInfo(data)
-                }
-            }, { t: Throwable ->
-                ErrorHandler.handleError(t)
-            })
+            )
     }
 }

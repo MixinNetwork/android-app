@@ -7,9 +7,9 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
-import java.lang.reflect.Type
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.base64Encode
+import java.lang.reflect.Type
 
 object GsonHelper {
     val customGson = GsonBuilder().registerTypeHierarchyAdapter(ByteArray::class.java, ByteArrayToBase64TypeAdapter()).create()

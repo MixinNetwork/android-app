@@ -1,8 +1,8 @@
 package one.mixin.android.crypto
 
 import android.content.Context
-import java.security.SecureRandom
 import org.whispersystems.libsignal.util.Medium
+import java.security.SecureRandom
 
 object CryptoPreference {
 

@@ -100,13 +100,15 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
             bottomMargin = 0
         }
         keyboard?.isVisible = true
-        keyboard?.animateHeight(0,
+        keyboard?.animateHeight(
+            0,
             if (keyboardHeight == 0) keyboard?.measuredHeight ?: 0 else keyboardHeight,
             onEndAction = {
-            if (keyboardHeight == 0) {
-                keyboardHeight = keyboard?.measuredHeight ?: 0
+                if (keyboardHeight == 0) {
+                    keyboardHeight = keyboard?.measuredHeight ?: 0
+                }
             }
-        })
+        )
     }
 
     fun showDone() {

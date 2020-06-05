@@ -5,11 +5,11 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import kotlin.math.max
 import kotlinx.android.synthetic.main.view_flag.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.translationY
+import kotlin.math.max
 
 class FlagLayout @JvmOverloads constructor(
     context: Context,

@@ -13,7 +13,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.uber.autodispose.autoDispose
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_setup_name.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -27,6 +26,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
+import javax.inject.Inject
 
 class SetupNameFragment : BaseFragment() {
 
@@ -50,26 +50,29 @@ class SetupNameFragment : BaseFragment() {
             name_cover.visibility = VISIBLE
             val accountUpdateRequest = AccountUpdateRequest(name_et.text.toString())
             mobileViewModel.update(accountUpdateRequest)
-                .autoDispose(stopScope).subscribe({ r: MixinResponse<Account> ->
-                    name_fab?.hide()
-                    name_cover?.visibility = INVISIBLE
-                    if (!r.isSuccess) {
-                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                        return@subscribe
-                    }
-                    r.data?.let { data ->
-                        Session.storeAccount(data)
-                        mobileViewModel.insertUser(data.toUser())
-                    }
+                .autoDispose(stopScope).subscribe(
+                    { r: MixinResponse<Account> ->
+                        name_fab?.hide()
+                        name_cover?.visibility = INVISIBLE
+                        if (!r.isSuccess) {
+                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                            return@subscribe
+                        }
+                        r.data?.let { data ->
+                            Session.storeAccount(data)
+                            mobileViewModel.insertUser(data.toUser())
+                        }
 
-                    name_et?.hideKeyboard()
-                    startActivity(Intent(context, MainActivity::class.java))
-                    activity?.finish()
-                }, { t: Throwable ->
-                    name_fab?.hide()
-                    name_cover?.visibility = INVISIBLE
-                    ErrorHandler.handleError(t)
-                })
+                        name_et?.hideKeyboard()
+                        startActivity(Intent(context, MainActivity::class.java))
+                        activity?.finish()
+                    },
+                    { t: Throwable ->
+                        name_fab?.hide()
+                        name_cover?.visibility = INVISIBLE
+                        ErrorHandler.handleError(t)
+                    }
+                )
         }
         name_et.addTextChangedListener(mWatcher)
         name_cover.isClickable = true

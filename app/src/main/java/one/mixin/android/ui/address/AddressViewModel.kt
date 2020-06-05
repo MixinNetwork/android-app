@@ -1,10 +1,10 @@
 package one.mixin.android.ui.address
 
 import androidx.lifecycle.ViewModel
-import javax.inject.Inject
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.repository.AssetRepository
+import javax.inject.Inject
 
 class AddressViewModel @Inject
 internal constructor(

@@ -18,7 +18,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_new_group.*
 import kotlinx.android.synthetic.main.item_contact_normal.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -43,6 +42,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import org.jetbrains.anko.textColor
+import javax.inject.Inject
 
 class NewGroupFragment : BaseFragment() {
     companion object {
@@ -136,25 +136,28 @@ class NewGroupFragment : BaseFragment() {
             )
         }
         val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)
-        liveData.observe(viewLifecycleOwner, Observer { c ->
-            if (c != null) {
-                when (c.status) {
-                    ConversationStatus.SUCCESS.ordinal -> {
-                        liveData.removeObservers(viewLifecycleOwner)
-                        name_desc_et.hideKeyboard()
-                        dialog?.dismiss()
-                        activity?.finish()
-                        ConversationActivity.showAndClear(requireContext(), conversation.conversationId)
-                    }
-                    ConversationStatus.FAILURE.ordinal -> {
-                        liveData.removeObservers(viewLifecycleOwner)
-                        name_desc_et.hideKeyboard()
-                        dialog?.dismiss()
-                        startActivity(Intent(context, MainActivity::class.java))
+        liveData.observe(
+            viewLifecycleOwner,
+            Observer { c ->
+                if (c != null) {
+                    when (c.status) {
+                        ConversationStatus.SUCCESS.ordinal -> {
+                            liveData.removeObservers(viewLifecycleOwner)
+                            name_desc_et.hideKeyboard()
+                            dialog?.dismiss()
+                            activity?.finish()
+                            ConversationActivity.showAndClear(requireContext(), conversation.conversationId)
+                        }
+                        ConversationStatus.FAILURE.ordinal -> {
+                            liveData.removeObservers(viewLifecycleOwner)
+                            name_desc_et.hideKeyboard()
+                            dialog?.dismiss()
+                            startActivity(Intent(context, MainActivity::class.java))
+                        }
                     }
                 }
             }
-        })
+        )
     }
 
     private fun enableCreate(enable: Boolean) {

@@ -42,8 +42,6 @@ import com.jakewharton.rxbinding3.view.clicks
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.fadeIn
@@ -55,6 +53,8 @@ import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.InputAwareLayout
 import org.jetbrains.anko.dip
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 class ChatControlView : FrameLayout {
 
@@ -276,14 +276,18 @@ class ChatControlView : FrameLayout {
     }
 
     private fun startScaleAnim(v: ImageView, d: Drawable?) {
-        val scaleUp = ObjectAnimator.ofPropertyValuesHolder(v,
+        val scaleUp = ObjectAnimator.ofPropertyValuesHolder(
+            v,
             PropertyValuesHolder.ofFloat("scaleX", 0.6f, 1f),
-            PropertyValuesHolder.ofFloat("scaleY", 0.6f, 1f)).apply {
+            PropertyValuesHolder.ofFloat("scaleY", 0.6f, 1f)
+        ).apply {
             duration = 100
         }
-        val scaleDown = ObjectAnimator.ofPropertyValuesHolder(v,
+        val scaleDown = ObjectAnimator.ofPropertyValuesHolder(
+            v,
             PropertyValuesHolder.ofFloat("scaleX", 1f, 0.6f),
-            PropertyValuesHolder.ofFloat("scaleY", 1f, 0.6f)).apply {
+            PropertyValuesHolder.ofFloat("scaleY", 1f, 0.6f)
+        ).apply {
             duration = 100
         }
         scaleDown.doOnEnd {
@@ -316,11 +320,14 @@ class ChatControlView : FrameLayout {
             ObjectAnimator.ofFloat(recordCircle, "scale", 1f).apply {
                 interpolator = DecelerateInterpolator()
                 duration = 200
-                addListener(onEnd = {
-                    recordCircle.visibility = View.VISIBLE
-                }, onCancel = {
-                    recordCircle.visibility = View.VISIBLE
-                })
+                addListener(
+                    onEnd = {
+                        recordCircle.visibility = View.VISIBLE
+                    },
+                    onCancel = {
+                        recordCircle.visibility = View.VISIBLE
+                    }
+                )
             }.start()
             chat_send_ib.animate().setDuration(200).alpha(0f).start()
             chat_slide.onStart()
@@ -328,13 +335,16 @@ class ChatControlView : FrameLayout {
             ObjectAnimator.ofFloat(recordCircle, "scale", 0f).apply {
                 interpolator = AccelerateInterpolator()
                 duration = 200
-                addListener(onEnd = {
-                    recordCircle.visibility = View.GONE
-                    recordCircle.locked = false
-                }, onCancel = {
-                    recordCircle.visibility = View.GONE
-                    recordCircle.locked = false
-                })
+                addListener(
+                    onEnd = {
+                        recordCircle.visibility = View.GONE
+                        recordCircle.locked = false
+                    },
+                    onCancel = {
+                        recordCircle.visibility = View.GONE
+                        recordCircle.locked = false
+                    }
+                )
             }.start()
             chat_send_ib.animate().setDuration(200).alpha(1f).start()
             chat_slide.onEnd()
@@ -346,20 +356,24 @@ class ChatControlView : FrameLayout {
     @SuppressLint("ObjectAnimatorBinding")
     private fun createTransitions(): LayoutTransition {
         val scaleDownTransX = chat_send_ib.width
-        val scaleDown = ObjectAnimator.ofPropertyValuesHolder(null as Any?,
+        val scaleDown = ObjectAnimator.ofPropertyValuesHolder(
+            null as Any?,
             PropertyValuesHolder.ofFloat("scaleX", 1f, 0.3f),
             PropertyValuesHolder.ofFloat("scaleY", 1f, 0.3f),
             PropertyValuesHolder.ofFloat("alpha", 1f, 0f),
-            PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat())).apply {
+            PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat())
+        ).apply {
             duration = 50
             interpolator = DecelerateInterpolator()
         }
 
-        val scaleUp = ObjectAnimator.ofPropertyValuesHolder(null as Any?,
+        val scaleUp = ObjectAnimator.ofPropertyValuesHolder(
+            null as Any?,
             PropertyValuesHolder.ofFloat("scaleX", 0.3f, 1f),
             PropertyValuesHolder.ofFloat("scaleY", 0.3f, 1f),
             PropertyValuesHolder.ofFloat("alpha", 0f, 1f),
-            PropertyValuesHolder.ofFloat("translationX", 0f)).apply {
+            PropertyValuesHolder.ofFloat("translationX", 0f)
+        ).apply {
             duration = 50
             interpolator = DecelerateInterpolator()
         }
@@ -370,20 +384,24 @@ class ChatControlView : FrameLayout {
     @SuppressLint("ObjectAnimatorBinding")
     private fun createEditTransitions(): LayoutTransition {
         val scaleDownTransX = right - chat_menu_iv.width - chat_send_ib.width - edit_ll.width
-        val scaleDown = ObjectAnimator.ofPropertyValuesHolder(null as Any?,
+        val scaleDown = ObjectAnimator.ofPropertyValuesHolder(
+            null as Any?,
             PropertyValuesHolder.ofFloat("scaleX", 1f, 0.3f),
             PropertyValuesHolder.ofFloat("scaleY", 1f, 0.3f),
             PropertyValuesHolder.ofFloat("alpha", 1f, 0f),
-            PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat())).apply {
+            PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat())
+        ).apply {
             duration = 50
             interpolator = DecelerateInterpolator()
         }
 
-        val scaleUp = ObjectAnimator.ofPropertyValuesHolder(null as Any?,
+        val scaleUp = ObjectAnimator.ofPropertyValuesHolder(
+            null as Any?,
             PropertyValuesHolder.ofFloat("scaleX", 0.3f, 1f),
             PropertyValuesHolder.ofFloat("scaleY", 0.3f, 1f),
             PropertyValuesHolder.ofFloat("alpha", 0f, 1f),
-            PropertyValuesHolder.ofFloat("translationX", 0f)).apply {
+            PropertyValuesHolder.ofFloat("translationX", 0f)
+        ).apply {
             duration = 50
             interpolator = DecelerateInterpolator()
         }
@@ -488,7 +506,8 @@ class ChatControlView : FrameLayout {
             callback.onStickerClick()
 
             if (stickerStatus == KEYBOARD && inputLayout.isInputOpen &&
-                sendStatus == AUDIO && lastSendStatus == AUDIO) {
+                sendStatus == AUDIO && lastSendStatus == AUDIO
+            ) {
                 setSend()
             }
             remainFocusable()
@@ -499,13 +518,16 @@ class ChatControlView : FrameLayout {
     private val onChatImgClickListener = OnClickListener {
         RxPermissions(activity!! as FragmentActivity)
             .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .subscribe({ granted ->
-                if (granted) {
-                    clickGallery()
-                } else {
-                    context?.openPermissionSetting()
-                }
-            }, {})
+            .subscribe(
+                { granted ->
+                    if (granted) {
+                        clickGallery()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                },
+                {}
+            )
     }
 
     private fun clickGallery() {
@@ -716,8 +738,10 @@ class ChatControlView : FrameLayout {
 
                 val x = recordCircle.setLockTranslation(event.y)
                 if (x == 2) {
-                    ObjectAnimator.ofFloat(recordCircle, "lockAnimatedTranslation",
-                        recordCircle.startTranslation).apply {
+                    ObjectAnimator.ofFloat(
+                        recordCircle, "lockAnimatedTranslation",
+                        recordCircle.startTranslation
+                    ).apply {
                         duration = 150
                         interpolator = DecelerateInterpolator()
                     }.start()

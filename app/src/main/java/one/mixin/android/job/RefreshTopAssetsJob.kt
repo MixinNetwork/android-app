@@ -3,8 +3,10 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.vo.TopAsset
 
-class RefreshTopAssetsJob : BaseJob(Params(PRIORITY_UI_HIGH)
-    .addTags(RefreshTopAssetsJob.GROUP).requireNetwork()) {
+class RefreshTopAssetsJob : BaseJob(
+    Params(PRIORITY_UI_HIGH)
+        .addTags(RefreshTopAssetsJob.GROUP).requireNetwork()
+) {
 
     companion object {
         private const val serialVersionUID = 1L

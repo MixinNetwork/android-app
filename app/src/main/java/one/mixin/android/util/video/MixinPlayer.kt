@@ -25,14 +25,14 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
-import kotlin.math.max
-import kotlin.math.min
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import kotlin.math.max
+import kotlin.math.min
 
 @Suppress("unused")
 class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoListener {
@@ -109,9 +109,11 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     }
 
     fun seekTo(timeMillis: Int) {
-        val seekPos = (if (player.duration == C.TIME_UNSET)
-            0
-        else min(max(0, timeMillis), duration())).toLong()
+        val seekPos = (
+            if (player.duration == C.TIME_UNSET)
+                0
+            else min(max(0, timeMillis), duration())
+            ).toLong()
         seekTo(seekPos)
     }
 
@@ -177,7 +179,8 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
             uiThread {
                 mediaSource = if (contentType.contains("application/x-mpegURL", true) ||
                     contentType.contains("application/vnd.apple.mpegurl", true) ||
-                    contentType.contains("binary/octet-stream", ignoreCase = true)) {
+                    contentType.contains("binary/octet-stream", ignoreCase = true)
+                ) {
                     HlsMediaSource.Factory(buildDataSourceFactory()).createMediaSource(Uri.parse(url))
                 } else {
                     ProgressiveMediaSource.Factory(buildDataSourceFactory()).createMediaSource(Uri.parse(url))

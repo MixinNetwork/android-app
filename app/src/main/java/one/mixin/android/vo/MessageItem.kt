@@ -14,8 +14,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.android.exoplayer2.util.MimeTypes
-import java.io.File
-import java.io.FileInputStream
 import kotlinx.android.parcel.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -27,6 +25,8 @@ import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toast
 import one.mixin.android.util.VideoPlayer
+import java.io.File
+import java.io.FileInputStream
 
 @SuppressLint("ParcelCreator")
 @Entity
@@ -105,8 +105,10 @@ data class MessageItem(
 
 fun create(type: String, createdAt: String? = null) = MessageItem(
     "", "", "", "", "",
-    type, null, createdAt
-        ?: nowInUtc(), MessageStatus.READ.name, null, null,
+    type, null,
+    createdAt
+        ?: nowInUtc(),
+    MessageStatus.READ.name, null, null,
     null, null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null, null, null

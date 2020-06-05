@@ -33,7 +33,8 @@ class FileHolderBottomLayout constructor(context: Context, attrs: AttributeSet) 
                 .subscribe {
                     if (it.id == bindId) {
                         if (it.status == CircleProgress.STATUS_PLAY &&
-                            it.progress in 0f..seek_bar.max.toFloat()) {
+                            it.progress in 0f..seek_bar.max.toFloat()
+                        ) {
                             seek_bar.progress = (it.progress * seek_bar.max).toInt()
                             if (displayedChild != POS_SEEK_BAR) {
                                 showSeekBar()
@@ -46,7 +47,8 @@ class FileHolderBottomLayout constructor(context: Context, attrs: AttributeSet) 
                     } else {
                         if (it.status == CircleProgress.STATUS_PAUSE ||
                             it.status == CircleProgress.STATUS_PLAY ||
-                            it.status == CircleProgress.STATUS_ERROR) {
+                            it.status == CircleProgress.STATUS_ERROR
+                        ) {
                             seek_bar.progress = 0
                             if (displayedChild != POS_TEXT) {
                                 showText()

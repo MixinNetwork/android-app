@@ -6,7 +6,6 @@ import android.util.AttributeSet
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.widget.LinearLayout
-import java.math.BigDecimal
 import kotlinx.android.synthetic.main.layout_asset_balance.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
@@ -14,6 +13,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.Fiats
+import java.math.BigDecimal
 
 class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearLayout(context, attributeSet) {
     init {
@@ -40,6 +40,8 @@ class AssetBalanceLayout(context: Context, attributeSet: AttributeSet) : LinearL
     }
 
     private fun getValueText(value: String, assetPrice: BigDecimal) =
-        "≈ ${Fiats.getSymbol()}${(BigDecimal(value) *
-            assetPrice).numberFormat2()}"
+        "≈ ${Fiats.getSymbol()}${(
+            BigDecimal(value) *
+                assetPrice
+            ).numberFormat2()}"
 }

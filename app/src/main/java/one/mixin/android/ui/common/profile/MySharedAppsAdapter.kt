@@ -65,8 +65,10 @@ class MySharedAppsAdapter(
     }
 
     override fun getItemCount(): Int {
-        return (favoriteApps.notNullWithElse({ it.size }, 0) +
-            unFavoriteApps.notNullWithElse({ it.size }, 0)).run {
+        return (
+            favoriteApps.notNullWithElse({ it.size }, 0) +
+                unFavoriteApps.notNullWithElse({ it.size }, 0)
+            ).run {
             if (this > 0) {
                 this + 1
             } else {

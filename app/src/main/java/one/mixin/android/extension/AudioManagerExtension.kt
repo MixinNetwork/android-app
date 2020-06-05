@@ -10,7 +10,8 @@ fun AudioManager.isHeadsetOn(): Boolean {
             device.type == AudioDeviceInfo.TYPE_WIRED_HEADPHONES ||
             device.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
             device.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO ||
-            device.type == AudioDeviceInfo.TYPE_USB_HEADSET) {
+            device.type == AudioDeviceInfo.TYPE_USB_HEADSET
+        ) {
             return true
         }
     }

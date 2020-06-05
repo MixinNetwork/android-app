@@ -8,11 +8,6 @@ import android.util.AttributeSet
 import android.view.View
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import kotlin.experimental.and
-import kotlin.experimental.or
-import kotlin.math.ceil
-import kotlin.math.max
-import kotlin.math.min
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
@@ -20,6 +15,11 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import org.jetbrains.anko.dip
+import kotlin.experimental.and
+import kotlin.experimental.or
+import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.min
 
 class WaveformView : View {
     constructor(context: Context) : super(context)
@@ -76,7 +76,8 @@ class WaveformView : View {
                     } else {
                         if (it.status == STATUS_PAUSE ||
                             it.status == STATUS_PLAY ||
-                            it.status == STATUS_ERROR) {
+                            it.status == STATUS_ERROR
+                        ) {
                             setProgress(0f)
                         }
                     }

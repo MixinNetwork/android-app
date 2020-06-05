@@ -15,8 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_search_message.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +31,8 @@ import one.mixin.android.ui.search.SearchSingleFragment.Companion.ARGS_QUERY
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 class SearchMessageFragment : BaseFragment() {
     companion object {
@@ -77,8 +77,10 @@ class SearchMessageFragment : BaseFragment() {
         title_view.avatar_iv.setTextSize(16f)
         if (searchMessageItem.conversationCategory == ConversationCategory.CONTACT.name) {
             title_view.title_tv.text = searchMessageItem.userFullName
-            title_view.avatar_iv.setInfo(searchMessageItem.userFullName,
-                searchMessageItem.userAvatarUrl, searchMessageItem.userId)
+            title_view.avatar_iv.setInfo(
+                searchMessageItem.userFullName,
+                searchMessageItem.userAvatarUrl, searchMessageItem.userId
+            )
         } else {
             title_view.title_tv.text = searchMessageItem.conversationName
             title_view.avatar_iv.setGroup(searchMessageItem.conversationAvatarUrl)
@@ -91,10 +93,12 @@ class SearchMessageFragment : BaseFragment() {
                     .autoDispose(stopScope)
                     .subscribe {
                         search_et.hideKeyboard()
-                        ConversationActivity.show(requireContext(),
+                        ConversationActivity.show(
+                            requireContext(),
                             conversationId = searchMessageItem.conversationId,
                             messageId = item.messageId,
-                            keyword = search_et.text.toString())
+                            keyword = search_et.text.toString()
+                        )
                         if (isConversationSearch()) {
                             parentFragmentManager.popBackStack()
                         }
@@ -108,17 +112,26 @@ class SearchMessageFragment : BaseFragment() {
         search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
-            .subscribe({
-                clear_ib.isVisible = it.isNotEmpty()
-                onTextChanged(it.toString())
-            }, {})
-        search_et.postDelayed({
-            onTextChanged(query)
-        }, 50)
+            .subscribe(
+                {
+                    clear_ib.isVisible = it.isNotEmpty()
+                    onTextChanged(it.toString())
+                },
+                {}
+            )
+        search_et.postDelayed(
+            {
+                onTextChanged(query)
+            },
+            50
+        )
         if (isConversationSearch()) {
-            search_et.postDelayed({
-                search_et?.showKeyboard()
-            }, 500)
+            search_et.postDelayed(
+                {
+                    search_et?.showKeyboard()
+                },
+                500
+            )
         }
     }
 

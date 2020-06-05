@@ -73,10 +73,12 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun savePreference(currency: Currency) = lifecycleScope.launch {
-        val pb = indeterminateProgressDialog(message = R.string.pb_dialog_message,
-                title = R.string.currency_switch).apply {
-                setCancelable(false)
-            }
+        val pb = indeterminateProgressDialog(
+            message = R.string.pb_dialog_message,
+            title = R.string.currency_switch
+        ).apply {
+            setCancelable(false)
+        }
         pb.show()
 
         handleMixinResponse(
@@ -125,11 +127,13 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun filter(s: String) {
-        currencyAdapter.submitList(if (s.isNotBlank()) {
-            currencies.filter {
-                it.name.contains(s, true)
-            }.sortedByDescending { it.name == s }
-        } else currencies)
+        currencyAdapter.submitList(
+            if (s.isNotBlank()) {
+                currencies.filter {
+                    it.name.contains(s, true)
+                }.sortedByDescending { it.name == s }
+            } else currencies
+        )
     }
 
     interface Callback {

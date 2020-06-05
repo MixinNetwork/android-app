@@ -91,15 +91,23 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             showSendBottom()
         }
         headerView.receive_tv.setOnClickListener {
-            asset.differentProcess({
-                view.navigate(R.id.action_transactions_to_deposit_public_key,
-                    Bundle().apply { putParcelable(ARGS_ASSET, asset) })
-            }, {
-                view.navigate(R.id.action_transactions_to_deposit_account,
-                    Bundle().apply { putParcelable(ARGS_ASSET, asset) })
-            }, {
-                toast(getString(R.string.error_bad_data, ErrorHandler.BAD_DATA))
-            })
+            asset.differentProcess(
+                {
+                    view.navigate(
+                        R.id.action_transactions_to_deposit_public_key,
+                        Bundle().apply { putParcelable(ARGS_ASSET, asset) }
+                    )
+                },
+                {
+                    view.navigate(
+                        R.id.action_transactions_to_deposit_account,
+                        Bundle().apply { putParcelable(ARGS_ASSET, asset) }
+                    )
+                },
+                {
+                    toast(getString(R.string.error_bad_data, ErrorHandler.BAD_DATA))
+                }
+            )
         }
 
         adapter.listener = this
@@ -136,12 +144,15 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             }
         }
         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = currentOrder == R.id.sort_amount))
-        walletViewModel.assetItem(asset.assetId).observe(viewLifecycleOwner, Observer { assetItem ->
-            assetItem?.let {
-                asset = it
-                updateHeader(headerView, it)
+        walletViewModel.assetItem(asset.assetId).observe(
+            viewLifecycleOwner,
+            Observer { assetItem ->
+                assetItem?.let {
+                    asset = it
+                    updateHeader(headerView, it)
+                }
             }
-        })
+        )
 
         refreshPendingDeposits(asset)
     }
@@ -246,10 +257,12 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }
         view.address.setOnClickListener {
             bottomSheet.dismiss()
-            this@TransactionsFragment.view?.navigate(R.id.action_transactions_to_address_management,
+            this@TransactionsFragment.view?.navigate(
+                R.id.action_transactions_to_address_management,
                 Bundle().apply {
                     putParcelable(ARGS_ASSET, asset)
-                })
+                }
+            )
         }
         view.send_cancel.setOnClickListener { bottomSheet.dismiss() }
 
@@ -257,11 +270,13 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        view?.navigate(R.id.action_transactions_fragment_to_transaction_fragment,
+        view?.navigate(
+            R.id.action_transactions_fragment_to_transaction_fragment,
             Bundle().apply {
                 putParcelable(TransactionFragment.ARGS_SNAPSHOT, item as SnapshotItem)
                 putParcelable(ARGS_ASSET, asset)
-            })
+            }
+        )
     }
 
     override fun onUserClick(userId: String) {
@@ -269,8 +284,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             walletViewModel.getUser(userId)?.let {
                 val f = UserBottomSheetDialogFragment.newInstance(it)
                 f.showUserTransactionAction = {
-                    view?.navigate(R.id.action_transactions_to_user_transactions,
-                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) })
+                    view?.navigate(
+                        R.id.action_transactions_to_user_transactions,
+                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) }
+                    )
                 }
                 f.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
             }

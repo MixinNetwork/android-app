@@ -9,14 +9,6 @@ import android.security.keystore.UserNotAuthenticatedException
 import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import java.nio.charset.Charset
-import java.security.InvalidKeyException
-import java.security.KeyStore
-import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
-import javax.crypto.SecretKey
-import javax.crypto.SecretKeyFactory
-import javax.crypto.spec.IvParameterSpec
 import moe.feng.support.biometricprompt.BiometricPromptCompat
 import one.mixin.android.Constants
 import one.mixin.android.Constants.BIOMETRICS_ALIAS
@@ -27,6 +19,14 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.toast
 import org.jetbrains.anko.getStackTraceString
+import java.nio.charset.Charset
+import java.security.InvalidKeyException
+import java.security.KeyStore
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.IvParameterSpec
 
 object BiometricUtil {
 
@@ -57,7 +57,8 @@ object BiometricUtil {
     fun showAuthenticationScreen(fragment: Fragment) {
         val intent = fragment.requireContext().getSystemService<KeyguardManager>()?.createConfirmDeviceCredentialIntent(
             fragment.requireContext().getString(R.string.wallet_biometric_screen_lock),
-            fragment.requireContext().getString(R.string.wallet_biometric_screen_lock_desc))
+            fragment.requireContext().getString(R.string.wallet_biometric_screen_lock_desc)
+        )
         if (intent != null) {
             fragment.activity?.startActivityForResult(intent, REQUEST_CODE_CREDENTIALS)
         }
@@ -136,20 +137,26 @@ object BiometricUtil {
         try {
             if (key == null) {
                 val keyGenerator = KeyGenerator.getInstance(
-                    KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
+                    KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore"
+                )
                 keyGenerator.init(
-                    KeyGenParameterSpec.Builder(BIOMETRICS_ALIAS,
-                        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+                    KeyGenParameterSpec.Builder(
+                        BIOMETRICS_ALIAS,
+                        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                    )
                         .setBlockModes(
                             KeyProperties.BLOCK_MODE_CBC,
                             KeyProperties.BLOCK_MODE_CTR,
-                            KeyProperties.BLOCK_MODE_GCM)
+                            KeyProperties.BLOCK_MODE_GCM
+                        )
                         .setEncryptionPaddings(
                             KeyProperties.ENCRYPTION_PADDING_PKCS7,
-                            KeyProperties.ENCRYPTION_PADDING_NONE)
+                            KeyProperties.ENCRYPTION_PADDING_NONE
+                        )
                         .setUserAuthenticationRequired(true)
                         .setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
-                        .build())
+                        .build()
+                )
                 key = keyGenerator.generateKey()
             }
         } catch (e: Exception) {

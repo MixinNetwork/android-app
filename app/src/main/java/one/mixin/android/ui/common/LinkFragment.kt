@@ -6,9 +6,6 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import java.util.Timer
-import java.util.TimerTask
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.view_link_state.*
 import one.mixin.android.R
 import one.mixin.android.db.FloodMessageDao
@@ -22,6 +19,9 @@ import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
 import one.mixin.android.webrtc.CallService
 import org.jetbrains.anko.runOnUiThread
+import java.util.Timer
+import java.util.TimerTask
+import javax.inject.Inject
 
 open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
 
@@ -39,12 +39,18 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         floodMessageCount = floodMessageDao.getFloodMessageCount()
-        linkState.observe(viewLifecycleOwner, Observer { state ->
-            check(state)
-        })
-        callState.observe(viewLifecycleOwner, Observer {
-            check(linkState.state)
-        })
+        linkState.observe(
+            viewLifecycleOwner,
+            Observer { state ->
+                check(state)
+            }
+        )
+        callState.observe(
+            viewLifecycleOwner,
+            Observer {
+                check(linkState.state)
+            }
+        )
     }
 
     override fun onStop() {
@@ -81,16 +87,19 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     override fun onChanged(t: Int?) {
         if (callState.callInfo.callState != CallService.CallState.STATE_IDLE) return
 
-        t.notNullWithElse({
-            if (it > 500) {
-                setSyncing()
-                showBar()
-            } else {
+        t.notNullWithElse(
+            {
+                if (it > 500) {
+                    setSyncing()
+                    showBar()
+                } else {
+                    hiddenBar()
+                }
+            },
+            {
                 hiddenBar()
             }
-        }, {
-            hiddenBar()
-        })
+        )
     }
 
     private fun showBar() {

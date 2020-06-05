@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_circle_manager.*
 import kotlinx.android.synthetic.main.item_circle_manager.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -31,6 +30,7 @@ import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getCircleColor
 import one.mixin.android.widget.SegmentationItemDecoration
+import javax.inject.Inject
 
 class CircleManagerFragment : BaseFragment() {
     companion object {
@@ -223,8 +223,10 @@ class CircleManagerFragment : BaseFragment() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CircleHolder =
             CircleHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_circle_manager, parent, false))
 
-        override fun getItemCount(): Int = (includeCircleItem.notEmptyWithElse({ it.size }, 0) +
-            otherCircleItem.notEmptyWithElse({ it.size }, 0))
+        override fun getItemCount(): Int = (
+            includeCircleItem.notEmptyWithElse({ it.size }, 0) +
+                otherCircleItem.notEmptyWithElse({ it.size }, 0)
+            )
 
         override fun getItemViewType(position: Int): Int {
             val favoriteSize = includeCircleItem.notNullWithElse({ it.size }, 0)

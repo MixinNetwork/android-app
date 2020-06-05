@@ -99,10 +99,13 @@ class DepositAccountFragment : DepositFragment() {
                 }.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .autoDispose(scopeProvider)
-                    .subscribe({ r ->
-                        qr.setImageBitmap(r)
-                    }, {
-                    })
+                    .subscribe(
+                        { r ->
+                            qr.setImageBitmap(r)
+                        },
+                        {
+                        }
+                    )
             }
         }
     }

@@ -60,9 +60,11 @@ class VideoHolder(
 
         itemView.player_view.apply {
             currentMessageId = messageItem.messageId
-            setPlaybackPrepare(PlaybackPreparer {
-                messageItem.loadVideoOrLive { showPb() }
-            })
+            setPlaybackPrepare(
+                PlaybackPreparer {
+                    messageItem.loadVideoOrLive { showPb() }
+                }
+            )
             if (needPostTransition) {
                 player = VideoPlayer.player().player
             }
@@ -136,7 +138,8 @@ class VideoHolder(
     private fun maybeLoadVideo(videoStatusCache: LruCache<String, String>, messageItem: MessageItem) {
         val preStatus = videoStatusCache[messageItem.messageId] ?: return
         if (preStatus != MediaStatus.DONE.name && preStatus != MediaStatus.READ.name &&
-            (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name)) {
+            (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name)
+        ) {
             messageItem.loadVideoOrLive {
                 VideoPlayer.player().start()
             }

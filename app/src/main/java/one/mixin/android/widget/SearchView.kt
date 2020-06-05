@@ -56,7 +56,8 @@ class SearchView(context: Context, attrs: AttributeSet?) : AppCompatEditText(con
             if (event.action == MotionEvent.ACTION_UP) {
                 val rightDrawable = compoundDrawables[2]
                 if (rightDrawable != null &&
-                    event.rawX >= right - (rightDrawable.bounds.width() + context.dpToPx(16f))) {
+                    event.rawX >= right - (rightDrawable.bounds.width() + context.dpToPx(16f))
+                ) {
                     text?.clear()
                     return true
                 } else {

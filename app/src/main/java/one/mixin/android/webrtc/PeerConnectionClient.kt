@@ -2,7 +2,6 @@ package one.mixin.android.webrtc
 
 import android.content.Context
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import java.util.concurrent.Executors
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
 import org.webrtc.DataChannel
@@ -17,6 +16,7 @@ import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
 import timber.log.Timber
+import java.util.concurrent.Executors
 
 class PeerConnectionClient(private val context: Context, private val events: PeerConnectionEvents) {
     private val executor = Executors.newSingleThreadExecutor()
@@ -55,15 +55,18 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             peerConnection = createPeerConnectionInternal()
             val offerSdpObserver = object : SdpObserverWrapper() {
                 override fun onCreateSuccess(sdp: SessionDescription) {
-                    peerConnection?.setLocalDescription(object : SdpObserverWrapper() {
-                        override fun onSetFailure(error: String?) {
-                            reportError("createOffer setLocalSdp onSetFailure error: $error")
-                        }
-                        override fun onSetSuccess() {
-                            Timber.d("createOffer setLocalSdp onSetSuccess")
-                            events.onLocalDescription(sdp)
-                        }
-                    }, sdp)
+                    peerConnection?.setLocalDescription(
+                        object : SdpObserverWrapper() {
+                            override fun onSetFailure(error: String?) {
+                                reportError("createOffer setLocalSdp onSetFailure error: $error")
+                            }
+                            override fun onSetSuccess() {
+                                Timber.d("createOffer setLocalSdp onSetSuccess")
+                                events.onLocalDescription(sdp)
+                            }
+                        },
+                        sdp
+                    )
                 }
 
                 override fun onCreateFailure(error: String?) {
@@ -83,15 +86,18 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             peerConnection?.setRemoteDescription(remoteSdpObserver, remoteSdp)
             val answerSdpObserver = object : SdpObserverWrapper() {
                 override fun onCreateSuccess(sdp: SessionDescription) {
-                    peerConnection?.setLocalDescription(object : SdpObserverWrapper() {
-                        override fun onSetFailure(error: String?) {
-                            reportError("createAnswer setLocalSdp onSetFailure error: $error")
-                        }
-                        override fun onSetSuccess() {
-                            Timber.d("createAnswer setLocalSdp onSetSuccess")
-                            events.onLocalDescription(sdp)
-                        }
-                    }, sdp)
+                    peerConnection?.setLocalDescription(
+                        object : SdpObserverWrapper() {
+                            override fun onSetFailure(error: String?) {
+                                reportError("createAnswer setLocalSdp onSetFailure error: $error")
+                            }
+                            override fun onSetSuccess() {
+                                Timber.d("createAnswer setLocalSdp onSetSuccess")
+                                events.onLocalDescription(sdp)
+                            }
+                        },
+                        sdp
+                    )
                 }
 
                 override fun onCreateFailure(error: String?) {
@@ -159,8 +165,9 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
                 val localSdp = "{ localDescription: { description: ${pc.localDescription.description}, type: ${pc.localDescription.type} }"
                 val remoteSdp = "{ remoteDescription: { description: ${pc.remoteDescription.description}, type: ${pc.remoteDescription.type} }"
                 pc.getStats { report ->
-                    FirebaseCrashlytics.getInstance().log("WebRTC peer connection error " +
-                        """
+                    FirebaseCrashlytics.getInstance().log(
+                        "WebRTC peer connection error " +
+                            """
                             { stats: $report },
                             $localSdp,
                             $remoteSdp

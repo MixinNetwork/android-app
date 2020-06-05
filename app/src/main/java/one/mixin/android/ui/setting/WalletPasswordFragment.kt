@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import com.uber.autodispose.autoDispose
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_wallet_password.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
@@ -32,6 +31,7 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
+import javax.inject.Inject
 
 class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
@@ -137,7 +137,8 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
         lastPassword = null
         pin.clear()
         title_view.setSubTitle(
-            getString(if (change) R.string.wallet_password_set_new_pin else R.string.wallet_password_set_pin), getSubTitle())
+            getString(if (change) R.string.wallet_password_set_new_pin else R.string.wallet_password_set_pin), getSubTitle()
+        )
         tip_tv.text = getString(if (change) R.string.wallet_password_set_new_pin_desc else R.string.wallet_password_set_pin_desc)
     }
 
@@ -211,54 +212,60 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
             STEP4 -> {
                 if (checkEqual()) return
 
-                val dialog = indeterminateProgressDialog(message = getString(R.string.pb_dialog_message),
-                    title = if (change) getString(R.string.changing) else getString(R.string.group_creating))
+                val dialog = indeterminateProgressDialog(
+                    message = getString(R.string.pb_dialog_message),
+                    title = if (change) getString(R.string.changing) else getString(R.string.group_creating)
+                )
                 dialog.setCancelable(false)
                 dialog.show()
 
                 walletViewModel.updatePin(pin.code(), oldPassword)
-                    .autoDispose(stopScope).subscribe({ r: MixinResponse<Account> ->
-                        if (r.isSuccess) {
-                            r.data?.let {
-                                Session.storeAccount(it)
-                                walletViewModel.insertUser(it.toUser())
+                    .autoDispose(stopScope).subscribe(
+                        { r: MixinResponse<Account> ->
+                            if (r.isSuccess) {
+                                r.data?.let {
+                                    Session.storeAccount(it)
+                                    walletViewModel.insertUser(it.toUser())
 
-                                val cur = System.currentTimeMillis()
-                                defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
-                                defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_INTERVAL, INTERVAL_10_MINS)
+                                    val cur = System.currentTimeMillis()
+                                    defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
+                                    defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_INTERVAL, INTERVAL_10_MINS)
 
-                                val openBiometrics = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-                                if (openBiometrics) {
-                                    BiometricUtil.savePin(requireContext(), pin.code(), this@WalletPasswordFragment)
-                                }
+                                    val openBiometrics = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+                                    if (openBiometrics) {
+                                        BiometricUtil.savePin(requireContext(), pin.code(), this@WalletPasswordFragment)
+                                    }
 
-                                activity?.let { activity ->
-                                    if (activity is ConversationActivity ||
-                                        activity is ContactsActivity) {
-                                        context?.toast(R.string.wallet_set_password_success)
-                                        parentFragmentManager.popBackStackImmediate()
-                                    } else if (activity is MainActivity) {
-                                        context?.toast(R.string.wallet_set_password_success)
-                                        parentFragmentManager.popBackStackImmediate()
-                                        WalletActivity.show(activity)
-                                    } else {
-                                        if (change) {
-                                            context?.toast(R.string.wallet_change_password_success)
-                                        } else {
+                                    activity?.let { activity ->
+                                        if (activity is ConversationActivity ||
+                                            activity is ContactsActivity
+                                        ) {
                                             context?.toast(R.string.wallet_set_password_success)
+                                            parentFragmentManager.popBackStackImmediate()
+                                        } else if (activity is MainActivity) {
+                                            context?.toast(R.string.wallet_set_password_success)
+                                            parentFragmentManager.popBackStackImmediate()
+                                            WalletActivity.show(activity)
+                                        } else {
+                                            if (change) {
+                                                context?.toast(R.string.wallet_change_password_success)
+                                            } else {
+                                                context?.toast(R.string.wallet_set_password_success)
+                                            }
+                                            parentFragmentManager.popBackStackImmediate()
                                         }
-                                        parentFragmentManager.popBackStackImmediate()
                                     }
                                 }
+                            } else {
+                                ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                             }
-                        } else {
-                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                            dialog.dismiss()
+                        },
+                        { t ->
+                            dialog.dismiss()
+                            ErrorHandler.handleError(t)
                         }
-                        dialog.dismiss()
-                    }, { t ->
-                        dialog.dismiss()
-                        ErrorHandler.handleError(t)
-                    })
+                    )
             }
         }
     }

@@ -1,11 +1,11 @@
 package one.mixin.android.ui.common.profile
 
 import androidx.lifecycle.ViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.util.ErrorHandler
+import javax.inject.Inject
 
 class MySharedAppsViewModel
 @Inject internal constructor(

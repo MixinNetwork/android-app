@@ -37,7 +37,6 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.view_search.view.*
 import kotlinx.coroutines.Dispatchers
@@ -128,6 +127,7 @@ import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
+import javax.inject.Inject
 
 class MainActivity : BlazeBaseActivity() {
 
@@ -315,9 +315,9 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun checkRoot() {
         if (RootUtil.isDeviceRooted && defaultSharedPreferences.getBoolean(
-                Constants.Account.PREF_BIOMETRICS,
-                false
-            )
+            Constants.Account.PREF_BIOMETRICS,
+            false
+        )
         ) {
             BiometricUtil.deleteKey(this)
         }
@@ -331,13 +331,16 @@ class MainActivity : BlazeBaseActivity() {
             accountRepo.deviceCheck().subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .autoDispose(stopScope)
-                .subscribe({ resp ->
-                    resp.data?.let {
-                        val nonce = Base64.decode(it.nonce)
-                        validateSafetyNet(nonce)
+                .subscribe(
+                    { resp ->
+                        resp.data?.let {
+                            val nonce = Base64.decode(it.nonce)
+                            validateSafetyNet(nonce)
+                        }
+                    },
+                    {
                     }
-                }, {
-                })
+                )
         }
     }
 
@@ -537,14 +540,17 @@ class MainActivity : BlazeBaseActivity() {
                 runOnUiThread { alertDialog?.dismiss() }
                 innerIntent
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .autoDispose(stopScope).subscribe({
-                    it?.let { intent ->
-                        this.startActivity(intent)
+                .autoDispose(stopScope).subscribe(
+                    {
+                        it?.let { intent ->
+                            this.startActivity(intent)
+                        }
+                    },
+                    {
+                        alertDialog?.dismiss()
+                        ErrorHandler.handleError(it)
                     }
-                }, {
-                    alertDialog?.dismiss()
-                    ErrorHandler.handleError(it)
-                })
+                )
         }
     }
 
@@ -554,25 +560,35 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun initView() {
-        search_bar.setOnLeftClickListener(View.OnClickListener {
-            openSearch()
-        })
-        search_bar.setOnGroupClickListener(View.OnClickListener {
-            navigationController.pushContacts()
-        })
-        search_bar.setOnAddClickListener(View.OnClickListener {
-            addCircle()
-        })
-        search_bar.setOnConfirmClickListener(View.OnClickListener {
-            val circlesFragment =
-                supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
-            circlesFragment.cancelSort()
-            search_bar?.action_va?.showPrevious()
-        })
+        search_bar.setOnLeftClickListener(
+            View.OnClickListener {
+                openSearch()
+            }
+        )
+        search_bar.setOnGroupClickListener(
+            View.OnClickListener {
+                navigationController.pushContacts()
+            }
+        )
+        search_bar.setOnAddClickListener(
+            View.OnClickListener {
+                addCircle()
+            }
+        )
+        search_bar.setOnConfirmClickListener(
+            View.OnClickListener {
+                val circlesFragment =
+                    supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
+                circlesFragment.cancelSort()
+                search_bar?.action_va?.showPrevious()
+            }
+        )
 
-        search_bar.setOnBackClickListener(View.OnClickListener {
-            search_bar.closeSearch()
-        })
+        search_bar.setOnBackClickListener(
+            View.OnClickListener {
+                search_bar.closeSearch()
+            }
+        )
 
         search_bar.mOnQueryTextListener = object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String): Boolean {

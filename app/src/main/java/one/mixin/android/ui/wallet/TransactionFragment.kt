@@ -8,8 +8,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import java.math.BigDecimal
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transaction.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -29,6 +27,8 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import org.jetbrains.anko.textColorResource
+import java.math.BigDecimal
+import javax.inject.Inject
 
 class TransactionFragment : BaseFragment() {
     companion object {
@@ -99,7 +99,7 @@ class TransactionFragment : BaseFragment() {
         avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         value_tv.text = if (isPositive) "+${snapshot.amount.numberFormat()}"
-            else snapshot.amount.numberFormat()
+        else snapshot.amount.numberFormat()
         symbol_tv.text = asset.symbol
         value_tv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
         val amount = (BigDecimal(snapshot.amount) * asset.priceFiat()).priceFormat()

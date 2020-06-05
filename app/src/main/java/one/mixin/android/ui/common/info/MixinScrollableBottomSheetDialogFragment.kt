@@ -17,7 +17,6 @@ import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.scope
-import javax.inject.Inject
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.booleanFromAttribute
@@ -30,6 +29,7 @@ import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.linktext.AutoLinkMode
 import one.mixin.android.widget.linktext.AutoLinkTextView
 import timber.log.Timber
+import javax.inject.Inject
 
 abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
@@ -131,7 +131,8 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         }
         detailsTv.setOnTouchListener { _, _ ->
             if (detailsTv.canScrollVertically(1) ||
-                detailsTv.canScrollVertically(-1)) {
+                detailsTv.canScrollVertically(-1)
+            ) {
                 detailsTv.parent.requestDisallowInterceptTouchEvent(true)
             }
             return@setOnTouchListener false

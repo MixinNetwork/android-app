@@ -2,7 +2,6 @@ package one.mixin.android.crypto.storage
 
 import android.content.Context
 import android.util.Log
-import java.io.IOException
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase
@@ -11,6 +10,7 @@ import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.protocol.CiphertextMessage
 import org.whispersystems.libsignal.state.SessionRecord
 import org.whispersystems.libsignal.state.SessionStore
+import java.io.IOException
 
 class MixinSessionStore(context: Context) : SessionStore {
 

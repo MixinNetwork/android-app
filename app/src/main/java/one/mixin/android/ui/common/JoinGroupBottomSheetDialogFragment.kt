@@ -67,27 +67,30 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
         contentView.join_tv.setOnClickListener {
             contentView.join_tv?.visibility = View.INVISIBLE
             contentView.join_progress?.visibility = View.VISIBLE
-            bottomViewModel.join(code).autoDispose(stopScope).subscribe({
-                contentView.join_tv?.visibility = View.VISIBLE
-                contentView.join_progress?.visibility = View.GONE
-                if (it.isSuccess) {
-                    val conversationResponse = it.data as ConversationResponse
-                    val accountId = Session.getAccountId()
-                    val result = conversationResponse.participants.any { participant ->
-                        participant.userId == accountId
+            bottomViewModel.join(code).autoDispose(stopScope).subscribe(
+                {
+                    contentView.join_tv?.visibility = View.VISIBLE
+                    contentView.join_progress?.visibility = View.GONE
+                    if (it.isSuccess) {
+                        val conversationResponse = it.data as ConversationResponse
+                        val accountId = Session.getAccountId()
+                        val result = conversationResponse.participants.any { participant ->
+                            participant.userId == accountId
+                        }
+                        if (result) {
+                            bottomViewModel.refreshConversation(c.conversationId)
+                            ConversationActivity.show(requireContext(), c.conversationId)
+                        }
+                    } else {
+                        ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
                     }
-                    if (result) {
-                        bottomViewModel.refreshConversation(c.conversationId)
-                        ConversationActivity.show(requireContext(), c.conversationId)
-                    }
-                } else {
-                    ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
+                },
+                {
+                    contentView.join_tv?.visibility = View.VISIBLE
+                    contentView.join_progress?.visibility = View.GONE
+                    ErrorHandler.handleError(it)
                 }
-            }, {
-                contentView.join_tv?.visibility = View.VISIBLE
-                contentView.join_progress?.visibility = View.GONE
-                ErrorHandler.handleError(it)
-            })
+            )
         }
         contentView.detail_tv.movementMethod = LinkMovementMethod()
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)

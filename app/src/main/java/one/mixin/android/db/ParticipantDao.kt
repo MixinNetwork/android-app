@@ -12,15 +12,19 @@ import one.mixin.android.vo.User
 interface ParticipantDao : BaseDao<Participant> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("""
+    @Query(
+        """
         SELECT u.user_id, u.identity_number, u.full_name, u.avatar_url, u.relationship, u.biography FROM participants p, users u 
         WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id
-        """)
+        """
+    )
     fun getParticipants(conversationId: String): List<User>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship, u.app_id, u.is_verified FROM participants p, users u " +
-        "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at DESC")
+    @Query(
+        "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship, u.app_id, u.is_verified FROM participants p, users u " +
+            "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at DESC"
+    )
     fun getGroupParticipantsLiveData(conversationId: String): LiveData<List<User>>
 
     @Query("UPDATE participants SET role = :role where conversation_id = :conversationId AND user_id = :userId")
@@ -47,13 +51,17 @@ interface ParticipantDao : BaseDao<Participant> {
     fun deleteById(conversationId: String, userId: String)
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship FROM participants p, users u " +
-        "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at LIMIT 4")
+    @Query(
+        "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship FROM participants p, users u " +
+            "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at LIMIT 4"
+    )
     fun getParticipantsAvatar(conversationId: String): List<User>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship FROM participants p, users u " +
-        "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at DESC LIMIT :limit")
+    @Query(
+        "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship FROM participants p, users u " +
+            "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at DESC LIMIT :limit"
+    )
     fun getLimitParticipants(conversationId: String, limit: Int): List<User>
 
     @Query("SELECT * FROM participants WHERE conversation_id = :conversationId AND user_id = :userId")

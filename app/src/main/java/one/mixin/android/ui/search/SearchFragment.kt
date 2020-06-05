@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersTouchListener
 import com.uber.autodispose.autoDispose
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.item_search_app.view.*
 import kotlinx.android.synthetic.main.item_search_header.view.*
@@ -46,6 +45,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import javax.inject.Inject
 
 class SearchFragment : BaseFragment() {
 
@@ -112,19 +112,24 @@ class SearchFragment : BaseFragment() {
         search_rv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         search_rv.addItemDecoration(decoration)
         search_rv.adapter = searchAdapter
-        search_rv.addOnItemTouchListener(StickyRecyclerHeadersTouchListener(search_rv, decoration).apply {
-            setOnHeaderClickListener { headerView, position, _, e ->
-                if (headerView.search_header_more.x > e.rawX) return@setOnHeaderClickListener
+        search_rv.addOnItemTouchListener(
+            StickyRecyclerHeadersTouchListener(search_rv, decoration).apply {
+                setOnHeaderClickListener { headerView, position, _, e ->
+                    if (headerView.search_header_more.x > e.rawX) return@setOnHeaderClickListener
 
-                searchAdapter.getTypeData(position)?.let {
-                    val f = SearchSingleFragment.newInstance(arrayListOf<Parcelable>().apply {
-                        addAll(it)
-                    }, keyword ?: "")
-                    requireActivity().addFragment(this@SearchFragment, f, SearchSingleFragment.TAG, R.id.root_view)
-                    search_rv.hideKeyboard()
+                    searchAdapter.getTypeData(position)?.let {
+                        val f = SearchSingleFragment.newInstance(
+                            arrayListOf<Parcelable>().apply {
+                                addAll(it)
+                            },
+                            keyword ?: ""
+                        )
+                        requireActivity().addFragment(this@SearchFragment, f, SearchSingleFragment.TAG, R.id.root_view)
+                        search_rv.hideKeyboard()
+                    }
                 }
             }
-        })
+        )
 
         app_rv.layoutManager = GridLayoutManager(requireContext(), 4)
         appAdapter.appListener = object : AppListener {
@@ -141,26 +146,30 @@ class SearchFragment : BaseFragment() {
             override fun onTipClick() {
                 search_rv.hideKeyboard()
                 searchAdapter.searchingId = true
-                searchViewModel.search(searchAdapter.query).autoDispose(stopScope).subscribe({ r ->
-                    searchAdapter.searchingId = false
-                    when {
-                        r.isSuccess -> r.data?.let { data ->
-                            if (data.userId == Session.getAccountId()) {
-                                ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager,
-                                    UserBottomSheetDialogFragment.TAG
-                                )
-                            } else {
-                                searchViewModel.insertUser(user = data)
-                                UserBottomSheetDialogFragment.newInstance(data).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                searchViewModel.search(searchAdapter.query).autoDispose(stopScope).subscribe(
+                    { r ->
+                        searchAdapter.searchingId = false
+                        when {
+                            r.isSuccess -> r.data?.let { data ->
+                                if (data.userId == Session.getAccountId()) {
+                                    ProfileBottomSheetDialogFragment.newInstance().showNow(
+                                        parentFragmentManager,
+                                        UserBottomSheetDialogFragment.TAG
+                                    )
+                                } else {
+                                    searchViewModel.insertUser(user = data)
+                                    UserBottomSheetDialogFragment.newInstance(data).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                }
                             }
+                            r.errorCode == ErrorHandler.NOT_FOUND -> context?.toast(R.string.error_user_not_found)
+                            else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                         }
-                        r.errorCode == ErrorHandler.NOT_FOUND -> context?.toast(R.string.error_user_not_found)
-                        else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                    },
+                    { t: Throwable ->
+                        searchAdapter.searchingId = false
+                        ErrorHandler.handleError(t)
                     }
-                }, { t: Throwable ->
-                    searchAdapter.searchingId = false
-                    ErrorHandler.handleError(t)
-                })
+                )
             }
 
             override fun onAsset(assetItem: AssetItem) {

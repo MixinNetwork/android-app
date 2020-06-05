@@ -1,7 +1,7 @@
 package one.mixin.android.vo
 
-import kotlin.math.abs
 import one.mixin.android.extension.maxLimit
+import kotlin.math.abs
 
 class MessageBuilder(
     val id: String,
@@ -157,8 +157,10 @@ class MessageBuilder(
     }
 
     fun build(): Message =
-        Message(id, conversationId, userId, category, content, mediaUrl,
+        Message(
+            id, conversationId, userId, category, content, mediaUrl,
             mediaMimeType, mediaSize, mediaDuration, mediaWidth, mediaHeight, mediaHash,
             thumbImage, thumbUrl, mediaKey, mediaDigest, mediaStatus, status, createdAt,
-            action, participantId, snapshotId, hyperlink, name, albumId, stickerId, sharedUserId, mediaWaveform, null, quoteMessageId, quoteContent)
+            action, participantId, snapshotId, hyperlink, name, albumId, stickerId, sharedUserId, mediaWaveform, null, quoteMessageId, quoteContent
+        )
 }

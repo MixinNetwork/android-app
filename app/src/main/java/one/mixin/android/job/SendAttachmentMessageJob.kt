@@ -3,8 +3,6 @@ package one.mixin.android.job
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import io.reactivex.disposables.Disposable
-import java.net.URL
-import javax.net.ssl.HttpsURLConnection
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.AttachmentResponse
@@ -22,6 +20,8 @@ import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.AttachmentMessagePayload
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
+import java.net.URL
+import javax.net.ssl.HttpsURLConnection
 
 class SendAttachmentMessageJob(
     val message: Message
@@ -87,20 +87,23 @@ class SendAttachmentMessageJob(
             } else {
                 false
             }
-        }.subscribe({
-            if (it) {
-                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-                removeJob()
-            } else {
+        }.subscribe(
+            {
+                if (it) {
+                    messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
+                    removeJob()
+                } else {
+                    messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
+                    removeJob()
+                }
+            },
+            {
+                Timber.e("upload attachment error, ${it.getStackTraceString()}")
+                reportException(it)
                 messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
                 removeJob()
             }
-        }, {
-            Timber.e("upload attachment error, ${it.getStackTraceString()}")
-            reportException(it)
-            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-            removeJob()
-        })
+        )
     }
 
     private fun isPlain(): Boolean {
@@ -115,7 +118,8 @@ class SendAttachmentMessageJob(
         }
         val inputStream = MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.mediaUrl))
         val attachmentData =
-            PushAttachmentData(message.mediaMimeType,
+            PushAttachmentData(
+                message.mediaMimeType,
                 inputStream,
                 message.mediaSize!!,
                 if (isPlain()) {
@@ -130,7 +134,8 @@ class SendAttachmentMessageJob(
                         0f
                     }
                     RxBus.publish(loadingEvent(message.id, pg))
-                })
+                }
+            )
         val digest = try {
             if (isPlain()) {
                 uploadPlainAttachment(attachResponse.upload_url!!, message.mediaSize, attachmentData)

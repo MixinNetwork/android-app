@@ -49,32 +49,35 @@ class AuthenticationsFragment : BaseViewModelFragment<SettingViewModel>() {
                 navTo(fragment, PermissionListFragment.TAG)
             }
         })
-        viewModel.authorizations().autoDispose(stopScope).subscribe({ list ->
-            if (list.isSuccess) {
-                this.list = list.data?.map {
-                    it.app
-                }?.run {
-                    MutableList(this.size) {
-                        this[it]
+        viewModel.authorizations().autoDispose(stopScope).subscribe(
+            { list ->
+                if (list.isSuccess) {
+                    this.list = list.data?.map {
+                        it.app
+                    }?.run {
+                        MutableList(this.size) {
+                            this[it]
+                        }
                     }
-                }
-                if (this.list?.isNotEmpty() == true) {
-                    auth_va.displayedChild = 0
+                    if (this.list?.isNotEmpty() == true) {
+                        auth_va.displayedChild = 0
+                    } else {
+                        auth_va.displayedChild = 1
+                    }
+                    adapter.submitList(this.list)
+
+                    authResponseList = list.data?.toMutableList()
                 } else {
                     auth_va.displayedChild = 1
                 }
-                adapter.submitList(this.list)
-
-                authResponseList = list.data?.toMutableList()
-            } else {
+                progress.visibility = View.GONE
+            },
+            {
+                progress.visibility = View.GONE
                 auth_va.displayedChild = 1
+                ErrorHandler.handleError(it)
             }
-            progress.visibility = View.GONE
-        }, {
-            progress.visibility = View.GONE
-            auth_va.displayedChild = 1
-            ErrorHandler.handleError(it)
-        })
+        )
         auth_rv.adapter = adapter
     }
 

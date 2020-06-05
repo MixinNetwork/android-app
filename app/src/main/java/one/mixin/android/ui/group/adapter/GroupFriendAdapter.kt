@@ -13,7 +13,8 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
-class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHolder>(),
+class GroupFriendAdapter :
+    RecyclerView.Adapter<GroupFriendAdapter.FriendViewHolder>(),
     StickyRecyclerHeadersAdapter<GroupFriendAdapter.HeaderViewHolder> {
 
     private var data: List<User>? = null
@@ -41,14 +42,17 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
         if (!mShowHeader) {
             return -1
         }
-        return data.notNullWithElse({
-            val u = it[position]
-            if (u.fullName != null) {
-                if (u.fullName.isEmpty()) ' '.toLong() else u.fullName[0].toLong()
-            } else {
-                -1L
-            }
-        }, -1L)
+        return data.notNullWithElse(
+            {
+                val u = it[position]
+                if (u.fullName != null) {
+                    if (u.fullName.isEmpty()) ' '.toLong() else u.fullName[0].toLong()
+                } else {
+                    -1L
+                }
+            },
+            -1L
+        )
     }
 
     override fun onBindHeaderViewHolder(holder: HeaderViewHolder, position: Int) {

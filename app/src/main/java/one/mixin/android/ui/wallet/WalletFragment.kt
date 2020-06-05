@@ -20,9 +20,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.snackbar.Snackbar
-import java.math.BigDecimal
-import java.math.RoundingMode
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_wallet.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_bottom.view.*
@@ -50,6 +47,9 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
+import java.math.BigDecimal
+import java.math.RoundingMode
+import javax.inject.Inject
 
 class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
@@ -88,29 +88,31 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         assetsAdapter.footerView = footer
         (coins_rv.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
         coins_rv.setHasFixedSize(true)
-        ItemTouchHelper(AssetItemCallback(object : AssetItemCallback.ItemCallbackListener {
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
-                val hiddenPos = viewHolder.absoluteAdapterPosition
-                val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
-                val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
-                lifecycleScope.launch(Dispatchers.IO) {
-                    walletViewModel.updateAssetHidden(asset.assetId, true)
-                    withContext(Dispatchers.Main) {
-                        Snackbar.make(coins_rv, getString(R.string.wallet_already_hidden, asset.symbol), Snackbar.LENGTH_LONG)
-                            .setAction(R.string.undo_capital) {
-                                assetsAdapter.restoreItem(deleteItem, hiddenPos)
-                                lifecycleScope.launch(Dispatchers.IO) {
-                                    walletViewModel.updateAssetHidden(asset.assetId, false)
-                                }
-                            }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                                this.view.setBackgroundResource(R.color.call_btn_icon_checked)
-                                (this.view.findViewById(R.id.snackbar_text) as TextView)
-                                    .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                            }.show()
+        ItemTouchHelper(
+            AssetItemCallback(object : AssetItemCallback.ItemCallbackListener {
+                override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
+                    val hiddenPos = viewHolder.absoluteAdapterPosition
+                    val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
+                    val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        walletViewModel.updateAssetHidden(asset.assetId, true)
+                        withContext(Dispatchers.Main) {
+                            Snackbar.make(coins_rv, getString(R.string.wallet_already_hidden, asset.symbol), Snackbar.LENGTH_LONG)
+                                .setAction(R.string.undo_capital) {
+                                    assetsAdapter.restoreItem(deleteItem, hiddenPos)
+                                    lifecycleScope.launch(Dispatchers.IO) {
+                                        walletViewModel.updateAssetHidden(asset.assetId, false)
+                                    }
+                                }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                                    this.view.setBackgroundResource(R.color.call_btn_icon_checked)
+                                    (this.view.findViewById(R.id.snackbar_text) as TextView)
+                                        .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                                }.show()
+                        }
                     }
                 }
-            }
-        })).apply { attachToRecyclerView(coins_rv) }
+            })
+        ).apply { attachToRecyclerView(coins_rv) }
         assetsAdapter.onItemListener = this
         coins_rv.adapter = assetsAdapter
 
@@ -278,7 +280,9 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     override fun <T> onNormalItemClick(item: T) {
         item as AssetItem
-        view?.navigate(R.id.action_wallet_fragment_to_transactions_fragment,
-            Bundle().apply { putParcelable(ARGS_ASSET, item) })
+        view?.navigate(
+            R.id.action_wallet_fragment_to_transactions_fragment,
+            Bundle().apply { putParcelable(ARGS_ASSET, item) }
+        )
     }
 }

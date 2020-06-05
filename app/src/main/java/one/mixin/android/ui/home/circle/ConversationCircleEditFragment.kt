@@ -12,7 +12,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_conversation_circle_edit.*
 import kotlinx.android.synthetic.main.fragment_conversation_circle_edit.search_et
 import kotlinx.android.synthetic.main.fragment_group.select_rv
@@ -37,6 +36,7 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import org.jetbrains.anko.textColor
+import javax.inject.Inject
 
 class ConversationCircleEditFragment : BaseFragment() {
     companion object {
@@ -180,7 +180,8 @@ class ConversationCircleEditFragment : BaseFragment() {
         circleConversations.forEach { cc ->
             oldCircleConversationPayloadSet.add(
                 CircleConversationPayload(
-                    cc.conversationId, if (cc.userId.isNullOrEmpty()) {
+                    cc.conversationId,
+                    if (cc.userId.isNullOrEmpty()) {
                         null
                     } else {
                         cc.userId

@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_time.*
 import kotlinx.coroutines.Job
 import one.mixin.android.Constants
@@ -16,6 +15,7 @@ import one.mixin.android.extension.shaking
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
+import javax.inject.Inject
 
 class TimeFragment : BaseFragment() {
 
@@ -51,25 +51,28 @@ class TimeFragment : BaseFragment() {
         if (currentJob == null || currentJob?.isActive == false) {
             everybody_pb.visibility = View.VISIBLE
             continue_tv.visibility = View.INVISIBLE
-            currentJob = loadingViewModel.pingServer({
-                if (isAdded) {
-                    everybody_pb.visibility = View.INVISIBLE
-                    continue_tv.visibility = View.VISIBLE
-                    defaultSharedPreferences.putBoolean(Constants.Account.PREF_WRONG_TIME, false)
-                    MainActivity.show(requireContext())
-                    activity?.finish()
-                }
-            }, { exception ->
-                if (isAdded) {
-                    everybody_pb.visibility = View.INVISIBLE
-                    continue_tv.visibility = View.VISIBLE
-                    if (exception == null) {
-                        info.shaking()
-                    } else {
-                        ErrorHandler.handleError(exception)
+            currentJob = loadingViewModel.pingServer(
+                {
+                    if (isAdded) {
+                        everybody_pb.visibility = View.INVISIBLE
+                        continue_tv.visibility = View.VISIBLE
+                        defaultSharedPreferences.putBoolean(Constants.Account.PREF_WRONG_TIME, false)
+                        MainActivity.show(requireContext())
+                        activity?.finish()
+                    }
+                },
+                { exception ->
+                    if (isAdded) {
+                        everybody_pb.visibility = View.INVISIBLE
+                        continue_tv.visibility = View.VISIBLE
+                        if (exception == null) {
+                            info.shaking()
+                        } else {
+                            ErrorHandler.handleError(exception)
+                        }
                     }
                 }
-            })
+            )
         }
     }
 }

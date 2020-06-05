@@ -12,8 +12,6 @@ import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.PublishSubject
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.item_chat_unread.view.*
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.R
@@ -65,6 +63,8 @@ import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isRecall
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 class ConversationAdapter(
     private val context: Context,
@@ -116,11 +116,14 @@ class ConversationAdapter(
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(AndroidSchedulers.mainThread())
             .autoDispose(scopeProvider)
-            .subscribe({
-                super.submitList(it)
-            }, {
-                Timber.e(it)
-            })
+            .subscribe(
+                {
+                    super.submitList(it)
+                },
+                {
+                    Timber.e(it)
+                }
+            )
     }
 
     override fun onCreateAttach(parent: ViewGroup): View =
@@ -138,9 +141,12 @@ class ConversationAdapter(
         }
     }
 
-    override fun getHeaderId(position: Int): Long = getItem(position).notNullWithElse({
-        abs(it.createdAt.hashForDate())
-    }, 0)
+    override fun getHeaderId(position: Int): Long = getItem(position).notNullWithElse(
+        {
+            abs(it.createdAt.hashForDate())
+        },
+        0
+    )
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder =
         TimeHolder(
@@ -273,7 +279,8 @@ class ConversationAdapter(
                     (holder as StrangerHolder).bind(onItemListener, isBot)
                 }
                 UNKNOWN_TYPE -> {
-                    (holder as UnknownHolder).bind(it,
+                    (holder as UnknownHolder).bind(
+                        it,
                         isLast(position),
                         isFirst(position),
                         selectSet.size > 0,
@@ -447,10 +454,11 @@ class ConversationAdapter(
             val changeCount = currentList.size - previousList.size
             when {
                 abs(changeCount) >= PAGE_SIZE -> notifyDataSetChanged()
-                changeCount > 0 -> for (i in 1 until changeCount + 1)
-                    getItem(i)?.let {
-                        RxBus.publish(BlinkEvent(it.messageId, isLast(i)))
-                    }
+                changeCount > 0 ->
+                    for (i in 1 until changeCount + 1)
+                        getItem(i)?.let {
+                            RxBus.publish(BlinkEvent(it.messageId, isLast(i)))
+                        }
                 changeCount < 0 -> notifyDataSetChanged()
             }
         }
@@ -476,14 +484,16 @@ class ConversationAdapter(
         } else if (isSecret && hasBottomView) {
             when (position) {
                 0 -> create(
-                    MessageCategory.STRANGER.name, if (super.getItemCount() > 0) {
+                    MessageCategory.STRANGER.name,
+                    if (super.getItemCount() > 0) {
                         super.getItem(0)?.createdAt
                     } else {
                         null
                     }
                 )
                 itemCount - 1 -> create(
-                    MessageCategory.SECRET.name, if (super.getItemCount() > 0) {
+                    MessageCategory.SECRET.name,
+                    if (super.getItemCount() > 0) {
                         super.getItem(super.getItemCount() - 1)?.createdAt
                     } else {
                         null
@@ -494,7 +504,8 @@ class ConversationAdapter(
         } else if (isSecret) {
             if (position == itemCount - 1) {
                 create(
-                    MessageCategory.SECRET.name, if (super.getItemCount() > 0) {
+                    MessageCategory.SECRET.name,
+                    if (super.getItemCount() > 0) {
                         super.getItem(super.getItemCount() - 1)?.createdAt
                     } else {
                         null
@@ -506,7 +517,8 @@ class ConversationAdapter(
         } else if (hasBottomView) {
             if (position == 0) {
                 create(
-                    MessageCategory.STRANGER.name, if (super.getItemCount() > 0) {
+                    MessageCategory.STRANGER.name,
+                    if (super.getItemCount() > 0) {
                         super.getItem(0)?.createdAt
                     } else {
                         null
@@ -681,78 +693,81 @@ class ConversationAdapter(
     }
 
     private fun getItemType(messageItem: MessageItem?): Int =
-        messageItem.notNullWithElse({ item ->
-            when {
-                item.status == MessageStatus.UNKNOWN.name -> UNKNOWN_TYPE
-                item.type == MessageCategory.STRANGER.name -> STRANGER_TYPE
-                item.type == MessageCategory.SECRET.name -> SECRET_TYPE
-                item.status == MessageStatus.FAILED.name -> WAITING_TYPE
-                item.type == MessageCategory.SIGNAL_TEXT.name || item.type == MessageCategory.PLAIN_TEXT.name -> {
-                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
-                        TEXT_QUOTE_TYPE
-                    } else if (!item.siteName.isNullOrBlank() || !item.siteDescription.isNullOrBlank()) {
-                        LINK_TYPE
-                    } else {
-                        TEXT_TYPE
+        messageItem.notNullWithElse(
+            { item ->
+                when {
+                    item.status == MessageStatus.UNKNOWN.name -> UNKNOWN_TYPE
+                    item.type == MessageCategory.STRANGER.name -> STRANGER_TYPE
+                    item.type == MessageCategory.SECRET.name -> SECRET_TYPE
+                    item.status == MessageStatus.FAILED.name -> WAITING_TYPE
+                    item.type == MessageCategory.SIGNAL_TEXT.name || item.type == MessageCategory.PLAIN_TEXT.name -> {
+                        if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                            TEXT_QUOTE_TYPE
+                        } else if (!item.siteName.isNullOrBlank() || !item.siteDescription.isNullOrBlank()) {
+                            LINK_TYPE
+                        } else {
+                            TEXT_TYPE
+                        }
                     }
-                }
-                item.type == MessageCategory.SIGNAL_IMAGE.name ||
-                    item.type == MessageCategory.PLAIN_IMAGE.name -> {
-                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
-                        IMAGE_QUOTE_TYPE
-                    } else {
-                        IMAGE_TYPE
+                    item.type == MessageCategory.SIGNAL_IMAGE.name ||
+                        item.type == MessageCategory.PLAIN_IMAGE.name -> {
+                        if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                            IMAGE_QUOTE_TYPE
+                        } else {
+                            IMAGE_TYPE
+                        }
                     }
-                }
-                item.type == MessageCategory.SYSTEM_CONVERSATION.name -> SYSTEM_TYPE
-                item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> BILL_TYPE
-                item.type == MessageCategory.SIGNAL_DATA.name ||
-                    item.type == MessageCategory.PLAIN_DATA.name -> {
-                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
-                        FILE_QUOTE_TYPE
-                    } else {
-                        FILE_TYPE
+                    item.type == MessageCategory.SYSTEM_CONVERSATION.name -> SYSTEM_TYPE
+                    item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> BILL_TYPE
+                    item.type == MessageCategory.SIGNAL_DATA.name ||
+                        item.type == MessageCategory.PLAIN_DATA.name -> {
+                        if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                            FILE_QUOTE_TYPE
+                        } else {
+                            FILE_TYPE
+                        }
                     }
-                }
-                item.type == MessageCategory.SIGNAL_STICKER.name ||
-                    item.type == MessageCategory.PLAIN_STICKER.name -> STICKER_TYPE
-                item.type == MessageCategory.APP_BUTTON_GROUP.name -> ACTION_TYPE
-                item.type == MessageCategory.APP_CARD.name -> ACTION_CARD_TYPE
-                item.type == MessageCategory.SIGNAL_CONTACT.name ||
-                    item.type == MessageCategory.PLAIN_CONTACT.name -> {
-                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
-                        CONTACT_CARD_QUOTE_TYPE
-                    } else {
-                        CONTACT_CARD_TYPE
+                    item.type == MessageCategory.SIGNAL_STICKER.name ||
+                        item.type == MessageCategory.PLAIN_STICKER.name -> STICKER_TYPE
+                    item.type == MessageCategory.APP_BUTTON_GROUP.name -> ACTION_TYPE
+                    item.type == MessageCategory.APP_CARD.name -> ACTION_CARD_TYPE
+                    item.type == MessageCategory.SIGNAL_CONTACT.name ||
+                        item.type == MessageCategory.PLAIN_CONTACT.name -> {
+                        if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                            CONTACT_CARD_QUOTE_TYPE
+                        } else {
+                            CONTACT_CARD_TYPE
+                        }
                     }
-                }
-                item.type == MessageCategory.SIGNAL_VIDEO.name ||
-                    item.type == MessageCategory.PLAIN_VIDEO.name ||
-                    item.type == MessageCategory.SIGNAL_LIVE.name ||
-                    item.type == MessageCategory.PLAIN_LIVE.name -> {
-                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
-                        VIDEO_QUOTE_TYPE
-                    } else {
-                        VIDEO_TYPE
+                    item.type == MessageCategory.SIGNAL_VIDEO.name ||
+                        item.type == MessageCategory.PLAIN_VIDEO.name ||
+                        item.type == MessageCategory.SIGNAL_LIVE.name ||
+                        item.type == MessageCategory.PLAIN_LIVE.name -> {
+                        if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                            VIDEO_QUOTE_TYPE
+                        } else {
+                            VIDEO_TYPE
+                        }
                     }
-                }
-                item.type == MessageCategory.SIGNAL_AUDIO.name ||
-                    item.type == MessageCategory.PLAIN_AUDIO.name -> {
-                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
-                        AUDIO_QUOTE_TYPE
-                    } else {
-                        AUDIO_TYPE
+                    item.type == MessageCategory.SIGNAL_AUDIO.name ||
+                        item.type == MessageCategory.PLAIN_AUDIO.name -> {
+                        if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                            AUDIO_QUOTE_TYPE
+                        } else {
+                            AUDIO_TYPE
+                        }
                     }
+                    item.type == MessageCategory.PLAIN_POST.name ||
+                        item.type == MessageCategory.SIGNAL_POST.name -> POST_TYPE
+                    item.isCallMessage() -> CALL_TYPE
+                    item.isRecall() -> RECALL_TYPE
+                    item.type == MessageCategory.PLAIN_LOCATION.name ||
+                        item.type == MessageCategory.SIGNAL_LOCATION.name -> LOCATION_TYPE
+                    else -> UNKNOWN_TYPE
                 }
-                item.type == MessageCategory.PLAIN_POST.name ||
-                    item.type == MessageCategory.SIGNAL_POST.name -> POST_TYPE
-                item.isCallMessage() -> CALL_TYPE
-                item.isRecall() -> RECALL_TYPE
-                item.type == MessageCategory.PLAIN_LOCATION.name ||
-                    item.type == MessageCategory.SIGNAL_LOCATION.name -> LOCATION_TYPE
-                else -> UNKNOWN_TYPE
-            }
-        }, NULL_TYPE)
+            },
+            NULL_TYPE
+        )
 
     override fun getItemViewType(position: Int): Int = getItemType(getItem(position))
 

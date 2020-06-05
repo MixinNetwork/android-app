@@ -11,9 +11,6 @@ import androidx.annotation.RequiresPermission
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.io.File
-import java.util.Date
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_restore.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,6 +27,9 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.restore
+import java.io.File
+import java.util.Date
+import javax.inject.Inject
 
 class RestoreActivity : BaseActivity() {
 
@@ -52,16 +52,19 @@ class RestoreActivity : BaseActivity() {
                 RxPermissions(this)
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     .autoDispose(stopScope)
-                    .subscribe({ granted ->
-                        if (!granted) {
-                            openPermissionSetting()
-                        } else {
-                            findBackup()
+                    .subscribe(
+                        { granted ->
+                            if (!granted) {
+                                openPermissionSetting()
+                            } else {
+                                findBackup()
+                            }
+                        },
+                        {
+                            InitializeActivity.showLoading(this)
+                            finish()
                         }
-                    }, {
-                        InitializeActivity.showLoading(this)
-                        finish()
-                    })
+                    )
                 dialog.dismiss()
             }.create().run {
                 this.setCanceledOnTouchOutside(false)
@@ -84,17 +87,19 @@ class RestoreActivity : BaseActivity() {
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     private fun showErrorAlert(error: Result) {
         alertDialogBuilder()
-            .setMessage(when (error) {
-                Result.FAILURE -> {
-                    R.string.restore_failure
+            .setMessage(
+                when (error) {
+                    Result.FAILURE -> {
+                        R.string.restore_failure
+                    }
+                    Result.NOT_FOUND -> {
+                        R.string.restore_not_found
+                    }
+                    else -> {
+                        R.string.restore_not_support
+                    }
                 }
-                Result.NOT_FOUND -> {
-                    R.string.restore_not_found
-                }
-                else -> {
-                    R.string.restore_not_support
-                }
-            })
+            )
             .setNegativeButton(R.string.restore_retry) { dialog, _ ->
                 findBackup()
                 dialog.dismiss()
@@ -115,29 +120,35 @@ class RestoreActivity : BaseActivity() {
         restore_time.text = data.lastModified().run {
             val now = Date().time
             val createTime = data.lastModified()
-            DateUtils.getRelativeTimeSpanString(createTime, now, when {
-                ((now - createTime) < 60000L) -> DateUtils.SECOND_IN_MILLIS
-                ((now - createTime) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
-                ((now - createTime) < 86400000L) -> DateUtils.HOUR_IN_MILLIS
-                else -> DateUtils.DAY_IN_MILLIS
-            })
+            DateUtils.getRelativeTimeSpanString(
+                createTime, now,
+                when {
+                    ((now - createTime) < 60000L) -> DateUtils.SECOND_IN_MILLIS
+                    ((now - createTime) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
+                    ((now - createTime) < 86400000L) -> DateUtils.HOUR_IN_MILLIS
+                    else -> DateUtils.DAY_IN_MILLIS
+                }
+            )
         }
         restore_restore.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
-                .subscribe({ granted ->
-                    if (!granted) {
-                        openPermissionSetting()
-                    } else {
-                        showProgress()
-                        BackupNotification.show(false)
-                        restore()
+                .subscribe(
+                    { granted ->
+                        if (!granted) {
+                            openPermissionSetting()
+                        } else {
+                            showProgress()
+                            BackupNotification.show(false)
+                            restore()
+                        }
+                    },
+                    {
+                        BackupNotification.cancel()
+                        hideProgress()
                     }
-                }, {
-                    BackupNotification.cancel()
-                    hideProgress()
-                })
+                )
         }
         restore_size.text = getString(R.string.restore_size, data.length().fileSize())
         restore_skip.setOnClickListener {

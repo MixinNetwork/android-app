@@ -20,14 +20,14 @@ import com.google.android.exoplayer2.ui.TimeBar
 import com.google.android.exoplayer2.util.Assertions
 import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
-import java.util.Formatter
-import java.util.Locale
-import kotlin.math.min
 import one.mixin.android.R
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.widget.PlayView2
 import one.mixin.android.widget.PlayView2.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView2.Companion.STATUS_PLAYING
+import java.util.Formatter
+import java.util.Locale
+import kotlin.math.min
 
 class PlayerControlView(context: Context, attributeSet: AttributeSet) :
     FrameLayout(context, attributeSet) {
@@ -421,7 +421,10 @@ class PlayerControlView(context: Context, attributeSet: AttributeSet) :
         }
     }
 
-    inner class ComponentListener : Player.EventListener, TimeBar.OnScrubListener, OnClickListener,
+    inner class ComponentListener :
+        Player.EventListener,
+        TimeBar.OnScrubListener,
+        OnClickListener,
         VideoListener {
         override fun onScrubMove(timeBar: TimeBar, position: Long) {
             positionView.text = Util.getStringForTime(formatBuilder, formatter, position)

@@ -158,14 +158,17 @@ class MultisigsBottomSheetDialogFragment :
                 }
             }
             is One2MultiBiometricItem -> {
-                bottomViewModel.transactions(RawTransactionsRequest(
-                    assetId = t.asset.assetId,
-                    opponentMultisig = OpponentMultisig(t.receivers, t.threshold),
-                    amount = t.amount,
-                    pin = "",
-                    traceId = t.trace,
-                    memo = t.memo
-                ), pin)
+                bottomViewModel.transactions(
+                    RawTransactionsRequest(
+                        assetId = t.asset.assetId,
+                        opponentMultisig = OpponentMultisig(t.receivers, t.threshold),
+                        amount = t.amount,
+                        pin = "",
+                        traceId = t.trace,
+                        memo = t.memo
+                    ),
+                    pin
+                )
             }
             else -> {
                 MixinResponse<Void>()

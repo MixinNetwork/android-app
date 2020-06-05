@@ -99,7 +99,8 @@ class PinSettingFragment : BaseViewModelFragment<SettingViewModel>() {
                     updateWhenSuccess()
                 }
             }
-            bottomSheet.showNow(parentFragmentManager,
+            bottomSheet.showNow(
+                parentFragmentManager,
                 PinBiometricsBottomSheetDialogFragment.TAG
             )
         }

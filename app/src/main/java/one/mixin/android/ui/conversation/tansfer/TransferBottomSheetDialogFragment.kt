@@ -6,7 +6,6 @@ import android.text.TextUtils
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import java.math.BigDecimal
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import one.mixin.android.Constants
@@ -28,6 +27,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textSizeDimen
+import java.math.BigDecimal
 
 class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<BiometricItem>() {
 
@@ -110,14 +110,14 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         return when (val t = this.t) {
             is TransferBiometricItem -> {
                 BiometricInfo(
-                getString(
-                    R.string.wallet_bottom_transfer_to,
-                    t.user.fullName
-                ),
-                getString(
-                    R.string.contact_mixin_id,
-                    t.user.identityNumber
-                ),
+                    getString(
+                        R.string.wallet_bottom_transfer_to,
+                        t.user.fullName
+                    ),
+                    getString(
+                        R.string.contact_mixin_id,
+                        t.user.identityNumber
+                    ),
                     getDescription(),
                     getString(R.string.wallet_pay_with_pwd)
                 )
@@ -125,10 +125,11 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             else -> {
                 t as WithdrawBiometricItem
                 BiometricInfo(
-                getString(R.string.withdrawal_to, t.label),
-                t.destination.formatPublicKey(),
-                getDescription(),
-                getString(R.string.wallet_pay_with_pwd))
+                    getString(R.string.withdrawal_to, t.label),
+                    t.destination.formatPublicKey(),
+                    getDescription(),
+                    getString(R.string.wallet_pay_with_pwd)
+                )
             }
         }
     }

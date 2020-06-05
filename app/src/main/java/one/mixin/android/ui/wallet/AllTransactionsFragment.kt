@@ -75,11 +75,13 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             a?.let {
                 if (!isAdded) return@launch
 
-                view?.navigate(R.id.action_all_transactions_fragment_to_transaction_fragment,
+                view?.navigate(
+                    R.id.action_all_transactions_fragment_to_transaction_fragment,
                     Bundle().apply {
                         putParcelable(ARGS_SNAPSHOT, snapshot)
                         putParcelable(ARGS_ASSET, it)
-                    })
+                    }
+                )
             }
         }
     }
@@ -89,8 +91,10 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             walletViewModel.getUser(userId)?.let {
                 val f = UserBottomSheetDialogFragment.newInstance(it)
                 f.showUserTransactionAction = {
-                    view?.navigate(R.id.action_all_transactions_to_user_transactions,
-                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) })
+                    view?.navigate(
+                        R.id.action_all_transactions_to_user_transactions,
+                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) }
+                    )
                 }
                 f.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
             }

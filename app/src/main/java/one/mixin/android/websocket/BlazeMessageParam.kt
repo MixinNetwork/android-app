@@ -1,10 +1,10 @@
 package one.mixin.android.websocket
 
-import java.io.Serializable
-import java.util.UUID
 import one.mixin.android.api.request.SignalKeyRequest
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
+import java.io.Serializable
+import java.util.UUID
 
 data class BlazeMessageParam(
     val conversation_id: String? = null,
@@ -39,12 +39,16 @@ fun createAckListParam(messages: List<BlazeAckMessage>) =
     BlazeMessageParam(messages = messages)
 
 fun createSignalKeyParam(conversationId: String, recipientId: String, cipherText: String) =
-    BlazeMessageParam(conversationId, recipientId, UUID.randomUUID().toString(), MessageCategory.SIGNAL_KEY.name,
-        cipherText, MessageStatus.SENT.name)
+    BlazeMessageParam(
+        conversationId, recipientId, UUID.randomUUID().toString(), MessageCategory.SIGNAL_KEY.name,
+        cipherText, MessageStatus.SENT.name
+    )
 
 fun createPlainJsonParam(conversationId: String, userId: String, encoded: String, sessionId: String? = null) =
-    BlazeMessageParam(conversationId, userId, UUID.randomUUID().toString(), MessageCategory.PLAIN_JSON.name,
-        encoded, MessageStatus.SENDING.name, session_id = sessionId)
+    BlazeMessageParam(
+        conversationId, userId, UUID.randomUUID().toString(), MessageCategory.PLAIN_JSON.name,
+        encoded, MessageStatus.SENDING.name, session_id = sessionId
+    )
 
 fun createConsumeSignalKeysParam(recipients: ArrayList<BlazeMessageParamSession>?) =
     BlazeMessageParam(recipients = recipients)

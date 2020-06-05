@@ -21,7 +21,6 @@ import com.google.i18n.phonenumbers.Phonenumber
 import com.mukesh.countrypicker.Country
 import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDispose
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_mobile.*
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
@@ -40,6 +39,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.RecaptchaView
+import javax.inject.Inject
 
 class MobileFragment : BaseFragment() {
 
@@ -126,8 +126,12 @@ class MobileFragment : BaseFragment() {
 
     private fun showDialog() {
         alertDialogBuilder()
-            .setMessage(getString(R.string.landing_invitation_dialog_content,
-                mCountry.dialCode + " " + mobile_et.text.toString()))
+            .setMessage(
+                getString(
+                    R.string.landing_invitation_dialog_content,
+                    mCountry.dialCode + " " + mobile_et.text.toString()
+                )
+            )
             .setNegativeButton(R.string.change) { dialog, _ -> dialog.dismiss() }
             .setPositiveButton(R.string.confirm) { dialog, _ ->
                 requestSend()
@@ -145,42 +149,53 @@ class MobileFragment : BaseFragment() {
         val verificationRequest = VerificationRequest(
             phoneNum,
             if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name,
-            gRecaptchaResponse)
+            gRecaptchaResponse
+        )
         mobileViewModel.loginVerification(verificationRequest)
-            .autoDispose(stopScope).subscribe({ r: MixinResponse<VerificationResponse> ->
-                if (!r.isSuccess) {
-                    if (r.errorCode == NEED_RECAPTCHA) {
-                        initAndLoadRecaptcha()
-                    } else {
-                        hideLoading()
-                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+            .autoDispose(stopScope).subscribe(
+                { r: MixinResponse<VerificationResponse> ->
+                    if (!r.isSuccess) {
+                        if (r.errorCode == NEED_RECAPTCHA) {
+                            initAndLoadRecaptcha()
+                        } else {
+                            hideLoading()
+                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                        }
+                        return@subscribe
                     }
-                    return@subscribe
+                    hideLoading()
+                    val verificationResponse = r.data as VerificationResponse
+                    activity?.addFragment(
+                        this@MobileFragment,
+                        VerificationFragment.newInstance(
+                            verificationResponse.id, phoneNum,
+                            pin, verificationResponse.hasEmergencyContact
+                        ),
+                        VerificationFragment.TAG
+                    )
+                },
+                { t: Throwable ->
+                    hideLoading()
+                    ErrorHandler.handleError(t)
                 }
-                hideLoading()
-                val verificationResponse = r.data as VerificationResponse
-                activity?.addFragment(this@MobileFragment,
-                    VerificationFragment.newInstance(verificationResponse.id, phoneNum,
-                        pin, verificationResponse.hasEmergencyContact),
-                    VerificationFragment.TAG)
-            }, { t: Throwable ->
-                hideLoading()
-                ErrorHandler.handleError(t)
-            })
+            )
     }
 
     private fun initAndLoadRecaptcha() {
         if (recaptchaView == null) {
-            recaptchaView = RecaptchaView(requireContext(), object : RecaptchaView.Callback {
-                override fun onStop() {
-                    mobile_fab?.hide()
-                    mobile_cover?.visibility = GONE
-                }
+            recaptchaView = RecaptchaView(
+                requireContext(),
+                object : RecaptchaView.Callback {
+                    override fun onStop() {
+                        mobile_fab?.hide()
+                        mobile_cover?.visibility = GONE
+                    }
 
-                override fun onPostToken(value: String) {
-                    requestSend(value)
+                    override fun onPostToken(value: String) {
+                        requestSend(value)
+                    }
                 }
-            })
+            )
             (view as ViewGroup).addView(recaptchaView?.webView, MATCH_PARENT, MATCH_PARENT)
         }
         recaptchaView?.loadRecaptcha()

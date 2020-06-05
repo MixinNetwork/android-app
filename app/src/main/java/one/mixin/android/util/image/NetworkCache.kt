@@ -1,9 +1,9 @@
 package one.mixin.android.util.image
 
 import android.content.Context
+import timber.log.Timber
 import java.io.File
 import java.io.InputStream
-import timber.log.Timber
 
 class NetworkCache(context: Context) {
     private val appContext = context.applicationContext

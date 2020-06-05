@@ -20,7 +20,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_sticker_management.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -39,6 +38,7 @@ import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.vo.Sticker
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColor
+import javax.inject.Inject
 
 class StickerManagementFragment : BaseFragment() {
     companion object {
@@ -92,18 +92,23 @@ class StickerManagementFragment : BaseFragment() {
         stickerAdapter.setOnStickerListener(object : StickerListener {
             override fun onAddClick() {
                 RxPermissions(activity!!)
-                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE)
+                    .request(
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE
+                    )
                     .autoDispose(stopScope)
-                    .subscribe({ granted ->
-                        if (granted) {
-                            openGalleryFromSticker()
-                        } else {
-                            context?.openPermissionSetting()
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                openGalleryFromSticker()
+                            } else {
+                                context?.openPermissionSetting()
+                            }
+                        },
+                        {
+                            Bugsnag.notify(it)
                         }
-                    }, {
-                        Bugsnag.notify(it)
-                    })
+                    )
             }
 
             override fun onDelete() {
@@ -112,13 +117,19 @@ class StickerManagementFragment : BaseFragment() {
         })
 
         if (albumId == null) { // not add any personal sticker yet
-            stickerViewModel.observePersonalStickers().observe(viewLifecycleOwner, Observer {
-                it?.let { updateStickers(it) }
-            })
+            stickerViewModel.observePersonalStickers().observe(
+                viewLifecycleOwner,
+                Observer {
+                    it?.let { updateStickers(it) }
+                }
+            )
         } else {
-            stickerViewModel.observeStickers(albumId!!).observe(viewLifecycleOwner, Observer {
-                it?.let { updateStickers(it) }
-            })
+            stickerViewModel.observeStickers(albumId!!).observe(
+                viewLifecycleOwner,
+                Observer {
+                    it?.let { updateStickers(it) }
+                }
+            )
         }
     }
 
@@ -138,8 +149,10 @@ class StickerManagementFragment : BaseFragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
-                requireActivity().addFragment(this@StickerManagementFragment,
-                    StickerAddFragment.newInstance(it.toString(), true), StickerAddFragment.TAG)
+                requireActivity().addFragment(
+                    this@StickerManagementFragment,
+                    StickerAddFragment.newInstance(it.toString(), true), StickerAddFragment.TAG
+                )
             }
         }
     }

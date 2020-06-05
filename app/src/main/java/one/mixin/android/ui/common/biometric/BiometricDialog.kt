@@ -3,8 +3,6 @@ package one.mixin.android.ui.common.biometric
 import android.content.Context
 import android.os.CancellationSignal
 import android.security.keystore.UserNotAuthenticatedException
-import java.nio.charset.Charset
-import java.security.InvalidKeyException
 import moe.feng.support.biometricprompt.BiometricPromptCompat
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -14,6 +12,8 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.BiometricUtil.CRASHLYTICS_BIOMETRIC
 import one.mixin.android.util.reportException
 import org.jetbrains.anko.toast
+import java.nio.charset.Charset
+import java.security.InvalidKeyException
 
 class BiometricInfo(
     val title: String,
@@ -65,7 +65,8 @@ class BiometricDialog(
             if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_CANCELED || errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_USER_CANCELED) {
                 callback?.onCancel()
             } else if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT ||
-                errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT_PERMANENT) {
+                errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT_PERMANENT
+            ) {
                 cancellationSignal?.cancel()
                 callback?.showPin()
             } else {

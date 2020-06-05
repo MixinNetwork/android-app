@@ -4,8 +4,8 @@ import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import java.util.concurrent.CountDownLatch
 import timber.log.Timber
+import java.util.concurrent.CountDownLatch
 
 class DispatchQueue(threadName: String) : Thread() {
     @Volatile

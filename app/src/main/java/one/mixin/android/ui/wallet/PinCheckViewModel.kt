@@ -1,8 +1,8 @@
 package one.mixin.android.ui.wallet
 
 import androidx.lifecycle.ViewModel
-import javax.inject.Inject
 import one.mixin.android.repository.AccountRepository
+import javax.inject.Inject
 
 class PinCheckViewModel @Inject
 internal constructor(private val accountRepository: AccountRepository) : ViewModel() {

@@ -70,13 +70,17 @@ class MarkdownActivity : BaseActivity() {
         recycler_view.layoutManager = LinearLayoutManager(this)
         recycler_view.setHasFixedSize(true)
         recycler_view.adapter = adapter
-        val markwon = MarkwonUtil.getMarkwon(this, { link ->
-            LinkBottomSheetDialogFragment.newInstance(link)
-                .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-        }, { link ->
-            WebBottomSheetDialogFragment.newInstance(link, intent.getStringExtra(CONVERSATION_ID))
-                .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
-        })
+        val markwon = MarkwonUtil.getMarkwon(
+            this,
+            { link ->
+                LinkBottomSheetDialogFragment.newInstance(link)
+                    .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+            },
+            { link ->
+                WebBottomSheetDialogFragment.newInstance(link, intent.getStringExtra(CONVERSATION_ID))
+                    .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+            }
+        )
         val markdown = intent.getStringExtra(CONTENT) ?: return
         adapter.setMarkdown(markwon, markdown)
         adapter.notifyDataSetChanged()
@@ -100,16 +104,19 @@ class MarkdownActivity : BaseActivity() {
         view.save.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .subscribe({ granted ->
-                    if (granted) {
-                        savePost {
-                            bottomSheet.dismiss()
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            savePost {
+                                bottomSheet.dismiss()
+                            }
+                        } else {
+                            openPermissionSetting()
                         }
-                    } else {
-                        openPermissionSetting()
+                    },
+                    {
                     }
-                }, {
-                })
+                )
         }
         bottomSheet.show()
     }
@@ -139,10 +146,12 @@ class MarkdownActivity : BaseActivity() {
         private const val CONTENT = "content"
         private const val CONVERSATION_ID = "conversation_id"
         fun show(context: Context, content: String, conversationId: String? = null) {
-            context.startActivity(Intent(context, MarkdownActivity::class.java).apply {
-                putExtra(CONTENT, content)
-                putExtra(CONVERSATION_ID, conversationId)
-            })
+            context.startActivity(
+                Intent(context, MarkdownActivity::class.java).apply {
+                    putExtra(CONTENT, content)
+                    putExtra(CONVERSATION_ID, conversationId)
+                }
+            )
         }
     }
 }

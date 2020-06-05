@@ -22,7 +22,8 @@ abstract class BitmapTransformation : Transformation<Bitmap> {
         if (!Util.isValidDimensions(outWidth, outHeight)) {
             throw IllegalArgumentException(
                 "Cannot apply transformation on width: " + outWidth + " or height: " + outHeight +
-                    " less than or equal to zero and not Target.SIZE_ORIGINAL")
+                    " less than or equal to zero and not Target.SIZE_ORIGINAL"
+            )
         }
         val bitmapPool = Glide.get(context).bitmapPool
         val toTransform = resource.get()

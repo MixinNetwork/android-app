@@ -34,8 +34,10 @@ class Compressor {
     @Throws(IOException::class)
     @JvmOverloads
     fun compressToFile(imageFile: File, compressedFilePath: String = imageFile.name): File {
-        return ImageUtil.compressImage(imageFile, maxWidth, maxHeight, compressFormat, quality,
-            compressedFilePath)
+        return ImageUtil.compressImage(
+            imageFile, maxWidth, maxHeight, compressFormat, quality,
+            compressedFilePath
+        )
     }
 
     @Throws(IOException::class)

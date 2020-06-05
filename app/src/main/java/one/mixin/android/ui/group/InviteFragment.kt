@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.uber.autodispose.autoDispose
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_invite.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -20,6 +19,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.group.InviteActivity.Companion.ARGS_ID
 import one.mixin.android.util.ErrorHandler
+import javax.inject.Inject
 
 class InviteFragment : BaseFragment() {
     companion object {
@@ -52,52 +52,64 @@ class InviteFragment : BaseFragment() {
         layoutInflater.inflate(R.layout.fragment_invite, container, false)
 
     private fun refreshUrl() {
-        inviteViewModel.findConversation(conversationId).autoDispose(stopScope).subscribe({
-            if (it.isSuccess && it.data != null) {
-                inviteViewModel.updateCodeUrl(conversationId, it.data!!.codeUrl)
-            }
-        }, { ErrorHandler.handleError(it) })
+        inviteViewModel.findConversation(conversationId).autoDispose(stopScope).subscribe(
+            {
+                if (it.isSuccess && it.data != null) {
+                    inviteViewModel.updateCodeUrl(conversationId, it.data!!.codeUrl)
+                }
+            },
+            { ErrorHandler.handleError(it) }
+        )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
 
-        inviteViewModel.getConversation(conversationId).observe(viewLifecycleOwner, Observer {
-            it.notNullWithElse({
-                val url = it.codeUrl
-                invite_link.text = url
-                invite_forward.setOnClickListener {
-                    context?.let {
-                        ForwardActivity.show(it, url)
+        inviteViewModel.getConversation(conversationId).observe(
+            viewLifecycleOwner,
+            Observer {
+                it.notNullWithElse(
+                    {
+                        val url = it.codeUrl
+                        invite_link.text = url
+                        invite_forward.setOnClickListener {
+                            context?.let {
+                                ForwardActivity.show(it, url)
+                            }
+                        }
+                        invite_copy.setOnClickListener {
+                            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, url))
+                            context?.toast(R.string.copy_success)
+                        }
+                        invite_share.setOnClickListener {
+                            val sendIntent = Intent()
+                            sendIntent.action = Intent.ACTION_SEND
+                            sendIntent.putExtra(Intent.EXTRA_TEXT, url)
+                            sendIntent.type = "text/plain"
+                            startActivity(Intent.createChooser(sendIntent, resources.getText(R.string.invite_title)))
+                        }
+                    },
+                    {
+                        context?.toast(R.string.invite_invalid)
                     }
-                }
-                invite_copy.setOnClickListener {
-                    context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, url))
-                    context?.toast(R.string.copy_success)
-                }
-                invite_share.setOnClickListener {
-                    val sendIntent = Intent()
-                    sendIntent.action = Intent.ACTION_SEND
-                    sendIntent.putExtra(Intent.EXTRA_TEXT, url)
-                    sendIntent.type = "text/plain"
-                    startActivity(Intent.createChooser(sendIntent, resources.getText(R.string.invite_title)))
-                }
-            }, {
-                context?.toast(R.string.invite_invalid)
-            })
-        })
+                )
+            }
+        )
 
         invite_revoke.setOnClickListener {
-            inviteViewModel.rotate(conversationId).autoDispose(stopScope).subscribe({
-                if (it.isSuccess) {
-                    val cr = it.data!!
-                    invite_link.text = cr.codeUrl
-                    inviteViewModel.updateCodeUrl(cr.conversationId, cr.codeUrl)
+            inviteViewModel.rotate(conversationId).autoDispose(stopScope).subscribe(
+                {
+                    if (it.isSuccess) {
+                        val cr = it.data!!
+                        invite_link.text = cr.codeUrl
+                        inviteViewModel.updateCodeUrl(cr.conversationId, cr.codeUrl)
+                    }
+                },
+                {
+                    ErrorHandler.handleError(it)
                 }
-            }, {
-                ErrorHandler.handleError(it)
-            })
+            )
         }
 
         refreshUrl()

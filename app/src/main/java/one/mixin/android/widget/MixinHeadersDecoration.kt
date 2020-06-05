@@ -28,15 +28,19 @@ class MixinHeadersDecoration private constructor(
 
     private val mTempRect = Rect()
 
-    constructor(adapter: MixinStickyRecyclerHeadersAdapter<*>) : this(adapter,
-        LinearLayoutOrientationProvider(), DimensionCalculator())
+    constructor(adapter: MixinStickyRecyclerHeadersAdapter<*>) : this(
+        adapter,
+        LinearLayoutOrientationProvider(), DimensionCalculator()
+    )
 
     private constructor(
         adapter: MixinStickyRecyclerHeadersAdapter<*>,
         orientationProvider: OrientationProvider,
         dimensionCalculator: DimensionCalculator
-    ) : this(adapter, orientationProvider, dimensionCalculator, HeaderRenderer(orientationProvider),
-        HeaderViewCache(adapter, orientationProvider))
+    ) : this(
+        adapter, orientationProvider, dimensionCalculator, HeaderRenderer(orientationProvider),
+        HeaderViewCache(adapter, orientationProvider)
+    )
 
     private constructor(
         adapter: MixinStickyRecyclerHeadersAdapter<*>,
@@ -44,9 +48,13 @@ class MixinHeadersDecoration private constructor(
         dimensionCalculator: DimensionCalculator,
         headerRenderer: HeaderRenderer,
         headerProvider: HeaderProvider
-    ) : this(adapter, headerRenderer, orientationProvider, dimensionCalculator, headerProvider,
-        HeaderPositionCalculator(adapter, headerProvider, orientationProvider,
-            dimensionCalculator))
+    ) : this(
+        adapter, headerRenderer, orientationProvider, dimensionCalculator, headerProvider,
+        HeaderPositionCalculator(
+            adapter, headerProvider, orientationProvider,
+            dimensionCalculator
+        )
+    )
 
     override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
         super.getItemOffsets(outRect, view, parent, state)
@@ -164,14 +172,19 @@ class MixinHeadersDecoration private constructor(
             val attachView = mAdapter.onCreateAttach(parent)
             if (attachView.layoutParams == null) {
                 attachView.layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                )
             }
             val widthSpec = View.MeasureSpec.makeMeasureSpec(parent.width, View.MeasureSpec.EXACTLY)
             val heightSpec = View.MeasureSpec.makeMeasureSpec(parent.height, View.MeasureSpec.UNSPECIFIED)
-            val childWidth = ViewGroup.getChildMeasureSpec(widthSpec,
-                parent.paddingLeft + parent.paddingRight, attachView.layoutParams.width)
-            val childHeight = ViewGroup.getChildMeasureSpec(heightSpec,
-                parent.paddingTop + parent.paddingBottom, attachView.layoutParams.height)
+            val childWidth = ViewGroup.getChildMeasureSpec(
+                widthSpec,
+                parent.paddingLeft + parent.paddingRight, attachView.layoutParams.width
+            )
+            val childHeight = ViewGroup.getChildMeasureSpec(
+                heightSpec,
+                parent.paddingTop + parent.paddingBottom, attachView.layoutParams.height
+            )
             attachView.measure(childWidth, childHeight)
             attachView.layout(0, 0, attachView.measuredWidth, attachView.measuredHeight)
             this.attachView = attachView

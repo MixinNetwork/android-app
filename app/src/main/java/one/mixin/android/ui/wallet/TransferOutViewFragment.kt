@@ -14,7 +14,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.fragment_transfer_out.view.*
 import kotlinx.android.synthetic.main.layout_empty_transaction.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -40,6 +39,7 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotItem.Companion.fromSnapshot
 import one.mixin.android.widget.BottomSheet
+import kotlin.math.abs
 
 class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotListener {
 
@@ -117,9 +117,11 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
                 if (result.data?.size!! < LIMIT) {
                     hasMore = false
                 }
-                adapter.list.addAll(result.data!!.map {
-                    fromSnapshot(it, avatarUrl, symbol)
-                })
+                adapter.list.addAll(
+                    result.data!!.map {
+                        fromSnapshot(it, avatarUrl, symbol)
+                    }
+                )
                 adapter.notifyDataSetChanged()
             } else {
                 hasMore = false
@@ -129,7 +131,8 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
         }
     }
 
-    class SnapshotPagedAdapter : RecyclerView.Adapter<SnapshotHolder>(),
+    class SnapshotPagedAdapter :
+        RecyclerView.Adapter<SnapshotHolder>(),
         StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
 
         var list: MutableList<SnapshotItem> = mutableListOf()
@@ -194,7 +197,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
     }
 
     override fun <T> onNormalItemClick(item: T) {
-                 lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch(Dispatchers.IO) {
             val snapshot = item as SnapshotItem
             walletViewModel.simpleAssetItem(snapshot.assetId)?.let { assetItem ->
                 TransactionBottomSheetDialogFragment.newInstance(snapshot, assetItem).show(parentFragmentManager, TransactionBottomSheetDialogFragment.TAG)

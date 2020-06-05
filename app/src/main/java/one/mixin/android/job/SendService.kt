@@ -6,8 +6,6 @@ import android.content.Intent
 import androidx.core.app.RemoteInput
 import androidx.core.content.getSystemService
 import dagger.android.AndroidInjection
-import java.util.UUID
-import javax.inject.Inject
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
@@ -25,6 +23,8 @@ import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createMessage
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
+import java.util.UUID
+import javax.inject.Inject
 
 class SendService : IntentService("SendService") {
 
@@ -56,8 +56,10 @@ class SendService : IntentService("SendService") {
                 MessageCategory.SIGNAL_TEXT.name
             }
 
-            val message = createMessage(UUID.randomUUID().toString(), conversationId,
-                Session.getAccountId().toString(), category, content.toString().trim(), nowInUtc(), MessageStatus.SENDING.name)
+            val message = createMessage(
+                UUID.randomUUID().toString(), conversationId,
+                Session.getAccountId().toString(), category, content.toString().trim(), nowInUtc(), MessageStatus.SENDING.name
+            )
             jobManager.addJobInBackground(SendMessageJob(message))
         }
         val manager = getSystemService<NotificationManager>()

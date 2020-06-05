@@ -41,8 +41,10 @@ fun String.within24Hours(): Boolean {
 }
 
 fun String.timeAgo(context: Context): String {
-    val today = ZonedDateTime.of(ZonedDateTime.now().toLocalDate(),
-        LocalTime.MIN, LocaleZone.normalized())
+    val today = ZonedDateTime.of(
+        ZonedDateTime.now().toLocalDate(),
+        LocalTime.MIN, LocaleZone.normalized()
+    )
     var timeAgo = TimeCache.singleton.getTimeAgo(this + today)
     if (timeAgo == null) {
         val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)
@@ -71,8 +73,10 @@ fun String.timeAgo(context: Context): String {
 }
 
 fun String.timeAgoDate(context: Context): String {
-    val today = ZonedDateTime.of(ZonedDateTime.now().toLocalDate(),
-        LocalTime.MIN, LocaleZone.normalized())
+    val today = ZonedDateTime.of(
+        ZonedDateTime.now().toLocalDate(),
+        LocalTime.MIN, LocaleZone.normalized()
+    )
     val todayMilli = today.toInstant().toEpochMilli()
     var timeAgoDate = TimeCache.singleton.getTimeAgoDate(this + today)
     if (timeAgoDate == null) {
@@ -80,22 +84,26 @@ fun String.timeAgoDate(context: Context): String {
         timeAgoDate = when {
             (todayMilli <= date.toInstant().toEpochMilli()) -> context.getString(R.string.today)
             (today.year == date.year) -> {
-                date.format(DateTimeFormatter.ofPattern(
-                    if (Lingver.getInstance().isCurrChinese()) {
-                        weekPatternCn
-                    } else {
-                        weekPatternEn
-                    }
-                ).withZone(LocaleZone))
+                date.format(
+                    DateTimeFormatter.ofPattern(
+                        if (Lingver.getInstance().isCurrChinese()) {
+                            weekPatternCn
+                        } else {
+                            weekPatternEn
+                        }
+                    ).withZone(LocaleZone)
+                )
             }
             else -> {
-                date.format(DateTimeFormatter.ofPattern(
-                    if (Lingver.getInstance().isCurrChinese()) {
-                        yearPatternCn
-                    } else {
-                        yearPatternEn
-                    }
-                ).withZone(LocaleZone))
+                date.format(
+                    DateTimeFormatter.ofPattern(
+                        if (Lingver.getInstance().isCurrChinese()) {
+                            yearPatternCn
+                        } else {
+                            yearPatternEn
+                        }
+                    ).withZone(LocaleZone)
+                )
             }
         }
         TimeCache.singleton.putTimeAgoDate(this + today, timeAgoDate)
@@ -104,8 +112,10 @@ fun String.timeAgoDate(context: Context): String {
 }
 
 fun String.timeAgoDay(patten: String = "dd/MM/yyyy"): String {
-    val today = ZonedDateTime.of(ZonedDateTime.now().toLocalDate(),
-        LocalTime.MIN, LocaleZone.normalized()).toInstant().toEpochMilli()
+    val today = ZonedDateTime.of(
+        ZonedDateTime.now().toLocalDate(),
+        LocalTime.MIN, LocaleZone.normalized()
+    ).toInstant().toEpochMilli()
     var timeAgoDate = TimeCache.singleton.getTimeAgoDate(this + today)
     if (timeAgoDate == null) {
         val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)

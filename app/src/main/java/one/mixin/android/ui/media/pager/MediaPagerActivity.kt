@@ -44,10 +44,6 @@ import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.io.File
-import java.io.FileInputStream
-import javax.inject.Inject
-import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_media_pager.*
 import kotlinx.android.synthetic.main.item_pager_video_layout.view.*
 import kotlinx.android.synthetic.main.layout_player_view.view.*
@@ -104,6 +100,10 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.File
+import java.io.FileInputStream
+import javax.inject.Inject
+import kotlin.math.min
 
 class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener, SensorOrientationChangeNotifier.Listener {
     private lateinit var colorDrawable: ColorDrawable
@@ -261,16 +261,19 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     private fun observeAllDataSource() = lifecycleScope.launch {
         initialIndex = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
         viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
-            .observe(this@MediaPagerActivity, Observer {
-                adapter.submitList(it) {
-                    if (firstLoad) {
-                        adapter.initialPos = initialIndex
-                        view_pager.setCurrentItem(initialIndex, false)
-                        checkOrientation()
-                        firstLoad = false
+            .observe(
+                this@MediaPagerActivity,
+                Observer {
+                    adapter.submitList(it) {
+                        if (firstLoad) {
+                            adapter.initialPos = initialIndex
+                            view_pager.setCurrentItem(initialIndex, false)
+                            checkOrientation()
+                            firstLoad = false
+                        }
                     }
                 }
-            })
+            )
     }
 
     private fun checkPip() {
@@ -292,15 +295,18 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
-                .subscribe({ granted ->
-                    if (granted) {
-                        messageItem.saveToLocal(this@MediaPagerActivity)
-                    } else {
-                        openPermissionSetting()
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            messageItem.saveToLocal(this@MediaPagerActivity)
+                        } else {
+                            openPermissionSetting()
+                        }
+                    },
+                    {
+                        toast(R.string.save_failure)
                     }
-                }, {
-                    toast(R.string.save_failure)
-                })
+                )
             bottomSheet.dismiss()
         }
         view.share.setOnClickListener {
@@ -326,45 +332,48 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
-                .subscribe({ granted ->
-                    if (granted) {
-                        doAsync {
-                            val path = item.mediaUrl?.toUri()?.getFilePath()
-                            if (path == null) {
-                                toast(R.string.save_failure)
-                                return@doAsync
-                            }
-                            val file = File(path)
-                            val outFile = when {
-                                item.mediaMimeType.equals(
-                                    MimeType.GIF.toString(),
-                                    true
-                                ) -> this@MediaPagerActivity.getPublicPicturePath().createGifTemp(
-                                    false
-                                )
-                                item.mediaMimeType.equals(MimeType.PNG.toString()) ->
-                                    this@MediaPagerActivity.getPublicPicturePath().createPngTemp(
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            doAsync {
+                                val path = item.mediaUrl?.toUri()?.getFilePath()
+                                if (path == null) {
+                                    toast(R.string.save_failure)
+                                    return@doAsync
+                                }
+                                val file = File(path)
+                                val outFile = when {
+                                    item.mediaMimeType.equals(
+                                        MimeType.GIF.toString(),
+                                        true
+                                    ) -> this@MediaPagerActivity.getPublicPicturePath().createGifTemp(
                                         false
                                     )
-                                else -> this@MediaPagerActivity.getPublicPicturePath().createImageTemp(
-                                    noMedia = false
+                                    item.mediaMimeType.equals(MimeType.PNG.toString()) ->
+                                        this@MediaPagerActivity.getPublicPicturePath().createPngTemp(
+                                            false
+                                        )
+                                    else -> this@MediaPagerActivity.getPublicPicturePath().createImageTemp(
+                                        noMedia = false
+                                    )
+                                }
+                                outFile.copyFromInputStream(FileInputStream(file))
+                                sendBroadcast(
+                                    Intent(
+                                        Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                                        Uri.fromFile(outFile)
+                                    )
                                 )
+                                uiThread { toast(getString(R.string.save_to, outFile.absolutePath)) }
                             }
-                            outFile.copyFromInputStream(FileInputStream(file))
-                            sendBroadcast(
-                                Intent(
-                                    Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
-                                    Uri.fromFile(outFile)
-                                )
-                            )
-                            uiThread { toast(getString(R.string.save_to, outFile.absolutePath)) }
+                        } else {
+                            openPermissionSetting()
                         }
-                    } else {
-                        openPermissionSetting()
+                    },
+                    {
+                        toast(R.string.save_failure)
                     }
-                }, {
-                    toast(R.string.save_failure)
-                })
+                )
             bottomSheet.dismiss()
         }
         view.share_image.setOnClickListener {
@@ -846,7 +855,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 putExtra(EXCLUDE_LIVE, excludeLive)
             }
             activity.startActivity(
-                intent, ActivityOptions.makeSceneTransitionAnimation(
+                intent,
+                ActivityOptions.makeSceneTransitionAnimation(
                     activity, imageView,
                     "transition"
                 ).toBundle()

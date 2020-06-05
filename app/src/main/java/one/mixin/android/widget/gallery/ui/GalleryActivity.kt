@@ -32,9 +32,13 @@ import one.mixin.android.widget.gallery.internal.ui.adapter.AlbumsAdapter
 import one.mixin.android.widget.gallery.internal.ui.widget.AlbumsSpinner
 import one.mixin.android.widget.gallery.internal.utils.MediaStoreCompat
 
-class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks,
-    AdapterView.OnItemSelectedListener, MediaSelectionFragment.SelectionProvider,
-    AlbumMediaAdapter.CheckStateListener, AlbumMediaAdapter.OnMediaClickListener,
+class GalleryActivity :
+    AppCompatActivity(),
+    AlbumCollection.AlbumCallbacks,
+    AdapterView.OnItemSelectedListener,
+    MediaSelectionFragment.SelectionProvider,
+    AlbumMediaAdapter.CheckStateListener,
+    AlbumMediaAdapter.OnMediaClickListener,
     AlbumMediaAdapter.OnPhotoCapture {
     private val mAlbumCollection = AlbumCollection()
     private val mSelectedCollection = SelectedItemCollection(this)

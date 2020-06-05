@@ -2,6 +2,11 @@
 package one.mixin.android.crypto
 
 import android.os.Build
+import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.toLeByteArray
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
+import org.bouncycastle.util.io.pem.PemObject
+import org.bouncycastle.util.io.pem.PemWriter
 import java.io.StringWriter
 import java.security.KeyFactory
 import java.security.KeyPair
@@ -15,11 +20,6 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.OAEPParameterSpec
 import javax.crypto.spec.PSource
 import javax.crypto.spec.SecretKeySpec
-import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.toLeByteArray
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
-import org.bouncycastle.util.io.pem.PemObject
-import org.bouncycastle.util.io.pem.PemWriter
 
 fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     val kpg = KeyPairGenerator.getInstance("RSA")
@@ -59,8 +59,13 @@ fun aesEncrypt(key: String, iterator: Long, code: String): String? {
 
 fun rsaDecrypt(privateKey: PrivateKey, iv: String, pinToken: String): String {
     val deCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
-    deCipher.init(Cipher.DECRYPT_MODE, privateKey, OAEPParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256,
-        PSource.PSpecified(iv.toByteArray())))
+    deCipher.init(
+        Cipher.DECRYPT_MODE, privateKey,
+        OAEPParameterSpec(
+            "SHA-256", "MGF1", MGF1ParameterSpec.SHA256,
+            PSource.PSpecified(iv.toByteArray())
+        )
+    )
     return deCipher.doFinal(Base64.decode(pinToken)).base64Encode()
 }
 
@@ -78,8 +83,10 @@ fun getRSAPrivateKeyFromString(privateKeyPEM: String): PrivateKey {
 private fun stripRsaPrivateKeyHeaders(privatePem: String): String {
     val strippedKey = StringBuilder()
     val lines = privatePem.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-    lines.filter { line -> !line.contains("BEGIN RSA PRIVATE KEY") &&
-        !line.contains("END RSA PRIVATE KEY") && !line.trim { it <= ' ' }.isEmpty() }
+    lines.filter { line ->
+        !line.contains("BEGIN RSA PRIVATE KEY") &&
+            !line.contains("END RSA PRIVATE KEY") && !line.trim { it <= ' ' }.isEmpty()
+    }
         .forEach { line -> strippedKey.append(line.trim { it <= ' ' }) }
     return strippedKey.toString().trim { it <= ' ' }
 }

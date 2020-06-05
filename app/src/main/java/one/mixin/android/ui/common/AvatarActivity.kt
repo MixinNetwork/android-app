@@ -34,8 +34,10 @@ class AvatarActivity : AppCompatActivity() {
             val intent = Intent(activity, AvatarActivity::class.java).apply {
                 putExtra(ARGS_URL, url)
             }
-            val options = ActivityOptions.makeSceneTransitionAnimation(activity,
-                view, activity.getString(R.string.avatar_transition_name))
+            val options = ActivityOptions.makeSceneTransitionAnimation(
+                activity,
+                view, activity.getString(R.string.avatar_transition_name)
+            )
             activity.startActivity(intent, options.toBundle())
         }
     }

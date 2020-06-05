@@ -181,11 +181,14 @@ class PinView : LinearLayout {
     }
 
     private fun toStar(codeView: TextView, delay: Long = 0) {
-        codeView.postDelayed({
-            if (codeView.text.isNotEmpty()) {
-                codeView.text = STAR
-            }
-        }, delay)
+        codeView.postDelayed(
+            {
+                if (codeView.text.isNotEmpty()) {
+                    codeView.text = STAR
+                }
+            },
+            delay
+        )
     }
 
     interface OnPinListener {

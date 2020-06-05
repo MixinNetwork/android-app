@@ -29,11 +29,14 @@ class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
         title_view.left_ib.setOnClickListener {
             activity?.onBackPressed()
         }
-        viewModel.countBlockingUsers().observe(viewLifecycleOwner, Observer {
-            it?.let { users ->
-                blocking_tv.text = "${users.size}"
+        viewModel.countBlockingUsers().observe(
+            viewLifecycleOwner,
+            Observer {
+                it?.let { users ->
+                    blocking_tv.text = "${users.size}"
+                }
             }
-        })
+        )
         pin_rl.setOnClickListener {
             if (Session.getAccount()?.hasPin == true) {
                 navTo(PinSettingFragment.newInstance(), PinSettingFragment.TAG)

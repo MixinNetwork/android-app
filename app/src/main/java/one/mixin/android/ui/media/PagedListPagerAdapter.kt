@@ -57,13 +57,13 @@ abstract class PagedListPagerAdapter<T> : PagerAdapter() {
 
     private inner class PagerCallback : PagedList.Callback() {
         override fun onChanged(position: Int, count: Int) =
-                analyzeCount(position, count)
+            analyzeCount(position, count)
 
         override fun onInserted(position: Int, count: Int) =
-                analyzeCount(position, count)
+            analyzeCount(position, count)
 
         override fun onRemoved(position: Int, count: Int) =
-                analyzeCount(position, count)
+            analyzeCount(position, count)
 
         private fun analyzeCount(start: Int, count: Int) = analyzeRange(start, start + count)
 

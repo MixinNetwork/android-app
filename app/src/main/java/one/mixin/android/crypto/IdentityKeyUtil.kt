@@ -13,19 +13,21 @@ open class IdentityKeyUtil {
             val registrationId = KeyHelper.generateRegistrationId(false)
             CryptoPreference.setLocalRegistrationId(ctx, registrationId)
             val identityKeyPair = KeyHelper.generateIdentityKeyPair()
-            val identity = Identity("-1",
+            val identity = Identity(
+                "-1",
                 registrationId,
                 identityKeyPair.publicKey.serialize(),
                 identityKeyPair.privateKey.serialize(),
                 0,
-                System.currentTimeMillis())
+                System.currentTimeMillis()
+            )
             SignalDatabase.getDatabase(ctx).identityDao().insertSuspend(identity)
         }
 
         fun getIdentityKeyPair(context: Context) =
-                SignalDatabase.getDatabase(context).identityDao().getLocalIdentity().getIdentityKeyPair()
+            SignalDatabase.getDatabase(context).identityDao().getLocalIdentity().getIdentityKeyPair()
 
         fun getIdentityKey(context: Context) =
-                SignalDatabase.getDatabase(context).identityDao().getLocalIdentity().getIdentityKey()
+            SignalDatabase.getDatabase(context).identityDao().getLocalIdentity().getIdentityKey()
     }
 }

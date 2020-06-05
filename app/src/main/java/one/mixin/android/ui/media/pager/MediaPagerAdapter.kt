@@ -86,9 +86,9 @@ class MediaPagerAdapter(
             messageItem.type == MessageCategory.PLAIN_IMAGE.name
         ) {
             if (!messageItem.mediaMimeType.equals(
-                    MimeType.GIF.toString(),
-                    true
-                ) && messageItem.mediaHeight != null && messageItem.mediaWidth != null &&
+                MimeType.GIF.toString(),
+                true
+            ) && messageItem.mediaHeight != null && messageItem.mediaWidth != null &&
                 messageItem.mediaHeight / messageItem.mediaWidth.toFloat() > context.displayRatio() * 1.5f
             ) {
                 MediaItemType.LargeImage.ordinal

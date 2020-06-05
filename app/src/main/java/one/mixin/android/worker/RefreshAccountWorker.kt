@@ -44,11 +44,13 @@ class RefreshAccountWorker @AssistedInject constructor(
             val receive = MixinApplication.appContext.defaultSharedPreferences
                 .getInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
             if (response.data!!.receive_message_source == MessageSource.EVERYBODY.name &&
-                receive != MessageSource.EVERYBODY.ordinal) {
+                receive != MessageSource.EVERYBODY.ordinal
+            ) {
                 MixinApplication.appContext.defaultSharedPreferences
                     .putInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
             } else if (response.data!!.receive_message_source == MessageSource.CONTACTS.name &&
-                receive != MessageSource.CONTACTS.ordinal) {
+                receive != MessageSource.CONTACTS.ordinal
+            ) {
                 MixinApplication.appContext.defaultSharedPreferences
                     .putInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.CONTACTS.ordinal)
             }
@@ -56,11 +58,13 @@ class RefreshAccountWorker @AssistedInject constructor(
             val receiveGroup = MixinApplication.appContext.defaultSharedPreferences
                 .getInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
             if (response.data!!.accept_conversation_source == MessageSource.EVERYBODY.name &&
-                receiveGroup != MessageSource.EVERYBODY.ordinal) {
+                receiveGroup != MessageSource.EVERYBODY.ordinal
+            ) {
                 MixinApplication.appContext.defaultSharedPreferences
                     .putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
             } else if (response.data!!.accept_conversation_source == MessageSource.CONTACTS.name &&
-                receiveGroup != MessageSource.CONTACTS.ordinal) {
+                receiveGroup != MessageSource.CONTACTS.ordinal
+            ) {
                 MixinApplication.appContext.defaultSharedPreferences
                     .putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.CONTACTS.ordinal)
             }

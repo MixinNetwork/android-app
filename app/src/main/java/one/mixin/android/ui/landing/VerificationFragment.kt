@@ -145,33 +145,36 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     private fun handlePhoneModification() {
         showLoading()
         viewModel.changePhone(requireArguments().getString(ARGS_ID)!!, pin_verification_view.code(), pin = pin!!)
-            .autoDispose(stopScope).subscribe({ r: MixinResponse<Account> ->
-                verification_next_fab.hide()
-                verification_cover.visibility = GONE
-                if (!r.isSuccess) {
-                    handleFailure(r)
-                    return@subscribe
-                }
-                doAsync {
-                    val a = Session.getAccount()
-                    a?.let {
-                        val phone = requireArguments().getString(ARGS_PHONE_NUM) ?: return@doAsync
-                        viewModel.updatePhone(a.userId, phone)
-                        a.phone = phone
-                        Session.storeAccount(a)
+            .autoDispose(stopScope).subscribe(
+                { r: MixinResponse<Account> ->
+                    verification_next_fab.hide()
+                    verification_cover.visibility = GONE
+                    if (!r.isSuccess) {
+                        handleFailure(r)
+                        return@subscribe
                     }
-                    uiThread {
-                        alert(getString(R.string.change_phone_success))
-                            .setPositiveButton(android.R.string.yes) { dialog, _ ->
-                                dialog.dismiss()
-                                activity?.finish()
-                            }
-                            .show()
+                    doAsync {
+                        val a = Session.getAccount()
+                        a?.let {
+                            val phone = requireArguments().getString(ARGS_PHONE_NUM) ?: return@doAsync
+                            viewModel.updatePhone(a.userId, phone)
+                            a.phone = phone
+                            Session.storeAccount(a)
+                        }
+                        uiThread {
+                            alert(getString(R.string.change_phone_success))
+                                .setPositiveButton(android.R.string.yes) { dialog, _ ->
+                                    dialog.dismiss()
+                                    activity?.finish()
+                                }
+                                .show()
+                        }
                     }
+                },
+                { t: Throwable ->
+                    handleError(t)
                 }
-            }, { t: Throwable ->
-                handleError(t)
-            })
+            )
     }
 
     private fun handleLogin() = lifecycleScope.launch {
@@ -181,11 +184,13 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
         val registrationId = CryptoPreference.getLocalRegistrationId(requireContext())
         val sessionKey = generateRSAKeyPair()
         val sessionSecret = sessionKey.getPublicKey().base64Encode()
-        val accountRequest = AccountRequest(pin_verification_view.code(),
+        val accountRequest = AccountRequest(
+            pin_verification_view.code(),
             registration_id = registrationId,
             purpose = VerificationPurpose.SESSION.name,
             pin = Session.getPinToken()?.let { encryptPin(it, pin) },
-            session_secret = sessionSecret)
+            session_secret = sessionSecret
+        )
 
         handleMixinResponse(
             invokeNetwork = { viewModel.create(requireArguments().getString(ARGS_ID)!!, accountRequest) },
@@ -214,40 +219,47 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
         val verificationRequest = VerificationRequest(
             requireArguments().getString(ARGS_PHONE_NUM),
             if (isPhoneModification()) VerificationPurpose.PHONE.name else VerificationPurpose.SESSION.name,
-            gRecaptchaResponse)
+            gRecaptchaResponse
+        )
         viewModel.verification(verificationRequest)
-            .autoDispose(stopScope).subscribe({ r: MixinResponse<VerificationResponse> ->
-                if (!r.isSuccess) {
-                    if (r.errorCode == NEED_RECAPTCHA) {
-                        initAndLoadRecaptcha()
+            .autoDispose(stopScope).subscribe(
+                { r: MixinResponse<VerificationResponse> ->
+                    if (!r.isSuccess) {
+                        if (r.errorCode == NEED_RECAPTCHA) {
+                            initAndLoadRecaptcha()
+                        } else {
+                            hideLoading()
+                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                        }
                     } else {
+                        hasEmergencyContact = (r.data as VerificationResponse).hasEmergencyContact
                         hideLoading()
-                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                        pin_verification_view?.clear()
+                        startCountDown()
                     }
-                } else {
-                    hasEmergencyContact = (r.data as VerificationResponse).hasEmergencyContact
-                    hideLoading()
-                    pin_verification_view?.clear()
-                    startCountDown()
+                },
+                { t: Throwable ->
+                    handleError(t)
+                    verification_next_fab.visibility = GONE
+                    recaptchaView?.webView?.visibility = GONE
                 }
-            }, { t: Throwable ->
-                handleError(t)
-                verification_next_fab.visibility = GONE
-                recaptchaView?.webView?.visibility = GONE
-            })
+            )
     }
 
     private fun initAndLoadRecaptcha() {
         if (recaptchaView == null) {
-            recaptchaView = RecaptchaView(requireContext(), object : RecaptchaView.Callback {
-                override fun onStop() {
-                    hideLoading()
-                }
+            recaptchaView = RecaptchaView(
+                requireContext(),
+                object : RecaptchaView.Callback {
+                    override fun onStop() {
+                        hideLoading()
+                    }
 
-                override fun onPostToken(value: String) {
-                    sendVerification(value)
+                    override fun onPostToken(value: String) {
+                        sendVerification(value)
+                    }
                 }
-            })
+            )
             (view as ViewGroup).addView(recaptchaView?.webView, MATCH_PARENT, MATCH_PARENT)
         }
         recaptchaView?.loadRecaptcha()

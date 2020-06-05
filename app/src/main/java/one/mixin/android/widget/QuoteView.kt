@@ -103,11 +103,14 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     dip(16)
             }
             quoteMessageItem.type.endsWith("_DATA") -> {
-                quoteMessageItem.mediaName.notNullWithElse({
-                    reply_content_tv.text = it
-                }, {
-                    reply_content_tv.setText(R.string.document)
-                })
+                quoteMessageItem.mediaName.notNullWithElse(
+                    {
+                        reply_content_tv.text = it
+                    },
+                    {
+                        reply_content_tv.setText(R.string.document)
+                    }
+                )
                 setIcon(R.drawable.ic_status_file)
                 reply_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE
@@ -137,11 +140,14 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     dip(8)
             }
             quoteMessageItem.type.endsWith("_AUDIO") -> {
-                quoteMessageItem.mediaDuration.notNullWithElse({
-                    reply_content_tv.text = it.toLong().formatMillis()
-                }, {
-                    reply_content_tv.setText(R.string.audio)
-                })
+                quoteMessageItem.mediaDuration.notNullWithElse(
+                    {
+                        reply_content_tv.text = it.toLong().formatMillis()
+                    },
+                    {
+                        reply_content_tv.setText(R.string.audio)
+                    }
+                )
                 setIcon(R.drawable.ic_status_audio)
                 reply_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE
@@ -197,25 +203,28 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
     }
 
     private fun setIcon(@DrawableRes icon: Int? = null) {
-        icon.notNullWithElse({ drawable ->
-            AppCompatResources.getDrawable(context, drawable).let {
-                it?.setBounds(0, 0, context.dpToPx(10f), context.dpToPx(10f))
+        icon.notNullWithElse(
+            { drawable ->
+                AppCompatResources.getDrawable(context, drawable).let {
+                    it?.setBounds(0, 0, context.dpToPx(10f), context.dpToPx(10f))
+                    TextViewCompat.setCompoundDrawablesRelative(
+                        reply_content_tv,
+                        it,
+                        null,
+                        null,
+                        null
+                    )
+                }
+            },
+            {
                 TextViewCompat.setCompoundDrawablesRelative(
                     reply_content_tv,
-                    it,
+                    null,
                     null,
                     null,
                     null
                 )
             }
-        }, {
-            TextViewCompat.setCompoundDrawablesRelative(
-                reply_content_tv,
-                null,
-                null,
-                null,
-                null
-            )
-        })
+        )
     }
 }

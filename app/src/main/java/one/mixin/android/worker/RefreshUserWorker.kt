@@ -36,7 +36,8 @@ class RefreshUserWorker @AssistedInject constructor(
 
                 conversationId?.let {
                     WorkManager.getInstance(MixinApplication.appContext).enqueueAvatarWorkRequest(
-                        workDataOf(GROUP_ID to conversationId))
+                        workDataOf(GROUP_ID to conversationId)
+                    )
                 }
             }
             Result.success()

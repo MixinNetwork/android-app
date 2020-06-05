@@ -1,8 +1,8 @@
 package one.mixin.android.ui.home.bot
 
 import androidx.lifecycle.ViewModel
-import javax.inject.Inject
 import one.mixin.android.repository.UserRepository
+import javax.inject.Inject
 
 class BotManagerViewModel @Inject internal constructor(val userRepository: UserRepository) : ViewModel() {
 

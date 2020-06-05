@@ -13,7 +13,8 @@ import one.mixin.android.ui.contacts.ContactsAdapter
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
-class SingleFriendSelectAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
+class SingleFriendSelectAdapter :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     StickyRecyclerHeadersAdapter<SingleFriendSelectAdapter.HeaderViewHolder> {
 
     companion object {

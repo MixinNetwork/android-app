@@ -37,14 +37,17 @@ class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() 
         super.onViewCreated(view, savedInstanceState)
         blocked_rv.adapter = adapter
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        viewModel.blockingUsers(stopScope).observe(viewLifecycleOwner, Observer {
-            if (it != null && it.isNotEmpty()) {
-                block_va.displayedChild = POS_LIST
-                adapter.setUsers(it)
-            } else {
-                block_va.displayedChild = POS_EMPTY
+        viewModel.blockingUsers(stopScope).observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it != null && it.isNotEmpty()) {
+                    block_va.displayedChild = POS_LIST
+                    adapter.setUsers(it)
+                } else {
+                    block_va.displayedChild = POS_EMPTY
+                }
             }
-        })
+        )
     }
 
     class BlockedAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -94,7 +97,8 @@ class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() 
             itemView.normal.text = user.fullName
             itemView.setOnClickListener {
                 UserBottomSheetDialogFragment.newInstance(user).show(
-                    (it.context as FragmentActivity).supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+                    (it.context as FragmentActivity).supportFragmentManager, UserBottomSheetDialogFragment.TAG
+                )
             }
         }
     }

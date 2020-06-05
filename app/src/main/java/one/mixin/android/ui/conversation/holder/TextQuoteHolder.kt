@@ -150,23 +150,26 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
             }
             itemView.chat_tv.renderMessage(messageItem.content, mentionRenderContext, keyword)
         } else {
-            keyword.notNullWithElse({ k ->
-                messageItem.content?.let { str ->
-                    val start = str.indexOf(k, 0, true)
-                    if (start >= 0) {
-                        val sp = SpannableString(str)
-                        sp.setSpan(
-                            BackgroundColorSpan(HIGHLIGHTED), start,
-                            start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                        )
-                        itemView.chat_tv.text = sp
-                    } else {
-                        itemView.chat_tv.text = str
+            keyword.notNullWithElse(
+                { k ->
+                    messageItem.content?.let { str ->
+                        val start = str.indexOf(k, 0, true)
+                        if (start >= 0) {
+                            val sp = SpannableString(str)
+                            sp.setSpan(
+                                BackgroundColorSpan(HIGHLIGHTED), start,
+                                start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                            )
+                            itemView.chat_tv.text = sp
+                        } else {
+                            itemView.chat_tv.text = str
+                        }
                     }
+                },
+                {
+                    itemView.chat_tv.text = messageItem.content
                 }
-            }, {
-                itemView.chat_tv.text = messageItem.content
-            })
+            )
         }
 
         val isMe = meId == messageItem.userId

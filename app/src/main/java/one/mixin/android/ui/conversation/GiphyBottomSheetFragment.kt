@@ -56,7 +56,8 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                     callback?.onGiphyClick(image, previewUrl)
                     dismiss()
                 }
-            })
+            }
+        )
     }
     private var offset = 0
     private var fetching = false
@@ -129,29 +130,32 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         } else {
             bottomViewModel.trendingGifs(LIMIT, offset)
         }.autoDispose(stopScope)
-            .subscribe({ list ->
-                if (!isAdded) return@subscribe
-                if (offset == 0) {
-                    adapter.notifyDataSetChanged()
-                }
-                if (list.isEmpty()) {
+            .subscribe(
+                { list ->
+                    if (!isAdded) return@subscribe
+                    if (offset == 0) {
+                        adapter.notifyDataSetChanged()
+                    }
+                    if (list.isEmpty()) {
+                        contentView.sticker_va.displayedChild = POS_EMPTY
+                    } else {
+                        contentView.sticker_va.displayedChild = POS_RV
+                        update(list)
+                    }
+                    if (list.size < LIMIT) {
+                        noMore = true
+                    }
+                    fetching = false
+                },
+                { t ->
+                    fetching = false
                     contentView.sticker_va.displayedChild = POS_EMPTY
-                } else {
-                    contentView.sticker_va.displayedChild = POS_RV
-                    update(list)
+                    Timber.d("Search gifs failed, t: ${t.printStackTrace()}")
+                    if (t is HttpException && t.code() == 429) {
+                        toast("Giphy API rate limit exceeded")
+                    }
                 }
-                if (list.size < LIMIT) {
-                    noMore = true
-                }
-                fetching = false
-            }, { t ->
-                fetching = false
-                contentView.sticker_va.displayedChild = POS_EMPTY
-                Timber.d("Search gifs failed, t: ${t.printStackTrace()}")
-                if (t is HttpException && t.code() == 429) {
-                    toast("Giphy API rate limit exceeded")
-                }
-            })
+            )
     }
 
     private val onScrollListener = object : RecyclerView.OnScrollListener() {

@@ -1,9 +1,6 @@
 package one.mixin.android.util
 
 import android.content.Context
-import java.io.IOException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import one.mixin.android.MixinApplication
@@ -14,6 +11,9 @@ import one.mixin.android.api.ServerErrorException
 import one.mixin.android.extension.toast
 import org.jetbrains.anko.runOnUiThread
 import retrofit2.HttpException
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
 open class ErrorHandler {
 
@@ -138,7 +138,8 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
             getString(R.string.error_phone_sms_delivery, ErrorHandler.PHONE_SMS_DELIVERY)
         }
         ErrorHandler.RECAPTCHA_IS_INVALID -> {
-            getString(R.string.error_recaptcha_is_invalid,
+            getString(
+                R.string.error_recaptcha_is_invalid,
                 ErrorHandler.RECAPTCHA_IS_INVALID
             )
         }
@@ -146,19 +147,22 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
             getString(R.string.error_old_version, ErrorHandler.OLD_VERSION)
         }
         ErrorHandler.PHONE_INVALID_FORMAT -> {
-            getString(R.string.error_phone_invalid_format,
+            getString(
+                R.string.error_phone_invalid_format,
                 ErrorHandler.PHONE_INVALID_FORMAT
             )
         }
         ErrorHandler.INSUFFICIENT_IDENTITY_NUMBER -> "${ErrorHandler.INSUFFICIENT_IDENTITY_NUMBER} INSUFFICIENT_IDENTITY_NUMBER"
         ErrorHandler.INVALID_INVITATION_CODE -> "${ErrorHandler.INVALID_INVITATION_CODE} INVALID_INVITATION_CODE"
         ErrorHandler.PHONE_VERIFICATION_CODE_INVALID -> {
-            getString(R.string.error_phone_verification_code_invalid,
+            getString(
+                R.string.error_phone_verification_code_invalid,
                 ErrorHandler.PHONE_VERIFICATION_CODE_INVALID
             )
         }
         ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED -> {
-            getString(R.string.error_phone_verification_code_expired,
+            getString(
+                R.string.error_phone_verification_code_expired,
                 ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED
             )
         }
@@ -170,7 +174,8 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
             getString(R.string.error_full_group, ErrorHandler.GROUP_CHAT_FULL)
         }
         ErrorHandler.INSUFFICIENT_BALANCE -> {
-            getString(R.string.error_insufficient_balance,
+            getString(
+                R.string.error_insufficient_balance,
                 ErrorHandler.INSUFFICIENT_BALANCE
             )
         }
@@ -190,7 +195,8 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
             getString(R.string.error_used_phone, ErrorHandler.USED_PHONE)
         }
         ErrorHandler.INSUFFICIENT_TRANSACTION_FEE -> {
-            getString(R.string.error_insufficient_transaction_fee,
+            getString(
+                R.string.error_insufficient_transaction_fee,
                 ErrorHandler.INSUFFICIENT_TRANSACTION_FEE
             )
         }
@@ -204,27 +210,32 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
             getString(R.string.error_invalid_address, ErrorHandler.INVALID_ADDRESS)
         }
         ErrorHandler.WITHDRAWAL_AMOUNT_SMALL -> {
-            getString(R.string.error_too_small_withdraw_amount,
+            getString(
+                R.string.error_too_small_withdraw_amount,
                 ErrorHandler.WITHDRAWAL_AMOUNT_SMALL
             )
         }
         ErrorHandler.INVALID_CODE_TOO_FREQUENT -> {
-            getString(R.string.error_invalid_code_too_frequent,
+            getString(
+                R.string.error_invalid_code_too_frequent,
                 ErrorHandler.INVALID_CODE_TOO_FREQUENT
             )
         }
         ErrorHandler.INVALID_EMERGENCY_CONTACT -> {
-            getString(R.string.error_invalid_emergency_contact,
+            getString(
+                R.string.error_invalid_emergency_contact,
                 ErrorHandler.INVALID_EMERGENCY_CONTACT
             )
         }
         ErrorHandler.WITHDRAWAL_MEMO_FORMAT_INCORRECT -> {
-            getString(R.string.error_withdrawal_memo_format_incorrect,
+            getString(
+                R.string.error_withdrawal_memo_format_incorrect,
                 ErrorHandler.WITHDRAWAL_MEMO_FORMAT_INCORRECT
             )
         }
         ErrorHandler.FAVORITE_LIMIT, ErrorHandler.CIRCLE_LIMIT -> {
-            getString(R.string.error_favorite_limit,
+            getString(
+                R.string.error_favorite_limit,
                 ErrorHandler.FAVORITE_LIMIT
             )
         }

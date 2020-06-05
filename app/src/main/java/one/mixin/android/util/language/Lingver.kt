@@ -93,12 +93,16 @@ class Lingver private constructor(
     }
 
     internal fun initialize(application: Application) {
-        application.registerActivityLifecycleCallbacks(LingverActivityLifecycleCallbacks(this) {
-            applyForActivity(it)
-        })
-        application.registerComponentCallbacks(LingverApplicationCallbacks {
-            processConfigurationChange(application, it)
-        })
+        application.registerActivityLifecycleCallbacks(
+            LingverActivityLifecycleCallbacks(this) {
+                applyForActivity(it)
+            }
+        )
+        application.registerComponentCallbacks(
+            LingverApplicationCallbacks {
+                processConfigurationChange(application, it)
+            }
+        )
         val locale = if (store.isFollowingSystemLocale()) {
             systemLocale // might be different on every app launch
         } else {

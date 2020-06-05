@@ -37,9 +37,11 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         requireContext().dip(PADDING)
     }
 
-    private val adapter = MediaAdapter(fun(imageView: View, messageId: String) {
-        MediaPagerActivity.show(requireActivity(), imageView, conversationId, messageId, true)
-    })
+    private val adapter = MediaAdapter(
+        fun(imageView: View, messageId: String) {
+            MediaPagerActivity.show(requireActivity(), imageView, conversationId, messageId, true)
+        }
+    )
 
     override fun getModelClass() = SharedMediaViewModel::class.java
 
@@ -72,14 +74,17 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         recycler_view.adapter = adapter
         empty_iv.setImageResource(R.drawable.ic_empty_media)
         empty_tv.setText(R.string.no_media)
-        viewModel.getMediaMessagesExcludeLive(conversationId).observe(viewLifecycleOwner, Observer {
-            if (it.size <= 0) {
-                (view as ViewAnimator).displayedChild = 1
-            } else {
-                (view as ViewAnimator).displayedChild = 0
+        viewModel.getMediaMessagesExcludeLive(conversationId).observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it.size <= 0) {
+                    (view as ViewAnimator).displayedChild = 1
+                } else {
+                    (view as ViewAnimator).displayedChild = 0
+                }
+                adapter.submitList(it)
             }
-            adapter.submitList(it)
-        })
+        )
     }
 
     private fun different2Next(pos: Int): Boolean {

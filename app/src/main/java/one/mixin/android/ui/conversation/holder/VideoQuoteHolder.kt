@@ -114,27 +114,33 @@ class VideoQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         if (messageItem.mediaStatus == MediaStatus.DONE.name) {
-            messageItem.mediaDuration.notNullWithElse({
-                itemView.duration_tv.visibility = View.VISIBLE
-                itemView.duration_tv.text = try {
-                    it.toLong().formatMillis()
-                } catch (e: Exception) {
-                    ""
-                }
-            }, {
-                itemView.duration_tv.visibility = View.GONE
-            })
-        } else {
-            messageItem.mediaSize.notNullWithElse({
-                if (it == 0L) {
-                    itemView.duration_tv.visibility = View.GONE
-                } else {
+            messageItem.mediaDuration.notNullWithElse(
+                {
                     itemView.duration_tv.visibility = View.VISIBLE
-                    itemView.duration_tv.text = it.fileSize()
+                    itemView.duration_tv.text = try {
+                        it.toLong().formatMillis()
+                    } catch (e: Exception) {
+                        ""
+                    }
+                },
+                {
+                    itemView.duration_tv.visibility = View.GONE
                 }
-            }, {
-                itemView.duration_tv.visibility = View.GONE
-            })
+            )
+        } else {
+            messageItem.mediaSize.notNullWithElse(
+                {
+                    if (it == 0L) {
+                        itemView.duration_tv.visibility = View.GONE
+                    } else {
+                        itemView.duration_tv.visibility = View.VISIBLE
+                        itemView.duration_tv.text = it.fileSize()
+                    }
+                },
+                {
+                    itemView.duration_tv.visibility = View.GONE
+                }
+            )
         }
         messageItem.mediaStatus?.let {
             when (it) {

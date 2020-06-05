@@ -31,8 +31,11 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        itemView.avatar_iv.setInfo(messageItem.sharedUserFullName, messageItem.sharedUserAvatarUrl, messageItem.sharedUserId
-            ?: "0")
+        itemView.avatar_iv.setInfo(
+            messageItem.sharedUserFullName, messageItem.sharedUserAvatarUrl,
+            messageItem.sharedUserId
+                ?: "0"
+        )
         itemView.name_tv.text = messageItem.sharedUserFullName
         itemView.id_tv.text = messageItem.sharedUserIdentityNumber
         itemView.chat_time.timeAgoClock(messageItem.createdAt)

@@ -3,11 +3,11 @@ package one.mixin.android.di
 import android.app.Application
 import dagger.Module
 import dagger.Provides
-import javax.inject.Singleton
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
+import javax.inject.Singleton
 
 @Module
 internal class BaseDbModule {

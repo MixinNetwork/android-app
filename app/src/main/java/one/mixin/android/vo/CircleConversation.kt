@@ -5,8 +5,10 @@ import androidx.room.Entity
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
-@Entity(tableName = "circle_conversations",
-    primaryKeys = ["conversation_id", "circle_id"])
+@Entity(
+    tableName = "circle_conversations",
+    primaryKeys = ["conversation_id", "circle_id"]
+)
 data class CircleConversation(
     @ColumnInfo(name = "conversation_id")
     @SerializedName("conversation_id")

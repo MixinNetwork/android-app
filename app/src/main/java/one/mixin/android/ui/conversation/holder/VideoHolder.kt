@@ -10,7 +10,6 @@ import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
-import java.lang.Exception
 import kotlinx.android.synthetic.main.item_chat_video.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -28,6 +27,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
+import java.lang.Exception
 
 class VideoHolder constructor(containerView: View) : MediaHolder(containerView) {
 
@@ -112,27 +112,33 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         } else {
             itemView.live_tv.visibility = GONE
             if (messageItem.mediaStatus == MediaStatus.DONE.name) {
-                messageItem.mediaDuration.notNullWithElse({
-                    itemView.duration_tv.visibility = VISIBLE
-                    itemView.duration_tv.text = try {
-                        it.toLong().formatMillis()
-                    } catch (e: Exception) {
-                        ""
-                    }
-                }, {
-                    itemView.duration_tv.visibility = GONE
-                })
-            } else {
-                messageItem.mediaSize.notNullWithElse({
-                    if (it == 0L) {
-                        itemView.duration_tv.visibility = GONE
-                    } else {
+                messageItem.mediaDuration.notNullWithElse(
+                    {
                         itemView.duration_tv.visibility = VISIBLE
-                        itemView.duration_tv.text = it.fileSize()
+                        itemView.duration_tv.text = try {
+                            it.toLong().formatMillis()
+                        } catch (e: Exception) {
+                            ""
+                        }
+                    },
+                    {
+                        itemView.duration_tv.visibility = GONE
                     }
-                }, {
-                    itemView.duration_tv.visibility = GONE
-                })
+                )
+            } else {
+                messageItem.mediaSize.notNullWithElse(
+                    {
+                        if (it == 0L) {
+                            itemView.duration_tv.visibility = GONE
+                        } else {
+                            itemView.duration_tv.visibility = VISIBLE
+                            itemView.duration_tv.text = it.fileSize()
+                        }
+                    },
+                    {
+                        itemView.duration_tv.visibility = GONE
+                    }
+                )
             }
             messageItem.mediaStatus?.let {
                 when (it) {
@@ -292,7 +298,8 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
             }
         }
         if (dataWidth == null || dataHeight == null ||
-            dataWidth!! <= 0 || dataHeight!! <= 0) {
+            dataWidth!! <= 0 || dataHeight!! <= 0
+        ) {
             itemView.chat_image.layoutParams.width = width
             itemView.chat_image.layoutParams.height = width
         } else {

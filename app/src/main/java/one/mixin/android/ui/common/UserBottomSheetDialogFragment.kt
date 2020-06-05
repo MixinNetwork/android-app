@@ -22,8 +22,6 @@ import com.jakewharton.rxbinding3.view.clicks
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -80,6 +78,8 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.webrtc.CallService
 import org.threeten.bp.Instant
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
 
@@ -141,41 +141,44 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             dismiss()
         }
 
-        bottomViewModel.findUserById(user.userId).observe(this, Observer { u ->
-            if (u == null) return@Observer
-            // prevent add self
-            if (u.userId == Session.getAccountId()) {
-                ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, TAG)
-                dismiss()
-                return@Observer
-            }
-            updateUserInfo(u)
-            if (menuListLayout == null ||
-                u.relationship != user.relationship ||
-                u.muteUntil != user.muteUntil ||
-                u.fullName != user.fullName
-            ) {
-                lifecycleScope.launch {
-                    val circleNames = bottomViewModel.findCirclesNameByConversationId(
-                        generateConversationId(
-                            Session.getAccountId()!!,
-                            u.userId
-                        )
-                    )
-                    initMenu(u, circleNames)
+        bottomViewModel.findUserById(user.userId).observe(
+            this,
+            Observer { u ->
+                if (u == null) return@Observer
+                // prevent add self
+                if (u.userId == Session.getAccountId()) {
+                    ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, TAG)
+                    dismiss()
+                    return@Observer
                 }
-            }
-            user = u
+                updateUserInfo(u)
+                if (menuListLayout == null ||
+                    u.relationship != user.relationship ||
+                    u.muteUntil != user.muteUntil ||
+                    u.fullName != user.fullName
+                ) {
+                    lifecycleScope.launch {
+                        val circleNames = bottomViewModel.findCirclesNameByConversationId(
+                            generateConversationId(
+                                Session.getAccountId()!!,
+                                u.userId
+                            )
+                        )
+                        initMenu(u, circleNames)
+                    }
+                }
+                user = u
 
-            contentView.doOnPreDraw {
-                if (!isAdded) return@doOnPreDraw
+                contentView.doOnPreDraw {
+                    if (!isAdded) return@doOnPreDraw
 
-                behavior?.peekHeight =
-                    contentView.title.height +
+                    behavior?.peekHeight =
+                        contentView.title.height +
                         contentView.scroll_content.height -
                         (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
+                }
             }
-        })
+        )
         contentView.transfer_fl.setOnClickListener {
             if (Session.getAccount()?.hasPin == true) {
                 TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
@@ -193,9 +196,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
             context?.let { ctx ->
                 if (MixinApplication.conversationId == null || generateConversationId(
-                        user.userId,
-                        Session.getAccountId()!!
-                    ) != MixinApplication.conversationId
+                    user.userId,
+                    Session.getAccountId()!!
+                ) != MixinApplication.conversationId
                 ) {
                     RxBus.publish(BotCloseEvent())
                     ConversationActivity.show(ctx, null, user.userId)
@@ -220,7 +223,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     contentView.doOnPreDraw {
                         behavior?.peekHeight =
                             contentView.title.height + contentView.scroll_content.height -
-                                (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
+                            (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
                     }
                 }
             }
@@ -242,9 +245,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 }
             }
         }
-        val muteMenu = if (u.muteUntil.notNullWithElse({
+        val muteMenu = if (u.muteUntil.notNullWithElse(
+            {
                 Instant.now().isBefore(Instant.parse(it))
-            }, false)) {
+            },
+            false
+        )
+        ) {
             menu {
                 title = getString(R.string.un_mute)
                 subtitle = getString(R.string.mute_until, u.muteUntil?.localTime())
@@ -338,7 +345,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     title = getString(R.string.contact_other_shared_media)
                     action = {
                         SharedMediaActivity.show(
-                            requireContext(), generateConversationId(
+                            requireContext(),
+                            generateConversationId(
                                 user.userId,
                                 Session.getAccountId()!!
                             )
@@ -359,136 +367,158 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         }
 
         if (u.relationship == UserRelationship.FRIEND.name) {
-            list.groups.add(menuGroup {
-                menu(muteMenu)
-                menu(editNameMenu)
-            })
+            list.groups.add(
+                menuGroup {
+                    menu(muteMenu)
+                    menu(editNameMenu)
+                }
+            )
         } else {
-            list.groups.add(menuGroup {
-                menu(muteMenu)
-            })
+            list.groups.add(
+                menuGroup {
+                    menu(muteMenu)
+                }
+            )
         }
 
         if (u.isBot()) {
             if (telephoneCallMenu != null) {
-                list.groups.add(menuGroup {
-                    menu(telephoneCallMenu)
-                })
+                list.groups.add(
+                    menuGroup {
+                        menu(telephoneCallMenu)
+                    }
+                )
             }
         } else {
-            list.groups.add(menuGroup {
-                menu(voiceCallMenu)
-                telephoneCallMenu?.let { menu(it) }
-            })
+            list.groups.add(
+                menuGroup {
+                    menu(voiceCallMenu)
+                    telephoneCallMenu?.let { menu(it) }
+                }
+            )
         }
 
         if (u.isBot()) {
-            list.groups.add(menuGroup {
-                menu(developerMenu)
-                menu(transactionMenu)
-            })
+            list.groups.add(
+                menuGroup {
+                    menu(developerMenu)
+                    menu(transactionMenu)
+                }
+            )
         } else {
-            list.groups.add(menuGroup {
-                menu(transactionMenu)
-            })
+            list.groups.add(
+                menuGroup {
+                    menu(transactionMenu)
+                }
+            )
         }
 
-        list.groups.add(menuGroup {
-            menu {
-                title = getString(R.string.circle)
-                action = {
-                    startCircleManager()
-                    RxBus.publish(BotCloseEvent())
-                    dismiss()
+        list.groups.add(
+            menuGroup {
+                menu {
+                    title = getString(R.string.circle)
+                    action = {
+                        startCircleManager()
+                        RxBus.publish(BotCloseEvent())
+                        dismiss()
+                    }
+                    this.circleNames = circleNames
                 }
-                this.circleNames = circleNames
             }
-        })
+        )
 
         when (u.relationship) {
             UserRelationship.BLOCKING.name -> {
-                list.groups.add(menuGroup {
-                    menu {
-                        title = getString(R.string.contact_other_unblock)
-                        style = MenuStyle.Danger
-                        action = {
-                            bottomViewModel.updateRelationship(
-                                RelationshipRequest(
-                                    u.userId,
-                                    RelationshipAction.UNBLOCK.name
-                                )
-                            )
-                        }
-                    }
-                    menu(clearMenu)
-                })
-            }
-            UserRelationship.FRIEND.name -> {
-                list.groups.add(menuGroup {
-                    menu {
-                        title = getString(
-                            if (user.isBot()) {
-                                R.string.contact_other_remove_bot
-                            } else {
-                                R.string.contact_other_remove
-                            }
-                        )
-
-                        style = MenuStyle.Danger
-                        action = {
-                            requireContext().showConfirmDialog(
-                                getString(
-                                    if (user.isBot()) {
-                                        R.string.contact_other_remove_bot
-                                    } else {
-                                        R.string.contact_other_remove
-                                    }
-                                )
-                            ) {
-                                updateRelationship(UserRelationship.STRANGER.name)
-                                if (user.isBot()) {
-                                    RxBus.publish(BotEvent())
-                                }
-                            }
-                        }
-                    }
-                    menu(clearMenu)
-                })
-            }
-            UserRelationship.STRANGER.name -> {
-                list.groups.add(menuGroup {
-                    menu {
-                        title = getString(R.string.contact_other_block)
-                        style = MenuStyle.Danger
-                        action = {
-                            requireContext().showConfirmDialog(getString(R.string.contact_other_block)) {
+                list.groups.add(
+                    menuGroup {
+                        menu {
+                            title = getString(R.string.contact_other_unblock)
+                            style = MenuStyle.Danger
+                            action = {
                                 bottomViewModel.updateRelationship(
                                     RelationshipRequest(
                                         u.userId,
-                                        RelationshipAction.BLOCK.name
+                                        RelationshipAction.UNBLOCK.name
                                     )
                                 )
+                            }
+                        }
+                        menu(clearMenu)
+                    }
+                )
+            }
+            UserRelationship.FRIEND.name -> {
+                list.groups.add(
+                    menuGroup {
+                        menu {
+                            title = getString(
                                 if (user.isBot()) {
-                                    RxBus.publish(BotEvent())
+                                    R.string.contact_other_remove_bot
+                                } else {
+                                    R.string.contact_other_remove
+                                }
+                            )
+
+                            style = MenuStyle.Danger
+                            action = {
+                                requireContext().showConfirmDialog(
+                                    getString(
+                                        if (user.isBot()) {
+                                            R.string.contact_other_remove_bot
+                                        } else {
+                                            R.string.contact_other_remove
+                                        }
+                                    )
+                                ) {
+                                    updateRelationship(UserRelationship.STRANGER.name)
+                                    if (user.isBot()) {
+                                        RxBus.publish(BotEvent())
+                                    }
                                 }
                             }
                         }
+                        menu(clearMenu)
                     }
-                    menu(clearMenu)
-                })
+                )
+            }
+            UserRelationship.STRANGER.name -> {
+                list.groups.add(
+                    menuGroup {
+                        menu {
+                            title = getString(R.string.contact_other_block)
+                            style = MenuStyle.Danger
+                            action = {
+                                requireContext().showConfirmDialog(getString(R.string.contact_other_block)) {
+                                    bottomViewModel.updateRelationship(
+                                        RelationshipRequest(
+                                            u.userId,
+                                            RelationshipAction.BLOCK.name
+                                        )
+                                    )
+                                    if (user.isBot()) {
+                                        RxBus.publish(BotEvent())
+                                    }
+                                }
+                            }
+                        }
+                        menu(clearMenu)
+                    }
+                )
             }
         }
-        list.groups.add(menuGroup {
-            menu {
-                title = getString(R.string.contact_other_report)
-                style = MenuStyle.Danger
-                action = {
-                    requireContext().showConfirmDialog(getString(R.string.contact_other_report)) {
-                        reportUser(u.userId)
+        list.groups.add(
+            menuGroup {
+                menu {
+                    title = getString(R.string.contact_other_report)
+                    style = MenuStyle.Danger
+                    action = {
+                        requireContext().showConfirmDialog(getString(R.string.contact_other_report)) {
+                            reportUser(u.userId)
+                        }
                     }
                 }
             }
-        })
+        )
 
         menuListLayout?.removeAllViews()
         contentView.scroll_content.removeView(menuListLayout)
@@ -562,21 +592,25 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             RxPermissions(requireActivity())
                 .request(Manifest.permission.RECORD_AUDIO)
                 .autoDispose(stopScope)
-                .subscribe({ granted ->
-                    if (granted) {
-                        callVoice()
-                    } else {
-                        context?.openPermissionSetting()
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            callVoice()
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    },
+                    {
                     }
-                }, {
-                })
+                )
         }
     }
 
     private fun callVoice() {
         if (LinkState.isOnline(linkState.state)) {
             CallService.outgoing(
-                requireContext(), user, generateConversationId(
+                requireContext(), user,
+                generateConversationId(
                     Session.getAccountId()!!,
                     user.userId
                 )
@@ -600,7 +634,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     RelationshipRequest(
                         userId,
                         RelationshipAction.BLOCK.name
-                    ), conversationId
+                    ),
+                    conversationId
                 )
                 if (user.isBot()) {
                     RxBus.publish(BotEvent())
@@ -648,12 +683,15 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
                     }
                 bottomViewModel.findUserById(app.creatorId)
-                    .observe(this@UserBottomSheetDialogFragment, Observer { u ->
-                        creator = u
-                        if (u == null) {
-                            bottomViewModel.refreshUser(app.creatorId, true)
+                    .observe(
+                        this@UserBottomSheetDialogFragment,
+                        Observer { u ->
+                            creator = u
+                            if (u == null) {
+                                bottomViewModel.refreshUser(app.creatorId, true)
+                            }
                         }
-                    })
+                    )
             }
         } else {
             contentView.open_fl.visibility = GONE
@@ -785,7 +823,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         val request = RelationshipRequest(
             user.userId,
             if (relationship == UserRelationship.FRIEND.name)
-                RelationshipAction.ADD.name else RelationshipAction.REMOVE.name, user.fullName
+                RelationshipAction.ADD.name else RelationshipAction.REMOVE.name,
+            user.fullName
         )
         bottomViewModel.updateRelationship(request)
     }

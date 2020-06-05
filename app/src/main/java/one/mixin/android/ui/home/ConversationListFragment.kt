@@ -31,9 +31,6 @@ import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.io.File
-import javax.inject.Inject
-import kotlin.math.min
 import kotlinx.android.synthetic.main.fragment_conversation_list.*
 import kotlinx.android.synthetic.main.item_list_conversation.view.*
 import kotlinx.android.synthetic.main.item_list_conversation_header.view.*
@@ -103,6 +100,9 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
+import java.io.File
+import javax.inject.Inject
+import kotlin.math.min
 
 class ConversationListFragment : LinkFragment() {
 
@@ -228,9 +228,12 @@ class ConversationListFragment : LinkFragment() {
                 } else {
                     (requireActivity() as MainActivity).closeSearch()
                 }
-                top_fl.animateHeight(top_fl.height, 0, onEndAction = {
-                    vibrated = false
-                })
+                top_fl.animateHeight(
+                    top_fl.height, 0,
+                    onEndAction = {
+                        vibrated = false
+                    }
+                )
                 down_iv.scaleX = 1f
                 down_iv.scaleY = 1f
             }
@@ -247,8 +250,10 @@ class ConversationListFragment : LinkFragment() {
             }
 
             override fun onNormalItemClick(item: ConversationItem) {
-                if (item.isGroup() && (item.status == ConversationStatus.START.ordinal ||
-                        item.status == ConversationStatus.FAILURE.ordinal)
+                if (item.isGroup() && (
+                    item.status == ConversationStatus.START.ordinal ||
+                        item.status == ConversationStatus.FAILURE.ordinal
+                    )
                 ) {
                     if (!requireContext().networkConnected()) {
                         context?.toast(R.string.error_network)
@@ -275,11 +280,14 @@ class ConversationListFragment : LinkFragment() {
             }
         }
         start_bn.setOnClickListener {
-            circleId.notNullWithElse({ circleId ->
-                (requireActivity() as MainActivity).openCircleEdit(circleId)
-            }, {
-                navigationController.pushContacts()
-            })
+            circleId.notNullWithElse(
+                { circleId ->
+                    (requireActivity() as MainActivity).openCircleEdit(circleId)
+                },
+                {
+                    navigationController.pushContacts()
+                }
+            )
         }
         val circleId = defaultSharedPreferences.getString(CIRCLE_ID, null)
         if (circleId == null) {
@@ -475,17 +483,20 @@ class ConversationListFragment : LinkFragment() {
                             }
                         }
                         else -> {
-                            messagesViewModel.findAppById(id)?.notNullWithElse({ app ->
-                                view.isVisible = true
-                                view.setImageResource(app.getCategoryIcon())
-                                view.setOnClickListener {
-                                    WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app).show(
-                                        parentFragmentManager, WebBottomSheetDialogFragment.TAG
-                                    )
+                            messagesViewModel.findAppById(id)?.notNullWithElse(
+                                { app ->
+                                    view.isVisible = true
+                                    view.setImageResource(app.getCategoryIcon())
+                                    view.setOnClickListener {
+                                        WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app).show(
+                                            parentFragmentManager, WebBottomSheetDialogFragment.TAG
+                                        )
+                                    }
+                                },
+                                {
+                                    view.isInvisible = true
                                 }
-                            }, {
-                                view.isInvisible = true
-                            })
+                            )
                         }
                     }
                 }
@@ -660,7 +671,8 @@ class ConversationListFragment : LinkFragment() {
                                         getText(R.string.chat_you_start)
                                     } else {
                                         conversationItem.name
-                                    }, conversationItem.groupName
+                                    },
+                                    conversationItem.groupName
                                 )
                         }
                         SystemConversationAction.ADD.name -> {
@@ -780,7 +792,8 @@ class ConversationListFragment : LinkFragment() {
                     itemView.pb.visibility = GONE
                     conversationItem.unseenMessageCount.notEmptyWithElse(
                         { itemView.unread_tv.text = "$it"; itemView.unread_tv.visibility = VISIBLE },
-                        { itemView.unread_tv.visibility = GONE })
+                        { itemView.unread_tv.visibility = GONE }
+                    )
 
                     if (conversationItem.isGroup() && conversationItem.status == ConversationStatus.FAILURE.ordinal) {
                         itemView.msg_tv.text = getText(R.string.group_click_create_tip)

@@ -1,8 +1,6 @@
 package one.mixin.android.job
 
 import androidx.collection.ArrayMap
-import java.util.UUID
-import java.util.concurrent.Executors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -28,6 +26,8 @@ import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.LIST_PENDING_MESSAGES
 import org.webrtc.IceCandidate
 import timber.log.Timber
+import java.util.UUID
+import java.util.concurrent.Executors
 
 class DecryptCallMessage(
     private val callState: CallStateLiveData,
@@ -70,31 +70,40 @@ class DecryptCallMessage(
                 true
             }
             if (!isExpired && !listPendingOfferHandled) {
-                listPendingJobMap[data.messageId] = Pair(lifecycleScope.launch(listPendingDispatcher) {
-                    delay(LIST_PENDING_CALL_DELAY)
-                    listPendingOfferHandled = true
-                    listPendingJobMap.forEach { entry ->
-                        val pair = entry.value
-                        val job = pair.first
-                        val curData = pair.second
-                        if (entry.key != data.messageId && !job.isCancelled) {
-                            job.cancel()
-                            val m = createCallMessage(UUID.randomUUID().toString(), curData.conversationId, Session.getAccountId()!!,
-                                MessageCategory.WEBRTC_AUDIO_BUSY.name, null, nowInUtc(), MessageStatus.SENDING.name, curData.messageId)
-                            jobManager.addJobInBackground(SendMessageJob(m, recipientId = curData.userId))
+                listPendingJobMap[data.messageId] = Pair(
+                    lifecycleScope.launch(listPendingDispatcher) {
+                        delay(LIST_PENDING_CALL_DELAY)
+                        listPendingOfferHandled = true
+                        listPendingJobMap.forEach { entry ->
+                            val pair = entry.value
+                            val job = pair.first
+                            val curData = pair.second
+                            if (entry.key != data.messageId && !job.isCancelled) {
+                                job.cancel()
+                                val m = createCallMessage(
+                                    UUID.randomUUID().toString(), curData.conversationId, Session.getAccountId()!!,
+                                    MessageCategory.WEBRTC_AUDIO_BUSY.name, null, nowInUtc(), MessageStatus.SENDING.name, curData.messageId
+                                )
+                                jobManager.addJobInBackground(SendMessageJob(m, recipientId = curData.userId))
 
-                            val savedMessage = createCallMessage(curData.messageId, m.conversationId, curData.userId, m.category, m.content,
-                                m.createdAt, curData.status, m.quoteMessageId)
-                            database.insertAndNotifyConversation(savedMessage)
-                            listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
+                                val savedMessage = createCallMessage(
+                                    curData.messageId, m.conversationId, curData.userId, m.category, m.content,
+                                    m.createdAt, curData.status, m.quoteMessageId
+                                )
+                                database.insertAndNotifyConversation(savedMessage)
+                                listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
+                            }
                         }
-                    }
-                    processCall(data)
-                    listPendingJobMap.clear()
-                }, data)
+                        processCall(data)
+                        listPendingJobMap.clear()
+                    },
+                    data
+                )
             } else if (isExpired) {
-                val message = createCallMessage(data.messageId, data.conversationId, data.userId, MessageCategory.WEBRTC_AUDIO_CANCEL.name,
-                    null, data.createdAt, data.status)
+                val message = createCallMessage(
+                    data.messageId, data.conversationId, data.userId, MessageCategory.WEBRTC_AUDIO_CANCEL.name,
+                    null, data.createdAt, data.status
+                )
                 database.insertAndNotifyConversation(message)
             }
             notifyServer(data)
@@ -138,8 +147,10 @@ class DecryptCallMessage(
                 }
                 listPendingJobMap.remove(data.quoteMessageId)
 
-                val message = createCallMessage(data.quoteMessageId!!, data.conversationId, data.userId,
-                    MessageCategory.WEBRTC_AUDIO_CANCEL.name, null, data.createdAt, data.status)
+                val message = createCallMessage(
+                    data.quoteMessageId!!, data.conversationId, data.userId,
+                    MessageCategory.WEBRTC_AUDIO_CANCEL.name, null, data.createdAt, data.status
+                )
                 database.insertAndNotifyConversation(message)
             }
             notifyServer(data)
@@ -147,7 +158,8 @@ class DecryptCallMessage(
             when (data.category) {
                 MessageCategory.WEBRTC_AUDIO_ANSWER.name -> {
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
-                        data.quoteMessageId != callState.callInfo.messageId) {
+                        data.quoteMessageId != callState.callInfo.messageId
+                    ) {
                         notifyServer(data)
                         return
                     }
@@ -155,7 +167,8 @@ class DecryptCallMessage(
                 }
                 MessageCategory.WEBRTC_ICE_CANDIDATE.name -> {
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
-                        data.quoteMessageId != callState.callInfo.messageId) {
+                        data.quoteMessageId != callState.callInfo.messageId
+                    ) {
                         notifyServer(data)
                         return
                     }
@@ -188,7 +201,8 @@ class DecryptCallMessage(
                 MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
                         data.quoteMessageId != callState.callInfo.messageId ||
-                        callState.user == null) {
+                        callState.user == null
+                    ) {
                         notifyServer(data)
                         return
                     }
@@ -253,8 +267,10 @@ class DecryptCallMessage(
             messageStatus = status
         }
         val realCategory = category ?: data.category
-        val message = createCallMessage(data.quoteMessageId, data.conversationId, userId, realCategory,
-            null, data.createdAt, messageStatus, mediaDuration = duration)
+        val message = createCallMessage(
+            data.quoteMessageId, data.conversationId, userId, realCategory,
+            null, data.createdAt, messageStatus, mediaDuration = duration
+        )
         database.insertAndNotifyConversation(message)
     }
 }

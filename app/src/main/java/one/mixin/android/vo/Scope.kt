@@ -17,8 +17,10 @@ data class Scope(val name: String, val desc: String) : Parcelable {
             override fun areContentsTheSame(oldItem: Scope, newItem: Scope) = oldItem == newItem
         }
 
-        val SCOPES = arrayListOf("PROFILE:READ", "PHONE:READ", "MESSAGES:REPRESENT",
-            "CONTACTS:READ", "ASSETS:READ", "SNAPSHOTS:READ", "APPS:READ", "APPS:WRITE")
+        val SCOPES = arrayListOf(
+            "PROFILE:READ", "PHONE:READ", "MESSAGES:REPRESENT",
+            "CONTACTS:READ", "ASSETS:READ", "SNAPSHOTS:READ", "APPS:READ", "APPS:WRITE"
+        )
     }
 }
 

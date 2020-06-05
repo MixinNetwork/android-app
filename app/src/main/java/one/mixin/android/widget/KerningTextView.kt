@@ -103,7 +103,8 @@ class KerningTextView : AppCompatTextView {
                     ScaleXSpan(kerningFactor / 10),
                     i,
                     i + 1,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
                 i += 2
             }
         }

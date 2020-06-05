@@ -1,7 +1,6 @@
 package one.mixin.android.api
 
 import com.google.gson.annotations.SerializedName
-import java.io.IOException
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.getDeviceId
 import org.whispersystems.libsignal.IdentityKey
@@ -9,6 +8,7 @@ import org.whispersystems.libsignal.InvalidKeyException
 import org.whispersystems.libsignal.ecc.Curve
 import org.whispersystems.libsignal.ecc.ECPublicKey
 import org.whispersystems.libsignal.state.PreKeyBundle
+import java.io.IOException
 
 data class SignalKey(
     @SerializedName("identity_key")

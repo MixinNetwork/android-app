@@ -2,11 +2,11 @@ package one.mixin.android.util.image
 
 import android.content.Context
 import androidx.annotation.WorkerThread
+import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
-import timber.log.Timber
 
 class NetworkFetcher private constructor(
     context: Context,

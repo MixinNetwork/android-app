@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_upgrade.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_FTS4_UPGRADE
@@ -19,6 +18,7 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.MessageFts4Helper
+import javax.inject.Inject
 
 class UpgradeFragment : BaseFragment() {
 

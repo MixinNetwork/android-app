@@ -2,7 +2,6 @@ package one.mixin.android.ui.search.holder
 
 import android.annotation.SuppressLint
 import android.view.View
-import java.math.BigDecimal
 import kotlinx.android.synthetic.main.item_search_asset.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
@@ -16,6 +15,7 @@ import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import org.jetbrains.anko.textColorResource
+import java.math.BigDecimal
 
 class AssetHolder constructor(containerView: View) : NormalHolder(containerView) {
     @SuppressLint("SetTextI18n")

@@ -8,7 +8,6 @@ import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
-import kotlin.math.min
 import kotlinx.android.synthetic.main.item_chat_image.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -23,6 +22,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.dip
+import kotlin.math.min
 
 class ImageHolder constructor(containerView: View) : MediaHolder(containerView) {
 
@@ -223,7 +223,8 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
             }
         }
         if (dataWidth == null || dataHeight == null ||
-            dataWidth!! <= 0 || dataHeight!! <= 0) {
+            dataWidth!! <= 0 || dataHeight!! <= 0
+        ) {
             itemView.chat_image.layoutParams.width = width
             itemView.chat_image.layoutParams.height = width
         } else {

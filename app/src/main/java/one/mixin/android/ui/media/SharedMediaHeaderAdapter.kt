@@ -3,7 +3,6 @@ package one.mixin.android.ui.media
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.item_shared_media_header.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -12,6 +11,7 @@ import one.mixin.android.extension.inflate
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.vo.MessageItem
+import kotlin.math.abs
 
 abstract class SharedMediaHeaderAdapter<VH : NormalHolder> :
     SafePagedListAdapter<MessageItem, VH>(MessageItem.DIFF_CALLBACK),

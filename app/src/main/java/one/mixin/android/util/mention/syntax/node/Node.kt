@@ -4,17 +4,17 @@ import android.text.SpannableStringBuilder
 
 open class Node<R> {
 
-  private var children: MutableCollection<Node<R>>? = null
+    private var children: MutableCollection<Node<R>>? = null
 
-  fun getChildren(): Collection<Node<R>>? = children
+    fun getChildren(): Collection<Node<R>>? = children
 
-  fun hasChildren(): Boolean = children?.isNotEmpty() == true
+    fun hasChildren(): Boolean = children?.isNotEmpty() == true
 
-  fun addChild(child: Node<R>) {
-    children = (children ?: ArrayList()).apply {
-      add(child)
+    fun addChild(child: Node<R>) {
+        children = (children ?: ArrayList()).apply {
+            add(child)
+        }
     }
-  }
 
-  open fun render(builder: SpannableStringBuilder, renderContext: R) {}
+    open fun render(builder: SpannableStringBuilder, renderContext: R) {}
 }

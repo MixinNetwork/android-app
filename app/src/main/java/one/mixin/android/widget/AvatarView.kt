@@ -33,7 +33,8 @@ class AvatarView : ViewAnimator {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
         if (ta.hasValue(R.styleable.CircleImageView_border_text_size)) {
             avatar_tv.setTextSize(
-                TypedValue.COMPLEX_UNIT_PX, ta.getDimension(
+                TypedValue.COMPLEX_UNIT_PX,
+                ta.getDimension(
                     R.styleable.CircleImageView_border_text_size,
                     sp(20f).toFloat()
                 )

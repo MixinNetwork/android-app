@@ -2,15 +2,18 @@ package one.mixin.android.job
 
 import android.util.Log
 import com.birbit.android.jobqueue.Params
-import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.SignalKeyRequest
 import one.mixin.android.crypto.IdentityKeyUtil
 import one.mixin.android.crypto.PreKeyUtil
+import java.util.UUID
 
-class RefreshOneTimePreKeysJob : MixinJob(Params(PRIORITY_UI_HIGH).requireNetwork()
-    .groupBy("refresh_pre_keys"), UUID.randomUUID().toString()) {
+class RefreshOneTimePreKeysJob : MixinJob(
+    Params(PRIORITY_UI_HIGH).requireNetwork()
+        .groupBy("refresh_pre_keys"),
+    UUID.randomUUID().toString()
+) {
     override fun cancel() {
     }
 
@@ -45,8 +48,10 @@ class RefreshOneTimePreKeysJob : MixinJob(Params(PRIORITY_UI_HIGH).requireNetwor
         fun generateKeys(): SignalKeyRequest {
             val identityKeyPair = IdentityKeyUtil.getIdentityKeyPair(MixinApplication.appContext)
             val oneTimePreKeys = PreKeyUtil.generatePreKeys(MixinApplication.appContext)
-            val signedPreKeyRecord = PreKeyUtil.generateSignedPreKey(MixinApplication.appContext,
-                identityKeyPair, false)
+            val signedPreKeyRecord = PreKeyUtil.generateSignedPreKey(
+                MixinApplication.appContext,
+                identityKeyPair, false
+            )
             return SignalKeyRequest(identityKeyPair.publicKey, signedPreKeyRecord, oneTimePreKeys)
         }
     }

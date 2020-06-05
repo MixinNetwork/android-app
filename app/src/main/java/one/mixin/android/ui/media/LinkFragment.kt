@@ -48,13 +48,16 @@ class LinkFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         recycler_view.layoutManager = LinearLayoutManager(requireContext())
         recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         recycler_view.adapter = adapter
-        viewModel.getLinkMessages(conversationId).observe(viewLifecycleOwner, Observer {
-            if (it.size <= 0) {
-                (view as ViewAnimator).displayedChild = 1
-            } else {
-                (view as ViewAnimator).displayedChild = 0
+        viewModel.getLinkMessages(conversationId).observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it.size <= 0) {
+                    (view as ViewAnimator).displayedChild = 1
+                } else {
+                    (view as ViewAnimator).displayedChild = 0
+                }
+                adapter.submitList(it)
             }
-            adapter.submitList(it)
-        })
+        )
     }
 }

@@ -6,13 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.autoDispose
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import one.mixin.android.api.service.UserService
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
+import javax.inject.Inject
 
 class SettingBlockedViewModel @Inject
 internal constructor(
@@ -23,18 +23,21 @@ internal constructor(
 
     fun blockingUsers(scopeProvider: ScopeProvider): LiveData<List<User>> {
         userService.blockingUsers().subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
-            .autoDispose(scopeProvider).subscribe({
-                if (it.isSuccess) {
-                    it.data?.let {
-                        for (user in it) {
-                            user.relationship = UserRelationship.BLOCKING.name
-                            viewModelScope.launch {
-                                userRepository.upsertBlock(user)
+            .autoDispose(scopeProvider).subscribe(
+                {
+                    if (it.isSuccess) {
+                        it.data?.let {
+                            for (user in it) {
+                                user.relationship = UserRelationship.BLOCKING.name
+                                viewModelScope.launch {
+                                    userRepository.upsertBlock(user)
+                                }
                             }
                         }
                     }
-                }
-            }, {})
+                },
+                {}
+            )
         return accountRepository.findUsersByType(UserRelationship.BLOCKING.name)
     }
 }

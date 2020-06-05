@@ -272,7 +272,8 @@ class CircleProgress @JvmOverloads constructor(
                 fBounds.centerY() - fBounds.height() * 0.16f,
                 fBounds.centerX() + fBounds.width() * 0.16f,
                 fBounds.centerY() + fBounds.height() * 0.16f
-            ), cornerRadius, 0f, mPaint
+            ),
+            cornerRadius, 0f, mPaint
         )
     }
 

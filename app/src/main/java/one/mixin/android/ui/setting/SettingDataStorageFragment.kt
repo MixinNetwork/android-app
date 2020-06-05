@@ -46,17 +46,25 @@ class SettingDataStorageFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         storage_rl.setOnClickListener {
-            requireActivity().addFragment(this@SettingDataStorageFragment,
-                SettingStorageFragment.newInstance(), SettingStorageFragment.TAG)
+            requireActivity().addFragment(
+                this@SettingDataStorageFragment,
+                SettingStorageFragment.newInstance(), SettingStorageFragment.TAG
+            )
         }
         storage_mobile.setOnClickListener { showMenu(AUTO_DOWNLOAD_MOBILE, requireContext().getAutoDownloadMobileValue(), R.string.setting_data_mobile) }
         storage_wifi.setOnClickListener {
-            showMenu(AUTO_DOWNLOAD_WIFI, requireContext().getAutoDownloadWifiValue(), R.string
-                .setting_data_wifi)
+            showMenu(
+                AUTO_DOWNLOAD_WIFI, requireContext().getAutoDownloadWifiValue(),
+                R.string
+                    .setting_data_wifi
+            )
         }
         storage_roaming.setOnClickListener {
-            showMenu(AUTO_DOWNLOAD_ROAMING, requireContext().getAutoDownloadRoamingValue(), R.string
-                .setting_data_roaming)
+            showMenu(
+                AUTO_DOWNLOAD_ROAMING, requireContext().getAutoDownloadRoamingValue(),
+                R.string
+                    .setting_data_roaming
+            )
         }
     }
 

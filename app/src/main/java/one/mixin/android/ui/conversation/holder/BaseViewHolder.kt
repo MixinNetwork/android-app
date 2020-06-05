@@ -176,7 +176,8 @@ abstract class BaseViewHolder constructor(containerView: View) :
                         )
                     MessageStatus.DELIVERED.name ->
                         AppCompatResources.getDrawable(
-                            itemView.context, if (isWhite) {
+                            itemView.context,
+                            if (isWhite) {
                                 R.drawable.ic_status_delivered_white
                             } else {
                                 R.drawable.ic_status_delivered

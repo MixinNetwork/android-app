@@ -33,9 +33,6 @@ import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat
-import kotlin.math.abs
-import kotlin.math.max
-import kotlin.math.min
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
@@ -47,6 +44,9 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.util.SystemUIManager
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.displayMetrics
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 class BottomSheet(
     context: Context,
@@ -114,12 +114,14 @@ class BottomSheet(
             val widthSpec = if (context.isTablet()) {
                 MeasureSpec.makeMeasureSpec(
                     (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.8f).toInt(),
-                    MeasureSpec.EXACTLY)
+                    MeasureSpec.EXACTLY
+                )
             } else {
                 MeasureSpec.makeMeasureSpec(
                     if (isPortrait) width
                     else max(width * 0.8f, minOf(context.dip(480f), width).toFloat()).toInt(),
-                    MeasureSpec.EXACTLY)
+                    MeasureSpec.EXACTLY
+                )
             }
             sheetContainer.measure(widthSpec, MeasureSpec.makeMeasureSpec(height, AT_MOST))
         }
@@ -144,9 +146,11 @@ class BottomSheet(
     }
 
     init {
-        window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
-            or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-            or WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        window?.addFlags(
+            WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
+                or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                or WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS
+        )
         container.background = backDrawable
         container.fitsSystemWindows = true
         container.setOnApplyWindowInsetsListener { v, insets ->
@@ -164,7 +168,7 @@ class BottomSheet(
         if (Build.VERSION.SDK_INT >= 26) {
             window?.decorView?.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
-                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         }
         setContentView(container, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
@@ -176,10 +180,14 @@ class BottomSheet(
             if (customView!!.parent != null) {
                 (customView!!.parent as ViewGroup).removeView(customView)
             }
-            sheetContainer.addView(customView,
-                FrameLayout.LayoutParams(MATCH_PARENT,
+            sheetContainer.addView(
+                customView,
+                FrameLayout.LayoutParams(
+                    MATCH_PARENT,
                     if (customViewHeight > 0) customViewHeight else WRAP_CONTENT,
-                    Gravity.BOTTOM))
+                    Gravity.BOTTOM
+                )
+            )
         }
 
         window?.let { window ->
@@ -216,8 +224,10 @@ class BottomSheet(
         }
         isDismissed = false
         cancelSheetAnimation()
-        sheetContainer.measure(View.MeasureSpec.makeMeasureSpec(context.displayMetrics.widthPixels, AT_MOST),
-            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, AT_MOST))
+        sheetContainer.measure(
+            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.widthPixels, AT_MOST),
+            View.MeasureSpec.makeMeasureSpec(context.displayMetrics.heightPixels, AT_MOST)
+        )
         if (isShown) return
         backDrawable.alpha = 0
         sheetContainer.translationY = sheetContainer.measuredHeight.toFloat()
@@ -328,13 +338,16 @@ class BottomSheet(
     fun setCustomViewHeight(height: Int, endAction: (() -> Unit)? = null) {
         customViewHeight = height
         val params = customView?.layoutParams
-        val duration = customView?.layoutParams.notNullWithElse({
-            try {
-                min(abs(height - it.height) / speed, 200)
-            } catch (e: ArithmeticException) {
-                200
-            }
-        }, 200).toLong()
+        val duration = customView?.layoutParams.notNullWithElse(
+            {
+                try {
+                    min(abs(height - it.height) / speed, 200)
+                } catch (e: ArithmeticException) {
+                    200
+                }
+            },
+            200
+        ).toLong()
 
         if (duration == 0L) {
             return

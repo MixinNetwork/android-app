@@ -28,12 +28,14 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
                     child.id = id
                 } else {
                     if (child is CompoundButton) {
-                        child.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, isChecked ->
-                            if (isChecked) {
-                                update(id)
-                                onCheckedListener?.onChecked(id)
+                        child.setOnCheckedChangeListener(
+                            CompoundButton.OnCheckedChangeListener { _, isChecked ->
+                                if (isChecked) {
+                                    update(id)
+                                    onCheckedListener?.onChecked(id)
+                                }
                             }
-                        })
+                        )
                     } else if (child is RadioButton) {
                         child.setOnCheckedChangeListener(object : RadioButton.OnCheckedChangeListener {
                             override fun onCheckedChanged(id: Int, checked: Boolean) {

@@ -2,13 +2,13 @@ package one.mixin.android.vo
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.util.concurrent.ConcurrentHashMap
 import one.mixin.android.Constants.Account.PREF_FIAT_MAP
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.util.Session
+import java.util.concurrent.ConcurrentHashMap
 
 data class Fiat(val code: String, val rate: Double)
 

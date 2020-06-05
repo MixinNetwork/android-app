@@ -38,20 +38,26 @@ class JobNetworkUtil(val context: Context, private val linkState: LinkState) : N
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
             .build()
-        cm.registerNetworkCallback(request, object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) {
-                dispatchNetworkChange(context)
+        cm.registerNetworkCallback(
+            request,
+            object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: Network) {
+                    dispatchNetworkChange(context)
+                }
             }
-        })
+        )
     }
 
     @TargetApi(23)
     private fun listenForIdle(context: Context) {
-        context.registerReceiver(object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                dispatchNetworkChange(context)
-            }
-        }, IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED))
+        context.registerReceiver(
+            object : BroadcastReceiver() {
+                override fun onReceive(context: Context, intent: Intent) {
+                    dispatchNetworkChange(context)
+                }
+            },
+            IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED)
+        )
     }
 
     internal fun dispatchNetworkChange(context: Context) {

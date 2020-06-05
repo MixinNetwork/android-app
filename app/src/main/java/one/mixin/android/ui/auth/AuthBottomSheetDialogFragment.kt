@@ -84,22 +84,25 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.confirm_anim.displayedChild = POS_PB
             contentView.confirm_anim.isEnabled = false
             val request = AuthorizeRequest(auth.authorizationId, scopeAdapter.checkedScopes.toList())
-            bottomViewModel.authorize(request).autoDispose(stopScope).subscribe({ r ->
-                contentView.confirm_anim?.displayedChild = POS_TEXT
-                contentView.confirm_anim.isEnabled = true
-                if (r.isSuccess && r.data != null) {
-                    val redirectUri = r.data!!.app.redirectUri
-                    redirect(redirectUri, r.data!!.authorization_code)
-                    success = true
-                    dismiss()
-                } else {
-                    ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+            bottomViewModel.authorize(request).autoDispose(stopScope).subscribe(
+                { r ->
+                    contentView.confirm_anim?.displayedChild = POS_TEXT
+                    contentView.confirm_anim.isEnabled = true
+                    if (r.isSuccess && r.data != null) {
+                        val redirectUri = r.data!!.app.redirectUri
+                        redirect(redirectUri, r.data!!.authorization_code)
+                        success = true
+                        dismiss()
+                    } else {
+                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
+                    }
+                },
+                { t: Throwable ->
+                    contentView.confirm_anim?.displayedChild = POS_TEXT
+                    contentView.confirm_anim.isEnabled = true
+                    ErrorHandler.handleError(t)
                 }
-            }, { t: Throwable ->
-                contentView.confirm_anim?.displayedChild = POS_TEXT
-                contentView.confirm_anim.isEnabled = true
-                ErrorHandler.handleError(t)
-            })
+            )
         }
     }
 
@@ -108,13 +111,16 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             val request = AuthorizeRequest(auth.authorizationId, listOf())
             bottomViewModel.authorize(request)
                 .autoDispose(stopScope)
-                .subscribe({
-                if (it.isSuccess && it.data != null) {
-                    redirect(it.data!!.app.redirectUri, it.data!!.authorization_code)
-                }
-            }, {
-                ErrorHandler.handleError(it)
-            })
+                .subscribe(
+                    {
+                        if (it.isSuccess && it.data != null) {
+                            redirect(it.data!!.app.redirectUri, it.data!!.authorization_code)
+                        }
+                    },
+                    {
+                        ErrorHandler.handleError(it)
+                    }
+                )
         }
         super.onDismiss(dialog)
     }

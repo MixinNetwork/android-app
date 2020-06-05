@@ -35,27 +35,30 @@ class AudioFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         requireArguments().getString(Constants.ARGS_CONVERSATION_ID)!!
     }
 
-    private val adapter = AudioAdapter(fun(messageItem: MessageItem) {
-        when {
-            messageItem.mediaStatus == MediaStatus.CANCELED.name -> {
-                if (Session.getAccountId() == messageItem.userId) {
-                    viewModel.retryUpload(messageItem.messageId) {
-                        toast(R.string.error_retry_upload)
+    private val adapter = AudioAdapter(
+        fun(messageItem: MessageItem) {
+            when {
+                messageItem.mediaStatus == MediaStatus.CANCELED.name -> {
+                    if (Session.getAccountId() == messageItem.userId) {
+                        viewModel.retryUpload(messageItem.messageId) {
+                            toast(R.string.error_retry_upload)
+                        }
+                    } else {
+                        viewModel.retryDownload(messageItem.messageId)
                     }
-                } else {
-                    viewModel.retryDownload(messageItem.messageId)
                 }
-            }
-            messageItem.mediaStatus == MediaStatus.PENDING.name -> {
-                viewModel.cancel(messageItem.messageId)
-            }
-            mediaDownloaded(messageItem.status) -> if (AudioPlayer.get().isPlay(messageItem.messageId)) {
-                AudioPlayer.get().pause()
-            } else {
-                AudioPlayer.get().play(messageItem, continuePlayOnlyToday = true)
+                messageItem.mediaStatus == MediaStatus.PENDING.name -> {
+                    viewModel.cancel(messageItem.messageId)
+                }
+                mediaDownloaded(messageItem.status) ->
+                    if (AudioPlayer.get().isPlay(messageItem.messageId)) {
+                        AudioPlayer.get().pause()
+                    } else {
+                        AudioPlayer.get().play(messageItem, continuePlayOnlyToday = true)
+                    }
             }
         }
-    })
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,13 +73,16 @@ class AudioFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         recycler_view.adapter = adapter
         empty_iv.setImageResource(R.drawable.ic_empty_audio)
         empty_tv.setText(R.string.no_audio)
-        viewModel.getAudioMessages(conversationId).observe(viewLifecycleOwner, Observer {
-            if (it.size <= 0) {
-                (view as ViewAnimator).displayedChild = 1
-            } else {
-                (view as ViewAnimator).displayedChild = 0
+        viewModel.getAudioMessages(conversationId).observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it.size <= 0) {
+                    (view as ViewAnimator).displayedChild = 1
+                } else {
+                    (view as ViewAnimator).displayedChild = 0
+                }
+                adapter.submitList(it)
             }
-            adapter.submitList(it)
-        })
+        )
     }
 }

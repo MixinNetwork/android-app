@@ -22,7 +22,6 @@ import com.bumptech.glide.request.target.Target
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.io.File
 import kotlinx.android.synthetic.main.fragment_edit.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -46,6 +45,7 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import java.io.File
 
 class EditFragment : VisionFragment() {
 
@@ -137,11 +137,25 @@ class EditFragment : VisionFragment() {
         }
         send_fl.setOnClickListener {
             if (isVideo) {
-                ForwardActivity.show(requireContext(), arrayListOf(ForwardMessage(
-                    ForwardCategory.VIDEO.name, mediaUrl = path)), isShare = true)
+                ForwardActivity.show(
+                    requireContext(),
+                    arrayListOf(
+                        ForwardMessage(
+                            ForwardCategory.VIDEO.name, mediaUrl = path
+                        )
+                    ),
+                    isShare = true
+                )
             } else {
-                ForwardActivity.show(requireContext(), arrayListOf(ForwardMessage(
-                    ForwardCategory.IMAGE.name, mediaUrl = path)), isShare = true)
+                ForwardActivity.show(
+                    requireContext(),
+                    arrayListOf(
+                        ForwardMessage(
+                            ForwardCategory.IMAGE.name, mediaUrl = path
+                        )
+                    ),
+                    isShare = true
+                )
             }
         }
         if (fromScan) {

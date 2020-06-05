@@ -72,7 +72,8 @@ class DraggableRecyclerView @JvmOverloads constructor(
                         // scroll bottom to top over view area
                         ((over == OVER_TOP || over == OVER_BOTH) && event.y < 0 && disY < 0 && direction < 1) ||
                         // scroll top to bottom over view area
-                        ((over == OVER_BOTTOM || over == OVER_BOTH) && event.y > height && disY > 0 && direction < 1)) {
+                        ((over == OVER_BOTTOM || over == OVER_BOTH) && event.y > height && disY > 0 && direction < 1)
+                    ) {
                         velocityTracker?.addMovement(event)
                         callback?.onScroll(disY)
                         downY = moveY

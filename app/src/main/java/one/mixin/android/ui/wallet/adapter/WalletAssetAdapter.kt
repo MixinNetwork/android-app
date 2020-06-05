@@ -8,7 +8,6 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import java.math.BigDecimal
 import kotlinx.android.synthetic.main.item_wallet_asset.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
@@ -22,6 +21,7 @@ import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import org.jetbrains.anko.textColorResource
+import java.math.BigDecimal
 
 class WalletAssetAdapter(private val slideShow: Boolean) : HeaderFooterAdapter<AssetItem>() {
 

@@ -6,8 +6,8 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
-import java.util.concurrent.Callable
 import one.mixin.android.widget.RLottieDrawable
+import java.util.concurrent.Callable
 
 sealed class ImageLoader<T> {
     private val taskCache = HashMap<String, ImageTask<T>>()
@@ -53,10 +53,13 @@ object LottieLoader : ImageLoader<RLottieDrawable>() {
         precache: Boolean = false,
         limitFps: Boolean = false
     ): ImageTask<RLottieDrawable> {
-        return fromUrl(url, cacheKey, Callable {
-            val file = NetworkFetcher.fetchSync(context, url)
-            ImageResult(RLottieDrawable(file.value, w, h, precache, limitFps))
-        })
+        return fromUrl(
+            url, cacheKey,
+            Callable {
+                val file = NetworkFetcher.fetchSync(context, url)
+                ImageResult(RLottieDrawable(file.value, w, h, precache, limitFps))
+            }
+        )
     }
 }
 
@@ -67,9 +70,12 @@ object HeicLoader : ImageLoader<Drawable>() {
 
     @RequiresApi(Build.VERSION_CODES.P)
     fun fromUrl(context: Context, uri: Uri, cacheKey: String? = uri.toString()): ImageTask<Drawable> {
-        return fromUrl(uri.toString(), cacheKey, Callable {
-            val source = ImageDecoder.createSource(context.contentResolver, uri)
-            return@Callable ImageResult(ImageDecoder.decodeDrawable(source))
-        })
+        return fromUrl(
+            uri.toString(), cacheKey,
+            Callable {
+                val source = ImageDecoder.createSource(context.contentResolver, uri)
+                return@Callable ImageResult(ImageDecoder.decodeDrawable(source))
+            }
+        )
     }
 }

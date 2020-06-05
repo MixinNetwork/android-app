@@ -84,8 +84,11 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 reply_view_tv.setText(R.string.contact)
                 setIcon(R.drawable.ic_status_contact)
                 (reply_view_tv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
-                reply_avatar.setInfo(messageItem.sharedUserFullName, messageItem.sharedUserAvatarUrl, messageItem.sharedUserId
-                    ?: "0")
+                reply_avatar.setInfo(
+                    messageItem.sharedUserFullName, messageItem.sharedUserAvatarUrl,
+                    messageItem.sharedUserId
+                        ?: "0"
+                )
                 reply_avatar.visibility = View.VISIBLE
                 reply_view_iv.visibility = View.INVISIBLE
             }

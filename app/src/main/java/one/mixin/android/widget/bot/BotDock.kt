@@ -14,12 +14,12 @@ import androidx.core.view.ViewPropertyAnimatorCompat
 import androidx.core.view.ViewPropertyAnimatorListener
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
-import java.lang.Exception
-import kotlin.math.max
 import kotlinx.android.synthetic.main.item_dock.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.vibrate
 import one.mixin.android.vo.BotInterface
+import java.lang.Exception
+import kotlin.math.max
 
 class BotDock : ViewGroup, View.OnLongClickListener {
 
@@ -36,14 +36,16 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         val layoutInflater = LayoutInflater.from(context)
         addView(layoutInflater.inflate(R.layout.item_dock_empty, null))
         repeat(4) { index ->
-            addView(layoutInflater.inflate(R.layout.item_dock, null).apply {
-                id = when (index) {
-                    0 -> R.id.dock_1
-                    1 -> R.id.dock_2
-                    2 -> R.id.dock_3
-                    else -> R.id.dock_4
+            addView(
+                layoutInflater.inflate(R.layout.item_dock, null).apply {
+                    id = when (index) {
+                        0 -> R.id.dock_1
+                        1 -> R.id.dock_2
+                        2 -> R.id.dock_3
+                        else -> R.id.dock_4
+                    }
                 }
-            })
+            )
         }
         clipChildren = false
         clipToPadding = false

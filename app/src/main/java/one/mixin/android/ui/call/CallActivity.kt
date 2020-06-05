@@ -29,11 +29,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.GlideException
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.util.Timer
-import java.util.TimerTask
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_call.*
 import kotlinx.android.synthetic.main.view_call_button.view.*
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +46,11 @@ import one.mixin.android.vo.User
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.widget.CallButton
 import timber.log.Timber
+import java.util.Timer
+import java.util.TimerTask
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import javax.inject.Inject
 
 class CallActivity : BaseActivity(), SensorEventListener {
 
@@ -112,29 +112,32 @@ class CallActivity : BaseActivity(), SensorEventListener {
             }
         })
 
-        callState.observe(this, Observer { callInfo ->
-            when (callInfo.callState) {
-                CallService.CallState.STATE_DIALING -> {
-                    volumeControlStream = AudioManager.STREAM_VOICE_CALL
-                    call_cl.post { handleDialingConnecting() }
-                }
-                CallService.CallState.STATE_RINGING -> {
-                    call_cl.post { handleRinging() }
-                }
-                CallService.CallState.STATE_ANSWERING -> {
-                    call_cl.post { handleAnswering() }
-                }
-                CallService.CallState.STATE_CONNECTED -> {
-                    call_cl.post { handleConnected() }
-                }
-                CallService.CallState.STATE_BUSY -> {
-                    call_cl.post { handleBusy() }
-                }
-                CallService.CallState.STATE_IDLE -> {
-                    call_cl.post { handleDisconnected() }
+        callState.observe(
+            this,
+            Observer { callInfo ->
+                when (callInfo.callState) {
+                    CallService.CallState.STATE_DIALING -> {
+                        volumeControlStream = AudioManager.STREAM_VOICE_CALL
+                        call_cl.post { handleDialingConnecting() }
+                    }
+                    CallService.CallState.STATE_RINGING -> {
+                        call_cl.post { handleRinging() }
+                    }
+                    CallService.CallState.STATE_ANSWERING -> {
+                        call_cl.post { handleAnswering() }
+                    }
+                    CallService.CallState.STATE_CONNECTED -> {
+                        call_cl.post { handleConnected() }
+                    }
+                    CallService.CallState.STATE_BUSY -> {
+                        call_cl.post { handleBusy() }
+                    }
+                    CallService.CallState.STATE_IDLE -> {
+                        call_cl.post { handleDisconnected() }
+                    }
                 }
             }
-        })
+        )
 
         volumeControlStream = AudioManager.STREAM_VOICE_CALL
 

@@ -1,11 +1,11 @@
 package one.mixin.android.ui.search
 
-import kotlin.math.min
 import one.mixin.android.ui.search.holder.TipItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import kotlin.math.min
 
 class SearchDataPackage(
     var assetList: List<AssetItem>? = null,

@@ -27,10 +27,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.math.BigDecimal
-import java.math.RoundingMode
-import java.util.UUID
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
@@ -83,6 +79,10 @@ import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
 import one.mixin.android.worker.RefreshAssetsWorker
 import org.jetbrains.anko.textColor
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.util.UUID
+import javax.inject.Inject
 
 @SuppressLint("InflateParams")
 class TransferFragment : MixinBottomSheetDialogFragment() {
@@ -277,30 +277,33 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         address = requireArguments().getParcelable(ARGS_ADDRESS)
         if (address == null || currentAsset == null) return
 
-        chatViewModel.observeAddress(address!!.addressId).observe(this, Observer {
-            address = it
-            contentView.title_view.setSubTitle(getString(R.string.send_to, it.label), it.displayAddress().formatPublicKey())
-            contentView.memo_rl.isVisible = isInnerTransfer()
-            val bold = it.fee + " " + currentAsset!!.chainSymbol
-            val str = try {
-                val reserveDouble = it.reserve.toDouble()
-                if (reserveDouble > 0) {
-                    getString(R.string.withdrawal_fee_with_reserve, bold, currentAsset!!.symbol, currentAsset!!.name, it.reserve, currentAsset!!.symbol)
-                } else {
+        chatViewModel.observeAddress(address!!.addressId).observe(
+            this,
+            Observer {
+                address = it
+                contentView.title_view.setSubTitle(getString(R.string.send_to, it.label), it.displayAddress().formatPublicKey())
+                contentView.memo_rl.isVisible = isInnerTransfer()
+                val bold = it.fee + " " + currentAsset!!.chainSymbol
+                val str = try {
+                    val reserveDouble = it.reserve.toDouble()
+                    if (reserveDouble > 0) {
+                        getString(R.string.withdrawal_fee_with_reserve, bold, currentAsset!!.symbol, currentAsset!!.name, it.reserve, currentAsset!!.symbol)
+                    } else {
+                        getString(R.string.withdrawal_fee, bold, currentAsset!!.name)
+                    }
+                } catch (t: Throwable) {
                     getString(R.string.withdrawal_fee, bold, currentAsset!!.name)
                 }
-            } catch (t: Throwable) {
-                getString(R.string.withdrawal_fee, bold, currentAsset!!.name)
+                val ssb = SpannableStringBuilder(str)
+                val start = str.indexOf(bold)
+                ssb.setSpan(
+                    StyleSpan(Typeface.BOLD), start,
+                    start + bold.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                contentView.fee_tv?.visibility = VISIBLE
+                contentView.fee_tv?.text = ssb
             }
-            val ssb = SpannableStringBuilder(str)
-            val start = str.indexOf(bold)
-            ssb.setSpan(
-                StyleSpan(Typeface.BOLD), start,
-                start + bold.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-            contentView.fee_tv?.visibility = VISIBLE
-            contentView.fee_tv?.text = ssb
-        })
+        )
     }
 
     private fun handleInnerTransfer() {
@@ -330,36 +333,45 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         } else {
             contentView.expand_iv.isVisible = false
         }
-        chatViewModel.findUserById(userId!!).observe(this, Observer { u ->
-            if (u == null) {
-                jobManager.addJobInBackground(RefreshUserJob(listOf(userId!!)))
-            } else {
-                user = u
-                contentView.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
-                contentView.title_view.setSubTitle(getString(R.string.send_to, u.fullName), u.identityNumber)
+        chatViewModel.findUserById(userId!!).observe(
+            this,
+            Observer { u ->
+                if (u == null) {
+                    jobManager.addJobInBackground(RefreshUserJob(listOf(userId!!)))
+                } else {
+                    user = u
+                    contentView.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+                    contentView.title_view.setSubTitle(getString(R.string.send_to, u.fullName), u.identityNumber)
+                }
             }
-        })
+        )
 
-        chatViewModel.assetItemsWithBalance().observe(this, Observer { r: List<AssetItem>? ->
-            if (r != null && r.isNotEmpty()) {
-                assets = r
-                adapter.submitList(r)
-                contentView.asset_rl.isEnabled = true
+        chatViewModel.assetItemsWithBalance().observe(
+            this,
+            Observer { r: List<AssetItem>? ->
+                if (r != null && r.isNotEmpty()) {
+                    assets = r
+                    adapter.submitList(r)
+                    contentView.asset_rl.isEnabled = true
 
-                r.find {
-                    it.assetId == activity?.defaultSharedPreferences!!.getString(ASSET_PREFERENCE, "")
-                }.notNullWithElse({ a ->
-                    updateAssetUI(a)
-                    currentAsset = a
-                }, {
-                    val a = assets[0]
-                    updateAssetUI(a)
-                    currentAsset = a
-                })
-            } else {
-                contentView.asset_rl.isEnabled = false
+                    r.find {
+                        it.assetId == activity?.defaultSharedPreferences!!.getString(ASSET_PREFERENCE, "")
+                    }.notNullWithElse(
+                        { a ->
+                            updateAssetUI(a)
+                            currentAsset = a
+                        },
+                        {
+                            val a = assets[0]
+                            updateAssetUI(a)
+                            currentAsset = a
+                        }
+                    )
+                } else {
+                    contentView.asset_rl.isEnabled = false
+                }
             }
-        })
+        )
     }
 
     private fun filter(s: String) {

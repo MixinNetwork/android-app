@@ -85,19 +85,22 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
             RxPermissions(requireActivity())
                 .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
-                .subscribe({ granted ->
-                    if (granted) {
-                        lifecycleScope.launch(Dispatchers.IO) {
-                            if (!isAdded) return@launch
-                            contentView.content_ll.capture(requireContext())
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                if (!isAdded) return@launch
+                                contentView.content_ll.capture(requireContext())
+                            }
+                            requireContext().toast(R.string.save_success)
+                        } else {
+                            requireContext().openPermissionSetting()
                         }
-                        requireContext().toast(R.string.save_success)
-                    } else {
-                        requireContext().openPermissionSetting()
+                    },
+                    {
+                        requireContext().toast(R.string.save_failure)
                     }
-                }, {
-                    requireContext().toast(R.string.save_failure)
-                })
+                )
         }
 
         val name = when (type) {
@@ -123,10 +126,13 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                 }.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .autoDispose(stopScope)
-                    .subscribe({ r ->
-                        contentView.qr.setImageBitmap(r)
-                    }, {
-                    })
+                    .subscribe(
+                        { r ->
+                            contentView.qr.setImageBitmap(r)
+                        },
+                        {
+                        }
+                    )
             }
         }
     }

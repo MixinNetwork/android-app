@@ -39,8 +39,6 @@ import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
-import java.io.FileNotFoundException
-import java.io.IOException
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.util.mention.MentionRenderContext
 import one.mixin.android.util.mention.mentionConversationParser
@@ -48,6 +46,8 @@ import one.mixin.android.util.mention.mentionMessageParser
 import one.mixin.android.util.mention.syntax.simple.SimpleRenderer
 import org.jetbrains.anko.dip
 import timber.log.Timber
+import java.io.FileNotFoundException
+import java.io.IOException
 
 const val ANIMATION_DURATION_SHORTEST = 260L
 

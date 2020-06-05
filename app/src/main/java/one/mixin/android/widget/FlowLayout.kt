@@ -4,10 +4,10 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
-import kotlin.math.max
 import one.mixin.android.R
 import one.mixin.android.extension.round
 import org.jetbrains.anko.dip
+import kotlin.math.max
 
 open class FlowLayout @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0) :
     ViewGroup(context, attrs, defStyle) {

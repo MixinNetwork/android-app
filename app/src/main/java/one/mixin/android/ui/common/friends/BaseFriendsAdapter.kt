@@ -36,8 +36,10 @@ interface FriendsListener {
 
 class UserItemCallback(var filter: String) : DiffUtil.ItemCallback<User>() {
     override fun areItemsTheSame(oldItem: User, newItem: User) =
-        (oldItem.fullName?.contains(filter, true) == newItem.fullName?.contains(filter, true) &&
-            oldItem.identityNumber.contains(filter, true) == newItem.identityNumber.contains(filter, true))
+        (
+            oldItem.fullName?.contains(filter, true) == newItem.fullName?.contains(filter, true) &&
+                oldItem.identityNumber.contains(filter, true) == newItem.identityNumber.contains(filter, true)
+            )
 
     override fun areContentsTheSame(oldItem: User, newItem: User) = false
 }

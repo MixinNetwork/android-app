@@ -2,8 +2,6 @@ package one.mixin.android.ui.group
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import java.util.UUID
-import javax.inject.Inject
 import kotlinx.coroutines.launch
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
@@ -21,6 +19,8 @@ import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
+import java.util.UUID
+import javax.inject.Inject
 
 class GroupViewModel @Inject
 internal constructor(
@@ -94,8 +94,12 @@ internal constructor(
         users.mapTo(participantRequests) {
             ParticipantRequest(it.userId, role)
         }
-        jobManager.addJobInBackground(ConversationJob(conversationId = conversationId,
-            participantRequests = participantRequests, type = type))
+        jobManager.addJobInBackground(
+            ConversationJob(
+                conversationId = conversationId,
+                participantRequests = participantRequests, type = type
+            )
+        )
     }
 
     suspend fun getRealParticipants(conversationId: String) = conversationRepository.getRealParticipants(conversationId)
@@ -109,8 +113,12 @@ internal constructor(
     }
 
     fun mute(conversationId: String, duration: Long) {
-        jobManager.addJobInBackground(ConversationJob(conversationId = conversationId,
-            request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration),
-            type = ConversationJob.TYPE_MUTE))
+        jobManager.addJobInBackground(
+            ConversationJob(
+                conversationId = conversationId,
+                request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration),
+                type = ConversationJob.TYPE_MUTE
+            )
+        )
     }
 }

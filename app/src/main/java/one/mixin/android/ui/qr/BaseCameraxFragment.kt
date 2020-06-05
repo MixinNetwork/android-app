@@ -36,14 +36,6 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.io.File
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executor
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.max
-import kotlin.math.min
 import kotlinx.android.synthetic.main.fragment_capture.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -70,6 +62,14 @@ import one.mixin.android.util.reportException
 import one.mixin.android.widget.gallery.ui.GalleryActivity
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
+import java.io.File
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.max
+import kotlin.math.min
 
 abstract class BaseCameraxFragment : VisionFragment() {
     companion object {
@@ -137,14 +137,17 @@ abstract class BaseCameraxFragment : VisionFragment() {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
-                .subscribe({ granted ->
-                    if (granted) {
-                        openGallery()
-                    } else {
-                        context?.openPermissionSetting()
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            openGallery()
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    },
+                    {
                     }
-                }, {
-                })
+                )
         }
         checkFlash()
 
@@ -188,35 +191,38 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
         val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
-        cameraProviderFuture.addListener(Runnable {
-            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+        cameraProviderFuture.addListener(
+            Runnable {
+                val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-            preview = Preview.Builder()
-                .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
-                .setTargetRotation(rotation)
-                .build()
+                preview = Preview.Builder()
+                    .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
+                    .setTargetRotation(rotation)
+                    .build()
 
-            imageAnalysis = ImageAnalysis.Builder()
-                .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
-                .setTargetRotation(rotation)
-                .build()
-                .also {
-                    it.setAnalyzer(backgroundExecutor, imageAnalyzer)
+                imageAnalysis = ImageAnalysis.Builder()
+                    .setTargetResolution(Size(metrics.widthPixels, metrics.heightPixels))
+                    .setTargetRotation(rotation)
+                    .build()
+                    .also {
+                        it.setAnalyzer(backgroundExecutor, imageAnalyzer)
+                    }
+
+                val otherUseCases = getOtherUseCases(rotation)
+
+                cameraProvider.unbindAll()
+
+                try {
+                    camera = cameraProvider.bindToLifecycle(
+                        this as LifecycleOwner, cameraSelector, preview, imageAnalysis, *otherUseCases
+                    )
+                    preview?.setSurfaceProvider(view_finder.createSurfaceProvider())
+                } catch (e: Exception) {
+                    reportException("$CRASHLYTICS_CAMERAX-camera bindToLifecycle failure", e)
                 }
-
-            val otherUseCases = getOtherUseCases(rotation)
-
-            cameraProvider.unbindAll()
-
-            try {
-                camera = cameraProvider.bindToLifecycle(
-                    this as LifecycleOwner, cameraSelector, preview, imageAnalysis, *otherUseCases
-                )
-                preview?.setSurfaceProvider(view_finder.createSurfaceProvider())
-            } catch (e: Exception) {
-                reportException("$CRASHLYTICS_CAMERAX-camera bindToLifecycle failure", e)
-            }
-        }, mainExecutor)
+            },
+            mainExecutor
+        )
     }
 
     override fun onDestroyView() {
@@ -266,20 +272,24 @@ abstract class BaseCameraxFragment : VisionFragment() {
     private fun setZoomRatio(zoomRatio: Float) {
         camera?.let {
             val future = it.cameraControl.setZoomRatio(zoomRatio)
-            Futures.addCallback(future, object : FutureCallback<Void> {
-                override fun onSuccess(result: Void?) {
-                }
+            Futures.addCallback(
+                future,
+                object : FutureCallback<Void> {
+                    override fun onSuccess(result: Void?) {
+                    }
 
-                override fun onFailure(t: Throwable?) {
-                    t?.let { throwable ->
-                        if (BuildConfig.DEBUG) {
-                            Timber.w("$CRASHLYTICS_CAMERAX-setZoomRatio failure, ${throwable.getStackTraceString()}")
-                        } else {
-                            reportException("$CRASHLYTICS_CAMERAX-setZoomRatio failure", throwable)
+                    override fun onFailure(t: Throwable?) {
+                        t?.let { throwable ->
+                            if (BuildConfig.DEBUG) {
+                                Timber.w("$CRASHLYTICS_CAMERAX-setZoomRatio failure, ${throwable.getStackTraceString()}")
+                            } else {
+                                reportException("$CRASHLYTICS_CAMERAX-setZoomRatio failure", throwable)
+                            }
                         }
                     }
-                }
-            }, mainExecutor)
+                },
+                mainExecutor
+            )
         }
     }
 
@@ -287,13 +297,16 @@ abstract class BaseCameraxFragment : VisionFragment() {
     private fun focusAndMeter(v: PreviewView): Boolean {
         var x = 0f
         var y = 0f
-        upEvent.notNullWithElse({
-            x = it.x
-            y = it.y
-        }, {
-            x = v.x + v.width / 2f
-            y = v.y + v.height / 2f
-        })
+        upEvent.notNullWithElse(
+            {
+                x = it.x
+                y = it.y
+            },
+            {
+                x = v.x + v.width / 2f
+                y = v.y + v.height / 2f
+            }
+        )
         upEvent = null
         focus_view.focusAndMeter(x, y)
 
@@ -310,24 +323,32 @@ abstract class BaseCameraxFragment : VisionFragment() {
             val aePoint = pointFactory.createPoint(x, y, aePointWidth)
 
             val future = c.cameraControl.startFocusAndMetering(
-                FocusMeteringAction.Builder(afPoint,
-                    FocusMeteringAction.FLAG_AF).addPoint(aePoint,
-                    FocusMeteringAction.FLAG_AE).build()
+                FocusMeteringAction.Builder(
+                    afPoint,
+                    FocusMeteringAction.FLAG_AF
+                ).addPoint(
+                    aePoint,
+                    FocusMeteringAction.FLAG_AE
+                ).build()
             )
-            Futures.addCallback(future, object : FutureCallback<FocusMeteringResult> {
-                override fun onSuccess(result: FocusMeteringResult?) {
-                }
+            Futures.addCallback(
+                future,
+                object : FutureCallback<FocusMeteringResult> {
+                    override fun onSuccess(result: FocusMeteringResult?) {
+                    }
 
-                override fun onFailure(t: Throwable?) {
-                    t?.let { throwable ->
-                        if (BuildConfig.DEBUG) {
-                            Timber.w("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure, ${throwable.getStackTraceString()}")
-                        } else {
-                            reportException("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure", throwable)
+                    override fun onFailure(t: Throwable?) {
+                        t?.let { throwable ->
+                            if (BuildConfig.DEBUG) {
+                                Timber.w("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure, ${throwable.getStackTraceString()}")
+                            } else {
+                                reportException("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure", throwable)
+                            }
                         }
                     }
-                }
-            }, mainExecutor)
+                },
+                mainExecutor
+            )
         }
         return true
     }
@@ -354,11 +375,14 @@ abstract class BaseCameraxFragment : VisionFragment() {
         requireContext().defaultSharedPreferences.putBoolean(CaptureActivity.SHOW_QR_CODE, false)
         if (forAddress || forAccountName || forMemo) {
             val result = Intent().apply {
-                putExtra(when {
-                    forAddress -> CaptureActivity.ARGS_ADDRESS_RESULT
-                    forAccountName -> CaptureActivity.ARGS_ACCOUNT_NAME_RESULT
-                    else -> CaptureActivity.ARGS_MEMO_RESULT
-                }, analysisResult)
+                putExtra(
+                    when {
+                        forAddress -> CaptureActivity.ARGS_ADDRESS_RESULT
+                        forAccountName -> CaptureActivity.ARGS_ACCOUNT_NAME_RESULT
+                        else -> CaptureActivity.ARGS_MEMO_RESULT
+                    },
+                    analysisResult
+                )
             }
             activity?.setResult(CaptureActivity.RESULT_CODE, result)
             activity?.finish()
@@ -526,6 +550,8 @@ abstract class BaseCameraxFragment : VisionFragment() {
     }
 }
 
-val donateSupported = arrayOf("bitcoin:", "bitcoincash:", "bitcoinsv:", "ethereum:",
+val donateSupported = arrayOf(
+    "bitcoin:", "bitcoincash:", "bitcoinsv:", "ethereum:",
     "litecoin:", "dash:", "ripple:", "zcash:", "horizen:", "monero:", "binancecoin:",
-    "stellar:", "dogecoin:")
+    "stellar:", "dogecoin:"
+)

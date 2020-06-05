@@ -15,8 +15,6 @@ import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import io.reactivex.plugins.RxJavaPlugins
-import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
@@ -37,6 +35,8 @@ import org.jetbrains.anko.notificationManager
 import org.jetbrains.anko.uiThread
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Inject
 
 class MixinApplication : Application(), HasAndroidInjector, Configuration.Provider, CameraXConfig.Provider {
     @Inject

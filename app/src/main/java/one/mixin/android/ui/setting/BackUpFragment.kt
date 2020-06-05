@@ -16,8 +16,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.util.Date
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_backup.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +35,8 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.delete
 import one.mixin.android.util.backup.findBackup
+import java.util.Date
+import javax.inject.Inject
 
 class BackUpFragment : BaseFragment() {
     companion object {
@@ -62,18 +62,24 @@ class BackUpFragment : BaseFragment() {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
-                .subscribe({ granted ->
-                    if (granted) {
-                        jobManager.addJobInBackground(BackupJob(true))
-                    } else {
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            jobManager.addJobInBackground(BackupJob(true))
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    },
+                    {
                         context?.openPermissionSetting()
                     }
-                }, {
-                    context?.openPermissionSetting()
-                })
+                )
         }
-        if (ContextCompat.checkSelfPermission(requireContext(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+        ) {
             findBackUp()
         }
         delete_bn.setOnClickListener {
@@ -89,24 +95,27 @@ class BackUpFragment : BaseFragment() {
             }
         }
 
-        BackupJob.backupLiveData.observe(viewLifecycleOwner, Observer {
-            if (it) {
-                backup_bn.visibility = INVISIBLE
-                progressGroup.visibility = VISIBLE
-            } else {
-                backup_bn.visibility = VISIBLE
-                progressGroup.visibility = GONE
-                when {
-                    BackupJob.backupLiveData.result == Result.SUCCESS -> findBackUp()
-                    BackupJob.backupLiveData.result == Result.NO_AVAILABLE_MEMORY ->
-                        alertDialogBuilder()
-                            .setMessage(R.string.backup_no_available_memory)
-                            .setNegativeButton(R.string.group_ok) { dialog, _ -> dialog.dismiss() }
-                            .show()
-                    BackupJob.backupLiveData.result == Result.FAILURE -> toast(R.string.backup_failure_tip)
+        BackupJob.backupLiveData.observe(
+            viewLifecycleOwner,
+            Observer {
+                if (it) {
+                    backup_bn.visibility = INVISIBLE
+                    progressGroup.visibility = VISIBLE
+                } else {
+                    backup_bn.visibility = VISIBLE
+                    progressGroup.visibility = GONE
+                    when {
+                        BackupJob.backupLiveData.result == Result.SUCCESS -> findBackUp()
+                        BackupJob.backupLiveData.result == Result.NO_AVAILABLE_MEMORY ->
+                            alertDialogBuilder()
+                                .setMessage(R.string.backup_no_available_memory)
+                                .setNegativeButton(R.string.group_ok) { dialog, _ -> dialog.dismiss() }
+                                .show()
+                        BackupJob.backupLiveData.result == Result.FAILURE -> toast(R.string.backup_failure_tip)
+                    }
                 }
             }
-        })
+        )
     }
 
     private val options by lazy {
@@ -142,12 +151,15 @@ class BackUpFragment : BaseFragment() {
                 val time = file.lastModified().run {
                     val now = Date().time
                     val createTime = file.lastModified()
-                    DateUtils.getRelativeTimeSpanString(createTime, now, when {
-                        ((now - createTime) < 60000L) -> DateUtils.SECOND_IN_MILLIS
-                        ((now - createTime) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
-                        ((now - createTime) < 86400000L) -> DateUtils.HOUR_IN_MILLIS
-                        else -> DateUtils.DAY_IN_MILLIS
-                    })
+                    DateUtils.getRelativeTimeSpanString(
+                        createTime, now,
+                        when {
+                            ((now - createTime) < 60000L) -> DateUtils.SECOND_IN_MILLIS
+                            ((now - createTime) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
+                            ((now - createTime) < 86400000L) -> DateUtils.HOUR_IN_MILLIS
+                            else -> DateUtils.DAY_IN_MILLIS
+                        }
+                    )
                 }
                 backup_info.text = getString(R.string.backup_external_storage, time)
                 backup_size.text = getString(R.string.restore_size, file.length().fileSize())

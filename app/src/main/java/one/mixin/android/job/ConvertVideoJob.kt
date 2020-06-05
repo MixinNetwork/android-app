@@ -3,7 +3,6 @@ package one.mixin.android.job
 import android.net.Uri
 import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
-import java.io.File
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.getFileNameNoEx
@@ -19,6 +18,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.toQuoteMessageItem
+import java.io.File
 
 class ConvertVideoJob(
     private val conversationId: String,
@@ -49,11 +49,13 @@ class ConvertVideoJob(
         if (!video.fileName.endsWith(".mp4")) {
             video.fileName = "${video.fileName.getFileNameNoEx()}.mp4"
         }
-        val message = createVideoMessage(messageId, conversationId, senderId, category, null,
+        val message = createVideoMessage(
+            messageId, conversationId, senderId, category, null,
             video.fileName, uri.toString(), video.duration, video.resultWidth,
             video.resultHeight, video.thumbnail, "video/mp4",
             0L, createdAt, null, null, MediaStatus.PENDING, MessageStatus.SENDING.name,
-            replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
+            replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+        )
         // insert message with mediaSize 0L
         // for show video place holder in chat list before convert video
         messageDao.insert(message)
@@ -69,8 +71,10 @@ class ConvertVideoJob(
         }
         jobManager.saveJob(this)
         val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp(conversationId, messageId, "mp4")
-        val result = MediaController.getInstance().convertVideo(video.originalPath, video.bitrate, video.resultWidth, video.resultHeight,
-            video.originalWidth, video.originalHeight, videoFile, video.needChange)
+        val result = MediaController.getInstance().convertVideo(
+            video.originalPath, video.bitrate, video.resultWidth, video.resultHeight,
+            video.originalWidth, video.originalHeight, videoFile, video.needChange
+        )
         if (isCancelled) {
             removeJob()
             return
@@ -78,12 +82,14 @@ class ConvertVideoJob(
         if (result) {
             messageDao.updateMediaMessageUrl(videoFile.toUri().toString(), messageId)
         }
-        val message = createVideoMessage(messageId, conversationId, senderId, category, null,
+        val message = createVideoMessage(
+            messageId, conversationId, senderId, category, null,
             video.fileName, videoFile.toUri().toString(), video.duration, video.resultWidth,
             video.resultHeight, video.thumbnail, "video/mp4",
             videoFile.length(), createdAt, null, null,
             if (result) MediaStatus.PENDING else MediaStatus.CANCELED,
-            if (result) MessageStatus.SENDING.name else MessageStatus.FAILED.name)
+            if (result) MessageStatus.SENDING.name else MessageStatus.FAILED.name
+        )
 
         removeJob()
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))

@@ -11,12 +11,6 @@ import com.google.gson.Gson
 import dagger.android.AndroidInjection
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import java.util.UUID
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledFuture
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.Base64
@@ -50,6 +44,12 @@ import org.webrtc.PeerConnectionFactory
 import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
 import timber.log.Timber
+import java.util.UUID
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Inject
 
 class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
@@ -165,12 +165,16 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (!callState.isIdle() || isBusy()) {
             val category = MessageCategory.WEBRTC_AUDIO_BUSY.name
             val bmd = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
-            val m = createCallMessage(UUID.randomUUID().toString(), bmd.conversationId, self.userId, category, null,
-                nowInUtc(), MessageStatus.SENDING.name, bmd.messageId)
+            val m = createCallMessage(
+                UUID.randomUUID().toString(), bmd.conversationId, self.userId, category, null,
+                nowInUtc(), MessageStatus.SENDING.name, bmd.messageId
+            )
             jobManager.addJobInBackground(SendMessageJob(m, recipientId = bmd.userId))
 
-            val savedMessage = createCallMessage(bmd.messageId, m.conversationId, bmd.userId, m.category, m.content,
-                m.createdAt, bmd.status, bmd.messageId)
+            val savedMessage = createCallMessage(
+                bmd.messageId, m.conversationId, bmd.userId, m.category, m.content,
+                m.createdAt, bmd.status, bmd.messageId
+            )
             if (checkConversation(m)) {
                 database.insertAndNotifyConversation(savedMessage)
             }
@@ -219,7 +223,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private fun handleAnswerCall(intent: Intent) {
         if (callState.callInfo.callState == CallState.STATE_ANSWERING ||
-            callState.isIdle()) return
+            callState.isIdle()
+        ) return
 
         callState.setCallState(CallState.STATE_ANSWERING)
         updateForegroundNotification()
@@ -316,8 +321,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         callState.setCallState(CallState.STATE_IDLE)
         if (state == CallState.STATE_DIALING && peerConnectionClient.hasLocalSdp()) {
             val mId = UUID.randomUUID().toString()
-            val m = createCallMessage(mId, conversationId, self.userId, MessageCategory.WEBRTC_AUDIO_FAILED.name,
-                null, nowInUtc(), MessageStatus.READ.name, mId)
+            val m = createCallMessage(
+                mId, conversationId, self.userId, MessageCategory.WEBRTC_AUDIO_FAILED.name,
+                null, nowInUtc(), MessageStatus.READ.name, mId
+            )
             database.insertAndNotifyConversation(m)
             disconnect()
         } else if (state != CallState.STATE_CONNECTED) {
@@ -349,7 +356,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private fun handleCheckTimeout() {
         if (callState.callInfo.callState == CallState.STATE_IDLE ||
-            callState.callInfo.callState == CallState.STATE_CONNECTED) return
+            callState.callInfo.callState == CallState.STATE_CONNECTED
+        ) return
 
         handleCallCancel()
     }
@@ -438,11 +446,15 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             } else {
                 if (category == MessageCategory.WEBRTC_AUDIO_END.name) {
                     val duration = System.currentTimeMillis() - callState.connectedTime!!
-                    createCallMessage(messageId, conversationId, self.userId, category, content,
-                        nowInUtc(), MessageStatus.SENDING.name, quoteMessageId, duration.toString())
+                    createCallMessage(
+                        messageId, conversationId, self.userId, category, content,
+                        nowInUtc(), MessageStatus.SENDING.name, quoteMessageId, duration.toString()
+                    )
                 } else {
-                    createCallMessage(messageId, conversationId, self.userId, category, content,
-                        nowInUtc(), MessageStatus.SENDING.name, quoteMessageId)
+                    createCallMessage(
+                        messageId, conversationId, self.userId, category, content,
+                        nowInUtc(), MessageStatus.SENDING.name, quoteMessageId
+                    )
                 }
             }
         } else {
@@ -453,12 +465,16 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             }
             if (category == MessageCategory.WEBRTC_AUDIO_END.name) {
                 val duration = System.currentTimeMillis() - callState.connectedTime!!
-                createCallMessage(UUID.randomUUID().toString(), blazeMessageData!!.conversationId,
+                createCallMessage(
+                    UUID.randomUUID().toString(), blazeMessageData!!.conversationId,
                     self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name, quoteMessageId,
-                    duration.toString())
+                    duration.toString()
+                )
             } else {
-                createCallMessage(UUID.randomUUID().toString(), blazeMessageData!!.conversationId,
-                    self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name, quoteMessageId)
+                createCallMessage(
+                    UUID.randomUUID().toString(), blazeMessageData!!.conversationId,
+                    self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name, quoteMessageId
+                )
             }
         }
         val recipientId = user?.userId
@@ -482,8 +498,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
                 database.insertAndNotifyConversation(createNewReadMessage(m, uId, status))
             }
             MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
-                val msg = createCallMessage(m.id, m.conversationId, uId, m.category, m.content,
-                    m.createdAt, MessageStatus.READ.name, m.quoteMessageId, m.mediaDuration)
+                val msg = createCallMessage(
+                    m.id, m.conversationId, uId, m.category, m.content,
+                    m.createdAt, MessageStatus.READ.name, m.quoteMessageId, m.mediaDuration
+                )
                 database.insertAndNotifyConversation(msg)
             }
             MessageCategory.WEBRTC_AUDIO_END.name, MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
@@ -494,9 +512,11 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun createNewReadMessage(m: Message, userId: String, status: MessageStatus) =
-        createCallMessage(quoteMessageId ?: blazeMessageData?.quoteMessageId ?: blazeMessageData?.messageId
-        ?: UUID.randomUUID().toString(),
-            m.conversationId, userId, m.category, m.content, m.createdAt, status.name, m.quoteMessageId, m.mediaDuration)
+        createCallMessage(
+            quoteMessageId ?: blazeMessageData?.quoteMessageId ?: blazeMessageData?.messageId
+                ?: UUID.randomUUID().toString(),
+            m.conversationId, userId, m.category, m.content, m.createdAt, status.name, m.quoteMessageId, m.mediaDuration
+        )
 
     private fun checkConversation(message: Message): Boolean {
         val conversation = conversationRepo.getConversation(message.conversationId)
@@ -506,17 +526,20 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun getTurnServer(action: (List<PeerConnection.IceServer>) -> Unit) {
-        disposable = accountService.getTurn().subscribeOn(Schedulers.io()).subscribe({
-            if (it.isSuccess) {
-                val array = it.data as Array<TurnServer>
-                action.invoke(genIceServerList(array))
-            } else {
+        disposable = accountService.getTurn().subscribeOn(Schedulers.io()).subscribe(
+            {
+                if (it.isSuccess) {
+                    val array = it.data as Array<TurnServer>
+                    action.invoke(genIceServerList(array))
+                } else {
+                    handleFetchTurnError()
+                }
+            },
+            {
+                ErrorHandler.handleError(it)
                 handleFetchTurnError()
             }
-        }, {
-            ErrorHandler.handleError(it)
-            handleFetchTurnError()
-        })
+        )
     }
 
     private fun handleFetchTurnError() {
@@ -526,10 +549,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun genIceServerList(array: Array<TurnServer>): List<PeerConnection.IceServer> {
         val iceServer = arrayListOf<PeerConnection.IceServer>()
         array.forEach {
-            iceServer.add(PeerConnection.IceServer.builder(it.url)
-                .setUsername(it.username)
-                .setPassword(it.credential)
-                .createIceServer())
+            iceServer.add(
+                PeerConnection.IceServer.builder(it.url)
+                    .setUsername(it.username)
+                    .setPassword(it.credential)
+                    .createIceServer()
+            )
         }
         return iceServer
     }

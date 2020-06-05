@@ -1,8 +1,8 @@
 package one.mixin.android.ui.url
 
 import androidx.lifecycle.ViewModel
-import javax.inject.Inject
 import one.mixin.android.repository.UserRepository
+import javax.inject.Inject
 
 class UrlInterpreterViewModel @Inject internal constructor(
     private val userRepository: UserRepository

@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
-import javax.inject.Inject
 import one.mixin.android.R
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.home.ConversationListFragment
@@ -13,6 +12,7 @@ import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.Session
+import javax.inject.Inject
 
 class NavigationController
 @Inject
@@ -60,12 +60,12 @@ constructor(mainActivity: MainActivity) {
     fun hideSearch() {
         val f = fragmentManager.findFragmentByTag(SearchFragment.TAG)
         f?.view?.animate()?.apply {
-          setListener(object : AnimatorListenerAdapter() {
-              override fun onAnimationEnd(animation: Animator?) {
-                  setListener(null)
-                  f.view?.isVisible = false
-              }
-          })
+            setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    setListener(null)
+                    f.view?.isVisible = false
+                }
+            })
         }?.alpha(0f)?.start()
     }
 }

@@ -15,7 +15,6 @@ import androidx.fragment.app.FragmentManager
 import com.uber.autodispose.android.lifecycle.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_preview.view.*
 import kotlinx.android.synthetic.main.fragment_preview_video.view.*
 import one.mixin.android.R
@@ -27,6 +26,7 @@ import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelineView
+import java.util.concurrent.TimeUnit
 
 class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {
 
@@ -113,11 +113,14 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        mediaDialogView = LayoutInflater.from(context).inflate(if (isVideo) {
-            R.layout.fragment_preview_video
-        } else {
-            R.layout.fragment_preview
-        }, null, false)
+        mediaDialogView = LayoutInflater.from(context).inflate(
+            if (isVideo) {
+                R.layout.fragment_preview_video
+            } else {
+                R.layout.fragment_preview
+            },
+            null, false
+        )
         if (isVideo) {
             mediaDialogView!!.dialog_play.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
@@ -142,7 +145,8 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
     private var action: ((Uri) -> Unit)? = null
     fun show(fragmentManager: FragmentManager, uri: Uri, action: (Uri) -> Unit) {
         try {
-            super.showNow(fragmentManager,
+            super.showNow(
+                fragmentManager,
                 if (isVideo) {
                     "PreviewVideoDialogFragment"
                 } else {

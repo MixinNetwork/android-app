@@ -2,8 +2,6 @@ package one.mixin.android.crypto.storage
 
 import android.content.Context
 import android.util.Log
-import java.io.IOException
-import java.util.LinkedList
 import one.mixin.android.crypto.db.PreKeyDao
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.db.SignedPreKeyDao
@@ -14,6 +12,8 @@ import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.PreKeyStore
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyStore
+import java.io.IOException
+import java.util.LinkedList
 
 class MixinPreKeyStore(context: Context) : PreKeyStore, SignedPreKeyStore {
 

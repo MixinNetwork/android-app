@@ -48,13 +48,17 @@ class AvatarsView : ViewGroup {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val parentWidth = avatarSize + (childCount - 1) * avatarSize * ratio
-        setMeasuredDimension(MeasureSpec.makeMeasureSpec(parentWidth.toInt(), MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY))
+        setMeasuredDimension(
+            MeasureSpec.makeMeasureSpec(parentWidth.toInt(), MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY)
+        )
 
         for (i in 0 until childCount) {
             val c = getChildAt(i)
-            c.measure(MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY))
+            c.measure(
+                MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(avatarSize, MeasureSpec.EXACTLY)
+            )
         }
     }
 

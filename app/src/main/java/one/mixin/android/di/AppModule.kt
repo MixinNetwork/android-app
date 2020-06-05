@@ -10,14 +10,6 @@ import com.google.firebase.iid.FirebaseInstanceId
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import dagger.Module
 import dagger.Provides
-import java.net.ConnectException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import java.util.Locale
-import java.util.UUID
-import java.util.concurrent.TimeUnit
-import javax.inject.Singleton
-import kotlin.math.abs
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
@@ -70,13 +62,23 @@ import one.mixin.android.websocket.ChatWebSocket
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
+import java.util.Locale
+import java.util.UUID
+import java.util.concurrent.TimeUnit
+import javax.inject.Singleton
+import kotlin.math.abs
 
 @Module(includes = [(ViewModelModule::class), (BaseDbModule::class), (ReadDbModule::class)])
 internal class AppModule {
 
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
-    private val API_UA = ("Mixin/" + BuildConfig.VERSION_NAME +
-        " (Android " + android.os.Build.VERSION.RELEASE + "; " + android.os.Build.FINGERPRINT + "; " + LOCALE + ")").filterNonAscii()
+    private val API_UA = (
+        "Mixin/" + BuildConfig.VERSION_NAME +
+            " (Android " + android.os.Build.VERSION.RELEASE + "; " + android.os.Build.FINGERPRINT + "; " + LOCALE + ")"
+        ).filterNonAscii()
 
     private fun getDeviceId(resolver: ContentResolver): String {
         var deviceId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)

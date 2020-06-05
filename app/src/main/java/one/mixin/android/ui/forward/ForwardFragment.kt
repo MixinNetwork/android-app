@@ -16,7 +16,6 @@ import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_forward.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
@@ -36,6 +35,7 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
+import javax.inject.Inject
 
 class ForwardFragment : BaseFragment() {
     companion object {
@@ -181,17 +181,21 @@ class ForwardFragment : BaseFragment() {
             RxPermissions(requireActivity())
                 .request(
                     WRITE_EXTERNAL_STORAGE,
-                    READ_EXTERNAL_STORAGE)
+                    READ_EXTERNAL_STORAGE
+                )
                 .autoDispose(stopScope)
-                .subscribe({ granted ->
-                    if (granted) {
-                        sharePreOperation(single)
-                    } else {
-                        requireContext().openPermissionSetting()
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            sharePreOperation(single)
+                        } else {
+                            requireContext().openPermissionSetting()
+                        }
+                    },
+                    {
+                        Bugsnag.notify(it)
                     }
-                }, {
-                    Bugsnag.notify(it)
-                })
+                )
         } else {
             sharePreOperation(single)
         }
@@ -200,7 +204,7 @@ class ForwardFragment : BaseFragment() {
     private fun sharePreOperation(single: Boolean) {
         chatViewModel.sendForwardMessages(adapter.selectItem, messages, !isShare && !fromConversation)
         val forwardEvent = adapter.selectItem[0].let {
-             if (it is User) {
+            if (it is User) {
                 ForwardEvent(null, it.userId)
             } else {
                 it as ConversationItem

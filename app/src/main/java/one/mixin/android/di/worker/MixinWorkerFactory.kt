@@ -9,7 +9,7 @@ import javax.inject.Provider
 
 class MixinWorkerFactory @Inject constructor(
     private val creators: Map<Class<out ListenableWorker>,
-    @JvmSuppressWildcards Provider<ChildWorkerFactory>>
+        @JvmSuppressWildcards Provider<ChildWorkerFactory>>
 ) : WorkerFactory() {
     override fun createWorker(
         context: Context,
@@ -19,7 +19,7 @@ class MixinWorkerFactory @Inject constructor(
         val workerClass = Class.forName(workerClassName)
         val foundEntry = creators.entries.find { workerClass.isAssignableFrom(it.key) }
         val factory = foundEntry?.value
-                ?: throw IllegalArgumentException("unknown worker class name: $workerClassName")
+            ?: throw IllegalArgumentException("unknown worker class name: $workerClassName")
         return factory.get().create(context, workerParameters)
     }
 }

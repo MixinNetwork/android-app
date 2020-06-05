@@ -4,8 +4,10 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
 
-@Entity(tableName = "favorite_apps",
-    primaryKeys = ["app_id", "user_id"])
+@Entity(
+    tableName = "favorite_apps",
+    primaryKeys = ["app_id", "user_id"]
+)
 data class FavoriteApp(
 
     @SerializedName("app_id")

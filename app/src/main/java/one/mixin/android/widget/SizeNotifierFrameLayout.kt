@@ -10,9 +10,9 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
-import kotlin.math.ceil
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.statusBarHeight
+import kotlin.math.ceil
 
 class SizeNotifierFrameLayout : FrameLayout {
 
@@ -73,8 +73,10 @@ class SizeNotifierFrameLayout : FrameLayout {
                     canvas.save()
                     val scale: Float = 2.0f / context.resources.displayMetrics.density
                     canvas.scale(scale, scale)
-                    backgroundImage!!.setBounds(0, 0, ceil((measuredWidth / scale).toDouble()).toInt(),
-                        ceil((measuredHeight / scale).toDouble()).toInt())
+                    backgroundImage!!.setBounds(
+                        0, 0, ceil((measuredWidth / scale).toDouble()).toInt(),
+                        ceil((measuredHeight / scale).toDouble()).toInt()
+                    )
                     backgroundImage!!.draw(canvas)
                     canvas.restore()
                 } else {

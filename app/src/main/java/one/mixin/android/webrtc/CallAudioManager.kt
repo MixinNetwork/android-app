@@ -112,10 +112,13 @@ class CallAudioManager(private val context: Context) {
 
     fun start(isInitiator: Boolean) {
         context.registerReceiver(wiredHeadsetReceiver, IntentFilter(Intent.ACTION_HEADSET_PLUG))
-        context.registerReceiver(bluetoothHeadsetReceiver, IntentFilter().apply {
-            addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED)
-            addAction(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED)
-        })
+        context.registerReceiver(
+            bluetoothHeadsetReceiver,
+            IntentFilter().apply {
+                addAction(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED)
+                addAction(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED)
+            }
+        )
         bluetoothState = State.HEADSET_UNAVAILABLE
         defaultAudioDevice = if (isInitiator) {
             AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
@@ -215,7 +218,8 @@ class CallAudioManager(private val context: Context) {
     private fun updateAudioDevice() {
         if (bluetoothState == State.HEADSET_AVAILABLE ||
             bluetoothState == State.HEADSET_UNAVAILABLE ||
-            bluetoothState == State.SCO_CONNECTING) {
+            bluetoothState == State.SCO_CONNECTING
+        ) {
             updateBluetoothDevice()
         }
 
@@ -223,7 +227,8 @@ class CallAudioManager(private val context: Context) {
 
         if (bluetoothState == State.HEADSET_AVAILABLE ||
             bluetoothState == State.SCO_CONNECTED ||
-            bluetoothState == State.SCO_CONNECTING) {
+            bluetoothState == State.SCO_CONNECTING
+        ) {
             newAudioDevices.add(AudioDeviceInfo.TYPE_BLUETOOTH_SCO)
         }
         if (hasWiredHeadset) {
@@ -237,7 +242,8 @@ class CallAudioManager(private val context: Context) {
         var audioDeviceSetUpdated = audioDevices != newAudioDevices
         audioDevices = newAudioDevices
         if (bluetoothState == State.HEADSET_UNAVAILABLE &&
-            userSelectedAudioDevice == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+            userSelectedAudioDevice == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
+        ) {
             userSelectedAudioDevice = AudioDeviceInfo.TYPE_UNKNOWN
         }
         if (hasWiredHeadset && userSelectedAudioDevice == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
@@ -248,12 +254,18 @@ class CallAudioManager(private val context: Context) {
         }
 
         val needBluetoothAudioStart = bluetoothState == State.HEADSET_AVAILABLE &&
-            (userSelectedAudioDevice == AudioDeviceInfo.TYPE_UNKNOWN ||
-                userSelectedAudioDevice == AudioDeviceInfo.TYPE_BLUETOOTH_SCO)
-        val needBluetoothAudioStop = (bluetoothState == State.SCO_CONNECTED ||
-            bluetoothState == State.SCO_CONNECTING) &&
-            (userSelectedAudioDevice != AudioDeviceInfo.TYPE_UNKNOWN &&
-                userSelectedAudioDevice != AudioDeviceInfo.TYPE_BLUETOOTH_SCO)
+            (
+                userSelectedAudioDevice == AudioDeviceInfo.TYPE_UNKNOWN ||
+                    userSelectedAudioDevice == AudioDeviceInfo.TYPE_BLUETOOTH_SCO
+                )
+        val needBluetoothAudioStop = (
+            bluetoothState == State.SCO_CONNECTED ||
+                bluetoothState == State.SCO_CONNECTING
+            ) &&
+            (
+                userSelectedAudioDevice != AudioDeviceInfo.TYPE_UNKNOWN &&
+                    userSelectedAudioDevice != AudioDeviceInfo.TYPE_BLUETOOTH_SCO
+                )
         if (needBluetoothAudioStop) {
             stopScoAudio()
             updateBluetoothDevice()

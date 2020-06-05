@@ -1,12 +1,12 @@
 package one.mixin.android.di
 
-import java.io.IOException
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import okhttp3.Request
 import one.mixin.android.Constants
 import one.mixin.android.Constants.API.URL
+import java.io.IOException
 
 class HostSelectionInterceptor private constructor() : Interceptor {
     @Volatile

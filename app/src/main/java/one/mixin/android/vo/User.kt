@@ -16,8 +16,10 @@ import kotlinx.android.parcel.Parcelize
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-@Entity(tableName = "users",
-    indices = [(Index(value = arrayOf("full_name")))])
+@Entity(
+    tableName = "users",
+    indices = [(Index(value = arrayOf("full_name")))]
+)
 data class User(
     @PrimaryKey
     @SerializedName("user_id")

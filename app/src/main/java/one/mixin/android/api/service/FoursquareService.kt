@@ -1,12 +1,12 @@
 package one.mixin.android.api.service
 
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import one.mixin.android.BuildConfig
 import one.mixin.android.vo.foursquare.FoursquareResult
 import retrofit2.http.GET
 import retrofit2.http.Query
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 interface FoursquareService {
 

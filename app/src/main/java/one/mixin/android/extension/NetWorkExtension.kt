@@ -65,19 +65,23 @@ fun Context.differentNetWorkAction(wifiAction: () -> Unit, mobileAction: () -> U
 
 fun Context.autoDownload(support: (value: Int) -> Boolean, action: () -> Unit) {
     if (hasWritePermission()) {
-        differentNetWorkAction({
-            if (support(getAutoDownloadWifiValue())) {
-                action()
+        differentNetWorkAction(
+            {
+                if (support(getAutoDownloadWifiValue())) {
+                    action()
+                }
+            },
+            {
+                if (support(getAutoDownloadMobileValue())) {
+                    action()
+                }
+            },
+            {
+                if (support(getAutoDownloadRoamingValue())) {
+                    action()
+                }
             }
-        }, {
-            if (support(getAutoDownloadMobileValue())) {
-                action()
-            }
-        }, {
-            if (support(getAutoDownloadRoamingValue())) {
-                action()
-            }
-        })
+        )
     }
 }
 

@@ -2,8 +2,6 @@ package one.mixin.android.job
 
 import android.os.SystemClock
 import com.google.gson.JsonElement
-import java.io.IOException
-import javax.inject.Inject
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.CircleService
@@ -43,6 +41,8 @@ import one.mixin.android.vo.createConversation
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
+import java.io.IOException
+import javax.inject.Inject
 
 open class Injector : Injectable {
     @Inject
@@ -178,8 +178,10 @@ open class Injector : Injectable {
                         Participant(conversationId, it.userId, it.role, it.createdAt!!)
                     }
                     participantDao.replaceAll(conversationId, remote)
-                    conversationDao.updateConversation(conversationData.conversationId, ownerId, conversationData.category, conversationData.name,
-                        conversationData.announcement, conversationData.muteUntil, conversationData.createdAt, status)
+                    conversationDao.updateConversation(
+                        conversationData.conversationId, ownerId, conversationData.category, conversationData.name,
+                        conversationData.announcement, conversationData.muteUntil, conversationData.createdAt, status
+                    )
 
                     conversationData.circles?.let { circles ->
                         circles.forEach {

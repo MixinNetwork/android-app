@@ -8,8 +8,10 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
 
-class RefreshStickerAlbumJob : BaseJob(Params(PRIORITY_UI_HIGH)
-    .addTags(RefreshStickerAlbumJob.GROUP).requireNetwork()) {
+class RefreshStickerAlbumJob : BaseJob(
+    Params(PRIORITY_UI_HIGH)
+        .addTags(RefreshStickerAlbumJob.GROUP).requireNetwork()
+) {
 
     companion object {
         private const val serialVersionUID = 1L

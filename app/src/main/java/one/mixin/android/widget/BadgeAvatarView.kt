@@ -16,8 +16,10 @@ class BadgeAvatarView(context: Context, attrs: AttributeSet?) : FrameLayout(cont
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        measureChild(badge, MeasureSpec.makeMeasureSpec(measuredWidth / 4, MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(measuredHeight / 4, MeasureSpec.EXACTLY))
+        measureChild(
+            badge, MeasureSpec.makeMeasureSpec(measuredWidth / 4, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(measuredHeight / 4, MeasureSpec.EXACTLY)
+        )
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {

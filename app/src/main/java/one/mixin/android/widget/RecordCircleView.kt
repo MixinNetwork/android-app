@@ -258,9 +258,11 @@ class RecordCircleView : View {
         if (locked) {
             lockSize = AndroidUtilities.dp(31f)
             lockY =
-                AndroidUtilities.dp(57f) + (AndroidUtilities.dp(30f) * (1.0f - sc) - yAdd + AndroidUtilities.dp(
+                AndroidUtilities.dp(57f) + (
+                AndroidUtilities.dp(30f) * (1.0f - sc) - yAdd + AndroidUtilities.dp(
                     20f
-                ) * moveProgress).toInt()
+                ) * moveProgress
+                ).toInt()
             lockTopY = lockY + AndroidUtilities.dp(5f)
             lockMiddleY = lockY + AndroidUtilities.dp(11f)
             lockArrowY = lockY + AndroidUtilities.dp(25f)

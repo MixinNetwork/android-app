@@ -2,9 +2,6 @@ package one.mixin.android.job
 
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
-import java.io.File
-import java.io.FileInputStream
-import java.util.concurrent.TimeUnit
 import okhttp3.Call
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -40,12 +37,18 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.widget.gallery.MimeType
 import org.whispersystems.libsignal.logging.Log
 import org.whispersystems.libsignal.util.guava.Optional
+import java.io.File
+import java.io.FileInputStream
+import java.util.concurrent.TimeUnit
 
 class AttachmentDownloadJob(
     private val message: Message,
     private val attachmentId: String? = null
-) : MixinJob(Params(PRIORITY_RECEIVE_MESSAGE)
-        .groupBy("attachment_download").requireNetwork().persist(), message.id) {
+) : MixinJob(
+    Params(PRIORITY_RECEIVE_MESSAGE)
+        .groupBy("attachment_download").requireNetwork().persist(),
+    message.id
+) {
 
     private val TAG = AttachmentDownloadJob::class.java.simpleName
 
@@ -117,17 +120,21 @@ class AttachmentDownloadJob(
             .readTimeout(30, TimeUnit.SECONDS)
             .addNetworkInterceptor { chain: Interceptor.Chain ->
                 val originalResponse = chain.proceed(chain.request())
-                originalResponse.newBuilder().body(ProgressResponseBody(originalResponse.body,
-                    ProgressListener { bytesRead, contentLength, done ->
-                        if (!done) {
-                            val progress = try {
-                                bytesRead.toFloat() / contentLength.toFloat()
-                            } catch (e: Exception) {
-                                0f
+                originalResponse.newBuilder().body(
+                    ProgressResponseBody(
+                        originalResponse.body,
+                        ProgressListener { bytesRead, contentLength, done ->
+                            if (!done) {
+                                val progress = try {
+                                    bytesRead.toFloat() / contentLength.toFloat()
+                                } catch (e: Exception) {
+                                    0f
+                                }
+                                RxBus.publish(loadingEvent(message.id, progress))
                             }
-                            RxBus.publish(loadingEvent(message.id, progress))
                         }
-                    })).build()
+                    )
+                ).build()
             }
             .build()
 

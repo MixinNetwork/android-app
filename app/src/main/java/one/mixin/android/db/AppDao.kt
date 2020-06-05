@@ -11,7 +11,8 @@ import one.mixin.android.vo.AppItem
 @Dao
 interface AppDao : BaseDao<App> {
     companion object {
-        const val PREFIX_APP_ITEM = """
+        const val PREFIX_APP_ITEM =
+            """
             SELECT a.app_id as appId,a.app_number as appNumber, a.home_uri as homeUri, a.redirect_uri as redirectUri,
             a.name as name, a.icon_url as iconUrl, a.category as category, a.description as description, a.app_secret as appSecret,
             a.capabilities as capabilities, a.creator_id as creatorId, a.resource_patterns as resourcePatterns, 
@@ -54,9 +55,11 @@ interface AppDao : BaseDao<App> {
     @Query("SELECT a.* FROM favorite_apps fa INNER JOIN apps a ON fa.app_id = a.app_id WHERE fa.user_id =:userId ORDER BY fa.created_at ASC")
     suspend fun getFavoriteAppsByUserId(userId: String): List<App>
 
-    @Query("""
+    @Query(
+        """
         SELECT a.* FROM apps a INNER JOIN users u ON u.user_id = a.app_id WHERE u.relationship = 'FRIEND' AND a.app_id NOT IN (SELECT fa.app_id FROM favorite_apps fa WHERE fa.user_id = :userId)
-    """)
+    """
+    )
     suspend fun getUnfavoriteApps(userId: String): List<App>
 
     @Query("SELECT a.* FROM apps a LEFT JOIN users u ON a.app_id = u.app_id WHERE a.app_id NOT IN (:appIds) AND u.relationship = 'FRIEND' ORDER BY u.full_name ASC")

@@ -53,35 +53,38 @@ import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.User
 
-@Database(entities = [
-    (User::class),
-    (Conversation::class),
-    (Message::class),
-    (Participant::class),
-    (ParticipantSession::class),
-    (Offset::class),
-    (Asset::class),
-    (AssetsExtra::class),
-    (Snapshot::class),
-    (MessageHistory::class),
-    (SentSenderKey::class),
-    (Sticker::class),
-    (StickerAlbum::class),
-    (App::class),
-    (Hyperlink::class),
-    (FloodMessage::class),
-    (Address::class),
-    (ResendMessage::class),
-    (ResendSessionMessage::class),
-    (StickerRelationship::class),
-    (TopAsset::class),
-    (FavoriteApp::class),
-    (Job::class),
-    (MessageMention::class),
-    (MessageFts4::class),
-    (Circle::class),
-    (CircleConversation::class)],
-    version = CURRENT_VERSION)
+@Database(
+    entities = [
+        (User::class),
+        (Conversation::class),
+        (Message::class),
+        (Participant::class),
+        (ParticipantSession::class),
+        (Offset::class),
+        (Asset::class),
+        (AssetsExtra::class),
+        (Snapshot::class),
+        (MessageHistory::class),
+        (SentSenderKey::class),
+        (Sticker::class),
+        (StickerAlbum::class),
+        (App::class),
+        (Hyperlink::class),
+        (FloodMessage::class),
+        (Address::class),
+        (ResendMessage::class),
+        (ResendSessionMessage::class),
+        (StickerRelationship::class),
+        (TopAsset::class),
+        (FavoriteApp::class),
+        (Job::class),
+        (MessageMention::class),
+        (MessageFts4::class),
+        (Circle::class),
+        (CircleConversation::class)
+    ],
+    version = CURRENT_VERSION
+)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao

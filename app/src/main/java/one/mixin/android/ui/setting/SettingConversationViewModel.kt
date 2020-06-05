@@ -3,7 +3,6 @@ package one.mixin.android.ui.setting
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import javax.inject.Inject
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.extension.defaultSharedPreferences
@@ -12,6 +11,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.ui.setting.PhoneNumberSettingFragment.Companion.ACCEPT_SEARCH_KEY
 import one.mixin.android.vo.MessageSource
 import one.mixin.android.vo.SearchSource
+import javax.inject.Inject
 
 class SettingConversationViewModel @Inject
 internal constructor(private val userService: AccountService) : ViewModel() {
@@ -38,39 +38,51 @@ internal constructor(private val userService: AccountService) : ViewModel() {
 
     class MessageSourcePreferences(val context: Context) : LiveData<Int>() {
         init {
-            value = context.defaultSharedPreferences.getInt(SettingConversationFragment.CONVERSATION_KEY,
-                MessageSource.EVERYBODY.ordinal)
+            value = context.defaultSharedPreferences.getInt(
+                SettingConversationFragment.CONVERSATION_KEY,
+                MessageSource.EVERYBODY.ordinal
+            )
         }
 
         fun setEveryBody() {
             value = MessageSource.EVERYBODY.ordinal
-            context.defaultSharedPreferences.putInt(SettingConversationFragment.CONVERSATION_KEY,
-                MessageSource.EVERYBODY.ordinal)
+            context.defaultSharedPreferences.putInt(
+                SettingConversationFragment.CONVERSATION_KEY,
+                MessageSource.EVERYBODY.ordinal
+            )
         }
 
         fun setContacts() {
             value = MessageSource.CONTACTS.ordinal
-            context.defaultSharedPreferences.putInt(SettingConversationFragment.CONVERSATION_KEY,
-                MessageSource.CONTACTS.ordinal)
+            context.defaultSharedPreferences.putInt(
+                SettingConversationFragment.CONVERSATION_KEY,
+                MessageSource.CONTACTS.ordinal
+            )
         }
     }
 
     class MessageGroupSourcePreferences(val context: Context) : LiveData<Int>() {
         init {
-            value = context.defaultSharedPreferences.getInt(SettingConversationFragment.CONVERSATION_GROUP_KEY,
-                MessageSource.EVERYBODY.ordinal)
+            value = context.defaultSharedPreferences.getInt(
+                SettingConversationFragment.CONVERSATION_GROUP_KEY,
+                MessageSource.EVERYBODY.ordinal
+            )
         }
 
         fun setEveryBody() {
             value = MessageSource.EVERYBODY.ordinal
-            context.defaultSharedPreferences.putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY,
-                MessageSource.EVERYBODY.ordinal)
+            context.defaultSharedPreferences.putInt(
+                SettingConversationFragment.CONVERSATION_GROUP_KEY,
+                MessageSource.EVERYBODY.ordinal
+            )
         }
 
         fun setContacts() {
             value = MessageSource.CONTACTS.ordinal
-            context.defaultSharedPreferences.putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY,
-                MessageSource.CONTACTS.ordinal)
+            context.defaultSharedPreferences.putInt(
+                SettingConversationFragment.CONVERSATION_GROUP_KEY,
+                MessageSource.CONTACTS.ordinal
+            )
         }
     }
 
@@ -78,26 +90,34 @@ internal constructor(private val userService: AccountService) : ViewModel() {
 
     class SearchSourcePreferences(val context: Context) : LiveData<String>() {
         init {
-            value = context.defaultSharedPreferences.getString(ACCEPT_SEARCH_KEY,
-                SearchSource.EVERYBODY.name)
+            value = context.defaultSharedPreferences.getString(
+                ACCEPT_SEARCH_KEY,
+                SearchSource.EVERYBODY.name
+            )
         }
 
         fun setEveryBody() {
             value = SearchSource.EVERYBODY.name
-            context.defaultSharedPreferences.putString(ACCEPT_SEARCH_KEY,
-                SearchSource.EVERYBODY.name)
+            context.defaultSharedPreferences.putString(
+                ACCEPT_SEARCH_KEY,
+                SearchSource.EVERYBODY.name
+            )
         }
 
         fun setContacts() {
             value = SearchSource.CONTACTS.name
-            context.defaultSharedPreferences.putString(ACCEPT_SEARCH_KEY,
-                SearchSource.CONTACTS.name)
+            context.defaultSharedPreferences.putString(
+                ACCEPT_SEARCH_KEY,
+                SearchSource.CONTACTS.name
+            )
         }
 
         fun setNobody() {
             value = SearchSource.NOBODY.name
-            context.defaultSharedPreferences.putString(ACCEPT_SEARCH_KEY,
-                SearchSource.NOBODY.name)
+            context.defaultSharedPreferences.putString(
+                ACCEPT_SEARCH_KEY,
+                SearchSource.NOBODY.name
+            )
         }
     }
 }

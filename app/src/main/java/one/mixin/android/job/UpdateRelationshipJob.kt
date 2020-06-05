@@ -61,7 +61,8 @@ class UpdateRelationshipJob(
                 if (deleteConversationId != null) {
                     conversationDao.deleteConversationById(deleteConversationId)
                 }
-            })
+            }
+        )
     }
 
     private suspend fun updateUser(u: User) {

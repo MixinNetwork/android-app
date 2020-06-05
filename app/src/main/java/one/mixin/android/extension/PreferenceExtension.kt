@@ -16,7 +16,7 @@ inline val Context.defaultSharedPreferences: SharedPreferences
     get() = PreferenceManager.getDefaultSharedPreferences(this)
 
 inline fun Context.sharedPreferences(name: String): SharedPreferences =
-        this.getSharedPreferences(name, MODE_PRIVATE)
+    this.getSharedPreferences(name, MODE_PRIVATE)
 
 inline fun SharedPreferences.clear() {
     this.edit().clear().apply()

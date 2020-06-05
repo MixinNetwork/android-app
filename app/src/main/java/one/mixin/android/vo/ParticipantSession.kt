@@ -5,8 +5,10 @@ import androidx.room.Entity
 import one.mixin.android.extension.md5
 import one.mixin.android.extension.nowInUtc
 
-@Entity(tableName = "participant_session",
-    primaryKeys = ["conversation_id", "user_id", "session_id"])
+@Entity(
+    tableName = "participant_session",
+    primaryKeys = ["conversation_id", "user_id", "session_id"]
+)
 data class ParticipantSession(
     @ColumnInfo(name = "conversation_id")
     val conversationId: String,
@@ -32,9 +34,11 @@ data class ParticipantSession(
 }
 
 fun generateConversationChecksum(devices: List<ParticipantSession>): String {
-    val sorted = devices.sortedWith(Comparator<ParticipantSession> { a, b ->
-        a.sessionId.compareTo(b.sessionId)
-    })
+    val sorted = devices.sortedWith(
+        Comparator<ParticipantSession> { a, b ->
+            a.sessionId.compareTo(b.sessionId)
+        }
+    )
     val d = sorted.joinToString("") { it.sessionId }
     return d.md5()
 }

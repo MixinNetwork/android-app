@@ -14,7 +14,8 @@ class CheckedFlowItem @JvmOverloads constructor(
 ) : AppCompatCheckedTextView(context, attrs, defStyle) {
     init {
         layoutParams = ViewGroup.MarginLayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        )
         setBackgroundResource(R.drawable.bg_selector_wallet_round_gray)
         setPaddingRelative(dip(16), dip(8), dip(16), dip(8))
         setOnClickListener {

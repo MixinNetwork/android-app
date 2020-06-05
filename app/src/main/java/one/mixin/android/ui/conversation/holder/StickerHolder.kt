@@ -105,15 +105,17 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
         }
         messageItem.assetUrl?.let { url ->
             if (url.isLottieUrl()) {
-                LottieLoader.fromUrl(itemView.context, url, url,
-                    itemView.chat_sticker.layoutParams.width, itemView.chat_sticker.layoutParams.height)
+                LottieLoader.fromUrl(
+                    itemView.context, url, url,
+                    itemView.chat_sticker.layoutParams.width, itemView.chat_sticker.layoutParams.height
+                )
                     .addListener(object : ImageListener<RLottieDrawable> {
-                    override fun onResult(result: RLottieDrawable) {
-                        itemView.chat_sticker.setAnimation(result)
-                        itemView.chat_sticker.playAnimation()
-                        itemView.chat_sticker.setAutoRepeat(true)
-                    }
-                })
+                        override fun onResult(result: RLottieDrawable) {
+                            itemView.chat_sticker.setAnimation(result)
+                            itemView.chat_sticker.playAnimation()
+                            itemView.chat_sticker.setAutoRepeat(true)
+                        }
+                    })
             } else {
                 itemView.chat_sticker.loadSticker(url, messageItem.assetType)
             }

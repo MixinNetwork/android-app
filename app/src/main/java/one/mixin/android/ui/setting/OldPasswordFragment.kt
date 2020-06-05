@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_old_password.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +23,7 @@ import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
+import javax.inject.Inject
 
 class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
@@ -70,8 +70,10 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
     }
 
     private fun verify(pinCode: String) = lifecycleScope.launch {
-        val dialog = indeterminateProgressDialog(message = getString(R.string.pb_dialog_message),
-            title = getString(R.string.wallet_verifying))
+        val dialog = indeterminateProgressDialog(
+            message = getString(R.string.pb_dialog_message),
+            title = getString(R.string.wallet_verifying)
+        )
         dialog.setCancelable(false)
         dialog.show()
         handleMixinResponse(

@@ -3,13 +3,13 @@ package one.mixin.android.widget.gallery.internal.model
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import java.util.ArrayList
-import java.util.LinkedHashSet
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.widget.gallery.internal.entity.IncapableCause
 import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.internal.entity.SelectionSpec
 import one.mixin.android.widget.gallery.internal.utils.PhotoMetadataUtils
+import java.util.ArrayList
+import java.util.LinkedHashSet
 
 class SelectedItemCollection(private val mContext: Context) {
     private var mItems: MutableSet<Item>? = null

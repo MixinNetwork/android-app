@@ -44,16 +44,20 @@ class SystemHolder constructor(containerView: View) : BaseViewHolder(containerVi
         when (messageItem.actionName) {
             SystemConversationAction.CREATE.name -> {
                 itemView.chat_info.text =
-                    String.format(getText(R.string.chat_group_create),
+                    String.format(
+                        getText(R.string.chat_group_create),
                         if (id == messageItem.userId) {
                             getText(R.string.chat_you_start)
                         } else {
                             messageItem.userFullName
-                        }, messageItem.groupName)
+                        },
+                        messageItem.groupName
+                    )
             }
             SystemConversationAction.ADD.name -> {
                 itemView.chat_info.text =
-                    String.format(getText(R.string.chat_group_add),
+                    String.format(
+                        getText(R.string.chat_group_add),
                         if (id == messageItem.userId) {
                             getText(R.string.chat_you_start)
                         } else {
@@ -63,11 +67,13 @@ class SystemHolder constructor(containerView: View) : BaseViewHolder(containerVi
                             getText(R.string.chat_you)
                         } else {
                             messageItem.participantFullName
-                        })
+                        }
+                    )
             }
             SystemConversationAction.REMOVE.name -> {
                 itemView.chat_info.text =
-                    String.format(getText(R.string.chat_group_remove),
+                    String.format(
+                        getText(R.string.chat_group_remove),
                         if (id == messageItem.userId) {
                             getText(R.string.chat_you_start)
                         } else {
@@ -77,25 +83,30 @@ class SystemHolder constructor(containerView: View) : BaseViewHolder(containerVi
                             getText(R.string.chat_you)
                         } else {
                             messageItem.participantFullName
-                        })
+                        }
+                    )
             }
             SystemConversationAction.JOIN.name -> {
                 itemView.chat_info.text =
-                    String.format(getText(R.string.chat_group_join),
+                    String.format(
+                        getText(R.string.chat_group_join),
                         if (id == messageItem.participantUserId) {
                             getText(R.string.chat_you_start)
                         } else {
                             messageItem.participantFullName
-                        })
+                        }
+                    )
             }
             SystemConversationAction.EXIT.name -> {
                 itemView.chat_info.text =
-                    String.format(getText(R.string.chat_group_exit),
+                    String.format(
+                        getText(R.string.chat_group_exit),
                         if (id == messageItem.participantUserId) {
                             getText(R.string.chat_you_start)
                         } else {
                             messageItem.participantFullName
-                        })
+                        }
+                    )
             }
             SystemConversationAction.ROLE.name -> {
                 itemView.chat_info.text = getText(R.string.group_role)

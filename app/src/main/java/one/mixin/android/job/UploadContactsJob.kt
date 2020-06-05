@@ -21,15 +21,18 @@ class UploadContactsJob : BaseJob(Params(PRIORITY_BACKGROUND).requireNetwork()) 
         }
         RxContacts.fetch(ctx)
             .toSortedList(Contact::compareTo)
-            .subscribe({ contacts ->
-                val mutableList = createContactsRequests(contacts)
-                if (mutableList.isEmpty()) return@subscribe
-                runBlocking {
-                    handleMixinResponse(
-                        invokeNetwork = { contactService.syncContacts(mutableList) },
-                        successBlock = {}
-                    )
-                }
-            }, { })
+            .subscribe(
+                { contacts ->
+                    val mutableList = createContactsRequests(contacts)
+                    if (mutableList.isEmpty()) return@subscribe
+                    runBlocking {
+                        handleMixinResponse(
+                            invokeNetwork = { contactService.syncContacts(mutableList) },
+                            successBlock = {}
+                        )
+                    }
+                },
+                { }
+            )
     }
 }

@@ -57,7 +57,8 @@ class LocationSearchAdapter(val callback: (LocationPayload) -> Unit) : RecyclerV
             } else {
                 1
             }
-        }, if (currentVenues == null) {
+        },
+        if (currentVenues == null) {
             0
         } else {
             1

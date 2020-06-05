@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_group.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
@@ -31,6 +30,7 @@ import one.mixin.android.ui.group.adapter.GroupFriendAdapter
 import one.mixin.android.ui.group.adapter.GroupSelectAdapter
 import one.mixin.android.vo.User
 import org.jetbrains.anko.textColor
+import javax.inject.Inject
 
 class GroupFragment : BaseFragment() {
 
@@ -151,10 +151,13 @@ class GroupFragment : BaseFragment() {
         group_rv.addItemDecoration(StickyRecyclerHeadersDecoration(groupFriendAdapter))
 
         if (from == TYPE_ADD || from == TYPE_CREATE) {
-            groupViewModel.getFriends().observe(viewLifecycleOwner, Observer {
-                users = it
-                filterAndSet(search_et.text.toString(), it)
-            })
+            groupViewModel.getFriends().observe(
+                viewLifecycleOwner,
+                Observer {
+                    users = it
+                    filterAndSet(search_et.text.toString(), it)
+                }
+            )
         } else {
             users = alreadyUsers
             filterAndSet(search_et.text.toString(), alreadyUsers)
@@ -203,7 +206,8 @@ class GroupFragment : BaseFragment() {
             when (from) {
                 TYPE_REMOVE -> getString(R.string.group_info_remove_member)
                 else -> getString(R.string.group_add)
-            }, "$size/$MAX_USER"
+            },
+            "$size/$MAX_USER"
         )
     }
 

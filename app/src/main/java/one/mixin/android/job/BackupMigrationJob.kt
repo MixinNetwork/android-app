@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import java.io.File
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.MixinApplication
@@ -11,6 +10,7 @@ import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.util.backup.findOldBackupSync
 import timber.log.Timber
+import java.io.File
 
 class BackupMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).persist()) {
     companion object {

@@ -20,11 +20,6 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
-import java.util.UUID
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -128,6 +123,11 @@ import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import timber.log.Timber
+import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
+import java.util.UUID
+import javax.inject.Inject
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class ConversationViewModel
@@ -142,7 +142,8 @@ internal constructor(
 
     fun getMessages(id: String, initialLoadKey: Int = 0): LiveData<PagedList<MessageItem>> {
         return LivePagedListBuilder(
-            conversationRepository.getMessages(id), PagedList.Config.Builder()
+            conversationRepository.getMessages(id),
+            PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE * 2)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
@@ -238,7 +239,8 @@ internal constructor(
             UUID.randomUUID().toString(), conversationId, sender.userId, category,
             null, attachment.filename, attachment.uri.toString(),
             attachment.mimeType, attachment.fileSize, nowInUtc(), null,
-            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
+            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+        )
         jobManager.addJobInBackground(ConvertDataJobJob(message))
     }
 
@@ -253,7 +255,8 @@ internal constructor(
         replyMessage: MessageItem? = null
     ) {
         val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
-        val message = createAudioMessage(messageId, conversationId, sender.userId, null, category,
+        val message = createAudioMessage(
+            messageId, conversationId, sender.userId, null, category,
             file.length(), Uri.fromFile(file).toString(), duration.toString(), nowInUtc(), waveForm, null, null,
             MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
         )
@@ -494,8 +497,8 @@ internal constructor(
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
             return@map 0
         }
-        .subscribeOn(Schedulers.io())
-        .observeOn(AndroidSchedulers.mainThread())
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
     }
 
     fun sendFordMessage(conversationId: String, sender: User, id: String, isPlain: Boolean): Flowable<Int> =
@@ -542,12 +545,14 @@ internal constructor(
                             return@map -1
                         }
                         sendLiveMessage(
-                            conversationId, sender, LiveMessagePayload(
+                            conversationId, sender,
+                            LiveMessagePayload(
                                 message.mediaWidth,
                                 message.mediaHeight,
                                 message.thumbUrl ?: "",
                                 message.mediaUrl
-                            ), isPlain
+                            ),
+                            isPlain
                         )
                     }
                     message.category.endsWith("_VIDEO") -> {
@@ -704,8 +709,10 @@ internal constructor(
                         jobManager.addJobInBackground(
                             SendGiphyJob(
                                 it.conversationId, it.userId, it.mediaUrl!!,
-                                it.mediaWidth!!, it.mediaHeight!!, category, it.id, it.thumbImage
-                                    ?: "", it.createdAt
+                                it.mediaWidth!!, it.mediaHeight!!, category, it.id,
+                                it.thumbImage
+                                    ?: "",
+                                it.createdAt
                             )
                         )
                     } catch (e: NullPointerException) {
@@ -834,13 +841,16 @@ internal constructor(
             val sender = Session.getAccount()!!.toUser()
             for (item in forwardMessages) {
                 if (item.id != null) {
-                    sendFordMessage(conversationId, sender, item.id, isPlainMessage).subscribe({
-                        if (it == 0) {
-                            showForwardSuccessToast(showSuccess)
+                    sendFordMessage(conversationId, sender, item.id, isPlainMessage).subscribe(
+                        {
+                            if (it == 0) {
+                                showForwardSuccessToast(showSuccess)
+                            }
+                        },
+                        {
+                            Timber.e(it)
                         }
-                    }, {
-                        Timber.e(it)
-                    })
+                    )
                 } else {
                     when (item.type) {
                         ForwardCategory.CONTACT.name -> {
@@ -858,13 +868,16 @@ internal constructor(
                                 sender,
                                 Uri.parse(item.mediaUrl),
                                 isPlainMessage
-                            )?.subscribe({
-                                if (it == 0) {
-                                    showForwardSuccessToast(showSuccess)
-                                }
-                                }, {
+                            )?.subscribe(
+                                {
+                                    if (it == 0) {
+                                        showForwardSuccessToast(showSuccess)
+                                    }
+                                },
+                                {
                                     Timber.e(it)
-                                })
+                                }
+                            )
                         }
                         ForwardCategory.DATA.name -> {
                             MixinApplication.get().getAttachment(Uri.parse(item.mediaUrl))?.let {
@@ -1060,55 +1073,57 @@ internal constructor(
     suspend fun getSortMessagesByIds(messages: Set<MessageItem>): ArrayList<ForwardMessage> {
         return withContext(Dispatchers.IO) {
             val list = ArrayList<ForwardMessage>()
-            list.addAll(conversationRepository.getSortMessagesByIds(messages.map { it.messageId }).map {
-                when {
-                    it.category.endsWith("_TEXT") -> ForwardMessage(
-                        ForwardCategory.TEXT.name,
-                        content = it.content
-                    )
-                    it.category.endsWith("_IMAGE") -> ForwardMessage(
-                        ForwardCategory.IMAGE.name,
-                        id = it.id
-                    )
-                    it.category.endsWith("_DATA") -> ForwardMessage(
-                        ForwardCategory.DATA.name,
-                        id = it.id
-                    )
-                    it.category.endsWith("_VIDEO") -> ForwardMessage(
-                        ForwardCategory.VIDEO.name,
-                        id = it.id
-                    )
-                    it.category.endsWith("_CONTACT") -> ForwardMessage(
-                        ForwardCategory.CONTACT.name,
-                        sharedUserId = it.sharedUserId
-                    )
-                    it.category.endsWith("_STICKER") -> ForwardMessage(
-                        ForwardCategory.STICKER.name,
-                        id = it.id
-                    )
-                    it.category.endsWith("_AUDIO") -> ForwardMessage(
-                        ForwardCategory.AUDIO.name,
-                        id = it.id
-                    )
-                    it.category.endsWith("_LIVE") -> ForwardMessage(
-                        ForwardCategory.LIVE.name,
-                        id = it.id
-                    )
-                    it.category.endsWith("_POST") -> ForwardMessage(
-                        ForwardCategory.POST.name,
-                        content = it.content
-                    )
-                    it.category.endsWith("_LOCATION") -> ForwardMessage(
-                        ForwardCategory.LOCATION.name,
-                        content = it.content
-                    )
-                    it.category == MessageCategory.APP_CARD.name -> ForwardMessage(
-                        ForwardCategory.APP_CARD.name,
-                        content = it.content
-                    )
-                    else -> ForwardMessage(ForwardCategory.TEXT.name)
+            list.addAll(
+                conversationRepository.getSortMessagesByIds(messages.map { it.messageId }).map {
+                    when {
+                        it.category.endsWith("_TEXT") -> ForwardMessage(
+                            ForwardCategory.TEXT.name,
+                            content = it.content
+                        )
+                        it.category.endsWith("_IMAGE") -> ForwardMessage(
+                            ForwardCategory.IMAGE.name,
+                            id = it.id
+                        )
+                        it.category.endsWith("_DATA") -> ForwardMessage(
+                            ForwardCategory.DATA.name,
+                            id = it.id
+                        )
+                        it.category.endsWith("_VIDEO") -> ForwardMessage(
+                            ForwardCategory.VIDEO.name,
+                            id = it.id
+                        )
+                        it.category.endsWith("_CONTACT") -> ForwardMessage(
+                            ForwardCategory.CONTACT.name,
+                            sharedUserId = it.sharedUserId
+                        )
+                        it.category.endsWith("_STICKER") -> ForwardMessage(
+                            ForwardCategory.STICKER.name,
+                            id = it.id
+                        )
+                        it.category.endsWith("_AUDIO") -> ForwardMessage(
+                            ForwardCategory.AUDIO.name,
+                            id = it.id
+                        )
+                        it.category.endsWith("_LIVE") -> ForwardMessage(
+                            ForwardCategory.LIVE.name,
+                            id = it.id
+                        )
+                        it.category.endsWith("_POST") -> ForwardMessage(
+                            ForwardCategory.POST.name,
+                            content = it.content
+                        )
+                        it.category.endsWith("_LOCATION") -> ForwardMessage(
+                            ForwardCategory.LOCATION.name,
+                            content = it.content
+                        )
+                        it.category == MessageCategory.APP_CARD.name -> ForwardMessage(
+                            ForwardCategory.APP_CARD.name,
+                            content = it.content
+                        )
+                        else -> ForwardMessage(ForwardCategory.TEXT.name)
+                    }
                 }
-            })
+            )
             list
         }
     }

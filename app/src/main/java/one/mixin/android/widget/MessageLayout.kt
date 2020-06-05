@@ -5,10 +5,10 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import kotlin.math.max
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import org.jetbrains.anko.dip
+import kotlin.math.max
 
 class MessageLayout : ViewGroup {
     private val offset: Int

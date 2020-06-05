@@ -44,10 +44,6 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.io.ByteArrayInputStream
-import java.io.FileInputStream
-import java.net.URISyntaxException
-import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import kotlinx.coroutines.CoroutineScope
@@ -95,6 +91,10 @@ import one.mixin.android.widget.WebControlView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.ByteArrayInputStream
+import java.io.FileInputStream
+import java.net.URISyntaxException
+import java.util.concurrent.TimeUnit
 
 class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
@@ -111,7 +111,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val ARGS_APP = "args_app"
         private const val ARGS_APP_CARD = "args_app_card"
 
-        const val themeColorScript = """
+        const val themeColorScript =
+            """
             (function() {
                 var metas = document.getElementsByTagName('meta');
                 for (var i = 0; i < metas.length; i++) {
@@ -241,11 +242,14 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         initView()
 
-        appCard.notNullWithElse({
-            checkAppCard(it)
-        }, {
-            loadWebView()
-        })
+        appCard.notNullWithElse(
+            {
+                checkAppCard(it)
+            },
+            {
+                loadWebView()
+            }
+        )
     }
 
     private fun checkAppCard(appCard: AppCardData) = lifecycleScope.launch {
@@ -309,11 +313,14 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.chat_web_view.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME
 
         contentView.chat_web_view.webViewClient =
-            WebViewClientImpl(object : WebViewClientImpl.OnPageFinishedListener {
-                override fun onPageFinished() {
-                    reloadTheme()
-                }
-            }, conversationId, this.parentFragmentManager, lifecycleScope)
+            WebViewClientImpl(
+                object : WebViewClientImpl.OnPageFinishedListener {
+                    override fun onPageFinished() {
+                        reloadTheme()
+                    }
+                },
+                conversationId, this.parentFragmentManager, lifecycleScope
+            )
 
         contentView.chat_web_view.webChromeClient = object : WebChromeClient() {
             override fun onReceivedTitle(view: WebView?, title: String?) {
@@ -368,17 +375,20 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 RxPermissions(requireActivity())
                                     .request(Manifest.permission.CAMERA)
                                     .autoDispose(stopScope)
-                                    .subscribe({ granted ->
-                                        if (granted) {
-                                            startActivityForResult(
-                                                Intent(MediaStore.ACTION_VIDEO_CAPTURE),
-                                                FILE_CHOOSER
-                                            )
-                                        } else {
-                                            context?.openPermissionSetting()
+                                    .subscribe(
+                                        { granted ->
+                                            if (granted) {
+                                                startActivityForResult(
+                                                    Intent(MediaStore.ACTION_VIDEO_CAPTURE),
+                                                    FILE_CHOOSER
+                                                )
+                                            } else {
+                                                context?.openPermissionSetting()
+                                            }
+                                        },
+                                        {
                                         }
-                                    }, {
-                                    })
+                                    )
                             }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
                         return true
                     } else if (intent?.type == "image/*") {
@@ -394,14 +404,17 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 RxPermissions(requireActivity())
                                     .request(Manifest.permission.CAMERA)
                                     .autoDispose(stopScope)
-                                    .subscribe({ granted ->
-                                        if (granted) {
-                                            openCamera(getImageUri())
-                                        } else {
-                                            context?.openPermissionSetting()
+                                    .subscribe(
+                                        { granted ->
+                                            if (granted) {
+                                                openCamera(getImageUri())
+                                            } else {
+                                                context?.openPermissionSetting()
+                                            }
+                                        },
+                                        {
                                         }
-                                    }, {
-                                    })
+                                    )
                             }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
                         return true
                     }
@@ -472,7 +485,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 conversationId,
                 immersive,
                 reloadThemeAction = { reloadTheme() }
-            ), "MixinContext"
+            ),
+            "MixinContext"
         )
 
         val extraHeaders = HashMap<String, String>()
@@ -532,8 +546,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     if (app.matchResourcePattern(currentUrl)) {
                         val webTitle = contentView.chat_web_view.title ?: app.name
                         val appCardData = AppCardData(app.appId, app.iconUrl, webTitle, app.name, currentUrl, app.updatedAt)
-                        ForwardActivity.show(requireContext(),
-                            arrayListOf(ForwardMessage(ForwardCategory.APP_CARD.name, content = Gson().toJson(appCardData))))
+                        ForwardActivity.show(
+                            requireContext(),
+                            arrayListOf(ForwardMessage(ForwardCategory.APP_CARD.name, content = Gson().toJson(appCardData)))
+                        )
                     } else {
                         ForwardActivity.show(requireContext(), currentUrl)
                     }
@@ -758,7 +774,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         @JavascriptInterface
         fun getContext(): String? = Gson().toJson(
             MixinContext(
-                conversationId, immersive, appearance = if (context.isNightMode()) {
+                conversationId, immersive,
+                appearance = if (context.isNightMode()) {
                     "dark"
                 } else {
                     "light"

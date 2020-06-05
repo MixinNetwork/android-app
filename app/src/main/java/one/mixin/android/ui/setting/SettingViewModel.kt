@@ -3,7 +3,6 @@ package one.mixin.android.ui.setting
 import androidx.lifecycle.ViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
@@ -17,6 +16,7 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.LogResponse
 import one.mixin.android.vo.UserRelationship
+import javax.inject.Inject
 
 class SettingViewModel @Inject
 internal constructor(

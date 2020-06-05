@@ -25,20 +25,32 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             right_animator.displayedChild = POS_TEXT
         }
         if (ta.hasValue(R.styleable.TitleView_rightTextColor)) {
-            right_tv.setTextColor(ta.getColor(R.styleable.TitleView_rightTextColor,
-                ContextCompat.getColor(context, R.color.text_gray)))
+            right_tv.setTextColor(
+                ta.getColor(
+                    R.styleable.TitleView_rightTextColor,
+                    ContextCompat.getColor(context, R.color.text_gray)
+                )
+            )
             right_animator.displayedChild = POS_TEXT
         }
         if (ta.hasValue(R.styleable.TitleView_leftIcon)) {
             left_ib.setImageResource(ta.getResourceId(R.styleable.TitleView_leftIcon, 0))
         }
         if (ta.hasValue(R.styleable.TitleView_titleColor)) {
-            title_tv.setTextColor(ta.getColor(R.styleable.TitleView_titleColor,
-                ContextCompat.getColor(context, android.R.color.black)))
+            title_tv.setTextColor(
+                ta.getColor(
+                    R.styleable.TitleView_titleColor,
+                    ContextCompat.getColor(context, android.R.color.black)
+                )
+            )
         }
         if (ta.hasValue(R.styleable.TitleView_android_background)) {
-            setBackgroundResource(ta.getResourceId(R.styleable.TitleView_android_background,
-                ContextCompat.getColor(context, android.R.color.white)))
+            setBackgroundResource(
+                ta.getResourceId(
+                    R.styleable.TitleView_android_background,
+                    ContextCompat.getColor(context, android.R.color.white)
+                )
+            )
         } else {
             setBackgroundResource(android.R.color.white)
         }

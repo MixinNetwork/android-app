@@ -3,12 +3,12 @@ package one.mixin.android.ui.landing
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import javax.inject.Inject
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseActivity
 import org.jetbrains.anko.doAsync
+import javax.inject.Inject
 
 class LandingActivity : BaseActivity() {
 

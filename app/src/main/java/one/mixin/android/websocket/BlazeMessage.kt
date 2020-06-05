@@ -1,9 +1,9 @@
 package one.mixin.android.websocket
 
 import com.google.gson.JsonElement
+import one.mixin.android.api.ResponseError
 import java.io.Serializable
 import java.util.UUID
-import one.mixin.android.api.ResponseError
 
 data class BlazeMessage(
     val id: String,

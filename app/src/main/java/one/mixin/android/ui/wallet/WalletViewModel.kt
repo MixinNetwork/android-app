@@ -9,7 +9,6 @@ import androidx.paging.PagedList
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,6 +34,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toTopAssetItem
+import javax.inject.Inject
 
 class WalletViewModel @Inject
 internal constructor(
@@ -58,7 +58,8 @@ internal constructor(
         orderByAmount: Boolean = false
     ): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(
-            assetRepository.snapshotsFromDb(id, type, otherType, orderByAmount), PagedList.Config.Builder()
+            assetRepository.snapshotsFromDb(id, type, otherType, orderByAmount),
+            PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
@@ -72,7 +73,8 @@ internal constructor(
         initialLoadKey: Int? = 0
     ): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(
-            assetRepository.snapshotsByUserId(opponentId), PagedList.Config.Builder()
+            assetRepository.snapshotsByUserId(opponentId),
+            PagedList.Config.Builder()
                 .setPrefetchDistance(PAGE_SIZE)
                 .setPageSize(PAGE_SIZE)
                 .setEnablePlaceholders(true)
@@ -115,15 +117,16 @@ internal constructor(
 
     fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0, orderByAmount: Boolean = false):
         LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(
-            assetRepository.allSnapshots(type, otherType, orderByAmount = orderByAmount), PagedList.Config.Builder()
-                .setPrefetchDistance(PAGE_SIZE * 2)
-                .setPageSize(PAGE_SIZE)
-                .setEnablePlaceholders(true)
+            LivePagedListBuilder(
+                assetRepository.allSnapshots(type, otherType, orderByAmount = orderByAmount),
+                PagedList.Config.Builder()
+                    .setPrefetchDistance(PAGE_SIZE * 2)
+                    .setPageSize(PAGE_SIZE)
+                    .setEnablePlaceholders(true)
+                    .build()
+            )
+                .setInitialLoadKey(initialLoadKey)
                 .build()
-        )
-            .setInitialLoadKey(initialLoadKey)
-            .build()
 
     suspend fun pendingDeposits(asset: String, destination: String, tag: String? = null) =
         assetRepository.pendingDeposits(asset, destination, tag)
@@ -218,7 +221,8 @@ internal constructor(
 
     suspend fun getSnapshots(assetId: String, offset: String?, limit: Int, opponent: String?, destination: String?, tag: String?) =
         assetRepository.getSnapshots(
-            assetId, offset, limit, opponent, destination, if (tag?.isEmpty() == true) {
+            assetId, offset, limit, opponent, destination,
+            if (tag?.isEmpty() == true) {
                 null
             } else {
                 tag

@@ -42,16 +42,21 @@ class SharedMediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         view_pager.adapter = adapter
-        TabLayoutMediator(shared_tl, view_pager, TabLayoutMediator.TabConfigurationStrategy { tab, position ->
-            tab.text = getString(when (position) {
-                0 -> R.string.media
-                1 -> R.string.audio
-                2 -> R.string.post
-                3 -> R.string.links
-                else -> R.string.files
-            })
-            view_pager.setCurrentItem(tab.position, true)
-        }).attach()
+        TabLayoutMediator(
+            shared_tl, view_pager,
+            TabLayoutMediator.TabConfigurationStrategy { tab, position ->
+                tab.text = getString(
+                    when (position) {
+                        0 -> R.string.media
+                        1 -> R.string.audio
+                        2 -> R.string.post
+                        3 -> R.string.links
+                        else -> R.string.files
+                    }
+                )
+                view_pager.setCurrentItem(tab.position, true)
+            }
+        ).attach()
         shared_tl.tabMode = TabLayout.MODE_FIXED
         view_pager.currentItem = 0
     }

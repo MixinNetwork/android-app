@@ -1,9 +1,9 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import java.util.UUID
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.websocket.BlazeAckMessage
+import java.util.UUID
 
 class SendAckMessageJob(
     private val ack: List<BlazeAckMessage>,

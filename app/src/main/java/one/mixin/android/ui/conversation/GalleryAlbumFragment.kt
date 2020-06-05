@@ -45,10 +45,13 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view_pager.adapter = albumAdapter
-        TabLayoutMediator(album_tl, view_pager, TabLayoutMediator.TabConfigurationStrategy { tab, position ->
-            tab.text = albumAdapter.albums?.get(position)?.getDisplayName(requireContext())
-            view_pager.setCurrentItem(tab.position, true)
-        }).attach()
+        TabLayoutMediator(
+            album_tl, view_pager,
+            TabLayoutMediator.TabConfigurationStrategy { tab, position ->
+                tab.text = albumAdapter.albums?.get(position)?.getDisplayName(requireContext())
+                view_pager.setCurrentItem(tab.position, true)
+            }
+        ).attach()
         album_tl.tabMode = TabLayout.MODE_SCROLLABLE
         view_pager.currentItem = 0
         va.displayedChild = POS_LOADING

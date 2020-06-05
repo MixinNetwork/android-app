@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
-import java.security.KeyPair
 import kotlinx.android.synthetic.main.fragment_verification_emergency.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,6 +28,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
+import java.security.KeyPair
 
 class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
     companion object {
@@ -88,13 +88,16 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
         showLoading()
         handleMixinResponse(
             invokeNetwork = {
-                viewModel.createVerifyEmergency(verificationId, EmergencyRequest(
-                    user?.phone,
-                    user?.identityNumber ?: userIdentityNumber,
-                    Session.getPinToken()?.let { encryptPin(it, pin)!! },
-                    pin_verification_view.code(),
-                    EmergencyPurpose.CONTACT.name
-                ))
+                viewModel.createVerifyEmergency(
+                    verificationId,
+                    EmergencyRequest(
+                        user?.phone,
+                        user?.identityNumber ?: userIdentityNumber,
+                        Session.getPinToken()?.let { encryptPin(it, pin)!! },
+                        pin_verification_view.code(),
+                        EmergencyPurpose.CONTACT.name
+                    )
+                )
             },
             switchContext = Dispatchers.IO,
             successBlock = { response ->
@@ -106,10 +109,13 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
                 }
 
                 alertDialogBuilder()
-                    .setMessage(getString(
-                        if (Session.hasEmergencyContact())
-                            R.string.setting_emergency_change_success
-                        else R.string.setting_emergency_create_success))
+                    .setMessage(
+                        getString(
+                            if (Session.hasEmergencyContact())
+                                R.string.setting_emergency_change_success
+                            else R.string.setting_emergency_create_success
+                        )
+                    )
                     .setPositiveButton(R.string.group_ok) { dialog, _ ->
                         parentFragmentManager.popBackStackImmediate()
                         parentFragmentManager.popBackStackImmediate()

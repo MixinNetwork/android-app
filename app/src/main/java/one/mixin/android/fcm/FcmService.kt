@@ -6,11 +6,11 @@ import androidx.work.workDataOf
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.android.AndroidInjection
-import javax.inject.Inject
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.util.Session
 import one.mixin.android.worker.RefreshFcmWorker
+import javax.inject.Inject
 
 class FcmService : FirebaseMessagingService() {
 

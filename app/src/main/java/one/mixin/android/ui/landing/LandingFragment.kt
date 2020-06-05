@@ -32,7 +32,8 @@ class LandingFragment : Fragment() {
         introduction_tv.highlightLinkText(
             policyWrapper,
             arrayOf(policy, termsService),
-            arrayOf(policyUrl, termsUrl))
+            arrayOf(policyUrl, termsUrl)
+        )
 
         agree_tv.setOnClickListener {
             activity?.addFragment(this@LandingFragment, MobileFragment.newInstance(), MobileFragment.TAG)

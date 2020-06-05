@@ -2,8 +2,6 @@ package one.mixin.android.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
@@ -32,6 +30,8 @@ import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class UserRepository

@@ -55,8 +55,10 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
         }
         change_rl.setOnClickListener {
             parentFragmentManager.inTransaction {
-                setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                    R.anim.slide_in_bottom, R.anim.slide_out_bottom)
+                setCustomAnimations(
+                    R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                    R.anim.slide_in_bottom, R.anim.slide_out_bottom
+                )
                     .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
                     .addToBackStack(null)
             }

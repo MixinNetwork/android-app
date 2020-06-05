@@ -32,8 +32,10 @@ class ShareHelper {
                 val text = intent.getStringExtra(Intent.EXTRA_TEXT)
                 if (text.isNullOrEmpty()) {
                     intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let {
-                        ForwardMessage(ForwardCategory.DATA.name,
-                            mediaUrl = it.getFilePath(MixinApplication.appContext)).addTo(result)
+                        ForwardMessage(
+                            ForwardCategory.DATA.name,
+                            mediaUrl = it.getFilePath(MixinApplication.appContext)
+                        ).addTo(result)
                     }
                 } else {
                     ForwardMessage(ForwardCategory.TEXT.name, content = text).addTo(result)
@@ -48,8 +50,10 @@ class ShareHelper {
                 generateShareMessage(imageUri, ForwardCategory.VIDEO.name)?.addTo(result)
             } else if (type.startsWith("application/") || type.startsWith("audio/")) {
                 intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let {
-                    ForwardMessage(ForwardCategory.DATA.name,
-                        mediaUrl = it.getFilePath(MixinApplication.appContext)).addTo(result)
+                    ForwardMessage(
+                        ForwardCategory.DATA.name,
+                        mediaUrl = it.getFilePath(MixinApplication.appContext)
+                    ).addTo(result)
                 }
             }
         } else if (Intent.ACTION_SEND_MULTIPLE == action) {

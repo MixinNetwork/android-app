@@ -10,7 +10,6 @@ import androidx.annotation.WorkerThread
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
-import java.io.File
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.Constants.BackUp.BACKUP_LAST_TIME
@@ -26,6 +25,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.util.backup.BackupLiveData
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
+import java.io.File
 
 class BackupJob(private val force: Boolean = false) : BaseJob(
     Params(
@@ -57,11 +57,11 @@ class BackupJob(private val force: Boolean = false) : BaseJob(
                 val lastTime = context.defaultSharedPreferences.getLong(BACKUP_LAST_TIME, currentTime)
                 val timeDiff = currentTime - lastTime
                 if (timeDiff >= when (option) {
-                        1 -> DAY_IN_MILLIS
-                        2 -> WEEK_IN_MILLIS
-                        3 -> DAY_IN_MILLIS * 30
-                        else -> Long.MAX_VALUE
-                    }
+                    1 -> DAY_IN_MILLIS
+                    2 -> WEEK_IN_MILLIS
+                    3 -> DAY_IN_MILLIS * 30
+                    else -> Long.MAX_VALUE
+                }
                 ) {
                     backup(context)
                 }

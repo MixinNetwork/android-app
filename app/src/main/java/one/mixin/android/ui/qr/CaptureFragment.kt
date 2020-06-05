@@ -20,7 +20,6 @@ import androidx.camera.core.UseCase
 import androidx.core.view.isVisible
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.io.File
 import kotlinx.android.synthetic.main.fragment_capture.*
 import one.mixin.android.R
 import one.mixin.android.extension.bounce
@@ -38,6 +37,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.util.reportException
 import one.mixin.android.widget.CameraOpView
+import java.io.File
 
 class CaptureFragment : BaseCameraxFragment() {
     companion object {
@@ -156,18 +156,24 @@ class CaptureFragment : BaseCameraxFragment() {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .autoDispose(stopScope)
-                .subscribe({ granted ->
-                    if (granted) {
-                        onTakePicture()
-                        capture_border_view?.isVisible = true
-                        capture_border_view?.postDelayed({
-                            capture_border_view?.isVisible = false
-                        }, 100)
-                    } else {
-                        context?.openPermissionSetting()
+                .subscribe(
+                    { granted ->
+                        if (granted) {
+                            onTakePicture()
+                            capture_border_view?.isVisible = true
+                            capture_border_view?.postDelayed(
+                                {
+                                    capture_border_view?.isVisible = false
+                                },
+                                100
+                            )
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    },
+                    {
                     }
-                }, {
-                })
+                )
         }
 
         override fun onProgressStart() {
@@ -206,9 +212,12 @@ class CaptureFragment : BaseCameraxFragment() {
                 }
             }
             if (Build.VERSION.SDK_INT != Build.VERSION_CODES.N && Build.VERSION.SDK_INT != Build.VERSION_CODES.N_MR1) {
-                requireContext().mainThreadDelayed({
-                    audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, oldStreamVolume, 0)
-                }, 300)
+                requireContext().mainThreadDelayed(
+                    {
+                        audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, oldStreamVolume, 0)
+                    },
+                    300
+                )
             }
         }
     }

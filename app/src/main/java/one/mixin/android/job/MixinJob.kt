@@ -5,7 +5,6 @@ import android.util.Log
 import com.birbit.android.jobqueue.Params
 import com.google.gson.Gson
 import com.google.gson.JsonElement
-import java.util.UUID
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
@@ -52,6 +51,7 @@ import one.mixin.android.websocket.createConsumeSessionSignalKeys
 import one.mixin.android.websocket.createConsumeSignalKeysParam
 import one.mixin.android.websocket.createSignalKeyMessage
 import one.mixin.android.websocket.createSignalKeyMessageParam
+import java.util.UUID
 
 abstract class MixinJob(
     params: Params,
@@ -294,7 +294,8 @@ abstract class MixinJob(
     }
 
     private fun createConversation(conversation: Conversation) {
-        val request = ConversationRequest(conversationId = conversation.conversationId,
+        val request = ConversationRequest(
+            conversationId = conversation.conversationId,
             category = conversation.category, participants = arrayListOf(ParticipantRequest(conversation.ownerId!!, ""))
         )
         val response = conversationApi.create(request).execute().body()
@@ -387,8 +388,10 @@ abstract class MixinJob(
             } else {
                 ConversationStatus.QUIT.ordinal
             }
-            conversationDao.updateConversation(data.conversationId, ownerId, data.category, data.name,
-                data.announcement, data.muteUntil, data.createdAt, status)
+            conversationDao.updateConversation(
+                data.conversationId, ownerId, data.category, data.name,
+                data.announcement, data.muteUntil, data.createdAt, status
+            )
             if (!data.announcement.isBlank() && c.announcement != data.announcement) {
                 RxBus.publish(GroupEvent(data.conversationId))
                 applicationContext.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(data.conversationId, true)

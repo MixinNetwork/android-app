@@ -181,12 +181,17 @@ class PlayerView(context: Context, attributeSet: AttributeSet) :
 
         val playbackState = player!!.playbackState
         return controllerAutoShow &&
-            (playbackState == Player.STATE_IDLE ||
-                playbackState == Player.STATE_ENDED ||
-                !player!!.playWhenReady)
+            (
+                playbackState == Player.STATE_IDLE ||
+                    playbackState == Player.STATE_ENDED ||
+                    !player!!.playWhenReady
+                )
     }
 
-    inner class ComponentListener : Player.EventListener, VideoListener, OnLayoutChangeListener,
+    inner class ComponentListener :
+        Player.EventListener,
+        VideoListener,
+        OnLayoutChangeListener,
         SingleTapListener {
         override fun onLayoutChange(
             v: View?,

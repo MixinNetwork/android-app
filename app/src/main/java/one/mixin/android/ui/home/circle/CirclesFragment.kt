@@ -14,8 +14,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import java.util.Collections
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_coversation_circle.*
 import kotlinx.android.synthetic.main.item_conversation_circle.view.*
 import kotlinx.coroutines.launch
@@ -40,6 +38,8 @@ import one.mixin.android.widget.recyclerview.ItemTouchHelperAdapter
 import one.mixin.android.widget.recyclerview.OnStartDragListener
 import one.mixin.android.widget.recyclerview.SimpleItemTouchHelperCallback
 import org.threeten.bp.Instant
+import java.util.Collections
+import javax.inject.Inject
 
 class CirclesFragment : BaseFragment(), OnStartDragListener {
     companion object {
@@ -67,26 +67,38 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         itemTouchHelper = ItemTouchHelper(callback)
         circle_rv.adapter = conversationAdapter
         itemTouchHelper.attachToRecyclerView(circle_rv)
-        conversationViewModel.observeAllCircleItem().observe(viewLifecycleOwner, Observer {
-            val list = mutableListOf<ConversationCircleItem>()
-            list.addAll(it)
-            conversationAdapter.conversationCircles = list
-        })
-        conversationViewModel.observeAllConversationUnread().observe(viewLifecycleOwner, Observer {
-            conversationAdapter.allUnread = it
-        })
+        conversationViewModel.observeAllCircleItem().observe(
+            viewLifecycleOwner,
+            Observer {
+                val list = mutableListOf<ConversationCircleItem>()
+                list.addAll(it)
+                conversationAdapter.conversationCircles = list
+            }
+        )
+        conversationViewModel.observeAllConversationUnread().observe(
+            viewLifecycleOwner,
+            Observer {
+                conversationAdapter.allUnread = it
+            }
+        )
     }
 
     private val conversationAdapter by lazy {
-        ConversationCircleAdapter(this, { name, circleId ->
-            (requireActivity() as MainActivity).selectCircle(name, circleId)
-        }, { view, conversationCircleItem ->
-            showMenu(view, conversationCircleItem)
-        }, {
-            (requireActivity() as MainActivity).sortAction()
-        }, {
-            conversationViewModel.sortCircleConversations(it)
-        })
+        ConversationCircleAdapter(
+            this,
+            { name, circleId ->
+                (requireActivity() as MainActivity).selectCircle(name, circleId)
+            },
+            { view, conversationCircleItem ->
+                showMenu(view, conversationCircleItem)
+            },
+            {
+                (requireActivity() as MainActivity).sortAction()
+            },
+            {
+                conversationViewModel.sortCircleConversations(it)
+            }
+        )
     }
 
     override fun onBackPressed(): Boolean {

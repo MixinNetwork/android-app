@@ -98,10 +98,13 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
                         RxContacts.fetch(requireContext())
                             .toSortedList(Contact::compareTo)
                             .autoDispose(stopScope)
-                            .subscribe({ contacts ->
-                                updateContacts(contacts)
-                            }, {
-                            })
+                            .subscribe(
+                                { contacts ->
+                                    updateContacts(contacts)
+                                },
+                                {
+                                }
+                            )
                     } else {
                         context?.openPermissionSetting()
                     }

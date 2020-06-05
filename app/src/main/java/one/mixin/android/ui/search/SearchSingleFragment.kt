@@ -12,8 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_search_single.*
 import kotlinx.android.synthetic.main.view_head_search_single.view.*
 import kotlinx.coroutines.launch
@@ -29,6 +27,8 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 class SearchSingleFragment : BaseFragment() {
     companion object {
@@ -124,13 +124,16 @@ class SearchSingleFragment : BaseFragment() {
         search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
-            .subscribe({
-                clear_ib.isVisible = it.isNotEmpty()
-                if (it == adapter.query) return@subscribe
+            .subscribe(
+                {
+                    clear_ib.isVisible = it.isNotEmpty()
+                    if (it == adapter.query) return@subscribe
 
-                adapter.query = it.toString()
-                onTextChanged(it.toString())
-            }, {})
+                    adapter.query = it.toString()
+                    onTextChanged(it.toString())
+                },
+                {}
+            )
     }
 
     private fun onTextChanged(s: String) = lifecycleScope.launch {

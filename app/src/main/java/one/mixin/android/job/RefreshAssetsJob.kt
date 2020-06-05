@@ -7,8 +7,11 @@ import one.mixin.android.vo.Fiats
 
 class RefreshAssetsJob(
     private val assetId: String? = null
-) : MixinJob(Params(PRIORITY_UI_HIGH)
-    .singleInstanceBy(assetId ?: "all-assets").persist().requireNetwork(), assetId ?: "all-assets") {
+) : MixinJob(
+    Params(PRIORITY_UI_HIGH)
+        .singleInstanceBy(assetId ?: "all-assets").persist().requireNetwork(),
+    assetId ?: "all-assets"
+) {
 
     companion object {
         private const val serialVersionUID = 1L

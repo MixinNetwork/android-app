@@ -111,18 +111,24 @@ fun MenuList.createMenuLayout(
                     context.resources.getColor(R.color.colorRed, context.theme)
                 }
             )
-            menu.apps.notNullWithElse({
-                menuLayout.avatar_group.isVisible = true
-                menuLayout.avatar_group.setApps(it)
-            }, {
-                menuLayout.avatar_group.isVisible = false
-            })
-            menu.circleNames.notNullWithElse({
-                menuLayout.flow_layout.isVisible = true
-                addCirclesLayout(context, it, menuLayout.flow_layout)
-            }, {
-                menuLayout.flow_layout.isVisible = false
-            })
+            menu.apps.notNullWithElse(
+                {
+                    menuLayout.avatar_group.isVisible = true
+                    menuLayout.avatar_group.setApps(it)
+                },
+                {
+                    menuLayout.avatar_group.isVisible = false
+                }
+            )
+            menu.circleNames.notNullWithElse(
+                {
+                    menuLayout.flow_layout.isVisible = true
+                    addCirclesLayout(context, it, menuLayout.flow_layout)
+                },
+                {
+                    menuLayout.flow_layout.isVisible = false
+                }
+            )
             val top = index == 0
             val bottom = index == group.menus.size - 1
             menuLayout.roundTopOrBottom(dp13.toFloat(), top, bottom)
@@ -132,15 +138,18 @@ fun MenuList.createMenuLayout(
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp56)
             )
         }
-        listLayout.addView(groupLayout, LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply {
-            marginStart = dp16
-            marginEnd = dp16
-            topMargin = dp5
-            bottomMargin = dp5
-        })
+        listLayout.addView(
+            groupLayout,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                marginStart = dp16
+                marginEnd = dp16
+                topMargin = dp5
+                bottomMargin = dp5
+            }
+        )
     }
     return listLayout
 }

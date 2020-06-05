@@ -62,14 +62,16 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder, VM : ViewModel> :
     }
 
     private fun dataChange() {
-        adapter.submitList(if (keyWord.isNotBlank()) {
-            users.filter {
-                it.fullName?.contains(keyWord, true) == true ||
-                    it.identityNumber.contains(keyWord, true)
-            }.sortedByDescending { it.fullName == keyWord || it.identityNumber == keyWord }
-        } else {
-            users
-        })
+        adapter.submitList(
+            if (keyWord.isNotBlank()) {
+                users.filter {
+                    it.fullName?.contains(keyWord, true) == true ||
+                        it.identityNumber.contains(keyWord, true)
+                }.sortedByDescending { it.fullName == keyWord || it.identityNumber == keyWord }
+            } else {
+                users
+            }
+        )
     }
 
     abstract fun getTitleResId(): Int

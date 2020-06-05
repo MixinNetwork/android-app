@@ -61,17 +61,23 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, Emergen
     }
 
     private fun requestCreateEmergency(user: User) = lifecycleScope.launch {
-        val dialog = indeterminateProgressDialog(message = getString(R.string.pb_dialog_message),
-            title = getString(if (Session.hasEmergencyContact()) R.string.changing else R.string.group_creating))
+        val dialog = indeterminateProgressDialog(
+            message = getString(R.string.pb_dialog_message),
+            title = getString(if (Session.hasEmergencyContact()) R.string.changing else R.string.group_creating)
+        )
         dialog.setCancelable(false)
         dialog.show()
         handleMixinResponse(
             invokeNetwork = { viewModel.createEmergency(buildEmergencyRequest(user)) },
             switchContext = Dispatchers.IO,
             successBlock = { response ->
-                navTo(VerificationEmergencyFragment.newInstance(user, pin,
-                    (response.data as VerificationResponse).id, FROM_CONTACT),
-                    VerificationEmergencyFragment.TAG)
+                navTo(
+                    VerificationEmergencyFragment.newInstance(
+                        user, pin,
+                        (response.data as VerificationResponse).id, FROM_CONTACT
+                    ),
+                    VerificationEmergencyFragment.TAG
+                )
             },
             exceptionBlock = {
                 dialog.dismiss()
@@ -84,5 +90,6 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, Emergen
     private fun buildEmergencyRequest(user: User) = EmergencyRequest(
         identityNumber = user.identityNumber,
         pin = Session.getPinToken()?.let { encryptPin(it, pin)!! },
-        purpose = EmergencyPurpose.CONTACT.name)
+        purpose = EmergencyPurpose.CONTACT.name
+    )
 }

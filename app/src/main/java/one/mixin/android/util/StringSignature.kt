@@ -38,8 +38,10 @@ class StringSignature(private val signature: String?) : Key {
     }
 
     override fun toString(): String {
-        return ("StringSignature{" +
-            "signature='" + signature + '\''.toString() +
-            '}'.toString())
+        return (
+            "StringSignature{" +
+                "signature='" + signature + '\''.toString() +
+                '}'.toString()
+            )
     }
 }

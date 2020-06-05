@@ -12,7 +12,8 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.ConversationCheckView
 
-class ForwardAdapter(private val disableCheck: Boolean = false) : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
+class ForwardAdapter(private val disableCheck: Boolean = false) :
+    RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     StickyRecyclerHeadersAdapter<ForwardAdapter.HeaderViewHolder> {
 
     companion object {
@@ -46,7 +47,7 @@ class ForwardAdapter(private val disableCheck: Boolean = false) : RecyclerView.A
                 }
             }?.sortedByDescending {
                 if (it.isGroup()) {
-                   it.groupName == keyword
+                    it.groupName == keyword
                 } else {
                     it.name == keyword || it.ownerIdentityNumber == keyword
                 }
@@ -116,12 +117,13 @@ class ForwardAdapter(private val disableCheck: Boolean = false) : RecyclerView.A
         }
         holder.itemView.header.text = holder.itemView.context.getString(
             if (conversations != null && conversations!!.isNotEmpty() && position < conversations!!.size) {
-            R.string.chat_item_title
-        } else if (friends != null && friends!!.isNotEmpty() && position < conversations!!.size + friends!!.size) {
-            R.string.contact_item_title
-        } else {
-            R.string.bot_item_title
-        })
+                R.string.chat_item_title
+            } else if (friends != null && friends!!.isNotEmpty() && position < conversations!!.size + friends!!.size) {
+                R.string.contact_item_title
+            } else {
+                R.string.bot_item_title
+            }
+        )
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): HeaderViewHolder {
@@ -155,28 +157,40 @@ class ForwardAdapter(private val disableCheck: Boolean = false) : RecyclerView.A
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
             TYPE_CONVERSATION -> {
-                ConversationViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_forward_conversation,
-                    parent, false).apply {
-                    if (disableCheck) {
-                        (this as ConversationCheckView).disableCheck()
+                ConversationViewHolder(
+                    LayoutInflater.from(parent.context).inflate(
+                        R.layout.item_forward_conversation,
+                        parent, false
+                    ).apply {
+                        if (disableCheck) {
+                            (this as ConversationCheckView).disableCheck()
+                        }
                     }
-                })
+                )
             }
             TYPE_FRIEND -> {
-                FriendViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_friend,
-                    parent, false).apply {
-                    if (disableCheck) {
-                        (this as ConversationCheckView).disableCheck()
+                FriendViewHolder(
+                    LayoutInflater.from(parent.context).inflate(
+                        R.layout.item_contact_friend,
+                        parent, false
+                    ).apply {
+                        if (disableCheck) {
+                            (this as ConversationCheckView).disableCheck()
+                        }
                     }
-                })
+                )
             }
             else -> {
-                BotViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_friend,
-                    parent, false).apply {
-                    if (disableCheck) {
-                        (this as ConversationCheckView).disableCheck()
+                BotViewHolder(
+                    LayoutInflater.from(parent.context).inflate(
+                        R.layout.item_contact_friend,
+                        parent, false
+                    ).apply {
+                        if (disableCheck) {
+                            (this as ConversationCheckView).disableCheck()
+                        }
                     }
-                })
+                )
             }
         }
     }

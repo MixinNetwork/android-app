@@ -16,7 +16,8 @@ class MessageProvider {
         fun getMessages(conversationId: String, database: MixinDatabase) =
             object : DataSource.Factory<Int, MessageItem>() {
                 override fun create(): DataSource<Int, MessageItem> {
-                    val sql = """
+                    val sql =
+                        """
                         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
                         u.full_name AS userFullName, u.identity_number AS userIdentityNumber, u.app_id AS appId, m.category AS type,
                         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_waveform AS mediaWaveform,
@@ -188,13 +189,15 @@ class MessageProvider {
                                     cursor.getInt(cursorIndexOfMentionRead)
                                 }
                                 val tmpMentionRead = if (tmp_1 == null) null else tmp_1 != 0
-                                item = MessageItem(tmpMessageId, tmpConversationId, tmpUserId, tmpUserFullName, tmpUserIdentityNumber, tmpType, tmpContent,
+                                item = MessageItem(
+                                    tmpMessageId, tmpConversationId, tmpUserId, tmpUserFullName, tmpUserIdentityNumber, tmpType, tmpContent,
                                     tmpCreatedAt, tmpStatus, tmpMediaStatus, null, tmpMediaName, tmpMediaMimeType, tmpMediaSize, tmpThumbUrl, tmpMediaWidth,
                                     tmpMediaHeight, tmpThumbImage, tmpMediaUrl, tmpMediaDuration, tmpParticipantFullName, tmpParticipantUserId, tmpActionName, tmpSnapshotId,
                                     tmpSnapshotType, tmpSnapshotAmount, tmpAssetId, tmpAssetType, tmpAssetSymbol, tmpAssetIcon, tmpAssetUrl, tmpAssetHeight, tmpAssetWidth,
                                     null, tmpStickerId, tmpAssetName, tmpAppId, tmpSiteName, tmpSiteTitle, tmpSiteDescription, tmpSiteImage, tmpSharedUserId,
                                     tmpSharedUserFullName, tmpSharedUserIdentityNumber, tmpSharedUserAvatarUrl, tmpSharedUserIsVerified, tmpSharedUserAppId,
-                                    tmpMediaWaveform, tmpQuoteId, tmpQuoteContent, tmpGroupName, tmpMentions, tmpMentionRead)
+                                    tmpMediaWaveform, tmpQuoteId, tmpQuoteContent, tmpGroupName, tmpMentions, tmpMentionRead
+                                )
                                 res.add(item)
                             }
                             return res
@@ -206,7 +209,8 @@ class MessageProvider {
         fun getConversations(database: MixinDatabase) =
             object : DataSource.Factory<Int, ConversationItem>() {
                 override fun create(): DataSource<Int, ConversationItem> {
-                    val sql = """
+                    val sql =
+                        """
                     SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
                     c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId,
                     c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, c.pin_time AS pinTime, c.mute_until AS muteUntil,
@@ -323,7 +327,8 @@ class MessageProvider {
         fun observeConversationsByCircleId(circleId: String, database: MixinDatabase) =
             object : DataSource.Factory<Int, ConversationItem>() {
                 override fun create(): DataSource<Int, ConversationItem> {
-                    val sql = """
+                    val sql =
+                        """
                         SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
                         c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId,
                         c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, cc.pin_time AS pinTime, c.mute_until AS muteUntil,
@@ -354,7 +359,8 @@ class MessageProvider {
                         """
                     val statement = RoomSQLiteQuery.acquire(sql, 1)
                     statement.bindString(1, circleId)
-                    val countSql = """
+                    val countSql =
+                        """
                         SELECT COUNT(1) FROM circle_conversations cc
 	                    INNER JOIN circles ci ON ci.circle_id = cc.circle_id
                         INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
@@ -446,9 +452,10 @@ class MessageProvider {
             }
 
         fun fuzzySearchMessageDetail(query: String?, conversationId: String?, database: MixinDatabase) =
-                object : DataSource.Factory<Int, SearchMessageDetailItem>() {
-                    override fun create(): DataSource<Int, SearchMessageDetailItem> {
-                        val sql = """
+            object : DataSource.Factory<Int, SearchMessageDetailItem>() {
+                override fun create(): DataSource<Int, SearchMessageDetailItem> {
+                    val sql =
+                        """
                             SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
                             m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
                             FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
@@ -458,59 +465,60 @@ class MessageProvider {
                             AND m.status != 'FAILED'
                             ORDER BY m.created_at DESC
                         """
-                        val countSql = """
+                    val countSql =
+                        """
                             SELECT count(*) FROM messages m 
                             INNER JOIN users u ON m.user_id = u.user_id 
                             WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
                             AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST') 
                             AND m.conversation_id = ?
                         """
-                        val countStatement = RoomSQLiteQuery.acquire(countSql, 2)
-                        val statement = RoomSQLiteQuery.acquire(sql, 2)
-                        var argIndex = 1
-                        if (query == null) {
-                            statement.bindNull(argIndex)
-                            countStatement.bindNull(argIndex)
-                        } else {
-                            statement.bindString(argIndex, query)
-                            countStatement.bindString(argIndex, query)
-                        }
-                        argIndex = 2
-                        if (conversationId == null) {
-                            statement.bindNull(argIndex)
-                            countStatement.bindNull(argIndex)
-                        } else {
-                            statement.bindString(argIndex, conversationId)
-                            countStatement.bindString(argIndex, conversationId)
-                        }
-                        return object : MixinLimitOffsetDataSource<SearchMessageDetailItem>(database, statement, countStatement, false, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
-                            override fun convertRows(cursor: Cursor): MutableList<SearchMessageDetailItem> {
-                                val cursorIndexOfMessageId = CursorUtil.getColumnIndexOrThrow(cursor, "messageId")
-                                val cursorIndexOfUserId = CursorUtil.getColumnIndexOrThrow(cursor, "userId")
-                                val cursorIndexOfUserAvatarUrl = CursorUtil.getColumnIndexOrThrow(cursor, "userAvatarUrl")
-                                val cursorIndexOfUserFullName = CursorUtil.getColumnIndexOrThrow(cursor, "userFullName")
-                                val cursorIndexOfType = CursorUtil.getColumnIndexOrThrow(cursor, "type")
-                                val cursorIndexOfContent = CursorUtil.getColumnIndexOrThrow(cursor, "content")
-                                val cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(cursor, "createdAt")
-                                val cursorIndexOfMediaName = CursorUtil.getColumnIndexOrThrow(cursor, "mediaName")
-                                val res = ArrayList<SearchMessageDetailItem>(cursor.count)
-                                while (cursor.moveToNext()) {
-                                    val item: SearchMessageDetailItem
-                                    val tmpMessageId = cursor.getString(cursorIndexOfMessageId)
-                                    val tmpUserId = cursor.getString(cursorIndexOfUserId)
-                                    val tmpUserAvatarUrl = cursor.getString(cursorIndexOfUserAvatarUrl)
-                                    val tmpUserFullName = cursor.getString(cursorIndexOfUserFullName)
-                                    val tmpType = cursor.getString(cursorIndexOfType)
-                                    val tmpContent = cursor.getString(cursorIndexOfContent)
-                                    val tmpCreatedAt = cursor.getString(cursorIndexOfCreatedAt)
-                                    val tmpMediaName = cursor.getString(cursorIndexOfMediaName)
-                                    item = SearchMessageDetailItem(tmpMessageId, tmpType, tmpContent, tmpCreatedAt, tmpMediaName, tmpUserId, tmpUserFullName, tmpUserAvatarUrl)
-                                    res.add(item)
-                                }
-                                return res
+                    val countStatement = RoomSQLiteQuery.acquire(countSql, 2)
+                    val statement = RoomSQLiteQuery.acquire(sql, 2)
+                    var argIndex = 1
+                    if (query == null) {
+                        statement.bindNull(argIndex)
+                        countStatement.bindNull(argIndex)
+                    } else {
+                        statement.bindString(argIndex, query)
+                        countStatement.bindString(argIndex, query)
+                    }
+                    argIndex = 2
+                    if (conversationId == null) {
+                        statement.bindNull(argIndex)
+                        countStatement.bindNull(argIndex)
+                    } else {
+                        statement.bindString(argIndex, conversationId)
+                        countStatement.bindString(argIndex, conversationId)
+                    }
+                    return object : MixinLimitOffsetDataSource<SearchMessageDetailItem>(database, statement, countStatement, false, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
+                        override fun convertRows(cursor: Cursor): MutableList<SearchMessageDetailItem> {
+                            val cursorIndexOfMessageId = CursorUtil.getColumnIndexOrThrow(cursor, "messageId")
+                            val cursorIndexOfUserId = CursorUtil.getColumnIndexOrThrow(cursor, "userId")
+                            val cursorIndexOfUserAvatarUrl = CursorUtil.getColumnIndexOrThrow(cursor, "userAvatarUrl")
+                            val cursorIndexOfUserFullName = CursorUtil.getColumnIndexOrThrow(cursor, "userFullName")
+                            val cursorIndexOfType = CursorUtil.getColumnIndexOrThrow(cursor, "type")
+                            val cursorIndexOfContent = CursorUtil.getColumnIndexOrThrow(cursor, "content")
+                            val cursorIndexOfCreatedAt = CursorUtil.getColumnIndexOrThrow(cursor, "createdAt")
+                            val cursorIndexOfMediaName = CursorUtil.getColumnIndexOrThrow(cursor, "mediaName")
+                            val res = ArrayList<SearchMessageDetailItem>(cursor.count)
+                            while (cursor.moveToNext()) {
+                                val item: SearchMessageDetailItem
+                                val tmpMessageId = cursor.getString(cursorIndexOfMessageId)
+                                val tmpUserId = cursor.getString(cursorIndexOfUserId)
+                                val tmpUserAvatarUrl = cursor.getString(cursorIndexOfUserAvatarUrl)
+                                val tmpUserFullName = cursor.getString(cursorIndexOfUserFullName)
+                                val tmpType = cursor.getString(cursorIndexOfType)
+                                val tmpContent = cursor.getString(cursorIndexOfContent)
+                                val tmpCreatedAt = cursor.getString(cursorIndexOfCreatedAt)
+                                val tmpMediaName = cursor.getString(cursorIndexOfMediaName)
+                                item = SearchMessageDetailItem(tmpMessageId, tmpType, tmpContent, tmpCreatedAt, tmpMediaName, tmpUserId, tmpUserFullName, tmpUserAvatarUrl)
+                                res.add(item)
                             }
+                            return res
                         }
                     }
-        }
+                }
+            }
     }
 }

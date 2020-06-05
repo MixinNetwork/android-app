@@ -60,14 +60,17 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
         b_rv.adapter = adapter
         menuView.adapter = menuAdapter
         viewModel.getConversationStorageUsage().autoDispose(stopScope)
-            .subscribe({ list ->
-                if (progress.visibility != View.GONE) {
-                    progress.visibility = View.GONE
+            .subscribe(
+                { list ->
+                    if (progress.visibility != View.GONE) {
+                        progress.visibility = View.GONE
+                    }
+                    adapter.setData(list)
+                },
+                { error ->
+                    Timber.e(error)
                 }
-                adapter.setData(list)
-            }, { error ->
-                Timber.e(error)
-            })
+            )
     }
 
     private val dialog: Dialog by lazy {
@@ -81,18 +84,21 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
 
     private val selectSet: ArraySet<StorageUsage> = ArraySet()
     private fun showMenu(conversationId: String) {
-        viewModel.getStorageUsage(conversationId).autoDispose(stopScope).subscribe({
-            menuAdapter.setData(it)
-            selectSet.clear()
-            it?.let {
-                for (item in it) {
-                    selectSet.add(item)
+        viewModel.getStorageUsage(conversationId).autoDispose(stopScope).subscribe(
+            {
+                menuAdapter.setData(it)
+                selectSet.clear()
+                it?.let {
+                    for (item in it) {
+                        selectSet.add(item)
+                    }
                 }
+                menuDialog.show()
+            },
+            {
+                Timber.e(it)
             }
-            menuDialog.show()
-        }, {
-            Timber.e(it)
-        })
+        )
     }
 
     private val menuDialog: AlertDialog by lazy {
@@ -154,13 +160,16 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
             }
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(stopScope)
-            .subscribe({
-                dialog.dismiss()
-            }, {
-                Timber.e(it)
-                dialog.dismiss()
-                toast(getString(R.string.error_unknown_with_message, selectSet.toString()))
-            })
+            .subscribe(
+                {
+                    dialog.dismiss()
+                },
+                {
+                    Timber.e(it)
+                    dialog.dismiss()
+                    toast(getString(R.string.error_unknown_with_message, selectSet.toString()))
+                }
+            )
     }
 
     private val menuView: RecyclerView by lazy {
@@ -236,9 +245,11 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
             )
             itemView.check_view.setSize(storageUsage.mediaSize)
             itemView.check_view.isChecked = true
-            itemView.check_view.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, checked ->
-                checkAction(checked, storageUsage)
-            })
+            itemView.check_view.setOnCheckedChangeListener(
+                CompoundButton.OnCheckedChangeListener { _, checked ->
+                    checkAction(checked, storageUsage)
+                }
+            )
         }
     }
 

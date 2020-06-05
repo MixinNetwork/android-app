@@ -51,9 +51,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.io.File
-import javax.inject.Inject
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
@@ -194,10 +191,18 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.File
+import javax.inject.Inject
+import kotlin.math.abs
 
 @SuppressLint("InvalidWakeLockTag")
-class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
-    OpusAudioRecorder.Callback, SensorEventListener, AudioPlayer.StatusListener {
+class ConversationFragment :
+    LinkFragment(),
+    OnKeyboardShownListener,
+    OnKeyboardHiddenListener,
+    OpusAudioRecorder.Callback,
+    SensorEventListener,
+    AudioPlayer.StatusListener {
 
     companion object {
         const val TAG = "ConversationFragment"
@@ -275,7 +280,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             }
                         }
                         if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                                ?.getBoolean(conversationId, false) == true
+                            ?.getBoolean(conversationId, false) == true
                         ) {
                             chatViewModel.viewModelScope.launch {
                                 group_desc.text = chatViewModel.getAnnouncementByConversationId(conversationId)
@@ -419,14 +424,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 RxPermissions(requireActivity())
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     .autoDispose(stopScope)
-                    .subscribe({ granted ->
-                        if (granted) {
-                            chatViewModel.retryDownload(messageId)
-                        } else {
-                            context?.openPermissionSetting()
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                chatViewModel.retryDownload(messageId)
+                            } else {
+                                context?.openPermissionSetting()
+                            }
+                        },
+                        {
                         }
-                    }, {
-                    })
+                    )
             }
 
             @SuppressLint("MissingPermission")
@@ -434,16 +442,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 RxPermissions(requireActivity())
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     .autoDispose(stopScope)
-                    .subscribe({ granted ->
-                        if (granted) {
-                            chatViewModel.retryUpload(messageId) {
-                                toast(R.string.error_retry_upload)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                chatViewModel.retryUpload(messageId) {
+                                    toast(R.string.error_retry_upload)
+                                }
+                            } else {
+                                context?.openPermissionSetting()
                             }
-                        } else {
-                            context?.openPermissionSetting()
+                        },
+                        {
                         }
-                    }, {
-                    })
+                    )
             }
 
             override fun onCancel(id: String) {
@@ -521,14 +532,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onUserClick(userId: String) {
-                chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe({
-                    it?.let {
-                        UserBottomSheetDialogFragment.newInstance(it, conversationId)
-                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe(
+                    {
+                        it?.let {
+                            UserBottomSheetDialogFragment.newInstance(it, conversationId)
+                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        }
+                    },
+                    {
+                        Timber.e(it)
                     }
-                }, {
-                    Timber.e(it)
-                })
+                )
             }
 
             override fun onUrlClick(url: String) {
@@ -583,9 +597,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onBillClick(messageItem: MessageItem) {
                 activity?.addFragment(
-                    this@ConversationFragment, TransactionFragment.newInstance(
+                    this@ConversationFragment,
+                    TransactionFragment.newInstance(
                         assetId = messageItem.assetId, snapshotId = messageItem.snapshotId
-                    ), TransactionFragment.TAG
+                    ),
+                    TransactionFragment.TAG
                 )
             }
 
@@ -597,14 +613,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     )
                     return
                 }
-                chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe({
-                    it?.let {
-                        UserBottomSheetDialogFragment.newInstance(it, conversationId)
-                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe(
+                    {
+                        it?.let {
+                            UserBottomSheetDialogFragment.newInstance(it, conversationId)
+                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        }
+                    },
+                    {
+                        Timber.e(it)
                     }
-                }, {
-                    Timber.e(it)
-                })
+                )
             }
 
             override fun onQuoteMessageClick(messageId: String, quoteMessageId: String?) {
@@ -661,14 +680,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     RxPermissions(requireActivity())
                         .request(Manifest.permission.RECORD_AUDIO)
                         .autoDispose(stopScope)
-                        .subscribe({ granted ->
-                            if (granted) {
-                                callVoice()
-                            } else {
-                                context?.openPermissionSetting()
+                        .subscribe(
+                            { granted ->
+                                if (granted) {
+                                    callVoice()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            },
+                            {
                             }
-                        }, {
-                        })
+                        )
                 }
             }
         }
@@ -1056,20 +1078,20 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chat_control.recordTipView = record_tip_tv
         chat_control.setCircle(record_circle)
         chat_control.chat_et.setCommitContentListener(object :
-            ContentEditText.OnCommitContentListener {
-            override fun onCommitContent(
-                inputContentInfo: InputContentInfoCompat?,
-                flags: Int,
-                opts: Bundle?
-            ): Boolean {
-                if (inputContentInfo != null) {
-                    val url = inputContentInfo.contentUri.getFilePath(requireContext())
-                        ?: return false
-                    sendImageMessage(url.toUri())
+                ContentEditText.OnCommitContentListener {
+                override fun onCommitContent(
+                    inputContentInfo: InputContentInfoCompat?,
+                    flags: Int,
+                    opts: Bundle?
+                ): Boolean {
+                    if (inputContentInfo != null) {
+                        val url = inputContentInfo.contentUri.getFilePath(requireContext())
+                            ?: return false
+                        sendImageMessage(url.toUri())
+                    }
+                    return true
                 }
-                return true
-            }
-        })
+            })
         chat_rv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
         chat_rv.addItemDecoration(decoration)
         chat_rv.itemAnimator = null
@@ -1133,15 +1155,18 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         }
         chatViewModel.searchConversationById(conversationId)
-            .autoDispose(stopScope).subscribe({
-                it?.draft?.let { str ->
-                    if (isAdded) {
-                        chat_control.chat_et.setText(str)
+            .autoDispose(stopScope).subscribe(
+                {
+                    it?.draft?.let { str ->
+                        if (isAdded) {
+                            chat_control.chat_et.setText(str)
+                        }
                     }
+                },
+                {
+                    Timber.e(it)
                 }
-            }, {
-                Timber.e(it)
-            })
+            )
         tool_view.close_iv.setOnClickListener { activity?.onBackPressed() }
         tool_view.delete_iv.setOnClickListener {
             chatAdapter.selectSet.filter { it.type.endsWith("_AUDIO") }.forEach {
@@ -1233,9 +1258,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             requireActivity().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(conversationId, false)
             group_flag.isVisible = false
         }
-        callState.observe(viewLifecycleOwner, Observer { info ->
-            chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
-        })
+        callState.observe(
+            viewLifecycleOwner,
+            Observer { info ->
+                chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
+            }
+        )
         bindData()
     }
 
@@ -1261,8 +1289,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 requireContext().toast(R.string.add_success)
             }
         } else {
-            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription,
-                getString(R.string.sticker_add_failed))
+            ErrorHandler.handleMixinError(
+                r.errorCode, r.errorDescription,
+                getString(R.string.sticker_add_failed)
+            )
         }
     }
 
@@ -1339,8 +1369,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     oldCount = list.size
                 }
                 chatViewModel.viewModelScope.launch {
-                    chatAdapter.hasBottomView = ((isBot && list.isEmpty()) ||
-                        (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(conversationId, sender.userId))) &&
+                    chatAdapter.hasBottomView = (
+                        (isBot && list.isEmpty()) ||
+                            (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(conversationId, sender.userId))
+                        ) &&
                         recipient?.relationship == UserRelationship.STRANGER.name
                 }
                 if (isFirstLoad && messageId == null && unreadCount > 0) {
@@ -1375,22 +1407,25 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         unreadCount = requireArguments().getInt(UNREAD_COUNT, 0)
         liveDataMessage(unreadCount, initialPositionMessageId)
 
-        chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(viewLifecycleOwner, Observer { mentionMessages ->
-            flag_layout.mentionCount = mentionMessages.size
-            flag_layout.mention_flag_layout.setOnClickListener {
-                lifecycleScope.launch {
-                    if (mentionMessages.isEmpty()) {
-                        return@launch
-                    }
-                    val messageId = mentionMessages.first().messageId
-                    scrollToMessage(messageId) {
-                        lifecycleScope.launch {
-                            chatViewModel.markMentionRead(messageId, conversationId)
+        chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(
+            viewLifecycleOwner,
+            Observer { mentionMessages ->
+                flag_layout.mentionCount = mentionMessages.size
+                flag_layout.mention_flag_layout.setOnClickListener {
+                    lifecycleScope.launch {
+                        if (mentionMessages.isEmpty()) {
+                            return@launch
+                        }
+                        val messageId = mentionMessages.first().messageId
+                        scrollToMessage(messageId) {
+                            lifecycleScope.launch {
+                                chatViewModel.markMentionRead(messageId, conversationId)
+                            }
                         }
                     }
                 }
             }
-        })
+        )
 
         if (isBot) {
             chatViewModel.updateRecentUsedBots(defaultSharedPreferences, recipient!!.userId)
@@ -1501,7 +1536,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 mimeType,
                 getRelyMessage()
             )
-                ?.autoDispose(stopScope)?.subscribe({
+                ?.autoDispose(stopScope)?.subscribe(
+                {
                     when (it) {
                         0 -> {
                             scrollToDown()
@@ -1510,9 +1546,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         -1 -> context?.toast(R.string.error_image)
                         -2 -> context?.toast(R.string.error_format)
                     }
-                }, {
+                },
+                {
                     context?.toast(R.string.error_image)
-                })
+                }
+            )
         }
     }
 
@@ -1525,9 +1563,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 isPlainMessage(),
                 previewUrl
             )
-            chat_rv.postDelayed({
-                scrollToDown()
-            }, 1000)
+            chat_rv.postDelayed(
+                {
+                    scrollToDown()
+                },
+                1000
+            )
         }
     }
 
@@ -1564,9 +1605,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 isPlainMessage(),
                 replyMessage = getRelyMessage()
             )
-            chat_rv.postDelayed({
-                scrollToDown()
-            }, 1000)
+            chat_rv.postDelayed(
+                {
+                    scrollToDown()
+                },
+                1000
+            )
         }
     }
 
@@ -1574,13 +1618,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         id?.let {
             createConversation {
                 chatViewModel.sendFordMessage(conversationId, sender, it, isPlainMessage())
-                    .autoDispose(stopScope).subscribe({
-                        if (it == -1) {
-                            toast(R.string.error_file_exists)
+                    .autoDispose(stopScope).subscribe(
+                        {
+                            if (it == -1) {
+                                toast(R.string.error_file_exists)
+                            }
+                        },
+                        {
+                            Timber.e(id)
                         }
-                    }, {
-                        Timber.e(id)
-                    })
+                    )
             }
         }
     }
@@ -1688,36 +1735,43 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         action_bar.avatar_iv.setOnClickListener {
             showGroupBottomSheet(false)
         }
-        chatViewModel.getConversationById(conversationId).observe(viewLifecycleOwner, Observer {
-            it?.let {
-                groupName = it.name
-                action_bar.setSubTitle(
-                    groupName
-                        ?: "", getString(R.string.title_participants, groupNumber)
-                )
-                action_bar.avatar_iv.setGroup(it.iconUrl)
-            }
-        })
-        chatViewModel.getGroupParticipantsLiveData(conversationId)
-            .observe(viewLifecycleOwner, Observer { users ->
-                users?.let { u ->
-                    groupNumber = u.size
+        chatViewModel.getConversationById(conversationId).observe(
+            viewLifecycleOwner,
+            Observer {
+                it?.let {
+                    groupName = it.name
                     action_bar.setSubTitle(
-                        groupName ?: "",
+                        groupName
+                            ?: "",
                         getString(R.string.title_participants, groupNumber)
                     )
-                    val userIds = arrayListOf<String>()
-                    users.mapTo(userIds) { it.userId }
-                    if (userIds.contains(Session.getAccountId())) {
-                        chat_control.visibility = VISIBLE
-                        bottom_cant_send.visibility = GONE
-                    } else {
-                        chat_control.visibility = INVISIBLE
-                        bottom_cant_send.visibility = VISIBLE
-                        chat_control.chat_et.hideKeyboard()
+                    action_bar.avatar_iv.setGroup(it.iconUrl)
+                }
+            }
+        )
+        chatViewModel.getGroupParticipantsLiveData(conversationId)
+            .observe(
+                viewLifecycleOwner,
+                Observer { users ->
+                    users?.let { u ->
+                        groupNumber = u.size
+                        action_bar.setSubTitle(
+                            groupName ?: "",
+                            getString(R.string.title_participants, groupNumber)
+                        )
+                        val userIds = arrayListOf<String>()
+                        users.mapTo(userIds) { it.userId }
+                        if (userIds.contains(Session.getAccountId())) {
+                            chat_control.visibility = VISIBLE
+                            bottom_cant_send.visibility = GONE
+                        } else {
+                            chat_control.visibility = INVISIBLE
+                            bottom_cant_send.visibility = VISIBLE
+                            chat_control.chat_et.hideKeyboard()
+                        }
                     }
                 }
-            })
+            )
         mention_rv.adapter = mentionAdapter
         mention_rv.layoutManager = LinearLayoutManager(context)
     }
@@ -1748,15 +1802,18 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun renderUser(user: User) {
         chatAdapter.recipient = user
         renderUserInfo(user)
-        chatViewModel.findUserById(user.userId).observe(viewLifecycleOwner, Observer {
-            it?.let { u ->
-                recipient = u
-                if (u.isBot()) {
-                    renderBot(u)
+        chatViewModel.findUserById(user.userId).observe(
+            viewLifecycleOwner,
+            Observer {
+                it?.let { u ->
+                    recipient = u
+                    if (u.isBot()) {
+                        renderBot(u)
+                    }
+                    renderUserInfo(u)
                 }
-                renderUserInfo(u)
             }
-        })
+        )
         action_bar.avatar_iv.setOnClickListener {
             hideIfShowBottomSheet()
             UserBottomSheetDialogFragment.newInstance(user, conversationId)
@@ -1897,14 +1954,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     MenuType.File -> {
                         RxPermissions(requireActivity())
                             .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                            .subscribe({ granted ->
-                                if (granted) {
-                                    selectDocument()
-                                } else {
-                                    context?.openPermissionSetting()
+                            .subscribe(
+                                { granted ->
+                                    if (granted) {
+                                        selectDocument()
+                                    } else {
+                                        context?.openPermissionSetting()
+                                    }
+                                },
+                                {
                                 }
-                            }, {
-                            })
+                            )
                     }
                     MenuType.Transfer -> {
                         chat_control.reset()
@@ -1916,8 +1976,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         } else {
                             parentFragmentManager.inTransaction {
                                 setCustomAnimations(
-                                    R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
-                                        .anim.slide_in_bottom, R.anim.slide_out_bottom
+                                    R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                                    R
+                                        .anim.slide_in_bottom,
+                                    R.anim.slide_out_bottom
                                 )
                                     .add(
                                         R.id.container,
@@ -1931,8 +1993,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     MenuType.Contact -> {
                         parentFragmentManager.inTransaction {
                             setCustomAnimations(
-                                R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
-                                    .anim.slide_in_bottom, R.anim.slide_out_bottom
+                                R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                                R
+                                    .anim.slide_in_bottom,
+                                R.anim.slide_out_bottom
                             )
                                 .add(
                                     R.id.container,
@@ -1940,7 +2004,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                         setOnFriendClick {
                                             sendContactMessage(it.userId)
                                         }
-                                    }, FriendsFragment.TAG
+                                    },
+                                    FriendsFragment.TAG
                                 )
                                 .addToBackStack(null)
                         }
@@ -1961,14 +2026,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         } else {
                             RxPermissions(requireActivity())
                                 .request(Manifest.permission.RECORD_AUDIO)
-                                .subscribe({ granted ->
-                                    if (granted) {
-                                        callVoice()
-                                    } else {
-                                        context?.openPermissionSetting()
+                                .subscribe(
+                                    { granted ->
+                                        if (granted) {
+                                            callVoice()
+                                        } else {
+                                            context?.openPermissionSetting()
+                                        }
+                                    },
+                                    {
                                     }
-                                }, {
-                                })
+                                )
                         }
                     }
                     MenuType.Location -> {
@@ -2055,27 +2123,30 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         delay: Long = 30,
         action: (() -> Unit)? = null
     ) {
-        chat_rv.postDelayed({
-            if (isAdded) {
-                if (position == 0 && offset == 0) {
-                    chat_rv.layoutManager?.scrollToPosition(0)
-                } else if (offset == -1) {
-                    (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                        position,
-                        0
-                    )
-                } else {
-                    (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                        position,
-                        offset
-                    )
+        chat_rv.postDelayed(
+            {
+                if (isAdded) {
+                    if (position == 0 && offset == 0) {
+                        chat_rv.layoutManager?.scrollToPosition(0)
+                    } else if (offset == -1) {
+                        (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                            position,
+                            0
+                        )
+                    } else {
+                        (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
+                            position,
+                            offset
+                        )
+                    }
+                    action?.let { it() }
+                    if (abs(firstPosition - position) > PAGE_SIZE * 6) {
+                        chatAdapter.notifyDataSetChanged()
+                    }
                 }
-                action?.let { it() }
-                if (abs(firstPosition - position) > PAGE_SIZE * 6) {
-                    chatAdapter.notifyDataSetChanged()
-                }
-            }
-        }, delay)
+            },
+            delay
+        )
     }
 
     private fun scrollToMessage(
@@ -2087,33 +2158,54 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         val index = chatViewModel.findMessageIndex(conversationId, messageId)
         findMessageAction?.invoke(index)
         if (index == 0) {
-            scrollTo(0, chat_rv.measuredHeight * 3 / 4, action = {
-                requireContext().mainThreadDelayed({
-                    RxBus.publish(BlinkEvent(messageId))
-                }, 60)
-            })
+            scrollTo(
+                0, chat_rv.measuredHeight * 3 / 4,
+                action = {
+                    requireContext().mainThreadDelayed(
+                        {
+                            RxBus.publish(BlinkEvent(messageId))
+                        },
+                        60
+                    )
+                }
+            )
         } else {
             chatAdapter.loadAround(index)
             if (index == chatAdapter.itemCount - 1) {
-                scrollTo(index, 0, action = {
-                    requireContext().mainThreadDelayed({
-                        RxBus.publish(BlinkEvent(messageId))
-                    }, 60)
-                })
+                scrollTo(
+                    index, 0,
+                    action = {
+                        requireContext().mainThreadDelayed(
+                            {
+                                RxBus.publish(BlinkEvent(messageId))
+                            },
+                            60
+                        )
+                    }
+                )
             } else {
                 val lm = (chat_rv.layoutManager as LinearLayoutManager)
                 val lastPosition = lm.findLastCompletelyVisibleItemPosition()
                 val firstPosition = lm.findFirstVisibleItemPosition()
                 if (index in firstPosition..lastPosition) {
-                    requireContext().mainThreadDelayed({
-                        RxBus.publish(BlinkEvent(messageId))
-                    }, 60)
-                } else {
-                    scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = {
-                        requireContext().mainThreadDelayed({
+                    requireContext().mainThreadDelayed(
+                        {
                             RxBus.publish(BlinkEvent(messageId))
-                        }, 60)
-                    })
+                        },
+                        60
+                    )
+                } else {
+                    scrollTo(
+                        index + 1, chat_rv.measuredHeight * 3 / 4,
+                        action = {
+                            requireContext().mainThreadDelayed(
+                                {
+                                    RxBus.publish(BlinkEvent(messageId))
+                                },
+                                60
+                            )
+                        }
+                    )
                 }
             }
         }
@@ -2173,17 +2265,20 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         RxPermissions(requireActivity())
             .request(Manifest.permission.CAMERA)
             .autoDispose(stopScope)
-            .subscribe({ granted ->
-                if (granted) {
-                    imageUri = createImageUri()
-                    imageUri?.let {
-                        openCamera(it)
+            .subscribe(
+                { granted ->
+                    if (granted) {
+                        imageUri = createImageUri()
+                        imageUri?.let {
+                            openCamera(it)
+                        }
+                    } else {
+                        context?.openPermissionSetting()
                     }
-                } else {
-                    context?.openPermissionSetting()
+                },
+                {
                 }
-            }, {
-            })
+            )
     }
 
     private var previewDialogFragment: PreviewDialogFragment? = null
@@ -2302,27 +2397,47 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         val builder = BottomSheet.Builder(requireActivity())
         val items = arrayListOf<BottomSheetItem>()
         if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
-            items.add(BottomSheetItem(getString(R.string.save_to_music), {
-                checkWritePermissionAndSave(messageItem)
-                bottomSheet?.dismiss()
-            }))
+            items.add(
+                BottomSheetItem(
+                    getString(R.string.save_to_music),
+                    {
+                        checkWritePermissionAndSave(messageItem)
+                        bottomSheet?.dismiss()
+                    }
+                )
+            )
         } else if (MimeTypes.isVideo(messageItem.mediaMimeType) ||
             messageItem.mediaMimeType?.isImageSupport() == true
         ) {
-            items.add(BottomSheetItem(getString(R.string.save_to_gallery), {
-                checkWritePermissionAndSave(messageItem)
-                bottomSheet?.dismiss()
-            }))
+            items.add(
+                BottomSheetItem(
+                    getString(R.string.save_to_gallery),
+                    {
+                        checkWritePermissionAndSave(messageItem)
+                        bottomSheet?.dismiss()
+                    }
+                )
+            )
         } else {
-            items.add(BottomSheetItem(getString(R.string.save_to_downloads), {
-                checkWritePermissionAndSave(messageItem)
-                bottomSheet?.dismiss()
-            }))
+            items.add(
+                BottomSheetItem(
+                    getString(R.string.save_to_downloads),
+                    {
+                        checkWritePermissionAndSave(messageItem)
+                        bottomSheet?.dismiss()
+                    }
+                )
+            )
         }
-        items.add(BottomSheetItem(getString(R.string.open), {
-            requireContext().openMedia(messageItem)
-            bottomSheet?.dismiss()
-        }))
+        items.add(
+            BottomSheetItem(
+                getString(R.string.open),
+                {
+                    requireContext().openMedia(messageItem)
+                    bottomSheet?.dismiss()
+                }
+            )
+        )
         val view = buildBottomSheetView(requireContext(), items)
         builder.setCustomView(view)
         bottomSheet = builder.create()
@@ -2333,14 +2448,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         RxPermissions(requireActivity())
             .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             .autoDispose(stopScope)
-            .subscribe({ granted ->
-                if (granted) {
-                    messageItem.saveToLocal(requireContext())
-                } else {
-                    context?.openPermissionSetting()
+            .subscribe(
+                { granted ->
+                    if (granted) {
+                        messageItem.saveToLocal(requireContext())
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                },
+                {
                 }
-            }, {
-            })
+            )
     }
 
     private fun showRecordingAlert() {
