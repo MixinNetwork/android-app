@@ -19,6 +19,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.SendMessageJob
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.MessageCategory
@@ -110,7 +111,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val recipientId = users[0].userId
                 val message = createCallMessage(UUID.randomUUID().toString(), conversationId,
                     "", MessageCategory.KRAKEN_INVITE.name, "", nowInUtc(), MessageStatus.SENDING.name)
-                // jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
+                jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
                 CallService.publish(requireContext(), conversationId)
                 dismiss()
             }

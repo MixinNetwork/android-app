@@ -52,6 +52,7 @@ import one.mixin.android.websocket.createConsumeSignalKeysParam
 import one.mixin.android.websocket.createSignalKeyMessage
 import one.mixin.android.websocket.createSignalKeyMessageParam
 import java.util.UUID
+import timber.log.Timber
 
 abstract class MixinJob(
     params: Params,
@@ -240,6 +241,7 @@ abstract class MixinJob(
                 return true
             } else {
                 SystemClock.sleep(SLEEP_MILLIS)
+                Timber.e("$blazeMessage, $bm")
                 throw NetworkException()
             }
         }
