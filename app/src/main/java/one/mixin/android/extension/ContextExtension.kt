@@ -1,5 +1,6 @@
 package one.mixin.android.extension
 
+import android.app.Activity
 import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.content.ClipboardManager
@@ -30,6 +31,7 @@ import android.util.Log
 import android.util.TypedValue
 import android.view.KeyCharacterMap
 import android.view.KeyEvent
+import android.view.View
 import android.view.ViewConfiguration
 import android.view.Window
 import android.view.WindowManager
@@ -122,6 +124,15 @@ fun Context.navigationBarHeight(): Int {
         return resources.getDimensionPixelSize(resourceId)
     }
     return dpToPx(24f)
+}
+
+fun Context.isActivityNotDestroyed(): Boolean {
+    if (this is Activity) {
+        if (this.isDestroyed || this.isFinishing) {
+            return false
+        }
+    }
+    return true
 }
 
 @Suppress("DEPRECATION")
