@@ -10,6 +10,10 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_verification_emergency_id.*
+import kotlinx.android.synthetic.main.fragment_verification_emergency_id.back_iv
+import kotlinx.android.synthetic.main.fragment_verification_emergency_id.verification_cover
+import kotlinx.android.synthetic.main.fragment_verification_emergency_id.verification_keyboard
+import kotlinx.android.synthetic.main.fragment_verification_emergency_id.verification_next_fab
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -74,6 +78,13 @@ class VerificationEmergencyIdFragment : FabLoadingFragment<EmergencyViewModel>()
                 handleError(it)
             }
         )
+    }
+
+    override fun hideLoading() {
+        if (!isAdded) return
+
+        verification_next_fab.hide()
+        verification_cover.visibility = View.GONE
     }
 
     private fun buildEmergencyRequest(mixinID: String) = EmergencyRequest(
