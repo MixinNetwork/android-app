@@ -6,13 +6,11 @@ import android.os.SystemClock
 import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.Observer
 import com.google.gson.Gson
-import com.uber.autodispose.android.lifecycle.scope
-import com.uber.autodispose.autoDispose
 import dagger.android.AndroidInjection
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -74,8 +72,6 @@ import timber.log.Timber
 
 class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvents {
 
-    private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
-
     private val callExecutor = Executors.newSingleThreadExecutor()
     private val timeoutExecutor = Executors.newScheduledThreadPool(1)
     private var timeoutFuture: ScheduledFuture<*>? = null
@@ -84,6 +80,8 @@ class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvent
         CallAudioManager(this)
     }
     private var audioEnable = true
+
+    private var disposable: Disposable? = null
 
     private val peerConnectionClient: PeerConnectionClient by lazy {
         PeerConnectionClient(this, this)
@@ -207,6 +205,7 @@ class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvent
         stopForeground(true)
         audioManager.stop()
         peerConnectionClient.close()
+        disposable?.dispose()
         timeoutFuture?.cancel(true)
     }
 
@@ -731,8 +730,7 @@ class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvent
     }
 
     private fun getTurnServer(action: (List<PeerConnection.IceServer>) -> Unit) {
-        accountService.getTurn().subscribeOn(Schedulers.io())
-            .autoDispose(destroyScope)
+         disposable = accountService.getTurn().subscribeOn(Schedulers.io())
             .subscribe({
                 if (it.isSuccess) {
                     val array = it.data as Array<TurnServer>
