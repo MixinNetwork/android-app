@@ -10,6 +10,7 @@ import android.widget.RelativeLayout
 import androidx.collection.ArraySet
 import kotlinx.android.synthetic.main.view_pseudo_notification.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isMixinUrl
 import org.jetbrains.anko.dip
 
@@ -38,7 +39,7 @@ class PseudoNotificationView : RelativeLayout {
         }
         contentSet.add(s)
         currContent = s
-        content_tv.text = if (s.isMixinUrl()) {
+        content_tv.text = if (s.isMixinUrl() || s.isDonateUrl()) {
             context.getString(R.string.detect_qr_tip)
         } else {
             s

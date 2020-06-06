@@ -11,6 +11,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.closeSilently
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
@@ -46,7 +47,9 @@ abstract class VisionFragment : BaseFragment() {
     }
 
     protected fun handleResult(content: String) {
-        if (!content.isMixinUrl()) {
+        if (content.isDonateUrl()) {
+            MainActivity.showFromScan(requireActivity(), url = content)
+        } else if (!content.isMixinUrl()) {
             MainActivity.showFromScan(requireActivity(), scanText = content)
         } else if (content.startsWith(Constants.Scheme.TRANSFER, true) ||
             content.startsWith(Constants.Scheme.HTTPS_TRANSFER, true)
