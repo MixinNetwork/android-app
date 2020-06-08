@@ -213,7 +213,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         peerConnection.setAudioRecording(false)
 
         localSender = peerConnection.addTrack(createAudioTrack())
-        localSender!!.setFrameEncryptor(RTCFrameEncryptor(""))
+        localSender!!.setFrameEncryptor(RTCFrameEncryptor("e8ffc7e56311679f12b6fc91aa77a5eb".toByteArray()))
         return peerConnection
     }
 
@@ -301,7 +301,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
 
         override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
-            receiver?.setFrameDecryptor(RTCFrameDecryptor(""))
+            receiver?.setFrameDecryptor(RTCFrameDecryptor("e8ffc7e56311679f12b6fc91aa77a5eb".toByteArray()))
             Timber.d("onAddTrack=%s", receiver.toString())
             receiver?.track()?.setEnabled(true)
         }
