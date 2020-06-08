@@ -81,7 +81,7 @@ interface AccountService {
     fun removeSticker(@Body ids: List<String>): Call<MixinResponse<Sticker>>
 
     @GET("turn")
-    fun getTurn(): Observable<MixinResponse<Array<TurnServer>>>
+    suspend fun getTurn(): MixinResponse<Array<TurnServer>>
 
     @GET("/")
     fun ping(): Call<MixinResponse<Void>>

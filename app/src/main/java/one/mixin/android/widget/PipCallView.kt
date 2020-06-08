@@ -16,10 +16,6 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.annotation.Keep
-import java.util.Timer
-import java.util.TimerTask
-import kotlin.math.abs
-import kotlin.math.round
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -34,6 +30,10 @@ import one.mixin.android.ui.Rect
 import one.mixin.android.ui.call.CallActivity
 import org.jetbrains.anko.runOnUiThread
 import timber.log.Timber
+import java.util.Timer
+import java.util.TimerTask
+import kotlin.math.abs
+import kotlin.math.round
 
 class PipCallView {
     companion object {
@@ -126,9 +126,9 @@ class PipCallView {
                     startY = y
                 } else if (event.action == MotionEvent.ACTION_MOVE) {
                     if (abs(startX - x) >= appContext.getPixelsInCM(
-                            0.3f,
-                            true
-                        ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
+                        0.3f,
+                        true
+                    ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
                     ) {
                         startX = x
                         startY = y

@@ -82,7 +82,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.showVerifiedOrBot
-import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.outgoingCall
 import org.threeten.bp.Instant
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -627,7 +627,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     private fun callVoice() {
         if (LinkState.isOnline(linkState.state)) {
-            CallService.outgoing(
+            outgoingCall(
                 requireContext(),
                 generateConversationId(
                     Session.getAccountId()!!,

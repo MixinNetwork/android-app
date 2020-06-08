@@ -54,6 +54,12 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.GroupCallService
+import one.mixin.android.webrtc.VoiceCallService
+import one.mixin.android.webrtc.acceptInvite
+import one.mixin.android.webrtc.answerCall
+import one.mixin.android.webrtc.muteAudio
+import one.mixin.android.webrtc.speakerPhone
 import one.mixin.android.widget.CallButton
 import one.mixin.android.widget.PipCallView
 import timber.log.Timber
@@ -147,12 +153,20 @@ class CallActivity : BaseActivity(), SensorEventListener {
         }
         mute_cb.setOnCheckedChangeListener(object : CallButton.OnCheckedChangeListener {
             override fun onCheckedChanged(id: Int, checked: Boolean) {
-                CallService.muteAudio(this@CallActivity, checked)
+                if (callState.isGroupCall()) {
+                    muteAudio<GroupCallService>(this@CallActivity, checked)
+                } else {
+                    muteAudio<VoiceCallService>(this@CallActivity, checked)
+                }
             }
         })
         voice_cb.setOnCheckedChangeListener(object : CallButton.OnCheckedChangeListener {
             override fun onCheckedChanged(id: Int, checked: Boolean) {
-                CallService.speakerPhone(this@CallActivity, checked)
+                if (callState.isGroupCall()) {
+                    speakerPhone<GroupCallService>(this@CallActivity, checked)
+                } else {
+                    speakerPhone<VoiceCallService>(this@CallActivity, checked)
+                }
             }
         })
 
@@ -279,9 +293,9 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 if (granted) {
                     handleAnswering()
                     if (callState.isGroupCall()) {
-                        CallService.acceptInvite(this@CallActivity)
+                        acceptInvite(this@CallActivity)
                     } else {
-                        CallService.answer(this@CallActivity)
+                        answerCall(this@CallActivity)
                     }
                 } else {
                     callState.handleHangup(this@CallActivity)

@@ -45,8 +45,8 @@ import one.mixin.android.websocket.PlainJsonMessagePayload
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
 import org.jetbrains.anko.notificationManager
-import javax.inject.Inject
 import timber.log.Timber
+import javax.inject.Inject
 
 class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
 

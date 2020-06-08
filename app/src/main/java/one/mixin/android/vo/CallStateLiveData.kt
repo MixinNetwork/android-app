@@ -3,6 +3,12 @@ package one.mixin.android.vo
 import android.content.Context
 import androidx.lifecycle.LiveData
 import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.cancelCall
+import one.mixin.android.webrtc.declineCall
+import one.mixin.android.webrtc.krakenCancel
+import one.mixin.android.webrtc.krakenDecline
+import one.mixin.android.webrtc.krakenEnd
+import one.mixin.android.webrtc.localEnd
 
 class CallStateLiveData : LiveData<CallService.CallState>() {
     var state: CallService.CallState = CallService.CallState.STATE_IDLE
@@ -46,7 +52,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     fun removeUser(user: User) {
         if (users.isNullOrEmpty()) return
 
-        users?.remove(user) ?: false
+        users?.remove(user)
     }
 
     fun isIdle() = state == CallService.CallState.STATE_IDLE
@@ -56,30 +62,30 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         when (state) {
             CallService.CallState.STATE_DIALING ->
                 if (isGroupCall()) {
-                    CallService.krakenCancel(ctx)
+                    krakenCancel(ctx)
                 } else {
-                    CallService.cancel(ctx)
+                    cancelCall(ctx)
                 }
             CallService.CallState.STATE_RINGING ->
                 if (isGroupCall()) {
-                    CallService.krakenDecline(ctx)
+                    krakenDecline(ctx)
                 } else {
-                    CallService.decline(ctx)
+                    declineCall(ctx)
                 }
             CallService.CallState.STATE_ANSWERING -> {
                 if (isOffer) {
-                    CallService.cancel(ctx)
+                    cancelCall(ctx)
                 } else {
-                    CallService.decline(ctx)
+                    declineCall(ctx)
                 }
             }
             CallService.CallState.STATE_CONNECTED ->
                 if (isGroupCall()) {
-                    CallService.krakenEnd(ctx)
+                    krakenEnd(ctx)
                 } else {
-                    CallService.localEnd(ctx)
+                    localEnd(ctx)
                 }
-            else -> CallService.cancel(ctx)
+            else -> cancelCall(ctx)
         }
     }
 }

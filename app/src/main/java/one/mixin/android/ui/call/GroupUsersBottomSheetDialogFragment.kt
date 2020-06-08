@@ -8,8 +8,6 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import java.util.UUID
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_group_users_bottom_sheet.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
@@ -26,10 +24,12 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createCallMessage
-import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.publish
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetRelativeLayout
 import one.mixin.android.widget.SearchView
+import java.util.UUID
+import javax.inject.Inject
 
 class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
@@ -94,8 +94,10 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             search_et.setHint(getString(R.string.contact_search_hint))
 
-            select_rv.layoutManager = LinearLayoutManager(requireContext(),
-                LinearLayoutManager.HORIZONTAL, false)
+            select_rv.layoutManager = LinearLayoutManager(
+                requireContext(),
+                LinearLayoutManager.HORIZONTAL, false
+            )
             select_rv.adapter = selectAdapter
             user_rv.layoutManager = LinearLayoutManager(requireContext())
             user_rv.adapter = groupUserAdapter
@@ -109,10 +111,12 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val users = checkedUsers.toList()
                 // TODO
                 val recipientId = users[0].userId
-                val message = createCallMessage(UUID.randomUUID().toString(), conversationId,
-                    "", MessageCategory.KRAKEN_INVITE.name, "", nowInUtc(), MessageStatus.SENDING.name)
+                val message = createCallMessage(
+                    UUID.randomUUID().toString(), conversationId,
+                    "", MessageCategory.KRAKEN_INVITE.name, "", nowInUtc(), MessageStatus.SENDING.name
+                )
                 jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
-                CallService.publish(requireContext(), conversationId)
+                publish(requireContext(), conversationId)
                 dismiss()
             }
         }

@@ -175,6 +175,7 @@ import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.toLocationData
@@ -338,7 +339,7 @@ class ConversationFragment :
                     .showNow(parentFragmentManager, GroupUsersBottomSheetDialogFragment.TAG)
             } else {
                 createConversation {
-                    CallService.outgoing(requireContext(), conversationId, recipient!!)
+                    outgoingCall(requireContext(), conversationId, recipient!!)
                 }
             }
         } else {

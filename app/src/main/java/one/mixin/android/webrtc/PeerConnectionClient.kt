@@ -58,15 +58,18 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             peerConnection = createPeerConnectionInternal()
             val offerSdpObserver = object : SdpObserverWrapper() {
                 override fun onCreateSuccess(sdp: SessionDescription) {
-                    peerConnection?.setLocalDescription(object : SdpObserverWrapper() {
-                        override fun onSetFailure(error: String?) {
-                            reportError("createOffer setLocalSdp onSetFailure error: $error")
-                        }
-                        override fun onSetSuccess() {
-                            Timber.d("createOffer setLocalSdp onSetSuccess")
-                            setLocalSuccess(sdp)
-                        }
-                    }, sdp)
+                    peerConnection?.setLocalDescription(
+                        object : SdpObserverWrapper() {
+                            override fun onSetFailure(error: String?) {
+                                reportError("createOffer setLocalSdp onSetFailure error: $error")
+                            }
+                            override fun onSetSuccess() {
+                                Timber.d("createOffer setLocalSdp onSetSuccess")
+                                setLocalSuccess(sdp)
+                            }
+                        },
+                        sdp
+                    )
                 }
 
                 override fun onCreateFailure(error: String?) {
@@ -85,15 +88,18 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             peerConnection?.setRemoteDescription(remoteSdpObserver, remoteSdp)
             val answerSdpObserver = object : SdpObserverWrapper() {
                 override fun onCreateSuccess(sdp: SessionDescription) {
-                    peerConnection?.setLocalDescription(object : SdpObserverWrapper() {
-                        override fun onSetFailure(error: String?) {
-                            reportError("createAnswer setLocalSdp onSetFailure error: $error")
-                        }
-                        override fun onSetSuccess() {
-                            Timber.d("createAnswer setLocalSdp onSetSuccess")
-                            setLocalSuccess(sdp)
-                        }
-                    }, sdp)
+                    peerConnection?.setLocalDescription(
+                        object : SdpObserverWrapper() {
+                            override fun onSetFailure(error: String?) {
+                                reportError("createAnswer setLocalSdp onSetFailure error: $error")
+                            }
+                            override fun onSetSuccess() {
+                                Timber.d("createAnswer setLocalSdp onSetSuccess")
+                                setLocalSuccess(sdp)
+                            }
+                        },
+                        sdp
+                    )
                 }
 
                 override fun onCreateFailure(error: String?) {

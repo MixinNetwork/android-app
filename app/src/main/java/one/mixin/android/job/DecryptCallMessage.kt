@@ -19,7 +19,17 @@ import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createCallMessage
-import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.DEFAULT_TIMEOUT_MINUTES
+import one.mixin.android.webrtc.answerCall
+import one.mixin.android.webrtc.busy
+import one.mixin.android.webrtc.cancelCall
+import one.mixin.android.webrtc.candidate
+import one.mixin.android.webrtc.declineCall
+import one.mixin.android.webrtc.incomingCall
+import one.mixin.android.webrtc.receiveInvite
+import one.mixin.android.webrtc.receivePublish
+import one.mixin.android.webrtc.remoteEnd
+import one.mixin.android.webrtc.remoteFailed
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -70,11 +80,11 @@ class DecryptCallMessage(
         Timber.d("@@@ processKraken category: ${data.category}")
         if (data.category == MessageCategory.KRAKEN_PUBLISH.name) {
             syncUser(data.userId)?.let { user ->
-                CallService.receivePublish(ctx, user, data)
+                receivePublish(ctx, user, data)
             }
         } else if (data.category == MessageCategory.KRAKEN_INVITE.name) {
             syncUser(data.userId)?.let { user ->
-                CallService.receiveInvite(ctx, data, arrayListOf(user))
+                receiveInvite(ctx, data, arrayListOf(user))
             }
         }
         notifyServer(data)
@@ -84,7 +94,7 @@ class DecryptCallMessage(
         if (data.source == LIST_PENDING_MESSAGES && data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             val isExpired = try {
                 val offset = System.currentTimeMillis() - data.createdAt.createAtToLong()
-                offset > CallService.DEFAULT_TIMEOUT_MINUTES * 58 * 1000
+                offset > DEFAULT_TIMEOUT_MINUTES * 58 * 1000
             } catch (e: NumberFormatException) {
                 true
             }
@@ -137,9 +147,9 @@ class DecryptCallMessage(
             syncUser(data.userId)?.let { user ->
                 val pendingCandidateList = listPendingCandidateMap[data.messageId]
                 if (pendingCandidateList == null || pendingCandidateList.isEmpty()) {
-                    CallService.incoming(ctx, user, data)
+                    incomingCall(ctx, user, data)
                 } else {
-                    CallService.incoming(ctx, user, data, GsonHelper.customGson.toJson(pendingCandidateList.toArray()))
+                    incomingCall(ctx, user, data, GsonHelper.customGson.toJson(pendingCandidateList.toArray()))
                     pendingCandidateList.clear()
                     listPendingCandidateMap.remove(data.messageId, pendingCandidateList)
                 }
@@ -180,14 +190,14 @@ class DecryptCallMessage(
                         notifyServer(data)
                         return
                     }
-                    CallService.answer(ctx, data)
+                    answerCall(ctx, data)
                 }
                 MessageCategory.WEBRTC_ICE_CANDIDATE.name -> {
                     if (callState.isIdle() || data.quoteMessageId != callState.trackId) {
                         notifyServer(data)
                         return
                     }
-                    CallService.candidate(ctx, data)
+                    candidate(ctx, data)
                 }
                 MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
                     if (callState.isIdle()) {
@@ -198,7 +208,7 @@ class DecryptCallMessage(
                     if (data.quoteMessageId != callState.trackId) {
                         return
                     }
-                    CallService.cancel(ctx)
+                    cancelCall(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
                     if (callState.isIdle()) {
@@ -211,7 +221,7 @@ class DecryptCallMessage(
                     if (data.quoteMessageId != callState.trackId) {
                         return
                     }
-                    CallService.decline(ctx)
+                    declineCall(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
                     if (callState.isIdle() || data.quoteMessageId != callState.trackId ||
@@ -222,7 +232,7 @@ class DecryptCallMessage(
                     }
 
                     saveCallMessage(data, userId = Session.getAccountId()!!)
-                    CallService.busy(ctx)
+                    busy(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_END.name -> {
                     if (callState.isIdle()) {
@@ -232,7 +242,7 @@ class DecryptCallMessage(
 
                     val duration = System.currentTimeMillis() - callState.connectedTime!!
                     saveCallMessage(data, duration = duration.toString(), userId = getUserId(), status = MessageStatus.READ.name)
-                    CallService.remoteEnd(ctx)
+                    remoteEnd(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
                     if (callState.isIdle()) {
@@ -242,7 +252,7 @@ class DecryptCallMessage(
 
                     val uId = getUserId()
                     saveCallMessage(data, userId = uId)
-                    CallService.remoteFailed(ctx)
+                    remoteFailed(ctx)
                 }
             }
             notifyServer(data)

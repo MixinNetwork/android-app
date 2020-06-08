@@ -8,7 +8,14 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import one.mixin.android.R
 import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.webrtc.ACTION_CALL_ANSWER
+import one.mixin.android.webrtc.ACTION_CALL_CANCEL
+import one.mixin.android.webrtc.ACTION_CALL_DECLINE
+import one.mixin.android.webrtc.ACTION_CALL_LOCAL_END
 import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.EXTRA_TO_IDLE
+import one.mixin.android.webrtc.GroupCallService
+import one.mixin.android.webrtc.VoiceCallService
 
 class CallNotificationBuilder {
 
@@ -18,7 +25,7 @@ class CallNotificationBuilder {
         const val ACTION_EXIT = "action_exit"
 
         fun getCallNotification(context: Context, callState: CallStateLiveData): Notification? {
-//            if (callState.isIdle()) return null
+            if (callState.isIdle()) return null
 
             val callIntent = Intent(context, CallActivity::class.java)
             callIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -31,16 +38,21 @@ class CallNotificationBuilder {
                 .setOngoing(true)
                 .setContentTitle(user?.fullName)
 
+            val clazz = if (callState.isGroupCall()) {
+                GroupCallService::class.java
+            } else {
+                VoiceCallService::class.java
+            }
             when (callState.state) {
                 CallService.CallState.STATE_DIALING -> {
                     builder.setContentText(context.getString(R.string.call_notification_outgoing))
                     builder.addAction(
                         getAction(
-                            context, CallService.ACTION_CALL_CANCEL, R.drawable.ic_close_black,
+                            context, clazz, ACTION_CALL_CANCEL, R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_cancel
                         ) {
-                            it.putExtra(CallService.EXTRA_TO_IDLE, true)
+                            it.putExtra(EXTRA_TO_IDLE, true)
                         }
                     )
                 }
@@ -48,14 +60,14 @@ class CallNotificationBuilder {
                     builder.setContentText(context.getString(R.string.call_notification_incoming_voice))
                     builder.addAction(
                         getAction(
-                            context, CallService.ACTION_CALL_ANSWER, R.drawable.ic_close_black,
+                            context, clazz, ACTION_CALL_ANSWER, R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_answer
                         )
                     )
                     builder.addAction(
                         getAction(
-                            context, CallService.ACTION_CALL_DECLINE, R.drawable.ic_close_black,
+                            context, clazz, ACTION_CALL_DECLINE, R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_decline
                         )
@@ -65,24 +77,24 @@ class CallNotificationBuilder {
                     builder.setContentText(context.getString(R.string.call_notification_connected))
                     builder.addAction(
                         getAction(
-                            context, CallService.ACTION_CALL_LOCAL_END, R.drawable.ic_close_black,
+                            context, clazz, ACTION_CALL_LOCAL_END, R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_hang_up
                         ) {
-                            it.putExtra(CallService.EXTRA_TO_IDLE, true)
+                            it.putExtra(EXTRA_TO_IDLE, true)
                         }
                     )
                 }
                 else -> {
                     builder.setContentText(context.getString(R.string.call_connecting))
-                    val action = if (callState.isOffer) CallService.ACTION_CALL_CANCEL else CallService.ACTION_CALL_DECLINE
+                    val action = if (callState.isOffer) ACTION_CALL_CANCEL else ACTION_CALL_DECLINE
                     builder.addAction(
                         getAction(
-                            context, action, R.drawable.ic_close_black,
+                            context, clazz, action, R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_hang_up
                         ) {
-                            it.putExtra(CallService.EXTRA_TO_IDLE, true)
+                            it.putExtra(EXTRA_TO_IDLE, true)
                         }
                     )
                 }
@@ -92,12 +104,13 @@ class CallNotificationBuilder {
 
         private fun getAction(
             context: Context,
+            clazz: Class<*>,
             action: String,
             iconResId: Int,
             titleResId: Int,
             putExtra: ((intent: Intent) -> Unit)? = null
         ): NotificationCompat.Action {
-            val intent = Intent(context, CallService::class.java)
+            val intent = Intent(context, clazz)
             intent.action = action
             putExtra?.invoke(intent)
             val pendingIntent = PendingIntent.getService(context, 0, intent, FLAG_UPDATE_CURRENT)

@@ -51,8 +51,8 @@ import one.mixin.android.websocket.createConsumeSessionSignalKeys
 import one.mixin.android.websocket.createConsumeSignalKeysParam
 import one.mixin.android.websocket.createSignalKeyMessage
 import one.mixin.android.websocket.createSignalKeyMessageParam
-import java.util.UUID
 import timber.log.Timber
+import java.util.UUID
 
 abstract class MixinJob(
     params: Params,
