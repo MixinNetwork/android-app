@@ -736,12 +736,11 @@ class DecryptMessage : Injector() {
             if (resendMessageId != null) {
                 return
             }
+            refreshSignalKeys(data.conversationId)
             if (data.category == MessageCategory.SIGNAL_KEY.name) {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, deviceId).toString())
-                refreshKeys(data.conversationId)
             } else {
                 insertFailedMessage(data)
-                refreshKeys(data.conversationId)
                 val address = SignalProtocolAddress(data.userId, deviceId)
                 val status = ratchetSenderKeyDao.getRatchetSenderKey(data.conversationId, address.toString())?.status
                 if (status == null) {
@@ -861,7 +860,7 @@ class DecryptMessage : Injector() {
         jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
     }
 
-    private fun refreshKeys(conversationId: String) {
+    private fun refreshSignalKeys(conversationId: String) {
         val start = refreshKeyMap[conversationId] ?: 0.toLong()
         val current = System.currentTimeMillis()
         if (start == 0.toLong()) {
