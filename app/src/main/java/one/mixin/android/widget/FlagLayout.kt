@@ -16,18 +16,23 @@ class FlagLayout @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyle: Int = 0
 ) : ViewGroup(context, attrs, defStyle) {
+
+    private val space by lazy {
+        3.dp
+    }
+
     var bottomFlag = false
         set(value) {
             if (field != value) {
+                down_flag_layout.isVisible = value
                 field = value
-                requestLayout()
                 update()
             }
         }
+    
     var bottomCountFlag = false
         set(value) {
             if (field != value) {
-                requestLayout()
                 down_unread.isVisible = value
                 field = value
                 update()
@@ -37,15 +42,24 @@ class FlagLayout @JvmOverloads constructor(
     var mentionCount = 0
         set(value) {
             if (field != value) {
-                requestLayout()
+                mention_flag_layout.isVisible = value > 0
+                mention_count.text = "$value"
                 field = value
-                down_unread.isVisible = value == 0
-                mention_count.text = "$field"
+                update()
+            }
+        }
+
+    var unreadCount = 0
+        set(value) {
+            if (field != value) {
+                field = value
+                down_unread.text = "$value"
                 update()
             }
         }
 
     private fun update() {
+        requestLayout()
         if (!bottomCountFlag && !bottomFlag && mentionCount == 0) {
             hide()
         } else {
@@ -64,6 +78,9 @@ class FlagLayout @JvmOverloads constructor(
             if ((i == 1 && bottomFlag) || (i == 0 && mentionCount != 0)) {
                 child.layout(paddingStart, bottom - child.measuredHeight, paddingStart + child.measuredWidth, bottom)
                 bottom -= child.measuredHeight
+                if (i == 1) {
+                    bottom -= space
+                }
             }
         }
     }
@@ -77,7 +94,7 @@ class FlagLayout @JvmOverloads constructor(
             width = max(child.measuredWidth, width)
             height += child.measuredHeight
         }
-        setMeasuredDimension(width + paddingStart + paddingEnd, height + paddingTop + paddingBottom)
+        setMeasuredDimension(width + paddingStart + paddingEnd + space, height + paddingTop + paddingBottom)
     }
 
     private fun show() {

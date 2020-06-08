@@ -314,7 +314,7 @@ class ConversationFragment :
                     else -> {
                         if (unreadTipCount > 0) {
                             flag_layout.bottomCountFlag = true
-                            flag_layout.down_unread.text = "$unreadTipCount"
+                            flag_layout.unreadCount = unreadTipCount
                         } else {
                             flag_layout.bottomCountFlag = false
                         }
