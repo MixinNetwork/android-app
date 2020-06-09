@@ -29,7 +29,7 @@ class FlagLayout @JvmOverloads constructor(
                 update()
             }
         }
-    
+
     var bottomCountFlag = false
         set(value) {
             if (field != value) {

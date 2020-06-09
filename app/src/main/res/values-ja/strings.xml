@@ -541,7 +541,6 @@
     <string name="chat_you">自分</string>
     <string name="chat_group_checking">リンク確認中</string>
     <string name="chat_expired">期限切れ</string>
-    <string name="unknown_update_app">このメッセージはサポートされていません。アプリを最新版にアップデートしてください。</string>
     <string name="group_ok">OK</string>
     <string name="link_error">このリンクは無効です。</string>
     <string name="bottom_sheet_check_payment_info">支払い情報を確認中</string>
