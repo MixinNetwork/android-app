@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.os.Bundle
 import android.text.Editable
 import android.view.View
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,6 +13,7 @@ import kotlinx.android.synthetic.main.fragment_group_users_bottom_sheet.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
+import one.mixin.android.extension.alert
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.realSize
@@ -34,6 +36,7 @@ import javax.inject.Inject
 class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "GroupUsersBottomSheetDialogFragment"
+        const val GROUP_VOOICE_MAX_COUNT = 16
 
         fun newInstance(
             conversationId: String
@@ -105,7 +108,11 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (callState.isGroupCall() && !callState.users.isNullOrEmpty()) {
                 action_iv.setImageResource(R.drawable.ic_check)
             } else {
-                action_iv.setImageResource(R.drawable.ic_menu_call)
+                action_iv.setImageResource(R.drawable.ic_pip_call)
+                action_iv.setColorFilter(
+                    ContextCompat.getColor(context, R.color.colorAccent),
+                    android.graphics.PorterDuff.Mode.SRC_IN
+                )
             }
             action_iv.setOnClickListener {
                 val users = checkedUsers.toList()
@@ -121,11 +128,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
 
-        val alreadyUserIds = arrayListOf<String>()
-        callState.users?.mapTo(alreadyUserIds) { u ->
-            u.userId
-        }
-        groupUserAdapter.alreadyUserIds = alreadyUserIds
+        groupUserAdapter.alreadyUserIds = callState.users
         groupUserAdapter.listener = object : GroupUserListener {
             override fun onItemClick(user: User, checked: Boolean) {
                 if (checked) {
@@ -136,6 +139,13 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 selectAdapter.notifyDataSetChanged()
                 contentView.action_iv.isVisible = checkedUsers.isNotEmpty()
                 contentView.select_rv.layoutManager?.scrollToPosition(checkedUsers.size - 1)
+            }
+
+            override fun onFull() {
+                alert(getString(R.string.call_group_full, GROUP_VOOICE_MAX_COUNT))
+                    .setPositiveButton(R.string.ok) { dialog, _ ->
+                        dialog.dismiss()
+                    }.show()
             }
         }
 

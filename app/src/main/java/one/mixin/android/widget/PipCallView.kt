@@ -213,7 +213,9 @@ class PipCallView {
             override fun run() {
                 appContext.runOnUiThread {
                     val duration = System.currentTimeMillis() - connectedTime
-                    timeView?.text = duration.formatMillis()
+                    val text = duration.formatMillis()
+                    Timber.d("@@@ text: $text")
+                    timeView?.text = text
                 }
             }
         }

@@ -1271,10 +1271,14 @@ class ConversationFragment :
             group_flag.isVisible = false
             driver.isVisible = false
         }
+        tap_join_view.setOnClickListener {
+            CallActivity.show(requireContext(), conversationId)
+        }
         callState.observe(
             viewLifecycleOwner,
             Observer { state ->
                 chat_control.calling = state != CallService.CallState.STATE_IDLE
+                tap_join_view.isVisible = callState.isPendingGroupCall(conversationId)
             }
         )
         bindData()

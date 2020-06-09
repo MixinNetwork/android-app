@@ -13,13 +13,13 @@
         android:layout_height="40dp"
         android:layout_marginStart="4dp"
         android:layout_centerVertical="true"
-        android:background="@drawable/bg_circle_70_solid_gray">
+        android:background="@drawable/bg_menu_no_border">
 
         <ImageView
             android:layout_width="18dp"
             android:layout_height="18dp"
             android:layout_gravity="center"
-            android:src="@drawable/ic_menu_call"/>
+            android:src="@drawable/ic_pip_call"/>
     </FrameLayout>
 
     <Space

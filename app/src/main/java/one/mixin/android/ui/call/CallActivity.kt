@@ -27,6 +27,7 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.transition.AutoTransition
@@ -40,6 +41,7 @@ import kotlinx.android.synthetic.main.view_call_button.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.checkInlinePermissions
@@ -70,6 +72,12 @@ import java.util.concurrent.TimeoutException
 import javax.inject.Inject
 
 class CallActivity : BaseActivity(), SensorEventListener {
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+    private val viewModel: CallViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(CallViewModel::class.java)
+    }
 
     @Inject
     lateinit var callState: CallStateLiveData
@@ -108,18 +116,35 @@ class CallActivity : BaseActivity(), SensorEventListener {
         sensorManager = getSystemService()
         powerManager = getSystemService()
         wakeLock = powerManager?.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
+        val conversationId: String? = intent.getStringExtra(ARGS_CONVERSATION_ID)
         if (callState.isGroupCall()) {
             avatar.isVisible = false
             name_tv.isVisible = false
             users_rv.isVisible = true
             add_iv.isVisible = true
-            val callees = callState.users
+            val callees = if (conversationId == null) {
+                callState.users
+            } else {
+                callState.getUserByConversationId(conversationId)
+            }
             if (userAdapter == null) {
                 userAdapter = CallUserAdapter()
             }
             users_rv.layoutManager = GridLayoutManager(this, getSpanCount(callees?.size ?: 3))
             users_rv.adapter = userAdapter
-            userAdapter?.submitList(callees)
+            if (callees.isNullOrEmpty()) {
+                userAdapter?.submitList(null)
+            } else {
+                lifecycleScope.launch {
+                    Timber.d("@@@ callees: $callees")
+                    val users = viewModel.findMultiUsersByIds(callees.toSet())
+                    userAdapter?.submitList(users)
+                }
+            }
+
+            if (conversationId != null && callState.isPendingGroupCall(conversationId)) {
+                handleRinging()
+            }
         } else {
             avatar.isVisible = true
             name_tv.isVisible = true
@@ -191,7 +216,9 @@ class CallActivity : BaseActivity(), SensorEventListener {
                         call_cl.post { handleBusy() }
                     }
                     CallService.CallState.STATE_IDLE -> {
-                        call_cl.post { handleDisconnected() }
+                        if (conversationId == null || !callState.isPendingGroupCall(conversationId)) {
+                            call_cl.post { handleDisconnected() }
+                        }
                     }
                 }
             }
@@ -452,8 +479,9 @@ class CallActivity : BaseActivity(), SensorEventListener {
     companion object {
         const val TAG = "CallActivity"
 
-        fun show(context: Context) {
+        fun show(context: Context, conversationId: String? = null) {
             Intent(context, CallActivity::class.java).apply {
+                putExtra(ARGS_CONVERSATION_ID, conversationId)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }.run {
                 context.startActivity(this)

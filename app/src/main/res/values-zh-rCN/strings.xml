@@ -756,6 +756,7 @@
     <string name="call_decline">挂断</string>
     <string name="call_accept">接听</string>
     <string name="call_mute">静音</string>
+    <string name="call_group_full">群组语音最多支持%1$d人</string>
 
     <!-- restore&backup -->
     <string name="restore_info">从外部存储还原您的对话。如果您选择现在不进行还原，您稍后将无法还原资料。</string>

@@ -10,6 +10,12 @@ import one.mixin.android.webrtc.krakenDecline
 import one.mixin.android.webrtc.krakenEnd
 import one.mixin.android.webrtc.localEnd
 
+data class GroupCallState(
+    var conversationId: String
+) {
+    var users: ArrayList<String>? = null
+}
+
 class CallStateLiveData : LiveData<CallService.CallState>() {
     var state: CallService.CallState = CallService.CallState.STATE_IDLE
         set(value) {
@@ -21,9 +27,11 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     var conversationId: String? = null
     var trackId: String? = null
     var user: User? = null
-    var users: ArrayList<User>? = null
+    var users: ArrayList<String>? = null
     var connectedTime: Long? = null
     var isOffer: Boolean = true
+
+    private val pendingGroupCalls = mutableSetOf<GroupCallState>()
 
     fun reset() {
         conversationId = null
@@ -37,26 +45,69 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
 
     fun isGroupCall() = user == null
 
-    fun addUser(user: User) {
-        if (users == null) {
-            users = arrayListOf()
-        }
-        users?.let { us ->
-            val existsUser = us.find { u -> u.userId == user.userId }
-            if (existsUser != null) return
+    fun addPendingGroupCall(conversationId: String) {
+        pendingGroupCalls.add(GroupCallState(conversationId))
+        postValue(state)
+    }
 
-            us.add(user)
+    fun getUserByConversationId(conversationId: String) =
+        if (this.conversationId == conversationId) {
+            users
+        } else {
+            pendingGroupCalls.find {
+                it.conversationId == conversationId
+            }?.users
+        }
+
+    fun getUserCountByConversationId(conversationId: String): Int =
+        getUserByConversationId(conversationId)?.size ?: 0
+
+    fun setUsersByConversationId(conversationId: String, newUsers: ArrayList<String>) {
+        if (this.conversationId == conversationId) {
+            users = newUsers
+        } else {
+            val groupCallState = pendingGroupCalls.find {
+                it.conversationId == conversationId
+            } ?: return
+            groupCallState.users = newUsers
         }
     }
 
-    fun removeUser(user: User) {
-        if (users.isNullOrEmpty()) return
+    fun addUser(user: User, conversationId: String) {
+        if (this.conversationId == conversationId) {
+            users = addUserToList(user, users)
+        } else {
+            val groupCallState = pendingGroupCalls.find {
+                it.conversationId == conversationId
+            } ?: return
+            groupCallState.users = addUserToList(user, groupCallState.users)
+        }
+    }
 
-        users?.remove(user)
+    fun removeUser(user: User, conversationId: String) {
+        if (this.conversationId == conversationId) {
+            if (users.isNullOrEmpty()) return
+
+            users?.remove(user.userId)
+        } else {
+            val groupCallState = pendingGroupCalls.find {
+                it.conversationId == conversationId
+            } ?: return
+            groupCallState.users?.remove(user.userId)
+        }
     }
 
     fun isIdle() = state == CallService.CallState.STATE_IDLE
+    fun isNotIdle() = state != CallService.CallState.STATE_IDLE
     fun isConnected() = state == CallService.CallState.STATE_CONNECTED
+    fun isNotConnected() = state != CallService.CallState.STATE_CONNECTED
+
+    fun isPendingGroupCall(conversationId: String) =
+        if (this.conversationId == conversationId) {
+            isIdle()
+        } else {
+            pendingGroupCalls.any { it.conversationId == conversationId }
+        }
 
     fun handleHangup(ctx: Context) {
         when (state) {
@@ -87,5 +138,16 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
                 }
             else -> cancelCall(ctx)
         }
+    }
+
+    private fun addUserToList(user: User, users: ArrayList<String>? = null): ArrayList<String> {
+        val userList = users ?: arrayListOf()
+        userList.let { us ->
+            val existsUser = us.find { u -> u == user.userId }
+            if (existsUser == null) {
+                us.add(user.userId)
+            }
+        }
+        return userList
     }
 }

@@ -772,6 +772,7 @@
     <string name="call_decline">Decline</string>
     <string name="call_accept">Accept</string>
     <string name="call_mute">Mute</string>
+    <string name="call_group_full">Support up to %1$d people group voice</string>
 
     <!-- restore&backup -->
     <string name="restore_info">Restore your messages from external storage.\nIf you don\'t restore new, you won\'t be able to restore later.</string>

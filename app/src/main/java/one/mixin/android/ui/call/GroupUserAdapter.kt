@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_group_friend.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.inflate
+import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.GROUP_VOOICE_MAX_COUNT
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
@@ -56,6 +57,10 @@ class GroupUserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
         itemView.cb.isClickable = false
         itemView.setOnClickListener {
+            if (alreadyUserIds?.size ?: 0 + checkedMap.size >= GROUP_VOOICE_MAX_COUNT) {
+                listener?.onFull()
+                return@setOnClickListener
+            }
             itemView.cb.isChecked = !itemView.cb.isChecked
             checkedMap[user.identityNumber] = itemView.cb.isChecked
             listener?.onItemClick(user, itemView.cb.isChecked)
@@ -65,4 +70,5 @@ class GroupUserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
 interface GroupUserListener {
     fun onItemClick(user: User, checked: Boolean)
+    fun onFull()
 }

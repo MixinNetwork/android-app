@@ -189,6 +189,10 @@ class VoiceCallService : CallService() {
         disconnect()
     }
 
+    override fun onDisconnect() {
+        // Left empty
+    }
+
     private fun handleCallRemoteEnd() {
         if (callState.isIdle()) return
 

@@ -10,6 +10,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.extension.createAtToLong
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
@@ -20,6 +21,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.webrtc.DEFAULT_TIMEOUT_MINUTES
+import one.mixin.android.webrtc.PUBLISH_PLACEHOLDER
 import one.mixin.android.webrtc.answerCall
 import one.mixin.android.webrtc.busy
 import one.mixin.android.webrtc.cancelCall
@@ -80,11 +82,13 @@ class DecryptCallMessage(
         Timber.d("@@@ processKraken category: ${data.category}")
         if (data.category == MessageCategory.KRAKEN_PUBLISH.name) {
             syncUser(data.userId)?.let { user ->
-                receivePublish(ctx, user, data)
+                val krakenDataString = String(data.data.decodeBase64())
+                val needBackground = krakenDataString == PUBLISH_PLACEHOLDER && callState.trackId.isNullOrEmpty()
+                receivePublish(ctx, user, data, !needBackground)
             }
         } else if (data.category == MessageCategory.KRAKEN_INVITE.name) {
             syncUser(data.userId)?.let { user ->
-                receiveInvite(ctx, data, arrayListOf(user))
+                receiveInvite(ctx, data, arrayListOf(user.userId))
             }
         }
         notifyServer(data)

@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
-import androidx.lifecycle.Observer
 import com.google.gson.Gson
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.runBlocking
@@ -84,17 +83,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
                 self = user
             }
         }
-        callState.observe(
-            this,
-            Observer { state ->
-                if (state == CallState.STATE_CONNECTED && callState.isGroupCall() && pipCallView.timer == null) {
-                    callState.connectedTime?.let { pipCallView.startTimer(it) }
-                } else if (state != CallState.STATE_CONNECTED && callState.isGroupCall() && pipCallView.timer != null) {
-                    pipCallView.stopTimer()
-                }
-            }
-        )
-
         supportsOreo {
             updateForegroundNotification()
         }
@@ -137,12 +125,15 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         audioManager.stop()
         peerConnectionClient.close()
         timeoutFuture?.cancel(true)
+
+        onDisconnect()
     }
 
     abstract fun handleIntent(intent: Intent): Boolean
     abstract fun handleCallLocalFailed()
     abstract fun handleCallCancel(intent: Intent? = null)
     abstract fun handleCallLocalEnd(intent: Intent? = null)
+    abstract fun onDisconnect()
 
     override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {
     }
@@ -173,7 +164,8 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     private fun handleConnected() {
         if (callState.isConnected()) return
 
-        callState.connectedTime = System.currentTimeMillis()
+        val connectedTime = System.currentTimeMillis()
+        callState.connectedTime = connectedTime
         callState.state = CallState.STATE_CONNECTED
         updateForegroundNotification()
         timeoutFuture?.cancel(true)
@@ -181,6 +173,8 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         audioManager.stop()
         peerConnectionClient.setAudioEnable(audioEnable)
         peerConnectionClient.enableCommunication()
+
+        pipCallView.startTimer(connectedTime)
     }
 
     private fun handleMuteAudio(intent: Intent) {
@@ -204,6 +198,8 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     protected fun updateForegroundNotification() {
+        if (!callServiceForeground) return
+
         CallNotificationBuilder.getCallNotification(this, callState)?.let {
             startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION, it)
         }
@@ -274,6 +270,8 @@ const val EXTRA_MUTE = "mute"
 const val EXTRA_SPEAKERPHONE = "speakerphone"
 const val EXTRA_PENDING_CANDIDATES = "pending_candidates"
 
+var callServiceForeground: Boolean = true
+
 inline fun <reified T : CallService> muteAudio(ctx: Context, checked: Boolean) = startService<T>(ctx, ACTION_MUTE_AUDIO) {
     it.putExtra(EXTRA_MUTE, checked)
 }
@@ -289,13 +287,20 @@ inline fun <reified T : CallService> disconnect(ctx: Context) {
 inline fun <reified T : CallService> startService(
     ctx: Context,
     action: String? = null,
+    foreground: Boolean = true,
     putExtra: ((intent: Intent) -> Unit)
 ) {
     val intent = Intent(ctx, T::class.java).apply {
         this.action = action
         putExtra.invoke(this)
     }
-    ContextCompat.startForegroundService(ctx, intent)
+    if (foreground) {
+        callServiceForeground = true
+        ContextCompat.startForegroundService(ctx, intent)
+    } else {
+        callServiceForeground = false
+        ctx.startService(intent)
+    }
 }
 
 inline fun <reified T : CallService> stopService(context: Context) {
