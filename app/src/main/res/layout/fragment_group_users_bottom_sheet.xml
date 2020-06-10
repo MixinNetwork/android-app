@@ -60,6 +60,7 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:padding="12dp"
+            android:visibility="gone"
             android:background="@drawable/bg_menu_no_border"
             android:src="@drawable/ic_check"/>
     </RelativeLayout>

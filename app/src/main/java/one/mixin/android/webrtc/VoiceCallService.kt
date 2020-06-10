@@ -189,7 +189,7 @@ class VoiceCallService : CallService() {
         disconnect()
     }
 
-    override fun onDisconnect() {
+    override fun onDestroyed() {
         // Left empty
     }
 

@@ -84,6 +84,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             setCustomView(contentView)
             setCustomViewHeight((requireContext().realSize().y * .6f).toInt())
         }
+        val inGroupCallUsers = callState.getUserByConversationId(conversationId)
 
         contentView.apply {
             close_iv.setOnClickListener { dismiss() }
@@ -105,7 +106,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             user_rv.layoutManager = LinearLayoutManager(requireContext())
             user_rv.adapter = groupUserAdapter
 
-            if (callState.isGroupCall() && !callState.users.isNullOrEmpty()) {
+            if (callState.isGroupCall() && !inGroupCallUsers.isNullOrEmpty()) {
                 action_iv.setImageResource(R.drawable.ic_check)
             } else {
                 action_iv.setImageResource(R.drawable.ic_pip_call)
@@ -128,7 +129,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
 
-        groupUserAdapter.alreadyUserIds = callState.users
+        groupUserAdapter.alreadyUserIds = inGroupCallUsers
         groupUserAdapter.listener = object : GroupUserListener {
             override fun onItemClick(user: User, checked: Boolean) {
                 if (checked) {

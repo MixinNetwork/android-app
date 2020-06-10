@@ -41,7 +41,6 @@ import kotlinx.android.synthetic.main.view_call_button.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.checkInlinePermissions
@@ -53,8 +52,10 @@ import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.util.Session
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
@@ -88,6 +89,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     private var userAdapter: CallUserAdapter? = null
 
+    private val self = Session.getAccount()!!.toUser()
+
     private val pipCallView by lazy {
         PipCallView.get()
     }
@@ -116,34 +119,22 @@ class CallActivity : BaseActivity(), SensorEventListener {
         sensorManager = getSystemService()
         powerManager = getSystemService()
         wakeLock = powerManager?.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
-        val conversationId: String? = intent.getStringExtra(ARGS_CONVERSATION_ID)
         if (callState.isGroupCall()) {
             avatar.isVisible = false
             name_tv.isVisible = false
             users_rv.isVisible = true
             add_iv.isVisible = true
-            val callees = if (conversationId == null) {
-                callState.users
-            } else {
-                callState.getUserByConversationId(conversationId)
-            }
+            val callees = callState.getUserByConversationId(callState.conversationId!!)
             if (userAdapter == null) {
                 userAdapter = CallUserAdapter()
             }
             users_rv.layoutManager = GridLayoutManager(this, getSpanCount(callees?.size ?: 3))
             users_rv.adapter = userAdapter
+            Timber.d("@@@ callees: $callees")
             if (callees.isNullOrEmpty()) {
-                userAdapter?.submitList(null)
+                userAdapter?.submitList(listOf(self))
             } else {
-                lifecycleScope.launch {
-                    Timber.d("@@@ callees: $callees")
-                    val users = viewModel.findMultiUsersByIds(callees.toSet())
-                    userAdapter?.submitList(users)
-                }
-            }
-
-            if (conversationId != null && callState.isPendingGroupCall(conversationId)) {
-                handleRinging()
+                refreshUsersByIds(callees)
             }
         } else {
             avatar.isVisible = true
@@ -216,9 +207,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                         call_cl.post { handleBusy() }
                     }
                     CallService.CallState.STATE_IDLE -> {
-                        if (conversationId == null || !callState.isPendingGroupCall(conversationId)) {
-                            call_cl.post { handleDisconnected() }
-                        }
+                        call_cl.post { handleDisconnected() }
                     }
                 }
             }
@@ -257,7 +246,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         if (wakeLock?.isHeld == true) {
             wakeLock?.release()
         }
-        stopTimber()
+        stopTimer()
         super.onPause()
     }
 
@@ -289,6 +278,12 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     private fun handleHangup() {
         callState.handleHangup(this)
+    }
+
+    private fun refreshUsersByIds(ids: ArrayList<String>) = lifecycleScope.launch {
+        val users = viewModel.findMultiUsersByIds(ids.toSet()) + self
+        Timber.d("@@@ refreshUsersByIds users: $users")
+        userAdapter?.submitList(users)
     }
 
     private fun setBlurBg(url: String) = lifecycleScope.launch(Dispatchers.IO) {
@@ -468,7 +463,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         timer?.schedule(timerTask, 0, 1000)
     }
 
-    private fun stopTimber() {
+    private fun stopTimer() {
         timer?.cancel()
         timer?.purge()
         timer = null
@@ -479,9 +474,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
     companion object {
         const val TAG = "CallActivity"
 
-        fun show(context: Context, conversationId: String? = null) {
+        fun show(context: Context) {
             Intent(context, CallActivity::class.java).apply {
-                putExtra(ARGS_CONVERSATION_ID, conversationId)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }.run {
                 context.startActivity(this)

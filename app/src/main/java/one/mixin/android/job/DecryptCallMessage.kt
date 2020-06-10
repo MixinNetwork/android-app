@@ -62,14 +62,19 @@ class DecryptCallMessage(
     fun onRun(data: BlazeMessageData) {
         try {
             syncConversation(data)
-            if (isExistMessage(data.messageId)) {
-                updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
-            } else if (data.category.startsWith("WEBRTC_")) {
-                processWebRTC(data)
-            } else if (data.category.startsWith("KRAKEN_")) {
-                processKraken(data)
-            } else {
-                updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+            when {
+                isExistMessage(data.messageId) -> {
+                    updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+                }
+                data.category.startsWith("WEBRTC_") -> {
+                    processWebRTC(data)
+                }
+                data.category.startsWith("KRAKEN_") -> {
+                    processKraken(data)
+                }
+                else -> {
+                    updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+                }
             }
         } catch (e: Exception) {
             Timber.e("DecryptCallMessage failure, $e")
@@ -79,16 +84,22 @@ class DecryptCallMessage(
 
     private fun processKraken(data: BlazeMessageData) {
         val ctx = MixinApplication.appContext
-        Timber.d("@@@ processKraken category: ${data.category}")
-        if (data.category == MessageCategory.KRAKEN_PUBLISH.name) {
-            syncUser(data.userId)?.let { user ->
-                val krakenDataString = String(data.data.decodeBase64())
-                val needBackground = krakenDataString == PUBLISH_PLACEHOLDER && callState.trackId.isNullOrEmpty()
-                receivePublish(ctx, user, data, !needBackground)
+        Timber.d("@@@ processKraken category: ${data.category}, data: $data")
+        when (data.category) {
+            MessageCategory.KRAKEN_PUBLISH.name -> {
+                syncUser(data.userId)?.let { user ->
+                    val krakenDataString = String(data.data.decodeBase64())
+                    val needBackground = krakenDataString == PUBLISH_PLACEHOLDER && callState.trackId.isNullOrEmpty()
+                    receivePublish(ctx, user, data, !needBackground)
+                }
             }
-        } else if (data.category == MessageCategory.KRAKEN_INVITE.name) {
-            syncUser(data.userId)?.let { user ->
-                receiveInvite(ctx, data, arrayListOf(user.userId))
+            MessageCategory.KRAKEN_INVITE.name -> {
+                syncUser(data.userId)?.let { user ->
+                    receiveInvite(ctx, data.conversationId, arrayListOf(user.userId))
+                }
+            }
+            MessageCategory.KRAKEN_END.name -> {
+                callState.removeUser(data.userId, data.conversationId)
             }
         }
         notifyServer(data)

@@ -9,6 +9,7 @@ import one.mixin.android.webrtc.krakenCancel
 import one.mixin.android.webrtc.krakenDecline
 import one.mixin.android.webrtc.krakenEnd
 import one.mixin.android.webrtc.localEnd
+import timber.log.Timber
 
 data class GroupCallState(
     var conversationId: String
@@ -27,7 +28,6 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     var conversationId: String? = null
     var trackId: String? = null
     var user: User? = null
-    var users: ArrayList<String>? = null
     var connectedTime: Long? = null
     var isOffer: Boolean = true
 
@@ -37,7 +37,6 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         conversationId = null
         trackId = null
         user = null
-        users = null
         connectedTime = null
         isOffer = true
         state = CallService.CallState.STATE_IDLE
@@ -50,51 +49,49 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         postValue(state)
     }
 
-    fun getUserByConversationId(conversationId: String) =
-        if (this.conversationId == conversationId) {
-            users
-        } else {
-            pendingGroupCalls.find {
-                it.conversationId == conversationId
-            }?.users
+    fun removePendingGroupCall(conversationId: String): Boolean {
+        val each = pendingGroupCalls.iterator()
+        var removed = false
+        while (each.hasNext()) {
+            if (conversationId == each.next().conversationId) {
+                each.remove()
+                removed = true
+            }
         }
+        Timber.d("removePendingGroupCall $removed")
+        postValue(state)
+        return removed
+    }
+
+    fun getUserByConversationId(conversationId: String) =
+        pendingGroupCalls.find {
+            it.conversationId == conversationId
+        }?.users
 
     fun getUserCountByConversationId(conversationId: String): Int =
         getUserByConversationId(conversationId)?.size ?: 0
 
-    fun setUsersByConversationId(conversationId: String, newUsers: ArrayList<String>) {
-        if (this.conversationId == conversationId) {
-            users = newUsers
-        } else {
-            val groupCallState = pendingGroupCalls.find {
-                it.conversationId == conversationId
-            } ?: return
-            groupCallState.users = newUsers
-        }
+    fun setUsersByConversationId(conversationId: String, newUsers: ArrayList<String>?) {
+        if (newUsers.isNullOrEmpty()) return
+
+        val groupCallState = pendingGroupCalls.find {
+            it.conversationId == conversationId
+        } ?: return
+        groupCallState.users = newUsers
     }
 
-    fun addUser(user: User, conversationId: String) {
-        if (this.conversationId == conversationId) {
-            users = addUserToList(user, users)
-        } else {
-            val groupCallState = pendingGroupCalls.find {
-                it.conversationId == conversationId
-            } ?: return
-            groupCallState.users = addUserToList(user, groupCallState.users)
-        }
+    fun addUser(userId: String, conversationId: String) {
+        val groupCallState = pendingGroupCalls.find {
+            it.conversationId == conversationId
+        } ?: return
+        groupCallState.users = addUserToList(userId, groupCallState.users)
     }
 
-    fun removeUser(user: User, conversationId: String) {
-        if (this.conversationId == conversationId) {
-            if (users.isNullOrEmpty()) return
-
-            users?.remove(user.userId)
-        } else {
-            val groupCallState = pendingGroupCalls.find {
-                it.conversationId == conversationId
-            } ?: return
-            groupCallState.users?.remove(user.userId)
-        }
+    fun removeUser(userId: String, conversationId: String) {
+        val groupCallState = pendingGroupCalls.find {
+            it.conversationId == conversationId
+        } ?: return
+        groupCallState.users?.remove(userId)
     }
 
     fun isIdle() = state == CallService.CallState.STATE_IDLE
@@ -140,12 +137,12 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         }
     }
 
-    private fun addUserToList(user: User, users: ArrayList<String>? = null): ArrayList<String> {
+    private fun addUserToList(userId: String, users: ArrayList<String>? = null): ArrayList<String> {
         val userList = users ?: arrayListOf()
         userList.let { us ->
-            val existsUser = us.find { u -> u == user.userId }
+            val existsUser = us.find { u -> u == userId }
             if (existsUser == null) {
-                us.add(user.userId)
+                us.add(userId)
             }
         }
         return userList

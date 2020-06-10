@@ -176,6 +176,7 @@ import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.outgoingCall
+import one.mixin.android.webrtc.receiveInvite
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.toLocationData
@@ -1272,7 +1273,8 @@ class ConversationFragment :
             driver.isVisible = false
         }
         tap_join_view.setOnClickListener {
-            CallActivity.show(requireContext(), conversationId)
+            val users = callState.getUserByConversationId(conversationId)
+            receiveInvite(requireContext(), conversationId, users)
         }
         callState.observe(
             viewLifecycleOwner,

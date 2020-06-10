@@ -28,6 +28,7 @@ import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
 import org.webrtc.StatsReport
+import timber.log.Timber
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.atomic.AtomicBoolean
@@ -110,30 +111,32 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     override fun onDestroy() {
+        Timber.d("@@@ onDestroy")
         super.onDestroy()
         if (isDestroyed.compareAndSet(false, true)) {
-            pipCallView.close()
             audioManager.release()
-            callState.reset()
+
+            onDestroyed()
         }
     }
 
     protected fun disconnect() {
+        Timber.d("@@@ disconnect")
         if (isDestroyed.get()) return
 
         stopForeground(true)
         audioManager.stop()
+        pipCallView.close()
+        callState.reset()
         peerConnectionClient.close()
         timeoutFuture?.cancel(true)
-
-        onDisconnect()
     }
 
     abstract fun handleIntent(intent: Intent): Boolean
     abstract fun handleCallLocalFailed()
     abstract fun handleCallCancel(intent: Intent? = null)
     abstract fun handleCallLocalEnd(intent: Intent? = null)
-    abstract fun onDisconnect()
+    abstract fun onDestroyed()
 
     override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {
     }
