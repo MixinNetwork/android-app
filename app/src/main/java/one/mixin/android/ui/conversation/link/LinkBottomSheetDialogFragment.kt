@@ -3,7 +3,6 @@ package one.mixin.android.ui.conversation.link
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.net.Uri
-import android.net.UrlQuerySanitizer
 import android.os.Build
 import android.view.Gravity
 import android.view.View
@@ -542,7 +541,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                 return
             }
             lifecycleScope.launch {
-                if (!showTransfer(url)) {
+                val newUrl = url.replaceFirst(":", "://")
+                if (!showTransfer(newUrl)) {
                     QrScanBottomSheetDialogFragment.newInstance(url)
                         .show(parentFragmentManager, QrScanBottomSheetDialogFragment.TAG)
                 }
@@ -587,22 +587,22 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
     }
 
     private suspend fun showTransfer(text: String): Boolean {
-        val sanitizer = UrlQuerySanitizer(text)
+        val uri = text.toUri()
         val amount = try {
-            sanitizer.getValue("amount").toDouble()
+            uri.getQueryParameter("amount")!!.toDouble()
         } catch (e: Exception) {
             return false
         }.toString()
-        val userId = sanitizer.getValue("recipient")
+        val userId = uri.getQueryParameter("recipient")
         if (userId == null || !userId.isUUID()) {
             return false
         }
-        val assetId = sanitizer.getValue("asset")
+        val assetId = uri.getQueryParameter("asset")
         if (assetId == null || !assetId.isUUID()) {
             return false
         }
-        val trace = sanitizer.getValue("trace") ?: UUID.randomUUID().toString()
-        val memo = sanitizer.getValue("memo")
+        val trace = uri.getQueryParameter("trace") ?: UUID.randomUUID().toString()
+        val memo = uri.getQueryParameter("memo")
 
         var asset = linkViewModel.findAssetItemById(assetId)
         if (asset == null) {
