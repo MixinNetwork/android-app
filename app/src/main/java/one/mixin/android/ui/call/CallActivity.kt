@@ -351,7 +351,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
             } else {
                 View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
-        pipCallView.show(this)
+        pipCallView.show(this, callState.connectedTime)
         AnimatorSet().apply {
             playTogether(
                 ObjectAnimator.ofFloat(windowView, View.SCALE_X, scale),

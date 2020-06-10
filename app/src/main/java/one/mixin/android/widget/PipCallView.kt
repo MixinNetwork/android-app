@@ -108,7 +108,8 @@ class PipCallView {
     }
 
     fun show(
-        activity: Activity
+        activity: Activity,
+        connectedTime: Long? = null
     ) {
         val isLandscape = appContext.isLandscape()
         val realSize = appContext.realSize()
@@ -192,6 +193,10 @@ class PipCallView {
         } catch (e: Exception) {
             Timber.e(e)
         }
+
+        if (connectedTime != null) {
+            startTimer(connectedTime)
+        }
     }
 
     var shown = false
@@ -208,6 +213,9 @@ class PipCallView {
         private set
 
     fun startTimer(connectedTime: Long) {
+        Timber.d("@@@ startTimer timer: $timer")
+        if (timer != null) return
+
         timer = Timer(true)
         val timerTask = object : TimerTask() {
             override fun run() {
@@ -223,6 +231,7 @@ class PipCallView {
     }
 
     fun stopTimer() {
+        Timber.d("@@@ stopTimer")
         timer?.cancel()
         timer?.purge()
         timer = null
@@ -243,33 +252,27 @@ class PipCallView {
         var animatorY: Animator? = null
         val editor = appContext.defaultSharedPreferences.edit()
         when {
-            windowLayoutParams.x < startX -> {
+            windowLayoutParams.x < startX || windowLayoutParams.x <= endX / 2 -> {
                 editor.putInt(CALL_SIDE_X, 0)
-                animatorX = ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, startX)
-            }
-            windowLayoutParams.x > endX -> {
-                editor.putInt(CALL_SIDE_X, 1)
-                animatorX = ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX)
+                animatorX = ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, 0)
             }
             else -> {
-                editor.putInt(CALL_SIDE_X, 2)
-                editor.putFloat(CALL_PX, (windowLayoutParams.x - startX) / (endX - startX).toFloat())
+                editor.putInt(CALL_SIDE_X, 1)
+                animatorX = ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX)
             }
         }
         when {
             windowLayoutParams.y < startY -> {
-                editor.putInt(CALL_SIDE_Y, 0)
+                editor.putFloat(CALL_PY, startY.toFloat() / realY)
                 animatorY = ObjectAnimator.ofInt(this, "y", windowLayoutParams.y, startY)
             }
             windowLayoutParams.y > endY -> {
-                editor.putInt(CALL_SIDE_Y, 1)
+                editor.putFloat(CALL_PY, endY.toFloat() / realY)
                 animatorY = ObjectAnimator.ofInt(this, "y", windowLayoutParams.y, endY)
             }
-            else -> {
-                editor.putInt(CALL_SIDE_Y, 2)
-                editor.putFloat(CALL_PY, (windowLayoutParams.y - startY) / (endY - startY).toFloat())
-            }
+            else -> editor.putFloat(CALL_PY, windowLayoutParams.y.toFloat() / realY)
         }
+        editor.putInt(CALL_SIDE_Y, 2)
         editor.apply()
         val animators = mutableListOf<Animator>()
         animatorX?.let { animators.add(it) }
