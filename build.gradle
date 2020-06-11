@@ -22,7 +22,7 @@ buildscript {
         ext.viewpagerVersion = '1.1.0-alpha01'
         ext.espressoVersion = '3.2.0'
         ext.cameraxVersion = '1.0.0-beta05'
-        ext.cameraxviewVersion = '1.0.0-alpha11'
+        ext.cameraxviewVersion = '1.0.0-alpha12'
         ext.glideVersion = '4.11.0'
         ext.webpdecoderVesion = '1.7.4.11.0'
         ext.timberVersion = '4.7.1'
