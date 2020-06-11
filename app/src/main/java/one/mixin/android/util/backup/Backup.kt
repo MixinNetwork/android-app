@@ -154,7 +154,7 @@ suspend fun findNewBackup(
     context: Context,
     coroutineContext: CoroutineContext
 ): File? = withContext(coroutineContext) {
-    val backupDir = context.getOldBackupPath() ?: return@withContext null
+    val backupDir = context.getBackupPath() ?: return@withContext null
     if (!backupDir.exists() || !backupDir.isDirectory) return@withContext null
     if (checkDb("$backupDir${File.separator}$DB_NAME")) {
         return@withContext File("$backupDir${File.separator}$DB_NAME")
