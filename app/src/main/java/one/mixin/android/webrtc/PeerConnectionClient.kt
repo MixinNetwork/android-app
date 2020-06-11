@@ -4,13 +4,18 @@ import android.content.Context
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
+import org.webrtc.CryptoOptions
 import org.webrtc.DataChannel
 import org.webrtc.IceCandidate
+import org.webrtc.Logging
 import org.webrtc.MediaConstraints
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
+import org.webrtc.RTCFrameDecryptor
+import org.webrtc.RTCFrameEncryptor
 import org.webrtc.RtpReceiver
+import org.webrtc.RtpSender
 import org.webrtc.RtpTransceiver
 import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
@@ -37,6 +42,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     private var peerConnection: PeerConnection? = null
     private var audioTrack: AudioTrack? = null
     private var audioSource: AudioSource? = null
+    private var localSender: RtpSender? = null
     private val sdpConstraint = MediaConstraints()
 
     fun createPeerConnectionFactory(options: PeerConnectionFactory.Options) {
@@ -195,17 +201,19 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
             enableDtlsSrtp = true
             continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
+            cryptoOptions = CryptoOptions.builder().setRequireFrameEncryption(true).createCryptoOptions()
         }
         val peerConnection = factory!!.createPeerConnection(rtcConfig, pcObserver)
         if (peerConnection == null) {
             reportError("PeerConnection is not created")
             return null
         }
-        // Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO);
+        Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO);
         peerConnection.setAudioPlayout(false)
         peerConnection.setAudioRecording(false)
 
-        peerConnection.addTrack(createAudioTrack())
+        localSender = peerConnection.addTrack(createAudioTrack())
+        localSender!!.setFrameEncryptor(RTCFrameEncryptor("e8ffc7e56311679f12b6fc91aa77a5eb".toByteArray()))
         return peerConnection
     }
 
@@ -293,6 +301,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
 
         override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
+            receiver?.setFrameDecryptor(RTCFrameDecryptor("e8ffc7e56311679f12b6fc91aa77a5eb".toByteArray()))
             Timber.d("onAddTrack=%s", receiver.toString())
             receiver?.track()?.setEnabled(true)
         }
