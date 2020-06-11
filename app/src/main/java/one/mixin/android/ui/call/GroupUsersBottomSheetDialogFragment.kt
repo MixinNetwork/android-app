@@ -36,7 +36,7 @@ import javax.inject.Inject
 class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "GroupUsersBottomSheetDialogFragment"
-        const val GROUP_VOOICE_MAX_COUNT = 16
+        const val GROUP_VOICE_MAX_COUNT = 16
 
         fun newInstance(
             conversationId: String
@@ -143,7 +143,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
             override fun onFull() {
-                alert(getString(R.string.call_group_full, GROUP_VOOICE_MAX_COUNT))
+                alert(getString(R.string.call_group_full, GROUP_VOICE_MAX_COUNT))
                     .setPositiveButton(R.string.ok) { dialog, _ ->
                         dialog.dismiss()
                     }.show()

@@ -195,7 +195,9 @@ class GroupCallService : CallService() {
         }
         val currentCount = callState.getUserCountByConversationId(conversationId)
         if (currentCount < peerList.peers.size) {
-            callState.setUsersByConversationId(conversationId, peerList.peers)
+            val userIdList = arrayListOf<String>()
+            peerList.peers.mapTo(userIdList) { it.userId }
+            callState.setUsersByConversationId(conversationId, userIdList)
         }
     }
 
@@ -461,7 +463,7 @@ private const val ACTION_KRAKEN_DECLINE = "kraken_decline"
 const val PUBLISH_PLACEHOLDER = "PLACEHOLDER"
 
 data class PeerList(
-    val peers: ArrayList<String>?
+    val peers: ArrayList<UserSession>?
 )
 
 fun publish(ctx: Context, conversationId: String) =
