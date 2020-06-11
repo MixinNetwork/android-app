@@ -136,7 +136,7 @@ class GroupCallService : CallService() {
         if (data.getSessionDescription().type == SessionDescription.Type.ANSWER) {
             peerConnectionClient.setAnswerSdp(data.getSessionDescription())
             callState.trackId = data.trackId
-            scheduledExecutors.scheduleAtFixedRate(SubscribeRunnable(data.trackId), 0, 3, TimeUnit.SECONDS)
+            sendSubscribe(data.trackId)
         }
     }
 
@@ -341,12 +341,6 @@ class GroupCallService : CallService() {
                 krakenParam = KrakenParam(jsep, candidate, trackId)
             )
         )
-    }
-
-    inner class SubscribeRunnable(private val trackId: String) : Runnable {
-        override fun run() {
-            sendSubscribe(trackId)
-        }
     }
 
     inner class ListRunnable(private val conversationId: String) : Runnable {
