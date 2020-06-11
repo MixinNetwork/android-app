@@ -136,7 +136,6 @@ dependencies {
     implementation "androidx.browser:browser:${supportLibVersion}"
     implementation "androidx.constraintlayout:constraintlayout:${constraintLayoutVersion}"
     implementation "androidx.core:core-ktx:${ktxVersion}"
-    implementation "androidx.collection:collection:${collectionx}"
     implementation "androidx.collection:collection-ktx:${collectionx}"
     implementation "androidx.preference:preference-ktx:${preference_version}"
     implementation "androidx.viewpager2:viewpager2:${viewpagerVersion}"
@@ -260,8 +259,6 @@ dependencies {
     implementation "io.noties.markwon:ext-tasklist:${markwonVersion}"
     implementation "com.github.SandroMachado:BitcoinPaymentURI:${bitcoinPaymentURI}"
     implementation "com.caverock:androidsvg-aar:${svgVersion}"
-
-//    implementation "org.webrtc:google-webrtc:${webrtcVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

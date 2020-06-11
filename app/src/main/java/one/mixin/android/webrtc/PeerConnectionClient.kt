@@ -201,7 +201,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
             enableDtlsSrtp = true
             continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
-            cryptoOptions = CryptoOptions.builder().setRequireFrameEncryption(true).createCryptoOptions()
+            // cryptoOptions = CryptoOptions.builder().setRequireFrameEncryption(true).createCryptoOptions()
         }
         val peerConnection = factory!!.createPeerConnection(rtcConfig, pcObserver)
         if (peerConnection == null) {
@@ -213,7 +213,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         peerConnection.setAudioRecording(false)
 
         localSender = peerConnection.addTrack(createAudioTrack())
-        localSender!!.setFrameEncryptor(RTCFrameEncryptor("e8ffc7e56311679f12b6fc91aa77a5eb".toByteArray()))
+        // localSender!!.setFrameEncryptor(RTCFrameEncryptor("e8ffc7e56311679f12b6fc91aa77a5eb".toByteArray()))
         return peerConnection
     }
 
@@ -301,7 +301,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
 
         override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
-            receiver?.setFrameDecryptor(RTCFrameDecryptor("e8ffc7e56311679f12b6fc91aa77a5eb".toByteArray()))
+            // receiver?.setFrameDecryptor(RTCFrameDecryptor("e8ffc7e56311679f12b6fc91aa77a5eb".toByteArray()))
             Timber.d("onAddTrack=%s", receiver.toString())
             receiver?.track()?.setEnabled(true)
         }
