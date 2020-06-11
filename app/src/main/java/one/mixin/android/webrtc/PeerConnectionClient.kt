@@ -164,13 +164,20 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             peerConnection = null
             audioSource?.dispose()
             audioSource = null
-            factory?.dispose()
-            factory = null
             events.onPeerConnectionClosed()
         }
     }
 
+    fun release() {
+        close()
+        executor.execute {
+            factory?.dispose()
+            factory = null
+        }
+    }
+
     private fun reportError(error: String) {
+        Timber.d("@@@ reportError: $error")
         executor.execute {
             peerConnection?.let { pc ->
                 val localSdp = "{ localDescription: { description: ${pc.localDescription.description}, type: ${pc.localDescription.type} }"

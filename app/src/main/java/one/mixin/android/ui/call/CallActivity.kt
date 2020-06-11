@@ -189,6 +189,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         callState.observe(
             this,
             Observer { state ->
+                Timber.d("@@@ state: $state")
                 when (state) {
                     CallService.CallState.STATE_DIALING -> {
                         volumeControlStream = AudioManager.STREAM_VOICE_CALL
@@ -281,7 +282,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     private fun refreshUsersByIds(ids: ArrayList<String>) = lifecycleScope.launch {
-        val users = viewModel.findMultiUsersByIds(ids.toSet()) + self
+        val users = viewModel.findMultiUsersByIds(ids.toSet())
         Timber.d("@@@ refreshUsersByIds users: $users")
         userAdapter?.submitList(users)
     }

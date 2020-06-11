@@ -115,6 +115,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         super.onDestroy()
         if (isDestroyed.compareAndSet(false, true)) {
             audioManager.release()
+            peerConnectionClient.release()
 
             onDestroyed()
         }
@@ -122,6 +123,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     protected fun disconnect() {
         Timber.d("@@@ disconnect")
+        callState.state = CallState.STATE_IDLE
         if (isDestroyed.get()) return
 
         stopForeground(true)
@@ -229,6 +231,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     private fun handleFetchTurnError() {
+        Timber.d("@@@ handleFetchTurnError")
         callExecutor.execute { handleCallLocalFailed() }
     }
 
@@ -265,7 +268,6 @@ const val DEFAULT_TIMEOUT_MINUTES = 1L
 const val ACTION_MUTE_AUDIO = "mute_audio"
 const val ACTION_SPEAKERPHONE = "speakerphone"
 
-const val EXTRA_TO_IDLE = "from_notification"
 const val EXTRA_CONVERSATION_ID = "conversation_id"
 const val EXTRA_USERS = "users"
 const val EXTRA_BLAZE = "blaze"

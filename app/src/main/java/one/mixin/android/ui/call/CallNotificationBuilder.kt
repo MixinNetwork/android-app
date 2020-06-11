@@ -13,7 +13,6 @@ import one.mixin.android.webrtc.ACTION_CALL_CANCEL
 import one.mixin.android.webrtc.ACTION_CALL_DECLINE
 import one.mixin.android.webrtc.ACTION_CALL_LOCAL_END
 import one.mixin.android.webrtc.CallService
-import one.mixin.android.webrtc.EXTRA_TO_IDLE
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
 
@@ -51,9 +50,7 @@ class CallNotificationBuilder {
                             context, clazz, ACTION_CALL_CANCEL, R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_cancel
-                        ) {
-                            it.putExtra(EXTRA_TO_IDLE, true)
-                        }
+                        )
                     )
                 }
                 CallService.CallState.STATE_RINGING -> {
@@ -80,9 +77,7 @@ class CallNotificationBuilder {
                             context, clazz, ACTION_CALL_LOCAL_END, R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_hang_up
-                        ) {
-                            it.putExtra(EXTRA_TO_IDLE, true)
-                        }
+                        )
                     )
                 }
                 else -> {
@@ -93,9 +88,7 @@ class CallNotificationBuilder {
                             context, clazz, action, R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_hang_up
-                        ) {
-                            it.putExtra(EXTRA_TO_IDLE, true)
-                        }
+                        )
                     )
                 }
             }

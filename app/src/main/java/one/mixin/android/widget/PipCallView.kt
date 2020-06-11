@@ -202,11 +202,12 @@ class PipCallView {
     var shown = false
 
     fun close() {
+        Timber.d("@@@ close shown:$shown")
         if (shown) {
             shown = false
             windowManager.removeView(windowView)
-            stopTimer()
         }
+        stopTimer()
     }
 
     var timer: Timer? = null
