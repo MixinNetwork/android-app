@@ -81,7 +81,7 @@ class GroupCallService : CallService() {
         if (krakenDataString == PUBLISH_PLACEHOLDER) {
             if (!callState.trackId.isNullOrEmpty()) {
                 callState.conversationId = cid
-                sendSubscribe(callState.trackId!!)
+                sendSubscribe(cid, callState.trackId!!)
             } else {
                 callState.addPendingGroupCall(cid)
                 val existsFuture = scheduledFutures[cid]
@@ -141,14 +141,14 @@ class GroupCallService : CallService() {
             peerConnectionClient.setAnswerSdp(data.getSessionDescription())
             callState.trackId = data.trackId
             subscribeFuture?.cancel(true)
-            subscribeFuture = scheduledExecutors.scheduleAtFixedRate(SubscribeRunnable(data.trackId), 0, 3, TimeUnit.SECONDS)
+            subscribeFuture = scheduledExecutors.scheduleAtFixedRate(SubscribeRunnable(callState.conversationId!!, data.trackId), 0, 3, TimeUnit.SECONDS)
         }
     }
 
-    private fun sendSubscribe(trackId: String) {
+    private fun sendSubscribe(conversationId: String, trackId: String) {
         Timber.d("@@@ sendSubscribe")
         val blazeMessageParam = BlazeMessageParam(
-            conversation_id = callState.conversationId, category = MessageCategory.KRAKEN_SUBSCRIBE.name,
+            conversation_id = conversationId, category = MessageCategory.KRAKEN_SUBSCRIBE.name,
             message_id = UUID.randomUUID().toString(), track_id = trackId
         )
         val bm = createKrakenMessage(blazeMessageParam)
@@ -322,6 +322,10 @@ class GroupCallService : CallService() {
         disconnect()
     }
 
+    override fun onCallDisconnected() {
+        subscribeFuture?.cancel(true)
+    }
+
     override fun onDestroyed() {
         if (!scheduledExecutors.isShutdown) {
             scheduledExecutors.shutdownNow()
@@ -361,9 +365,12 @@ class GroupCallService : CallService() {
         )
     }
 
-    inner class SubscribeRunnable(private val trackId: String) : Runnable {
+    inner class SubscribeRunnable(
+        private val conversationId: String,
+        private val trackId: String
+    ) : Runnable {
         override fun run() {
-            sendSubscribe(trackId)
+            sendSubscribe(conversationId, trackId)
         }
     }
 

@@ -179,6 +179,10 @@ class VoiceCallService : CallService() {
         sendCallMessage(category)
     }
 
+    override fun onCallDisconnected() {
+        // Left empty
+    }
+
     override fun onDestroyed() {
         // Left empty
     }

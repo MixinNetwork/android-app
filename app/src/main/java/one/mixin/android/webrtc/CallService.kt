@@ -130,12 +130,15 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         callState.reset()
         peerConnectionClient.close()
         timeoutFuture?.cancel(true)
+
+        onCallDisconnected()
     }
 
     abstract fun handleIntent(intent: Intent): Boolean
     abstract fun handleCallLocalFailed()
     abstract fun handleCallCancel(intent: Intent? = null)
     abstract fun handleCallLocalEnd(intent: Intent? = null)
+    abstract fun onCallDisconnected()
     abstract fun onDestroyed()
 
     override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {
