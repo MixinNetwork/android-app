@@ -4,7 +4,6 @@ import android.content.Context
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
-import org.webrtc.CryptoOptions
 import org.webrtc.DataChannel
 import org.webrtc.IceCandidate
 import org.webrtc.Logging
@@ -12,8 +11,6 @@ import org.webrtc.MediaConstraints
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
-import org.webrtc.RTCFrameDecryptor
-import org.webrtc.RTCFrameEncryptor
 import org.webrtc.RtpReceiver
 import org.webrtc.RtpSender
 import org.webrtc.RtpTransceiver
@@ -208,7 +205,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             reportError("PeerConnection is not created")
             return null
         }
-        Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO);
+        Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
         peerConnection.setAudioPlayout(false)
         peerConnection.setAudioRecording(false)
 
