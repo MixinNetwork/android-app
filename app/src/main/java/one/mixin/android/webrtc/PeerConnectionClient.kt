@@ -220,7 +220,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             reportError("PeerConnection is not created")
             return null
         }
-        Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
+        // Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
         peerConnection.setAudioPlayout(false)
         peerConnection.setAudioRecording(false)
 

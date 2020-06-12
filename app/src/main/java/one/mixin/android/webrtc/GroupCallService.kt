@@ -161,8 +161,8 @@ class GroupCallService : CallService() {
     }
 
     private fun answer(krakenData: KrakenData) {
-        Timber.d("@@@ answer")
         if (krakenData.getSessionDescription().type == SessionDescription.Type.OFFER) {
+            Timber.d("@@@ answer")
             peerConnectionClient.createAnswer(
                 krakenData.getSessionDescription(),
                 setLocalSuccess = {
@@ -388,7 +388,7 @@ class GroupCallService : CallService() {
             blazeMessage.params.conversation_checksum = getCheckSum(it)
         }
         val bm = chatWebSocket.sendMessage(blazeMessage)
-        Timber.d("@@@ webSocketChannel bm: $bm")
+        Timber.d("@@@ webSocketChannel $blazeMessage, bm: $bm")
         if (bm == null) {
             SystemClock.sleep(Constants.SLEEP_MILLIS)
             blazeMessage.id = UUID.randomUUID().toString()
