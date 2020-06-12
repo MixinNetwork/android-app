@@ -140,8 +140,9 @@ class GroupCallService : CallService() {
         if (data.getSessionDescription().type == SessionDescription.Type.ANSWER) {
             peerConnectionClient.setAnswerSdp(data.getSessionDescription())
             callState.trackId = data.trackId
-            subscribeFuture?.cancel(true)
-            subscribeFuture = scheduledExecutors.scheduleAtFixedRate(SubscribeRunnable(callState.conversationId!!, data.trackId), 0, 3, TimeUnit.SECONDS)
+            if (subscribeFuture == null) {
+                subscribeFuture = scheduledExecutors.scheduleAtFixedRate(SubscribeRunnable(callState.conversationId!!, data.trackId), 0, 3, TimeUnit.SECONDS)
+            }
         }
     }
 
@@ -161,7 +162,6 @@ class GroupCallService : CallService() {
     private fun answer(krakenData: KrakenData) {
         Timber.d("@@@ answer ${krakenData.getSessionDescription().type == SessionDescription.Type.OFFER}")
         if (krakenData.getSessionDescription().type == SessionDescription.Type.OFFER) {
-            subscribeFuture?.cancel(true)
             peerConnectionClient.createAnswer(
                 krakenData.getSessionDescription(),
                 setLocalSuccess = {
