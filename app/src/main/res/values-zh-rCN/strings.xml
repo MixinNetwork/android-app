@@ -112,7 +112,7 @@
     <string name="error_forbidden">禁止访问</string>
     <string name="error_not_found">错误 %1$d：没有找到相应的信息</string>
     <string name="error_not_found_message">没有找到相应的消息</string>
-    <string name="error_too_many_request">错误 %1$d：请求太快啦</string>
+    <string name="error_too_many_request">错误 %1$d：请求过于频繁</string>
     <string name="error_authentication">错误 %1$d：请重新登录</string>
     <string name="can_not_recognize">无法识别二维码</string>
     <string name="error_no_camera">没有相机</string>
