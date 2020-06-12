@@ -95,11 +95,12 @@ class DecryptCallMessage(
             }
             MessageCategory.KRAKEN_INVITE.name -> {
                 syncUser(data.userId)?.let { user ->
-                    receiveInvite(ctx, data.conversationId, arrayListOf(user.userId))
+                    receiveInvite(ctx, data.conversationId, arrayListOf(user.userId), true)
                 }
             }
             MessageCategory.KRAKEN_END.name -> {
-                callState.removeUser(data.userId, data.conversationId)
+                // Let kraken list update peers?
+                // callState.removeUser(data.userId, data.conversationId)
             }
         }
         notifyServer(data)

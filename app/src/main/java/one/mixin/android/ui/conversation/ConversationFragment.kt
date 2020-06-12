@@ -1274,7 +1274,7 @@ class ConversationFragment :
         }
         tap_join_view.setOnClickListener {
             val users = callState.getUserByConversationId(conversationId)
-            receiveInvite(requireContext(), conversationId, users)
+            receiveInvite(requireContext(), conversationId, users, false)
         }
         callState.observe(
             viewLifecycleOwner,

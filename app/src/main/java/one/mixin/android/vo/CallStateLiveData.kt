@@ -45,8 +45,12 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     fun isGroupCall() = user == null
 
     fun addPendingGroupCall(conversationId: String) {
+        val exists = pendingGroupCalls.find {
+            it.conversationId == conversationId
+        }
+        if (exists != null) return
+
         pendingGroupCalls.add(GroupCallState(conversationId))
-        postValue(state)
     }
 
     fun removePendingGroupCall(conversationId: String): Boolean {
@@ -78,6 +82,8 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
             it.conversationId == conversationId
         } ?: return
         groupCallState.users = newUsers
+
+        postValue(state)
     }
 
     fun addUser(userId: String, conversationId: String) {
@@ -85,6 +91,8 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
             it.conversationId == conversationId
         } ?: return
         groupCallState.users = addUserToList(userId, groupCallState.users)
+
+        postValue(state)
     }
 
     fun removeUser(userId: String, conversationId: String) {
@@ -92,6 +100,8 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
             it.conversationId == conversationId
         } ?: return
         groupCallState.users?.remove(userId)
+
+        postValue(state)
     }
 
     fun isIdle() = state == CallService.CallState.STATE_IDLE

@@ -76,20 +76,14 @@ class GroupCallService : CallService() {
         val blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as? BlazeMessageData
         requireNotNull(blazeMessageData)
         val cid = blazeMessageData.conversationId
+        startCheckPeers(cid)
+
         val krakenDataString = String(blazeMessageData.data.decodeBase64())
-        Timber.d("@@@ krakenDataString: $krakenDataString")
+        Timber.d("@@@ krakenDataString: $krakenDataString, trackId: ${callState.trackId}")
         if (krakenDataString == PUBLISH_PLACEHOLDER) {
             if (!callState.trackId.isNullOrEmpty()) {
                 callState.conversationId = cid
                 sendSubscribe(cid, callState.trackId!!)
-            } else {
-                callState.addPendingGroupCall(cid)
-                val existsFuture = scheduledFutures[cid]
-                existsFuture?.cancel(true)
-                scheduledFutures[cid] = scheduledExecutors.scheduleAtFixedRate(
-                    ListRunnable(cid),
-                    0, KRAKEN_LIST_INTERVAL, TimeUnit.SECONDS
-                )
             }
         } else {
             callState.conversationId = cid
@@ -140,7 +134,8 @@ class GroupCallService : CallService() {
         if (data.getSessionDescription().type == SessionDescription.Type.ANSWER) {
             peerConnectionClient.setAnswerSdp(data.getSessionDescription())
             callState.trackId = data.trackId
-            sendSubscribe(callState.conversationId!!, data.trackId)
+            val cid = callState.conversationId!!
+            startCheckPeers(cid)
         }
     }
 
@@ -180,6 +175,17 @@ class GroupCallService : CallService() {
         }
     }
 
+    private fun startCheckPeers(cid: String) {
+        callState.addPendingGroupCall(cid)
+        val existsFuture = scheduledFutures[cid]
+        if (existsFuture == null) {
+            scheduledFutures[cid] = scheduledExecutors.scheduleAtFixedRate(
+                ListRunnable(cid),
+                0, KRAKEN_LIST_INTERVAL, TimeUnit.SECONDS
+            )
+        }
+    }
+
     private fun getPeers(conversationId: String) {
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = conversationId,
@@ -191,11 +197,9 @@ class GroupCallService : CallService() {
         val peerList = gson.fromJson(json, PeerList::class.java)
         Timber.d("@@@ getPeers : ${peerList.peers}")
         if (peerList.peers.isNullOrEmpty()) {
-            val removed = callState.removePendingGroupCall(conversationId)
-            if (removed) {
-                val listFuture = scheduledFutures.remove(conversationId)
-                listFuture?.cancel(true)
-            }
+            callState.removePendingGroupCall(conversationId)
+            val listFuture = scheduledFutures.remove(conversationId)
+            listFuture?.cancel(true)
 
             Timber.d("@@@ scheduledFutures isEmpty: ${scheduledFutures.isEmpty()}")
 
@@ -205,12 +209,12 @@ class GroupCallService : CallService() {
             }
             return
         }
-        val currentCount = callState.getUserCountByConversationId(conversationId)
-        if (currentCount < peerList.peers.size) {
-            val userIdList = arrayListOf<String>()
-            peerList.peers.mapTo(userIdList) { it.userId }
-            callState.setUsersByConversationId(conversationId, userIdList)
-        }
+        // val currentCount = callState.getUserCountByConversationId(conversationId)
+        // if (currentCount < peerList.peers.size) {
+        val userIdList = arrayListOf<String>()
+        peerList.peers.mapTo(userIdList) { it.userId }
+        callState.setUsersByConversationId(conversationId, userIdList)
+        // }
     }
 
     private fun handleReceiveInvite(intent: Intent) {
@@ -229,7 +233,9 @@ class GroupCallService : CallService() {
         callState.isOffer = false
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         CallActivity.show(this)
-        audioManager.start(false)
+        if (intent.getBooleanExtra(EXTRA_PLAY_RING, true)) {
+            audioManager.start(false)
+        }
     }
 
     private fun handleAcceptInvite() {
@@ -282,7 +288,6 @@ class GroupCallService : CallService() {
             conversation_id = callState.conversationId,
             category = MessageCategory.KRAKEN_DECLINE.name,
             message_id = UUID.randomUUID().toString(),
-            recipient_id = callState.getUserByConversationId(callState.conversationId!!)!![0],
             track_id = callState.trackId
         )
 
@@ -487,6 +492,8 @@ private const val ACTION_KRAKEN_END = "kraken_end"
 private const val ACTION_KRAKEN_CANCEL = "kraken_cancel"
 private const val ACTION_KRAKEN_DECLINE = "kraken_decline"
 
+private const val EXTRA_PLAY_RING = "extra_play_ring"
+
 const val PUBLISH_PLACEHOLDER = "PLACEHOLDER"
 
 data class PeerList(
@@ -504,10 +511,11 @@ fun receivePublish(ctx: Context, user: User, data: BlazeMessageData, foreground:
         it.putExtra(EXTRA_BLAZE, data)
     }
 
-fun receiveInvite(ctx: Context, conversationId: String, users: ArrayList<String>? = null) =
+fun receiveInvite(ctx: Context, conversationId: String, users: ArrayList<String>?, playRing: Boolean) =
     startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_INVITE) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USERS, users)
+        it.putExtra(EXTRA_PLAY_RING, playRing)
     }
 
 fun acceptInvite(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_ACCEPT_INVITE) {}

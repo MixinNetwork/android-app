@@ -124,18 +124,11 @@ class CallActivity : BaseActivity(), SensorEventListener {
             name_tv.isVisible = false
             users_rv.isVisible = true
             add_iv.isVisible = true
-            val callees = callState.getUserByConversationId(callState.conversationId!!)
             if (userAdapter == null) {
                 userAdapter = CallUserAdapter()
             }
-            users_rv.layoutManager = GridLayoutManager(this, getSpanCount(callees?.size ?: 3))
             users_rv.adapter = userAdapter
-            Timber.d("@@@ callees: $callees")
-            if (callees.isNullOrEmpty()) {
-                userAdapter?.submitList(listOf(self))
-            } else {
-                refreshUsersByIds(callees)
-            }
+            refreshUsers()
         } else {
             avatar.isVisible = true
             name_tv.isVisible = true
@@ -190,10 +183,13 @@ class CallActivity : BaseActivity(), SensorEventListener {
             this,
             Observer { state ->
                 Timber.d("@@@ state: $state")
+                if (callState.isGroupCall()) {
+                    refreshUsers()
+                }
                 when (state) {
                     CallService.CallState.STATE_DIALING -> {
                         volumeControlStream = AudioManager.STREAM_VOICE_CALL
-                        call_cl.post { handleDialingConnecting() }
+                        call_cl.post { handleDialing() }
                     }
                     CallService.CallState.STATE_RINGING -> {
                         call_cl.post { handleRinging() }
@@ -281,10 +277,29 @@ class CallActivity : BaseActivity(), SensorEventListener {
         callState.handleHangup(this)
     }
 
-    private fun refreshUsersByIds(ids: ArrayList<String>) = lifecycleScope.launch {
-        val users = viewModel.findMultiUsersByIds(ids.toSet())
-        Timber.d("@@@ refreshUsersByIds users: $users")
-        userAdapter?.submitList(users)
+    private fun refreshUsers() = lifecycleScope.launch {
+        val cid = callState.conversationId ?: return@launch
+        val callees = callState.getUserByConversationId(cid)
+        var layoutManager: GridLayoutManager? = users_rv?.layoutManager as GridLayoutManager?
+        val spanCount = getSpanCount(callees?.size ?: 3)
+        Timber.d("@@@ callees: $callees, spanCount: $spanCount")
+        if (layoutManager == null) {
+            layoutManager = GridLayoutManager(this@CallActivity, spanCount)
+            users_rv?.layoutManager = layoutManager
+        } else {
+            if (layoutManager.spanCount != spanCount) {
+                layoutManager.spanCount = spanCount
+            }
+        }
+        if (callees.isNullOrEmpty()) {
+            userAdapter?.submitList(listOf(self))
+        } else {
+            callees.remove(self.userId)
+            callees.add(0, self.userId)
+            val users = viewModel.findMultiUsersByIds(callees.toSet())
+            Timber.d("@@@ refreshUsersByIds users: $users")
+            userAdapter?.submitList(users)
+        }
     }
 
     private fun setBlurBg(url: String) = lifecycleScope.launch(Dispatchers.IO) {
@@ -386,7 +401,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         }
     }
 
-    private fun handleDialingConnecting() {
+    private fun handleDialing() {
         voice_cb.isVisible = true
         mute_cb.isVisible = true
         answer_cb.isVisible = false
