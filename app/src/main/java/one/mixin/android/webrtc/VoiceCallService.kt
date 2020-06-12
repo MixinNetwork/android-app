@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit
 
 class VoiceCallService : CallService() {
 
+    private var blazeMessageData: BlazeMessageData? = null
     private var declineTriggeredByUser: Boolean = true
 
     override fun handleIntent(intent: Intent): Boolean {

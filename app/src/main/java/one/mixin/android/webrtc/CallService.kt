@@ -65,8 +65,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     protected lateinit var self: User
 
-    protected var blazeMessageData: BlazeMessageData? = null
-
     private var isDestroyed = AtomicBoolean(false)
 
     private val pipCallView by lazy {

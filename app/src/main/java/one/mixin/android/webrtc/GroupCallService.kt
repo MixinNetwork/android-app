@@ -58,15 +58,10 @@ class GroupCallService : CallService() {
     lateinit var conversationApi: ConversationService
 
     override fun handleIntent(intent: Intent): Boolean {
-        val newData = intent.getSerializableExtra(EXTRA_BLAZE) as? BlazeMessageData
-        if (newData != null) {
-            blazeMessageData = newData
-        }
-
         var handled = true
         when (intent.action) {
             ACTION_KRAKEN_PUBLISH -> handlePublish(intent)
-            ACTION_KRAKEN_RECEIVE_PUBLISH -> handleReceivePublish()
+            ACTION_KRAKEN_RECEIVE_PUBLISH -> handleReceivePublish(intent)
             ACTION_KRAKEN_RECEIVE_INVITE -> handleReceiveInvite(intent)
             ACTION_KRAKEN_ACCEPT_INVITE -> handleAcceptInvite()
             ACTION_KRAKEN_END -> handleKrakenEnd()
@@ -77,9 +72,11 @@ class GroupCallService : CallService() {
         return handled
     }
 
-    private fun handleReceivePublish() {
-        val cid = blazeMessageData!!.conversationId
-        val krakenDataString = String(blazeMessageData!!.data.decodeBase64())
+    private fun handleReceivePublish(intent: Intent) {
+        val blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as? BlazeMessageData
+        requireNotNull(blazeMessageData)
+        val cid = blazeMessageData.conversationId
+        val krakenDataString = String(blazeMessageData.data.decodeBase64())
         Timber.d("@@@ krakenDataString: $krakenDataString")
         if (krakenDataString == PUBLISH_PLACEHOLDER) {
             if (!callState.trackId.isNullOrEmpty()) {
@@ -139,11 +136,12 @@ class GroupCallService : CallService() {
     }
 
     private fun subscribe(data: KrakenData) {
-        Timber.d("@@@ subscribe")
+        Timber.d("@@@ subscribe ${data.getSessionDescription().type == SessionDescription.Type.ANSWER}")
         if (data.getSessionDescription().type == SessionDescription.Type.ANSWER) {
             peerConnectionClient.setAnswerSdp(data.getSessionDescription())
             callState.trackId = data.trackId
-            scheduledExecutors.scheduleAtFixedRate(SubscribeRunnable(data.trackId), 0, 3, TimeUnit.SECONDS)
+            subscribeFuture?.cancel(true)
+            subscribeFuture = scheduledExecutors.scheduleAtFixedRate(SubscribeRunnable(data.trackId), 0, 3, TimeUnit.SECONDS)
         }
     }
 
@@ -161,8 +159,9 @@ class GroupCallService : CallService() {
     }
 
     private fun answer(krakenData: KrakenData) {
+        Timber.d("@@@ answer ${krakenData.getSessionDescription().type == SessionDescription.Type.OFFER}")
         if (krakenData.getSessionDescription().type == SessionDescription.Type.OFFER) {
-            Timber.d("@@@ answer")
+            subscribeFuture?.cancel(true)
             peerConnectionClient.createAnswer(
                 krakenData.getSessionDescription(),
                 setLocalSuccess = {
@@ -341,11 +340,6 @@ class GroupCallService : CallService() {
     }
 
     override fun onPeerConnectionClosed() {
-    }
-
-    override fun onConnected() {
-        super.onConnected()
-        subscribeFuture?.cancel(true)
     }
 
     private fun sendGroupCallMessage(
