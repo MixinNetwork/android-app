@@ -32,6 +32,7 @@ open class SendMessageJob(
     private val resendData: ResendData? = null,
     private val alreadyExistMessage: Boolean = false,
     private var recipientId: String? = null,
+    private var recipientIds: List<String>? = null,
     private val recallMessageId: String? = null,
     private val krakenParam: KrakenParam? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
@@ -141,7 +142,8 @@ open class SendMessageJob(
             message.category,
             content,
             quote_message_id = message.quoteMessageId,
-            mentions = getMentionData(message.id)
+            mentions = getMentionData(message.id),
+            recipient_ids = recipientIds
         )
         val blazeMessage = if (message.isCall()) {
             if (message.isKraken()) {

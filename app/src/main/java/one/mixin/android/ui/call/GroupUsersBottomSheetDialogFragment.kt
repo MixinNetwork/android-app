@@ -116,14 +116,13 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 )
             }
             action_iv.setOnClickListener {
-                val users = checkedUsers.toList()
-                // TODO
-                val recipientId = users[0].userId
+                val users = mutableListOf<String>()
+                checkedUsers.mapTo(users) { it.userId }
                 val message = createCallMessage(
                     UUID.randomUUID().toString(), conversationId,
                     "", MessageCategory.KRAKEN_INVITE.name, "", nowInUtc(), MessageStatus.SENDING.name
                 )
-                jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
+                jobManager.addJobInBackground(SendMessageJob(message, recipientIds = users))
                 publish(requireContext(), conversationId)
                 dismiss()
             }
