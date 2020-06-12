@@ -22,7 +22,6 @@ import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.TurnServer
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
-import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.widget.PipCallView
 import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection

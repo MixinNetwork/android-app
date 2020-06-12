@@ -176,7 +176,7 @@ class GroupCallService : CallService() {
             )
         }
         if (subscribeFuture == null) {
-            subscribeFuture = scheduledExecutors.scheduleAtFixedRate(SubscribeRunnable(callState.conversationId!!, krakenData.trackId), 0, 3, TimeUnit.SECONDS)
+            subscribeFuture = scheduledExecutors.scheduleWithFixedDelay(SubscribeRunnable(callState.conversationId!!, krakenData.trackId), 0, 3, TimeUnit.SECONDS)
         }
     }
 
