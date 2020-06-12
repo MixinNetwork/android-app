@@ -140,9 +140,7 @@ class GroupCallService : CallService() {
         if (data.getSessionDescription().type == SessionDescription.Type.ANSWER) {
             peerConnectionClient.setAnswerSdp(data.getSessionDescription())
             callState.trackId = data.trackId
-            if (subscribeFuture == null) {
-                subscribeFuture = scheduledExecutors.scheduleAtFixedRate(SubscribeRunnable(callState.conversationId!!, data.trackId), 0, 3, TimeUnit.SECONDS)
-            }
+            sendSubscribe(callState.conversationId!!, data.trackId)
         }
     }
 
@@ -176,6 +174,9 @@ class GroupCallService : CallService() {
                     val data = webSocketChannel(bm) ?: return@createAnswer
                 }
             )
+        }
+        if (subscribeFuture == null) {
+            subscribeFuture = scheduledExecutors.scheduleAtFixedRate(SubscribeRunnable(callState.conversationId!!, krakenData.trackId), 0, 3, TimeUnit.SECONDS)
         }
     }
 
