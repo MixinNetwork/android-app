@@ -1273,8 +1273,8 @@ class ConversationFragment :
             driver.isVisible = false
         }
         tap_join_view.setOnClickListener {
-            val users = callState.getUserByConversationId(conversationId)
-            receiveInvite(requireContext(), conversationId, users, false)
+            val users = callState.getUsersByConversationId(conversationId)
+            receiveInvite(requireContext(), conversationId, users = users, playRing = false)
         }
         callState.observe(
             viewLifecycleOwner,

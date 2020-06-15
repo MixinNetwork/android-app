@@ -14,6 +14,7 @@ import timber.log.Timber
 data class GroupCallState(
     var conversationId: String
 ) {
+    var inviter: String? = null
     var users: ArrayList<String>? = null
 }
 
@@ -44,13 +45,15 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
 
     fun isGroupCall() = user == null
 
-    fun addPendingGroupCall(conversationId: String) {
+    fun addPendingGroupCall(conversationId: String): GroupCallState {
         val exists = pendingGroupCalls.find {
             it.conversationId == conversationId
         }
-        if (exists != null) return
+        if (exists != null) return exists
 
-        pendingGroupCalls.add(GroupCallState(conversationId))
+        val groupCallState = GroupCallState(conversationId)
+        pendingGroupCalls.add(groupCallState)
+        return groupCallState
     }
 
     fun removePendingGroupCall(conversationId: String): Boolean {
@@ -67,13 +70,23 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         return removed
     }
 
-    fun getUserByConversationId(conversationId: String) =
+    fun setInviter(conversationId: String, userId: String) {
+        val groupCallState = addPendingGroupCall(conversationId)
+        groupCallState.inviter = userId
+    }
+
+    fun getInviter(conversationId: String): String? =
+        pendingGroupCalls.find {
+            it.conversationId == conversationId
+        }?.inviter
+
+    fun getUsersByConversationId(conversationId: String) =
         pendingGroupCalls.find {
             it.conversationId == conversationId
         }?.users
 
-    fun getUserCountByConversationId(conversationId: String): Int =
-        getUserByConversationId(conversationId)?.size ?: 0
+    fun getUsersCountByConversationId(conversationId: String): Int =
+        getUsersByConversationId(conversationId)?.size ?: 0
 
     fun setUsersByConversationId(conversationId: String, newUsers: ArrayList<String>?) {
         if (newUsers.isNullOrEmpty()) return
@@ -126,7 +139,9 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
                 }
             CallService.CallState.STATE_RINGING ->
                 if (isGroupCall()) {
-                    krakenDecline(ctx)
+                    val cid = conversationId
+                    requireNotNull(cid)
+                    krakenDecline(ctx, cid)
                 } else {
                     declineCall(ctx)
                 }

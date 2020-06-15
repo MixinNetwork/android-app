@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.SystemClock
 import com.google.gson.JsonElement
 import one.mixin.android.Constants
-import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ParticipantDao
@@ -23,7 +22,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.Sdp
-import one.mixin.android.vo.User
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.vo.generateConversationChecksum
 import one.mixin.android.websocket.BlazeMessage
@@ -46,7 +44,6 @@ class GroupCallService : CallService() {
 
     private val scheduledExecutors = Executors.newScheduledThreadPool(1)
     private val scheduledFutures = mutableMapOf<String, ScheduledFuture<*>>()
-    private var subscribeFuture: ScheduledFuture<*>? = null
 
     @Inject
     lateinit var chatWebSocket: ChatWebSocket
@@ -63,10 +60,10 @@ class GroupCallService : CallService() {
             ACTION_KRAKEN_PUBLISH -> handlePublish(intent)
             ACTION_KRAKEN_RECEIVE_PUBLISH -> handleReceivePublish(intent)
             ACTION_KRAKEN_RECEIVE_INVITE -> handleReceiveInvite(intent)
-            ACTION_KRAKEN_ACCEPT_INVITE -> handleAcceptInvite()
+            ACTION_KRAKEN_ACCEPT_INVITE -> handleAcceptInvite(intent)
             ACTION_KRAKEN_END -> handleKrakenEnd()
             ACTION_KRAKEN_CANCEL -> handleKrakenCancel()
-            ACTION_KRAKEN_DECLINE -> handleKrakenDecline()
+            ACTION_KRAKEN_DECLINE -> handleKrakenDecline(intent)
             else -> handled = false
         }
         return handled
@@ -81,9 +78,10 @@ class GroupCallService : CallService() {
         val krakenDataString = String(blazeMessageData.data.decodeBase64())
         Timber.d("@@@ krakenDataString: $krakenDataString, trackId: ${callState.trackId}")
         if (krakenDataString == PUBLISH_PLACEHOLDER) {
-            if (!callState.trackId.isNullOrEmpty()) {
+            val trackId = callState.trackId
+            if (!trackId.isNullOrEmpty()) {
                 callState.conversationId = cid
-                sendSubscribe(cid, callState.trackId!!)
+                sendSubscribe(cid, trackId)
             }
         } else {
             callState.conversationId = cid
@@ -105,17 +103,17 @@ class GroupCallService : CallService() {
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         CallActivity.show(this)
         audioManager.start(true)
-        publish()
+        publish(cid)
     }
 
-    private fun publish() {
+    private fun publish(conversationId: String) {
         Timber.d("@@@ publish")
         getTurnServer { turns ->
             peerConnectionClient.createOffer(
                 turns,
                 setLocalSuccess = {
                     val blazeMessageParam = BlazeMessageParam(
-                        conversation_id = callState.conversationId,
+                        conversation_id = conversationId,
                         category = MessageCategory.KRAKEN_PUBLISH.name,
                         message_id = UUID.randomUUID().toString(),
                         jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode()
@@ -123,19 +121,19 @@ class GroupCallService : CallService() {
                     val bm = createKrakenMessage(blazeMessageParam)
                     val data = getBlazeMessageData(bm) ?: return@createOffer
                     val krakenData = gson.fromJson(String(data.data.decodeBase64()), KrakenData::class.java)
-                    subscribe(krakenData)
+                    subscribe(krakenData, conversationId)
                 }
             )
         }
     }
 
-    private fun subscribe(data: KrakenData) {
+    private fun subscribe(data: KrakenData, conversationId: String) {
         Timber.d("@@@ subscribe ${data.getSessionDescription().type == SessionDescription.Type.ANSWER}")
         if (data.getSessionDescription().type == SessionDescription.Type.ANSWER) {
             peerConnectionClient.setAnswerSdp(data.getSessionDescription())
             callState.trackId = data.trackId
-            val cid = callState.conversationId!!
-            startCheckPeers(cid)
+            sendSubscribe(conversationId, data.trackId)
+            startCheckPeers(conversationId)
         }
     }
 
@@ -149,17 +147,17 @@ class GroupCallService : CallService() {
         Timber.d("@@@ subscribe track id: $trackId")
         val bmData = getBlazeMessageData(bm) ?: return
         val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
-        answer(krakenData)
+        answer(krakenData, conversationId)
     }
 
-    private fun answer(krakenData: KrakenData) {
+    private fun answer(krakenData: KrakenData, conversationId: String) {
         Timber.d("@@@ answer ${krakenData.getSessionDescription().type == SessionDescription.Type.OFFER}")
         if (krakenData.getSessionDescription().type == SessionDescription.Type.OFFER) {
             peerConnectionClient.createAnswer(
                 krakenData.getSessionDescription(),
                 setLocalSuccess = {
                     val blazeMessageParam = BlazeMessageParam(
-                        conversation_id = callState.conversationId,
+                        conversation_id = conversationId,
                         category = MessageCategory.KRAKEN_ANSWER.name,
                         message_id = UUID.randomUUID().toString(),
                         jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode(),
@@ -169,9 +167,6 @@ class GroupCallService : CallService() {
                     val data = webSocketChannel(bm) ?: return@createAnswer
                 }
             )
-        }
-        if (subscribeFuture == null) {
-            subscribeFuture = scheduledExecutors.scheduleWithFixedDelay(SubscribeRunnable(callState.conversationId!!, krakenData.trackId), 0, 3, TimeUnit.SECONDS)
         }
     }
 
@@ -226,9 +221,11 @@ class GroupCallService : CallService() {
             updateForegroundNotification()
         }
         val users = intent.getStringArrayListExtra(EXTRA_USERS)
+        val userId = intent.getStringExtra(EXTRA_USER_ID)
         val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
         requireNotNull(cid)
         callState.conversationId = cid
+        userId?.let { callState.setInviter(cid, it) }
         callState.setUsersByConversationId(cid, users)
         callState.isOffer = false
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
@@ -238,9 +235,11 @@ class GroupCallService : CallService() {
         }
     }
 
-    private fun handleAcceptInvite() {
+    private fun handleAcceptInvite(intent: Intent) {
         Timber.d("@@@ handleAcceptInvite")
-        publish()
+        val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
+        requireNotNull(cid)
+        publish(cid)
     }
 
     private fun handleKrakenEnd() {
@@ -280,12 +279,15 @@ class GroupCallService : CallService() {
         val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
     }
 
-    private fun handleKrakenDecline() {
+    private fun handleKrakenDecline(intent: Intent) {
         Timber.d("@@@ handleKrakenDecline")
         if (callState.isIdle()) return
 
+        val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
+        requireNotNull(cid)
         val blazeMessageParam = BlazeMessageParam(
-            conversation_id = callState.conversationId,
+            conversation_id = cid,
+            recipient_id = callState.getInviter(cid),
             category = MessageCategory.KRAKEN_DECLINE.name,
             message_id = UUID.randomUUID().toString(),
             track_id = callState.trackId
@@ -329,7 +331,6 @@ class GroupCallService : CallService() {
     }
 
     override fun onCallDisconnected() {
-        subscribeFuture?.cancel(true)
     }
 
     override fun onDestroyed() {
@@ -369,15 +370,6 @@ class GroupCallService : CallService() {
                 krakenParam = KrakenParam(jsep, candidate, trackId)
             )
         )
-    }
-
-    inner class SubscribeRunnable(
-        private val conversationId: String,
-        private val trackId: String
-    ) : Runnable {
-        override fun run() {
-            sendSubscribe(conversationId, trackId)
-        }
     }
 
     inner class ListRunnable(private val conversationId: String) : Runnable {
@@ -505,23 +497,27 @@ fun publish(ctx: Context, conversationId: String) =
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
     }
 
-fun receivePublish(ctx: Context, user: User, data: BlazeMessageData, foreground: Boolean) =
+fun receivePublish(ctx: Context, data: BlazeMessageData, foreground: Boolean) =
     startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_PUBLISH, foreground) {
-        it.putExtra(ARGS_USER, user)
         it.putExtra(EXTRA_BLAZE, data)
     }
 
-fun receiveInvite(ctx: Context, conversationId: String, users: ArrayList<String>?, playRing: Boolean) =
+fun receiveInvite(ctx: Context, conversationId: String, userId: String? = null, users: ArrayList<String>? = null, playRing: Boolean) =
     startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_INVITE) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USERS, users)
+        it.putExtra(EXTRA_USER_ID, userId)
         it.putExtra(EXTRA_PLAY_RING, playRing)
     }
 
-fun acceptInvite(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_ACCEPT_INVITE) {}
+fun acceptInvite(ctx: Context, conversationId: String) = startService<GroupCallService>(ctx, ACTION_KRAKEN_ACCEPT_INVITE) {
+    it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+}
 
 fun krakenEnd(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_END) {}
 
 fun krakenCancel(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_CANCEL) {}
 
-fun krakenDecline(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_DECLINE) {}
+fun krakenDecline(ctx: Context, conversationId: String) = startService<GroupCallService>(ctx, ACTION_KRAKEN_DECLINE) {
+    it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+}

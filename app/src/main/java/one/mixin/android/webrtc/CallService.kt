@@ -270,6 +270,7 @@ const val ACTION_SPEAKERPHONE = "speakerphone"
 
 const val EXTRA_CONVERSATION_ID = "conversation_id"
 const val EXTRA_USERS = "users"
+const val EXTRA_USER_ID = "user_id"
 const val EXTRA_BLAZE = "blaze"
 const val EXTRA_MUTE = "mute"
 const val EXTRA_SPEAKERPHONE = "speakerphone"

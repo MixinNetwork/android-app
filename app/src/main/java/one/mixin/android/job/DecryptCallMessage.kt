@@ -87,16 +87,10 @@ class DecryptCallMessage(
         Timber.d("@@@ processKraken category: ${data.category}, data: $data")
         when (data.category) {
             MessageCategory.KRAKEN_PUBLISH.name -> {
-                syncUser(data.userId)?.let { user ->
-                    val krakenDataString = String(data.data.decodeBase64())
-                    val needBackground = krakenDataString == PUBLISH_PLACEHOLDER && callState.trackId.isNullOrEmpty()
-                    receivePublish(ctx, user, data, !needBackground)
-                }
+                receivePublish(ctx, data, false)
             }
             MessageCategory.KRAKEN_INVITE.name -> {
-                syncUser(data.userId)?.let { user ->
-                    receiveInvite(ctx, data.conversationId, arrayListOf(user.userId), true)
-                }
+                receiveInvite(ctx, data.conversationId, userId = data.userId, playRing = true)
             }
             MessageCategory.KRAKEN_END.name -> {
                 // Let kraken list update peers?

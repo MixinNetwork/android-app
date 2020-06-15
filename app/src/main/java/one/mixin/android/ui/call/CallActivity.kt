@@ -279,7 +279,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     private fun refreshUsers() = lifecycleScope.launch {
         val cid = callState.conversationId ?: return@launch
-        val callees = callState.getUserByConversationId(cid)
+        val callees = callState.getUsersByConversationId(cid)
         var layoutManager: GridLayoutManager? = users_rv?.layoutManager as GridLayoutManager?
         val spanCount = getSpanCount(callees?.size ?: 3)
         Timber.d("@@@ callees: $callees, spanCount: $spanCount")
@@ -331,7 +331,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 if (granted) {
                     handleAnswering()
                     if (callState.isGroupCall()) {
-                        acceptInvite(this@CallActivity)
+                        acceptInvite(this@CallActivity, callState.conversationId!!)
                     } else {
                         answerCall(this@CallActivity)
                     }
