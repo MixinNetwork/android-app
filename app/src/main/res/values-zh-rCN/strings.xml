@@ -449,7 +449,7 @@
     <string name="setting_unblock">解除屏蔽</string>
     <string name="setting_block_tip">被屏蔽的用户不能给你发送消息或者邀请你加入群聊</string>
     <string name="setting_conversation_tip">你可以限制谁给你发消息。</string>
-    <string name="setting_conversation_group_tip">你可以限制谁邀请你加入群聊。</string>
+    <string name="setting_conversation_group_tip">谁能加我进入群组。</string>
     <string name="setting_conversation_everybody">任何人</string>
     <string name="setting_logs_empty">没有日志</string>
     <string name="conversation_status_pic">照片</string>

@@ -437,6 +437,7 @@
     <string name="setting_conversation_tip">あなたにメッセージを送れる人を制限することができます。</string>
     <string name="setting_conversation_group_tip">あなたをグループに追加できる人を制限することができます。</string>
     <string name="setting_conversation_everybody">全員</string>
+    <string name="setting_logs_empty">No logs</string>
     <string name="conversation_status_pic">画像</string>
     <string name="conversation_status_video">動画</string>
     <string name="conversation_status_file">ファイル</string>

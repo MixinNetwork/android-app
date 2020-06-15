@@ -464,7 +464,7 @@
     <string name="setting_unblock">Unblock</string>
     <string name="setting_block_tip">Blocked users can\'t send you messages or add you to groups.</string>
     <string name="setting_conversation_tip">You can restrict who can send message to me.</string>
-    <string name="setting_conversation_group_tip">You can restrict who can add me to group chats.</string>
+    <string name="setting_conversation_group_tip">Who can add me to groups.</string>
     <string name="setting_conversation_everybody">Everybody</string>
     <string name="setting_logs_empty">No logs</string>
     <string name="conversation_status_pic">Photo</string>
