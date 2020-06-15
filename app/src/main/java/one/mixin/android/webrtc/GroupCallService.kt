@@ -239,6 +239,9 @@ class GroupCallService : CallService() {
         Timber.d("@@@ handleAcceptInvite")
         val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
         requireNotNull(cid)
+
+        audioManager.stop()
+
         publish(cid)
     }
 
@@ -285,20 +288,26 @@ class GroupCallService : CallService() {
 
         val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
         requireNotNull(cid)
-        val blazeMessageParam = BlazeMessageParam(
-            conversation_id = cid,
-            recipient_id = callState.getInviter(cid),
-            category = MessageCategory.KRAKEN_DECLINE.name,
-            message_id = UUID.randomUUID().toString(),
-            track_id = callState.trackId
-        )
+        val inviter = callState.getInviter(cid)
+        val trackId = callState.trackId
 
         audioManager.stop()
         disconnect()
 
-        val bm = createKrakenMessage(blazeMessageParam)
-        val bmData = getBlazeMessageData(bm) ?: return
-        val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
+        if (inviter != null) {
+            val blazeMessageParam = BlazeMessageParam(
+                conversation_id = cid,
+                recipient_id = inviter,
+                category = MessageCategory.KRAKEN_DECLINE.name,
+                message_id = UUID.randomUUID().toString(),
+                track_id = trackId
+            )
+            val bm = createKrakenMessage(blazeMessageParam)
+            val bmData = getBlazeMessageData(bm) ?: return
+            val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
+        } else {
+            Timber.w("@@@ Try send kraken decline message but inviter is null, conversationId: $cid")
+        }
     }
 
     override fun handleCallLocalFailed() {

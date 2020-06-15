@@ -196,6 +196,8 @@ class PipCallView {
 
         if (connectedTime != null) {
             startTimer(connectedTime)
+        } else {
+            timeView?.text = appContext.getString(R.string.waiting)
         }
     }
 

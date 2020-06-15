@@ -153,30 +153,30 @@ class VoiceCallService : CallService() {
         if (callState.isIdle()) return
 
         audioManager.stop()
-        disconnect()
         if (callState.isOffer) {
             val category = MessageCategory.WEBRTC_AUDIO_CANCEL.name
             sendCallMessage(category)
         }
+        disconnect()
     }
 
     private fun handleCallDecline() {
         if (callState.isIdle()) return
 
         audioManager.stop()
-        disconnect()
         if (!callState.isOffer) {
             val category = MessageCategory.WEBRTC_AUDIO_DECLINE.name
             sendCallMessage(category)
         }
+        disconnect()
     }
 
     override fun handleCallLocalEnd(intent: Intent?) {
         if (callState.isIdle()) return
 
         val category = MessageCategory.WEBRTC_AUDIO_END.name
-        disconnect()
         sendCallMessage(category)
+        disconnect()
     }
 
     override fun onCallDisconnected() {
@@ -203,7 +203,6 @@ class VoiceCallService : CallService() {
         if (callState.isIdle()) return
 
         val state = callState.state
-        disconnect()
         if (state == CallState.STATE_DIALING && peerConnectionClient.hasLocalSdp()) {
             val mId = UUID.randomUUID().toString()
             val m = createCallMessage(
@@ -214,6 +213,7 @@ class VoiceCallService : CallService() {
         } else if (state != CallState.STATE_CONNECTED) {
             sendCallMessage(MessageCategory.WEBRTC_AUDIO_FAILED.name)
         }
+        disconnect()
     }
 
     private fun handleCallRemoteFailed() {

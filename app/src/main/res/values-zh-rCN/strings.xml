@@ -103,6 +103,7 @@
     <string name="analyzing">解析中…</string>
     <string name="scam_warning">警告：此账号被大量用户举报，请谨防网络诈骗，注意个人财产安全</string>
     <string name="add_shortcut">添加到桌面</string>
+    <string name="waiting">等待中</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>

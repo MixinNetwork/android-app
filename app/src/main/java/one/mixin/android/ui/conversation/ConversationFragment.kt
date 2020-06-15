@@ -1280,7 +1280,11 @@ class ConversationFragment :
             viewLifecycleOwner,
             Observer { state ->
                 chat_control.calling = state != CallService.CallState.STATE_IDLE
-                tap_join_view.isVisible = callState.isPendingGroupCall(conversationId)
+                if (isGroup) {
+                    tap_join_view.isVisible = callState.isPendingGroupCall(conversationId)
+                } else {
+                    tap_join_view.isVisible = false
+                }
             }
         )
         bindData()

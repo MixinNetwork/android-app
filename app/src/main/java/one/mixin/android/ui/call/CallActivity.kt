@@ -269,6 +269,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
         super.onBackPressed()
         if (callState.isIdle()) {
             handleHangup()
+        } else {
+            switch2Pip()
         }
         handleDisconnected()
     }
@@ -294,8 +296,15 @@ class CallActivity : BaseActivity(), SensorEventListener {
         if (callees.isNullOrEmpty()) {
             userAdapter?.submitList(listOf(self))
         } else {
-            callees.remove(self.userId)
-            callees.add(0, self.userId)
+            val first = callees[0]
+            if (callees.size == 1 && first == self.userId) {
+                userAdapter?.submitList(listOf(self))
+                return@launch
+            }
+            if (first != self.userId) {
+                callees.remove(self.userId)
+                callees.add(0, self.userId)
+            }
             val users = viewModel.findMultiUsersByIds(callees.toSet())
             Timber.d("@@@ refreshUsersByIds users: $users")
             userAdapter?.submitList(users)

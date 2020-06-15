@@ -109,6 +109,7 @@
     <string name="analyzing">Analyzing…</string>
     <string name="scam_warning">Warning: Many users reported this account as a scam. Please be careful, especially if it asks you for money</string>
     <string name="add_shortcut">Add to Home screen</string>
+    <string name="waiting">Waiting</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

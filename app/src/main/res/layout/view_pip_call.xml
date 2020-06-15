@@ -21,6 +21,5 @@
         android:layout_below="@id/icon"
         android:typeface="monospace"
         android:textSize="12sp"
-        android:text="00:00"
         android:textColor="@color/call_light_green"/>
 </RelativeLayout>
