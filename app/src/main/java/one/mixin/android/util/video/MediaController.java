@@ -109,7 +109,6 @@ public class MediaController {
     }
 
     public static int getBitrate(String videoPath, float scale) {
-        TrackHeaderBox trackHeaderBox = null;
         float videoDuration;
         int originalBitrate;
         try {
@@ -146,7 +145,6 @@ public class MediaController {
                 }
                 TrackHeaderBox headerBox = trackBox.getTrackHeaderBox();
                 if (headerBox.getWidth() != 0 && headerBox.getHeight() != 0) {
-                    trackHeaderBox = headerBox;
                     originalBitrate = (int) (trackBitrate / 100000 * 100000);
                     return Math.min(1100000, (int) (originalBitrate / scale));
                 }
@@ -164,8 +162,7 @@ public class MediaController {
     }
 
     public boolean convertVideo(String videoPath, int bitrate, int resultWidth,
-                                int resultHeight, int
-                                        originalWidth, int originalHeight, File cacheFile, boolean needChange, long duration) throws
+                                int resultHeight, File cacheFile, boolean needChange, long duration) throws
             IOException {
         if (!needChange) {
             Util.copy(new FileInputStream(videoPath), new FileOutputStream(cacheFile));

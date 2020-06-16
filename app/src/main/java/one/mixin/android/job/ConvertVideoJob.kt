@@ -73,7 +73,7 @@ class ConvertVideoJob(
         val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp(conversationId, messageId, "mp4")
         val result = MediaController.getInstance().convertVideo(
             video.originalPath, video.bitrate, video.resultWidth, video.resultHeight,
-            video.originalWidth, video.originalHeight, videoFile, video.needChange, video.duration
+            videoFile, video.needChange, video.duration
         )
         if (isCancelled) {
             removeJob()
