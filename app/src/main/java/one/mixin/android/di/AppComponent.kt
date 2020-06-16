@@ -17,7 +17,8 @@ import javax.inject.Singleton
         (WorkerModule::class),
         (AppModule::class),
         (ActivityModule::class),
-        (ServiceModule::class)
+        (ServiceModule::class),
+        (BroadcastReceiverModule::class)
     ]
 )
 interface AppComponent {

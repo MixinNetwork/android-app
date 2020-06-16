@@ -12,6 +12,10 @@ import one.mixin.android.webrtc.ACTION_CALL_ANSWER
 import one.mixin.android.webrtc.ACTION_CALL_CANCEL
 import one.mixin.android.webrtc.ACTION_CALL_DECLINE
 import one.mixin.android.webrtc.ACTION_CALL_LOCAL_END
+import one.mixin.android.webrtc.ACTION_KRAKEN_ACCEPT_INVITE
+import one.mixin.android.webrtc.ACTION_KRAKEN_CANCEL
+import one.mixin.android.webrtc.ACTION_KRAKEN_DECLINE
+import one.mixin.android.webrtc.ACTION_KRAKEN_END
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
@@ -37,7 +41,8 @@ class CallNotificationBuilder {
                 .setOngoing(true)
                 .setContentTitle(user?.fullName)
 
-            val clazz = if (callState.isGroupCall()) {
+            val isGroupCall = callState.isGroupCall()
+            val clazz = if (isGroupCall) {
                 GroupCallService::class.java
             } else {
                 VoiceCallService::class.java
@@ -45,9 +50,12 @@ class CallNotificationBuilder {
             when (callState.state) {
                 CallService.CallState.STATE_DIALING -> {
                     builder.setContentText(context.getString(R.string.call_notification_outgoing))
+                    val action = if (isGroupCall) {
+                        ACTION_KRAKEN_CANCEL
+                    } else ACTION_CALL_CANCEL
                     builder.addAction(
                         getAction(
-                            context, clazz, ACTION_CALL_CANCEL, R.drawable.ic_close_black,
+                            context, clazz, action, R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_cancel
                         )
@@ -55,16 +63,22 @@ class CallNotificationBuilder {
                 }
                 CallService.CallState.STATE_RINGING -> {
                     builder.setContentText(context.getString(R.string.call_notification_incoming_voice))
+                    val answerAction = if (isGroupCall) {
+                        ACTION_KRAKEN_ACCEPT_INVITE
+                    } else ACTION_CALL_ANSWER
+                    val declineAction = if (isGroupCall) {
+                        ACTION_KRAKEN_DECLINE
+                    } else ACTION_CALL_DECLINE
                     builder.addAction(
                         getAction(
-                            context, clazz, ACTION_CALL_ANSWER, R.drawable.ic_close_black,
+                            context, clazz, answerAction, R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_answer
                         )
                     )
                     builder.addAction(
                         getAction(
-                            context, clazz, ACTION_CALL_DECLINE, R.drawable.ic_close_black,
+                            context, clazz, declineAction, R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_decline
                         )
@@ -72,9 +86,12 @@ class CallNotificationBuilder {
                 }
                 CallService.CallState.STATE_CONNECTED -> {
                     builder.setContentText(context.getString(R.string.call_notification_connected))
+                    val action = if (isGroupCall) {
+                        ACTION_KRAKEN_END
+                    } else ACTION_CALL_LOCAL_END
                     builder.addAction(
                         getAction(
-                            context, clazz, ACTION_CALL_LOCAL_END, R.drawable.ic_close_black,
+                            context, clazz, action, R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_hang_up
                         )
@@ -82,7 +99,11 @@ class CallNotificationBuilder {
                 }
                 else -> {
                     builder.setContentText(context.getString(R.string.call_connecting))
-                    val action = if (callState.isOffer) ACTION_CALL_CANCEL else ACTION_CALL_DECLINE
+                    val action = if (isGroupCall) {
+                        ACTION_KRAKEN_CANCEL
+                    } else {
+                        if (callState.isOffer) ACTION_CALL_CANCEL else ACTION_CALL_DECLINE
+                    }
                     builder.addAction(
                         getAction(
                             context, clazz, action, R.drawable.ic_close_black,

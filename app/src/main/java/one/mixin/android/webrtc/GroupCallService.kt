@@ -487,11 +487,11 @@ class GroupCallService : CallService() {
 private const val ACTION_KRAKEN_PUBLISH = "kraken_publish"
 private const val ACTION_KRAKEN_RECEIVE_PUBLISH = "kraken_receive_publish"
 private const val ACTION_KRAKEN_RECEIVE_INVITE = "kraken_receive_invite"
-private const val ACTION_KRAKEN_ACCEPT_INVITE = "kraken_accept_invite"
+const val ACTION_KRAKEN_ACCEPT_INVITE = "kraken_accept_invite"
 private const val ACTION_KRAKEN_RECEIVE_END = "kraken_receive_end"
-private const val ACTION_KRAKEN_END = "kraken_end"
-private const val ACTION_KRAKEN_CANCEL = "kraken_cancel"
-private const val ACTION_KRAKEN_DECLINE = "kraken_decline"
+const val ACTION_KRAKEN_END = "kraken_end"
+const val ACTION_KRAKEN_CANCEL = "kraken_cancel"
+const val ACTION_KRAKEN_DECLINE = "kraken_decline"
 
 private const val EXTRA_PLAY_RING = "extra_play_ring"
 
