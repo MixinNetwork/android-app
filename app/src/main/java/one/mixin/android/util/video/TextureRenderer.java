@@ -1,6 +1,5 @@
 package one.mixin.android.util.video;
 
-import android.annotation.TargetApi;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
@@ -10,7 +9,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-@TargetApi(16)
 public class TextureRenderer {
 
     private static final int FLOAT_SIZE_BYTES = 4;

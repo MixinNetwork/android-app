@@ -1,15 +1,32 @@
 package one.mixin.android.util.video;
 
-import android.annotation.TargetApi;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import com.coremedia.iso.BoxParser;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.IsoTypeWriter;
-import com.coremedia.iso.boxes.*;
-import com.coremedia.iso.boxes.apple.AppleItemListBox;
+import com.coremedia.iso.boxes.Box;
+import com.coremedia.iso.boxes.CompositionTimeToSample;
+import com.coremedia.iso.boxes.Container;
+import com.coremedia.iso.boxes.DataEntryUrlBox;
+import com.coremedia.iso.boxes.DataInformationBox;
+import com.coremedia.iso.boxes.DataReferenceBox;
+import com.coremedia.iso.boxes.FileTypeBox;
+import com.coremedia.iso.boxes.HandlerBox;
+import com.coremedia.iso.boxes.MediaBox;
+import com.coremedia.iso.boxes.MediaHeaderBox;
+import com.coremedia.iso.boxes.MediaInformationBox;
+import com.coremedia.iso.boxes.MovieBox;
+import com.coremedia.iso.boxes.MovieHeaderBox;
+import com.coremedia.iso.boxes.SampleSizeBox;
+import com.coremedia.iso.boxes.SampleTableBox;
+import com.coremedia.iso.boxes.SampleToChunkBox;
+import com.coremedia.iso.boxes.StaticChunkOffsetBox;
+import com.coremedia.iso.boxes.SyncSampleBox;
+import com.coremedia.iso.boxes.TimeToSampleBox;
+import com.coremedia.iso.boxes.TrackBox;
+import com.coremedia.iso.boxes.TrackHeaderBox;
 import com.googlecode.mp4parser.DataSource;
-import com.googlecode.mp4parser.boxes.apple.AppleCommentBox;
 import com.googlecode.mp4parser.util.Matrix;
 
 import java.io.FileOutputStream;
@@ -17,9 +34,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
-@TargetApi(16)
 public class MP4Builder {
 
     private InterleaveChunkMdat mdat = null;
@@ -27,13 +47,14 @@ public class MP4Builder {
     private FileOutputStream fos = null;
     private FileChannel fc = null;
     private long dataOffset = 0;
-    private long writedSinceLastMdat = 0;
+    private long wroteSinceLastMdat = 0;
     private boolean writeNewMdat = true;
     private HashMap<Track, long[]> track2SampleSizes = new HashMap<>();
     private ByteBuffer sizeBuffer = null;
+    private boolean splitMdat;
+    private boolean wasFirstVideoFrame;
 
-
-    public MP4Builder createMovie(Mp4Movie mp4Movie) throws Exception {
+    public MP4Builder createMovie(Mp4Movie mp4Movie, boolean split) throws Exception {
         currentMp4Movie = mp4Movie;
 
         fos = new FileOutputStream(mp4Movie.getCacheFile());
@@ -42,7 +63,8 @@ public class MP4Builder {
         FileTypeBox fileTypeBox = createFileTypeBox();
         fileTypeBox.getBox(fc);
         dataOffset += fileTypeBox.getSize();
-        writedSinceLastMdat += dataOffset;
+        wroteSinceLastMdat += dataOffset;
+        splitMdat = split;
 
         mdat = new InterleaveChunkMdat();
 
@@ -59,47 +81,82 @@ public class MP4Builder {
         mdat.setDataOffset(0);
         mdat.setContentSize(0);
         fos.flush();
+        fos.getFD().sync();
     }
 
-    public boolean writeSampleData(int trackIndex, ByteBuffer byteBuf, MediaCodec.BufferInfo bufferInfo, boolean writeLength) throws Exception {
+    public long writeSampleData(int trackIndex, ByteBuffer byteBuf, MediaCodec.BufferInfo bufferInfo, boolean writeLength) throws Exception {
         if (writeNewMdat) {
             mdat.setContentSize(0);
             mdat.getBox(fc);
             mdat.setDataOffset(dataOffset);
             dataOffset += 16;
-            writedSinceLastMdat += 16;
+            wroteSinceLastMdat += 16;
             writeNewMdat = false;
         }
 
+        /*if (writeLength && !wasFirstVideoFrame) {
+            wasFirstVideoFrame = true;
+            byte[] buff = new byte[bufferInfo.size];
+            byteBuf.position(bufferInfo.offset);
+            byteBuf.limit(bufferInfo.offset + bufferInfo.size);
+            byteBuf.get(buff);
+            ByteBuffer nativeBuffer = ByteBuffer.allocateDirect(bufferInfo.size);
+            nativeBuffer.position(4);
+            int indexOfNal = -1;
+            int totalLen = 0;
+            for (int a = 0, N = buff.length - 3; a < N; a++) {
+                if (buff[a] == 0 && buff[a + 1] == 0 && buff[a + 2] == 0 && buff[a + 3] == 1 || a == N - 1) {
+                    if (indexOfNal != -1) {
+                        int len = a - indexOfNal - 4;
+                        nativeBuffer.put(buff, indexOfNal, len);
+                        totalLen += len;
+                    }
+                    indexOfNal = a;
+                }
+            }
+            nativeBuffer.position(0);
+            nativeBuffer.putInt(totalLen);
+            bufferInfo.offset = 0;
+            bufferInfo.size = totalLen + 4;
+            byteBuf = nativeBuffer;
+        }*/
+
         mdat.setContentSize(mdat.getContentSize() + bufferInfo.size);
-        writedSinceLastMdat += bufferInfo.size;
+        wroteSinceLastMdat += bufferInfo.size;
 
         boolean flush = false;
-        if (writedSinceLastMdat >= 32 * 1024) {
-            flushCurrentMdat();
-            writeNewMdat = true;
+        if (wroteSinceLastMdat >= 32 * 1024) {
+            if (splitMdat) {
+                flushCurrentMdat();
+                writeNewMdat = true;
+            }
             flush = true;
-            writedSinceLastMdat -= 32 * 1024;
+            wroteSinceLastMdat = 0;
         }
 
         currentMp4Movie.addSample(trackIndex, dataOffset, bufferInfo);
-        byteBuf.position(bufferInfo.offset + (!writeLength ? 0 : 4));
-        byteBuf.limit(bufferInfo.offset + bufferInfo.size);
 
         if (writeLength) {
             sizeBuffer.position(0);
             sizeBuffer.putInt(bufferInfo.size - 4);
             sizeBuffer.position(0);
             fc.write(sizeBuffer);
-        }
 
+            byteBuf.position(bufferInfo.offset + 4);
+        } else {
+            byteBuf.position(bufferInfo.offset);
+        }
+        byteBuf.limit(bufferInfo.offset + bufferInfo.size);
         fc.write(byteBuf);
+
         dataOffset += bufferInfo.size;
 
         if (flush) {
             fos.flush();
+            fos.getFD().sync();
+            return fc.position();
         }
-        return flush;
+        return 0;
     }
 
     public int addTrack(MediaFormat mediaFormat, boolean isAudio) {
@@ -123,6 +180,7 @@ public class MP4Builder {
         Box moov = createMovieBox(currentMp4Movie);
         moov.getBox(fc);
         fos.flush();
+        fos.getFD().sync();
 
         fc.close();
         fos.close();
@@ -179,7 +237,7 @@ public class MP4Builder {
         }
 
         @Override
-        public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) throws IOException {
+        public void parse(DataSource dataSource, ByteBuffer header, long contentSize, BoxParser boxParser) {
 
         }
 
@@ -246,29 +304,7 @@ public class MP4Builder {
         for (Track track : movie.getTracks()) {
             movieBox.addBox(createTrackBox(track, movie));
         }
-        if (movie.getComment() != null) {
-            movieBox.addBox(createUdta(movie.getComment()));
-        }
         return movieBox;
-    }
-
-    protected UserDataBox createUdta(String comment) {
-        UserDataBox userDataBox = new UserDataBox();
-        MetaBox metaBox = new MetaBox();
-        HandlerBox hdlr = new HandlerBox();
-        hdlr.setHandlerType("mdir");
-        metaBox.addBox(hdlr);
-
-        AppleItemListBox ilst = new AppleItemListBox();
-        AppleCommentBox cmt = new AppleCommentBox();
-        cmt.setDataCountry(0);
-        cmt.setDataLanguage(0);
-        cmt.setValue(comment);
-        ilst.addBox(cmt);
-
-        metaBox.addBox(ilst);
-        userDataBox.addBox(metaBox);
-        return userDataBox;
     }
 
     protected TrackBox createTrackBox(Track track, Mp4Movie movie) {
@@ -397,7 +433,7 @@ public class MP4Builder {
 
     protected void createStsc(Track track, SampleTableBox stbl) {
         SampleToChunkBox stsc = new SampleToChunkBox();
-        stsc.setEntries(new LinkedList<SampleToChunkBox.Entry>());
+        stsc.setEntries(new LinkedList<>());
 
         long lastOffset;
         int lastChunkNumber = 1;
@@ -439,6 +475,12 @@ public class MP4Builder {
         SampleSizeBox stsz = new SampleSizeBox();
         stsz.setSampleSizes(track2SampleSizes.get(track));
         stbl.addBox(stsz);
+    }
+
+    protected void createSidx(Track track, SampleTableBox stbl) {
+        //SampleSizeBox stsz = new SampleSizeBox();
+        //stsz.setSampleSizes(track2SampleSizes.get(track));
+        //stbl.addBox(stsz);
     }
 
     protected void createStco(Track track, SampleTableBox stbl) {
