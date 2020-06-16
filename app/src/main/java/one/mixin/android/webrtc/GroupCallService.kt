@@ -9,6 +9,7 @@ import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
+import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.nowInUtc
@@ -24,6 +25,7 @@ import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.Sdp
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.vo.generateConversationChecksum
+import one.mixin.android.vo.isGroupCallType
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.BlazeMessageParam
@@ -99,6 +101,9 @@ class GroupCallService : CallService() {
         val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
         requireNotNull(cid)
         callState.conversationId = cid
+        val users = intent.getStringArrayListExtra(EXTRA_USERS)
+        callState.setUsersByConversationId(cid, users)
+        callState.addPendingGroupCall(cid)
         callState.isOffer = true
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         CallActivity.show(this)
@@ -233,6 +238,10 @@ class GroupCallService : CallService() {
         if (intent.getBooleanExtra(EXTRA_PLAY_RING, true)) {
             audioManager.start(false)
         }
+
+        userId?.let {
+            saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
+        }
     }
 
     private fun handleAcceptInvite(intent: Intent) {
@@ -249,8 +258,11 @@ class GroupCallService : CallService() {
         Timber.d("@@@ handleKrakenEnd")
         if (callState.isIdle()) return
 
+        val cid = callState.conversationId
+        requireNotNull(cid)
+        val duration = System.currentTimeMillis() - (callState.connectedTime ?: 0)
         val blazeMessageParam = BlazeMessageParam(
-            conversation_id = callState.conversationId,
+            conversation_id = cid,
             category = MessageCategory.KRAKEN_END.name,
             message_id = UUID.randomUUID().toString(),
             track_id = callState.trackId
@@ -258,6 +270,7 @@ class GroupCallService : CallService() {
 
         disconnect()
 
+        saveMessage(cid, self.userId, MessageCategory.KRAKEN_END.name, duration.toString())
         val bm = createKrakenMessage(blazeMessageParam)
         val bmData = getBlazeMessageData(bm) ?: return
         val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
@@ -267,8 +280,10 @@ class GroupCallService : CallService() {
         Timber.d("@@@ handleKrakenCancel")
         if (callState.isIdle()) return
 
+        val cid = callState.conversationId
+        requireNotNull(cid)
         val blazeMessageParam = BlazeMessageParam(
-            conversation_id = callState.conversationId,
+            conversation_id = cid,
             category = MessageCategory.KRAKEN_CANCEL.name,
             message_id = UUID.randomUUID().toString(),
             track_id = callState.trackId
@@ -277,6 +292,7 @@ class GroupCallService : CallService() {
         audioManager.stop()
         disconnect()
 
+        saveMessage(cid, self.userId, MessageCategory.KRAKEN_CANCEL.name)
         val bm = createKrakenMessage(blazeMessageParam)
         val bmData = getBlazeMessageData(bm) ?: return
         val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
@@ -294,6 +310,7 @@ class GroupCallService : CallService() {
         audioManager.stop()
         disconnect()
 
+        saveMessage(cid, self.userId, MessageCategory.KRAKEN_DECLINE.name)
         if (inviter != null) {
             val blazeMessageParam = BlazeMessageParam(
                 conversation_id = cid,
@@ -369,8 +386,10 @@ class GroupCallService : CallService() {
         trackId: String? = null,
         recipientId: String? = null
     ) {
+        val cid = callState.conversationId
+        requireNotNull(cid)
         val message = createCallMessage(
-            UUID.randomUUID().toString(), callState.conversationId!!,
+            UUID.randomUUID().toString(), cid,
             self.userId, category, "", nowInUtc(), MessageStatus.SENDING.name
         )
         jobManager.addJobInBackground(
@@ -379,6 +398,7 @@ class GroupCallService : CallService() {
                 krakenParam = KrakenParam(jsep, candidate, trackId)
             )
         )
+        saveMessage(cid, self.userId, category)
     }
 
     inner class ListRunnable(private val conversationId: String) : Runnable {
@@ -479,6 +499,17 @@ class GroupCallService : CallService() {
         }
     }
 
+    private fun saveMessage(cid: String, userId: String, category: String, duration: String? = null) {
+        if (!category.isGroupCallType()) return
+
+        val message = createCallMessage(
+            UUID.randomUUID().toString(), cid, userId, category,
+            "", nowInUtc(), MessageStatus.READ.name,
+            mediaDuration = duration
+        )
+        database.insertAndNotifyConversation(message)
+    }
+
     companion object {
         private const val KRAKEN_LIST_INTERVAL = 5L
     }
@@ -501,9 +532,10 @@ data class PeerList(
     val peers: ArrayList<UserSession>?
 )
 
-fun publish(ctx: Context, conversationId: String) =
+fun publish(ctx: Context, conversationId: String, users: ArrayList<String>? = null) =
     startService<GroupCallService>(ctx, ACTION_KRAKEN_PUBLISH) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+        it.putExtra(EXTRA_USERS, users)
     }
 
 fun receivePublish(ctx: Context, data: BlazeMessageData, foreground: Boolean) =

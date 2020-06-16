@@ -91,6 +91,8 @@ data class ConversationItem(
 
     fun isRecall() =
         contentType == MessageCategory.MESSAGE_RECALL.name
+
+    fun isGroupVoiceCall() = contentType?.isGroupCallType() == true
 }
 
 fun ConversationItem.showVerifiedOrBot(verifiedView: View, botView: View) {

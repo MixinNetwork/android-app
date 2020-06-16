@@ -19,6 +19,7 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.ui.call.CallNotificationBuilder
 import one.mixin.android.util.Session
 import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.vo.Message
 import one.mixin.android.vo.TurnServer
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
@@ -246,6 +247,13 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             )
         }
         return iceServer
+    }
+
+    protected fun checkConversation(message: Message): Boolean {
+        val conversation = conversationRepo.getConversation(message.conversationId)
+        if (conversation != null) return true
+
+        return conversationRepo.refreshConversation(message.conversationId)
     }
 
     enum class CallState {

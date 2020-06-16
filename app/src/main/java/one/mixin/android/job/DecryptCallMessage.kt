@@ -10,7 +10,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.extension.createAtToLong
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
@@ -21,7 +20,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.webrtc.DEFAULT_TIMEOUT_MINUTES
-import one.mixin.android.webrtc.PUBLISH_PLACEHOLDER
 import one.mixin.android.webrtc.answerCall
 import one.mixin.android.webrtc.busy
 import one.mixin.android.webrtc.cancelCall
@@ -83,8 +81,49 @@ class DecryptCallMessage(
     }
 
     private fun processKraken(data: BlazeMessageData) {
-        val ctx = MixinApplication.appContext
         Timber.d("@@@ processKraken category: ${data.category}, data: $data")
+        if (data.source == LIST_PENDING_MESSAGES && data.category == MessageCategory.KRAKEN_INVITE.name) {
+            val isExpired = isExpired(data)
+            if (!isExpired && !listPendingOfferHandled) {
+                listPendingJobMap[data.messageId] = Pair(
+                    lifecycleScope.launch(listPendingDispatcher) {
+                        delay(LIST_PENDING_CALL_DELAY)
+                        listPendingOfferHandled = true
+                        listPendingJobMap.forEach { entry ->
+                            val pair = entry.value
+                            val job = pair.first
+                            if (entry.key != data.messageId && !job.isCancelled) {
+                                job.cancel()
+
+                                val curData = pair.second
+                                val savedMessage = createCallMessage(
+                                    UUID.randomUUID().toString(), curData.conversationId, curData.userId,
+                                    MessageCategory.KRAKEN_INVITE.name, null, nowInUtc(), MessageStatus.SENDING.name, null
+                                )
+                                database.insertAndNotifyConversation(savedMessage)
+                                listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
+                            }
+                        }
+                        processKrakenCall(data)
+                        listPendingJobMap.clear()
+                    },
+                    data
+                )
+            } else if (isExpired) {
+                val message = createCallMessage(
+                    data.messageId, data.conversationId, data.userId, MessageCategory.KRAKEN_INVITE.name,
+                    null, data.createdAt, data.status
+                )
+                database.insertAndNotifyConversation(message)
+            }
+            notifyServer(data)
+        } else {
+            processKrakenCall(data)
+        }
+    }
+
+    private fun processKrakenCall(data: BlazeMessageData) {
+        val ctx = MixinApplication.appContext
         when (data.category) {
             MessageCategory.KRAKEN_PUBLISH.name -> {
                 receivePublish(ctx, data, false)
@@ -93,8 +132,7 @@ class DecryptCallMessage(
                 receiveInvite(ctx, data.conversationId, userId = data.userId, playRing = true)
             }
             MessageCategory.KRAKEN_END.name -> {
-                // Let kraken list update peers?
-                // callState.removeUser(data.userId, data.conversationId)
+                callState.removeUser(data.userId, data.conversationId)
             }
         }
         notifyServer(data)
@@ -102,12 +140,7 @@ class DecryptCallMessage(
 
     private fun processWebRTC(data: BlazeMessageData) {
         if (data.source == LIST_PENDING_MESSAGES && data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
-            val isExpired = try {
-                val offset = System.currentTimeMillis() - data.createdAt.createAtToLong()
-                offset > DEFAULT_TIMEOUT_MINUTES * 58 * 1000
-            } catch (e: NumberFormatException) {
-                true
-            }
+            val isExpired = isExpired(data)
             if (!isExpired && !listPendingOfferHandled) {
                 listPendingJobMap[data.messageId] = Pair(
                     lifecycleScope.launch(listPendingDispatcher) {
@@ -148,6 +181,15 @@ class DecryptCallMessage(
             notifyServer(data)
         } else {
             processCall(data)
+        }
+    }
+
+    private fun isExpired(data: BlazeMessageData): Boolean {
+        return try {
+            val offset = System.currentTimeMillis() - data.createdAt.createAtToLong()
+            offset > DEFAULT_TIMEOUT_MINUTES * 58 * 1000
+        } catch (e: NumberFormatException) {
+            true
         }
     }
 

@@ -342,13 +342,6 @@ class VoiceCallService : CallService() {
             m.conversationId, userId, m.category, m.content, m.createdAt, status.name, m.quoteMessageId, m.mediaDuration
         )
 
-    private fun checkConversation(message: Message): Boolean {
-        val conversation = conversationRepo.getConversation(message.conversationId)
-        if (conversation != null) return true
-
-        return conversationRepo.refreshConversation(message.conversationId)
-    }
-
     companion object {
         const val TAG = "VoiceCallService"
     }

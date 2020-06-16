@@ -290,6 +290,10 @@
     <string name="chat_app_card_back_to_chat">返回聊天</string>
     <string name="chat_app_card_continue_open_url">继续访问</string>
     <string name="chat_tap_join">点击加入</string>
+    <string name="chat_group_call_invite">%1$s 邀请你加入群组语音</string>
+    <string name="chat_group_call_decline">已拒绝群组语音</string>
+    <string name="chat_group_call_cancel">已取消群组语音</string>
+    <string name="chat_group_call_end">群组语音结束，时长 %1$s</string>
     <!--contact-->
     <string name="contact_other_send">发消息</string>
     <string name="contact_other_share">发送名片</string>
