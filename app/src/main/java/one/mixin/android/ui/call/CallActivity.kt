@@ -95,6 +95,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
         PipCallView.get()
     }
 
+    private var uiState: CallService.CallState = CallService.CallState.STATE_IDLE
+
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_Call
     }
@@ -186,6 +188,15 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 if (callState.isGroupCall()) {
                     refreshUsers()
                 }
+                if (state == CallService.CallState.STATE_IDLE) {
+                    call_cl.post { handleDisconnected() }
+                    return@Observer
+                }
+
+                if (uiState >= state) return@Observer
+
+                uiState = state
+
                 when (state) {
                     CallService.CallState.STATE_DIALING -> {
                         volumeControlStream = AudioManager.STREAM_VOICE_CALL
@@ -202,9 +213,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
                     }
                     CallService.CallState.STATE_BUSY -> {
                         call_cl.post { handleBusy() }
-                    }
-                    CallService.CallState.STATE_IDLE -> {
-                        call_cl.post { handleDisconnected() }
                     }
                 }
             }

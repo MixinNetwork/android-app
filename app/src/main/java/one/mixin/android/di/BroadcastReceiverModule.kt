@@ -6,5 +6,5 @@ import one.mixin.android.receiver.ExitBroadcastReceiver
 
 @Module
 abstract class BroadcastReceiverModule {
-    @ContributesAndroidInjector abstract fun contributesExitBroadcastReceiver() : ExitBroadcastReceiver
+    @ContributesAndroidInjector abstract fun contributesExitBroadcastReceiver(): ExitBroadcastReceiver
 }

@@ -386,8 +386,8 @@ class GroupCallService : CallService() {
         trackId: String? = null,
         recipientId: String? = null
     ) {
-        val cid = callState.conversationId
-        requireNotNull(cid)
+        val cid = callState.conversationId ?: return
+
         val message = createCallMessage(
             UUID.randomUUID().toString(), cid,
             self.userId, category, "", nowInUtc(), MessageStatus.SENDING.name

@@ -40,7 +40,7 @@ class GroupCallHolder constructor(containerView: View) : BaseViewHolder(containe
         }
         when (messageItem.type) {
             MessageCategory.KRAKEN_INVITE.name -> {
-                itemView.chat_info.text = context.getString(R.string.chat_group_call_invite, messageItem.userId)
+                itemView.chat_info.text = context.getString(R.string.chat_group_call_invite, messageItem.userFullName)
             }
             MessageCategory.KRAKEN_CANCEL.name -> {
                 itemView.chat_info.text = context.getString(R.string.chat_group_call_cancel)
