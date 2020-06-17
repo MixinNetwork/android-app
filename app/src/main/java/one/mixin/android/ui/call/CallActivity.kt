@@ -127,7 +127,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
             users_rv.isVisible = true
             add_iv.isVisible = true
             if (userAdapter == null) {
-                userAdapter = CallUserAdapter()
+                userAdapter = CallUserAdapter(self)
             }
             users_rv.adapter = userAdapter
             refreshUsers()
@@ -292,7 +292,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         val callees = callState.getUsersByConversationId(cid)
         var layoutManager: GridLayoutManager? = users_rv?.layoutManager as GridLayoutManager?
         val spanCount = getSpanCount(callees?.size ?: 3)
-        Timber.d("@@@ callees: $callees, spanCount: $spanCount")
+        Timber.d("@@@ callees: $callees, spanCount: $spanCount, guestsNotConnected: ${userAdapter?.guestsNotConnected}")
         if (layoutManager == null) {
             layoutManager = GridLayoutManager(this@CallActivity, spanCount)
             users_rv?.layoutManager = layoutManager
@@ -316,6 +316,12 @@ class CallActivity : BaseActivity(), SensorEventListener {
             val users = viewModel.findMultiUsersByIds(callees.toSet())
             Timber.d("@@@ refreshUsersByIds users: $users")
             userAdapter?.submitList(users)
+        }
+        val currentGuestsNotConnected = userAdapter?.guestsNotConnected
+        val newGuestsNotConnected = callState.getGuestsNotInUsers(cid)
+        if (currentGuestsNotConnected != newGuestsNotConnected) {
+            userAdapter?.guestsNotConnected = newGuestsNotConnected
+            userAdapter?.notifyDataSetChanged()
         }
     }
 

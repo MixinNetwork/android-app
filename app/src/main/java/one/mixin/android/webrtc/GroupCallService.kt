@@ -83,7 +83,7 @@ class GroupCallService : CallService() {
             val trackId = callState.trackId
             if (!trackId.isNullOrEmpty()) {
                 callState.conversationId = cid
-                sendSubscribe(cid, trackId)
+                sendSubscribe(cid, trackId, blazeMessageData.userId)
             }
         } else {
             callState.conversationId = cid
@@ -102,8 +102,8 @@ class GroupCallService : CallService() {
         requireNotNull(cid)
         callState.conversationId = cid
         val users = intent.getStringArrayListExtra(EXTRA_USERS)
-        callState.setUsersByConversationId(cid, users)
         callState.addPendingGroupCall(cid)
+        users?.let { callState.setInitialGuests(cid, it) }
         callState.isOffer = true
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         CallActivity.show(this)
@@ -142,7 +142,7 @@ class GroupCallService : CallService() {
         }
     }
 
-    private fun sendSubscribe(conversationId: String, trackId: String) {
+    private fun sendSubscribe(conversationId: String, trackId: String, userId: String? = null) {
         Timber.d("@@@ sendSubscribe")
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = conversationId, category = MessageCategory.KRAKEN_SUBSCRIBE.name,
@@ -151,6 +151,11 @@ class GroupCallService : CallService() {
         val bm = createKrakenMessage(blazeMessageParam)
         Timber.d("@@@ subscribe track id: $trackId")
         val bmData = getBlazeMessageData(bm) ?: return
+
+        userId?.let { u ->
+            callState.removeInitialGuest(conversationId, u)
+        }
+
         val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
         answer(krakenData, conversationId)
     }
@@ -209,12 +214,9 @@ class GroupCallService : CallService() {
             }
             return
         }
-        // val currentCount = callState.getUserCountByConversationId(conversationId)
-        // if (currentCount < peerList.peers.size) {
         val userIdList = arrayListOf<String>()
         peerList.peers.mapTo(userIdList) { it.userId }
         callState.setUsersByConversationId(conversationId, userIdList)
-        // }
     }
 
     private fun handleReceiveInvite(intent: Intent) {

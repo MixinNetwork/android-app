@@ -16,6 +16,7 @@ data class GroupCallState(
 ) {
     var inviter: String? = null
     var users: ArrayList<String>? = null
+    var initialGuests: ArrayList<String>? = null
 }
 
 class CallStateLiveData : LiveData<CallService.CallState>() {
@@ -80,13 +81,53 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
             it.conversationId == conversationId
         }?.inviter
 
-    fun getUsersByConversationId(conversationId: String) =
-        pendingGroupCalls.find {
+    fun getUsersByConversationId(conversationId: String): ArrayList<String>? {
+        val groupCallState = pendingGroupCalls.find {
             it.conversationId == conversationId
-        }?.users
+        } ?: return null
+        val us = groupCallState.users
+        val initialGuests = groupCallState.initialGuests
+
+        if (initialGuests.isNullOrEmpty()) return us
+        if (us.isNullOrEmpty()) return initialGuests
+
+        return arrayListOf<String>().apply { addAll(initialGuests.union(us)) }
+    }
 
     fun getUsersCountByConversationId(conversationId: String): Int =
         getUsersByConversationId(conversationId)?.size ?: 0
+
+    fun setInitialGuests(conversationId: String, guests: ArrayList<String>) {
+        if (guests.isNullOrEmpty()) return
+
+        val groupCallState = pendingGroupCalls.find {
+            it.conversationId == conversationId
+        } ?: return
+        groupCallState.initialGuests = guests
+    }
+
+    fun removeInitialGuest(conversationId: String, userId: String) {
+        val groupCallState = pendingGroupCalls.find {
+            it.conversationId == conversationId
+        } ?: return
+        groupCallState.initialGuests?.remove(userId)
+    }
+
+    fun getGuestsNotInUsers(conversationId: String): ArrayList<String>? {
+        val groupCallState = pendingGroupCalls.find {
+            it.conversationId == conversationId
+        } ?: return null
+        val us = groupCallState.users
+        val initialGuests = groupCallState.initialGuests
+
+        if (initialGuests.isNullOrEmpty()) return null
+        if (us.isNullOrEmpty()) return initialGuests
+
+        val resultSet = initialGuests.subtract(us)
+        if (resultSet.isNullOrEmpty()) return null
+
+        return arrayListOf<String>().apply { addAll(resultSet) }
+    }
 
     fun setUsersByConversationId(conversationId: String, newUsers: ArrayList<String>?) {
         if (newUsers.isNullOrEmpty()) return
