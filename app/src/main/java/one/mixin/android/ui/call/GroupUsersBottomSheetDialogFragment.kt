@@ -126,6 +126,8 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 jobManager.addJobInBackground(SendMessageJob(message, recipientId = users[0]))
                 if (callState.isIdle()) {
                     publish(requireContext(), conversationId, users)
+                } else {
+                    callState.addInitialGuests(conversationId, users)
                 }
                 dismiss()
             }

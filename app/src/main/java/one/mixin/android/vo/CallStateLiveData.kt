@@ -106,6 +106,21 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         groupCallState.initialGuests = guests
     }
 
+    fun addInitialGuests(conversationId: String, guests: ArrayList<String>) {
+        if (guests.isNullOrEmpty()) return
+
+        val groupCallState = pendingGroupCalls.find {
+            it.conversationId == conversationId
+        } ?: return
+
+        val current = groupCallState.initialGuests
+        if (current.isNullOrEmpty()) {
+            groupCallState.initialGuests = guests
+            return
+        }
+        groupCallState.initialGuests = arrayListOf<String>().apply { addAll(current.union(guests)) }
+    }
+
     fun removeInitialGuest(conversationId: String, userId: String) {
         val groupCallState = pendingGroupCalls.find {
             it.conversationId == conversationId
