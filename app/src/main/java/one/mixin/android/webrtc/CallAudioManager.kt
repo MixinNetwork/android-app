@@ -163,20 +163,31 @@ class CallAudioManager(private val context: Context) {
     }
 
     fun release() {
+        if (!mediaPlayerStopped) {
+            stop()
+        }
+
         audioManager.isSpeakerphoneOn = savedSpeakerOn
         audioManager.mode = saveMode
         audioManager.isMicrophoneMute = savedMicrophoneMute
-        vibrator?.cancel()
+
+        if (hasStarted) {
+            context.unregisterReceiver(wiredHeadsetReceiver)
+            context.unregisterReceiver(bluetoothHeadsetReceiver)
+        }
+
+        selectedAudioDevice = AudioDeviceInfo.TYPE_UNKNOWN
         stopScoAudio()
         if (bluetoothHeadset != null) {
             bluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset)
             bluetoothHeadset = null
         }
-        if (hasStarted) {
-            context.unregisterReceiver(wiredHeadsetReceiver)
-            context.unregisterReceiver(bluetoothHeadsetReceiver)
-        }
         bluetoothState = State.UNINITIALIZED
+
+        hasStarted = false
+        mediaPlayerStopped = false
+        isInitiator = false
+        changedByUser = false
     }
 
     @Synchronized

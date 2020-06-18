@@ -122,8 +122,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     UUID.randomUUID().toString(), conversationId,
                     "", MessageCategory.KRAKEN_INVITE.name, "", nowInUtc(), MessageStatus.SENDING.name
                 )
-                // jobManager.addJobInBackground(SendMessageJob(message, recipientIds = users))
-                jobManager.addJobInBackground(SendMessageJob(message, recipientId = users[0]))
+                jobManager.addJobInBackground(SendMessageJob(message, recipientIds = users))
                 if (callState.isIdle()) {
                     publish(requireContext(), conversationId, users)
                 } else {

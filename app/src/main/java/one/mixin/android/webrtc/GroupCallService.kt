@@ -291,7 +291,6 @@ class GroupCallService : CallService() {
             track_id = callState.trackId
         )
 
-        audioManager.stop()
         disconnect()
 
         saveMessage(cid, self.userId, MessageCategory.KRAKEN_CANCEL.name)
@@ -309,7 +308,6 @@ class GroupCallService : CallService() {
         val inviter = callState.getInviter(cid)
         val trackId = callState.trackId
 
-        audioManager.stop()
         disconnect()
 
         saveMessage(cid, self.userId, MessageCategory.KRAKEN_DECLINE.name)
@@ -334,7 +332,6 @@ class GroupCallService : CallService() {
         Timber.d("@@@ handleCallLocalFailed")
         if (callState.isIdle()) return
 
-        audioManager.stop()
         disconnect()
     }
 
@@ -342,7 +339,6 @@ class GroupCallService : CallService() {
         Timber.d("@@@ handleCallCancel")
         if (callState.isIdle()) return
 
-        audioManager.stop()
         if (callState.trackId != null) {
             sendGroupCallMessage(MessageCategory.KRAKEN_CANCEL.name, trackId = callState.trackId)
         }
@@ -445,7 +441,6 @@ class GroupCallService : CallService() {
         } else if (bm.error != null) {
             if (bm.error.status == 500 && bm.error.code == 7000) {
                 Timber.w("try send a ${blazeMessage.action} message,but the remote track has been released.")
-                audioManager.stop()
                 disconnect()
                 return null
             }

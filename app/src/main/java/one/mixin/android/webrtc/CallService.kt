@@ -110,7 +110,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         Timber.d("@@@ onDestroy")
         super.onDestroy()
         if (isDestroyed.compareAndSet(false, true)) {
-            audioManager.release()
             peerConnectionClient.release()
 
             onDestroyed()
@@ -123,7 +122,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         if (isDestroyed.get()) return
 
         stopForeground(true)
-        audioManager.stop()
+        audioManager.release()
         pipCallView.close()
         callState.reset()
         peerConnectionClient.close()

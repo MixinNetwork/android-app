@@ -152,7 +152,6 @@ class VoiceCallService : CallService() {
     override fun handleCallCancel(intent: Intent?) {
         if (callState.isIdle()) return
 
-        audioManager.stop()
         if (callState.isOffer) {
             val category = MessageCategory.WEBRTC_AUDIO_CANCEL.name
             sendCallMessage(category)
@@ -163,7 +162,6 @@ class VoiceCallService : CallService() {
     private fun handleCallDecline() {
         if (callState.isIdle()) return
 
-        audioManager.stop()
         if (!callState.isOffer) {
             val category = MessageCategory.WEBRTC_AUDIO_DECLINE.name
             sendCallMessage(category)
