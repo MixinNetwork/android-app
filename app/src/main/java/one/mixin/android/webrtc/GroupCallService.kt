@@ -446,6 +446,13 @@ class GroupCallService : CallService() {
             blazeMessage.id = UUID.randomUUID().toString()
             return webSocketChannel(blazeMessage)
         } else if (bm.error != null) {
+            if (bm.error.status == 500 && bm.error.code == 7000) {
+                Timber.w("try send a ${blazeMessage.action} message,but the remote track has been released.")
+                audioManager.stop()
+                disconnect()
+                return null
+            }
+
             return when (bm.error.code) {
                 ErrorHandler.CONVERSATION_CHECKSUM_INVALID_ERROR -> {
                     blazeMessage.params?.conversation_id?.let {
