@@ -43,8 +43,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     protected val audioManager: CallAudioManager by lazy {
         CallAudioManager(this)
     }
-    private var audioEnable = true
-
     protected val peerConnectionClient: PeerConnectionClient by lazy {
         PeerConnectionClient(this, this)
     }
@@ -171,7 +169,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         timeoutFuture?.cancel(true)
         vibrate(longArrayOf(0, 30))
         audioManager.stop()
-        peerConnectionClient.setAudioEnable(audioEnable)
+        peerConnectionClient.setAudioEnable(callState.audioEnable)
         peerConnectionClient.enableCommunication()
 
         pipCallView.startTimer(connectedTime)
@@ -180,14 +178,16 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     private fun handleMuteAudio(intent: Intent) {
         val extras = intent.extras ?: return
 
-        audioEnable = !extras.getBoolean(EXTRA_MUTE)
-        peerConnectionClient.setAudioEnable(audioEnable)
+        val enable = !extras.getBoolean(EXTRA_MUTE)
+        callState.audioEnable = enable
+        peerConnectionClient.setAudioEnable(enable)
     }
 
     private fun handleSpeakerphone(intent: Intent) {
         val extras = intent.extras ?: return
 
         val speakerphone = extras.getBoolean(EXTRA_SPEAKERPHONE)
+        callState.speakerEnable = speakerphone
         audioManager.isSpeakerOn = speakerphone
     }
 

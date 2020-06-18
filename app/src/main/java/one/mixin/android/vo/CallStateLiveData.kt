@@ -33,6 +33,9 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     var connectedTime: Long? = null
     var isOffer: Boolean = true
 
+    var audioEnable = true
+    var speakerEnable = false
+
     private val pendingGroupCalls = mutableSetOf<GroupCallState>()
 
     fun reset() {
@@ -41,6 +44,8 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         user = null
         connectedTime = null
         isOffer = true
+        audioEnable = true
+        speakerEnable = false
         state = CallService.CallState.STATE_IDLE
     }
 

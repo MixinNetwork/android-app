@@ -81,15 +81,12 @@ class GroupCallService : CallService() {
         startCheckPeers(cid)
 
         val krakenDataString = String(blazeMessageData.data.decodeBase64())
-        Timber.d("@@@ krakenDataString: $krakenDataString, trackId: ${callState.trackId}")
+        Timber.d("@@@ krakenDataString: $krakenDataString, isInVoiceCall: ${!callState.isGroupCall()}, trackId: ${callState.trackId}")
         if (krakenDataString == PUBLISH_PLACEHOLDER) {
-            val trackId = callState.trackId
+            val trackId = if (callState.isGroupCall()) callState.trackId else null
             if (!trackId.isNullOrEmpty()) {
-                callState.conversationId = cid
                 sendSubscribe(cid, trackId, blazeMessageData.userId)
             }
-        } else {
-            callState.conversationId = cid
         }
     }
 
@@ -253,9 +250,9 @@ class GroupCallService : CallService() {
         Timber.d("@@@ handleAcceptInvite")
         val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
         requireNotNull(cid)
+        callState.conversationId = cid
 
         audioManager.stop()
-
         publish(cid)
     }
 

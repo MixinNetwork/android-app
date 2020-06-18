@@ -180,11 +180,13 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 }
             }
         })
+        updateMuteAndSpeaker()
 
         callState.observe(
             this,
             Observer { state ->
                 Timber.d("@@@ state: $state")
+                updateMuteAndSpeaker()
                 if (callState.isGroupCall()) {
                     refreshUsers()
                 }
@@ -285,6 +287,11 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     private fun handleHangup() {
         callState.handleHangup(this)
+    }
+
+    private fun updateMuteAndSpeaker() {
+        mute_cb?.isChecked = !callState.audioEnable
+        voice_cb?.isChecked = callState.speakerEnable
     }
 
     private fun refreshUsers() = lifecycleScope.launch {
