@@ -4,7 +4,7 @@ import android.net.Uri
 import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_ATTACHMENT_END
+import one.mixin.android.Constants.Account.PREF_ATTACHMENT_LAST
 import one.mixin.android.Constants.Account.PREF_ATTACHMENT_OFFSET
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.createAudioTemp
@@ -24,10 +24,8 @@ import one.mixin.android.extension.getOldMediaPath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.putString
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
@@ -42,14 +40,14 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
     override fun onRun() {
         val startTime = System.currentTimeMillis()
         val preferences = MixinApplication.appContext.defaultSharedPreferences
-        var migrationEnd = preferences.getString(PREF_ATTACHMENT_END, null)
+        var migrationLast = preferences.getLong(PREF_ATTACHMENT_LAST, -1)
         val offset = preferences.getLong(PREF_ATTACHMENT_OFFSET, 0)
-        if (migrationEnd == null) {
-            migrationEnd = nowInUtc()
-            preferences.putString(PREF_ATTACHMENT_END, migrationEnd)
+        if (migrationLast == -1L) {
+            migrationLast = messageDao.getLastMessageRowid()
+            preferences.putLong(PREF_ATTACHMENT_LAST, migrationLast)
         }
         if (!hasWritePermission()) return
-        val list = messageDao.findAttachmentMigration(migrationEnd, EACH, offset)
+        val list = messageDao.findAttachmentMigration(migrationLast, EACH, offset)
         list.forEach { attachment ->
             val path = attachment.mediaUrl?.toUri()?.getFilePath() ?: return@forEach
             val fromFile = File(path)
@@ -97,7 +95,7 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
             messageDao.updateMediaMessageUrl(Uri.fromFile(toFile).toString(), attachment.messageId)
         }
         preferences.putLong(PREF_ATTACHMENT_OFFSET, offset + list.size)
-        Timber.d("Attachment migration handle $offset file cost: ${System.currentTimeMillis() - startTime} ms")
+        Timber.d("Attachment migration handle ${offset + list.size} file cost: ${System.currentTimeMillis() - startTime} ms")
         if (list.size < EACH) {
             MixinApplication.appContext.getOldMediaPath()?.deleteRecursively()
             preferences.putBoolean(Constants.Account.PREF_ATTACHMENT, true)
