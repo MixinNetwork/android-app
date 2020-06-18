@@ -65,10 +65,10 @@ class GroupCallService : CallService() {
             ACTION_KRAKEN_PUBLISH -> handlePublish(intent)
             ACTION_KRAKEN_RECEIVE_PUBLISH -> handleReceivePublish(intent)
             ACTION_KRAKEN_RECEIVE_INVITE -> handleReceiveInvite(intent)
-            ACTION_KRAKEN_ACCEPT_INVITE -> handleAcceptInvite(intent)
+            ACTION_KRAKEN_ACCEPT_INVITE -> handleAcceptInvite()
             ACTION_KRAKEN_END -> handleKrakenEnd()
             ACTION_KRAKEN_CANCEL -> handleKrakenCancel()
-            ACTION_KRAKEN_DECLINE -> handleKrakenDecline(intent)
+            ACTION_KRAKEN_DECLINE -> handleKrakenDecline()
             else -> handled = false
         }
         return handled
@@ -246,11 +246,13 @@ class GroupCallService : CallService() {
         }
     }
 
-    private fun handleAcceptInvite(intent: Intent) {
+    private fun handleAcceptInvite() {
         Timber.d("@@@ handleAcceptInvite")
-        val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
-        requireNotNull(cid)
-        callState.conversationId = cid
+        val cid = callState.conversationId
+        if (cid == null) {
+            Timber.w("try accept invite but conversation id is null")
+            return
+        }
 
         audioManager.stop()
         publish(cid)
@@ -261,7 +263,11 @@ class GroupCallService : CallService() {
         if (callState.isIdle()) return
 
         val cid = callState.conversationId
-        requireNotNull(cid)
+        if (cid == null) {
+            Timber.w("try send kraken end message but conversation id is null")
+            return
+        }
+
         val duration = System.currentTimeMillis() - (callState.connectedTime ?: 0)
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = cid,
@@ -283,7 +289,11 @@ class GroupCallService : CallService() {
         if (callState.isIdle()) return
 
         val cid = callState.conversationId
-        requireNotNull(cid)
+        if (cid == null) {
+            Timber.w("try send kraken cancel message but conversation id is null")
+            return
+        }
+
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = cid,
             category = MessageCategory.KRAKEN_CANCEL.name,
@@ -299,12 +309,16 @@ class GroupCallService : CallService() {
         val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
     }
 
-    private fun handleKrakenDecline(intent: Intent) {
+    private fun handleKrakenDecline() {
         Timber.d("@@@ handleKrakenDecline")
         if (callState.isIdle()) return
 
-        val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
-        requireNotNull(cid)
+        val cid = callState.conversationId
+        if (cid == null) {
+            Timber.w("try send kraken decline message but conversation id is null")
+            return
+        }
+
         val inviter = callState.getInviter(cid)
         val trackId = callState.trackId
 
@@ -568,14 +582,10 @@ fun receiveInvite(ctx: Context, conversationId: String, userId: String? = null, 
         it.putExtra(EXTRA_PLAY_RING, playRing)
     }
 
-fun acceptInvite(ctx: Context, conversationId: String) = startService<GroupCallService>(ctx, ACTION_KRAKEN_ACCEPT_INVITE) {
-    it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
-}
+fun acceptInvite(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_ACCEPT_INVITE) {}
 
 fun krakenEnd(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_END) {}
 
 fun krakenCancel(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_CANCEL) {}
 
-fun krakenDecline(ctx: Context, conversationId: String) = startService<GroupCallService>(ctx, ACTION_KRAKEN_DECLINE) {
-    it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
-}
+fun krakenDecline(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_DECLINE) {}

@@ -361,7 +361,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 if (granted) {
                     handleAnswering()
                     if (callState.isGroupCall()) {
-                        acceptInvite(this@CallActivity, callState.conversationId!!)
+                        acceptInvite(this@CallActivity)
                     } else {
                         answerCall(this@CallActivity)
                     }

@@ -200,9 +200,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
                 }
             CallService.CallState.STATE_RINGING ->
                 if (isGroupCall()) {
-                    val cid = conversationId
-                    requireNotNull(cid)
-                    krakenDecline(ctx, cid)
+                    krakenDecline(ctx)
                 } else {
                     declineCall(ctx)
                 }
