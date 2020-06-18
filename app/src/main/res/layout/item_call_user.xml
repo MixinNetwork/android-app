@@ -19,6 +19,7 @@
     <ImageView
         android:layout_width="24dp"
         android:layout_height="24dp"
+        android:visibility="gone"
         android:contentDescription="@null"
         android:src="@drawable/ic_call_user_mute"
         app:layout_constraintEnd_toEndOf="@id/avatar_view"

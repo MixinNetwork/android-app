@@ -151,12 +151,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         callExecutor.execute { handleConnected() }
     }
 
-    override fun onDisconnected() {
-        callExecutor.execute {
-            handleCallLocalEnd()
-        }
-    }
-
     override fun onIceDisconnected() {
     }
 

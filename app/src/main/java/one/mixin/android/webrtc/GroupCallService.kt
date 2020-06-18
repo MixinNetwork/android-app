@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.SystemClock
 import com.google.gson.JsonElement
 import one.mixin.android.Constants
+import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ParticipantDao
@@ -12,6 +13,7 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
+import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.SendMessageJob
@@ -31,6 +33,7 @@ import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.KrakenParam
+import one.mixin.android.websocket.LIST_KRAKEN_PEERS
 import one.mixin.android.websocket.createKrakenMessage
 import one.mixin.android.websocket.createListKrakenPeers
 import org.webrtc.IceCandidate
@@ -326,6 +329,7 @@ class GroupCallService : CallService() {
             val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
         } else {
             Timber.w("@@@ Try send kraken decline message but inviter is null, conversationId: $cid")
+            getPeers(cid)
         }
     }
 
@@ -356,6 +360,10 @@ class GroupCallService : CallService() {
             sendGroupCallMessage(MessageCategory.KRAKEN_END.name, trackId = callState.trackId)
         }
         disconnect()
+    }
+
+    override fun onDisconnected() {
+        Timber.d("@@@ peerConnection onDisconnected")
     }
 
     override fun onCallDisconnected() {
@@ -420,13 +428,21 @@ class GroupCallService : CallService() {
         webSocketChannel(blazeMessage)?.data
 
     private tailrec fun webSocketChannel(blazeMessage: BlazeMessage): BlazeMessage? {
+        if (!networkConnected()) {
+            Timber.d("@@@ network not connected, action: ${blazeMessage.action}")
+            if (blazeMessage.action == LIST_KRAKEN_PEERS) return null
+
+            SystemClock.sleep(SLEEP_MILLIS)
+            return blazeMessage
+        }
+
         blazeMessage.params?.conversation_id?.let {
             blazeMessage.params.conversation_checksum = getCheckSum(it)
         }
         val bm = chatWebSocket.sendMessage(blazeMessage)
         Timber.d("@@@ webSocketChannel $blazeMessage, bm: $bm")
         if (bm == null) {
-            SystemClock.sleep(Constants.SLEEP_MILLIS)
+            SystemClock.sleep(SLEEP_MILLIS)
             blazeMessage.id = UUID.randomUUID().toString()
             return webSocketChannel(blazeMessage)
         } else if (bm.error != null) {
