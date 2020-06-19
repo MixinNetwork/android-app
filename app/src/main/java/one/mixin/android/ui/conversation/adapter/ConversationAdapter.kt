@@ -77,6 +77,12 @@ class ConversationAdapter(
     MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     var selectSet: ArraySet<MessageItem> = ArraySet()
     var unreadMsgId: String? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                notifyDataSetChanged()
+            }
+        }
     var recipient: User? = null
     val miniMarkwon by lazy {
         MarkwonUtil.getMiniMarkwon(context)
