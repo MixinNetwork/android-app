@@ -175,6 +175,7 @@ class GroupCallService : CallService() {
                     )
                     val bm = createKrakenMessage(blazeMessageParam)
                     val data = webSocketChannel(bm) ?: return@createAnswer
+                    Timber.d("@@@ answer data: $data")
                 }
             )
         }
@@ -221,16 +222,24 @@ class GroupCallService : CallService() {
 
     private fun handleReceiveInvite(intent: Intent) {
         Timber.d("@@@ handleReceiveInvite")
-        if (callState.state == CallState.STATE_RINGING) return
+        val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
+        requireNotNull(cid)
+        val userId = intent.getStringExtra(EXTRA_USER_ID)
+
+        if (isBusy()) {
+            // TODO send a kraken busy message?
+            Timber.d("@@@ receive a invite from $userId in $cid")
+            userId?.let {
+                saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
+            }
+            return
+        }
 
         callState.state = CallState.STATE_RINGING
         supportsOreo {
             updateForegroundNotification()
         }
         val users = intent.getStringArrayListExtra(EXTRA_USERS)
-        val userId = intent.getStringExtra(EXTRA_USER_ID)
-        val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
-        requireNotNull(cid)
         callState.conversationId = cid
         userId?.let { callState.setInviter(cid, it) }
         callState.setUsersByConversationId(cid, users)
@@ -251,6 +260,7 @@ class GroupCallService : CallService() {
         val cid = callState.conversationId
         if (cid == null) {
             Timber.w("try accept invite but conversation id is null")
+            disconnect()
             return
         }
 
@@ -265,6 +275,7 @@ class GroupCallService : CallService() {
         val cid = callState.conversationId
         if (cid == null) {
             Timber.w("try send kraken end message but conversation id is null")
+            disconnect()
             return
         }
 
@@ -291,6 +302,7 @@ class GroupCallService : CallService() {
         val cid = callState.conversationId
         if (cid == null) {
             Timber.w("try send kraken cancel message but conversation id is null")
+            disconnect()
             return
         }
 
@@ -316,6 +328,7 @@ class GroupCallService : CallService() {
         val cid = callState.conversationId
         if (cid == null) {
             Timber.w("try send kraken decline message but conversation id is null")
+            disconnect()
             return
         }
 

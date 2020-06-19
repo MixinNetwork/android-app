@@ -2,7 +2,9 @@ package one.mixin.android.webrtc
 
 import android.content.Context
 import android.content.Intent
+import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import androidx.lifecycle.LifecycleService
 import com.google.gson.Gson
 import dagger.android.AndroidInjection
@@ -69,6 +71,8 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         PipCallView.get()
     }
 
+    private var isForeground = false
+
     override fun onCreate() {
         AndroidInjection.inject(this)
         super.onCreate()
@@ -87,6 +91,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
+        isForeground = intent?.extras?.getBoolean(EXTRA_FOREGROUND) ?: true
         supportsOreo {
             updateForegroundNotification()
         }
@@ -122,6 +127,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         if (isDestroyed.get()) return
 
         stopForeground(true)
+        isForeground = false
         audioManager.release()
         pipCallView.close()
         callState.reset()
@@ -196,8 +202,13 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         handleCallCancel()
     }
 
+    protected fun isBusy(): Boolean {
+        val tm = getSystemService<TelephonyManager>()
+        return callState.isNotIdle() || tm?.callState != TelephonyManager.CALL_STATE_IDLE
+    }
+
     protected fun updateForegroundNotification() {
-        if (!callServiceForeground) return
+        if (!isForeground) return
 
         CallNotificationBuilder.getCallNotification(this, callState)?.let {
             startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION, it)
@@ -276,8 +287,7 @@ const val EXTRA_BLAZE = "blaze"
 const val EXTRA_MUTE = "mute"
 const val EXTRA_SPEAKERPHONE = "speakerphone"
 const val EXTRA_PENDING_CANDIDATES = "pending_candidates"
-
-var callServiceForeground: Boolean = true
+const val EXTRA_FOREGROUND = "foreground"
 
 inline fun <reified T : CallService> muteAudio(ctx: Context, checked: Boolean) = startService<T>(ctx, ACTION_MUTE_AUDIO) {
     it.putExtra(EXTRA_MUTE, checked)
@@ -300,12 +310,11 @@ inline fun <reified T : CallService> startService(
     val intent = Intent(ctx, T::class.java).apply {
         this.action = action
         putExtra.invoke(this)
+        putExtra(EXTRA_FOREGROUND, foreground)
     }
     if (foreground) {
-        callServiceForeground = true
         ContextCompat.startForegroundService(ctx, intent)
     } else {
-        callServiceForeground = false
         ctx.startService(intent)
     }
 }

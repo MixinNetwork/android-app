@@ -2,8 +2,6 @@ package one.mixin.android.webrtc
 
 import android.content.Context
 import android.content.Intent
-import android.telephony.TelephonyManager
-import androidx.core.content.getSystemService
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.insertAndNotifyConversation
@@ -51,7 +49,7 @@ class VoiceCallService : CallService() {
     }
 
     private fun handleCallIncoming(intent: Intent) {
-        if (!callState.isIdle() || isBusy()) {
+        if (isBusy()) {
             val category = MessageCategory.WEBRTC_AUDIO_BUSY.name
             val bmd = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
             val m = createCallMessage(
@@ -232,11 +230,6 @@ class VoiceCallService : CallService() {
             SessionDescription.Type.PRANSWER.canonicalForm() -> SessionDescription.Type.PRANSWER
             else -> SessionDescription.Type.OFFER
         }
-    }
-
-    private fun isBusy(): Boolean {
-        val tm = getSystemService<TelephonyManager>()
-        return callState.state != CallState.STATE_IDLE || tm?.callState != TelephonyManager.CALL_STATE_IDLE
     }
 
     override fun onIceCandidate(candidate: IceCandidate) {

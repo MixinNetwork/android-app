@@ -19,6 +19,7 @@ import one.mixin.android.webrtc.ACTION_KRAKEN_END
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
+import timber.log.Timber
 
 class CallNotificationBuilder {
 
@@ -28,7 +29,10 @@ class CallNotificationBuilder {
         const val ACTION_EXIT = "action_exit"
 
         fun getCallNotification(context: Context, callState: CallStateLiveData): Notification? {
-            if (callState.isIdle()) return null
+            if (callState.isIdle()) {
+                Timber.w("try get a call notification for foreground service in idle state.")
+                return null
+            }
 
             val callIntent = Intent(context, CallActivity::class.java)
             callIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
