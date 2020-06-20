@@ -468,6 +468,9 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun batchQueryMessages(limit: Int, offset: Int, after: Long): List<QueryMessage>
 
-    @Query("SELECT id, conversation_id, name, category, media_url, media_mine_type FROM messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' AND  :end > created_at LIMIT :limit OFFSET :offset")
-    fun findAttachmentMigration(end: String, limit: Int, offset: Long): List<AttachmentMigration>
+    @Query("SELECT id, conversation_id, name, category, media_url, media_mine_type FROM messages WHERE category IN ('SIGNAL_IMAGE','PLAIN_IMAGE', 'SIGNAL_VIDEO', 'PLAIN_VIDEO', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_AUDIO', 'PLAIN_AUDIO') AND media_status = 'DONE' AND rowid <= :rowId LIMIT :limit OFFSET :offset")
+    fun findAttachmentMigration(rowId: Long, limit: Int, offset: Long): List<AttachmentMigration>
+
+    @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
+    fun getLastMessageRowid(): Long
 }

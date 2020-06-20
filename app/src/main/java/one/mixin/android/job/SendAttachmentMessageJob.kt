@@ -64,7 +64,6 @@ class SendAttachmentMessageJob(
             }
         } else {
             messageDao.insert(message)
-            messageDao.updateMediaStatus(MediaStatus.PENDING.name, message.id)
         }
     }
 
