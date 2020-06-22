@@ -26,7 +26,6 @@ class CallNotificationBuilder {
     companion object {
         private const val CHANNEL_NODE = "channel_node"
         const val WEBRTC_NOTIFICATION = 313388
-        const val ACTION_EXIT = "action_exit"
 
         fun getCallNotification(context: Context, callState: CallStateLiveData): Notification? {
             if (callState.isIdle()) {

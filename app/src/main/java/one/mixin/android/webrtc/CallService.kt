@@ -103,6 +103,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         callExecutor.execute {
             if (!handleIntent(intent)) {
                 when (intent.action) {
+                    ACTION_CALL_DISCONNECT -> disconnect()
                     ACTION_MUTE_AUDIO -> handleMuteAudio(intent)
                     ACTION_SPEAKERPHONE -> handleSpeakerphone(intent)
                 }
@@ -134,6 +135,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         timeoutFuture?.cancel(true)
 
         callState.state = CallState.STATE_IDLE
+
         onCallDisconnected()
     }
 
@@ -184,6 +186,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     private fun handleMuteAudio(intent: Intent) {
+        if (callState.isIdle()) return
         val extras = intent.extras ?: return
 
         val enable = !extras.getBoolean(EXTRA_MUTE)
@@ -192,6 +195,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     private fun handleSpeakerphone(intent: Intent) {
+        if (callState.isIdle()) return
         val extras = intent.extras ?: return
 
         val speakerphone = extras.getBoolean(EXTRA_SPEAKERPHONE)
@@ -280,6 +284,8 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
 const val DEFAULT_TIMEOUT_MINUTES = 1L
 
+const val ACTION_CALL_DISCONNECT = "call_disconnect"
+
 const val ACTION_MUTE_AUDIO = "mute_audio"
 const val ACTION_SPEAKERPHONE = "speakerphone"
 
@@ -292,11 +298,11 @@ const val EXTRA_SPEAKERPHONE = "speakerphone"
 const val EXTRA_PENDING_CANDIDATES = "pending_candidates"
 const val EXTRA_FOREGROUND = "foreground"
 
-inline fun <reified T : CallService> muteAudio(ctx: Context, checked: Boolean) = startService<T>(ctx, ACTION_MUTE_AUDIO) {
+inline fun <reified T : CallService> muteAudio(ctx: Context, checked: Boolean) = startService<T>(ctx, ACTION_MUTE_AUDIO, false) {
     it.putExtra(EXTRA_MUTE, checked)
 }
 
-inline fun <reified T : CallService> speakerPhone(ctx: Context, checked: Boolean) = startService<T>(ctx, ACTION_SPEAKERPHONE) {
+inline fun <reified T : CallService> speakerPhone(ctx: Context, checked: Boolean) = startService<T>(ctx, ACTION_SPEAKERPHONE, false) {
     it.putExtra(EXTRA_SPEAKERPHONE, checked)
 }
 
@@ -320,8 +326,4 @@ inline fun <reified T : CallService> startService(
     } else {
         ctx.startService(intent)
     }
-}
-
-inline fun <reified T : CallService> stopService(context: Context) {
-    context.stopService(Intent(context, T::class.java))
 }

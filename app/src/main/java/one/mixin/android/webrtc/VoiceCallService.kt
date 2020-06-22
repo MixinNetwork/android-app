@@ -42,7 +42,6 @@ class VoiceCallService : CallService() {
             ACTION_CALL_BUSY -> handleCallBusy()
             ACTION_CALL_LOCAL_FAILED -> handleCallLocalFailed()
             ACTION_CALL_REMOTE_FAILED -> handleCallRemoteFailed()
-            ACTION_CALL_DISCONNECT -> disconnect()
             else -> handled = false
         }
         return handled
@@ -375,7 +374,6 @@ const val ACTION_CALL_REMOTE_END = "call_remote_end"
 const val ACTION_CALL_BUSY = "call_busy"
 const val ACTION_CALL_LOCAL_FAILED = "call_local_failed"
 const val ACTION_CALL_REMOTE_FAILED = "call_remote_failed"
-const val ACTION_CALL_DISCONNECT = "call_disconnect"
 
 fun incomingCall(ctx: Context, user: User, data: BlazeMessageData, pendingCandidateData: String? = null) =
     startService<VoiceCallService>(ctx, ACTION_CALL_INCOMING) {

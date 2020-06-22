@@ -210,7 +210,6 @@ class GroupCallService : CallService() {
             Timber.d("@@@ scheduledFutures isEmpty: ${scheduledFutures.isEmpty()}")
 
             if (scheduledFutures.isEmpty()) {
-                stopForeground(true)
                 stopSelf()
             }
             return
