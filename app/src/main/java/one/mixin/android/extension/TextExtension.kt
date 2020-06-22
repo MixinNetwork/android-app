@@ -46,6 +46,21 @@ fun Long.fileSize(): String {
     return String.format("%.2f %s", num, unit)
 }
 
+fun Long.fileUnit(): String {
+    var count = 0
+    var num = this.toFloat()
+    while (count > 3 || num > 1024) {
+        num /= 1024f
+        count++
+    }
+    return when (count) {
+        1 -> "KB"
+        2 -> "MB"
+        3 -> "GB"
+        else -> "Byte"
+    }
+}
+
 fun String.findLastUrl(): String? {
     val m = urlPatter.matcher(this)
     if (m.find()) {
