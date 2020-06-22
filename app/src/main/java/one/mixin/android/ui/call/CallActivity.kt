@@ -256,6 +256,18 @@ class CallActivity : BaseActivity(), SensorEventListener {
         super.onPause()
     }
 
+    override fun onStop() {
+        super.onStop()
+        if (callState.isNotIdle()) {
+            switch2Pip()
+        }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        handleDisconnected()
+    }
+
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
     }
 
@@ -274,16 +286,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
         }
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        if (callState.isIdle()) {
-            handleHangup()
-        } else {
-            switch2Pip()
-        }
-        handleDisconnected()
-    }
-
     private fun handleHangup() {
         callState.handleHangup(this)
     }
@@ -298,7 +300,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
         val callees = callState.getUsersByConversationId(cid)
         var layoutManager: GridLayoutManager? = users_rv?.layoutManager as GridLayoutManager?
         val spanCount = getSpanCount(callees?.size ?: 3)
-        Timber.d("@@@ callees: $callees, spanCount: $spanCount, guestsNotConnected: ${userAdapter?.guestsNotConnected}")
         if (layoutManager == null) {
             layoutManager = GridLayoutManager(this@CallActivity, spanCount)
             users_rv?.layoutManager = layoutManager

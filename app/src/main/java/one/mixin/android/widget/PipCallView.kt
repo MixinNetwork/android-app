@@ -98,7 +98,7 @@ class PipCallView {
         }
     }
 
-    private lateinit var windowView: FrameLayout
+    private var windowView: FrameLayout? = null
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
 
     private var timeView: TextView? = null
@@ -111,6 +111,8 @@ class PipCallView {
         activity: Activity,
         connectedTime: Long? = null
     ) {
+        windowView?.let { windowManager.removeView(it) }
+
         val isLandscape = appContext.isLandscape()
         val realSize = appContext.realSize()
         val realX = if (isLandscape) realSize.y else realSize.x
@@ -160,7 +162,7 @@ class PipCallView {
 
         val size = SIZE.dp
         val view = LayoutInflater.from(appContext).inflate(R.layout.view_pip_call, null)
-        windowView.addView(view, FrameLayout.LayoutParams(size, size, Gravity.START or Gravity.TOP))
+        windowView?.addView(view, FrameLayout.LayoutParams(size, size, Gravity.START or Gravity.TOP))
         view.setOnClickListener {
             CallActivity.show(appContext)
         }
@@ -208,12 +210,12 @@ class PipCallView {
         if (shown) {
             shown = false
             windowManager.removeView(windowView)
+            windowView = null
         }
         stopTimer()
     }
 
-    var timer: Timer? = null
-        private set
+    private var timer: Timer? = null
 
     fun startTimer(connectedTime: Long) {
         Timber.d("@@@ startTimer timer: $timer")
