@@ -39,6 +39,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     private val pendingGroupCalls = mutableSetOf<GroupCallState>()
 
     fun reset() {
+        conversationId?.let { clearInitialGuests(it) }
         conversationId = null
         trackId = null
         user = null
@@ -131,6 +132,13 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
             it.conversationId == conversationId
         } ?: return
         groupCallState.initialGuests?.remove(userId)
+    }
+
+    fun clearInitialGuests(conversationId: String) {
+        val groupCallState = pendingGroupCalls.find {
+            it.conversationId == conversationId
+        } ?: return
+        groupCallState.initialGuests = null
     }
 
     fun getGuestsNotInUsers(conversationId: String): ArrayList<String>? {

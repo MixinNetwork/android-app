@@ -677,7 +677,7 @@ class ConversationFragment :
             }
 
             override fun onCallClick(messageItem: MessageItem) {
-                if (!callState.isIdle()) {
+                if (callState.isNotIdle()) {
                     if (recipient != null && callState.user?.userId == recipient?.userId) {
                         CallActivity.show(requireContext())
                     } else {
@@ -934,7 +934,7 @@ class ConversationFragment :
 
     private var isCling: Boolean = false
     override fun onSensorChanged(event: SensorEvent?) {
-        if (!callState.isIdle()) return
+        if (callState.isNotIdle()) return
 
         val values = event?.values ?: return
         if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
@@ -2050,7 +2050,7 @@ class ConversationFragment :
                     }
                     MenuType.Voice -> {
                         chat_control.reset()
-                        if (!callState.isIdle()) {
+                        if (callState.isNotIdle()) {
                             if (recipient != null && callState.user?.userId == recipient?.userId) {
                                 CallActivity.show(requireContext())
                             } else {
@@ -2541,7 +2541,7 @@ class ConversationFragment :
     }
 
     private fun resetAudioMode() {
-        if (!callState.isIdle()) return
+        if (callState.isNotIdle()) return
 
         if (!audioManager.isHeadsetOn()) {
             if (isCling) {

@@ -596,7 +596,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     @SuppressLint("CheckResult")
     private fun startVoiceCall() {
-        if (!callState.isIdle()) {
+        if (callState.isNotIdle()) {
             if (callState.user?.userId == user.userId) {
                 CallActivity.show(requireContext())
             } else {

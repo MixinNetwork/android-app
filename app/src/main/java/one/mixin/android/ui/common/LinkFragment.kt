@@ -67,7 +67,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
 
     @Synchronized
     private fun check(state: Int?) {
-        if (!callState.isIdle()) {
+        if (callState.isNotIdle()) {
             setCalling()
             showBar()
             return
@@ -84,7 +84,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     }
 
     override fun onChanged(t: Int?) {
-        if (!callState.isIdle()) return
+        if (callState.isNotIdle()) return
 
         t.notNullWithElse(
             {

@@ -259,7 +259,7 @@ class GroupCallService : CallService() {
         Timber.d("@@@ handleAcceptInvite")
         val cid = callState.conversationId
         if (cid == null) {
-            Timber.w("try accept invite but conversation id is null")
+            Timber.e("try accept invite but conversation id is null")
             disconnect()
             return
         }
@@ -274,7 +274,7 @@ class GroupCallService : CallService() {
 
         val cid = callState.conversationId
         if (cid == null) {
-            Timber.w("try send kraken end message but conversation id is null")
+            Timber.e("try send kraken end message but conversation id is null")
             disconnect()
             return
         }
@@ -301,7 +301,7 @@ class GroupCallService : CallService() {
 
         val cid = callState.conversationId
         if (cid == null) {
-            Timber.w("try send kraken cancel message but conversation id is null")
+            Timber.e("try send kraken cancel message but conversation id is null")
             disconnect()
             return
         }
@@ -327,7 +327,7 @@ class GroupCallService : CallService() {
 
         val cid = callState.conversationId
         if (cid == null) {
-            Timber.w("try send kraken decline message but conversation id is null")
+            Timber.e("try send kraken decline message but conversation id is null")
             disconnect()
             return
         }
@@ -406,9 +406,6 @@ class GroupCallService : CallService() {
         }
     }
 
-    override fun onPeerConnectionClosed() {
-    }
-
     private fun sendGroupCallMessage(
         category: String,
         jsep: String? = null,
@@ -467,7 +464,7 @@ class GroupCallService : CallService() {
             return webSocketChannel(blazeMessage)
         } else if (bm.error != null) {
             if (bm.error.status == 500 && bm.error.code == 7000) {
-                Timber.w("try send a ${blazeMessage.action} message,but the remote track has been released.")
+                Timber.e("try send a ${blazeMessage.action} message,but the remote track has been released.")
                 disconnect()
                 return null
             }

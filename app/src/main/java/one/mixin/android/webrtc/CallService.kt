@@ -123,7 +123,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     protected fun disconnect() {
         Timber.d("@@@ disconnect")
-        callState.state = CallState.STATE_IDLE
         if (isDestroyed.get()) return
 
         stopForeground(true)
@@ -134,6 +133,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         peerConnectionClient.close()
         timeoutFuture?.cancel(true)
 
+        callState.state = CallState.STATE_IDLE
         onCallDisconnected()
     }
 
@@ -162,6 +162,9 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     override fun onPeerConnectionError(description: String) {
         callExecutor.execute { handleCallLocalFailed() }
+    }
+
+    override fun onPeerConnectionClosed() {
     }
 
     private fun handleConnected() {
