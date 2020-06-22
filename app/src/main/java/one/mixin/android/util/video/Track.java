@@ -1,6 +1,5 @@
 package one.mixin.android.util.video;
 
-import android.annotation.TargetApi;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
@@ -20,7 +19,6 @@ import com.mp4parser.iso14496.part15.AvcConfigurationBox;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-@TargetApi(16)
 public class Track {
 
     private class SamplePresentationTime {
@@ -35,13 +33,13 @@ public class Track {
         }
     }
 
-    private long trackId = 0;
+    private long trackId;
     private ArrayList<Sample> samples = new ArrayList<>();
     private long duration = 0;
     private int[] sampleCompositions;
     private String handler;
-    private AbstractMediaHeaderBox headerBox = null;
-    private SampleDescriptionBox sampleDescriptionBox = null;
+    private AbstractMediaHeaderBox headerBox;
+    private SampleDescriptionBox sampleDescriptionBox;
     private LinkedList<Integer> syncSamples = null;
     private int timeScale;
     private Date creationTime = new Date();
@@ -50,7 +48,7 @@ public class Track {
     private float volume = 0;
     private long[] sampleDurations;
     private ArrayList<SamplePresentationTime> samplePresentationTimes = new ArrayList<>();
-    private boolean isAudio = false;
+    private boolean isAudio;
     private static Map<Integer, Integer> samplingFrequencyIndexMap = new HashMap<>();
     private boolean first = true;
 
@@ -212,8 +210,19 @@ public class Track {
             slConfigDescriptor.setPredefined(2);
             descriptor.setSlConfigDescriptor(slConfigDescriptor);
 
+            String mime;
+            if (format.containsKey("mime")) {
+                mime = format.getString("mime");
+            } else {
+                mime = "audio/mp4-latm";
+            }
+
             DecoderConfigDescriptor decoderConfigDescriptor = new DecoderConfigDescriptor();
-            decoderConfigDescriptor.setObjectTypeIndication(0x40);
+            if ("audio/mpeg".equals(mime)) {
+                decoderConfigDescriptor.setObjectTypeIndication(0x69);
+            } else {
+                decoderConfigDescriptor.setObjectTypeIndication(0x40);
+            }
             decoderConfigDescriptor.setStreamType(5);
             decoderConfigDescriptor.setBufferSizeDB(1536);
             if (format.containsKey("max-bitrate")) {
@@ -254,16 +263,13 @@ public class Track {
 
     public void prepare() {
         ArrayList<SamplePresentationTime> original = new ArrayList<>(samplePresentationTimes);
-        Collections.sort(samplePresentationTimes, new Comparator<SamplePresentationTime>() {
-            @Override
-            public int compare(SamplePresentationTime o1, SamplePresentationTime o2) {
-                if (o1.presentationTime > o2.presentationTime) {
-                    return 1;
-                } else if (o1.presentationTime < o2.presentationTime) {
-                    return -1;
-                }
-                return 0;
+        Collections.sort(samplePresentationTimes, (o1, o2) -> {
+            if (o1.presentationTime > o2.presentationTime) {
+                return 1;
+            } else if (o1.presentationTime < o2.presentationTime) {
+                return -1;
             }
+            return 0;
         });
         long lastPresentationTimeUs = 0;
         sampleDurations = new long[samplePresentationTimes.size()];

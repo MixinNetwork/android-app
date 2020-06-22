@@ -1,6 +1,6 @@
+
 package one.mixin.android.util.video;
 
-import android.annotation.TargetApi;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import com.googlecode.mp4parser.util.Matrix;
@@ -8,14 +8,12 @@ import com.googlecode.mp4parser.util.Matrix;
 import java.io.File;
 import java.util.ArrayList;
 
-@TargetApi(16)
 public class Mp4Movie {
     private Matrix matrix = Matrix.ROTATE_0;
     private ArrayList<Track> tracks = new ArrayList<>();
     private File cacheFile;
     private int width;
     private int height;
-    private String comment;
 
     public Matrix getMatrix() {
         return matrix;
@@ -45,10 +43,6 @@ public class Mp4Movie {
         }
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
     public void setSize(int w, int h) {
         width = w;
         height = h;
@@ -73,9 +67,5 @@ public class Mp4Movie {
     public int addTrack(MediaFormat mediaFormat, boolean isAudio) {
         tracks.add(new Track(tracks.size(), mediaFormat, isAudio));
         return tracks.size() - 1;
-    }
-
-    public String getComment() {
-        return comment;
     }
 }
