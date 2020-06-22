@@ -45,6 +45,7 @@ import one.mixin.android.api.service.FoursquareService
 import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
@@ -299,7 +300,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap?) {
         googleMap ?: return
         this.googleMap = googleMap
-        if (isNightMode()) {
+        if (this.isNightMode()) {
             val style = MapStyleOptions.loadRawResourceStyle(applicationContext, R.raw.mapstyle_night)
             googleMap.setMapStyle(style)
         }

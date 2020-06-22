@@ -23,6 +23,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.getPixelsInCM
 import one.mixin.android.extension.isLandscape
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
@@ -162,6 +163,11 @@ class PipCallView {
 
         val size = SIZE.dp
         val view = LayoutInflater.from(appContext).inflate(R.layout.view_pip_call, null)
+        view.setBackgroundResource(
+            if (appContext.isNightMode()) {
+                R.drawable.bg_pip_call_dark
+            } else R.drawable.bg_pip_call
+        )
         windowView?.addView(view, FrameLayout.LayoutParams(size, size, Gravity.START or Gravity.TOP))
         view.setOnClickListener {
             CallActivity.show(appContext)
