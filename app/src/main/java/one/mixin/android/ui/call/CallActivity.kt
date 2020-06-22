@@ -185,7 +185,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
         callState.observe(
             this,
             Observer { state ->
-                Timber.d("@@@ state: $state")
                 updateMuteAndSpeaker()
                 if (callState.isGroupCall()) {
                     refreshUsers()
@@ -321,7 +320,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 callees.add(0, self.userId)
             }
             val users = viewModel.findMultiUsersByIds(callees.toSet())
-            Timber.d("@@@ refreshUsersByIds users: $users")
             userAdapter?.submitList(users)
         }
         val currentGuestsNotConnected = userAdapter?.guestsNotConnected

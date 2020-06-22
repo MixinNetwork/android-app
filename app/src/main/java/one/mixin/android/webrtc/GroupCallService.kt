@@ -398,10 +398,15 @@ class GroupCallService : CallService() {
     override fun onIceCandidate(candidate: IceCandidate) {
         callExecutor.execute {
             if (callState.trackId != null) {
-                sendGroupCallMessage(
-                    MessageCategory.KRAKEN_TRICKLE.name,
-                    candidate = gson.toJson(candidate), trackId = callState.trackId
+                val blazeMessageParam = BlazeMessageParam(
+                    conversation_id = callState.conversationId,
+                    category = MessageCategory.KRAKEN_TRICKLE.name,
+                    message_id = UUID.randomUUID().toString(),
+                    candidate = gson.toJson(candidate).base64Encode(),
+                    track_id = callState.trackId
                 )
+                val bm = createKrakenMessage(blazeMessageParam)
+                val data = webSocketChannel(bm)
             }
         }
     }
