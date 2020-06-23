@@ -188,6 +188,7 @@ class CallAudioManager(private val context: Context) {
         mediaPlayerStopped = false
         isInitiator = false
         changedByUser = false
+        isSpeakerOn = false
     }
 
     @Synchronized
@@ -313,9 +314,13 @@ class CallAudioManager(private val context: Context) {
     private fun setAudioDeviceInternal(device: Int) {
         require(isValidAudioDeviceTypeOut(device))
 
-        audioManager.isSpeakerphoneOn = when (device) {
-            AudioDeviceInfo.TYPE_BUILTIN_SPEAKER -> true
-            else -> false
+        audioManager.isSpeakerphoneOn = if (changedByUser) {
+            isSpeakerOn
+        } else {
+            when (device) {
+                AudioDeviceInfo.TYPE_BUILTIN_SPEAKER -> true
+                else -> false
+            }
         }
         selectedAudioDevice = device
     }

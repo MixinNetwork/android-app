@@ -6,11 +6,13 @@ import android.os.SystemClock
 import com.google.gson.JsonElement
 import one.mixin.android.Constants
 import one.mixin.android.Constants.SLEEP_MILLIS
+import one.mixin.android.RxBus
 import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.insertAndNotifyConversation
+import one.mixin.android.event.CallEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.networkConnected
@@ -467,8 +469,22 @@ class GroupCallService : CallService() {
             blazeMessage.id = UUID.randomUUID().toString()
             return webSocketChannel(blazeMessage)
         } else if (bm.error != null) {
-            if (bm.error.status == 500 && bm.error.code == 7000) {
-                Timber.e("try send a ${blazeMessage.action} message,but the remote track has been released.")
+            if (bm.error.status == 500) {
+                when (val errCode = bm.error.code) {
+                    7000 -> {
+                        Timber.w("try send a ${blazeMessage.action} message,but the remote track has been released.")
+                    }
+                    ERROR_ROOM_FULL -> {
+                        val cid = blazeMessage.params?.conversation_id
+                        Timber.d("try to publish and join a group call, but the room is full, conversation id: $cid.")
+                        cid?.let {
+                            RxBus.publish(CallEvent(it))
+                        }
+                    }
+                    else -> {
+                        Timber.w("send blazeMessage by webSocket get a server internal error, code: $errCode")
+                    }
+                }
                 disconnect()
                 return null
             }
@@ -572,6 +588,7 @@ const val ACTION_KRAKEN_DECLINE = "kraken_decline"
 private const val EXTRA_PLAY_RING = "extra_play_ring"
 
 const val PUBLISH_PLACEHOLDER = "PLACEHOLDER"
+const val ERROR_ROOM_FULL = 5002000
 
 data class PeerList(
     val peers: ArrayList<UserSession>?

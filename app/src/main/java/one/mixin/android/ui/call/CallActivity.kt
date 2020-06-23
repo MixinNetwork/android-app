@@ -180,12 +180,12 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 }
             }
         })
-        updateMuteAndSpeaker()
+        updateUI()
 
         callState.observe(
             this,
             Observer { state ->
-                updateMuteAndSpeaker()
+                updateUI()
                 if (callState.isGroupCall()) {
                     refreshUsers()
                 }
@@ -290,9 +290,11 @@ class CallActivity : BaseActivity(), SensorEventListener {
         callState.handleHangup(this)
     }
 
-    private fun updateMuteAndSpeaker() {
+    private fun updateUI() {
         mute_cb?.isChecked = !callState.audioEnable
         voice_cb?.isChecked = callState.speakerEnable
+        pip_iv?.isVisible = callState.isConnected()
+        add_iv?.isVisible = callState.isConnected()
     }
 
     private fun refreshUsers() = lifecycleScope.launch {

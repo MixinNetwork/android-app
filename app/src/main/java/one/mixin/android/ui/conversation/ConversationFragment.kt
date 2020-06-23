@@ -72,6 +72,7 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.event.BlinkEvent
+import one.mixin.android.event.CallEvent
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.event.ForwardEvent
@@ -123,6 +124,7 @@ import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
+import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.GROUP_VOICE_MAX_COUNT
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -846,6 +848,19 @@ class ConversationFragment :
             .subscribe { event ->
                 chatViewModel.viewModelScope.launch {
                     chatViewModel.markMentionRead(event.messageId, event.conversationId)
+                }
+            }
+        RxBus.listen(CallEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { event ->
+                if (event.conversationId == conversationId) {
+                    alertDialogBuilder()
+                        .setMessage(getString(R.string.call_group_full, GROUP_VOICE_MAX_COUNT))
+                        .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
                 }
             }
     }

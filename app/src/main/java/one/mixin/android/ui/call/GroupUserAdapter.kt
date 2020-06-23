@@ -51,9 +51,7 @@ class GroupUserViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                 itemView.isEnabled = true
             }
         }
-        if (checkedMap.containsKey(user.identityNumber)) {
-            itemView.cb.isChecked = checkedMap[user.identityNumber]!!
-        }
+        itemView.cb.isChecked = checkedMap[user.identityNumber] != null
         user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
         itemView.cb.isClickable = false
         itemView.setOnClickListener {
