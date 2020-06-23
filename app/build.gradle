@@ -257,6 +257,7 @@ dependencies {
     implementation "io.noties:prism4j:${prism4jVersion}"
     implementation "io.noties.markwon:syntax-highlight:${markwonVersion}"
     implementation "io.noties.markwon:ext-tasklist:${markwonVersion}"
+    implementation "com.github.Dovar66:DToast:${dtoastVersion}"
     implementation "com.github.SandroMachado:BitcoinPaymentURI:${bitcoinPaymentURI}"
     implementation "com.caverock:androidsvg-aar:${svgVersion}"
 }

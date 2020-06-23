@@ -678,7 +678,7 @@ fun Context.isAutoRotate() = Settings.System.getInt(contentResolver, Settings.Sy
 
 fun Fragment.toast(textResource: Int) = requireActivity().toast(textResource)
 
-fun Fragment.toast(text: CharSequence) = requireActivity().toast(text)
+fun Fragment.toast(text: String) = requireActivity().toast(text)
 
 fun Context.getCurrentThemeId() = defaultSharedPreferences.getInt(
     Constants.Theme.THEME_CURRENT_ID, defaultThemeId

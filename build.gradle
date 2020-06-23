@@ -84,6 +84,7 @@ buildscript {
         ext.webrtcVersion = '1.0.30039'
         ext.bitcoinPaymentURI = '1.0.3'
         ext.svgVersion = '1.4'
+        ext.dtoastVersion = '1.1.6'
     }
 
     repositories {
