@@ -85,7 +85,7 @@ class GroupCallService : CallService() {
         if (krakenDataString == PUBLISH_PLACEHOLDER) {
             val trackId = if (callState.isGroupCall()) callState.trackId else null
             if (!trackId.isNullOrEmpty()) {
-                sendSubscribe(cid, trackId, blazeMessageData.userId)
+                sendSubscribe(cid, trackId, blazeMessageData.userId, true)
             }
         }
     }
@@ -137,12 +137,12 @@ class GroupCallService : CallService() {
         if (data.getSessionDescription().type == SessionDescription.Type.ANSWER) {
             peerConnectionClient.setAnswerSdp(data.getSessionDescription())
             callState.trackId = data.trackId
-            sendSubscribe(conversationId, data.trackId)
+            sendSubscribe(conversationId, data.trackId, twice = false)
             startCheckPeers(conversationId)
         }
     }
 
-    private fun sendSubscribe(conversationId: String, trackId: String, userId: String? = null) {
+    private fun sendSubscribe(conversationId: String, trackId: String, userId: String? = null, twice: Boolean) {
         Timber.d("@@@ sendSubscribe")
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = conversationId, category = MessageCategory.KRAKEN_SUBSCRIBE.name,
@@ -157,10 +157,10 @@ class GroupCallService : CallService() {
         }
 
         val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
-        answer(krakenData, conversationId)
+        answer(krakenData, conversationId, twice)
     }
 
-    private fun answer(krakenData: KrakenData, conversationId: String) {
+    private fun answer(krakenData: KrakenData, conversationId: String, twice: Boolean) {
         Timber.d("@@@ answer ${krakenData.getSessionDescription().type == SessionDescription.Type.OFFER}")
         if (krakenData.getSessionDescription().type == SessionDescription.Type.OFFER) {
             peerConnectionClient.createAnswer(
@@ -176,6 +176,10 @@ class GroupCallService : CallService() {
                     val bm = createKrakenMessage(blazeMessageParam)
                     val data = webSocketChannel(bm) ?: return@createAnswer
                     Timber.d("@@@ answer data: $data")
+
+                    if (twice) {
+                        sendSubscribe(conversationId, krakenData.trackId, twice = false)
+                    }
                 }
             )
         }
