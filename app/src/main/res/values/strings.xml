@@ -152,7 +152,7 @@
     <string name="error_share">Share error.</string>
     <string name="error_recaptcha_is_invalid">ERROR %1$d: Recaptcha is invalid</string>
     <string name="error_recaptcha_timeout">Recaptcha timeout</string>
-    <string name="error_old_version">ERROR %1$d: Please update Mixin to continue use the service.</string>
+    <string name="error_old_version">ERROR %1$d: Please update Mixin(%2$s) to continue use the service.</string>
     <string name="error_file_chooser">File chooser error</string>
     <string name="error_duration_short">Duration is too short</string>
     <string name="error_too_many_stickers">ERROR %1$d: Too many stickers</string>
