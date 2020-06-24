@@ -353,6 +353,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT * FROM messages WHERE id = :messageId")
     fun findMessageById(messageId: String): Message?
 
+    @Query("SELECT * FROM messages WHERE id = :messageId AND user_id = :userId")
+    fun findMessageById(messageId: String, userId: String): Message?
+
     @Query("SELECT * FROM messages WHERE id = :messageId")
     suspend fun suspendFindMessageById(messageId: String): Message?
 
