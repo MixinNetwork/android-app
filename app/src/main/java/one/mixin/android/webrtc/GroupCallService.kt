@@ -67,6 +67,7 @@ class GroupCallService : CallService() {
             ACTION_KRAKEN_PUBLISH -> handlePublish(intent)
             ACTION_KRAKEN_RECEIVE_PUBLISH -> handleReceivePublish(intent)
             ACTION_KRAKEN_RECEIVE_INVITE -> handleReceiveInvite(intent)
+            ACTION_KRAKEN_RECEIVE_END -> handleReceiveEnd(intent)
             ACTION_KRAKEN_ACCEPT_INVITE -> handleAcceptInvite()
             ACTION_KRAKEN_END -> handleKrakenEnd()
             ACTION_KRAKEN_CANCEL -> handleKrakenCancel()
@@ -80,6 +81,8 @@ class GroupCallService : CallService() {
         val blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as? BlazeMessageData
         requireNotNull(blazeMessageData)
         val cid = blazeMessageData.conversationId
+        val userId = blazeMessageData.userId
+        callState.addUser(cid, userId)
         startCheckPeers(cid)
 
         val krakenDataString = String(blazeMessageData.data.decodeBase64())
@@ -205,20 +208,23 @@ class GroupCallService : CallService() {
         val peerList = gson.fromJson(json, PeerList::class.java)
         Timber.d("@@@ getPeers : ${peerList.peers}")
         if (peerList.peers.isNullOrEmpty()) {
-            callState.removePendingGroupCall(conversationId)
-            val listFuture = scheduledFutures.remove(conversationId)
-            listFuture?.cancel(true)
-
-            Timber.d("@@@ scheduledFutures isEmpty: ${scheduledFutures.isEmpty()}")
-
-            if (scheduledFutures.isEmpty()) {
-                stopSelf()
-            }
+            checkSchedules(conversationId)
             return
         }
         val userIdList = arrayListOf<String>()
         peerList.peers.mapTo(userIdList) { it.userId }
-        callState.setUsersByConversationId(conversationId, userIdList)
+        val currentList = callState.getUsersByConversationId(conversationId)
+        if (currentList != null && currentList.size > userIdList.size) {
+            val remainUsers = currentList.subtract(userIdList)
+            if (remainUsers.isEmpty()) {
+                checkSchedules(conversationId)
+            } else {
+                callState.setUsersByConversationId(
+                    conversationId,
+                    arrayListOf<String>().apply { addAll(remainUsers) }
+                )
+            }
+        }
     }
 
     private fun handleReceiveInvite(intent: Intent) {
@@ -253,6 +259,20 @@ class GroupCallService : CallService() {
 
         userId?.let {
             saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
+        }
+    }
+
+    private fun handleReceiveEnd(intent: Intent) {
+        val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
+        requireNotNull(cid)
+        val userId = intent.getStringExtra(EXTRA_USER_ID)
+        requireNotNull(userId)
+
+        callState.removeInitialGuest(cid, userId)
+        callState.removeUser(cid, userId)
+        val count = callState.getUsersCountByConversationId(cid)
+        if (count == 0) {
+            checkSchedules(cid)
         }
     }
 
@@ -510,6 +530,17 @@ class GroupCallService : CallService() {
         return bm
     }
 
+    private fun checkSchedules(conversationId: String) {
+        callState.removePendingGroupCall(conversationId)
+        val listFuture = scheduledFutures.remove(conversationId)
+        listFuture?.cancel(true)
+
+        Timber.d("@@@ scheduledFutures isEmpty: ${scheduledFutures.isEmpty()}")
+        if (scheduledFutures.isEmpty()) {
+            stopSelf()
+        }
+    }
+
     private fun getCheckSum(conversationId: String): String {
         val sessions = participantSessionDao.getParticipantSessionsByConversationId(conversationId)
         return if (sessions.isEmpty()) {
@@ -572,7 +603,7 @@ class GroupCallService : CallService() {
     }
 
     companion object {
-        private const val KRAKEN_LIST_INTERVAL = 5L
+        private const val KRAKEN_LIST_INTERVAL = 30L
     }
 }
 
@@ -600,8 +631,8 @@ fun publish(ctx: Context, conversationId: String, users: ArrayList<String>? = nu
         it.putExtra(EXTRA_USERS, users)
     }
 
-fun receivePublish(ctx: Context, data: BlazeMessageData, foreground: Boolean) =
-    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_PUBLISH, foreground) {
+fun receivePublish(ctx: Context, data: BlazeMessageData) =
+    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_PUBLISH, false) {
         it.putExtra(EXTRA_BLAZE, data)
     }
 
@@ -611,6 +642,12 @@ fun receiveInvite(ctx: Context, conversationId: String, userId: String? = null, 
         it.putExtra(EXTRA_USERS, users)
         it.putExtra(EXTRA_USER_ID, userId)
         it.putExtra(EXTRA_PLAY_RING, playRing)
+    }
+
+fun receiveEnd(ctx: Context, conversationId: String, userId: String) =
+    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_END, false) {
+        it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+        it.putExtra(EXTRA_USER_ID, userId)
     }
 
 fun acceptInvite(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_ACCEPT_INVITE) {}

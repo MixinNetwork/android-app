@@ -5,7 +5,6 @@ import android.app.Dialog
 import android.os.Bundle
 import android.text.Editable
 import android.view.View
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -110,10 +109,6 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 action_iv.setImageResource(R.drawable.ic_check)
             } else {
                 action_iv.setImageResource(R.drawable.ic_pip_call)
-                action_iv.setColorFilter(
-                    ContextCompat.getColor(context, R.color.colorAccent),
-                    android.graphics.PorterDuff.Mode.SRC_IN
-                )
             }
             action_iv.setOnClickListener {
                 val users = arrayListOf<String>()

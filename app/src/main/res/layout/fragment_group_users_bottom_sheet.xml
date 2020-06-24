@@ -62,6 +62,7 @@
             android:padding="12dp"
             android:visibility="gone"
             android:background="@drawable/bg_menu_no_border"
+            android:tint="@color/colorAccent"
             android:src="@drawable/ic_check"/>
     </RelativeLayout>
 

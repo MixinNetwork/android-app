@@ -2,6 +2,7 @@ package one.mixin.android.vo
 
 import android.content.Context
 import androidx.lifecycle.LiveData
+import one.mixin.android.util.Session
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.cancelCall
 import one.mixin.android.webrtc.declineCall
@@ -39,7 +40,10 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     private val pendingGroupCalls = mutableSetOf<GroupCallState>()
 
     fun reset() {
-        conversationId?.let { clearInitialGuests(it) }
+        conversationId?.let {
+            clearInitialGuests(it)
+            removeUser(it, Session.getAccountId()!!)
+        }
         conversationId = null
         trackId = null
         user = null
@@ -168,7 +172,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         postValue(state)
     }
 
-    fun addUser(userId: String, conversationId: String) {
+    fun addUser(conversationId: String, userId: String) {
         val groupCallState = pendingGroupCalls.find {
             it.conversationId == conversationId
         } ?: return
@@ -177,7 +181,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         postValue(state)
     }
 
-    fun removeUser(userId: String, conversationId: String) {
+    fun removeUser(conversationId: String, userId: String) {
         val groupCallState = pendingGroupCalls.find {
             it.conversationId == conversationId
         } ?: return

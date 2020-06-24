@@ -294,7 +294,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         mute_cb?.isChecked = !callState.audioEnable
         voice_cb?.isChecked = callState.speakerEnable
         pip_iv?.isVisible = callState.isConnected()
-        add_iv?.isVisible = callState.isConnected()
+        add_iv?.isVisible = callState.isConnected() && callState.isGroupCall()
     }
 
     private fun refreshUsers() = lifecycleScope.launch {
