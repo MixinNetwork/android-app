@@ -38,6 +38,8 @@ import one.mixin.android.extension.getPixelsInCM
 import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.round
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.VideoPlayer
@@ -248,6 +250,7 @@ class PipVideoView {
         }
         val aspectRatioFrameLayout = AspectRatioFrameLayout(activity)
         aspectRatioFrameLayout.setAspectRatio(aspectRatio, rotation)
+        aspectRatioFrameLayout.round(8.dp)
         windowView.addView(aspectRatioFrameLayout, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, Gravity.CENTER))
         val textureView = TextureView(activity)
         aspectRatioFrameLayout.addView(textureView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
