@@ -144,7 +144,8 @@ fun Context.getMixinErrorStringByCode(code: Int, message: String): String {
             )
         }
         ErrorHandler.OLD_VERSION -> {
-            getString(R.string.error_old_version, ErrorHandler.OLD_VERSION)
+            val versionName = packageManager.getPackageInfo(packageName, 0).versionName
+            getString(R.string.error_old_version, ErrorHandler.OLD_VERSION, versionName)
         }
         ErrorHandler.PHONE_INVALID_FORMAT -> {
             getString(

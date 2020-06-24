@@ -146,7 +146,7 @@
     <string name="error_share">シェアエラー</string>
     <string name="error_recaptcha_is_invalid">エラー %1$d: Recaptchaが無効です</string>
     <string name="error_recaptcha_timeout">Recaptchaがタイムアウトしました</string>
-    <string name="error_old_version">エラー %1$d: このサービスを引き続き使用するには、Mixinをアップデートしてください。</string>
+    <string name="error_old_version">エラー %1$d: このサービスを引き続き使用するには、Mixin(%2$s)をアップデートしてください。</string>
     <string name="error_file_chooser">ファイル選択エラー</string>
     <string name="error_duration_short">期間が短すぎます</string>
     <string name="error_too_many_stickers">エラー %1$d: スタンプが多すぎます</string>

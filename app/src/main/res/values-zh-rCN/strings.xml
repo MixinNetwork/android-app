@@ -144,7 +144,7 @@
     <string name="error_share">分享出错</string>
     <string name="error_recaptcha_is_invalid">错误 %1$d：验证失败</string>
     <string name="error_recaptcha_timeout">验证超时</string>
-    <string name="error_old_version">错误 %1$d：请更新 Mixin 至最新版。</string>
+    <string name="error_old_version">错误 %1$d：请更新 Mixin(%2$s) 至最新版。</string>
     <string name="error_file_chooser">文件选择错误</string>
     <string name="error_duration_short">时间太短</string>
     <string name="error_too_many_stickers">错误 %1$d：贴纸数已达上限</string>
