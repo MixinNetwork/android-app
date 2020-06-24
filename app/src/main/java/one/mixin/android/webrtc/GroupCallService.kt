@@ -192,7 +192,7 @@ class GroupCallService : CallService() {
         if (existsFuture == null) {
             scheduledFutures[cid] = scheduledExecutors.scheduleAtFixedRate(
                 ListRunnable(cid),
-                0, KRAKEN_LIST_INTERVAL, TimeUnit.SECONDS
+                10, KRAKEN_LIST_INTERVAL, TimeUnit.SECONDS
             )
         }
     }
@@ -256,6 +256,7 @@ class GroupCallService : CallService() {
         if (intent.getBooleanExtra(EXTRA_PLAY_RING, true)) {
             audioManager.start(false)
         }
+        startCheckPeers(cid)
 
         userId?.let {
             saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
@@ -294,8 +295,9 @@ class GroupCallService : CallService() {
         if (callState.isIdle()) return
 
         val cid = callState.conversationId
-        if (cid == null) {
-            Timber.e("try send kraken end message but conversation id is null")
+        val trackId = callState.trackId
+        if (cid == null || trackId == null) {
+            Timber.e("try send kraken end message but conversation id is $cid, trackId is $trackId")
             disconnect()
             return
         }
@@ -305,7 +307,7 @@ class GroupCallService : CallService() {
             conversation_id = cid,
             category = MessageCategory.KRAKEN_END.name,
             message_id = UUID.randomUUID().toString(),
-            track_id = callState.trackId
+            track_id = trackId
         )
 
         disconnect()
@@ -321,8 +323,9 @@ class GroupCallService : CallService() {
         if (callState.isIdle()) return
 
         val cid = callState.conversationId
-        if (cid == null) {
-            Timber.e("try send kraken cancel message but conversation id is null")
+        val trackId = callState.trackId
+        if (cid == null || trackId == null) {
+            Timber.e("try send kraken cancel message but conversation id is $cid, trackId is $trackId")
             disconnect()
             return
         }
@@ -331,7 +334,7 @@ class GroupCallService : CallService() {
             conversation_id = cid,
             category = MessageCategory.KRAKEN_CANCEL.name,
             message_id = UUID.randomUUID().toString(),
-            track_id = callState.trackId
+            track_id = trackId
         )
 
         disconnect()
@@ -347,14 +350,14 @@ class GroupCallService : CallService() {
         if (callState.isIdle()) return
 
         val cid = callState.conversationId
-        if (cid == null) {
-            Timber.e("try send kraken decline message but conversation id is null")
+        val trackId = callState.trackId
+        if (cid == null || trackId == null) {
+            Timber.e("try send kraken decline message but conversation id is $cid, trackId is $trackId")
             disconnect()
             return
         }
 
         val inviter = callState.getInviter(cid)
-        val trackId = callState.trackId
 
         disconnect()
 
@@ -387,8 +390,8 @@ class GroupCallService : CallService() {
         Timber.d("@@@ handleCallCancel")
         if (callState.isIdle()) return
 
-        if (callState.trackId != null) {
-            sendGroupCallMessage(MessageCategory.KRAKEN_CANCEL.name, trackId = callState.trackId)
+        callState.trackId?.let {
+            sendGroupCallMessage(MessageCategory.KRAKEN_CANCEL.name, trackId = it)
         }
         disconnect()
     }
@@ -397,8 +400,8 @@ class GroupCallService : CallService() {
         Timber.d("@@@ handleCallLocalEnd")
         if (callState.isIdle()) return
 
-        if (callState.trackId != null) {
-            sendGroupCallMessage(MessageCategory.KRAKEN_END.name, trackId = callState.trackId)
+        callState.trackId?.let {
+            sendGroupCallMessage(MessageCategory.KRAKEN_END.name, trackId = it)
         }
         disconnect()
     }
@@ -418,13 +421,15 @@ class GroupCallService : CallService() {
 
     override fun onIceCandidate(candidate: IceCandidate) {
         callExecutor.execute {
-            if (callState.trackId != null) {
+            val trackId = callState.trackId
+            val cid = callState.conversationId
+            if (trackId != null && cid != null) {
                 val blazeMessageParam = BlazeMessageParam(
-                    conversation_id = callState.conversationId,
+                    conversation_id = cid,
                     category = MessageCategory.KRAKEN_TRICKLE.name,
                     message_id = UUID.randomUUID().toString(),
                     candidate = gson.toJson(candidate).base64Encode(),
-                    track_id = callState.trackId
+                    track_id = trackId
                 )
                 val bm = createKrakenMessage(blazeMessageParam)
                 val data = webSocketChannel(bm)
