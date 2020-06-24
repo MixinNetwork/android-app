@@ -1288,6 +1288,15 @@ class ConversationFragment :
             driver.isVisible = false
         }
         tap_join_view.setOnClickListener {
+            if (callState.isNotIdle()) {
+                alertDialogBuilder()
+                    .setMessage(getString(R.string.chat_call_warning_call))
+                    .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
+                return@setOnClickListener
+            }
             val users = callState.getUsersByConversationId(conversationId)
             receiveInvite(requireContext(), conversationId, users = users, playRing = false)
         }

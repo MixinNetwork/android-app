@@ -542,6 +542,7 @@ class GroupCallService : CallService() {
 
         Timber.d("@@@ scheduledFutures isEmpty: ${scheduledFutures.isEmpty()}")
         if (scheduledFutures.isEmpty()) {
+            disconnect()
             stopSelf()
         }
     }
