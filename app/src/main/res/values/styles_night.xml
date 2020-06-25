@@ -39,6 +39,7 @@
         <item name="bg_post">@color/bgPostNight</item>
         <item name="bg_bubble">@color/bgBubbleNight</item>
         <item name="bg_bot">@color/bgPostNight</item>
+        <item name="bg_toast">@drawable/bg_toast_night</item>
 
         <item name="icon_emergency">@drawable/ic_emergency_avatar_night</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact_night</item>

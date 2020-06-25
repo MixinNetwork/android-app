@@ -52,6 +52,7 @@
         <item name="bg_post">@color/bgPost</item>
         <item name="bg_bubble">@color/bgBubble</item>
         <item name="bg_bot">@color/bgBot</item>
+        <item name="bg_toast">@drawable/bg_toast</item>
 
         <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
