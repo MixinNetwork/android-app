@@ -298,7 +298,7 @@ class DecryptMessage : Injector() {
                         if (resendMessage != null) {
                             continue
                         }
-                        val needResendMessage = messageDao.findMessageById(id)
+                        val needResendMessage = messageDao.findMessageById(id, Session.getAccountId()!!)
                         if (needResendMessage != null && needResendMessage.category != MessageCategory.MESSAGE_RECALL.name) {
                             needResendMessage.id = UUID.randomUUID().toString()
                             jobManager.addJobInBackground(
