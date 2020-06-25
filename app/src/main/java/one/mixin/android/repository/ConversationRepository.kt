@@ -248,8 +248,8 @@ internal constructor(
     fun getLimitParticipants(conversationId: String, limit: Int) =
         participantDao.getLimitParticipants(conversationId, limit)
 
-    fun findParticipantByIds(conversationId: String, userId: String) =
-        participantDao.findParticipantByIds(conversationId, userId)
+    fun findParticipantById(conversationId: String, userId: String) =
+        participantDao.findParticipantById(conversationId, userId)
 
     fun getParticipantsCount(conversationId: String) =
         participantDao.getParticipantsCount(conversationId)

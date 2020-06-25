@@ -65,7 +65,7 @@ interface ParticipantDao : BaseDao<Participant> {
     fun getLimitParticipants(conversationId: String, limit: Int): List<User>
 
     @Query("SELECT * FROM participants WHERE conversation_id = :conversationId AND user_id = :userId")
-    fun findParticipantByIds(conversationId: String, userId: String): Participant?
+    fun findParticipantById(conversationId: String, userId: String): Participant?
 
     @Query("SELECT count(*) FROM participants WHERE conversation_id = :conversationId")
     fun getParticipantsCount(conversationId: String): Int

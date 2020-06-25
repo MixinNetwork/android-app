@@ -100,6 +100,7 @@ import one.mixin.android.websocket.createPlainJsonParam
 import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
 import one.mixin.android.websocket.invalidData
+import org.threeten.bp.ZonedDateTime
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -299,18 +300,23 @@ class DecryptMessage : Injector() {
                             continue
                         }
                         val needResendMessage = messageDao.findMessageById(id, Session.getAccountId()!!)
-                        if (needResendMessage != null && needResendMessage.category != MessageCategory.MESSAGE_RECALL.name) {
-                            needResendMessage.id = UUID.randomUUID().toString()
-                            jobManager.addJobInBackground(
-                                SendMessageJob(
-                                    needResendMessage,
-                                    ResendData(data.userId, id, data.sessionId), true, messagePriority = PRIORITY_SEND_ATTACHMENT_MESSAGE
-                                )
-                            )
-                            resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId, 1, nowInUtc()))
-                        } else {
+                        if (needResendMessage == null || needResendMessage.category  == MessageCategory.MESSAGE_RECALL.name) {
                             resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId, 0, nowInUtc()))
+                            continue
                         }
+                        val p = participantDao.findParticipantById(data.conversationId, data.userId) ?: continue
+                        val pCreatedAt = ZonedDateTime.parse(p.createdAt)
+                        val mCreatedAt = ZonedDateTime.parse(needResendMessage.createdAt)
+                        if (pCreatedAt.isAfter(mCreatedAt)) {
+                            continue
+                        }
+                        needResendMessage.id = UUID.randomUUID().toString()
+                        jobManager.addJobInBackground(SendMessageJob(
+                                needResendMessage,
+                                ResendData(data.userId, id, data.sessionId), true, messagePriority = PRIORITY_SEND_ATTACHMENT_MESSAGE
+                            )
+                        )
+                        resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId, 1, nowInUtc()))
                     }
                 }
             } else if (plainData.action == PlainDataAction.NO_KEY.name) {

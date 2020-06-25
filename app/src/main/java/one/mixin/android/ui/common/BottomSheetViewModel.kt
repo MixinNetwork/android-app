@@ -164,8 +164,8 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun getConversation(id: String) = conversationRepo.getConversation(id)
 
-    fun findParticipantByIds(conversationId: String, userId: String) =
-        conversationRepo.findParticipantByIds(conversationId, userId)
+    fun findParticipantById(conversationId: String, userId: String) =
+        conversationRepo.findParticipantById(conversationId, userId)
 
     fun mute(senderId: String, recipientId: String, duration: Long) {
         viewModelScope.launch(SINGLE_DB_THREAD) {
