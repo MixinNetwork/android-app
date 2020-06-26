@@ -54,6 +54,9 @@ interface ConversationService {
     @POST("conversations/{id}/mute")
     fun mute(@Path("id") id: String, @Body request: ConversationRequest): Call<MixinResponse<ConversationResponse>>
 
+    @POST("conversations/{id}/mute")
+    suspend fun muteSuspend(@Path("id") id: String, @Body request: ConversationRequest): MixinResponse<ConversationResponse>
+
     @POST("conversations/{id}/circles")
     suspend fun updateCircles(@Path("id") id: String, @Body requests: List<ConversationCircleRequest>): MixinResponse<List<CircleConversation>>
 }

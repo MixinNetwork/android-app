@@ -48,6 +48,7 @@ import one.mixin.android.Constants.Mute.MUTE_1_YEAR
 import one.mixin.android.Constants.Mute.MUTE_8_HOURS
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.event.BotEvent
 import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.extension.alertDialogBuilder
@@ -865,13 +866,33 @@ class ConversationListFragment : LinkFragment() {
             }
             .setPositiveButton(R.string.confirm) { dialog, _ ->
                 if (conversationItem.isGroup()) {
-                    messagesViewModel.mute(conversationItem.conversationId, duration.toLong())
-                    context?.toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
+                    lifecycleScope.launch {
+                        handleMixinResponse(
+                            invokeNetwork = { messagesViewModel.mute(duration.toLong(), conversationId = conversationItem.conversationId) },
+                            successBlock = { response ->
+                                messagesViewModel.updateGroupMuteUntil(conversationItem.conversationId, response.data!!.muteUntil)
+                                context?.toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
+                            }
+                        )
+                    }
                 } else {
                     val account = Session.getAccount()
                     account?.let {
-                        messagesViewModel.mute(it.userId, conversationItem.ownerId, duration.toLong())
-                        context?.toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
+                        lifecycleScope.launch {
+                            handleMixinResponse(
+                                invokeNetwork = {
+                                    messagesViewModel.mute(
+                                        duration.toLong(),
+                                        senderId = it.userId,
+                                        recipientId = conversationItem.ownerId
+                                    )
+                                },
+                                successBlock = { response ->
+                                    messagesViewModel.updateMuteUntil(conversationItem.ownerId, response.data!!.muteUntil)
+                                    context?.toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
+                                }
+                            )
+                        }
                     }
                 }
 
@@ -891,13 +912,31 @@ class ConversationListFragment : LinkFragment() {
 
     private fun unMute(conversationItem: ConversationItem) {
         if (conversationItem.isGroup()) {
-            messagesViewModel.mute(conversationItem.conversationId, 0)
-            context?.toast(getString(R.string.un_mute) + " ${conversationItem.groupName}")
+            lifecycleScope.launch {
+                handleMixinResponse(
+                    invokeNetwork = {
+                        messagesViewModel.mute(0, conversationId = conversationItem.conversationId)
+                    },
+                    successBlock = { response ->
+                        messagesViewModel.updateGroupMuteUntil(conversationItem.conversationId, response.data!!.muteUntil)
+                        context?.toast(getString(R.string.un_mute) + " ${conversationItem.groupName}")
+                    }
+                )
+            }
         } else {
             Session.getAccount()?.let {
-                messagesViewModel.mute(it.userId, conversationItem.ownerId, 0)
+                lifecycleScope.launch {
+                    handleMixinResponse(
+                        invokeNetwork = {
+                            messagesViewModel.mute(0, senderId = it.userId, recipientId = conversationItem.ownerId)
+                        },
+                        successBlock = { response ->
+                            messagesViewModel.updateMuteUntil(conversationItem.ownerId, response.data!!.muteUntil)
+                            context?.toast(getString(R.string.un_mute) + " ${conversationItem.name}")
+                        }
+                    )
+                }
             }
-            context?.toast(getString(R.string.un_mute) + " ${conversationItem.name}")
         }
     }
 }

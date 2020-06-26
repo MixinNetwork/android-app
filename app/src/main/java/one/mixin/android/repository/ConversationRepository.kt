@@ -13,6 +13,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationCircleRequest
+import one.mixin.android.api.request.ConversationRequest
+import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.CircleConversationDao
@@ -368,4 +370,8 @@ internal constructor(
     fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String) {
         messageDao.deleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory)
     }
+
+    suspend fun muteSuspend(id: String, request: ConversationRequest): MixinResponse<ConversationResponse> = conversationService.muteSuspend(id, request)
+
+    fun updateGroupMuteUntil(conversationId: String, muteUntil: String) = conversationDao.updateGroupMuteUntil(conversationId, muteUntil)
 }
