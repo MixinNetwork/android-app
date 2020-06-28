@@ -427,7 +427,7 @@ fun Context.getAttachment(local: Uri): Attachment? {
 }
 
 private val maxVideoSize by lazy {
-    480f
+    1280.0f
 }
 
 fun getVideoModel(uri: Uri): VideoEditedInfo? {

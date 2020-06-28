@@ -160,7 +160,7 @@ public class Util {
             } else {
                 out = outputStreamFactory.createFor(connection.getOutputStream());
             }
-            byte[] buffer = new byte[4096];
+            byte[] buffer = new byte[8192];
             int read, written = 0;
 
             while ((read = data.read(buffer)) != -1) {
