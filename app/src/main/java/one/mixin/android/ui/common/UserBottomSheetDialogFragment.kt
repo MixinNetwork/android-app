@@ -35,6 +35,7 @@ import one.mixin.android.Constants.Mute.MUTE_8_HOURS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.event.BotCloseEvent
@@ -787,8 +788,21 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             .setPositiveButton(R.string.confirm) { dialog, _ ->
                 val account = Session.getAccount()
                 account?.let {
-                    bottomViewModel.mute(it.userId, user.userId, duration.toLong())
-                    context?.toast(getString(R.string.contact_mute_title) + " ${user.fullName} " + choices[whichItem])
+                    lifecycleScope.launch {
+                        handleMixinResponse(
+                            invokeNetwork = {
+                                bottomViewModel.mute(
+                                    duration.toLong(),
+                                    senderId = it.userId,
+                                    recipientId = user.userId
+                                )
+                            },
+                            successBlock = { response ->
+                                bottomViewModel.updateMuteUntil(user.userId, response.data!!.muteUntil)
+                                context?.toast(getString(R.string.contact_mute_title) + " ${user.fullName} " + choices[whichItem])
+                            }
+                        )
+                    }
                 }
                 dialog.dismiss()
             }
@@ -811,8 +825,17 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     private fun unMute() {
         val account = Session.getAccount()
         account?.let {
-            bottomViewModel.mute(it.userId, user.userId, 0)
-            context?.toast(getString(R.string.un_mute) + " ${user.fullName}")
+            lifecycleScope.launch {
+                handleMixinResponse(
+                    invokeNetwork = {
+                        bottomViewModel.mute(0, senderId = it.userId, recipientId = user.userId)
+                    },
+                    successBlock = { response ->
+                        bottomViewModel.updateMuteUntil(user.userId, response.data!!.muteUntil)
+                        context?.toast(getString(R.string.un_mute) + " ${user.fullName}")
+                    }
+                )
+            }
         }
     }
 

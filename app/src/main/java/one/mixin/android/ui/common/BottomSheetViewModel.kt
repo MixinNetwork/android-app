@@ -37,7 +37,6 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
@@ -167,39 +166,42 @@ class BottomSheetViewModel @Inject internal constructor(
     fun findParticipantById(conversationId: String, userId: String) =
         conversationRepo.findParticipantById(conversationId, userId)
 
-    fun mute(senderId: String, recipientId: String, duration: Long) {
-        viewModelScope.launch(SINGLE_DB_THREAD) {
-            var conversationId = conversationRepo.getConversationIdIfExistsSync(recipientId)
-            if (conversationId == null) {
-                conversationId = generateConversationId(senderId, recipientId)
+    suspend fun mute(
+        duration: Long,
+        conversationId: String? = null,
+        senderId: String? = null,
+        recipientId: String? = null
+    ): MixinResponse<ConversationResponse> {
+        require(conversationId != null || (senderId != null && recipientId != null)) {
+            "error data"
+        }
+        return if (conversationId != null) {
+            val request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration)
+            conversationRepo.muteSuspend(conversationId, request)
+        } else {
+            var cid = conversationRepo.getConversationIdIfExistsSync(recipientId!!)
+            if (cid == null) {
+                cid = generateConversationId(senderId!!, recipientId)
             }
             val participantRequest = ParticipantRequest(recipientId, "")
-            jobManager.addJobInBackground(
-                ConversationJob(
-                    ConversationRequest(
-                        conversationId,
-                        ConversationCategory.CONTACT.name,
-                        duration = duration,
-                        participants = listOf(participantRequest)
-                    ),
-                    recipientId = recipientId, type = ConversationJob.TYPE_MUTE
-                )
+            val request = ConversationRequest(
+                cid,
+                ConversationCategory.CONTACT.name, duration = duration, participants = listOf(participantRequest)
             )
+            conversationRepo.muteSuspend(cid, request)
         }
     }
 
-    fun mute(conversationId: String, duration: Long) {
-        jobManager.addJobInBackground(
-            ConversationJob(
-                conversationId = conversationId,
-                request = ConversationRequest(
-                    conversationId,
-                    ConversationCategory.GROUP.name,
-                    duration = duration
-                ),
-                type = ConversationJob.TYPE_MUTE
-            )
-        )
+    suspend fun updateGroupMuteUntil(conversationId: String, muteUntil: String) {
+        withContext(Dispatchers.IO) {
+            conversationRepo.updateGroupMuteUntil(conversationId, muteUntil)
+        }
+    }
+
+    suspend fun updateMuteUntil(id: String, muteUntil: String) {
+        withContext(Dispatchers.IO) {
+            userRepository.updateMuteUntil(id, muteUntil)
+        }
     }
 
     suspend fun findAppById(id: String) = userRepository.findAppById(id)
