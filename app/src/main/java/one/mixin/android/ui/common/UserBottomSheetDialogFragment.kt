@@ -40,7 +40,6 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.event.BotEvent
-import one.mixin.android.event.ExitEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dp
@@ -630,19 +629,18 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 dialog.dismiss()
             }
             .setNegativeButton(getString(R.string.contact_other_report)) { dialog, _ ->
-                val conversationId = generateConversationId(userId, Session.getAccountId()!!)
                 bottomViewModel.updateRelationship(
                     RelationshipRequest(
                         userId,
                         RelationshipAction.BLOCK.name
                     ),
-                    conversationId
+                    true
                 )
                 if (user.isBot()) {
                     RxBus.publish(BotEvent())
                 }
-                RxBus.publish(ExitEvent(conversationId))
                 dialog.dismiss()
+                dismiss()
             }
             .setCancelable(false)
             .show()
