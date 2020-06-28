@@ -1,6 +1,8 @@
 package one.mixin.android.vo
 
 import android.content.Context
+import android.telephony.TelephonyManager
+import androidx.core.content.getSystemService
 import androidx.lifecycle.LiveData
 import one.mixin.android.util.Session
 import one.mixin.android.webrtc.CallService
@@ -63,6 +65,11 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
 
     fun isGroupCall() = callType == CallType.Group
     fun isVoiceCall() = callType == CallType.Voice
+
+    fun isBusy(ctx: Context): Boolean {
+        val tm = ctx.getSystemService<TelephonyManager>()
+        return isNotIdle() || tm?.callState != TelephonyManager.CALL_STATE_IDLE
+    }
 
     fun addPendingGroupCall(conversationId: String): GroupCallState {
         val exists = pendingGroupCalls.find {

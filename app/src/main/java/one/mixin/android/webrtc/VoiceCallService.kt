@@ -49,7 +49,7 @@ class VoiceCallService : CallService() {
     }
 
     private fun handleCallIncoming(intent: Intent) {
-        if (isBusy()) {
+        if (callState.isBusy(this)) {
             val category = MessageCategory.WEBRTC_AUDIO_BUSY.name
             val bmd = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
             val m = createCallMessage(
@@ -383,14 +383,15 @@ const val ACTION_CALL_BUSY = "call_busy"
 const val ACTION_CALL_LOCAL_FAILED = "call_local_failed"
 const val ACTION_CALL_REMOTE_FAILED = "call_remote_failed"
 
-fun incomingCall(ctx: Context, user: User, data: BlazeMessageData, pendingCandidateData: String? = null) =
-    startService<VoiceCallService>(ctx, ACTION_CALL_INCOMING, true) {
+fun incomingCall(ctx: Context, user: User, data: BlazeMessageData, foreground: Boolean, pendingCandidateData: String? = null) {
+    startService<VoiceCallService>(ctx, ACTION_CALL_INCOMING, foreground) {
         it.putExtra(ARGS_USER, user)
         it.putExtra(EXTRA_BLAZE, data)
         if (pendingCandidateData != null) {
             it.putExtra(EXTRA_PENDING_CANDIDATES, pendingCandidateData)
         }
     }
+}
 
 fun outgoingCall(ctx: Context, conversationId: String, user: User? = null) =
     startService<VoiceCallService>(ctx, ACTION_CALL_OUTGOING, true) {

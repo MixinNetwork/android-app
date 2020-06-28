@@ -1298,7 +1298,8 @@ class ConversationFragment :
                 return@setOnClickListener
             }
             val users = callState.getUsersByConversationId(conversationId)
-            receiveInvite(requireContext(), conversationId, users = users, playRing = false)
+            val isForeground = !callState.isBusy(requireContext())
+            receiveInvite(requireContext(), conversationId, users = users, playRing = false, foreground = isForeground)
         }
         callState.observe(
             viewLifecycleOwner,

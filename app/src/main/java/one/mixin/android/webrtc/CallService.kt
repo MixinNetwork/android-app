@@ -3,9 +3,7 @@ package one.mixin.android.webrtc
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
-import androidx.core.content.getSystemService
 import androidx.lifecycle.LifecycleService
 import com.google.gson.Gson
 import dagger.android.AndroidInjection
@@ -203,11 +201,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         if (callState.isIdle() || callState.isConnected()) return
 
         handleCallCancel()
-    }
-
-    protected fun isBusy(): Boolean {
-        val tm = getSystemService<TelephonyManager>()
-        return callState.isNotIdle() || tm?.callState != TelephonyManager.CALL_STATE_IDLE
     }
 
     protected fun updateForegroundNotification() {

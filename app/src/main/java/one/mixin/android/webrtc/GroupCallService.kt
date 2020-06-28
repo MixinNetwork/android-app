@@ -85,8 +85,9 @@ class GroupCallService : CallService() {
         callState.addUser(cid, userId)
         startCheckPeers(cid)
 
+        if (callState.isNotIdle() && callState.conversationId != cid) return
+
         val krakenDataString = String(blazeMessageData.data.decodeBase64())
-        Timber.d("@@@ krakenDataString: $krakenDataString, isInVoiceCall: ${!callState.isGroupCall()}, trackId: ${callState.trackId}")
         if (krakenDataString == PUBLISH_PLACEHOLDER) {
             val trackId = if (callState.isGroupCall()) callState.trackId else null
             if (!trackId.isNullOrEmpty()) {
@@ -235,7 +236,7 @@ class GroupCallService : CallService() {
         requireNotNull(cid)
         val userId = intent.getStringExtra(EXTRA_USER_ID)
 
-        if (isBusy()) {
+        if (callState.isBusy(this)) {
             // TODO send a kraken busy message?
             Timber.d("@@@ receive a invite from $userId in $cid")
             userId?.let {
@@ -650,8 +651,8 @@ fun receivePublish(ctx: Context, data: BlazeMessageData) =
         it.putExtra(EXTRA_BLAZE, data)
     }
 
-fun receiveInvite(ctx: Context, conversationId: String, userId: String? = null, users: ArrayList<String>? = null, playRing: Boolean) =
-    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_INVITE, true) {
+fun receiveInvite(ctx: Context, conversationId: String, userId: String? = null, users: ArrayList<String>? = null, playRing: Boolean, foreground: Boolean) =
+    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_INVITE, foreground) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USERS, users)
         it.putExtra(EXTRA_USER_ID, userId)

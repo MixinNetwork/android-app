@@ -130,7 +130,8 @@ class DecryptCallMessage(
                 receivePublish(ctx, data)
             }
             MessageCategory.KRAKEN_INVITE.name -> {
-                receiveInvite(ctx, data.conversationId, userId = data.userId, playRing = true)
+                val isForeground = !callState.isBusy(ctx)
+                receiveInvite(ctx, data.conversationId, userId = data.userId, playRing = true, foreground = isForeground)
             }
             MessageCategory.KRAKEN_END.name -> {
                 receiveEnd(ctx, data.conversationId, data.userId)
@@ -202,10 +203,11 @@ class DecryptCallMessage(
         if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             syncUser(data.userId)?.let { user ->
                 val pendingCandidateList = listPendingCandidateMap[data.messageId]
+                val isForeground = !callState.isBusy(ctx)
                 if (pendingCandidateList == null || pendingCandidateList.isEmpty()) {
-                    incomingCall(ctx, user, data)
+                    incomingCall(ctx, user, data, isForeground)
                 } else {
-                    incomingCall(ctx, user, data, GsonHelper.customGson.toJson(pendingCandidateList.toArray()))
+                    incomingCall(ctx, user, data, isForeground, GsonHelper.customGson.toJson(pendingCandidateList.toArray()))
                     pendingCandidateList.clear()
                     listPendingCandidateMap.remove(data.messageId, pendingCandidateList)
                 }
