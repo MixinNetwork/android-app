@@ -135,21 +135,29 @@ class MainActivity : BlazeBaseActivity() {
 
     @Inject
     lateinit var navigationController: NavigationController
+
     @Inject
     lateinit var jobManager: MixinJobManager
+
     @Inject
     lateinit var conversationService: ConversationService
+
     @Inject
     lateinit var userService: UserService
+
     @Inject
     @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var conversationDao: ConversationDao
+
     @Inject
     lateinit var userDao: UserDao
+
     @Inject
     lateinit var userRepo: UserRepository
+
     @Inject
     lateinit var accountRepo: AccountRepository
+
     @Inject
     lateinit var participantDao: ParticipantDao
 
@@ -321,9 +329,9 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun checkRoot() {
         if (RootUtil.isDeviceRooted && defaultSharedPreferences.getBoolean(
-            Constants.Account.PREF_BIOMETRICS,
-            false
-        )
+                Constants.Account.PREF_BIOMETRICS,
+                false
+            )
         ) {
             BiometricUtil.deleteKey(this)
         }
@@ -807,6 +815,13 @@ class MainActivity : BlazeBaseActivity() {
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }.run {
                 context.startActivity(this)
+            }
+        }
+
+        fun getShortcutIntent(context: Context, conversationId: String): Intent {
+            return Intent(context, MainActivity::class.java).apply {
+                action = Intent.ACTION_MAIN
+                putExtra("conversation_id", conversationId)
             }
         }
 

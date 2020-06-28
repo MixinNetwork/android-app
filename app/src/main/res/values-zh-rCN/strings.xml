@@ -834,4 +834,5 @@
     <string name="bot_internal_camera">相机</string>
     <string name="bot_internal_wallet">钱包</string>
     <string name="bot_empty_tip">可以添加你喜欢的机器人</string>
+    <string name="action_add_shortcut">Add shortcut</string>
 </resources>
