@@ -193,7 +193,7 @@ internal constructor(
     fun getGroupParticipantsLiveData(conversationId: String) =
         participantDao.getGroupParticipantsLiveData(conversationId)
 
-    suspend fun updateMediaStatus(status: String, messageId: String) =
+    suspend fun updateMediaStatusSuspend(status: String, messageId: String) =
         messageDao.updateMediaStatusSuspend(status, messageId)
 
     fun deleteMessage(id: String, mediaUrl: String? = null, forceDelete: Boolean = true) {
@@ -374,4 +374,6 @@ internal constructor(
     suspend fun muteSuspend(id: String, request: ConversationRequest): MixinResponse<ConversationResponse> = conversationService.muteSuspend(id, request)
 
     fun updateGroupMuteUntil(conversationId: String, muteUntil: String) = conversationDao.updateGroupMuteUntil(conversationId, muteUntil)
+
+    fun updateMediaStatus(status: String, id: String) = messageDao.updateMediaStatus(status, id)
 }
