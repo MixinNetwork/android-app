@@ -1,5 +1,6 @@
 package one.mixin.android.webrtc
 
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.telephony.TelephonyManager
@@ -66,17 +67,18 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     protected lateinit var self: User
 
     private var isDestroyed = AtomicBoolean(false)
+    protected var isDisconnected = AtomicBoolean(true)
 
     private val pipCallView by lazy {
         PipCallView.get()
     }
 
-    private var isForeground = false
-
     override fun onCreate() {
         AndroidInjection.inject(this)
         super.onCreate()
-        peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
+        callExecutor.execute {
+            peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
+        }
         Session.getAccount()?.toUser().let { user ->
             if (user == null) {
                 stopSelf()
@@ -84,22 +86,17 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
                 self = user
             }
         }
-        supportsOreo {
-            updateForegroundNotification()
-        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        isForeground = intent?.extras?.getBoolean(EXTRA_FOREGROUND) ?: true
-        supportsOreo {
-            updateForegroundNotification()
-        }
-
-        if (intent == null || intent.action == null || isDestroyed.get()) {
+        if (intent == null || intent.action == null) {
             return START_NOT_STICKY
         }
-
+        if (isDestroyed.get()) {
+            stopSelf()
+            return Service.START_NOT_STICKY
+        }
         callExecutor.execute {
             if (!handleIntent(intent)) {
                 when (intent.action) {
@@ -124,19 +121,18 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     protected fun disconnect() {
         Timber.d("@@@ disconnect")
-        if (isDestroyed.get()) return
+        if (isDisconnected.compareAndSet(false, true)) {
+            stopForeground(true)
+            audioManager.release()
+            pipCallView.close()
+            callState.reset()
+            peerConnectionClient.close()
+            timeoutFuture?.cancel(true)
 
-        stopForeground(true)
-        isForeground = false
-        audioManager.release()
-        pipCallView.close()
-        callState.reset()
-        peerConnectionClient.close()
-        timeoutFuture?.cancel(true)
+            callState.state = CallState.STATE_IDLE
 
-        callState.state = CallState.STATE_IDLE
-
-        onCallDisconnected()
+            onCallDisconnected()
+        }
     }
 
     abstract fun handleIntent(intent: Intent): Boolean
@@ -215,10 +211,12 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     protected fun updateForegroundNotification() {
-        if (!isForeground) return
+        if (isDisconnected.get() || isDestroyed.get()) return
 
-        CallNotificationBuilder.getCallNotification(this, callState)?.let {
-            startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION, it)
+        supportsOreo {
+            CallNotificationBuilder.getCallNotification(this, callState)?.let {
+                startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION, it)
+            }
         }
     }
 
@@ -296,13 +294,12 @@ const val EXTRA_BLAZE = "blaze"
 const val EXTRA_MUTE = "mute"
 const val EXTRA_SPEAKERPHONE = "speakerphone"
 const val EXTRA_PENDING_CANDIDATES = "pending_candidates"
-const val EXTRA_FOREGROUND = "foreground"
 
-inline fun <reified T : CallService> muteAudio(ctx: Context, checked: Boolean) = startService<T>(ctx, ACTION_MUTE_AUDIO, false) {
+inline fun <reified T : CallService> muteAudio(ctx: Context, checked: Boolean) = startService<T>(ctx, ACTION_MUTE_AUDIO) {
     it.putExtra(EXTRA_MUTE, checked)
 }
 
-inline fun <reified T : CallService> speakerPhone(ctx: Context, checked: Boolean) = startService<T>(ctx, ACTION_SPEAKERPHONE, false) {
+inline fun <reified T : CallService> speakerPhone(ctx: Context, checked: Boolean) = startService<T>(ctx, ACTION_SPEAKERPHONE) {
     it.putExtra(EXTRA_SPEAKERPHONE, checked)
 }
 
@@ -313,13 +310,12 @@ inline fun <reified T : CallService> disconnect(ctx: Context) {
 inline fun <reified T : CallService> startService(
     ctx: Context,
     action: String? = null,
-    foreground: Boolean = true,
+    foreground: Boolean = false,
     putExtra: ((intent: Intent) -> Unit)
 ) {
     val intent = Intent(ctx, T::class.java).apply {
         this.action = action
         putExtra.invoke(this)
-        putExtra(EXTRA_FOREGROUND, foreground)
     }
     if (foreground) {
         ContextCompat.startForegroundService(ctx, intent)

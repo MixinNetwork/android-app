@@ -20,6 +20,10 @@ data class GroupCallState(
     var initialGuests: ArrayList<String>? = null
 }
 
+enum class CallType {
+    None, Voice, Group
+}
+
 class CallStateLiveData : LiveData<CallService.CallState>() {
     var state: CallService.CallState = CallService.CallState.STATE_IDLE
         set(value) {
@@ -37,6 +41,8 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     var audioEnable = true
     var speakerEnable = false
 
+    var callType = CallType.None
+
     private val pendingGroupCalls = mutableSetOf<GroupCallState>()
 
     fun reset() {
@@ -51,10 +57,12 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         isOffer = true
         audioEnable = true
         speakerEnable = false
+        callType = CallType.None
         state = CallService.CallState.STATE_IDLE
     }
 
-    fun isGroupCall() = user == null
+    fun isGroupCall() = callType == CallType.Group
+    fun isVoiceCall() = callType == CallType.Voice
 
     fun addPendingGroupCall(conversationId: String): GroupCallState {
         val exists = pendingGroupCalls.find {
@@ -95,13 +103,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         val groupCallState = pendingGroupCalls.find {
             it.conversationId == conversationId
         } ?: return null
-        val us = groupCallState.users
-        val initialGuests = groupCallState.initialGuests
-
-        if (initialGuests.isNullOrEmpty()) return us
-        if (us.isNullOrEmpty()) return initialGuests
-
-        return arrayListOf<String>().apply { addAll(initialGuests.union(us)) }
+        return groupCallState.users
     }
 
     fun getUsersCountByConversationId(conversationId: String): Int =
@@ -126,9 +128,11 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         val current = groupCallState.initialGuests
         if (current.isNullOrEmpty()) {
             groupCallState.initialGuests = guests
+            postValue(state)
             return
         }
         groupCallState.initialGuests = arrayListOf<String>().apply { addAll(current.union(guests)) }
+        postValue(state)
     }
 
     fun removeInitialGuest(conversationId: String, userId: String) {
@@ -159,6 +163,19 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         if (resultSet.isNullOrEmpty()) return null
 
         return arrayListOf<String>().apply { addAll(resultSet) }
+    }
+
+    fun getUsersWithGuests(conversationId: String): ArrayList<String>? {
+        val groupCallState = pendingGroupCalls.find {
+            it.conversationId == conversationId
+        } ?: return null
+        val us = groupCallState.users
+        val initialGuests = groupCallState.initialGuests
+
+        if (initialGuests.isNullOrEmpty()) return us
+        if (us.isNullOrEmpty()) return initialGuests
+
+        return arrayListOf<String>().apply { addAll(initialGuests.union(us)) }
     }
 
     fun setUsersByConversationId(conversationId: String, newUsers: ArrayList<String>?) {
@@ -192,8 +209,9 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
 
     fun isIdle() = state == CallService.CallState.STATE_IDLE
     fun isNotIdle() = state != CallService.CallState.STATE_IDLE
+    fun isAnswering() = state == CallService.CallState.STATE_ANSWERING
     fun isConnected() = state == CallService.CallState.STATE_CONNECTED
-    fun isNotConnected() = state != CallService.CallState.STATE_CONNECTED
+    fun isRinging() = state == CallService.CallState.STATE_RINGING
 
     fun isPendingGroupCall(conversationId: String) =
         if (this.conversationId == conversationId) {
@@ -207,29 +225,38 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
             CallService.CallState.STATE_DIALING ->
                 if (isGroupCall()) {
                     krakenCancel(ctx)
-                } else {
+                } else if (isVoiceCall()) {
                     cancelCall(ctx)
                 }
             CallService.CallState.STATE_RINGING ->
                 if (isGroupCall()) {
                     krakenDecline(ctx)
-                } else {
+                } else if (isVoiceCall()) {
                     declineCall(ctx)
                 }
             CallService.CallState.STATE_ANSWERING -> {
-                if (isOffer) {
-                    cancelCall(ctx)
-                } else {
-                    declineCall(ctx)
+                if (isGroupCall()) {
+                    krakenCancel(ctx)
+                } else if (isVoiceCall()) {
+                    if (isOffer) {
+                        cancelCall(ctx)
+                    } else {
+                        declineCall(ctx)
+                    }
                 }
             }
             CallService.CallState.STATE_CONNECTED ->
                 if (isGroupCall()) {
                     krakenEnd(ctx)
-                } else {
+                } else if (isVoiceCall()) {
                     localEnd(ctx)
                 }
-            else -> cancelCall(ctx)
+            else ->
+                if (isGroupCall()) {
+                    krakenCancel(ctx)
+                } else if (isVoiceCall()) {
+                    cancelCall(ctx)
+                }
         }
     }
 

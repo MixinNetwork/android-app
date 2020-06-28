@@ -17,19 +17,15 @@ import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
 import timber.log.Timber
-import java.util.concurrent.Executors
 
 class PeerConnectionClient(private val context: Context, private val events: PeerConnectionEvents) {
-    private val executor = Executors.newSingleThreadExecutor()
     private var factory: PeerConnectionFactory? = null
     private var isError = false
 
     init {
-        executor.execute {
-            PeerConnectionFactory.initialize(
-                PeerConnectionFactory.InitializationOptions.builder(context).createInitializationOptions()
-            )
-        }
+        PeerConnectionFactory.initialize(
+            PeerConnectionFactory.InitializationOptions.builder(context).createInitializationOptions()
+        )
     }
 
     private val pcObserver = PCObserver()
@@ -46,67 +42,61 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             reportError("PeerConnectionFactory has already been constructed")
             return
         }
-        executor.execute {
-            createPeerConnectionFactoryInternal(options)
-        }
+        createPeerConnectionFactoryInternal(options)
     }
 
     fun createOffer(iceServerList: List<PeerConnection.IceServer>, setLocalSuccess: ((sdp: SessionDescription) -> Unit)) {
         iceServers.addAll(iceServerList)
-        executor.execute {
-            peerConnection = createPeerConnectionInternal()
-            val offerSdpObserver = object : SdpObserverWrapper() {
-                override fun onCreateSuccess(sdp: SessionDescription) {
-                    peerConnection?.setLocalDescription(
-                        object : SdpObserverWrapper() {
-                            override fun onSetFailure(error: String?) {
-                                reportError("createOffer setLocalSdp onSetFailure error: $error")
-                            }
-                            override fun onSetSuccess() {
-                                Timber.d("createOffer setLocalSdp onSetSuccess")
-                                setLocalSuccess(sdp)
-                            }
-                        },
-                        sdp
-                    )
-                }
-
-                override fun onCreateFailure(error: String?) {
-                    reportError("createOffer onCreateFailure error: $error")
-                }
+        peerConnection = createPeerConnectionInternal()
+        val offerSdpObserver = object : SdpObserverWrapper() {
+            override fun onCreateSuccess(sdp: SessionDescription) {
+                peerConnection?.setLocalDescription(
+                    object : SdpObserverWrapper() {
+                        override fun onSetFailure(error: String?) {
+                            reportError("createOffer setLocalSdp onSetFailure error: $error")
+                        }
+                        override fun onSetSuccess() {
+                            Timber.d("createOffer setLocalSdp onSetSuccess")
+                            setLocalSuccess(sdp)
+                        }
+                    },
+                    sdp
+                )
             }
-            peerConnection?.createOffer(offerSdpObserver, sdpConstraint)
+
+            override fun onCreateFailure(error: String?) {
+                reportError("createOffer onCreateFailure error: $error")
+            }
         }
+        peerConnection?.createOffer(offerSdpObserver, sdpConstraint)
     }
 
     fun createAnswer(remoteSdp: SessionDescription, setLocalSuccess: (sdp: SessionDescription) -> Unit) {
-        executor.execute {
-            if (peerConnection == null) {
-                peerConnection = createPeerConnectionInternal()
-            }
-            peerConnection?.setRemoteDescription(remoteSdpObserver, remoteSdp)
-            val answerSdpObserver = object : SdpObserverWrapper() {
-                override fun onCreateSuccess(sdp: SessionDescription) {
-                    peerConnection?.setLocalDescription(
-                        object : SdpObserverWrapper() {
-                            override fun onSetFailure(error: String?) {
-                                reportError("createAnswer setLocalSdp onSetFailure error: $error")
-                            }
-                            override fun onSetSuccess() {
-                                Timber.d("createAnswer setLocalSdp onSetSuccess")
-                                setLocalSuccess(sdp)
-                            }
-                        },
-                        sdp
-                    )
-                }
-
-                override fun onCreateFailure(error: String?) {
-                    reportError("createAnswer onCreateFailure error: $error")
-                }
-            }
-            peerConnection?.createAnswer(answerSdpObserver, sdpConstraint)
+        if (peerConnection == null) {
+            peerConnection = createPeerConnectionInternal()
         }
+        peerConnection?.setRemoteDescription(remoteSdpObserver, remoteSdp)
+        val answerSdpObserver = object : SdpObserverWrapper() {
+            override fun onCreateSuccess(sdp: SessionDescription) {
+                peerConnection?.setLocalDescription(
+                    object : SdpObserverWrapper() {
+                        override fun onSetFailure(error: String?) {
+                            reportError("createAnswer setLocalSdp onSetFailure error: $error")
+                        }
+                        override fun onSetSuccess() {
+                            Timber.d("createAnswer setLocalSdp onSetSuccess")
+                            setLocalSuccess(sdp)
+                        }
+                    },
+                    sdp
+                )
+            }
+
+            override fun onCreateFailure(error: String?) {
+                reportError("createAnswer onCreateFailure error: $error")
+            }
+        }
+        peerConnection?.createAnswer(answerSdpObserver, sdpConstraint)
     }
 
     fun createAnswerWithIceServer(
@@ -119,36 +109,28 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     }
 
     fun addRemoteIceCandidate(candidate: IceCandidate) {
-        executor.execute {
-            if (peerConnection != null && peerConnection!!.remoteDescription != null) {
-                peerConnection?.addIceCandidate(candidate)
-            } else {
-                remoteCandidateCache.add(candidate)
-            }
+        if (peerConnection != null && peerConnection!!.remoteDescription != null) {
+            peerConnection?.addIceCandidate(candidate)
+        } else {
+            remoteCandidateCache.add(candidate)
         }
     }
 
     fun setAnswerSdp(sdp: SessionDescription) {
-        executor.execute {
-            peerConnection?.setRemoteDescription(remoteSdpObserver, sdp)
-        }
+        peerConnection?.setRemoteDescription(remoteSdpObserver, sdp)
     }
 
     fun setAudioEnable(enable: Boolean) {
-        executor.execute {
-            if (peerConnection == null || audioTrack == null || isError) return@execute
+        if (peerConnection == null || audioTrack == null || isError) return
 
-            audioTrack?.setEnabled(enable)
-        }
+        audioTrack?.setEnabled(enable)
     }
 
     fun enableCommunication() {
-        executor.execute {
-            if (peerConnection == null || isError) return@execute
+        if (peerConnection == null || isError) return
 
-            peerConnection?.setAudioPlayout(true)
-            peerConnection?.setAudioRecording(true)
-        }
+        peerConnection?.setAudioPlayout(true)
+        peerConnection?.setAudioRecording(true)
     }
 
     fun hasLocalSdp(): Boolean {
@@ -158,44 +140,38 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     }
 
     fun close() {
-        executor.execute {
-            peerConnection?.dispose()
-            peerConnection = null
-            audioSource?.dispose()
-            audioSource = null
-            events.onPeerConnectionClosed()
-        }
+        peerConnection?.dispose()
+        peerConnection = null
+        audioSource?.dispose()
+        audioSource = null
+        events.onPeerConnectionClosed()
     }
 
     fun release() {
         close()
-        executor.execute {
-            factory?.dispose()
-            factory = null
-        }
+        factory?.dispose()
+        factory = null
     }
 
     private fun reportError(error: String) {
         Timber.d("@@@ reportError: $error")
-        executor.execute {
-            peerConnection?.let { pc ->
-                val localSdp = "{ localDescription: { description: ${pc.localDescription.description}, type: ${pc.localDescription.type} }"
-                val remoteSdp = "{ remoteDescription: { description: ${pc.remoteDescription.description}, type: ${pc.remoteDescription.type} }"
-                pc.getStats { report ->
-                    FirebaseCrashlytics.getInstance().log(
-                        "WebRTC peer connection error " +
-                            """
-                            { stats: $report },
-                            $localSdp,
-                            $remoteSdp
+        peerConnection?.let { pc ->
+            val localSdp = "{ localDescription: { description: ${pc.localDescription?.description}, type: ${pc.localDescription?.type} }"
+            val remoteSdp = "{ remoteDescription: { description: ${pc.remoteDescription?.description}, type: ${pc.remoteDescription?.type} }"
+            pc.getStats { report ->
+                FirebaseCrashlytics.getInstance().log(
+                    "WebRTC peer connection error " +
                         """
-                    )
-                }
+                        { stats: $report },
+                        $localSdp,
+                        $remoteSdp
+                    """
+                )
             }
-            if (!isError) {
-                events.onPeerConnectionError(error)
-                isError = true
-            }
+        }
+        if (!isError) {
+            events.onPeerConnectionError(error)
+            isError = true
         }
     }
 
@@ -261,7 +237,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     private inner class PCObserver : PeerConnection.Observer {
 
         override fun onIceCandidate(candidate: IceCandidate) {
-            executor.execute { events.onIceCandidate(candidate) }
+            events.onIceCandidate(candidate)
         }
 
         override fun onDataChannel(dataChannel: DataChannel?) {
@@ -276,12 +252,10 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
         override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
             Timber.d("onConnectionChange: $newState")
-            executor.execute {
-                if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
-                    events.onConnected()
-                } else if (newState == PeerConnection.PeerConnectionState.DISCONNECTED) {
-                    events.onDisconnected()
-                }
+            if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
+                events.onConnected()
+            } else if (newState == PeerConnection.PeerConnectionState.DISCONNECTED) {
+                events.onDisconnected()
             }
         }
 
@@ -295,7 +269,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
         override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {
             Timber.d("onIceCandidatesRemoved")
-            executor.execute { events.onIceCandidatesRemoved(candidates) }
+            events.onIceCandidatesRemoved(candidates)
         }
 
         override fun onAddStream(stream: MediaStream) {

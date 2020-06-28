@@ -17,10 +17,10 @@ import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.supportsOreo
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.vo.CallType
 import one.mixin.android.vo.KrakenData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
@@ -99,21 +99,23 @@ class GroupCallService : CallService() {
         Timber.d("@@@ handlePublish")
         if (callState.state == CallState.STATE_DIALING) return
 
-        callState.state = CallState.STATE_DIALING
-        supportsOreo {
+        if (isDisconnected.compareAndSet(true, false)) {
+            callState.state = CallState.STATE_DIALING
+            callState.callType = CallType.Group
             updateForegroundNotification()
+            val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
+            requireNotNull(cid)
+            callState.conversationId = cid
+            val users = intent.getStringArrayListExtra(EXTRA_USERS)
+            callState.addPendingGroupCall(cid)
+            callState.addUser(cid, self.userId)
+            users?.let { callState.setInitialGuests(cid, it) }
+            callState.isOffer = true
+            timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+            CallActivity.show(this)
+            audioManager.start(true)
+            publish(cid)
         }
-        val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
-        requireNotNull(cid)
-        callState.conversationId = cid
-        val users = intent.getStringArrayListExtra(EXTRA_USERS)
-        callState.addPendingGroupCall(cid)
-        users?.let { callState.setInitialGuests(cid, it) }
-        callState.isOffer = true
-        timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-        CallActivity.show(this)
-        audioManager.start(true)
-        publish(cid)
     }
 
     private fun publish(conversationId: String) {
@@ -242,24 +244,26 @@ class GroupCallService : CallService() {
             return
         }
 
-        callState.state = CallState.STATE_RINGING
-        supportsOreo {
+        if (isDisconnected.compareAndSet(true, false)) {
+            callState.state = CallState.STATE_RINGING
+            callState.callType = CallType.Group
             updateForegroundNotification()
-        }
-        val users = intent.getStringArrayListExtra(EXTRA_USERS)
-        callState.conversationId = cid
-        userId?.let { callState.setInviter(cid, it) }
-        callState.setUsersByConversationId(cid, users)
-        callState.isOffer = false
-        timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-        CallActivity.show(this)
-        if (intent.getBooleanExtra(EXTRA_PLAY_RING, true)) {
-            audioManager.start(false)
-        }
-        startCheckPeers(cid)
+            val users = intent.getStringArrayListExtra(EXTRA_USERS)
+            callState.conversationId = cid
+            userId?.let { callState.setInviter(cid, it) }
+            callState.setUsersByConversationId(cid, users)
+            callState.isOffer = false
+            timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+            val playRing = intent.getBooleanExtra(EXTRA_PLAY_RING, true)
+            CallActivity.show(this, !playRing)
+            if (playRing) {
+                audioManager.start(false)
+            }
+            startCheckPeers(cid)
 
-        userId?.let {
-            saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
+            userId?.let {
+                saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
+            }
         }
     }
 
@@ -285,7 +289,11 @@ class GroupCallService : CallService() {
             disconnect()
             return
         }
+        if (callState.isAnswering()) return
 
+        callState.state = CallState.STATE_ANSWERING
+        callState.callType = CallType.Group
+        updateForegroundNotification()
         audioManager.stop()
         publish(cid)
     }
@@ -632,18 +640,18 @@ data class PeerList(
 )
 
 fun publish(ctx: Context, conversationId: String, users: ArrayList<String>? = null) =
-    startService<GroupCallService>(ctx, ACTION_KRAKEN_PUBLISH) {
+    startService<GroupCallService>(ctx, ACTION_KRAKEN_PUBLISH, true) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USERS, users)
     }
 
 fun receivePublish(ctx: Context, data: BlazeMessageData) =
-    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_PUBLISH, false) {
+    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_PUBLISH) {
         it.putExtra(EXTRA_BLAZE, data)
     }
 
 fun receiveInvite(ctx: Context, conversationId: String, userId: String? = null, users: ArrayList<String>? = null, playRing: Boolean) =
-    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_INVITE) {
+    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_INVITE, true) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USERS, users)
         it.putExtra(EXTRA_USER_ID, userId)
@@ -651,12 +659,12 @@ fun receiveInvite(ctx: Context, conversationId: String, userId: String? = null, 
     }
 
 fun receiveEnd(ctx: Context, conversationId: String, userId: String) =
-    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_END, false) {
+    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_END) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USER_ID, userId)
     }
 
-fun acceptInvite(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_ACCEPT_INVITE) {}
+fun acceptInvite(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_ACCEPT_INVITE, true) {}
 
 fun krakenEnd(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_END) {}
 

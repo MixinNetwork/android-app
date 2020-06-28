@@ -103,7 +103,7 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
             BlazeMessageService.stopService(this)
             if (callState.isGroupCall()) {
                 disconnect<GroupCallService>(this)
-            } else {
+            } else if (callState.isVoiceCall()) {
                 disconnect<VoiceCallService>(this)
             }
             notificationManager.cancelAll()
@@ -119,7 +119,7 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
             BlazeMessageService.stopService(this)
             if (callState.isGroupCall()) {
                 disconnect<GroupCallService>(this)
-            } else {
+            } else if (callState.isVoiceCall()) {
                 disconnect<VoiceCallService>(this)
             }
             notificationManager.cancelAll()

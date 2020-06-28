@@ -23,9 +23,11 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -121,6 +123,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         sensorManager = getSystemService()
         powerManager = getSystemService()
         wakeLock = powerManager?.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
+        val join = intent.getBooleanExtra(EXTRA_JOIN, false)
         if (callState.isGroupCall()) {
             avatar.isVisible = false
             name_tv.isVisible = false
@@ -156,17 +159,19 @@ class CallActivity : BaseActivity(), SensorEventListener {
             }
         }
         hangup_cb.setOnClickListener {
-            handleHangup()
-            handleDisconnected()
+            hangup()
         }
         answer_cb.setOnClickListener {
             handleAnswer()
+        }
+        close_iv.setOnClickListener {
+            hangup()
         }
         mute_cb.setOnCheckedChangeListener(object : CallButton.OnCheckedChangeListener {
             override fun onCheckedChanged(id: Int, checked: Boolean) {
                 if (callState.isGroupCall()) {
                     muteAudio<GroupCallService>(this@CallActivity, checked)
-                } else {
+                } else if (callState.isVoiceCall()) {
                     muteAudio<VoiceCallService>(this@CallActivity, checked)
                 }
             }
@@ -175,7 +180,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
             override fun onCheckedChanged(id: Int, checked: Boolean) {
                 if (callState.isGroupCall()) {
                     speakerPhone<GroupCallService>(this@CallActivity, checked)
-                } else {
+                } else if (callState.isVoiceCall()) {
                     speakerPhone<VoiceCallService>(this@CallActivity, checked)
                 }
             }
@@ -193,7 +198,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
                     call_cl.post { handleDisconnected() }
                     return@Observer
                 }
-
                 if (uiState >= state) return@Observer
 
                 uiState = state
@@ -204,7 +208,13 @@ class CallActivity : BaseActivity(), SensorEventListener {
                         call_cl.post { handleDialing() }
                     }
                     CallService.CallState.STATE_RINGING -> {
-                        call_cl.post { handleRinging() }
+                        call_cl.post {
+                            if (join) {
+                                handleJoin()
+                            } else {
+                                handleRinging()
+                            }
+                        }
                     }
                     CallService.CallState.STATE_ANSWERING -> {
                         call_cl.post { handleAnswering() }
@@ -256,16 +266,13 @@ class CallActivity : BaseActivity(), SensorEventListener {
         super.onPause()
     }
 
-    override fun onStop() {
-        super.onStop()
-        if (callState.isNotIdle()) {
-            switch2Pip()
-        }
-    }
-
     override fun onBackPressed() {
         super.onBackPressed()
-        handleDisconnected()
+        if (callState.isRinging()) {
+            hangup()
+        } else if (callState.isNotIdle()) {
+            switch2Pip()
+        }
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
@@ -286,20 +293,24 @@ class CallActivity : BaseActivity(), SensorEventListener {
         }
     }
 
-    private fun handleHangup() {
+    private fun hangup() {
         callState.handleHangup(this)
+        finishAndRemoveTask()
     }
 
     private fun updateUI() {
         mute_cb?.isChecked = !callState.audioEnable
         voice_cb?.isChecked = callState.speakerEnable
         pip_iv?.isVisible = callState.isConnected()
+        if (pip_iv?.isVisible == true) {
+            close_iv?.isVisible = false
+        }
         add_iv?.isVisible = callState.isConnected() && callState.isGroupCall()
     }
 
     private fun refreshUsers() = lifecycleScope.launch {
         val cid = callState.conversationId ?: return@launch
-        val callees = callState.getUsersByConversationId(cid)
+        val callees = callState.getUsersWithGuests(cid)
         var layoutManager: GridLayoutManager? = users_rv?.layoutManager as GridLayoutManager?
         val spanCount = getSpanCount(callees?.size ?: 3)
         if (layoutManager == null) {
@@ -363,7 +374,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                     handleAnswering()
                     if (callState.isGroupCall()) {
                         acceptInvite(this@CallActivity)
-                    } else {
+                    } else if (callState.isVoiceCall()) {
                         answerCall(this@CallActivity)
                     }
                 } else {
@@ -450,6 +461,18 @@ class CallActivity : BaseActivity(), SensorEventListener {
         action_tv.text = getString(R.string.call_notification_incoming_voice)
     }
 
+    private fun handleJoin() {
+        voice_cb.isVisible = false
+        mute_cb.isVisible = false
+        answer_cb.isVisible = true
+        hangup_cb.isVisible = false
+        answer_cb.text.text = getString(R.string.call_accept)
+        answer_cb.updateLayoutParams<ConstraintLayout.LayoutParams> {
+            horizontalBias = 0.5f
+        }
+        close_iv.isVisible = true
+    }
+
     private fun handleAnswering() {
         voice_cb.fadeIn()
         mute_cb.fadeIn()
@@ -520,10 +543,12 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     companion object {
         const val TAG = "CallActivity"
+        const val EXTRA_JOIN = "extra_join"
 
-        fun show(context: Context) {
+        fun show(context: Context, join: Boolean = false) {
             Intent(context, CallActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                putExtra(EXTRA_JOIN, join)
             }.run {
                 context.startActivity(this)
             }

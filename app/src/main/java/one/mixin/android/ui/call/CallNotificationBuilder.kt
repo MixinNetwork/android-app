@@ -8,6 +8,7 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import one.mixin.android.R
 import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.vo.CallType
 import one.mixin.android.webrtc.ACTION_CALL_ANSWER
 import one.mixin.android.webrtc.ACTION_CALL_CANCEL
 import one.mixin.android.webrtc.ACTION_CALL_DECLINE
@@ -28,7 +29,8 @@ class CallNotificationBuilder {
         const val WEBRTC_NOTIFICATION = 313388
 
         fun getCallNotification(context: Context, callState: CallStateLiveData): Notification? {
-            if (callState.isIdle()) {
+            val callType = callState.callType
+            if (callState.isIdle() || callType == CallType.None) {
                 Timber.w("try get a call notification for foreground service in idle state.")
                 return null
             }
@@ -44,7 +46,7 @@ class CallNotificationBuilder {
                 .setOngoing(true)
                 .setContentTitle(user?.fullName)
 
-            val isGroupCall = callState.isGroupCall()
+            val isGroupCall = callType == CallType.Group
             val clazz = if (isGroupCall) {
                 GroupCallService::class.java
             } else {

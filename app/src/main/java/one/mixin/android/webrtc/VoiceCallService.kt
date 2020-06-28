@@ -9,6 +9,7 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.vo.CallType
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
@@ -68,48 +69,54 @@ class VoiceCallService : CallService() {
         }
         if (callState.state == CallState.STATE_RINGING) return
 
-        callState.state = CallState.STATE_RINGING
-        val blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
-        val user = intent.getParcelableExtra<User>(ARGS_USER)
+        if (isDisconnected.compareAndSet(true, false)) {
+            callState.state = CallState.STATE_RINGING
+            callState.callType = CallType.Voice
+            val blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
+            val user = intent.getParcelableExtra<User>(ARGS_USER)
 
-        val pendingCandidateData = intent.getStringExtra(EXTRA_PENDING_CANDIDATES)
-        if (pendingCandidateData != null && pendingCandidateData.isNotEmpty()) {
-            val list = gson.fromJson(pendingCandidateData, Array<IceCandidate>::class.java)
-            list.forEach {
-                peerConnectionClient.addRemoteIceCandidate(it)
+            val pendingCandidateData = intent.getStringExtra(EXTRA_PENDING_CANDIDATES)
+            if (pendingCandidateData != null && pendingCandidateData.isNotEmpty()) {
+                val list = gson.fromJson(pendingCandidateData, Array<IceCandidate>::class.java)
+                list.forEach {
+                    peerConnectionClient.addRemoteIceCandidate(it)
+                }
             }
+            this.blazeMessageData = blazeMessageData
+            callState.user = user
+            callState.trackId = blazeMessageData.messageId
+            updateForegroundNotification()
+            timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+            callState.isOffer = false
+            CallActivity.show(this)
+            audioManager.start(false)
         }
-        this.blazeMessageData = blazeMessageData
-        callState.user = user
-        updateForegroundNotification()
-        callState.trackId = blazeMessageData.messageId
-        timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-        callState.isOffer = false
-        CallActivity.show(this)
-        audioManager.start(false)
     }
 
     private fun handleCallOutgoing(intent: Intent) {
         if (callState.state == CallState.STATE_DIALING) return
 
-        callState.state = CallState.STATE_DIALING
-        val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
-        require(cid != null)
-        callState.conversationId = cid
-        val user = intent.getParcelableExtra<User>(ARGS_USER)
-        callState.user = user
-        callState.isOffer = true
-        updateForegroundNotification()
-        timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
-        CallActivity.show(this)
-        audioManager.start(true)
-        getTurnServer { turns ->
-            peerConnectionClient.createOffer(
-                turns,
-                setLocalSuccess = {
-                    sendCallMessage(MessageCategory.WEBRTC_AUDIO_OFFER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
-                }
-            )
+        if (isDisconnected.compareAndSet(true, false)) {
+            callState.state = CallState.STATE_DIALING
+            callState.callType = CallType.Voice
+            val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
+            require(cid != null)
+            callState.conversationId = cid
+            val user = intent.getParcelableExtra<User>(ARGS_USER)
+            callState.user = user
+            updateForegroundNotification()
+            callState.isOffer = true
+            timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+            CallActivity.show(this)
+            audioManager.start(true)
+            getTurnServer { turns ->
+                peerConnectionClient.createOffer(
+                    turns,
+                    setLocalSuccess = {
+                        sendCallMessage(MessageCategory.WEBRTC_AUDIO_OFFER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
+                    }
+                )
+            }
         }
     }
 
@@ -119,6 +126,7 @@ class VoiceCallService : CallService() {
         ) return
 
         callState.state = CallState.STATE_ANSWERING
+        callState.callType = CallType.Voice
         updateForegroundNotification()
         audioManager.stop()
         if (callState.isOffer) {
@@ -376,7 +384,7 @@ const val ACTION_CALL_LOCAL_FAILED = "call_local_failed"
 const val ACTION_CALL_REMOTE_FAILED = "call_remote_failed"
 
 fun incomingCall(ctx: Context, user: User, data: BlazeMessageData, pendingCandidateData: String? = null) =
-    startService<VoiceCallService>(ctx, ACTION_CALL_INCOMING) {
+    startService<VoiceCallService>(ctx, ACTION_CALL_INCOMING, true) {
         it.putExtra(ARGS_USER, user)
         it.putExtra(EXTRA_BLAZE, data)
         if (pendingCandidateData != null) {
@@ -385,13 +393,13 @@ fun incomingCall(ctx: Context, user: User, data: BlazeMessageData, pendingCandid
     }
 
 fun outgoingCall(ctx: Context, conversationId: String, user: User? = null) =
-    startService<VoiceCallService>(ctx, ACTION_CALL_OUTGOING) {
+    startService<VoiceCallService>(ctx, ACTION_CALL_OUTGOING, true) {
         it.putExtra(ARGS_USER, user)
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
     }
 
 fun answerCall(ctx: Context, data: BlazeMessageData? = null) =
-    startService<VoiceCallService>(ctx, ACTION_CALL_ANSWER) { intent ->
+    startService<VoiceCallService>(ctx, ACTION_CALL_ANSWER, true) { intent ->
         data?.let {
             intent.putExtra(EXTRA_BLAZE, data)
         }
