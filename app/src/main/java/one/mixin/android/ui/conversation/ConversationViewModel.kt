@@ -9,7 +9,6 @@ import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
-import android.provider.MediaStore
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -684,7 +683,7 @@ internal constructor(
     fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
         jobManager.cancelJobByMixinJobId(id) {
             viewModelScope.launch {
-                conversationRepository.updateMediaStatus(MediaStatus.CANCELED.name, id)
+                conversationRepository.updateMediaStatusSuspend(MediaStatus.CANCELED.name, id)
             }
         }
     }
@@ -695,6 +694,7 @@ internal constructor(
             conversationRepository.findMessageById(id)?.let {
                 if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
                     try {
+                        conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
                         jobManager.addJobInBackground(
                             ConvertVideoJob(
                                 it.conversationId, it.userId, Uri.parse(it.mediaUrl),
@@ -721,6 +721,7 @@ internal constructor(
                         onError.invoke()
                     }
                 } else {
+                    conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
                     jobManager.addJobInBackground(SendAttachmentMessageJob(it))
                 }
             }

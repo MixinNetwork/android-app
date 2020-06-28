@@ -44,61 +44,6 @@ public class MediaCodecVideoConvertor {
                 resultWidth, resultHeight, framerate, bitrate, startTime, endTime, duration, needCompress, false);
     }
 
-    public static int getBitrate(String videoPath, float scale) {
-        TrackHeaderBox trackHeaderBox = null;
-        float videoDuration;
-        int originalBitrate;
-        try {
-            IsoFile isoFile = new IsoFile(videoPath);
-            List<Box> boxes = Path.getPaths(isoFile, "/moov/trak/");
-
-            Box boxTest = Path.getPath(isoFile, "/moov/trak/mdia/minf/stbl/stsd/mp4a/");
-            if (boxTest == null) {
-                Timber.d("video hasn't mp4a atom");
-            }
-
-            boxTest = Path.getPath(isoFile, "/moov/trak/mdia/minf/stbl/stsd/avc1/");
-            if (boxTest == null) {
-                Timber.d("video hasn't avc1 atom");
-            }
-
-            for (int b = 0; b < boxes.size(); b++) {
-                Box box = boxes.get(b);
-                TrackBox trackBox = (TrackBox) box;
-                long sampleSizes = 0;
-                long trackBitrate = 0;
-                try {
-                    MediaBox mediaBox = trackBox.getMediaBox();
-                    MediaHeaderBox mediaHeaderBox = mediaBox.getMediaHeaderBox();
-                    SampleSizeBox sampleSizeBox = mediaBox.getMediaInformationBox().getSampleTableBox().getSampleSizeBox();
-                    long[] sizes = sampleSizeBox.getSampleSizes();
-                    for (int a = 0; a < sizes.length; a++) {
-                        sampleSizes += sizes[a];
-                    }
-                    videoDuration = (float) mediaHeaderBox.getDuration() / (float) mediaHeaderBox.getTimescale();
-                    trackBitrate = (int) (sampleSizes * 8 / videoDuration);
-                } catch (Exception e) {
-
-
-                    Timber.e(e);
-                }
-                TrackHeaderBox headerBox = trackBox.getTrackHeaderBox();
-                if (headerBox.getWidth() != 0 && headerBox.getHeight() != 0) {
-                    if (trackHeaderBox != null && !(trackHeaderBox.getWidth() < headerBox.getWidth())) {
-                        trackHeaderBox.getHeight();
-                        headerBox.getHeight();
-                    }
-                    trackHeaderBox = headerBox;
-                    originalBitrate = (int) (trackBitrate / 100000 * 100000);
-                    return Math.min(1100000, (int) (originalBitrate / scale));
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
     private boolean convertVideoInternal(String videoPath, File cacheFile,
                                          int rotationValue, boolean isSecret,
                                          int resultWidth, int resultHeight,
