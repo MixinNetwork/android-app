@@ -9,6 +9,7 @@ import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
+import android.provider.MediaStore
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -687,6 +688,7 @@ internal constructor(
             }
         }
     }
+
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     fun retryUpload(id: String, onError: () -> Unit) {
         doAsync {
@@ -774,7 +776,7 @@ internal constructor(
         viewModelScope.launch(SINGLE_DB_THREAD) {
             list.forEach { item ->
                 conversationRepository.deleteMessage(
-                    item.messageId, item.mediaUrl
+                    item.messageId, item.mediaUrl, item.mediaStatus == MediaStatus.DONE.name
                 )
                 jobManager.cancelJobByMixinJobId(item.messageId)
                 notificationManager.cancel(item.userId.hashCode())
