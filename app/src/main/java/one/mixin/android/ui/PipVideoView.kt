@@ -31,6 +31,7 @@ import com.google.android.exoplayer2.Player.STATE_READY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
@@ -38,7 +39,6 @@ import one.mixin.android.extension.getPixelsInCM
 import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.round
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.media.pager.MediaPagerActivity
