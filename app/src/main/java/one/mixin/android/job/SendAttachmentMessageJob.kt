@@ -143,6 +143,9 @@ class SendAttachmentMessageJob(
                 uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
             }
         } catch (e: Exception) {
+            Timber.e(e)
+            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
+            removeJob()
             reportException(e)
             return false
         }
