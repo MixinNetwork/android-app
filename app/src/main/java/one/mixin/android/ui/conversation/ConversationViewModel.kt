@@ -775,11 +775,9 @@ internal constructor(
     fun deleteMessages(list: List<MessageItem>) {
         viewModelScope.launch(SINGLE_DB_THREAD) {
             list.forEach { item ->
-                if (item.mediaStatus == MediaStatus.DONE.name) {
-                    conversationRepository.deleteMessage(
-                        item.messageId, item.mediaUrl
-                    )
-                }
+                conversationRepository.deleteMessage(
+                    item.messageId, item.mediaUrl, item.mediaStatus == MediaStatus.DONE.name
+                )
                 jobManager.cancelJobByMixinJobId(item.messageId)
                 notificationManager.cancel(item.userId.hashCode())
             }

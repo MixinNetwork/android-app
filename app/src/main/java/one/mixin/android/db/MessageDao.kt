@@ -250,7 +250,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("DELETE FROM messages WHERE conversation_id = :conversationId")
     suspend fun deleteMessageByConversationId(conversationId: String)
 
-    @Query("SELECT m.media_url FROM messages m WHERE m.conversation_id = :conversationId AND m.media_url IS NOT NULL")
+    @Query("SELECT m.media_url FROM messages m WHERE m.conversation_id = :conversationId AND m.media_url IS NOT NULL AND m.media_status = 'DONE'")
     suspend fun findAllMediaPathByConversationId(conversationId: String): List<String>
 
     @Query("UPDATE messages SET status = :status WHERE id = :id")
