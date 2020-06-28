@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.holder
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.text.SpannableString
 import android.text.Spanned
@@ -30,6 +31,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         itemView.chat_flag.visibility = View.GONE
     }
 
+    @SuppressLint("SetTextI18n")
     fun bind(
         messageItem: MessageItem,
         keyword: String?,
@@ -82,10 +84,23 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                 itemView.file_name_tv.text = messageItem.mediaName
             }
         )
-        if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
-            itemView.file_size_tv.textResource = R.string.chat_expired
-        } else {
-            itemView.file_size_tv.text = "${messageItem.mediaSize?.fileSize()}"
+        when (messageItem.mediaStatus) {
+            MediaStatus.EXPIRED.name -> {
+                itemView.file_size_tv.textResource = R.string.chat_expired
+            }
+            MediaStatus.PENDING.name -> {
+                messageItem.mediaSize?.notNullWithElse(
+                    { it ->
+                        itemView.file_size_tv.setBindId(messageItem.messageId, it)
+                    },
+                    {
+                        itemView.file_size_tv.text = messageItem.mediaSize.fileSize()
+                    }
+                )
+            }
+            else -> {
+                itemView.file_size_tv.text = "${messageItem.mediaSize?.fileSize()}"
+            }
         }
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
             itemView.chat_flag.isVisible = statusIcon != null
