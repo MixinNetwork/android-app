@@ -296,7 +296,7 @@
     <string name="contact_other_remove">連絡先を削除する</string>
     <string name="contact_other_remove_bot">Botを削除する</string>
     <string name="contact_other_report">報告する</string>
-    <string name="contact_other_report_warning">報告してブロックしますか? この会話も同時に削除されます</string>
+    <string name="contact_other_report_warning">報告してブロックしますか?</string>
     <string name="contact_other_transactions">トランザクション</string>
     <string name="contact_less_title">連絡先</string>
     <string name="contact_less_invite">Mixinに招待する</string>

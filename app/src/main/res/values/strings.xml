@@ -312,7 +312,7 @@
     <string name="contact_other_remove">Remove Contact</string>
     <string name="contact_other_remove_bot">Remove Bot</string>
     <string name="contact_other_report">Report</string>
-    <string name="contact_other_report_warning">Do you want to report and block this contact? your chat with this conversation will also be deleted.</string>
+    <string name="contact_other_report_warning">Do you want to report and block this contact?</string>
     <string name="contact_other_transactions">Transactions</string>
     <string name="contact_less_title">Contact</string>
     <string name="contact_less_invite">Invite to Mixin</string>

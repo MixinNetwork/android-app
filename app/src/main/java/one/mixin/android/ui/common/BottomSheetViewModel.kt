@@ -153,8 +153,8 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun suspendFindUserById(id: String) = userRepository.suspendFindUserById(id)
 
-    fun updateRelationship(request: RelationshipRequest, deleteConversationId: String? = null) {
-        jobManager.addJobInBackground(UpdateRelationshipJob(request, deleteConversationId))
+    fun updateRelationship(request: RelationshipRequest, report: Boolean = false) {
+        jobManager.addJobInBackground(UpdateRelationshipJob(request, report))
     }
 
     fun getParticipantsCount(conversationId: String) =

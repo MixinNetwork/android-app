@@ -296,7 +296,7 @@
     <string name="contact_other_remove">删除联系人</string>
     <string name="contact_other_remove_bot">删除机器人</string>
     <string name="contact_other_report">举报</string>
-    <string name="contact_other_report_warning">确定要举报这个联系人？举报后你们的对话会被立即删除。</string>
+    <string name="contact_other_report_warning">确定要举报这个联系人？</string>
     <string name="contact_other_transactions">转账记录</string>
     <string name="contact_less_title">联系人</string>
     <string name="contact_less_invite">邀请至 Mixin</string>

@@ -16,7 +16,7 @@ import one.mixin.android.vo.UserRelationship
 
 class UpdateRelationshipJob(
     private val request: RelationshipRequest,
-    private val deleteConversationId: String? = null
+    private val report: Boolean = false
 ) :
     BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).groupBy("relationship").requireNetwork()) {
 
@@ -48,7 +48,7 @@ class UpdateRelationshipJob(
         }
         handleMixinResponse(
             invokeNetwork = {
-                if (deleteConversationId != null) {
+                if (report) {
                     userService.report(request)
                 } else {
                     userService.relationship(request)
@@ -57,9 +57,6 @@ class UpdateRelationshipJob(
             successBlock = { r ->
                 r.data?.let { u ->
                     updateUser(u)
-                }
-                if (deleteConversationId != null) {
-                    conversationDao.deleteConversationById(deleteConversationId)
                 }
             }
         )
