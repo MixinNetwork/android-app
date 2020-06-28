@@ -203,4 +203,6 @@ constructor(
     suspend fun getNotTopApps(appIds: List<String>): List<App> = appDao.getNotTopApps(appIds)
 
     suspend fun findUserByAppId(appId: String): User? = userDao.findUserByAppId(appId)
+
+    fun updateMuteUntil(id: String, muteUntil: String) = userDao.updateMuteUntil(id, muteUntil)
 }

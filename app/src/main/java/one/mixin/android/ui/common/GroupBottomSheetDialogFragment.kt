@@ -24,6 +24,7 @@ import one.mixin.android.Constants.Mute.MUTE_1_YEAR
 import one.mixin.android.Constants.Mute.MUTE_8_HOURS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dp
@@ -366,8 +367,17 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     private fun unMute() {
         val account = Session.getAccount()
         account?.let {
-            bottomViewModel.mute(conversationId, 0)
-            context?.toast(getString(R.string.un_mute) + " ${conversation.name}")
+            lifecycleScope.launch {
+                handleMixinResponse(
+                    invokeNetwork = {
+                        bottomViewModel.mute(0, conversationId = conversationId)
+                    },
+                    successBlock = { response ->
+                        bottomViewModel.updateGroupMuteUntil(conversationId, response.data!!.muteUntil)
+                        context?.toast(getString(R.string.un_mute) + " ${conversation.name}")
+                    }
+                )
+            }
         }
     }
 
@@ -388,8 +398,20 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             .setPositiveButton(R.string.confirm) { dialog, _ ->
                 val account = Session.getAccount()
                 account?.let {
-                    bottomViewModel.mute(conversationId, duration.toLong())
-                    context?.toast(getString(R.string.contact_mute_title) + " ${conversation.name} " + choices[whichItem])
+                    lifecycleScope.launch {
+                        handleMixinResponse(
+                            invokeNetwork = {
+                                bottomViewModel.mute(
+                                    duration.toLong(),
+                                    conversationId = conversationId
+                                )
+                            },
+                            successBlock = { response ->
+                                bottomViewModel.updateGroupMuteUntil(conversationId, response.data!!.muteUntil)
+                                context?.toast(getString(R.string.contact_mute_title) + " ${conversation.name} " + choices[whichItem])
+                            }
+                        )
+                    }
                 }
                 dialog.dismiss()
             }

@@ -5,12 +5,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.CONVERSATION_PAGE_SIZE
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.CircleConversationPayload
 import one.mixin.android.api.request.CircleConversationRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
+import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.db.withTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ConversationJob
@@ -18,7 +22,6 @@ import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleOrder
@@ -84,33 +87,42 @@ internal constructor(
         messageRepository.updateConversationPinTimeById(conversationId, circleId, pinTime)
     }
 
-    fun mute(senderId: String, recipientId: String, duration: Long) {
-        viewModelScope.launch(SINGLE_DB_THREAD) {
-            var conversationId = messageRepository.getConversationIdIfExistsSync(recipientId)
-            if (conversationId == null) {
-                conversationId = generateConversationId(senderId, recipientId)
+    suspend fun mute(
+        duration: Long,
+        conversationId: String? = null,
+        senderId: String? = null,
+        recipientId: String? = null
+    ): MixinResponse<ConversationResponse> {
+        require(conversationId != null || (senderId != null && recipientId != null)) {
+            "error data"
+        }
+        if (conversationId != null) {
+            val request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration)
+            return conversationRepository.muteSuspend(conversationId, request)
+        } else {
+            var cid = messageRepository.getConversationIdIfExistsSync(recipientId!!)
+            if (cid == null) {
+                cid = generateConversationId(senderId!!, recipientId)
             }
             val participantRequest = ParticipantRequest(recipientId, "")
-            jobManager.addJobInBackground(
-                ConversationJob(
-                    ConversationRequest(
-                        conversationId,
-                        ConversationCategory.CONTACT.name, duration = duration, participants = listOf(participantRequest)
-                    ),
-                    recipientId = recipientId, type = ConversationJob.TYPE_MUTE
-                )
+            val request = ConversationRequest(
+                cid,
+                ConversationCategory.CONTACT.name, duration = duration, participants = listOf(participantRequest)
             )
+            return conversationRepository.muteSuspend(cid, request)
         }
     }
 
-    fun mute(conversationId: String, duration: Long) {
-        jobManager.addJobInBackground(
-            ConversationJob(
-                conversationId = conversationId,
-                request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration),
-                type = ConversationJob.TYPE_MUTE
-            )
-        )
+    suspend fun updateGroupMuteUntil(conversationId: String, muteUntil: String) {
+        withContext(Dispatchers.IO) {
+            conversationRepository.updateGroupMuteUntil(conversationId, muteUntil)
+        }
+    }
+
+    suspend fun updateMuteUntil(id: String, muteUntil: String) {
+        withContext(Dispatchers.IO) {
+            userRepository.updateMuteUntil(id, muteUntil)
+        }
     }
 
     suspend fun suspendFindUserById(query: String) = userRepository.suspendFindUserById(query)
