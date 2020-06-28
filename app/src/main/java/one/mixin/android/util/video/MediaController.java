@@ -166,9 +166,9 @@ public class MediaController {
             IOException {
         if (!needChange) {
             Util.copy(new FileInputStream(videoPath), new FileOutputStream(cacheFile));
-            return true;
+            return false;
         }
         MediaCodecVideoConvertor videoConvertor = new MediaCodecVideoConvertor();
-        return videoConvertor.convertVideo(videoPath, cacheFile, 0, false, resultWidth, resultHeight, 25, bitrate, 0, 0, true, duration, null);
+        return videoConvertor.convertVideo(videoPath, cacheFile, 0, false, resultWidth, resultHeight, 25, bitrate, 0, duration * 1000, true, duration, null);
     }
 }
