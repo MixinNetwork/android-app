@@ -256,6 +256,7 @@ class GroupCallService : CallService() {
             updateForegroundNotification()
             callState.conversationId = cid
             userId?.let { callState.setInviter(cid, it) }
+            callState.addUser(cid, self.userId)
             callState.isOffer = false
             timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
             val playRing = intent.getBooleanExtra(EXTRA_PLAY_RING, true)
