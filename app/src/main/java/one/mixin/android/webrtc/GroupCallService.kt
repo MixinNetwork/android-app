@@ -193,6 +193,8 @@ class GroupCallService : CallService() {
         callState.addPendingGroupCall(cid)
         val existsFuture = scheduledFutures[cid]
         if (existsFuture == null) {
+            if (scheduledExecutors.isShutdown) return
+
             scheduledFutures[cid] = scheduledExecutors.scheduleAtFixedRate(
                 ListRunnable(cid),
                 10, KRAKEN_LIST_INTERVAL, TimeUnit.SECONDS
