@@ -164,7 +164,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     private fun handleConnected() {
-        if (callState.isConnected()) return
+        if (callState.isConnected() || callState.isIdle()) return
 
         val connectedTime = System.currentTimeMillis()
         callState.connectedTime = connectedTime
