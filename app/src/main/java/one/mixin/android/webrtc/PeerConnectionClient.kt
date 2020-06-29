@@ -144,6 +144,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         peerConnection = null
         audioSource?.dispose()
         audioSource = null
+        isError = false
         events.onPeerConnectionClosed()
     }
 

@@ -220,13 +220,12 @@ class GroupCallService : CallService() {
         peerList.peers.mapTo(userIdList) { it.userId }
         val currentList = callState.getUsersByConversationId(conversationId)
         if (currentList != null && currentList.size > userIdList.size) {
-            val remainUsers = currentList.subtract(userIdList)
-            if (remainUsers.isEmpty()) {
+            if (userIdList.isEmpty()) {
                 checkSchedules(conversationId)
             } else {
                 callState.setUsersByConversationId(
                     conversationId,
-                    arrayListOf<String>().apply { addAll(remainUsers) }
+                    userIdList
                 )
             }
         }
@@ -251,10 +250,8 @@ class GroupCallService : CallService() {
             callState.state = CallState.STATE_RINGING
             callState.callType = CallType.Group
             updateForegroundNotification()
-            val users = intent.getStringArrayListExtra(EXTRA_USERS)
             callState.conversationId = cid
             userId?.let { callState.setInviter(cid, it) }
-            callState.setUsersByConversationId(cid, users)
             callState.isOffer = false
             timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
             val playRing = intent.getBooleanExtra(EXTRA_PLAY_RING, true)
@@ -650,10 +647,9 @@ fun receivePublish(ctx: Context, data: BlazeMessageData) =
         it.putExtra(EXTRA_BLAZE, data)
     }
 
-fun receiveInvite(ctx: Context, conversationId: String, userId: String? = null, users: ArrayList<String>? = null, playRing: Boolean, foreground: Boolean) =
+fun receiveInvite(ctx: Context, conversationId: String, userId: String? = null, playRing: Boolean, foreground: Boolean) =
     startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_INVITE, foreground) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
-        it.putExtra(EXTRA_USERS, users)
         it.putExtra(EXTRA_USER_ID, userId)
         it.putExtra(EXTRA_PLAY_RING, playRing)
     }
