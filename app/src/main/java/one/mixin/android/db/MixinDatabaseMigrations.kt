@@ -212,7 +212,6 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("ALTER TABLE users ADD COLUMN is_scam INTEGER")
             }
         }
-
     }
 }
 
