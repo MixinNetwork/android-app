@@ -73,21 +73,19 @@
                 app:layout_constraintHorizontal_bias="1"
                 app:layout_constraintStart_toStartOf="parent" />
 
-            <one.mixin.android.widget.FloatingLayout
-                android:id="@+id/floating_layout"
+            <FrameLayout
                 android:layout_width="0dp"
-                android:layout_height="0dp"
-                app:layout_constraintBottom_toTopOf="@id/chat_control"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toBottomOf="@id/state_layout"
+                app:layout_goneMarginTop="6dp">
 
                 <RelativeLayout
                     android:id="@+id/group_flag"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignWithParentIfMissing="true"
-                    android:layout_above="@id/mention_rv"
                     android:layout_margin="8dp"
                     android:background="@drawable/bg_notice"
                     android:clipChildren="false"
@@ -109,8 +107,8 @@
 
                     <ImageView
                         android:id="@+id/group_close"
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_alignParentEnd="true"
                         android:layout_marginTop="8dp"
                         android:background="@drawable/mixin_ripple"
@@ -135,8 +133,6 @@
                     android:id="@+id/scam_flag"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignWithParentIfMissing="true"
-                    android:layout_above="@id/mention_rv"
                     android:layout_margin="8dp"
                     android:background="@drawable/bg_notice"
                     android:clipChildren="false"
@@ -160,8 +156,8 @@
 
                     <ImageView
                         android:id="@+id/warning_close"
-                        android:layout_width="16dp"
-                        android:layout_height="20dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_marginTop="8dp"
                         android:background="@drawable/mixin_ripple"
                         android:contentDescription="@null"
@@ -184,6 +180,17 @@
                         app:layout_constraintStart_toEndOf="@id/warning_iv"
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </FrameLayout>
+
+            <one.mixin.android.widget.FloatingLayout
+                android:id="@+id/floating_layout"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toTopOf="@id/chat_control"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/mention_rv"
