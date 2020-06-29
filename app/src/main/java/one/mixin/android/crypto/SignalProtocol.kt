@@ -22,6 +22,7 @@ import org.whispersystems.libsignal.SessionBuilder
 import org.whispersystems.libsignal.SessionCipher
 import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.UntrustedIdentityException
+import org.whispersystems.libsignal.ecc.DjbECPublicKey
 import org.whispersystems.libsignal.groups.GroupCipher
 import org.whispersystems.libsignal.groups.GroupSessionBuilder
 import org.whispersystems.libsignal.groups.SenderKeyName
@@ -34,6 +35,7 @@ import org.whispersystems.libsignal.protocol.PreKeySignalMessage
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
 import org.whispersystems.libsignal.protocol.SignalMessage
 import org.whispersystems.libsignal.state.PreKeyBundle
+import java.lang.Exception
 
 class SignalProtocol(ctx: Context) {
 
@@ -88,6 +90,16 @@ class SignalProtocol(ctx: Context) {
     private val signalProtocolStore = SignalProtocolStoreImpl(MixinApplication.appContext)
     private val senderKeyStore: MixinSenderKeyStore = MixinSenderKeyStore(ctx)
     private val sessionDao: SessionDao = SignalDatabase.getDatabase(MixinApplication.appContext).sessionDao()
+
+    fun getSenderKeyPublic(groupId: String, userId: String, sessionId: String? = null): ByteArray? {
+        val senderKeyName = SenderKeyName(groupId, SignalProtocolAddress(userId, sessionId.getDeviceId()))
+        val sender = senderKeyStore.loadSenderKey(senderKeyName)
+        try {
+            return (sender.senderKeyState.signingKeyPublic as DjbECPublicKey).publicKey
+        } catch (e: Exception) {
+            return null
+        }
+    }
 
     private fun getSenderKeyDistribution(groupId: String, senderId: String): SenderKeyDistributionMessage {
         val senderKeyName = SenderKeyName(groupId, SignalProtocolAddress(senderId, DEFAULT_DEVICE_ID))

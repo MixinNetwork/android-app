@@ -20,6 +20,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.Session
 import one.mixin.android.vo.CallType
 import one.mixin.android.vo.KrakenData
 import one.mixin.android.vo.MessageCategory
@@ -122,6 +123,8 @@ class GroupCallService : CallService() {
     private fun publish(conversationId: String) {
         Timber.d("@@@ publish")
         getTurnServer { turns ->
+            // TODO check sender key send?
+            val key = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
             peerConnectionClient.createOffer(
                 turns,
                 setLocalSuccess = {
@@ -135,7 +138,8 @@ class GroupCallService : CallService() {
                     val data = getBlazeMessageData(bm) ?: return@createOffer
                     val krakenData = gson.fromJson(String(data.data.decodeBase64()), KrakenData::class.java)
                     subscribe(krakenData, conversationId)
-                }
+                },
+                frameKey = key
             )
         }
     }
@@ -413,6 +417,13 @@ class GroupCallService : CallService() {
 
     override fun onDisconnected() {
         Timber.d("@@@ peerConnection onDisconnected")
+    }
+
+    override fun getSenderPublicKey(userId: String, sessionId: String): ByteArray? {
+        callState.conversationId?.let {
+            return signalProtocol.getSenderKeyPublic(it, userId, sessionId)
+        }
+        return null
     }
 
     override fun onCallDisconnected() {

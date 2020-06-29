@@ -263,6 +263,10 @@ class VoiceCallService : CallService() {
         }
     }
 
+    override fun getSenderPublicKey(userId: String, sessionId: String): ByteArray? {
+        return null
+    }
+
     private fun sendCallMessage(category: String, content: String? = null) {
         val quoteMessageId = callState.trackId
         val message = if (callState.isOffer) {

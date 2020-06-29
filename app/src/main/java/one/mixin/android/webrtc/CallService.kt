@@ -10,6 +10,7 @@ import dagger.android.AndroidInjection
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.AccountService
+import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
@@ -45,7 +46,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         CallAudioManager(this)
     }
     protected val peerConnectionClient: PeerConnectionClient by lazy {
-        PeerConnectionClient(this, this)
+        PeerConnectionClient(this, this, signalProtocol)
     }
 
     @Inject
@@ -59,6 +60,8 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     lateinit var callState: CallStateLiveData
     @Inject
     lateinit var conversationRepo: ConversationRepository
+    @Inject
+    lateinit var signalProtocol: SignalProtocol
 
     protected val gson = Gson()
 

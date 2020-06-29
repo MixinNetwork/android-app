@@ -2,6 +2,8 @@ package one.mixin.android.webrtc
 
 import android.content.Context
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import one.mixin.android.crypto.SignalProtocol
+import one.mixin.android.util.Session
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
 import org.webrtc.DataChannel
@@ -10,6 +12,8 @@ import org.webrtc.MediaConstraints
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
+import org.webrtc.RTCFrameDecryptor
+import org.webrtc.RTCFrameEncryptor
 import org.webrtc.RtpReceiver
 import org.webrtc.RtpSender
 import org.webrtc.RtpTransceiver
@@ -18,7 +22,7 @@ import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
 import timber.log.Timber
 
-class PeerConnectionClient(private val context: Context, private val events: PeerConnectionEvents) {
+class PeerConnectionClient(context: Context, private val events: PeerConnectionEvents, signalProtocol: SignalProtocol) {
     private var factory: PeerConnectionFactory? = null
     private var isError = false
 
@@ -28,7 +32,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         )
     }
 
-    private val pcObserver = PCObserver()
+    private val pcObserver = PCObserver(signalProtocol)
     private val iceServers = arrayListOf<PeerConnection.IceServer>()
     private var remoteCandidateCache = arrayListOf<IceCandidate>()
     private var peerConnection: PeerConnection? = null
@@ -45,9 +49,9 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         createPeerConnectionFactoryInternal(options)
     }
 
-    fun createOffer(iceServerList: List<PeerConnection.IceServer>, setLocalSuccess: ((sdp: SessionDescription) -> Unit)) {
+    fun createOffer(iceServerList: List<PeerConnection.IceServer>, setLocalSuccess: ((sdp: SessionDescription) -> Unit), frameKey: ByteArray? = null) {
         iceServers.addAll(iceServerList)
-        peerConnection = createPeerConnectionInternal()
+        peerConnection = createPeerConnectionInternal(frameKey)
         val offerSdpObserver = object : SdpObserverWrapper() {
             override fun onCreateSuccess(sdp: SessionDescription) {
                 peerConnection?.setLocalDescription(
@@ -176,7 +180,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
     }
 
-    private fun createPeerConnectionInternal(): PeerConnection? {
+    private fun createPeerConnectionInternal(frameKey: ByteArray? = null): PeerConnection? {
         if (factory == null || isError) {
             reportError("PeerConnectionFactory is not created")
             return null
@@ -201,7 +205,9 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         peerConnection.setAudioRecording(false)
 
         localSender = peerConnection.addTrack(createAudioTrack())
-        // localSender!!.setFrameEncryptor(RTCFrameEncryptor("e8ffc7e56311679f12b6fc91aa77a5eb".toByteArray()))
+        if (frameKey != null) {
+            localSender!!.setFrameEncryptor(RTCFrameEncryptor(frameKey))
+        }
         return peerConnection
     }
 
@@ -235,7 +241,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
     }
 
-    private inner class PCObserver : PeerConnection.Observer {
+    private inner class PCObserver(val signalProtocol: SignalProtocol) : PeerConnection.Observer {
 
         override fun onIceCandidate(candidate: IceCandidate) {
             events.onIceCandidate(candidate)
@@ -287,7 +293,17 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
 
         override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
-            // receiver?.setFrameDecryptor(RTCFrameDecryptor("e8ffc7e56311679f12b6fc91aa77a5eb".toByteArray()))
+            if (mediaStreams == null) return
+            for (m in mediaStreams) {
+                val userSession = m.id.split("~")
+                if (userSession[0] == Session.getAccountId()) {
+                    continue
+                }
+                val frameKey = events.getSenderPublicKey(userSession[0], userSession[1])
+                if (frameKey != null) {
+                    receiver?.setFrameDecryptor(RTCFrameDecryptor(frameKey))
+                }
+            }
             Timber.d("onAddTrack=%s", receiver.toString())
             receiver?.track()?.setEnabled(true)
         }
@@ -360,6 +376,8 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
          * Callback fired once peer connection error happened.
          */
         fun onPeerConnectionError(description: String)
+
+        fun getSenderPublicKey(userId: String, sessionId: String): ByteArray?
     }
 
     companion object {
