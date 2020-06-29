@@ -147,6 +147,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
             it.conversationId == conversationId
         } ?: return
         groupCallState.initialGuests?.remove(userId)
+        postValue(state)
     }
 
     fun clearInitialGuests(conversationId: String) {

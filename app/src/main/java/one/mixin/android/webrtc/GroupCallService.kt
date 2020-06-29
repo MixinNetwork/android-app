@@ -361,9 +361,8 @@ class GroupCallService : CallService() {
         if (callState.isIdle()) return
 
         val cid = callState.conversationId
-        val trackId = callState.trackId
-        if (cid == null || trackId == null) {
-            Timber.e("try send kraken decline message but conversation id is $cid, trackId is $trackId")
+        if (cid == null) {
+            Timber.e("try send kraken decline message but conversation id is $cid")
             disconnect()
             return
         }
@@ -378,15 +377,13 @@ class GroupCallService : CallService() {
                 conversation_id = cid,
                 recipient_id = inviter,
                 category = MessageCategory.KRAKEN_DECLINE.name,
-                message_id = UUID.randomUUID().toString(),
-                track_id = trackId
+                message_id = UUID.randomUUID().toString()
             )
             val bm = createKrakenMessage(blazeMessageParam)
             val bmData = getBlazeMessageData(bm) ?: return
             val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
         } else {
-            Timber.w("@@@ Try send kraken decline message but inviter is null, conversationId: $cid")
-            getPeers(cid)
+            Timber.w("try send kraken decline message but inviter is null, conversationId: $cid")
         }
     }
 
