@@ -512,9 +512,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     title = getString(R.string.contact_other_report)
                     style = MenuStyle.Danger
                     action = {
-                        requireContext().showConfirmDialog(getString(R.string.contact_other_report)) {
-                            reportUser(u.userId)
-                        }
+                        reportUser(u.userId)
                     }
                 }
             }

@@ -15,6 +15,12 @@ inline val Fragment.defaultSharedPreferences: SharedPreferences
 inline val Context.defaultSharedPreferences: SharedPreferences
     get() = PreferenceManager.getDefaultSharedPreferences(this)
 
+inline val Context.scamPreferences: SharedPreferences
+    get() = this.sharedPreferences("scam_preferences")
+
+inline val Fragment.scamPreferences: SharedPreferences
+    get() = requireContext().scamPreferences
+
 inline fun Context.sharedPreferences(name: String): SharedPreferences =
     this.getSharedPreferences(name, MODE_PRIVATE)
 

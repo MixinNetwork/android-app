@@ -107,6 +107,7 @@
     <string name="follow_system">Follow System</string>
     <string name="nobody">Nobody</string>
     <string name="analyzing">Analyzing…</string>
+    <string name="scam_warning">Warning: Many users reported this account as a scam. Please be careful, especially if it asks you for money</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

@@ -63,6 +63,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -106,7 +107,9 @@ import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.putLong
 import one.mixin.android.extension.replaceFragment
+import one.mixin.android.extension.scamPreferences
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.selectDocument
 import one.mixin.android.extension.sharedPreferences
@@ -1859,6 +1862,18 @@ class ConversationFragment :
             } else {
                 chat_control.visibility = VISIBLE
                 bottom_unblock.visibility = GONE
+            }
+        }
+        if (user.isScam == true) {
+            val closeScamTime = scamPreferences.getLong(user.userId, 0)
+            if (System.currentTimeMillis() > closeScamTime) {
+                scam_flag.isVisible = true
+                warning_close.setOnClickListener {
+                    scamPreferences.putLong(user.userId, System.currentTimeMillis() + INTERVAL_24_HOURS)
+                    scam_flag.isVisible = false
+                }
+            } else {
+                scam_flag.isVisible = false
             }
         }
     }
