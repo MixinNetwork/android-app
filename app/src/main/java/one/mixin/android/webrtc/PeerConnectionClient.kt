@@ -296,6 +296,9 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             if (mediaStreams == null) return
             for (m in mediaStreams) {
                 val userSession = m.id.split("~")
+                if (userSession.size != 2) {
+                    continue
+                }
                 if (userSession[0] == Session.getAccountId()) {
                     continue
                 }
