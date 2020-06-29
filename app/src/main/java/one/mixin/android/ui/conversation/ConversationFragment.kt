@@ -109,7 +109,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.replaceFragment
-import one.mixin.android.extension.scamPreference
+import one.mixin.android.extension.scamPreferences
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.selectDocument
 import one.mixin.android.extension.sharedPreferences
@@ -1865,11 +1865,11 @@ class ConversationFragment :
             }
         }
         if (user.isScam == true) {
-            val closeScamTime = scamPreference.getLong(user.userId, 0)
+            val closeScamTime = scamPreferences.getLong(user.userId, 0)
             if (System.currentTimeMillis() > closeScamTime) {
                 scam_flag.isVisible = true
                 warning_close.setOnClickListener {
-                    scamPreference.putLong(user.userId, System.currentTimeMillis() + INTERVAL_24_HOURS)
+                    scamPreferences.putLong(user.userId, System.currentTimeMillis() + INTERVAL_24_HOURS)
                     scam_flag.isVisible = false
                 }
             } else {
