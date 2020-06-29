@@ -206,6 +206,13 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("ALTER TABLE apps ADD COLUMN category TEXT")
             }
         }
+
+        val MIGRATION_31_32: Migration = object : SafeMigration(31, 32) {
+            override fun safeMigrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE users ADD COLUMN is_scam INTEGER")
+            }
+        }
+
     }
 }
 

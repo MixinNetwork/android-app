@@ -59,7 +59,10 @@ data class User(
     val hasPin: Boolean? = null,
     @SerializedName("app_id")
     @ColumnInfo(name = "app_id")
-    var appId: String? = null
+    var appId: String? = null,
+    @SerializedName("is_scam")
+    @ColumnInfo(name = "is_scam")
+    var isScam: Boolean? = null
 ) : Parcelable {
     @SerializedName("app")
     @Ignore

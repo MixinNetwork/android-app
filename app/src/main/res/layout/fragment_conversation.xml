@@ -131,6 +131,60 @@
                         android:textIsSelectable="true" />
                 </RelativeLayout>
 
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/scam_flag"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignWithParentIfMissing="true"
+                    android:layout_above="@id/mention_rv"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/bg_notice"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:padding="12dp"
+                    android:translationZ="1dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <ImageView
+                        android:id="@+id/warning_iv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_warning"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/warning_tv"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <ImageView
+                        android:id="@+id/warning_close"
+                        android:layout_width="16dp"
+                        android:layout_height="20dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/mixin_ripple"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_close_grey"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/warning_tv"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/warning_tv"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginEnd="12dp"
+                        android:text="@string/scam_warning"
+                        android:textColor="?attr/text_primary"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/warning_close"
+                        app:layout_constraintStart_toEndOf="@id/warning_iv"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/mention_rv"
                     android:layout_width="match_parent"

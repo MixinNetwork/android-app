@@ -101,6 +101,7 @@
     <string name="follow_system">跟随系统</string>
     <string name="nobody">没有人</string>
     <string name="analyzing">解析中…</string>
+    <string name="scam_warning">警告：此账号被大量用户举报，请谨防网络诈骗，注意个人财产安全</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
