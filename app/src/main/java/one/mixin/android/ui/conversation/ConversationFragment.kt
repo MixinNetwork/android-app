@@ -1437,9 +1437,9 @@ class ConversationFragment :
             chatViewModel.updateRecentUsedBots(defaultSharedPreferences, recipient!!.userId)
             chat_control.showBot()
         } else {
-            liveDataAppList()
             chat_control.hideBot()
         }
+        liveDataAppList()
     }
 
     private fun liveDataAppList() {

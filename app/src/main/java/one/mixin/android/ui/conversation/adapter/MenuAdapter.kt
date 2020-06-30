@@ -85,7 +85,7 @@ class MenuAdapter(
         } else {
             view.app_icon.visibility = VISIBLE
             view.app_icon.bg.loadImage(menu.app?.iconUrl, R.drawable.ic_avatar_place_holder)
-            if (!isGroup && !isBot) {
+            if (!isGroup) {
                 menu.app?.avatarUrl?.let {
                     view.app_icon.badge.loadImage(it, R.drawable.ic_avatar_place_holder)
                 }
