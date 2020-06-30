@@ -32,7 +32,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         )
     }
 
-    private val pcObserver = PCObserver(signalProtocol)
+    private val pcObserver = PCObserver()
     private val iceServers = arrayListOf<PeerConnection.IceServer>()
     private var remoteCandidateCache = arrayListOf<IceCandidate>()
     private var peerConnection: PeerConnection? = null
@@ -241,7 +241,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         }
     }
 
-    private inner class PCObserver(val signalProtocol: SignalProtocol) : PeerConnection.Observer {
+    private inner class PCObserver() : PeerConnection.Observer {
 
         override fun onIceCandidate(candidate: IceCandidate) {
             events.onIceCandidate(candidate)
@@ -292,8 +292,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             Timber.d("onTrack=%s", transceiver.toString())
         }
 
-        override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) {
-            if (mediaStreams == null) return
+        override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>) {
             for (m in mediaStreams) {
                 val userSession = m.id.split("~")
                 if (userSession.size != 2) {
