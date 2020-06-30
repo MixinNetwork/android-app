@@ -51,4 +51,7 @@
     <attr name="icon_emergency_contact" format="reference" />
 
     <attr name="code_border" format="color|reference" />
+
+    <attr name="bg_divider" format="color|reference" />
+
 </resources>

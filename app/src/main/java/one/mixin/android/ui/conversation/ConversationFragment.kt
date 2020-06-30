@@ -291,6 +291,7 @@ class ConversationFragment :
                                 group_desc.requestFocus()
                             }
                             group_flag.isVisible = true
+                            driver.isVisible = true
                         }
                         val position = if (messageId != null) {
                             unreadCount + 1
@@ -866,6 +867,7 @@ class ConversationFragment :
                             group_desc.requestFocus()
                         }
                         group_flag.isVisible = true
+                        driver.isVisible = true
                     }
                 }
         }
@@ -1260,6 +1262,7 @@ class ConversationFragment :
         group_close.setOnClickListener {
             requireActivity().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(conversationId, false)
             group_flag.isVisible = false
+            driver.isVisible = false
         }
         callState.observe(
             viewLifecycleOwner,
@@ -1868,12 +1871,15 @@ class ConversationFragment :
             val closeScamTime = scamPreferences.getLong(user.userId, 0)
             if (System.currentTimeMillis() > closeScamTime) {
                 scam_flag.isVisible = true
+                driver.isVisible = true
                 warning_close.setOnClickListener {
                     scamPreferences.putLong(user.userId, System.currentTimeMillis() + INTERVAL_24_HOURS)
                     scam_flag.isVisible = false
+                    driver.isVisible = false
                 }
             } else {
                 scam_flag.isVisible = false
+                driver.isVisible = false
             }
         }
     }
