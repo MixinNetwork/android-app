@@ -38,10 +38,13 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import com.google.firebase.ml.vision.FirebaseVision
-import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import com.google.mlkit.vision.barcode.Barcode
+import com.google.mlkit.vision.barcode.BarcodeScanner
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.common.InputImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_web.view.*
@@ -53,6 +56,7 @@ import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_CAMERA
+import one.mixin.android.extension.closeSilently
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
@@ -148,6 +152,12 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         requireArguments().getParcelable<AppCardData>(ARGS_APP_CARD)
     }
 
+    private val scanner: BarcodeScanner = BarcodeScanning.getClient(
+        BarcodeScannerOptions.Builder()
+            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+            .build()
+    )
+
     override fun onCreateContextMenu(
         menu: ContextMenu,
         v: View,
@@ -188,9 +198,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             if (isDetached) {
                                 return@uiThread
                             }
-                            val image = FirebaseVisionImage.fromBitmap(bitmap)
-                            val detector = FirebaseVision.getInstance().visionBarcodeDetector
-                            detector.detectInImage(image)
+                            val image = InputImage.fromBitmap(bitmap, 0)
+                            scanner.process(image)
                                 .addOnSuccessListener { barcodes ->
                                     val result = barcodes.firstOrNull()?.rawValue
                                     if (result != null) {
@@ -522,6 +531,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.webViewClient = null
         contentView.chat_web_view.webChromeClient = null
         unregisterForContextMenu(contentView.chat_web_view)
+        scanner.closeSilently()
         super.onDestroyView()
     }
 

@@ -40,8 +40,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.exoplayer2.Player
-import com.google.firebase.ml.vision.FirebaseVision
-import com.google.firebase.ml.vision.common.FirebaseVisionImage
+import com.google.mlkit.vision.barcode.Barcode
+import com.google.mlkit.vision.barcode.BarcodeScanner
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.common.InputImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.activity_media_pager.*
@@ -56,6 +59,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.closeSilently
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
@@ -127,6 +131,12 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     private val pipVideoView by lazy {
         PipVideoView.getInstance()
     }
+
+    private val scanner: BarcodeScanner = BarcodeScanning.getClient(
+        BarcodeScannerOptions.Builder()
+            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+            .build()
+    )
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
@@ -202,6 +212,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     override fun onDestroy() {
         super.onDestroy()
+        scanner.closeSilently()
         SensorOrientationChangeNotifier.reset()
         view_pager?.unregisterOnPageChangeCallback(onPageChangeCallback)
     }
@@ -411,9 +422,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             if (isFirebaseDecodeAvailable()) {
                 try {
                     var url: String? = null
-                    val image = FirebaseVisionImage.fromBitmap(bitmap)
-                    val detector = FirebaseVision.getInstance().visionBarcodeDetector
-                    detector.detectInImage(image)
+                    val image = InputImage.fromBitmap(bitmap, 0)
+                    scanner.process(image)
                         .addOnSuccessListener { barcodes ->
                             url = barcodes.firstOrNull()?.rawValue
                             url?.openAsUrlOrQrScan(supportFragmentManager, lifecycleScope)

@@ -32,8 +32,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.google.firebase.ml.vision.common.FirebaseVisionImage
-import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
+import com.google.mlkit.vision.common.InputImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_capture.*
@@ -432,13 +431,10 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 image.close()
                 return
             }
-            val visionImage = FirebaseVisionImage.fromMediaImage(
-                processImage,
-                FirebaseVisionImageMetadata.ROTATION_90
-            )
+            val inputImage = InputImage.fromMediaImage(processImage, image.imageInfo.rotationDegrees)
             val latch = CountDownLatch(1)
-            detector.use { d ->
-                d.detectInImage(visionImage)
+            scanner.use { s ->
+                s.process(inputImage)
                     .addOnSuccessListener { result ->
                         result.firstOrNull()?.rawValue?.let {
                             alreadyDetected = true

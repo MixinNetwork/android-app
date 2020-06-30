@@ -19,7 +19,7 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import com.google.firebase.ml.vision.common.FirebaseVisionImage
+import com.google.mlkit.vision.common.InputImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_edit.*
@@ -188,9 +188,9 @@ class EditFragment : VisionFragment() {
         val bitmap = BitmapFactory.decodeFile(path) ?: return@launch
         if (requireContext().isFirebaseDecodeAvailable()) {
             try {
-                val visionImage = FirebaseVisionImage.fromBitmap(bitmap)
-                detector.use { d ->
-                    d.detectInImage(visionImage)
+                val visionImage = InputImage.fromBitmap(bitmap, 0)
+                scanner.use { s ->
+                    s.process(visionImage)
                         .addOnSuccessListener { result ->
                             val content = result.firstOrNull()?.rawValue
                             if (!content.isNullOrBlank()) {
