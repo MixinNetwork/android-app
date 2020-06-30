@@ -48,7 +48,6 @@ import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.isFirebaseDecodeAvailable
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
@@ -398,10 +397,6 @@ abstract class BaseCameraxFragment : VisionFragment() {
         }
     }
 
-    private val isGooglePlayServicesAvailable by lazy {
-        context?.isFirebaseDecodeAvailable() ?: false
-    }
-
     private val imageAnalyzer = object : ImageAnalysis.Analyzer {
         private val detecting = AtomicBoolean(false)
 
@@ -409,15 +404,11 @@ abstract class BaseCameraxFragment : VisionFragment() {
             if (!alreadyDetected && !image.planes.isNullOrEmpty() &&
                 detecting.compareAndSet(false, true)
             ) {
-                if (isGooglePlayServicesAvailable) {
-                    try {
-                        decodeWithFirebaseVision(image)
-                    } catch (e: Exception) {
-                        decodeWithZxing(image)
-                        reportException("$CRASHLYTICS_CAMERAX-decodeWithFirebaseVision failure", e)
-                    }
-                } else {
+                try {
+                    decodeWithFirebaseVision(image)
+                } catch (e: Exception) {
                     decodeWithZxing(image)
+                    reportException("$CRASHLYTICS_CAMERAX-decodeWithFirebaseVision failure", e)
                 }
             } else {
                 image.close()
@@ -433,29 +424,27 @@ abstract class BaseCameraxFragment : VisionFragment() {
             }
             val inputImage = InputImage.fromMediaImage(processImage, image.imageInfo.rotationDegrees)
             val latch = CountDownLatch(1)
-            scanner.use { s ->
-                s.process(inputImage)
-                    .addOnSuccessListener { result ->
-                        result.firstOrNull()?.rawValue?.let {
-                            alreadyDetected = true
-                            handleAnalysis(it)
-                        }
+            scanner.process(inputImage)
+                .addOnSuccessListener { result ->
+                    result.firstOrNull()?.rawValue?.let {
+                        alreadyDetected = true
+                        handleAnalysis(it)
                     }
-                    .addOnCompleteListener {
-                        if (!alreadyDetected) {
-                            val bitmap = getBitmapFromImage(image)
-                            if (bitmap == null) {
-                                detecting.set(false)
-                            } else {
-                                decodeBitmapWithZxing(bitmap)
-                            }
-                        } else {
+                }
+                .addOnCompleteListener {
+                    if (!alreadyDetected) {
+                        val bitmap = getBitmapFromImage(image)
+                        if (bitmap == null) {
                             detecting.set(false)
+                        } else {
+                            decodeBitmapWithZxing(bitmap)
                         }
-                        image.close()
-                        latch.countDown()
+                    } else {
+                        detecting.set(false)
                     }
-            }
+                    image.close()
+                    latch.countDown()
+                }
             latch.await()
         }
 

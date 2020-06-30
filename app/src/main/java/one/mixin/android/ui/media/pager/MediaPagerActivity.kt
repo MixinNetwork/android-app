@@ -12,7 +12,6 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
@@ -40,11 +39,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.exoplayer2.Player
-import com.google.mlkit.vision.barcode.Barcode
-import com.google.mlkit.vision.barcode.BarcodeScanner
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions
-import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.common.InputImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.activity_media_pager.*
@@ -54,23 +48,18 @@ import kotlinx.android.synthetic.main.view_drag_image_bottom.view.*
 import kotlinx.android.synthetic.main.view_drag_video_bottom.view.*
 import kotlinx.android.synthetic.main.view_drag_video_bottom.view.cancel
 import kotlinx.android.synthetic.main.view_player_control.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.extension.closeSilently
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createPngTemp
-import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.isAutoRotate
-import one.mixin.android.extension.isFirebaseDecodeAvailable
 import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openPermissionSetting
@@ -81,6 +70,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.media.SharedMediaViewModel
+import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.SensorOrientationChangeNotifier
 import one.mixin.android.util.Session
@@ -132,11 +122,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         PipVideoView.getInstance()
     }
 
-    private val scanner: BarcodeScanner = BarcodeScanning.getClient(
-        BarcodeScannerOptions.Builder()
-            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-            .build()
-    )
+    private val processor = QRCodeProcessor()
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
@@ -212,7 +198,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     override fun onDestroy() {
         super.onDestroy()
-        scanner.closeSilently()
+        processor.close()
         SensorOrientationChangeNotifier.reset()
         view_pager?.unregisterOnPageChangeCallback(onPageChangeCallback)
     }
@@ -419,53 +405,24 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             imageView.drawingCache
         }
         if (bitmap != null) {
-            if (isFirebaseDecodeAvailable()) {
-                try {
-                    var url: String? = null
-                    val image = InputImage.fromBitmap(bitmap, 0)
-                    scanner.process(image)
-                        .addOnSuccessListener { barcodes ->
-                            url = barcodes.firstOrNull()?.rawValue
-                            url?.openAsUrlOrQrScan(supportFragmentManager, lifecycleScope)
-                        }
-                        .addOnFailureListener {
-                            toast(R.string.can_not_recognize)
-                        }
-                        .addOnCompleteListener {
-                            if (url == null) {
-                                decodeWithZxing(imageView, bitmap)
-                            } else {
-                                if (imageView !is ImageView) {
-                                    imageView.isDrawingCacheEnabled = false
-                                }
-                            }
-                        }
-                } catch (e: Exception) {
-                    decodeWithZxing(imageView, bitmap)
+            processor.detect(
+                lifecycleScope,
+                bitmap,
+                onSuccess = { result ->
+                    result.openAsUrlOrQrScan(supportFragmentManager, lifecycleScope)
+                },
+                onFailure = { toast(R.string.can_not_recognize) },
+                onComplete = {
+                    if (imageView !is ImageView) {
+                        imageView.isDrawingCacheEnabled = false
+                    }
                 }
-            } else {
-                decodeWithZxing(imageView, bitmap)
-            }
+            )
         } else {
             toast(R.string.can_not_recognize)
             if (imageView !is ImageView) {
                 imageView.isDrawingCacheEnabled = false
             }
-        }
-    }
-
-    @Suppress("DEPRECATION")
-    private fun decodeWithZxing(imageView: View, bitmap: Bitmap) = lifecycleScope.launch {
-        val url = withContext(Dispatchers.IO) {
-            bitmap.decodeQR()
-        }
-        if (imageView !is ImageView) {
-            imageView.isDrawingCacheEnabled = false
-        }
-        if (url != null) {
-            url.openAsUrlOrQrScan(supportFragmentManager, lifecycleScope)
-        } else {
-            toast(R.string.can_not_recognize)
         }
     }
 
