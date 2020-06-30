@@ -22,6 +22,7 @@ import com.mukesh.countrypicker.Country
 import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_mobile.*
+import kotlinx.android.synthetic.main.fragment_mobile.keyboard
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -243,21 +244,48 @@ class MobileFragment : BaseFragment() {
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
             context?.vibrate(longArrayOf(0, 30))
-            val editable = mobile_et.text ?: return
-            if (position == 11 && editable.isNotEmpty()) {
-                mobile_et.text = editable.subSequence(0, editable.length - 1) as Editable?
+            if (!isAdded) {
+                return
+            }
+            val editable = mobile_et.text
+            val start = mobile_et.selectionStart
+            val end = mobile_et.selectionEnd
+            if (position == 11) {
+                if (editable.isNullOrEmpty()) return
+
+                if (start == end) {
+                    if (start == 0) {
+                        mobile_et.text?.delete(0, end)
+                    } else {
+                        mobile_et.text?.delete(start - 1, end)
+                    }
+                    if (start > 0) {
+                        mobile_et.setSelection(start - 1)
+                    }
+                } else {
+                    mobile_et.text?.delete(start, end)
+                    mobile_et.setSelection(start)
+                }
             } else {
-                mobile_et.text = editable.append(value)
+                mobile_et.text = editable?.insert(start, value)
+                mobile_et.setSelection(start + 1)
             }
         }
 
         override fun onLongClick(position: Int, value: String) {
             context?.vibrate(longArrayOf(0, 30))
-            val editable = mobile_et.text ?: return
-            if (position == 11 && editable.isNotEmpty()) {
-                mobile_et.setText("")
+            if (!isAdded) {
+                return
+            }
+            val editable = mobile_et.text
+            if (position == 11) {
+                if (editable.isNullOrEmpty()) return
+
+                mobile_et.text?.clear()
             } else {
-                mobile_et.text = editable.append(value)
+                val start = mobile_et.selectionStart
+                mobile_et.text = editable?.insert(start, value)
+                mobile_et.setSelection(start + 1)
             }
         }
     }
