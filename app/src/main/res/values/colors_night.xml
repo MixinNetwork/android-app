@@ -37,4 +37,6 @@
 
     <color name="bgBlockNight">#23272B</color>
     <color name="codeBorderNight">#545859</color>
+
+    <color name="dividerNight">#424649</color>
 </resources>

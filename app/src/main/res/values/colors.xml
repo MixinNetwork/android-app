@@ -39,6 +39,8 @@
     <color name="bgBlock">#F6F7FA</color>
     <color name="codeBorder">#EFEFEF</color>
 
+    <color name="divider">#E9E9E9</color>
+
     <color name="white">#ffffffff</color>
     <color name="white_45">#73ffffff</color>
     <color name="black">#ff000000</color>

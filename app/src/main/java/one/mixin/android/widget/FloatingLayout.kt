@@ -160,6 +160,6 @@ class FloatingLayout @JvmOverloads constructor(
     }
 
     companion object {
-        const val POS_RECYCLER_VIEW = 2
+        const val POS_RECYCLER_VIEW = 0
     }
 }
