@@ -22,27 +22,25 @@
             android:src="@drawable/ic_pip_call"/>
     </FrameLayout>
 
-    <Space
-        android:id="@+id/center"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/center"
-        android:layout_marginStart="8dp"
-        android:text="@string/group_call"
-        android:textColor="?text_primary"
-        android:layout_toEndOf="@id/icon"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/center"
+        android:layout_centerVertical="true"
         android:layout_toEndOf="@id/icon"
-        android:layout_marginStart="8dp"
-        android:textColor="?text_minor"
-        android:text="@string/chat_tap_join"/>
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/group_call"
+            android:textColor="?text_primary"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textColor="?text_minor"
+            android:text="@string/chat_tap_join"/>
+    </LinearLayout>
 </RelativeLayout>
