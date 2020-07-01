@@ -8,6 +8,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.service.AccountService
@@ -105,7 +106,7 @@ constructor(
                     accountService.ping().execute()
                 }
                 response.headers()["X-Server-Time"]?.toLong()?.let { serverTime ->
-                    if (abs(serverTime / 1000000 - System.currentTimeMillis()) < 600000L) { // 10 minutes
+                    if (abs(serverTime / 1000000 - System.currentTimeMillis()) < ALLOW_INTERVAL) { // 10 minutes
                         callback.invoke()
                     } else {
                         elseCallBack.invoke(null)
