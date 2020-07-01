@@ -52,7 +52,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.95"/>
+        app:layout_constraintGuide_percent="0.9"/>
 
     <ImageView
         android:id="@+id/pip_iv"
@@ -111,7 +111,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@id/guideline_start"
         app:layout_constraintTop_toBottomOf="@+id/name_tv"
-        app:layout_constraintVertical_bias="0.87"/>
+        app:layout_constraintVertical_bias="0.95"/>
 
     <TextView
         android:id="@+id/name_tv"
@@ -152,12 +152,11 @@
         android:layout_height="wrap_content"
         android:checkable="true"
         android:checked="false"
-        android:text="@string/call_speaker"
         android:visibility="invisible"
         app:bg_circle_checked="@drawable/bg_call_btn_checked"
         app:bg_circle_unchecked="@drawable/bg_call_btn_unchecked"
-        app:ic_checked="@drawable/ic_volume_up_checked"
-        app:ic_unchecked="@drawable/ic_volume_up_call"
+        app:ic_checked="@drawable/ic_call_speaker_checked"
+        app:ic_unchecked="@drawable/ic_call_speaker_unchecked"
         app:layout_constraintBottom_toTopOf="@id/guideline_bottom"
         app:layout_constraintEnd_toEndOf="@id/guideline_end"
         app:layout_constraintHorizontal_bias="1.0"
@@ -170,12 +169,11 @@
         android:layout_height="wrap_content"
         android:checkable="true"
         android:checked="false"
-        android:text="@string/call_mute"
         android:visibility="invisible"
         app:bg_circle_checked="@drawable/bg_call_btn_checked"
         app:bg_circle_unchecked="@drawable/bg_call_btn_unchecked"
-        app:ic_checked="@drawable/ic_mic_off_checked_48dp"
-        app:ic_unchecked="@drawable/ic_mic_off_unchecked_48dp"
+        app:ic_checked="@drawable/ic_call_mute_checked"
+        app:ic_unchecked="@drawable/ic_call_mute_unchecked"
         app:layout_constraintBottom_toTopOf="@id/guideline_bottom"
         app:layout_constraintEnd_toEndOf="@id/guideline_end"
         app:layout_constraintHorizontal_bias="0.0"
@@ -185,27 +183,26 @@
     <one.mixin.android.widget.CallButton
         android:id="@+id/hangup_cb"
         android:layout_width="@dimen/call_button_size"
-        android:layout_height="100dp"
+        android:layout_height="wrap_content"
         app:bg_circle_checked="@drawable/bg_call_hangup"
         app:ic_checked="@drawable/ic_call_end_white_48dp"
-        android:text="@string/call_hang_up"
         app:layout_constraintBottom_toTopOf="@id/guideline_bottom"
         app:layout_constraintEnd_toEndOf="@id/guideline_end"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.1"
         app:layout_constraintStart_toStartOf="@id/guideline_start"
         tools:ignore="ContentDescription"/>
 
     <one.mixin.android.widget.CallButton
         android:id="@+id/answer_cb"
         android:layout_width="@dimen/call_button_size"
-        android:layout_height="100dp"
+        android:layout_height="wrap_content"
         app:bg_circle_checked="@drawable/bg_call_answer"
         app:ic_checked="@drawable/ic_call_white_48dp"
         android:text="@string/call_accept"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@id/guideline_bottom"
         app:layout_constraintEnd_toEndOf="@id/guideline_end"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.9"
         app:layout_constraintStart_toStartOf="@id/guideline_start"
         tools:ignore="ContentDescription"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

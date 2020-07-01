@@ -16,6 +16,7 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.annotation.Keep
+import androidx.core.content.ContextCompat
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -163,16 +164,18 @@ class PipCallView {
 
         val size = SIZE.dp
         val view = LayoutInflater.from(appContext).inflate(R.layout.view_pip_call, null)
-        view.setBackgroundResource(
-            if (appContext.isNightMode()) {
-                R.drawable.bg_pip_call_dark
-            } else R.drawable.bg_pip_call
-        )
         windowView?.addView(view, FrameLayout.LayoutParams(size, size, Gravity.START or Gravity.TOP))
         view.setOnClickListener {
             CallActivity.show(appContext)
         }
         timeView = view.findViewById(R.id.time_tv)
+        if (appContext.isNightMode()) {
+            view.setBackgroundResource(R.drawable.bg_pip_call_dark)
+            timeView?.setTextColor(ContextCompat.getColor(appContext, R.color.white))
+        } else {
+            view.setBackgroundResource(R.drawable.bg_pip_call)
+            timeView?.setTextColor(ContextCompat.getColor(appContext, R.color.call_light_green))
+        }
 
         val sp = appContext.defaultSharedPreferences
         val sideX = sp.getInt(CALL_SIDE_X, 1)
@@ -261,14 +264,14 @@ class PipCallView {
         var animatorX: Animator? = null
         var animatorY: Animator? = null
         val editor = appContext.defaultSharedPreferences.edit()
-        when {
+        animatorX = when {
             windowLayoutParams.x < startX || windowLayoutParams.x <= endX / 2 -> {
                 editor.putInt(CALL_SIDE_X, 0)
-                animatorX = ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, 0)
+                ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, 0)
             }
             else -> {
                 editor.putInt(CALL_SIDE_X, 1)
-                animatorX = ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX)
+                ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX)
             }
         }
         when {
@@ -293,7 +296,7 @@ class PipCallView {
                 decelerateInterpolator = DecelerateInterpolator()
             }
             interpolator = decelerateInterpolator
-            duration = 150
+            duration = 300
             start()
         }
     }

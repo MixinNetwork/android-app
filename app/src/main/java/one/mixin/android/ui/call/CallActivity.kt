@@ -455,8 +455,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
         voice_cb.isVisible = false
         mute_cb.isVisible = false
         answer_cb.isVisible = true
-        answer_cb.text.text = getString(R.string.call_accept)
-        hangup_cb.text.text = getString(R.string.call_decline)
         moveHangup(false, 0)
         action_tv.text = getString(R.string.call_notification_incoming_voice)
     }
@@ -466,7 +464,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
         mute_cb.isVisible = false
         answer_cb.isVisible = true
         hangup_cb.isVisible = false
-        answer_cb.text.text = getString(R.string.call_accept)
         answer_cb.updateLayoutParams<ConstraintLayout.LayoutParams> {
             horizontalBias = 0.5f
         }
@@ -507,7 +504,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         hangup_cb.visibility = VISIBLE
         val constraintSet = ConstraintSet().apply {
             clone(call_cl)
-            setHorizontalBias(hangup_cb.id, if (center) 0.5f else 0.0f)
+            setHorizontalBias(hangup_cb.id, if (center) 0.5f else 0.1f)
         }
         val transition = AutoTransition().apply {
             this.duration = duration

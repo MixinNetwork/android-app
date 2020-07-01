@@ -94,10 +94,10 @@ class SignalProtocol(ctx: Context) {
     fun getSenderKeyPublic(groupId: String, userId: String, sessionId: String? = null): ByteArray? {
         val senderKeyName = SenderKeyName(groupId, SignalProtocolAddress(userId, sessionId.getDeviceId()))
         val sender = senderKeyStore.loadSenderKey(senderKeyName)
-        try {
-            return (sender.senderKeyState.signingKeyPublic as DjbECPublicKey).publicKey
+        return try {
+            (sender.senderKeyState.signingKeyPublic as DjbECPublicKey).publicKey
         } catch (e: Exception) {
-            return null
+            null
         }
     }
 

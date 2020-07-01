@@ -86,7 +86,6 @@
         <attr name="bg_circle_unchecked" format="integer"/>
         <attr name="ic_checked" format="integer"/>
         <attr name="ic_unchecked" format="integer"/>
-        <attr name="android:text" format="string"/>
     </declare-styleable>
     <declare-styleable name="KerningTextView">
         <attr name="kv_spacing" format="float" />
