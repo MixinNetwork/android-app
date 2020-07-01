@@ -15,6 +15,7 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.URL
@@ -155,7 +156,7 @@ internal class AppModule {
 
                 if (MixinApplication.get().onlining.get()) {
                     response.header("X-Server-Time")?.toLong()?.let { serverTime ->
-                        if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= 300000L) {
+                        if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= ALLOW_INTERVAL) {
                             MixinApplication.get().gotoTimeWrong(serverTime)
                         }
                     }

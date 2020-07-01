@@ -44,6 +44,7 @@ class CallAudioManager(private val context: Context) {
 
     private var mediaPlayer: MediaPlayer? = null
     private var mediaPlayerStoped = false
+    private var hasStarted = false
 
     var isSpeakerOn = false
         set(value) {
@@ -111,6 +112,7 @@ class CallAudioManager(private val context: Context) {
     }
 
     fun start(isInitiator: Boolean) {
+        hasStarted = true
         context.registerReceiver(wiredHeadsetReceiver, IntentFilter(Intent.ACTION_HEADSET_PLUG))
         context.registerReceiver(
             bluetoothHeadsetReceiver,
@@ -170,8 +172,11 @@ class CallAudioManager(private val context: Context) {
             bluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset)
             bluetoothHeadset = null
         }
-        context.unregisterReceiver(wiredHeadsetReceiver)
-        context.unregisterReceiver(bluetoothHeadsetReceiver)
+        if (hasStarted) {
+            context.unregisterReceiver(wiredHeadsetReceiver)
+            context.unregisterReceiver(bluetoothHeadsetReceiver)
+        }
+        hasStarted = false
         bluetoothState = State.UNINITIALIZED
     }
 

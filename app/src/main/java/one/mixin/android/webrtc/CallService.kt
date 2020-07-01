@@ -634,7 +634,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         fun remoteFailed(ctx: Context) = startService(ctx, ACTION_CALL_REMOTE_FAILED)
 
         fun disconnect(ctx: Context) {
-            startService(ctx, ACTION_CALL_DISCONNECT)
+            val intent = Intent(ctx, CallService::class.java).apply {
+                action = ACTION_CALL_DISCONNECT
+            }
+            ctx.startService(intent)
         }
 
         fun muteAudio(ctx: Context, checked: Boolean) = startService(ctx, ACTION_MUTE_AUDIO) {
