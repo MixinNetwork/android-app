@@ -39,7 +39,6 @@ import com.bumptech.glide.load.engine.GlideException
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.activity_call.*
-import kotlinx.android.synthetic.main.view_call_button.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
