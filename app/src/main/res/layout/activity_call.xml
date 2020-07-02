@@ -38,7 +38,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.1"/>
+        app:layout_constraintGuide_percent="0.12"/>
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_middle"
@@ -120,13 +120,12 @@
         android:layout_height="wrap_content"
         android:textColor="@color/white_45"
         android:textSize="16sp"
-        android:drawableStart="@drawable/ic_call_secret"
-        android:layout_marginTop="16dp"
         android:text="@string/end_to_end_encryption"
         app:layout_constraintEnd_toEndOf="@id/guideline_end"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="@id/guideline_start"
-        app:layout_constraintTop_toBottomOf="@+id/guideline_top"/>
+        app:layout_constraintTop_toBottomOf="@+id/guideline_top"
+        app:drawableStartCompat="@drawable/ic_call_secret" />
 
     <TextView
         android:id="@+id/action_tv"
