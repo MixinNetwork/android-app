@@ -13,12 +13,6 @@
         android:scaleType="centerCrop"
         tools:ignore="ContentDescription"/>
 
-    <View
-        android:id="@+id/cover"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/call_bg"/>
-
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_start"
         android:layout_width="wrap_content"
