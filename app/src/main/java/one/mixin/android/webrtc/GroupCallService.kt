@@ -282,10 +282,7 @@ class GroupCallService : CallService() {
 
         callState.removeInitialGuest(cid, userId)
         callState.removeUser(cid, userId)
-        val count = callState.getUsersCountByConversationId(cid)
-        if (count == 0) {
-            checkSchedules(cid)
-        }
+        checkConversationUserCount(cid)
     }
 
     private fun handleAcceptInvite() {
@@ -326,6 +323,7 @@ class GroupCallService : CallService() {
         )
 
         disconnect()
+        checkConversationUserCount(cid)
 
         saveMessage(cid, self.userId, MessageCategory.KRAKEN_END.name, duration.toString())
         val bm = createKrakenMessage(blazeMessageParam)
@@ -388,6 +386,13 @@ class GroupCallService : CallService() {
             val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
         } else {
             Timber.w("try send kraken decline message but inviter is null, conversationId: $cid")
+        }
+    }
+
+    private fun checkConversationUserCount(conversationId: String) {
+        val count = callState.getUsersCountByConversationId(conversationId)
+        if (count == 0) {
+            checkSchedules(conversationId)
         }
     }
 
