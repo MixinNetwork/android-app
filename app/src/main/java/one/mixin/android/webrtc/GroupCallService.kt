@@ -564,8 +564,8 @@ class GroupCallService : CallService() {
         val listFuture = scheduledFutures.remove(conversationId)
         listFuture?.cancel(true)
 
-        Timber.d("@@@ scheduledFutures isEmpty: ${scheduledFutures.isEmpty()}")
-        if (scheduledFutures.isEmpty()) {
+        Timber.d("@@@ scheduledFutures isEmpty: ${scheduledFutures.isEmpty()}, isIdel: ${callState.isIdle()}")
+        if (scheduledFutures.isEmpty() && callState.isIdle()) {
             disconnect()
             stopSelf()
         }
