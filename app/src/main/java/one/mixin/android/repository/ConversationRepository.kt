@@ -380,4 +380,6 @@ internal constructor(
     fun updateGroupMuteUntil(conversationId: String, muteUntil: String) = conversationDao.updateGroupMuteUntil(conversationId, muteUntil)
 
     fun updateMediaStatus(status: String, id: String) = messageDao.updateMediaStatus(status, id)
+
+    fun observeConversationNameById(cid: String) = conversationDao.observeConversationNameById(cid)
 }

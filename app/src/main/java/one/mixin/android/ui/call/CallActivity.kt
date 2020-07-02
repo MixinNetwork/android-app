@@ -43,6 +43,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.fadeIn
@@ -53,6 +54,7 @@ import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.util.Session
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.CallStateLiveData
@@ -132,6 +134,14 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 userAdapter = CallUserAdapter(self)
             }
             users_rv.adapter = userAdapter
+            callState.conversationId?.let {
+                viewModel.observeConversationNameById(it).observe(
+                    this,
+                    Observer { name ->
+                        group_name_tv?.text = name
+                    }
+                )
+            }
             refreshUsers()
         } else {
             avatar.isVisible = true
@@ -165,6 +175,9 @@ class CallActivity : BaseActivity(), SensorEventListener {
         }
         close_iv.setOnClickListener {
             hangup()
+        }
+        encryption_tv.setOnClickListener {
+            showE2EETip()
         }
         mute_cb.setOnCheckedChangeListener(object : CallButton.OnCheckedChangeListener {
             override fun onCheckedChanged(id: Int, checked: Boolean) {
@@ -362,6 +375,21 @@ class CallActivity : BaseActivity(), SensorEventListener {
         } catch (e: GlideException) {
             Timber.e(e)
         }
+    }
+
+    private fun showE2EETip() {
+        alertDialogBuilder()
+            .setTitle(R.string.end_to_end_encryption_tip_title)
+            .setMessage(R.string.end_to_end_encryption_tip_desc)
+            .setNeutralButton(R.string.chat_learn) { dialog, _ ->
+                WebBottomSheetDialogFragment.newInstance(getString(R.string.chat_waiting_url), callState.conversationId)
+                    .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+                dialog.dismiss()
+            }
+            .setPositiveButton(R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun handleAnswer() {

@@ -100,6 +100,9 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun findConversationById(conversationId: String): Conversation?
 
+    @Query("SELECT name FROM conversations WHERE conversation_id = :conversationId")
+    fun observeConversationNameById(conversationId: String): LiveData<String>
+
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun searchConversationById(conversationId: String): Maybe<Conversation>
 

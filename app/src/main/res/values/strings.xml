@@ -111,6 +111,8 @@
     <string name="add_shortcut">Add to Home screen</string>
     <string name="waiting">Waiting</string>
     <string name="end_to_end_encryption">End-to-end encryption</string>
+    <string name="end_to_end_encryption_tip_title">This call is secured with end-to-end encryption.</string>
+    <string name="end_to_end_encryption_tip_desc">No one outside of this call can view or listen to it. Not even Mixin.</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
