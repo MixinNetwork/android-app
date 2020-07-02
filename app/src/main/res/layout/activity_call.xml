@@ -45,7 +45,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.7"/>
+        app:layout_constraintGuide_percent="0.75" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_bottom"
@@ -157,7 +157,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="@id/guideline_start"
         app:layout_constraintEnd_toEndOf="@id/guideline_end"
-        app:layout_constraintTop_toTopOf="@id/guideline_top"
+        app:layout_constraintTop_toTopOf="@id/encryption_tv"
         app:layout_constraintBottom_toBottomOf="@id/guideline_middle"/>
 
     <one.mixin.android.widget.CallButton
