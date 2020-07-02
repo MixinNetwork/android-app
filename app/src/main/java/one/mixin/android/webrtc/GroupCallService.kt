@@ -109,7 +109,6 @@ class GroupCallService : CallService() {
             requireNotNull(cid)
             callState.conversationId = cid
             val users = intent.getStringArrayListExtra(EXTRA_USERS)
-            callState.addPendingGroupCall(cid)
             callState.addUser(cid, self.userId)
             users?.let { callState.setInitialGuests(cid, it) }
             callState.isOffer = true
@@ -255,7 +254,10 @@ class GroupCallService : CallService() {
             callState.callType = CallType.Group
             updateForegroundNotification()
             callState.conversationId = cid
-            userId?.let { callState.setInviter(cid, it) }
+            userId?.let {
+                callState.setInviter(cid, it)
+                callState.addInitialGuests(cid, arrayListOf(it))
+            }
             callState.addUser(cid, self.userId)
             callState.isOffer = false
             timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)

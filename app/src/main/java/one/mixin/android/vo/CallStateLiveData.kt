@@ -198,9 +198,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     }
 
     fun addUser(conversationId: String, userId: String) {
-        val groupCallState = pendingGroupCalls.find {
-            it.conversationId == conversationId
-        } ?: return
+        val groupCallState = addPendingGroupCall(conversationId)
         groupCallState.users = addUserToList(userId, groupCallState.users)
 
         postValue(state)
