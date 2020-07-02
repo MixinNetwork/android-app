@@ -109,7 +109,6 @@ class GroupCallService : CallService() {
             requireNotNull(cid)
             callState.conversationId = cid
             val users = intent.getStringArrayListExtra(EXTRA_USERS)
-            callState.addUser(cid, self.userId)
             users?.let { callState.setInitialGuests(cid, it) }
             callState.isOffer = true
             timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
@@ -121,6 +120,7 @@ class GroupCallService : CallService() {
 
     private fun publish(conversationId: String) {
         Timber.d("@@@ publish")
+        callState.addUser(conversationId, self.userId)
         getTurnServer { turns ->
             // TODO check sender key send?
             val key = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
@@ -258,7 +258,6 @@ class GroupCallService : CallService() {
                 callState.setInviter(cid, it)
                 callState.addInitialGuests(cid, arrayListOf(it))
             }
-            callState.addUser(cid, self.userId)
             callState.isOffer = false
             timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
             val playRing = intent.getBooleanExtra(EXTRA_PLAY_RING, true)

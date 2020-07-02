@@ -119,18 +119,14 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     fun setInitialGuests(conversationId: String, guests: ArrayList<String>) {
         if (guests.isNullOrEmpty()) return
 
-        val groupCallState = pendingGroupCalls.find {
-            it.conversationId == conversationId
-        } ?: return
+        val groupCallState = addPendingGroupCall(conversationId)
         groupCallState.initialGuests = guests
     }
 
     fun addInitialGuests(conversationId: String, guests: ArrayList<String>) {
         if (guests.isNullOrEmpty()) return
 
-        val groupCallState = pendingGroupCalls.find {
-            it.conversationId == conversationId
-        } ?: return
+        val groupCallState = addPendingGroupCall(conversationId)
 
         val current = groupCallState.initialGuests
         if (current.isNullOrEmpty()) {
@@ -189,9 +185,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     fun setUsersByConversationId(conversationId: String, newUsers: ArrayList<String>?) {
         if (newUsers.isNullOrEmpty()) return
 
-        val groupCallState = pendingGroupCalls.find {
-            it.conversationId == conversationId
-        } ?: return
+        val groupCallState = addPendingGroupCall(conversationId)
         groupCallState.users = newUsers
 
         postValue(state)

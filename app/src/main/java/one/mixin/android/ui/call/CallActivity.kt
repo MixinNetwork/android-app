@@ -51,6 +51,7 @@ import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.fastBlur
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.isLandscape
+import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.common.BaseActivity
@@ -108,6 +109,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
         return R.style.AppTheme_Night_Call
     }
 
+    private var join = false
+
     @SuppressLint("InvalidWakeLockTag")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -124,7 +127,12 @@ class CallActivity : BaseActivity(), SensorEventListener {
         sensorManager = getSystemService()
         powerManager = getSystemService()
         wakeLock = powerManager?.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
-        val join = intent.getBooleanExtra(EXTRA_JOIN, false)
+        if (window?.isNotchScreen() == true) {
+            guideline_top.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                guidePercent = 0.15f
+            }
+        }
+        join = intent.getBooleanExtra(EXTRA_JOIN, false)
         if (callState.isGroupCall()) {
             avatar.isVisible = false
             name_tv.isVisible = false
@@ -202,6 +210,11 @@ class CallActivity : BaseActivity(), SensorEventListener {
         callState.observe(
             this,
             Observer { state ->
+                // if plan to join a group voice, do not show self before answering
+                if (join && state >= CallService.CallState.STATE_ANSWERING) {
+                    join = false
+                }
+
                 updateUI()
                 if (callState.isGroupCall()) {
                     refreshUsers()
@@ -334,7 +347,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
             }
         }
         if (callees.isNullOrEmpty()) {
-            userAdapter?.submitList(listOf(self))
+            userAdapter?.submitList(null)
         } else {
             val first = callees[0]
             if (callees.size == 1 && first == self.userId) {
@@ -342,8 +355,10 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 return@launch
             }
             if (first != self.userId) {
-                callees.remove(self.userId)
-                callees.add(0, self.userId)
+                val exists = callees.remove(self.userId)
+                if (exists || !join) {
+                    callees.add(0, self.userId)
+                }
             }
             val users = viewModel.findMultiUsersByIds(callees.toSet())
             userAdapter?.submitList(users)
@@ -379,8 +394,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     private fun showE2EETip() {
         alertDialogBuilder()
-            .setTitle(R.string.end_to_end_encryption_tip_title)
-            .setMessage(R.string.end_to_end_encryption_tip_desc)
+            .setMessage(R.string.end_to_end_encryption_tip)
             .setNeutralButton(R.string.chat_learn) { dialog, _ ->
                 WebBottomSheetDialogFragment.newInstance(getString(R.string.chat_waiting_url), callState.conversationId)
                     .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
