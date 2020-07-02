@@ -71,7 +71,7 @@
     <color name="call_green">#46d23c</color>
     <color name="call_red">#e7575c</color>
     <color name="call_gray">#595959</color>
-    <color name="call_bg">#FA595959</color>
+    <color name="call_bg">#aa595959</color>
     <color name="call_btn_bg_unchecked">#33000000</color>
     <color name="call_btn_checked">@color/white</color>
     <color name="call_btn_icon_checked">#182435</color>

@@ -103,9 +103,8 @@
 
 
     <style name="AppTheme.Call" parent="AppTheme.NoActionBar">
-        <item name="android:windowBackground">@color/call_bg</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@color/call_gray</item>
+        <item name="android:windowIsTranslucent">false</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
 

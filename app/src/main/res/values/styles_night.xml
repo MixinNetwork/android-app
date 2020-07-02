@@ -70,6 +70,12 @@
         <item name="android:navigationBarColor">?attr/text_primary</item>
     </style>
 
+    <style name="AppTheme.Night.Call" parent="AppTheme.Night.NoActionBar">
+        <item name="android:windowBackground">@color/call_gray</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
     <style name="AppTheme.Night.Transparent" parent="AppTheme.Night.FullScreen">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowNoTitle">true</item>

@@ -106,7 +106,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     override fun getNightThemeId(): Int {
-        return R.style.AppTheme_Call
+        return R.style.AppTheme_Night_Call
     }
 
     private var join = false
