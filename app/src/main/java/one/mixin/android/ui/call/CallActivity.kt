@@ -356,7 +356,9 @@ class CallActivity : BaseActivity(), SensorEventListener {
             }
             if (first != self.userId) {
                 val exists = callees.remove(self.userId)
-                if (exists || !join) {
+                if (!join) {
+                    callees.add(0, self.userId)
+                } else if (exists) {
                     callees.add(0, self.userId)
                 }
             }

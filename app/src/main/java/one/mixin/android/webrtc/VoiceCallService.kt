@@ -36,9 +36,9 @@ class VoiceCallService : CallService() {
             ACTION_CALL_OUTGOING -> handleCallOutgoing(intent)
             ACTION_CALL_ANSWER -> handleAnswerCall(intent)
             ACTION_CANDIDATE -> handleCandidate(intent)
-            ACTION_CALL_CANCEL -> handleCallCancel(intent)
+            ACTION_CALL_CANCEL -> handleCallCancel()
             ACTION_CALL_DECLINE -> handleCallDecline()
-            ACTION_CALL_LOCAL_END -> handleCallLocalEnd(intent)
+            ACTION_CALL_LOCAL_END -> handleCallLocalEnd()
             ACTION_CALL_REMOTE_END -> handleCallRemoteEnd()
             ACTION_CALL_BUSY -> handleCallBusy()
             ACTION_CALL_LOCAL_FAILED -> handleCallLocalFailed()
@@ -160,7 +160,7 @@ class VoiceCallService : CallService() {
         }
     }
 
-    override fun handleCallCancel(intent: Intent?) {
+    private fun handleCallCancel() {
         if (callState.isIdle()) return
 
         if (callState.isOffer) {
@@ -180,12 +180,20 @@ class VoiceCallService : CallService() {
         disconnect()
     }
 
-    override fun handleCallLocalEnd(intent: Intent?) {
+    private fun handleCallLocalEnd() {
         if (callState.isIdle()) return
 
         val category = MessageCategory.WEBRTC_AUDIO_END.name
         sendCallMessage(category)
         disconnect()
+    }
+
+    override fun onTimeout() {
+        handleCallCancel()
+    }
+
+    override fun onTurnServerError() {
+        handleCallLocalFailed()
     }
 
     override fun onCallDisconnected() {
@@ -208,7 +216,7 @@ class VoiceCallService : CallService() {
         disconnect()
     }
 
-    override fun handleCallLocalFailed() {
+    private fun handleCallLocalFailed() {
         if (callState.isIdle()) return
 
         val state = callState.state
@@ -255,6 +263,10 @@ class VoiceCallService : CallService() {
             val arr = arrayListOf(candidate)
             sendCallMessage(MessageCategory.WEBRTC_ICE_CANDIDATE.name, gson.toJson(arr))
         }
+    }
+
+    override fun onPeerConnectionError(description: String) {
+        callExecutor.execute { handleCallLocalFailed() }
     }
 
     override fun onDisconnected() {

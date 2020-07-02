@@ -120,6 +120,8 @@ class GroupCallService : CallService() {
 
     private fun publish(conversationId: String) {
         Timber.d("@@@ publish")
+        if (callState.isIdle()) return
+
         callState.addUser(conversationId, self.userId)
         getTurnServer { turns ->
             // TODO check sender key send?
@@ -144,6 +146,8 @@ class GroupCallService : CallService() {
     }
 
     private fun subscribe(data: KrakenData, conversationId: String) {
+        if (callState.isIdle()) return
+
         Timber.d("@@@ subscribe ${data.getSessionDescription().type == SessionDescription.Type.ANSWER}")
         if (data.getSessionDescription().type == SessionDescription.Type.ANSWER) {
             peerConnectionClient.setAnswerSdp(data.getSessionDescription())
@@ -155,6 +159,8 @@ class GroupCallService : CallService() {
 
     private fun sendSubscribe(conversationId: String, trackId: String, userId: String? = null) {
         Timber.d("@@@ sendSubscribe")
+        if (callState.isIdle()) return
+
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = conversationId, category = MessageCategory.KRAKEN_SUBSCRIBE.name,
             message_id = UUID.randomUUID().toString(), track_id = trackId
@@ -172,6 +178,8 @@ class GroupCallService : CallService() {
     }
 
     private fun answer(krakenData: KrakenData, conversationId: String) {
+        if (callState.isIdle()) return
+
         Timber.d("@@@ answer ${krakenData.getSessionDescription().type == SessionDescription.Type.OFFER}")
         if (krakenData.getSessionDescription().type == SessionDescription.Type.OFFER) {
             peerConnectionClient.createAnswer(
@@ -310,6 +318,7 @@ class GroupCallService : CallService() {
         if (cid == null || trackId == null) {
             Timber.e("try send kraken end message but conversation id is $cid, trackId is $trackId")
             disconnect()
+            cid?.let { checkConversationUserCount(it) }
             return
         }
 
@@ -322,12 +331,12 @@ class GroupCallService : CallService() {
         )
 
         disconnect()
-        checkConversationUserCount(cid)
 
         saveMessage(cid, self.userId, MessageCategory.KRAKEN_END.name, duration.toString())
         val bm = createKrakenMessage(blazeMessageParam)
-        val bmData = getBlazeMessageData(bm) ?: return
-        val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
+        val bmData = getBlazeMessageData(bm)
+
+        checkConversationUserCount(cid)
     }
 
     private fun handleKrakenCancel() {
@@ -339,6 +348,7 @@ class GroupCallService : CallService() {
         if (cid == null || trackId == null) {
             Timber.e("try send kraken cancel message but conversation id is $cid, trackId is $trackId")
             disconnect()
+            cid?.let { checkConversationUserCount(it) }
             return
         }
 
@@ -353,8 +363,9 @@ class GroupCallService : CallService() {
 
         saveMessage(cid, self.userId, MessageCategory.KRAKEN_CANCEL.name)
         val bm = createKrakenMessage(blazeMessageParam)
-        val bmData = getBlazeMessageData(bm) ?: return
-        val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
+        val bmData = getBlazeMessageData(bm)
+
+        checkConversationUserCount(cid)
     }
 
     private fun handleKrakenDecline() {
@@ -386,6 +397,8 @@ class GroupCallService : CallService() {
         } else {
             Timber.w("try send kraken decline message but inviter is null, conversationId: $cid")
         }
+
+        checkConversationUserCount(cid)
     }
 
     private fun checkConversationUserCount(conversationId: String) {
@@ -395,31 +408,25 @@ class GroupCallService : CallService() {
         }
     }
 
-    override fun handleCallLocalFailed() {
+    private fun handleCallLocalFailed() {
         Timber.d("@@@ handleCallLocalFailed")
         if (callState.isIdle()) return
 
+        val cid = callState.conversationId
         disconnect()
+        cid?.let { checkConversationUserCount(cid) }
     }
 
-    override fun handleCallCancel(intent: Intent?) {
-        Timber.d("@@@ handleCallCancel")
-        if (callState.isIdle()) return
-
-        callState.trackId?.let {
-            sendGroupCallMessage(MessageCategory.KRAKEN_CANCEL.name, trackId = it)
-        }
-        disconnect()
+    override fun onPeerConnectionError(description: String) {
+        callExecutor.execute { handleCallLocalFailed() }
     }
 
-    override fun handleCallLocalEnd(intent: Intent?) {
-        Timber.d("@@@ handleCallLocalEnd")
-        if (callState.isIdle()) return
+    override fun onTimeout() {
+        handleKrakenCancel()
+    }
 
-        callState.trackId?.let {
-            sendGroupCallMessage(MessageCategory.KRAKEN_END.name, trackId = it)
-        }
-        disconnect()
+    override fun onTurnServerError() {
+        handleCallLocalFailed()
     }
 
     override fun onDisconnected() {

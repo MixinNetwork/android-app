@@ -137,11 +137,10 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     abstract fun handleIntent(intent: Intent): Boolean
-    abstract fun handleCallLocalFailed()
-    abstract fun handleCallCancel(intent: Intent? = null)
-    abstract fun handleCallLocalEnd(intent: Intent? = null)
     abstract fun onCallDisconnected()
     abstract fun onDestroyed()
+    abstract fun onTimeout()
+    abstract fun onTurnServerError()
 
     override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {
     }
@@ -157,10 +156,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     override fun onPeerConnectionStatsReady(reports: Array<StatsReport>) {
-    }
-
-    override fun onPeerConnectionError(description: String) {
-        callExecutor.execute { handleCallLocalFailed() }
     }
 
     override fun onPeerConnectionClosed() {
@@ -203,7 +198,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     private fun handleCheckTimeout() {
         if (callState.isIdle() || callState.isConnected()) return
 
-        handleCallCancel()
+        onTimeout()
     }
 
     protected fun updateForegroundNotification() {
@@ -238,7 +233,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 
     private fun handleFetchTurnError() {
         Timber.d("@@@ handleFetchTurnError")
-        callExecutor.execute { handleCallLocalFailed() }
+        callExecutor.execute { onTurnServerError() }
     }
 
     private fun genIceServerList(array: Array<TurnServer>): List<PeerConnection.IceServer> {
