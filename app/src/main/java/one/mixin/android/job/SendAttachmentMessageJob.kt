@@ -78,6 +78,10 @@ class SendAttachmentMessageJob(
             removeJob()
             return
         }
+        if (message.mediaUrl == null) {
+            removeJob()
+            return
+        }
         jobManager.saveJob(this)
         disposable = conversationApi.requestAttachment().map {
             if (it.isSuccess && !isCancelled) {
