@@ -193,7 +193,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
             enableDtlsSrtp = true
             continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_ONCE
-            // cryptoOptions = CryptoOptions.builder().setRequireFrameEncryption(true).createCryptoOptions()
         }
         val peerConnection = factory!!.createPeerConnection(rtcConfig, pcObserver)
         if (peerConnection == null) {

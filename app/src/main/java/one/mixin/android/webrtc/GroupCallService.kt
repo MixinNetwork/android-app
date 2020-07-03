@@ -3,10 +3,14 @@ package one.mixin.android.webrtc
 import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
+import android.util.Log
+import com.google.gson.Gson
 import com.google.gson.JsonElement
 import one.mixin.android.Constants
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.RxBus
+import one.mixin.android.api.SignalKey
+import one.mixin.android.api.createPreKeyBundle
 import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ParticipantDao
@@ -15,8 +19,12 @@ import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.event.CallEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
+import one.mixin.android.extension.fromJson
+import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.job.MessageResult
+import one.mixin.android.job.MixinJob
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.ErrorHandler
@@ -28,17 +36,25 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.Sdp
+import one.mixin.android.vo.SenderKeyStatus
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.vo.generateConversationChecksum
 import one.mixin.android.vo.isGroupCallType
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.BlazeMessageParam
+import one.mixin.android.websocket.BlazeMessageParamSession
+import one.mixin.android.websocket.BlazeSignalKeyMessage
 import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.KrakenParam
 import one.mixin.android.websocket.LIST_KRAKEN_PEERS
+import one.mixin.android.websocket.createBlazeSignalKeyMessage
+import one.mixin.android.websocket.createConsumeSessionSignalKeys
+import one.mixin.android.websocket.createConsumeSignalKeysParam
 import one.mixin.android.websocket.createKrakenMessage
 import one.mixin.android.websocket.createListKrakenPeers
+import one.mixin.android.websocket.createSignalKeyMessage
+import one.mixin.android.websocket.createSignalKeyMessageParam
 import org.webrtc.IceCandidate
 import org.webrtc.SessionDescription
 import timber.log.Timber
@@ -124,7 +140,7 @@ class GroupCallService : CallService() {
 
         callState.addUser(conversationId, self.userId)
         getTurnServer { turns ->
-            // TODO check sender key send?
+            checkSessionSenderKey(conversationId)
             val key = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
             peerConnectionClient.createOffer(
                 turns,
@@ -525,6 +541,7 @@ class GroupCallService : CallService() {
             return webSocketChannel(blazeMessage)
         } else if (bm.error != null) {
             if (bm.error.status == 500) {
+                // TODO more check
                 when (val errCode = bm.error.code) {
                     7000 -> {
                         Timber.w("try send a ${blazeMessage.action} message,but the remote track has been released.")
@@ -548,6 +565,8 @@ class GroupCallService : CallService() {
                 ErrorHandler.CONVERSATION_CHECKSUM_INVALID_ERROR -> {
                     blazeMessage.params?.conversation_id?.let {
                         syncConversation(it)
+                        // send sender key
+                        checkSessionSenderKey(it)
                     }
                     blazeMessage.id = UUID.randomUUID().toString()
                     webSocketChannel(blazeMessage)
@@ -574,6 +593,91 @@ class GroupCallService : CallService() {
         if (scheduledFutures.isEmpty() && callState.isIdle()) {
             disconnect()
             stopSelf()
+        }
+    }
+
+    private fun checkSessionSenderKey(conversationId: String) {
+        val participants = participantSessionDao.getNotSendSessionParticipants(conversationId, Session.getSessionId()!!)
+        if (participants.isEmpty()) return
+        val requestSignalKeyUsers = arrayListOf<BlazeMessageParamSession>()
+        val signalKeyMessages = arrayListOf<BlazeSignalKeyMessage>()
+        for (p in participants) {
+            if (!signalProtocol.containsSession(p.userId, p.sessionId.getDeviceId())) {
+                requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId, p.sessionId))
+            } else {
+                val (cipherText, err) = signalProtocol.encryptSenderKey(conversationId, p.userId, p.sessionId.getDeviceId())
+                if (err) {
+                    requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId, p.sessionId))
+                } else {
+                    signalKeyMessages.add(createBlazeSignalKeyMessage(p.userId, cipherText!!, p.sessionId))
+                }
+            }
+        }
+
+        if (requestSignalKeyUsers.isNotEmpty()) {
+            val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(requestSignalKeyUsers))
+            val data = getJsonElement(blazeMessage)
+            if (data != null) {
+                val signalKeys = Gson().fromJson<ArrayList<SignalKey>>(data)
+                val keys = arrayListOf<BlazeMessageParamSession>()
+                if (signalKeys.isNotEmpty()) {
+                    for (key in signalKeys) {
+                        val preKeyBundle = createPreKeyBundle(key)
+                        signalProtocol.processSession(key.userId!!, preKeyBundle)
+                        val (cipherText, _) = signalProtocol.encryptSenderKey(conversationId, key.userId, preKeyBundle.deviceId)
+                        signalKeyMessages.add(createBlazeSignalKeyMessage(key.userId, cipherText!!, key.sessionId))
+                        keys.add(BlazeMessageParamSession(key.userId, key.sessionId))
+                    }
+                } else {
+                    Log.e(MixinJob.TAG, "No any group signal key from server: " + requestSignalKeyUsers.toString())
+                }
+
+                val noKeyList = requestSignalKeyUsers.filter { !keys.contains(it) }
+                if (noKeyList.isNotEmpty()) {
+                    val sentSenderKeys = noKeyList.map {
+                        ParticipantSession(conversationId, it.user_id, it.session_id!!, SenderKeyStatus.UNKNOWN.ordinal)
+                    }
+                    participantSessionDao.updateList(sentSenderKeys)
+                }
+            }
+        }
+        if (signalKeyMessages.isEmpty()) {
+            return
+        }
+        val checksum = getCheckSum(conversationId)
+        val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, signalKeyMessages, checksum))
+        val result = deliverNoThrow(bm)
+        if (result.retry) {
+            return checkSessionSenderKey(conversationId)
+        }
+        if (result.success) {
+            val sentSenderKeys = signalKeyMessages.map {
+                ParticipantSession(conversationId, it.recipient_id, it.sessionId!!, SenderKeyStatus.SENT.ordinal)
+            }
+            participantSessionDao.updateList(sentSenderKeys)
+        }
+    }
+
+    private tailrec fun deliverNoThrow(blazeMessage: BlazeMessage): MessageResult {
+        val bm = chatWebSocket.sendMessage(blazeMessage)
+        if (bm == null) {
+            SystemClock.sleep(SLEEP_MILLIS)
+            return deliverNoThrow(blazeMessage)
+        } else if (bm.error != null) {
+            return if (bm.error.code == ErrorHandler.CONVERSATION_CHECKSUM_INVALID_ERROR) {
+                blazeMessage.params?.conversation_id?.let {
+                    syncConversation(it)
+                }
+                MessageResult(false, retry = true)
+            } else if (bm.error.code == ErrorHandler.FORBIDDEN) {
+                MessageResult(true, retry = false)
+            } else {
+                SystemClock.sleep(SLEEP_MILLIS)
+                // warning: may caused job leak if server return error data and come to this branch
+                return deliverNoThrow(blazeMessage)
+            }
+        } else {
+            return MessageResult(true, retry = false)
         }
     }
 
