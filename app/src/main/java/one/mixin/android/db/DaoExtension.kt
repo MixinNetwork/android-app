@@ -168,3 +168,6 @@ fun MixinDatabase.insertAndNotifyConversation(message: Message) {
         }
     }
 }
+
+fun MixinDatabase.findFullNameById(userId: String): String? =
+    userDao().findFullNameById(userId)

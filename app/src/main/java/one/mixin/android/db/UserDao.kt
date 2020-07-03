@@ -32,6 +32,9 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE user_id = :id")
     fun findUser(id: String): User?
 
+    @Query("SELECT full_name FROM users WHERE user_id = :id")
+    fun findFullNameById(id: String): String?
+
     @Query("SELECT * FROM users WHERE user_id = :id")
     suspend fun suspendFindUserById(id: String): User?
 
