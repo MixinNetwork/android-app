@@ -153,20 +153,11 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         groupCallState.initialGuests = null
     }
 
-    fun getGuestsNotInUsers(conversationId: String): ArrayList<String>? {
+    fun getGuests(conversationId: String): ArrayList<String>? {
         val groupCallState = pendingGroupCalls.find {
             it.conversationId == conversationId
         } ?: return null
-        val us = groupCallState.users
-        val initialGuests = groupCallState.initialGuests
-
-        if (initialGuests.isNullOrEmpty()) return null
-        if (us.isNullOrEmpty()) return initialGuests
-
-        val resultSet = initialGuests.subtract(us)
-        if (resultSet.isNullOrEmpty()) return null
-
-        return arrayListOf<String>().apply { addAll(resultSet) }
+        return groupCallState.initialGuests
     }
 
     fun getUsersWithGuests(conversationId: String): ArrayList<String>? {
@@ -212,6 +203,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     fun isAnswering() = state == CallService.CallState.STATE_ANSWERING
     fun isConnected() = state == CallService.CallState.STATE_CONNECTED
     fun isRinging() = state == CallService.CallState.STATE_RINGING
+    fun isBeforeAnswering() = state < CallService.CallState.STATE_ANSWERING
 
     fun isPendingGroupCall(conversationId: String) =
         if (this.conversationId == conversationId) {

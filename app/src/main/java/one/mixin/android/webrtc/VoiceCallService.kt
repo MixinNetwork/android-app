@@ -189,11 +189,15 @@ class VoiceCallService : CallService() {
     }
 
     override fun onTimeout() {
-        handleCallCancel()
+        callExecutor.execute {
+            handleCallCancel()
+        }
     }
 
     override fun onTurnServerError() {
-        handleCallLocalFailed()
+        callExecutor.execute {
+            handleCallLocalFailed()
+        }
     }
 
     override fun onCallDisconnected() {

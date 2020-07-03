@@ -26,6 +26,7 @@ import one.mixin.android.webrtc.cancelCall
 import one.mixin.android.webrtc.candidate
 import one.mixin.android.webrtc.declineCall
 import one.mixin.android.webrtc.incomingCall
+import one.mixin.android.webrtc.receiveCancel
 import one.mixin.android.webrtc.receiveEnd
 import one.mixin.android.webrtc.receiveInvite
 import one.mixin.android.webrtc.receivePublish
@@ -136,7 +137,10 @@ class DecryptCallMessage(
             MessageCategory.KRAKEN_END.name -> {
                 receiveEnd(ctx, data.conversationId, data.userId)
             }
-            MessageCategory.KRAKEN_CANCEL.name, MessageCategory.KRAKEN_DECLINE.name -> {
+            MessageCategory.KRAKEN_CANCEL.name -> {
+                receiveCancel(ctx, data.conversationId, data.userId)
+            }
+            MessageCategory.KRAKEN_DECLINE.name -> {
                 callState.removeInitialGuest(data.conversationId, data.userId)
             }
         }

@@ -85,6 +85,7 @@ class GroupCallService : CallService() {
             ACTION_KRAKEN_RECEIVE_PUBLISH -> handleReceivePublish(intent)
             ACTION_KRAKEN_RECEIVE_INVITE -> handleReceiveInvite(intent)
             ACTION_KRAKEN_RECEIVE_END -> handleReceiveEnd(intent)
+            ACTION_KRAKEN_RECEIVE_CANCEL -> handleReceiveCancel(intent)
             ACTION_KRAKEN_ACCEPT_INVITE -> handleAcceptInvite()
             ACTION_KRAKEN_END -> handleKrakenEnd()
             ACTION_KRAKEN_CANCEL -> handleKrakenCancel()
@@ -100,6 +101,7 @@ class GroupCallService : CallService() {
         val cid = blazeMessageData.conversationId
         val userId = blazeMessageData.userId
         callState.addUser(cid, userId)
+        callState.addInitialGuests(cid, arrayListOf(userId))
         startCheckPeers(cid)
 
         if (callState.isNotIdle() && callState.conversationId != cid) return
@@ -168,7 +170,7 @@ class GroupCallService : CallService() {
         if (data.getSessionDescription().type == SessionDescription.Type.ANSWER) {
             peerConnectionClient.setAnswerSdp(data.getSessionDescription())
             callState.trackId = data.trackId
-            sendSubscribe(conversationId, data.trackId)
+            sendSubscribe(conversationId, data.trackId, callState.getInviter(conversationId))
             startCheckPeers(conversationId)
         }
     }
@@ -185,15 +187,11 @@ class GroupCallService : CallService() {
         Timber.d("@@@ subscribe track id: $trackId")
         val bmData = getBlazeMessageData(bm) ?: return
 
-        userId?.let { u ->
-            callState.removeInitialGuest(conversationId, u)
-        }
-
         val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
-        answer(krakenData, conversationId)
+        answer(krakenData, conversationId, userId)
     }
 
-    private fun answer(krakenData: KrakenData, conversationId: String) {
+    private fun answer(krakenData: KrakenData, conversationId: String, userId: String? = null) {
         if (callState.isIdle()) return
 
         Timber.d("@@@ answer ${krakenData.getSessionDescription().type == SessionDescription.Type.OFFER}")
@@ -211,6 +209,9 @@ class GroupCallService : CallService() {
                     val bm = createKrakenMessage(blazeMessageParam)
                     val data = webSocketChannel(bm) ?: return@createAnswer
                     Timber.d("@@@ answer data: $data")
+                    userId?.let { u ->
+                        callState.removeInitialGuest(conversationId, u)
+                    }
                 }
             )
         }
@@ -224,7 +225,7 @@ class GroupCallService : CallService() {
 
             scheduledFutures[cid] = scheduledExecutors.scheduleAtFixedRate(
                 ListRunnable(cid),
-                10, KRAKEN_LIST_INTERVAL, TimeUnit.SECONDS
+                KRAKEN_LIST_INTERVAL, KRAKEN_LIST_INTERVAL, TimeUnit.SECONDS
             )
         }
     }
@@ -308,6 +309,19 @@ class GroupCallService : CallService() {
         checkConversationUserCount(cid)
     }
 
+    private fun handleReceiveCancel(intent: Intent) {
+        val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
+        requireNotNull(cid)
+        val userId = intent.getStringExtra(EXTRA_USER_ID)
+        requireNotNull(userId)
+
+        callState.removeInitialGuest(cid, userId)
+        if (callState.isBeforeAnswering()) {
+            disconnect()
+            checkConversationUserCount(cid)
+        }
+    }
+
     private fun handleAcceptInvite() {
         Timber.d("@@@ handleAcceptInvite")
         val cid = callState.conversationId
@@ -360,9 +374,8 @@ class GroupCallService : CallService() {
         if (callState.isIdle()) return
 
         val cid = callState.conversationId
-        val trackId = callState.trackId
-        if (cid == null || trackId == null) {
-            Timber.e("try send kraken cancel message but conversation id is $cid, trackId is $trackId")
+        if (cid == null) {
+            Timber.e("try send kraken cancel message but conversation id is $cid")
             disconnect()
             cid?.let { checkConversationUserCount(it) }
             return
@@ -371,8 +384,7 @@ class GroupCallService : CallService() {
         val blazeMessageParam = BlazeMessageParam(
             conversation_id = cid,
             category = MessageCategory.KRAKEN_CANCEL.name,
-            message_id = UUID.randomUUID().toString(),
-            track_id = trackId
+            message_id = UUID.randomUUID().toString()
         )
 
         disconnect()
@@ -438,7 +450,9 @@ class GroupCallService : CallService() {
     }
 
     override fun onTimeout() {
-        handleKrakenCancel()
+        callExecutor.execute {
+            handleKrakenCancel()
+        }
     }
 
     override fun onTurnServerError() {
@@ -446,7 +460,9 @@ class GroupCallService : CallService() {
     }
 
     override fun onDisconnected() {
-        Timber.d("@@@ peerConnection onDisconnected")
+        callExecutor.execute {
+            handleKrakenEnd()
+        }
     }
 
     override fun getSenderPublicKey(userId: String, sessionId: String): ByteArray? {
@@ -752,6 +768,7 @@ private const val ACTION_KRAKEN_RECEIVE_PUBLISH = "kraken_receive_publish"
 private const val ACTION_KRAKEN_RECEIVE_INVITE = "kraken_receive_invite"
 const val ACTION_KRAKEN_ACCEPT_INVITE = "kraken_accept_invite"
 private const val ACTION_KRAKEN_RECEIVE_END = "kraken_receive_end"
+private const val ACTION_KRAKEN_RECEIVE_CANCEL = "kraken_receive_cancel"
 const val ACTION_KRAKEN_END = "kraken_end"
 const val ACTION_KRAKEN_CANCEL = "kraken_cancel"
 const val ACTION_KRAKEN_DECLINE = "kraken_decline"
@@ -785,6 +802,12 @@ fun receiveInvite(ctx: Context, conversationId: String, userId: String? = null, 
 
 fun receiveEnd(ctx: Context, conversationId: String, userId: String) =
     startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_END) {
+        it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+        it.putExtra(EXTRA_USER_ID, userId)
+    }
+
+fun receiveCancel(ctx: Context, conversationId: String, userId: String) =
+    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_CANCEL) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USER_ID, userId)
     }
