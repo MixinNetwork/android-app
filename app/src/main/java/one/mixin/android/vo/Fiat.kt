@@ -46,5 +46,12 @@ object Fiats {
 
     fun getRate(code: String = Session.getFiatCurrency()): Double = codeRateMap[code] ?: 1.0
 
-    fun getSymbol(code: String = Session.getFiatCurrency()): String = codeSymbolMap[code] ?: "$"
+    fun getSymbol(code: String = Session.getFiatCurrency()): String {
+        val rateExists = codeRateMap.keys.contains(code)
+        // if there is no rate info, just return '$' as default
+        if (!rateExists) {
+            return "$"
+        }
+        return codeSymbolMap[code] ?: "$"
+    }
 }
