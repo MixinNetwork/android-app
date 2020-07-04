@@ -9,9 +9,12 @@ import android.widget.FrameLayout
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import com.shizhefei.view.largeimage.LargeImageView
+import one.mixin.android.Constants.BIG_IMAGE_SIZE
 import one.mixin.android.R
 import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.inflate
+import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.screenWidth
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -86,10 +89,14 @@ class MediaPagerAdapter(
             messageItem.type == MessageCategory.PLAIN_IMAGE.name
         ) {
             if (!messageItem.mediaMimeType.equals(
-                MimeType.GIF.toString(),
-                true
-            ) && messageItem.mediaHeight != null && messageItem.mediaWidth != null &&
-                messageItem.mediaHeight / messageItem.mediaWidth.toFloat() > context.displayRatio() * 1.5f
+                    MimeType.GIF.toString(),
+                    true
+                ) && messageItem.mediaHeight != null && messageItem.mediaWidth != null &&
+                (messageItem.mediaHeight / messageItem.mediaWidth.toFloat() > context.displayRatio() * 1.5f ||
+                    messageItem.mediaHeight > context.screenHeight() * 3 ||
+                    messageItem.mediaWidth > context.screenWidth() * 3 ||
+                    (messageItem.mediaSize != null && messageItem.mediaSize >= BIG_IMAGE_SIZE)
+                    )
             ) {
                 MediaItemType.LargeImage.ordinal
             } else {

@@ -167,4 +167,6 @@ object Constants {
     const val RECENT_USED_BOTS_MAX_COUNT = 12
 
     const val PIN_ERROR_MAX = 5
+
+    const val BIG_IMAGE_SIZE = 5 * 1024 * 1024
 }
