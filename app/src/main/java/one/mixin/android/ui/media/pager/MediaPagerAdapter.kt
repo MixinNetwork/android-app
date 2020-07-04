@@ -13,6 +13,8 @@ import one.mixin.android.Constants.BIG_IMAGE_SIZE
 import one.mixin.android.R
 import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.inflate
+import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.screenWidth
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -91,8 +93,10 @@ class MediaPagerAdapter(
                     true
                 ) && messageItem.mediaHeight != null && messageItem.mediaWidth != null &&
                 (messageItem.mediaHeight / messageItem.mediaWidth.toFloat() > context.displayRatio() * 1.5f ||
-                    (messageItem.mediaSize == null || messageItem.mediaSize >= BIG_IMAGE_SIZE)
-                )
+                    messageItem.mediaHeight > context.screenHeight() * 3 ||
+                    messageItem.mediaWidth > context.screenWidth() * 3 ||
+                    (messageItem.mediaSize != null && messageItem.mediaSize >= BIG_IMAGE_SIZE)
+                    )
             ) {
                 MediaItemType.LargeImage.ordinal
             } else {
