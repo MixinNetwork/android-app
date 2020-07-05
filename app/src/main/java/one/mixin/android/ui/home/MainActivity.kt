@@ -83,6 +83,7 @@ import one.mixin.android.job.BackupMigrationJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshCircleJob
+import one.mixin.android.job.RefreshFiatsJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshStickerAlbumJob.Companion.REFRESH_STICKER_ALBUM_PRE_KEY
@@ -118,6 +119,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroup
@@ -241,6 +243,10 @@ class MainActivity : BlazeBaseActivity() {
 
         doAsync {
             jobManager.addJobInBackground(RefreshAccountJob())
+
+            if (Fiats.isRateEmpty()) {
+                jobManager.addJobInBackground(RefreshFiatsJob())
+            }
 
             WorkManager.getInstance(this@MainActivity)
                 .enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
