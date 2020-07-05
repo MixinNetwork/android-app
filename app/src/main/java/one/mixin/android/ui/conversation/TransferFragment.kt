@@ -68,9 +68,9 @@ import one.mixin.android.ui.qr.CaptureActivity.Companion.REQUEST_CODE
 import one.mixin.android.ui.qr.CaptureActivity.Companion.RESULT_CODE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferOutViewFragment
-import one.mixin.android.util.Session
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.vo.displayAddress
 import one.mixin.android.widget.BottomSheet
@@ -397,11 +397,11 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         checkInputForbidden(contentView.amount_et.text.toString())
         if (contentView.amount_et.text.isNullOrEmpty()) {
             if (swaped) {
-                contentView.amount_et.hint = "0.00 ${Session.getFiatCurrency()}"
+                contentView.amount_et.hint = "0.00 ${Fiats.getAccountCurrencyAppearance()}"
                 contentView.amount_as_tv.text = "0.00 ${asset.symbol}"
             } else {
                 contentView.amount_et.hint = "0.00 ${asset.symbol}"
-                contentView.amount_as_tv.text = "0.00 ${Session.getFiatCurrency()}"
+                contentView.amount_as_tv.text = "0.00 ${Fiats.getAccountCurrencyAppearance()}"
             }
             contentView.symbol_tv.text = ""
         } else {
@@ -433,7 +433,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             bottomValue.toString()
         } else {
             val s = contentView.amount_et.text.toString()
-            val symbol = if (swaped) currentAsset?.symbol ?: "" else Session.getFiatCurrency()
+            val symbol = if (swaped) currentAsset?.symbol ?: "" else Fiats.getAccountCurrencyAppearance()
             val index = s.indexOf(symbol)
             return if (index != -1) {
                 s.substring(0, index)
@@ -444,7 +444,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun getTopSymbol(): String {
-        return if (swaped) Session.getFiatCurrency() else currentAsset?.symbol ?: ""
+        return if (swaped) Fiats.getAccountCurrencyAppearance() else currentAsset?.symbol ?: ""
     }
 
     private fun getBottomText(): String {
@@ -453,7 +453,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         } catch (e: java.lang.NumberFormatException) {
             0.0
         }
-        val rightSymbol = if (swaped) currentAsset!!.symbol else Session.getFiatCurrency()
+        val rightSymbol = if (swaped) currentAsset!!.symbol else Fiats.getAccountCurrencyAppearance()
         val value = try {
             if (currentAsset == null || currentAsset!!.priceFiat().toDouble() == 0.0) {
                 BigDecimal(0)
@@ -572,9 +572,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 contentView.continue_tv.isEnabled = false
                 contentView.continue_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 if (contentView.amount_rl.isVisible) {
-                    contentView.amount_et.hint = "0.00 ${if (swaped) Session.getFiatCurrency() else currentAsset?.symbol}"
+                    contentView.amount_et.hint = "0.00 ${if (swaped) Fiats.getAccountCurrencyAppearance() else currentAsset?.symbol}"
                     contentView.symbol_tv.text = ""
-                    contentView.amount_as_tv.text = "0.00 ${if (swaped) currentAsset?.symbol else Session.getFiatCurrency()}"
+                    contentView.amount_as_tv.text = "0.00 ${if (swaped) currentAsset?.symbol else Fiats.getAccountCurrencyAppearance()}"
                 }
             }
         }
