@@ -329,9 +329,9 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun checkRoot() {
         if (RootUtil.isDeviceRooted && defaultSharedPreferences.getBoolean(
-                Constants.Account.PREF_BIOMETRICS,
-                false
-            )
+            Constants.Account.PREF_BIOMETRICS,
+            false
+        )
         ) {
             BiometricUtil.deleteKey(this)
         }

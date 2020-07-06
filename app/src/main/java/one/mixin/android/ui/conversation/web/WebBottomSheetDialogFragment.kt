@@ -9,9 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -40,13 +38,6 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.DataSource
-import com.bumptech.glide.load.engine.GlideException
-import com.bumptech.glide.request.RequestListener
-import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.target.Target
-import com.bumptech.glide.request.transition.Transition
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.gson.Gson
@@ -85,19 +76,14 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.home.MainActivity.Companion.getShortcutIntent
 import one.mixin.android.util.Session
-import one.mixin.android.util.addShortcut
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
-import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.matchResourcePattern
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SuspiciousLinkView
@@ -594,61 +580,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.chat_web_view.reload()
             bottomSheet.dismiss()
         }
-        if (isBot()) {
-            view.add_shortcut.isVisible = true
-            view.add_shortcut.setOnClickListener {
-                app?.let { app ->
-                    RxPermissions(requireActivity())
-                        .request(Manifest.permission.INSTALL_SHORTCUT)
-                        .autoDispose(stopScope)
-                        .subscribe(
-                            { granted ->
-                                if (granted) {
-                                    Glide.with(requireContext())
-                                        .asBitmap()
-                                        .load(app.iconUrl)
-                                        .listener(object : RequestListener<Bitmap> {
-                                            override fun onResourceReady(
-                                                resource: Bitmap?,
-                                                model: Any?,
-                                                target: Target<Bitmap>?,
-                                                dataSource: DataSource?,
-                                                isFirstResource: Boolean
-                                            ): Boolean {
-                                                addShortcut(
-                                                    requireContext(),
-                                                    app.name,
-                                                    resource!!,
-                                                    getShortcutIntent(requireContext(), generateConversationId(Session.getAccountId()!!, app.appId))
-                                                )
-                                                return false
-                                            }
-
-                                            override fun onLoadFailed(
-                                                e: GlideException?,
-                                                model: Any?,
-                                                target: Target<Bitmap>?,
-                                                isFirstResource: Boolean
-                                            ):
-                                                Boolean {
-
-                                                return false
-                                            }
-                                        }).submit()
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            },
-                            {
-                                Timber.e(it)
-                            }
-                        )
-                }
-            }
-        } else {
-            view.add_shortcut.isVisible = false
-        }
-
         view.open.setOnClickListener {
             contentView.chat_web_view.url?.let {
                 context?.openUrl(it)

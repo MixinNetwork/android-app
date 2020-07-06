@@ -47,21 +47,6 @@
         android:textColor="?attr/text_primary" />
 
     <TextView
-        android:id="@+id/add_shortcut"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_gravity="center"
-        android:background="?attr/bg_white"
-        android:drawablePadding="16dp"
-        android:foreground="?attr/selectableItemBackground"
-        android:gravity="center_vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:text="@string/action_add_shortcut"
-        android:textColor="?attr/text_primary" />
-
-
-    <TextView
         android:id="@+id/open"
         android:layout_width="match_parent"
         android:layout_height="56dp"
