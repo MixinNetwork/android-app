@@ -365,9 +365,12 @@ class CallActivity : BaseActivity(), SensorEventListener {
             val users = viewModel.findMultiUsersByIds(callees.toSet())
             userAdapter?.submitList(users)
         }
-        val newGuestsNotConnected = callState.getGuests(cid)
-        userAdapter?.guestsNotConnected = newGuestsNotConnected
-        userAdapter?.notifyDataSetChanged()
+        val currentGuestsNotConnected = userAdapter?.guestsNotConnected
+        val newGuestsNotConnected = callState.getGuestsNotInUsers(cid)
+        if (currentGuestsNotConnected != newGuestsNotConnected) {
+            userAdapter?.guestsNotConnected = newGuestsNotConnected
+            userAdapter?.notifyDataSetChanged()
+        }
     }
 
     private fun setBlurBg(url: String) = lifecycleScope.launch(Dispatchers.IO) {
