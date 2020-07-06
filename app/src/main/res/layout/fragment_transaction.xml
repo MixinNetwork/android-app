@@ -1,23 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/bg_white"
-    android:orientation="vertical">
+    android:background="?attr/bg_white">
+
+    <View
+        android:id="@+id/ph"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="?attr/bg_white" />
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_below="@id/ph"
         app:need_divider="false"
         app:titleText="@string/wallet_transaction_title" />
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_below="@id/title_view">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -46,12 +53,12 @@
                     <one.mixin.android.widget.BalanceLayout
                         android:id="@+id/value_rl"
                         android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/avatar"
+                        android:layout_centerHorizontal="true"
                         android:layout_marginStart="32dp"
                         android:layout_marginEnd="32dp"
-                        app:center="true"
-                        android:layout_centerHorizontal="true"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/avatar">
+                        app:center="true">
 
                         <TextView
                             android:id="@+id/value_tv"
@@ -77,17 +84,17 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_below="@+id/value_rl"
+                        android:layout_centerHorizontal="true"
                         android:layout_marginTop="@dimen/margin12"
                         android:layout_marginBottom="32dp"
-                        android:layout_centerHorizontal="true"
-                        android:textColor="?attr/text_minor"/>
+                        android:textColor="?attr/text_minor" />
                 </RelativeLayout>
             </FrameLayout>
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="10dp"
-                android:background="?attr/bg_window"/>
+                android:background="?attr/bg_window" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -216,4 +223,4 @@
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
-</LinearLayout>
+</RelativeLayout>
