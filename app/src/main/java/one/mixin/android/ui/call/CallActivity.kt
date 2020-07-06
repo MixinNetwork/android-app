@@ -319,7 +319,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     private fun hangup() {
-        callState.handleHangup(this)
+        callState.handleHangup(this, join)
         finishAndRemoveTask()
     }
 

@@ -97,6 +97,7 @@ class GroupCallService : CallService() {
             ACTION_KRAKEN_END -> handleKrakenEnd()
             ACTION_KRAKEN_CANCEL -> handleKrakenCancel()
             ACTION_KRAKEN_DECLINE -> handleKrakenDecline()
+            ACTION_KRAKEN_CANCEL_SILENTLY -> handleCallLocalFailed()
             else -> handled = false
         }
         return handled
@@ -782,6 +783,7 @@ private const val ACTION_KRAKEN_RECEIVE_CANCEL = "kraken_receive_cancel"
 const val ACTION_KRAKEN_END = "kraken_end"
 const val ACTION_KRAKEN_CANCEL = "kraken_cancel"
 const val ACTION_KRAKEN_DECLINE = "kraken_decline"
+const val ACTION_KRAKEN_CANCEL_SILENTLY = "kraken_local_cancel"
 
 private const val EXTRA_PLAY_RING = "extra_play_ring"
 
@@ -829,3 +831,5 @@ fun krakenEnd(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_
 fun krakenCancel(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_CANCEL) {}
 
 fun krakenDecline(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_DECLINE) {}
+
+fun krakenCancelSilently(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_CANCEL_SILENTLY) {}

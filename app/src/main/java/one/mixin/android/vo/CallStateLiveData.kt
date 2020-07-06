@@ -9,6 +9,7 @@ import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.cancelCall
 import one.mixin.android.webrtc.declineCall
 import one.mixin.android.webrtc.krakenCancel
+import one.mixin.android.webrtc.krakenCancelSilently
 import one.mixin.android.webrtc.krakenDecline
 import one.mixin.android.webrtc.krakenEnd
 import one.mixin.android.webrtc.localEnd
@@ -221,7 +222,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
             pendingGroupCalls.any { it.conversationId == conversationId }
         }
 
-    fun handleHangup(ctx: Context) {
+    fun handleHangup(ctx: Context, join: Boolean = false) {
         when (state) {
             CallService.CallState.STATE_DIALING ->
                 if (isGroupCall()) {
@@ -231,7 +232,11 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
                 }
             CallService.CallState.STATE_RINGING ->
                 if (isGroupCall()) {
-                    krakenDecline(ctx)
+                    if (join) {
+                        krakenCancelSilently(ctx)
+                    } else {
+                        krakenDecline(ctx)
+                    }
                 } else if (isVoiceCall()) {
                     declineCall(ctx)
                 }
