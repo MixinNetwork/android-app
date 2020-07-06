@@ -18,7 +18,7 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.image.ImageListener
 import one.mixin.android.util.image.LottieLoader
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.isLottieUrl
+import one.mixin.android.vo.isLottie
 import one.mixin.android.vo.isSignal
 import one.mixin.android.widget.RLottieDrawable
 import org.jetbrains.anko.dip
@@ -104,7 +104,7 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
             itemView.chat_time.visibility = VISIBLE
         }
         messageItem.assetUrl?.let { url ->
-            if (url.isLottieUrl()) {
+            if (messageItem.isLottie()) {
                 LottieLoader.fromUrl(
                     itemView.context, url, url,
                     itemView.chat_sticker.layoutParams.width, itemView.chat_sticker.layoutParams.height
