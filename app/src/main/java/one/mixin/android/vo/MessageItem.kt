@@ -161,6 +161,8 @@ fun MessageItem.isFile() =
     type == MessageCategory.SIGNAL_DATA.name ||
         type == MessageCategory.PLAIN_DATA.name
 
+fun MessageItem.isLottie() = assetType?.equals(Sticker.STICKER_TYPE_JSON, true) == true
+
 fun MessageItem.mediaDownloaded() = mediaStatus == MediaStatus.DONE.name || mediaStatus == MediaStatus.READ.name
 
 fun MessageItem.canRecall(): Boolean {
