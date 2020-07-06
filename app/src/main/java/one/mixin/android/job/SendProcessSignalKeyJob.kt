@@ -1,7 +1,9 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import one.mixin.android.RxBus
 import one.mixin.android.db.clearParticipant
+import one.mixin.android.event.SenderKeyChange
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.websocket.BlazeMessageData
@@ -31,6 +33,7 @@ class SendProcessSignalKeyJob(
             Session.getAccountId()?.let {
                 appDatabase.clearParticipant(data.conversationId, participantId!!)
                 signalProtocol.clearSenderKey(data.conversationId, it)
+                RxBus.publish(SenderKeyChange(data.conversationId))
             }
         } else if (action == ProcessSignalKeyAction.ADD_PARTICIPANT) {
             val response = userService.fetchSessions(arrayListOf(participantId!!)).execute().body()

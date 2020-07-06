@@ -21,6 +21,7 @@ import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.event.RecallEvent
+import one.mixin.android.event.SenderKeyChange
 import one.mixin.android.extension.autoDownload
 import one.mixin.android.extension.autoDownloadDocument
 import one.mixin.android.extension.autoDownloadPhoto
@@ -702,6 +703,9 @@ class DecryptMessage : Injector() {
             signalProtocol.decrypt(
                 data.conversationId, data.userId, keyType, cipherText, data.category, data.sessionId,
                 DecryptionCallback {
+                    if (data.category == MessageCategory.SIGNAL_KEY.name && data.userId != Session.getAccountId()) {
+                        RxBus.publish(SenderKeyChange(data.conversationId, data.userId, data.sessionId))
+                    }
                     if (data.category != MessageCategory.SIGNAL_KEY.name) {
                         val plaintext = String(it)
                         if (resendMessageId != null) {

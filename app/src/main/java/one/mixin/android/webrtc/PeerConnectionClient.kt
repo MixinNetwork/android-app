@@ -1,6 +1,7 @@
 package one.mixin.android.webrtc
 
 import android.content.Context
+import androidx.collection.arrayMapOf
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.util.Session
@@ -39,6 +40,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private var audioTrack: AudioTrack? = null
     private var audioSource: AudioSource? = null
     private var localSender: RtpSender? = null
+    private val rtpReceivers = arrayMapOf<String, RtpReceiver>()
     private val sdpConstraint = MediaConstraints()
 
     fun createPeerConnectionFactory(options: PeerConnectionFactory.Options) {
@@ -149,6 +151,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         audioSource?.dispose()
         audioSource = null
         isError = false
+        rtpReceivers.clear()
         events.onPeerConnectionClosed()
     }
 
@@ -208,6 +211,20 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             localSender!!.setFrameEncryptor(RTCFrameEncryptor(frameKey))
         }
         return peerConnection
+    }
+
+    fun setSenderFrameKey(frameKey: ByteArray? = null) {
+        if (frameKey != null && localSender != null) {
+            localSender!!.setFrameEncryptor(RTCFrameEncryptor(frameKey))
+        }
+    }
+
+    fun setReceiverFrameKey(userId: String, sessionId: String, frameKey: ByteArray? = null) {
+        val key = "$userId~$sessionId"
+        if (rtpReceivers.containsKey(key)) {
+            val receiver = rtpReceivers[key]
+            receiver?.setFrameDecryptor(RTCFrameDecryptor(frameKey))
+        }
     }
 
     private fun createPeerConnectionFactoryInternal(options: PeerConnectionFactory.Options) {
@@ -291,7 +308,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             Timber.d("onTrack=%s", transceiver.toString())
         }
 
-        override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>) {
+        override fun onAddTrack(receiver: RtpReceiver, mediaStreams: Array<out MediaStream>) {
             for (m in mediaStreams) {
                 val userSession = m.id.split("~")
                 if (userSession.size != 2) {
@@ -302,11 +319,12 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 }
                 val frameKey = events.getSenderPublicKey(userSession[0], userSession[1])
                 if (frameKey != null) {
-                    receiver?.setFrameDecryptor(RTCFrameDecryptor(frameKey))
+                    rtpReceivers[m.id] = receiver
+                    receiver.setFrameDecryptor(RTCFrameDecryptor(frameKey))
                 }
             }
             Timber.d("onAddTrack=%s", receiver.toString())
-            receiver?.track()?.setEnabled(true)
+            receiver.track()?.setEnabled(true)
         }
     }
 

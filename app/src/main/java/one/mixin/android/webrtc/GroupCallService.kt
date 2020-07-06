@@ -1,11 +1,13 @@
 package one.mixin.android.webrtc
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonElement
+import io.reactivex.disposables.Disposable
 import one.mixin.android.Constants
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.R
@@ -19,6 +21,7 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.findFullNameById
 import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.event.CallEvent
+import one.mixin.android.event.SenderKeyChange
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.fromJson
@@ -80,6 +83,8 @@ class GroupCallService : CallService() {
     @Inject
     lateinit var conversationApi: ConversationService
 
+    private var disposable: Disposable? = null
+
     override fun handleIntent(intent: Intent): Boolean {
         var handled = true
         when (intent.action) {
@@ -137,6 +142,7 @@ class GroupCallService : CallService() {
         }
     }
 
+    @SuppressLint("AutoDispose")
     private fun publish(conversationId: String) {
         Timber.d("@@@ publish")
         if (callState.isIdle()) return
@@ -161,6 +167,24 @@ class GroupCallService : CallService() {
                 },
                 frameKey = key
             )
+
+            disposable = RxBus.listen(SenderKeyChange::class.java)
+                .subscribe { event ->
+                    if (event.conversationId != conversationId) {
+                        return@subscribe
+                    }
+                    if (event.userId != null && event.sessionId != null) {
+                        val users = callState.getUsersByConversationId(event.conversationId) ?: return@subscribe
+                        if (users.contains(event.userId)) {
+                            val frameKey = getSenderPublicKey(event.userId, event.sessionId) ?: return@subscribe
+                            peerConnectionClient.setReceiverFrameKey(event.userId, event.sessionId, frameKey)
+                        }
+                    } else {
+                        checkSessionSenderKey(conversationId)
+                        val frameKey = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
+                        peerConnectionClient.setSenderFrameKey(frameKey)
+                    }
+                }
         }
     }
 
@@ -480,6 +504,7 @@ class GroupCallService : CallService() {
     }
 
     override fun onCallDisconnected() {
+        disposable?.dispose()
     }
 
     override fun onDestroyed() {
