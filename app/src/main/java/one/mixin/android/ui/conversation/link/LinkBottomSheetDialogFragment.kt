@@ -40,7 +40,6 @@ import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.getScopes
 import one.mixin.android.di.Injectable
-import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
@@ -68,7 +67,7 @@ import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.TransactionFragment
+import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.SystemUIManager
@@ -443,11 +442,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                     val result = linkViewModel.getSnapshotByTraceId(traceId)
                     if (result != null) {
                         dismiss()
-                        activity?.addFragment(
-                            this@LinkBottomSheetDialogFragment,
-                            TransactionFragment.newInstance(result.first, result.second),
-                            TransactionFragment.TAG
-                        )
+                        TransactionBottomSheetDialogFragment.newInstance(result.first, result.second)
+                            .show(parentFragmentManager, TransactionBottomSheetDialogFragment.TAG)
                     } else {
                         error()
                     }
@@ -462,11 +458,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                     val result = linkViewModel.getSnapshotAndAsset(snapshotId)
                     if (result != null) {
                         dismiss()
-                        activity?.addFragment(
-                            this@LinkBottomSheetDialogFragment,
-                            TransactionFragment.newInstance(result.first, result.second),
-                            TransactionFragment.TAG
-                        )
+                        TransactionBottomSheetDialogFragment.newInstance(result.first, result.second)
+                            .show(parentFragmentManager, TransactionBottomSheetDialogFragment.TAG)
                     } else {
                         error()
                     }
