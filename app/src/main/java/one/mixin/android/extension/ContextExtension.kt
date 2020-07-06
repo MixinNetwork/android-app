@@ -362,13 +362,15 @@ fun Fragment.selectMediaType(type: String, extraMimeType: Array<String>?, reques
     }
 }
 
-fun Context.openPermissionSetting() {
+fun Context.openPermissionSetting(enableToast: Boolean = true) {
     val intent = Intent()
     intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
     val uri = Uri.fromParts("package", packageName, null)
     intent.data = uri
     startActivity(intent)
-    toast(R.string.error_permission)
+    if (enableToast) {
+        toast(R.string.error_permission)
+    }
 }
 
 fun Context.openNotificationSetting() {
@@ -385,6 +387,7 @@ fun Context.openNotificationSetting() {
         startActivity(intent)
     } catch (e: Exception) {
         Timber.e(e)
+        openPermissionSetting(false)
     }
 }
 
