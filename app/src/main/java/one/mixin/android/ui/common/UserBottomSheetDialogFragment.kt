@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ClipData
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
@@ -17,6 +18,11 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.jakewharton.rxbinding3.view.clicks
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -63,6 +69,7 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.UserTransactionsFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.util.Session
@@ -78,6 +85,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.webrtc.CallService
 import org.threeten.bp.Instant
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -110,12 +118,14 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     }
 
     private lateinit var user: User
+
     // bot need conversation id
     private var conversationId: String? = null
     private var creator: User? = null
 
     @Inject
     lateinit var linkState: LinkState
+
     @Inject
     lateinit var callState: CallStateLiveData
 
@@ -423,6 +433,18 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                         dismiss()
                     }
                     this.circleNames = circleNames
+                }
+            }
+        )
+
+        list.groups.add(
+            menuGroup {
+                menu {
+                    title = getString(R.string.add_shortcut)
+                    action = {
+                        addShortcut()
+                        dismiss()
+                    }
                 }
             }
         )
@@ -846,6 +868,64 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             user.fullName
         )
         bottomViewModel.updateRelationship(request)
+    }
+
+    private fun addShortcut() {
+        RxPermissions(requireActivity())
+            .request(Manifest.permission.INSTALL_SHORTCUT)
+            .autoDispose(stopScope)
+            .subscribe(
+                { granted ->
+                    if (granted) {
+                        addShortcutInternal()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                },
+                {
+                    Timber.e(it)
+                }
+            )
+    }
+
+    private fun addShortcutInternal() {
+        Glide.with(requireContext())
+            .asBitmap()
+            .load(user.avatarUrl)
+            .listener(object : RequestListener<Bitmap> {
+                override fun onResourceReady(
+                    resource: Bitmap?,
+                    model: Any?,
+                    target: Target<Bitmap>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    user.fullName?.let {
+                        val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
+                        one.mixin.android.util.addShortcut(
+                            requireContext(),
+                            conversationId,
+                            it,
+                            resource!!,
+                            MainActivity.getShortcutIntent(
+                                requireContext(),
+                                conversationId
+                            )
+                        )
+                    }
+                    return false
+                }
+
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: Target<Bitmap>?,
+                    isFirstResource: Boolean
+                ): Boolean {
+
+                    return false
+                }
+            }).submit()
     }
 
     override fun onStateChanged(bottomSheet: View, newState: Int) {

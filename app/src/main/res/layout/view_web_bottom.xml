@@ -46,7 +46,6 @@
         android:text="@string/action_refresh"
         android:textColor="?attr/text_primary" />
 
-
     <TextView
         android:id="@+id/open"
         android:layout_width="match_parent"
