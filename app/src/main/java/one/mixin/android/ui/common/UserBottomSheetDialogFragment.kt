@@ -921,11 +921,10 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     model: Any?,
                     target: Target<Bitmap>?,
                     isFirstResource: Boolean
-                ):
-                    Boolean {
+                ): Boolean {
 
-                        return false
-                    }
+                    return false
+                }
             }).submit()
     }
 
