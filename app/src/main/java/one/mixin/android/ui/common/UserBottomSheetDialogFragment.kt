@@ -889,13 +889,15 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                                     isFirstResource: Boolean
                                 ): Boolean {
                                     user.fullName?.let {
+                                        val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
                                         one.mixin.android.util.addShortcut(
                                             requireContext(),
+                                            conversationId,
                                             it,
                                             resource!!,
                                             MainActivity.getShortcutIntent(
                                                 requireContext(),
-                                                generateConversationId(Session.getAccountId()!!, user.userId)
+                                                conversationId
                                             )
                                         )
                                     }

@@ -10,10 +10,10 @@ import android.os.Build
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.getSystemService
 
-fun addShortcut(context: Context, name: String, icon: Bitmap, launcher: Intent) {
+fun addShortcut(context: Context, conversationId: String, name: String, icon: Bitmap, launcher: Intent) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val scm: ShortcutManager? = context.getSystemService()
-        val si = ShortcutInfo.Builder(context, "dataroam")
+        val si = ShortcutInfo.Builder(context, conversationId)
             .setIcon(Icon.createWithBitmap(icon))
             .setShortLabel(name)
             .setIntent(launcher)
