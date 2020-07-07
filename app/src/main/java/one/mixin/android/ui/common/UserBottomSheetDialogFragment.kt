@@ -877,44 +877,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             .subscribe(
                 { granted ->
                     if (granted) {
-                        Glide.with(requireContext())
-                            .asBitmap()
-                            .load(user.avatarUrl)
-                            .listener(object : RequestListener<Bitmap> {
-                                override fun onResourceReady(
-                                    resource: Bitmap?,
-                                    model: Any?,
-                                    target: Target<Bitmap>?,
-                                    dataSource: DataSource?,
-                                    isFirstResource: Boolean
-                                ): Boolean {
-                                    user.fullName?.let {
-                                        val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
-                                        one.mixin.android.util.addShortcut(
-                                            requireContext(),
-                                            conversationId,
-                                            it,
-                                            resource!!,
-                                            MainActivity.getShortcutIntent(
-                                                requireContext(),
-                                                conversationId
-                                            )
-                                        )
-                                    }
-                                    return false
-                                }
-
-                                override fun onLoadFailed(
-                                    e: GlideException?,
-                                    model: Any?,
-                                    target: Target<Bitmap>?,
-                                    isFirstResource: Boolean
-                                ):
-                                    Boolean {
-
-                                        return false
-                                    }
-                            }).submit()
+                        addShortcutInternal()
                     } else {
                         context?.openPermissionSetting()
                     }
@@ -923,6 +886,47 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     Timber.e(it)
                 }
             )
+    }
+
+    private fun addShortcutInternal() {
+        Glide.with(requireContext())
+            .asBitmap()
+            .load(user.avatarUrl)
+            .listener(object : RequestListener<Bitmap> {
+                override fun onResourceReady(
+                    resource: Bitmap?,
+                    model: Any?,
+                    target: Target<Bitmap>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    user.fullName?.let {
+                        val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
+                        one.mixin.android.util.addShortcut(
+                            requireContext(),
+                            conversationId,
+                            it,
+                            resource!!,
+                            MainActivity.getShortcutIntent(
+                                requireContext(),
+                                conversationId
+                            )
+                        )
+                    }
+                    return false
+                }
+
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: Target<Bitmap>?,
+                    isFirstResource: Boolean
+                ):
+                    Boolean {
+
+                        return false
+                    }
+            }).submit()
     }
 
     override fun onStateChanged(bottomSheet: View, newState: Int) {
