@@ -192,7 +192,7 @@ dependencies {
 
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.google.firebase:firebase-analytics:${firebaseVersion}"
-    implementation 'com.google.firebase:firebase-crashlytics:17.1.0'
+    implementation 'com.google.firebase:firebase-crashlytics:17.1.1'
     implementation "com.google.firebase:firebase-messaging:${firebaseMessageVersion}"
     implementation "com.google.firebase:firebase-dynamic-links:${firebaseDylinkVersion}"
     implementation "com.google.firebase:firebase-ml-vision:${firebaseMLVersion}"
