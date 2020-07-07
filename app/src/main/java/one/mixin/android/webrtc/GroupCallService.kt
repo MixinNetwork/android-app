@@ -478,7 +478,7 @@ class GroupCallService : CallService() {
     }
 
     override fun onPeerConnectionError(description: String) {
-        callExecutor.execute { handleCallLocalFailed() }
+        callExecutor.execute { handleKrakenEnd() }
     }
 
     override fun onTimeout() {

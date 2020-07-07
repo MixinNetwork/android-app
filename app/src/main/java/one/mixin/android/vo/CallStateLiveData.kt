@@ -271,7 +271,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         userList.let { us ->
             val existsUser = us.find { u -> u == userId }
             if (existsUser == null) {
-                us.add(userId)
+                us.add(0, userId)
             }
         }
         return userList

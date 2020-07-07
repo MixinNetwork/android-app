@@ -292,12 +292,15 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
         if (callState.isRinging()) {
             hangup()
         } else if (callState.isNotIdle()) {
+            if (!checkInlinePermissions()) {
+                return
+            }
             switch2Pip()
         }
+        super.onBackPressed()
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {

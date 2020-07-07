@@ -157,6 +157,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
+import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
@@ -253,6 +254,9 @@ class ConversationFragment :
 
     @Inject
     lateinit var jobManager: MixinJobManager
+
+    @Inject
+    lateinit var callState: CallStateLiveData
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
