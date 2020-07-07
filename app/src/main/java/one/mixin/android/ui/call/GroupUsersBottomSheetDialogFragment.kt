@@ -83,7 +83,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             setCustomView(contentView)
             setCustomViewHeight((requireContext().realSize().y * .6f).toInt())
         }
-        val inGroupCallUsers = callState.getUsersWithGuests(conversationId)
+        val inGroupCallUsers = callState.getUsers(conversationId)
 
         contentView.apply {
             close_iv.setOnClickListener { dismiss() }
@@ -120,7 +120,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (callState.isIdle()) {
                     publish(requireContext(), conversationId, users)
                 } else {
-                    callState.addInitialGuests(conversationId, users)
+                    callState.addPendingUsers(conversationId, users)
                 }
                 jobManager.addJobInBackground(SendMessageJob(message, recipientIds = users))
                 dismiss()

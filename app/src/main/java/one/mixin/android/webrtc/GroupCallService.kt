@@ -134,7 +134,7 @@ class GroupCallService : CallService() {
             requireNotNull(cid)
             callState.conversationId = cid
             val users = intent.getStringArrayListExtra(EXTRA_USERS)
-            users?.let { callState.setInitialGuests(cid, it) }
+            users?.let { callState.setPendingUsers(cid, it) }
             callState.isOffer = true
             timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
             CallActivity.show(this)
@@ -201,7 +201,7 @@ class GroupCallService : CallService() {
         }
     }
 
-    private fun sendSubscribe(conversationId: String, trackId: String, userId: String? = null) {
+    private fun sendSubscribe(conversationId: String, trackId: String) {
         Timber.d("@@@ sendSubscribe")
         if (callState.isIdle()) return
 
@@ -212,11 +212,6 @@ class GroupCallService : CallService() {
         val bm = createKrakenMessage(blazeMessageParam)
         Timber.d("@@@ subscribe track id: $trackId")
         val bmData = getBlazeMessageData(bm) ?: return
-
-        userId?.let { u ->
-            callState.removeInitialGuest(conversationId, u)
-        }
-
         val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
         answer(krakenData, conversationId)
     }
@@ -245,7 +240,7 @@ class GroupCallService : CallService() {
     }
 
     private fun startCheckPeers(cid: String) {
-        callState.addPendingGroupCall(cid)
+        callState.addGroupCallState(cid)
         val existsFuture = scheduledFutures[cid]
         if (existsFuture == null) {
             if (scheduledExecutors.isShutdown) return
@@ -308,7 +303,7 @@ class GroupCallService : CallService() {
             callState.conversationId = cid
             userId?.let {
                 callState.setInviter(cid, it)
-                callState.addInitialGuests(cid, arrayListOf(it))
+                callState.addPendingUsers(cid, arrayListOf(it))
             }
             callState.isOffer = false
             timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
@@ -331,7 +326,6 @@ class GroupCallService : CallService() {
         val userId = intent.getStringExtra(EXTRA_USER_ID)
         requireNotNull(userId)
 
-        callState.removeInitialGuest(cid, userId)
         callState.removeUser(cid, userId)
         checkConversationUserCount(cid)
     }
@@ -342,7 +336,7 @@ class GroupCallService : CallService() {
         val userId = intent.getStringExtra(EXTRA_USER_ID)
         requireNotNull(userId)
 
-        callState.removeInitialGuest(cid, userId)
+        callState.removeUser(cid, userId)
         saveMessage(cid, userId, MessageCategory.KRAKEN_CANCEL.name)
         val fullName = database.findFullNameById(userId)
         mainThread {
@@ -612,7 +606,7 @@ class GroupCallService : CallService() {
     }
 
     private fun checkSchedules(conversationId: String) {
-        callState.removePendingGroupCall(conversationId)
+        callState.removeGroupCallState(conversationId)
         val listFuture = scheduledFutures.remove(conversationId)
         listFuture?.cancel(true)
 

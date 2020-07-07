@@ -141,7 +141,7 @@ class DecryptCallMessage(
                 receiveCancel(ctx, data.conversationId, data.userId)
             }
             MessageCategory.KRAKEN_DECLINE.name -> {
-                callState.removeInitialGuest(data.conversationId, data.userId)
+                callState.removeUser(data.conversationId, data.userId)
             }
         }
         notifyServer(data)

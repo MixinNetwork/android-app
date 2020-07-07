@@ -11,7 +11,7 @@ import one.mixin.android.extension.inflate
 import one.mixin.android.vo.User
 
 class CallUserAdapter(private val self: User) : ListAdapter<User, CallUserHolder>(User.DIFF_CALLBACK) {
-    var guestsNotConnected: ArrayList<String>? = null
+    var guestsNotConnected: List<String>? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         CallUserHolder(parent.inflate(R.layout.item_call_user))
@@ -24,7 +24,7 @@ class CallUserAdapter(private val self: User) : ListAdapter<User, CallUserHolder
 }
 
 class CallUserHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    fun bind(user: User, self: User, guestsNotConnected: ArrayList<String>?) {
+    fun bind(user: User, self: User, guestsNotConnected: List<String>?) {
         itemView.avatar_view.setInfo(user.fullName, user.avatarUrl, user.userId)
         itemView.connecting_view.isVisible = user.userId != self.userId &&
             guestsNotConnected?.contains(user.userId) == true

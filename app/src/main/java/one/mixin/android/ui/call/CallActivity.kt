@@ -338,9 +338,10 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     private fun refreshUsers() = lifecycleScope.launch {
         val cid = callState.conversationId ?: return@launch
-        val callees = callState.getUsersWithGuests(cid)
+        val us = callState.getUsers(cid)
+        val callees = mutableListOf<String>().apply { us?.let { addAll(it) } }
         var layoutManager: GridLayoutManager? = users_rv?.layoutManager as GridLayoutManager?
-        val spanCount = getSpanCount(callees?.size ?: 3)
+        val spanCount = getSpanCount(callees.size)
         if (layoutManager == null) {
             layoutManager = GridLayoutManager(this@CallActivity, spanCount)
             users_rv?.layoutManager = layoutManager
@@ -352,24 +353,24 @@ class CallActivity : BaseActivity(), SensorEventListener {
         if (callees.isNullOrEmpty()) {
             userAdapter?.submitList(null)
         } else {
-            val first = callees[0]
-            if (callees.size == 1 && first == self.userId) {
+            val last = callees.lastOrNull()
+            if (callees.size == 1 && last == self.userId) {
                 userAdapter?.submitList(listOf(self))
                 return@launch
             }
-            if (first != self.userId) {
+            if (last != self.userId) {
                 val exists = callees.remove(self.userId)
-                if (!join) {
-                    callees.add(0, self.userId)
-                } else if (exists) {
-                    callees.add(0, self.userId)
+                if (!join || exists) {
+                    callees.add(self.userId)
                 }
             }
             val users = viewModel.findMultiUsersByIds(callees.toSet())
-            userAdapter?.submitList(users)
+            val orderByIds = callees.withIndex().associate { it.value to it.index }
+            val sortedUsers = users.sortedBy { orderByIds[it.userId] }
+            userAdapter?.submitList(sortedUsers)
         }
         val currentGuestsNotConnected = userAdapter?.guestsNotConnected
-        val newGuestsNotConnected = callState.getGuestsNotInUsers(cid)
+        val newGuestsNotConnected = callState.getPendingUsers(cid)
         if (currentGuestsNotConnected != newGuestsNotConnected) {
             userAdapter?.guestsNotConnected = newGuestsNotConnected
             userAdapter?.notifyDataSetChanged()
