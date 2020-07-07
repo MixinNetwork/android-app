@@ -39,7 +39,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private var peerConnection: PeerConnection? = null
     private var audioTrack: AudioTrack? = null
     private var audioSource: AudioSource? = null
-    private var localSender: RtpSender? = null
+    private var rtpSender: RtpSender? = null
     private val rtpReceivers = arrayMapOf<String, RtpReceiver>()
     private val sdpConstraint = MediaConstraints()
 
@@ -146,6 +146,8 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     }
 
     fun close() {
+        rtpSender?.dispose()
+        rtpSender = null
         peerConnection?.dispose()
         peerConnection = null
         audioSource?.dispose()
@@ -206,14 +208,14 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         peerConnection.setAudioPlayout(false)
         peerConnection.setAudioRecording(false)
 
-        localSender = peerConnection.addTrack(createAudioTrack())
+        rtpSender = peerConnection.addTrack(createAudioTrack())
         setSenderFrameKey(frameKey)
         return peerConnection
     }
 
     fun setSenderFrameKey(frameKey: ByteArray? = null) {
-        if (frameKey != null && localSender != null) {
-            localSender!!.setFrameEncryptor(RTCFrameEncryptor(frameKey))
+        if (frameKey != null && rtpSender != null) {
+            rtpSender!!.setFrameEncryptor(RTCFrameEncryptor(frameKey))
         }
     }
 
