@@ -150,7 +150,7 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
 
     // Architecture components
-    implementation "androidx.paging:paging-runtime:${pagingVersion}"
+    implementation "androidx.paging:paging-runtime-ktx:${pagingVersion}"
     implementation "androidx.lifecycle:lifecycle-extensions:${lifecycleVersion}"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${lifecycleVersion}"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:${lifecycleVersion}"
