@@ -207,9 +207,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         peerConnection.setAudioRecording(false)
 
         localSender = peerConnection.addTrack(createAudioTrack())
-        if (frameKey != null) {
-            localSender!!.setFrameEncryptor(RTCFrameEncryptor(frameKey))
-        }
+        setSenderFrameKey(frameKey)
         return peerConnection
     }
 
@@ -221,7 +219,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
 
     fun setReceiverFrameKey(userId: String, sessionId: String, frameKey: ByteArray? = null) {
         val key = "$userId~$sessionId"
-        if (rtpReceivers.containsKey(key)) {
+        if (rtpReceivers.containsKey(key) && frameKey != null) {
             val receiver = rtpReceivers[key]
             receiver?.setFrameDecryptor(RTCFrameDecryptor(frameKey))
         }
