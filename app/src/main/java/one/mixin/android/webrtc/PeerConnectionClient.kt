@@ -146,13 +146,12 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     }
 
     fun close() {
-        rtpSender?.dispose()
-        rtpSender = null
         peerConnection?.dispose()
         peerConnection = null
         audioSource?.dispose()
         audioSource = null
         isError = false
+        rtpSender = null
         rtpReceivers.clear()
         events.onPeerConnectionClosed()
     }
