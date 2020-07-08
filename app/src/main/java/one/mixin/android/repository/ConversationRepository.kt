@@ -31,6 +31,7 @@ import one.mixin.android.db.deleteMessage
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.joinStar
+import one.mixin.android.extension.replaceQuotationMark
 import one.mixin.android.job.AttachmentDeleteJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.media.pager.MediaPagerActivity
@@ -131,10 +132,10 @@ internal constructor(
         readConversationDao.getConversation(conversationId)
 
     suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem> =
-        readMessageDao.fuzzySearchMessage(query.joinStar(), limit)
+        readMessageDao.fuzzySearchMessage(query.joinStar().replaceQuotationMark(), limit)
 
     fun fuzzySearchMessageDetail(query: String, conversationId: String) =
-        MessageProvider.fuzzySearchMessageDetail(query.joinStar(), conversationId, readAppDatabase)
+        MessageProvider.fuzzySearchMessageDetail(query.joinStar().replaceQuotationMark(), conversationId, readAppDatabase)
 
     suspend fun fuzzySearchChat(query: String): List<ChatMinimal> =
         readConversationDao.fuzzySearchChat(query)
