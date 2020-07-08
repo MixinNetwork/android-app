@@ -93,6 +93,7 @@ class GroupCallService : CallService() {
             ACTION_KRAKEN_RECEIVE_INVITE -> handleReceiveInvite(intent)
             ACTION_KRAKEN_RECEIVE_END -> handleReceiveEnd(intent)
             ACTION_KRAKEN_RECEIVE_CANCEL -> handleReceiveCancel(intent)
+            ACTION_KRAKEN_RECEIVE_DECLINE -> handleReceiveDecline(intent)
             ACTION_KRAKEN_ACCEPT_INVITE -> handleAcceptInvite()
             ACTION_KRAKEN_END -> handleKrakenEnd()
             ACTION_KRAKEN_CANCEL -> handleKrakenCancel()
@@ -345,6 +346,20 @@ class GroupCallService : CallService() {
         if (callState.isBeforeAnswering()) {
             disconnect()
             checkConversationUserCount(cid)
+        }
+    }
+
+    private fun handleReceiveDecline(intent: Intent) {
+        val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
+        requireNotNull(cid)
+        val userId = intent.getStringExtra(EXTRA_USER_ID)
+        requireNotNull(userId)
+
+        callState.removeUser(cid, userId)
+        saveMessage(cid, userId, MessageCategory.KRAKEN_DECLINE.name)
+        val fullName = database.findFullNameById(userId)
+        mainThread {
+            toast(getString(R.string.chat_group_call_decline, fullName))
         }
     }
 
@@ -774,6 +789,7 @@ private const val ACTION_KRAKEN_RECEIVE_INVITE = "kraken_receive_invite"
 const val ACTION_KRAKEN_ACCEPT_INVITE = "kraken_accept_invite"
 private const val ACTION_KRAKEN_RECEIVE_END = "kraken_receive_end"
 private const val ACTION_KRAKEN_RECEIVE_CANCEL = "kraken_receive_cancel"
+private const val ACTION_KRAKEN_RECEIVE_DECLINE = "kraken_receive_decline"
 const val ACTION_KRAKEN_END = "kraken_end"
 const val ACTION_KRAKEN_CANCEL = "kraken_cancel"
 const val ACTION_KRAKEN_DECLINE = "kraken_decline"
@@ -814,6 +830,12 @@ fun receiveEnd(ctx: Context, conversationId: String, userId: String) =
 
 fun receiveCancel(ctx: Context, conversationId: String, userId: String) =
     startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_CANCEL) {
+        it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+        it.putExtra(EXTRA_USER_ID, userId)
+    }
+
+fun receiveDecline(ctx: Context, conversationId: String, userId: String) =
+    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_DECLINE) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USER_ID, userId)
     }

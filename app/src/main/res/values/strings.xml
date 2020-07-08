@@ -309,7 +309,7 @@
     <string name="chat_app_card_continue_open_url">Continue Open URL</string>
     <string name="chat_tap_join">Tap to join</string>
     <string name="chat_group_call_invite">%1$s has invited you to a voice call</string>
-    <string name="chat_group_call_decline">Group voice call declined</string>
+    <string name="chat_group_call_decline">%1$s has declined group voice call</string>
     <string name="chat_group_call_cancel">%1$s has canceled group voice call</string>
     <string name="chat_group_call_end">Group voice call ended, duration: %1$s</string>
     <!--contact-->
