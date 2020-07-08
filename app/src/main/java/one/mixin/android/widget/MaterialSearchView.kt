@@ -224,6 +224,7 @@ class MaterialSearchView : FrameLayout {
 
                 private fun op() {
                     setListener(null)
+                    logo_layout.isVisible = false
                     search_et.isVisible = true
                     search_et.showKeyboard()
                     search_et.animate().apply {
@@ -286,6 +287,7 @@ class MaterialSearchView : FrameLayout {
                 private fun op() {
                     setListener(null)
                     back_ib.isGone = true
+                    logo_layout.alpha = 0f
                     logo_layout.isVisible = true
                     logo_layout.animate().apply {
                         setListener(object : AnimatorListenerAdapter() {
