@@ -117,11 +117,7 @@ class VideoQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
             messageItem.mediaDuration.notNullWithElse(
                 {
                     itemView.duration_tv.visibility = View.VISIBLE
-                    itemView.duration_tv.text = try {
-                        it.toLong().formatMillis()
-                    } catch (e: Exception) {
-                        ""
-                    }
+                    itemView.duration_tv.text = it.toLongOrNull()?.formatMillis() ?: ""
                 },
                 {
                     itemView.duration_tv.visibility = View.GONE

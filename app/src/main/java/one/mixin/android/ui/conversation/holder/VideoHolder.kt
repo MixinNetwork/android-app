@@ -27,7 +27,6 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
-import java.lang.Exception
 
 class VideoHolder constructor(containerView: View) : MediaHolder(containerView) {
 
@@ -115,11 +114,7 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
                 messageItem.mediaDuration.notNullWithElse(
                     {
                         itemView.duration_tv.visibility = VISIBLE
-                        itemView.duration_tv.text = try {
-                            it.toLong().formatMillis()
-                        } catch (e: Exception) {
-                            ""
-                        }
+                        itemView.duration_tv.text = it.toLongOrNull()?.formatMillis() ?: ""
                     },
                     {
                         itemView.duration_tv.visibility = GONE

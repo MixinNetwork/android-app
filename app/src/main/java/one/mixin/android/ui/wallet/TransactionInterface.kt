@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import android.annotation.SuppressLint
 import android.view.View
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_transaction.view.*
@@ -29,11 +30,11 @@ interface TransactionInterface {
         walletViewModel: WalletViewModel,
         assetId: String?,
         snapshotId: String?,
-        asset: AssetItem?,
-        snapshot: SnapshotItem?
+        assetItem: AssetItem?,
+        snapshotItem: SnapshotItem?
     ) {
         contentView.title_view.right_animator.visibility = View.GONE
-        if (snapshot == null || asset == null) {
+        if (snapshotItem == null || assetItem == null) {
             if (snapshotId != null && assetId != null) {
                 lifecycleScope.launch {
                     val asset = walletViewModel.simpleAssetItem(assetId)
@@ -48,18 +49,16 @@ interface TransactionInterface {
                 fragment.toast(R.string.error_data)
             }
         } else {
-            updateUI(fragment, contentView, asset!!, snapshot!!)
+            updateUI(fragment, contentView, assetItem, snapshotItem)
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateUI(fragment: Fragment, contentView: View, asset: AssetItem, snapshot: SnapshotItem) {
         if (!fragment.isAdded) return
 
-        val isPositive = try {
-            snapshot.amount.toFloat() > 0
-        } catch (e: NumberFormatException) {
-            false
-        }
+        val amountVal = snapshot.amount.toFloatOrNull()
+        val isPositive = if (amountVal == null) false else amountVal > 0
         contentView.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         contentView.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         contentView.value_tv.text = if (isPositive) "+${snapshot.amount.numberFormat()}"

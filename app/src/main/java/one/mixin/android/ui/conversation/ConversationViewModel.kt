@@ -561,11 +561,7 @@ internal constructor(
                         if (message.mediaUrl?.fileExists() != true) {
                             return@map -1
                         }
-                        val mediaDuration = try {
-                            message.mediaDuration?.toLong()
-                        } catch (e: Exception) {
-                            0L
-                        }
+                        val mediaDuration = message.mediaDuration?.toLongOrNull() ?: 0L
                         jobManager.addJobInBackground(
                             SendAttachmentMessageJob(
                                 createVideoMessage(
