@@ -3,16 +3,19 @@
 package one.mixin.android.extension
 
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.RectF
 import android.text.Editable
 import com.google.android.exoplayer2.util.Util
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
-import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
-import com.google.zxing.MultiFormatWriter
-import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import com.google.zxing.qrcode.encoder.Encoder
+import com.google.zxing.qrcode.encoder.QRCode
 import okio.Buffer
 import okio.ByteString
 import okio.GzipSink
@@ -39,34 +42,87 @@ import kotlin.collections.set
 import kotlin.jvm.Throws
 import kotlin.math.abs
 
-fun String.generateQRCode(size: Int): Bitmap? {
-    val result: BitMatrix
+fun String.generateQRCode(size: Int, isNight: Boolean, padding: Float = 20.dp.toFloat()): Bitmap? {
+    val result: QRCode
     try {
         val hints = HashMap<EncodeHintType, Any>()
         hints[EncodeHintType.CHARACTER_SET] = "utf-8"
-        hints[EncodeHintType.ERROR_CORRECTION] = ErrorCorrectionLevel.H
-        result = MultiFormatWriter().encode(this, BarcodeFormat.QR_CODE, size, size, hints)
+        result = Encoder.encode(this, ErrorCorrectionLevel.H, hints)
     } catch (iae: IllegalArgumentException) {
         // Unsupported format
         return null
     }
 
-    val width = result.width
-    val height = result.height
-    val pixels = IntArray(width * height)
-    for (y in 0 until height) {
-        val offset = y * width
-        for (x in 0 until width) {
-            pixels[offset + x] = if (result.get(x, y)) {
-                -0x1000000 // black
-            } else {
-                -0x1 // white
+    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        Color.BLACK
+    }
+    val patternSize = 7
+    val input = result.matrix
+    val inputWidth = input.width
+    val inputHeight = input.height
+    val itemSize = (size - padding * 2) / inputWidth
+    val circleRadius = itemSize / 2
+    if (isNight) {
+        paint.color = Color.WHITE
+        paint.style = Paint.Style.FILL
+        canvas.drawRect(
+            RectF(padding / 2f, padding / 2f, size - padding / 2f, size - padding / 2),
+            paint
+        )
+        paint.color = Color.BLACK
+    }
+    for (y in 0 until inputHeight) {
+        for (x in 0 until inputWidth) {
+            if (input[x, y].toInt() == 1) {
+                if (x in 0..patternSize && (y in 0..patternSize || y in inputHeight - 1 - patternSize until inputHeight)) {
+                    continue
+                } else if (x in inputWidth - 1 - patternSize until inputWidth && y in 0..patternSize) {
+                    continue
+                }
+                canvas.drawCircle(
+                    (circleRadius + itemSize * x) + padding,
+                    (circleRadius + itemSize * y) + padding,
+                    circleRadius,
+                    paint
+                )
             }
         }
     }
-    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-    bitmap.setPixels(pixels, 0, width, 0, 0, width, height)
+    paint.strokeWidth = itemSize
+    val positionSize = itemSize * (patternSize - 1)
+    drawRoundRect(canvas, padding + itemSize / 2, padding + itemSize / 2, positionSize, paint)
+    drawRoundRect(
+        canvas,
+        size - padding - (itemSize * patternSize - itemSize),
+        padding + itemSize / 2,
+        positionSize,
+        paint
+    )
+    drawRoundRect(
+        canvas,
+        padding + itemSize / 2,
+        size - padding - (itemSize * patternSize - itemSize),
+        positionSize,
+        paint
+    )
     return bitmap
+}
+
+private fun drawRoundRect(canvas: Canvas, left: Float, top: Float, size: Float, paint: Paint) {
+    paint.style = Paint.Style.STROKE
+    canvas.drawRoundRect(RectF(left, top, left + size, top + size), size / 4, size / 4, paint)
+    paint.style = Paint.Style.FILL
+    canvas.drawRoundRect(
+        RectF(
+            left + size * 2 / 7,
+            top + size * 2 / 7,
+            left + size * 5 / 7,
+            top + size * 5 / 7
+        ),
+        2.dp.toFloat(), 2.dp.toFloat(), paint
+    )
 }
 
 fun String.getEpochNano(): Long {

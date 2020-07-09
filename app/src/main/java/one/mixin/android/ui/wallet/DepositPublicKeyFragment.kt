@@ -21,6 +21,7 @@ import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getQRCodePath
 import one.mixin.android.extension.getTipsByAsset
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
@@ -78,7 +79,7 @@ class DepositPublicKeyFragment : DepositFragment() {
             } else {
                 qr.post {
                     Observable.create<Bitmap> { e ->
-                        val b = asset.destination.generateQRCode(qr.width)
+                        val b = asset.destination.generateQRCode(qr.width, requireContext().isNightMode())
                         if (b != null) {
                             b.saveQRCode(requireContext(), asset.destination)
                             e.onNext(b)
