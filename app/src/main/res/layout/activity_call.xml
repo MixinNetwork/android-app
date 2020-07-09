@@ -98,7 +98,7 @@
         tools:ignore="ContentDescription" />
 
     <TextView
-        android:id="@+id/group_name_tv"
+        android:id="@+id/name_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textColor="@color/white"
@@ -140,20 +140,8 @@
         app:layout_constraintEnd_toEndOf="@id/guideline_end"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@id/guideline_start"
-        app:layout_constraintTop_toBottomOf="@+id/name_tv"
+        app:layout_constraintTop_toBottomOf="@+id/avatar"
         app:layout_constraintVertical_bias="0.95"/>
-
-    <TextView
-        android:id="@+id/name_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/white"
-        android:textSize="22sp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="@id/guideline_end"
-        app:layout_constraintHorizontal_bias="0.508"
-        app:layout_constraintStart_toStartOf="@id/guideline_start"
-        app:layout_constraintTop_toBottomOf="@+id/avatar"/>
 
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar"

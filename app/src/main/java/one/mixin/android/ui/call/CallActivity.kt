@@ -135,7 +135,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
         join = intent.getBooleanExtra(EXTRA_JOIN, false)
         if (callState.isGroupCall()) {
             avatar.isVisible = false
-            name_tv.isVisible = false
             users_rv.isVisible = true
             add_iv.isVisible = true
             if (userAdapter == null) {
@@ -146,14 +145,13 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 viewModel.observeConversationNameById(it).observe(
                     this,
                     Observer { name ->
-                        group_name_tv?.text = name
+                        name_tv?.text = name
                     }
                 )
             }
             refreshUsers()
         } else {
             avatar.isVisible = true
-            name_tv.isVisible = true
             users_rv.isVisible = false
             add_iv.isVisible = false
             val callee = callState.user
