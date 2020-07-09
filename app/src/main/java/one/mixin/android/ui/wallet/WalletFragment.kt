@@ -94,21 +94,21 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                     val hiddenPos = viewHolder.absoluteAdapterPosition
                     val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
                     val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
-                    lifecycleScope.launch(Dispatchers.IO) {
+                    lifecycleScope.launch {
                         walletViewModel.updateAssetHidden(asset.assetId, true)
-                        withContext(Dispatchers.Main) {
-                            Snackbar.make(coins_rv, getString(R.string.wallet_already_hidden, asset.symbol), Snackbar.LENGTH_LONG)
-                                .setAction(R.string.undo_capital) {
-                                    assetsAdapter.restoreItem(deleteItem, hiddenPos)
-                                    lifecycleScope.launch(Dispatchers.IO) {
-                                        walletViewModel.updateAssetHidden(asset.assetId, false)
-                                    }
-                                }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                                    this.view.setBackgroundResource(R.color.call_btn_icon_checked)
-                                    (this.view.findViewById(R.id.snackbar_text) as TextView)
-                                        .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                                }.show()
-                        }
+                        val anchorView = coins_rv ?: return@launch
+
+                        Snackbar.make(anchorView, getString(R.string.wallet_already_hidden, asset.symbol), Snackbar.LENGTH_LONG)
+                            .setAction(R.string.undo_capital) {
+                                assetsAdapter.restoreItem(deleteItem, hiddenPos)
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    walletViewModel.updateAssetHidden(asset.assetId, false)
+                                }
+                            }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                                this.view.setBackgroundResource(R.color.call_btn_icon_checked)
+                                (this.view.findViewById(R.id.snackbar_text) as TextView)
+                                    .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+                            }.show()
                     }
                 }
             })
