@@ -69,9 +69,9 @@ fun AssetItem.differentProcess(
     }
 }
 
-fun AssetItem.needShowReserve() =
-    !reserve.isNullOrBlank() && try {
-        reserve.toInt() > 0
-    } catch (e: NumberFormatException) {
-        false
-    }
+fun AssetItem.needShowReserve(): Boolean {
+    if (reserve.isNullOrBlank()) return false
+
+    val reserveVal = reserve.toIntOrNull() ?: return false
+    return reserveVal > 0
+}

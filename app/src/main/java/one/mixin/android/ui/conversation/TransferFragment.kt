@@ -383,11 +383,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
     @SuppressLint("SetTextI18n")
     private fun updateAssetUI(asset: AssetItem) {
-        val valuable = try {
-            asset.priceUsd.toFloat() > 0f
-        } catch (e: NumberFormatException) {
-            false
-        }
+        val price = asset.priceUsd.toFloatOrNull()
+        val valuable = if (price == null) false else price > 0f
         if (valuable) {
             contentView.swap_iv.visibility = VISIBLE
         } else {
@@ -448,11 +445,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun getBottomText(): String {
-        val amount = try {
-            contentView.amount_et.text.toString().toDouble()
-        } catch (e: java.lang.NumberFormatException) {
-            0.0
-        }
+        val amount = contentView.amount_et.text.toString().toDoubleOrNull() ?: 0.0
         val rightSymbol = if (swaped) currentAsset!!.symbol else Fiats.getAccountCurrencyAppearance()
         val value = try {
             if (currentAsset == null || currentAsset!!.priceFiat().toDouble() == 0.0) {
