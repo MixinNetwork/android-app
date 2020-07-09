@@ -45,11 +45,7 @@ class AudioHolder(itemView: View) : NormalHolder(itemView) {
             itemView.audio_waveform.setWaveform(it)
         }
         item.mediaDuration?.let {
-            itemView.audio_duration.text = try {
-                it.toLong().formatMillis()
-            } catch (e: Exception) {
-                ""
-            }
+            itemView.audio_duration.text = it.toLongOrNull()?.formatMillis() ?: ""
         }
         if (!isMe && item.mediaStatus != MediaStatus.READ.name) {
             itemView.audio_duration.setTextColor(itemView.context.getColor(R.color.colorBlue))

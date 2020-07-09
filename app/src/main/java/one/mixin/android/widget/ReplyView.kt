@@ -107,7 +107,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 reply_avatar.visibility = View.GONE
             }
             messageItem.type.endsWith("_AUDIO") -> {
-                reply_view_tv.text = messageItem.mediaDuration!!.toLong().formatMillis()
+                reply_view_tv.text = messageItem.mediaDuration?.toLongOrNull()?.formatMillis() ?: ""
                 setIcon(R.drawable.ic_status_audio)
                 (reply_view_tv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 reply_view_iv.visibility = View.GONE

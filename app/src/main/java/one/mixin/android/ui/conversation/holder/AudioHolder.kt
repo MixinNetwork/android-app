@@ -73,11 +73,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
             itemView.audio_duration.textResource = R.string.chat_expired
         } else {
-            itemView.audio_duration.text = try {
-                messageItem.mediaDuration?.toLong()?.formatMillis() ?: "00:00"
-            } catch (e: Exception) {
-                "00:00"
-            }
+            itemView.audio_duration.text = messageItem.mediaDuration?.toLongOrNull()?.formatMillis() ?: "00:00"
         }
 
         messageItem.mediaDuration?.let {

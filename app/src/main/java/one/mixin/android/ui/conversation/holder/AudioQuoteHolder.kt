@@ -90,7 +90,7 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
         if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
             itemView.audio_duration.textResource = R.string.chat_expired
         } else {
-            itemView.audio_duration.text = messageItem.mediaDuration!!.toLong().formatMillis()
+            itemView.audio_duration.text = messageItem.mediaDuration?.toLongOrNull()?.formatMillis() ?: ""
         }
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
