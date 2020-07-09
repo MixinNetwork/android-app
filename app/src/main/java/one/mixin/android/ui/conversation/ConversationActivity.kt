@@ -2,6 +2,7 @@ package one.mixin.android.ui.conversation
 
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.os.Bundle
 import android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
 import androidx.lifecycle.lifecycleScope
@@ -20,6 +21,7 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.MESSAGE_
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.UNREAD_COUNT
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
@@ -56,8 +58,16 @@ class ConversationActivity : BlazeBaseActivity() {
         showConversation(intent)
     }
 
+    override fun finish() {
+        if (intent.getBooleanExtra(ARGS_SHORTCUT, false)) {
+            MainActivity.show(this)
+        }
+        super.finish()
+    }
+
     @Inject
     lateinit var conversationRepository: ConversationRepository
+
     @Inject
     lateinit var userRepository: UserRepository
 
@@ -116,6 +126,7 @@ class ConversationActivity : BlazeBaseActivity() {
 
     companion object {
         private const val ARGS_FAST_SHOW = "args_fast_show"
+        private const val ARGS_SHORTCUT = "args_shortcut"
 
         fun fastShow(
             context: Context,
@@ -136,6 +147,15 @@ class ConversationActivity : BlazeBaseActivity() {
                 )
             }.run {
                 context.startActivity(this)
+            }
+        }
+
+        fun getShortcutIntent(context: Context, conversationId: String): Intent {
+            return putIntent(context, conversationId).apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_CLEAR_TASK)
+                addCategory(Intent.CATEGORY_LAUNCHER)
+                putExtra(ARGS_SHORTCUT, true)
+                action = Intent.ACTION_VIEW
             }
         }
 

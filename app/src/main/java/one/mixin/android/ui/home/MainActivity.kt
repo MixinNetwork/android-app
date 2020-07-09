@@ -818,13 +818,6 @@ class MainActivity : BlazeBaseActivity() {
             }
         }
 
-        fun getShortcutIntent(context: Context, conversationId: String): Intent {
-            return Intent(context, MainActivity::class.java).apply {
-                action = Intent.ACTION_MAIN
-                putExtra("conversation_id", conversationId)
-            }
-        }
-
         fun getSingleIntent(context: Context): Intent {
             return Intent(context, MainActivity::class.java).apply {
                 addCategory(Intent.CATEGORY_LAUNCHER)

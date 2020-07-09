@@ -69,7 +69,6 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.UserTransactionsFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.util.Session
@@ -907,7 +906,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             conversationId,
                             it,
                             resource!!,
-                            MainActivity.getShortcutIntent(
+                            ConversationActivity.getShortcutIntent(
                                 requireContext(),
                                 conversationId
                             )
