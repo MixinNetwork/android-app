@@ -2,18 +2,17 @@
     android:width="52dp"
     android:height="52dp"
     android:viewportWidth="52"
-    android:tint="#397EE4"
     android:viewportHeight="52">
   <path
       android:pathData="M22.5799,21L32.0988,21L30.4969,18.4516C29.8721,17.4576 28.5735,17.1627 27.591,17.7918L22.5799,21ZM32.6018,22.432C32.5619,22.4297 32.5218,22.4286 32.4815,22.4286L20.5185,22.4286C20.4543,22.4286 20.3906,22.4315 20.3273,22.4372C19.251,22.5353 18.4074,23.4534 18.4074,24.5714L18.4074,32.4286C18.4074,33.612 19.3526,34.5714 20.5185,34.5714L32.4815,34.5714C33.6474,34.5714 34.5926,33.612 34.5926,32.4286L34.5926,24.5714C34.5926,23.4289 33.7117,22.4953 32.6018,22.432L32.6018,22.432ZM19.8372,21.0669L26.8401,16.5835C28.4777,15.5351 30.642,16.0265 31.6834,17.6832L33.9821,21.3402C35.1748,21.9118 36,23.1438 36,24.5714L36,32.4286C36,34.401 34.4247,36 32.4815,36L20.5185,36C18.5753,36 17,34.401 17,32.4286L17,24.5714C17,22.8356 18.2201,21.3889 19.8372,21.0669Z"
       android:strokeWidth="1"
-      android:fillColor="@color/white"
+      android:fillColor="@color/icon_foreground"
       android:fillType="nonZero"
       android:strokeColor="#00000000"/>
   <path
       android:pathData="M28.963,28.1429a1.4074,1.4286 0,1 0,2.8148 0a1.4074,1.4286 0,1 0,-2.8148 0z"
       android:strokeWidth="1"
-      android:fillColor="@color/white"
+      android:fillColor="@color/icon_foreground"
       android:fillAlpha="0.6"
       android:fillType="evenOdd"
       android:strokeColor="#00000000"/>
