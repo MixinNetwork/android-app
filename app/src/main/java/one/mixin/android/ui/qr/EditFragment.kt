@@ -19,7 +19,7 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import com.google.firebase.ml.vision.common.FirebaseVisionImage
+import com.google.mlkit.vision.common.InputImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_edit.*
@@ -34,7 +34,6 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.getPublicPicturePath
-import one.mixin.android.extension.isFirebaseDecodeAvailable
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
@@ -186,36 +185,30 @@ class EditFragment : VisionFragment() {
         if (!isAdded) return@launch
 
         val bitmap = BitmapFactory.decodeFile(path) ?: return@launch
-        if (requireContext().isFirebaseDecodeAvailable()) {
-            try {
-                val visionImage = FirebaseVisionImage.fromBitmap(bitmap)
-                detector.use { d ->
-                    d.detectInImage(visionImage)
-                        .addOnSuccessListener { result ->
-                            val content = result.firstOrNull()?.rawValue
-                            if (!content.isNullOrBlank()) {
-                                lifecycleScope.launch innerLaunch@{
-                                    if (!isAdded) return@innerLaunch
-                                    if (fromScan) {
-                                        handleResult(content)
-                                    } else {
-                                        pseudoNotificationView?.addContent(content)
-                                    }
-                                }
+        try {
+            val visionImage = InputImage.fromBitmap(bitmap, 0)
+            scanner.process(visionImage)
+                .addOnSuccessListener { result ->
+                    val content = result.firstOrNull()?.rawValue
+                    if (!content.isNullOrBlank()) {
+                        lifecycleScope.launch innerLaunch@{
+                            if (!isAdded) return@innerLaunch
+                            if (fromScan) {
+                                handleResult(content)
                             } else {
-                                lifecycleScope.launch innerLaunch@{
-                                    if (!isAdded) return@innerLaunch
-                                    if (fromScan) {
-                                        showNoResultDialog()
-                                    }
-                                }
+                                pseudoNotificationView?.addContent(content)
                             }
                         }
+                    } else {
+                        lifecycleScope.launch innerLaunch@{
+                            if (!isAdded) return@innerLaunch
+                            if (fromScan) {
+                                showNoResultDialog()
+                            }
+                        }
+                    }
                 }
-            } catch (e: Exception) {
-                decodeWithZxing(bitmap)
-            }
-        } else {
+        } catch (e: Exception) {
             decodeWithZxing(bitmap)
         }
     }

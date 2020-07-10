@@ -3,10 +3,10 @@ package one.mixin.android.ui.qr
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
-import com.google.firebase.ml.vision.FirebaseVision
-import com.google.firebase.ml.vision.barcode.FirebaseVisionBarcode
-import com.google.firebase.ml.vision.barcode.FirebaseVisionBarcodeDetector
-import com.google.firebase.ml.vision.barcode.FirebaseVisionBarcodeDetectorOptions
+import com.google.mlkit.vision.barcode.Barcode
+import com.google.mlkit.vision.barcode.BarcodeScanner
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.closeSilently
@@ -20,12 +20,11 @@ import one.mixin.android.widget.PseudoNotificationView
 abstract class VisionFragment : BaseFragment() {
     protected var pseudoNotificationView: PseudoNotificationView? = null
 
-    protected val detector: FirebaseVisionBarcodeDetector =
-        FirebaseVision.getInstance().getVisionBarcodeDetector(
-            FirebaseVisionBarcodeDetectorOptions.Builder()
-                .setBarcodeFormats(FirebaseVisionBarcode.FORMAT_QR_CODE)
-                .build()
-        )
+    protected val scanner: BarcodeScanner = BarcodeScanning.getClient(
+        BarcodeScannerOptions.Builder()
+            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+            .build()
+    )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -37,7 +36,7 @@ abstract class VisionFragment : BaseFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        detector.closeSilently()
+        scanner.closeSilently()
     }
 
     private val pseudoViewCallback = object : PseudoNotificationView.Callback {

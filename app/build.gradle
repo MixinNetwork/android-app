@@ -195,7 +195,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-crashlytics:17.1.1'
     implementation "com.google.firebase:firebase-messaging:${firebaseMessageVersion}"
     implementation "com.google.firebase:firebase-dynamic-links:${firebaseDylinkVersion}"
-    implementation "com.google.firebase:firebase-ml-vision:${firebaseMLVersion}"
+    implementation "com.google.mlkit:barcode-scanning:${mlkitBarcodeVersion}"
     implementation("com.google.firebase:firebase-perf:${perfVersion}") {
         exclude group: 'com.google.protobuf', module: 'protobuf-lite'
     }

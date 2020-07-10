@@ -38,8 +38,6 @@ import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import com.google.firebase.ml.vision.FirebaseVision
-import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -47,7 +45,9 @@ import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
@@ -77,6 +77,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.util.Session
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.vo.App
@@ -148,6 +149,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         requireArguments().getParcelable<AppCardData>(ARGS_APP_CARD)
     }
 
+    private val processor = QRCodeProcessor()
+
     override fun onCreateContextMenu(
         menu: ContextMenu,
         v: View,
@@ -177,34 +180,27 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.hitTestResult?.let {
             val url = it.extra
             if (item.itemId == CONTEXT_MENU_ID_SCAN_IMAGE) {
-                doAsync {
+                lifecycleScope.launch {
                     try {
-                        val bitmap = Glide.with(requireContext())
-                            .asBitmap()
-                            .load(url)
-                            .submit()
-                            .get(10, TimeUnit.SECONDS)
-                        uiThread {
-                            if (isDetached) {
-                                return@uiThread
-                            }
-                            val image = FirebaseVisionImage.fromBitmap(bitmap)
-                            val detector = FirebaseVision.getInstance().visionBarcodeDetector
-                            detector.detectInImage(image)
-                                .addOnSuccessListener { barcodes ->
-                                    val result = barcodes.firstOrNull()?.rawValue
-                                    if (result != null) {
-                                        if (!isAdded) return@addOnSuccessListener
-
-                                        result.openAsUrlOrQrScan(parentFragmentManager, lifecycleScope)
-                                    } else {
-                                        if (isAdded) toast(R.string.can_not_recognize)
-                                    }
-                                }
-                                .addOnFailureListener {
-                                    if (isAdded) toast(R.string.can_not_recognize)
-                                }
+                        val bitmap = withContext(Dispatchers.IO) {
+                            Glide.with(requireContext())
+                                .asBitmap()
+                                .load(url)
+                                .submit()
+                                .get(10, TimeUnit.SECONDS)
                         }
+                        if (isDetached) return@launch
+
+                        processor.detect(
+                            lifecycleScope,
+                            bitmap,
+                            onSuccess = { result ->
+                                result.openAsUrlOrQrScan(parentFragmentManager, lifecycleScope)
+                            },
+                            onFailure = {
+                                if (isAdded) toast(R.string.can_not_recognize)
+                            }
+                        )
                     } catch (e: Exception) {
                         if (isAdded) toast(R.string.can_not_recognize)
                     }
@@ -522,6 +518,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.webViewClient = null
         contentView.chat_web_view.webChromeClient = null
         unregisterForContextMenu(contentView.chat_web_view)
+        processor.close()
         super.onDestroyView()
     }
 

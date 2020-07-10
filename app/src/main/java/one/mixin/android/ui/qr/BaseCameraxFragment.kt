@@ -32,8 +32,7 @@ import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.google.firebase.ml.vision.common.FirebaseVisionImage
-import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
+import com.google.mlkit.vision.common.InputImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_capture.*
@@ -49,7 +48,6 @@ import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.isFirebaseDecodeAvailable
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
@@ -399,10 +397,6 @@ abstract class BaseCameraxFragment : VisionFragment() {
         }
     }
 
-    private val isGooglePlayServicesAvailable by lazy {
-        context?.isFirebaseDecodeAvailable() ?: false
-    }
-
     private val imageAnalyzer = object : ImageAnalysis.Analyzer {
         private val detecting = AtomicBoolean(false)
 
@@ -410,15 +404,11 @@ abstract class BaseCameraxFragment : VisionFragment() {
             if (!alreadyDetected && !image.planes.isNullOrEmpty() &&
                 detecting.compareAndSet(false, true)
             ) {
-                if (isGooglePlayServicesAvailable) {
-                    try {
-                        decodeWithFirebaseVision(image)
-                    } catch (e: Exception) {
-                        decodeWithZxing(image)
-                        reportException("$CRASHLYTICS_CAMERAX-decodeWithFirebaseVision failure", e)
-                    }
-                } else {
+                try {
+                    decodeWithFirebaseVision(image)
+                } catch (e: Exception) {
                     decodeWithZxing(image)
+                    reportException("$CRASHLYTICS_CAMERAX-decodeWithFirebaseVision failure", e)
                 }
             } else {
                 image.close()
@@ -432,34 +422,29 @@ abstract class BaseCameraxFragment : VisionFragment() {
                 image.close()
                 return
             }
-            val visionImage = FirebaseVisionImage.fromMediaImage(
-                processImage,
-                FirebaseVisionImageMetadata.ROTATION_90
-            )
+            val inputImage = InputImage.fromMediaImage(processImage, image.imageInfo.rotationDegrees)
             val latch = CountDownLatch(1)
-            detector.use { d ->
-                d.detectInImage(visionImage)
-                    .addOnSuccessListener { result ->
-                        result.firstOrNull()?.rawValue?.let {
-                            alreadyDetected = true
-                            handleAnalysis(it)
-                        }
+            scanner.process(inputImage)
+                .addOnSuccessListener { result ->
+                    result.firstOrNull()?.rawValue?.let {
+                        alreadyDetected = true
+                        handleAnalysis(it)
                     }
-                    .addOnCompleteListener {
-                        if (!alreadyDetected) {
-                            val bitmap = getBitmapFromImage(image)
-                            if (bitmap == null) {
-                                detecting.set(false)
-                            } else {
-                                decodeBitmapWithZxing(bitmap)
-                            }
-                        } else {
+                }
+                .addOnCompleteListener {
+                    if (!alreadyDetected) {
+                        val bitmap = getBitmapFromImage(image)
+                        if (bitmap == null) {
                             detecting.set(false)
+                        } else {
+                            decodeBitmapWithZxing(bitmap)
                         }
-                        image.close()
-                        latch.countDown()
+                    } else {
+                        detecting.set(false)
                     }
-            }
+                    image.close()
+                    latch.countDown()
+                }
             latch.await()
         }
 
