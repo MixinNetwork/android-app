@@ -108,6 +108,7 @@ import one.mixin.android.ui.home.circle.ConversationCircleEditFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
+import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
@@ -431,6 +432,14 @@ class MainActivity : BlazeBaseActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handlerCode(intent)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == CaptureActivity.REQUEST_CODE && resultCode == CaptureActivity.RESULT_CODE && data != null) {
+            intent = data
+            handlerCode(intent)
+        }
     }
 
     private var bottomSheet: DialogFragment? = null
@@ -774,9 +783,9 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     companion object {
-        private const val URL = "url"
-        private const val SCAN = "scan"
-        private const val TRANSFER = "transfer"
+        const val URL = "url"
+        const val SCAN = "scan"
+        const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
 
         fun showWallet(context: Context) {
@@ -788,26 +797,12 @@ class MainActivity : BlazeBaseActivity() {
             }
         }
 
-        fun showFromScan(
+        fun showFromShortcut(
             activity: Activity,
-            scanText: String? = null,
-            userId: String? = null,
-            url: String? = null
+            intent: Intent
         ) {
-            Intent(activity, MainActivity::class.java).apply {
-                scanText?.let {
-                    putExtra(SCAN, it)
-                }
-                userId?.let {
-                    putExtra(TRANSFER, userId)
-                }
-                url?.let {
-                    putExtra(URL, it)
-                }
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
-            }.run {
-                activity.startActivity(this)
-            }
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+            activity.startActivity(intent)
         }
 
         fun show(context: Context) {

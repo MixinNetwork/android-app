@@ -85,6 +85,7 @@ import one.mixin.android.ui.home.bot.TOP_BOT
 import one.mixin.android.ui.home.bot.getCategoryIcon
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
+import one.mixin.android.ui.qr.CaptureActivity.Companion.REQUEST_CODE
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.util.markdown.MarkwonUtil
@@ -101,6 +102,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.support.v4.startActivityForResult
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -513,7 +515,7 @@ class ConversationListFragment : LinkFragment() {
                 if (granted) {
                     CaptureActivity.show(requireActivity()) { intent ->
                         intent.putExtra(ARGS_SHOW_SCAN, scan)
-                        startActivity(intent)
+                        requireActivity().startActivityForResult(intent, REQUEST_CODE)
                     }
                 } else {
                     context?.openPermissionSetting()

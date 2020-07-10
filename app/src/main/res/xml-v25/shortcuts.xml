@@ -23,6 +23,7 @@
             android:targetClass="one.mixin.android.ui.qr.CaptureActivity" >
 
             <extra android:name="args_show_scan" android:value="true" />
+            <extra android:name="args_shortcut" android:value="true" />
         </intent>
         <categories android:name="android.shortcut.conversation" />
     </shortcut>
