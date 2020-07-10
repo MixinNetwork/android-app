@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.fragment_scan.*
 import one.mixin.android.R
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.conversation.ConversationActivity.Companion.ARGS_SHORTCUT
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
 
@@ -23,11 +24,13 @@ class ScanFragment : BaseCameraxFragment() {
         fun newInstance(
             forAddress: Boolean = false,
             forAccountName: Boolean = false,
-            forMemo: Boolean = false
+            forMemo: Boolean = false,
+            fromShortcut: Boolean = false
         ) = ScanFragment().withArgs {
             putBoolean(CaptureActivity.ARGS_FOR_ADDRESS, forAddress)
             putBoolean(CaptureActivity.ARGS_FOR_ACCOUNT_NAME, forAccountName)
             putBoolean(CaptureActivity.ARGS_FOR_MEMO, forMemo)
+            putBoolean(ARGS_SHORTCUT, fromShortcut)
         }
     }
 
@@ -36,6 +39,7 @@ class ScanFragment : BaseCameraxFragment() {
         forAddress = requireArguments().getBoolean(CaptureActivity.ARGS_FOR_ADDRESS)
         forAccountName = requireArguments().getBoolean(CaptureActivity.ARGS_FOR_ACCOUNT_NAME)
         forMemo = requireArguments().getBoolean(CaptureActivity.ARGS_FOR_MEMO)
+        fromShortcut = requireArguments().getBoolean(ARGS_SHORTCUT)
     }
 
     override fun onCreateView(

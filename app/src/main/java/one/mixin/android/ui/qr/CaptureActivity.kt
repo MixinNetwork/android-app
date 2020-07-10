@@ -14,6 +14,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.ui.conversation.ConversationActivity.Companion.ARGS_SHORTCUT
 import one.mixin.android.util.isCameraCanUse
 
 class CaptureActivity : BlazeBaseActivity() {
@@ -59,7 +60,8 @@ class CaptureActivity : BlazeBaseActivity() {
                 replaceFragment(ScanFragment.newInstance(forMemo = true), R.id.container, ScanFragment.TAG)
             else ->
                 if (intent.getBooleanExtra(ARGS_SHOW_SCAN, false)) {
-                    replaceFragment(ScanFragment.newInstance(), R.id.container, ScanFragment.TAG)
+                    val fromShortcut = intent.getBooleanExtra(ARGS_SHORTCUT, false)
+                    replaceFragment(ScanFragment.newInstance(fromShortcut = fromShortcut), R.id.container, ScanFragment.TAG)
                 } else {
                     replaceFragment(CaptureFragment.newInstance(), R.id.container, CaptureFragment.TAG)
                 }

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.qr
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
@@ -26,6 +27,8 @@ abstract class VisionFragment : BaseFragment() {
             .build()
     )
 
+    protected var fromShortcut = false
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         pseudoNotificationView = view.findViewById<PseudoNotificationView>(R.id.pseudo_view)?.apply {
@@ -46,10 +49,13 @@ abstract class VisionFragment : BaseFragment() {
     }
 
     protected fun handleResult(content: String) {
+        val result = if (fromShortcut) {
+            Intent(requireContext(), MainActivity::class.java)
+        } else Intent()
         if (content.isDonateUrl()) {
-            MainActivity.showFromScan(requireActivity(), url = content)
+            result.putExtra(MainActivity.URL, content)
         } else if (!content.isMixinUrl()) {
-            MainActivity.showFromScan(requireActivity(), scanText = content)
+            result.putExtra(MainActivity.SCAN, content)
         } else if (content.startsWith(Constants.Scheme.TRANSFER, true) ||
             content.startsWith(Constants.Scheme.HTTPS_TRANSFER, true)
         ) {
@@ -59,9 +65,15 @@ abstract class VisionFragment : BaseFragment() {
             } else {
                 segments[0]
             }
-            MainActivity.showFromScan(requireActivity(), userId = userId)
+            result.putExtra(MainActivity.TRANSFER, userId)
         } else {
-            MainActivity.showFromScan(requireActivity(), url = content)
+            result.putExtra(MainActivity.URL, content)
+        }
+        if (fromShortcut) {
+            MainActivity.showFromShortcut(requireActivity(), result)
+        } else {
+            requireActivity().setResult(CaptureActivity.RESULT_CODE, result)
+            requireActivity().finish()
         }
     }
 }

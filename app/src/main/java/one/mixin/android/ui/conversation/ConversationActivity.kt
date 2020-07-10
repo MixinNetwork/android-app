@@ -126,7 +126,7 @@ class ConversationActivity : BlazeBaseActivity() {
 
     companion object {
         private const val ARGS_FAST_SHOW = "args_fast_show"
-        private const val ARGS_SHORTCUT = "args_shortcut"
+        const val ARGS_SHORTCUT = "args_shortcut"
 
         fun fastShow(
             context: Context,

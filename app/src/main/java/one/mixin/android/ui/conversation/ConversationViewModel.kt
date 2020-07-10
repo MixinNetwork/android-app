@@ -590,12 +590,14 @@ internal constructor(
                     message.category.endsWith("_DATA") -> {
                         val category =
                             if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
-                        val uri = (if (Uri.parse(message.mediaUrl).scheme == SCHEME_CONTENT) {
-                            message.mediaUrl
-                        } else {
-                            MixinApplication.get().getUriForFile(File(message.mediaUrl))
-                                .toString()
-                        }) ?: return@map -1
+                        val uri = (
+                            if (Uri.parse(message.mediaUrl).scheme == SCHEME_CONTENT) {
+                                message.mediaUrl
+                            } else {
+                                MixinApplication.get().getUriForFile(File(message.mediaUrl))
+                                    .toString()
+                            }
+                            ) ?: return@map -1
                         jobManager.addJobInBackground(
                             SendAttachmentMessageJob(
                                 createAttachmentMessage(

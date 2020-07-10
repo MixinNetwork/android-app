@@ -89,13 +89,14 @@ class MediaPagerAdapter(
             messageItem.type == MessageCategory.PLAIN_IMAGE.name
         ) {
             if (!messageItem.mediaMimeType.equals(
-                    MimeType.GIF.toString(),
-                    true
-                ) && messageItem.mediaHeight != null && messageItem.mediaWidth != null &&
-                (messageItem.mediaHeight / messageItem.mediaWidth.toFloat() > context.displayRatio() * 1.5f ||
-                    messageItem.mediaHeight > context.screenHeight() * 3 ||
-                    messageItem.mediaWidth > context.screenWidth() * 3 ||
-                    (messageItem.mediaSize != null && messageItem.mediaSize >= BIG_IMAGE_SIZE)
+                MimeType.GIF.toString(),
+                true
+            ) && messageItem.mediaHeight != null && messageItem.mediaWidth != null &&
+                (
+                    messageItem.mediaHeight / messageItem.mediaWidth.toFloat() > context.displayRatio() * 1.5f ||
+                        messageItem.mediaHeight > context.screenHeight() * 3 ||
+                        messageItem.mediaWidth > context.screenWidth() * 3 ||
+                        (messageItem.mediaSize != null && messageItem.mediaSize >= BIG_IMAGE_SIZE)
                     )
             ) {
                 MediaItemType.LargeImage.ordinal
