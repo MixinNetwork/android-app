@@ -109,6 +109,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                         }
                         adapter.selectItem.add(user)
                         selectAdapter.checkedItems.add(user)
+                        search_et?.text?.clear()
                     }
                     adapter.notifyDataSetChanged()
                     selectAdapter.notifyDataSetChanged()
@@ -130,6 +131,7 @@ class ConversationCircleEditFragment : BaseFragment() {
                         }
                         adapter.selectItem.add(item)
                         selectAdapter.checkedItems.add(item)
+                        search_et?.text?.clear()
                     }
                     adapter.notifyDataSetChanged()
                     selectAdapter.notifyDataSetChanged()
