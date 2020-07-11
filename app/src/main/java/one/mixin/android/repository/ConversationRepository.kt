@@ -191,6 +191,9 @@ internal constructor(
     fun getGroupParticipants(conversationId: String) =
         participantDao.getParticipants(conversationId)
 
+    suspend fun getParticipantsWithoutBot(conversationId: String) =
+        participantDao.getParticipantsWithoutBot(conversationId)
+
     fun getGroupParticipantsLiveData(conversationId: String) =
         participantDao.getGroupParticipantsLiveData(conversationId)
 
@@ -377,4 +380,6 @@ internal constructor(
     fun updateGroupMuteUntil(conversationId: String, muteUntil: String) = conversationDao.updateGroupMuteUntil(conversationId, muteUntil)
 
     fun updateMediaStatus(status: String, id: String) = messageDao.updateMediaStatus(status, id)
+
+    fun observeConversationNameById(cid: String) = conversationDao.observeConversationNameById(cid)
 }

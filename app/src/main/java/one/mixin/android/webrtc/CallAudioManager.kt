@@ -43,7 +43,7 @@ class CallAudioManager(private val context: Context) {
     private val vibrator: Vibrator? = context.getSystemService()
 
     private var mediaPlayer: MediaPlayer? = null
-    private var mediaPlayerStoped = false
+    private var mediaPlayerStopped = false
     private var hasStarted = false
 
     var isSpeakerOn = false
@@ -145,9 +145,9 @@ class CallAudioManager(private val context: Context) {
     }
 
     fun stop() {
-        if (mediaPlayerStoped) return
+        if (mediaPlayerStopped) return
 
-        mediaPlayerStoped = true
+        mediaPlayerStopped = true
         audioManager.mode = if (bluetoothState == State.SCO_CONNECTED) {
             AudioManager.MODE_NORMAL
         } else AudioManager.MODE_IN_COMMUNICATION
@@ -163,26 +163,37 @@ class CallAudioManager(private val context: Context) {
     }
 
     fun release() {
+        if (!mediaPlayerStopped) {
+            stop()
+        }
+
         audioManager.isSpeakerphoneOn = savedSpeakerOn
         audioManager.mode = saveMode
         audioManager.isMicrophoneMute = savedMicrophoneMute
-        vibrator?.cancel()
+
+        if (hasStarted) {
+            context.unregisterReceiver(wiredHeadsetReceiver)
+            context.unregisterReceiver(bluetoothHeadsetReceiver)
+        }
+
+        selectedAudioDevice = AudioDeviceInfo.TYPE_UNKNOWN
         stopScoAudio()
         if (bluetoothHeadset != null) {
             bluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset)
             bluetoothHeadset = null
         }
-        if (hasStarted) {
-            context.unregisterReceiver(wiredHeadsetReceiver)
-            context.unregisterReceiver(bluetoothHeadsetReceiver)
-        }
-        hasStarted = false
         bluetoothState = State.UNINITIALIZED
+
+        hasStarted = false
+        mediaPlayerStopped = false
+        isInitiator = false
+        changedByUser = false
+        isSpeakerOn = false
     }
 
     @Synchronized
     private fun updateMediaPlayer() {
-        if (mediaPlayerStoped) return
+        if (mediaPlayerStopped) return
 
         if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer()
@@ -303,9 +314,13 @@ class CallAudioManager(private val context: Context) {
     private fun setAudioDeviceInternal(device: Int) {
         require(isValidAudioDeviceTypeOut(device))
 
-        audioManager.isSpeakerphoneOn = when (device) {
-            AudioDeviceInfo.TYPE_BUILTIN_SPEAKER -> true
-            else -> false
+        audioManager.isSpeakerphoneOn = if (changedByUser) {
+            isSpeakerOn
+        } else {
+            when (device) {
+                AudioDeviceInfo.TYPE_BUILTIN_SPEAKER -> true
+                else -> false
+            }
         }
         selectedAudioDevice = device
     }

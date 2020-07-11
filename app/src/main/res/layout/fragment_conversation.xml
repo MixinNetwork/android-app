@@ -289,6 +289,11 @@
                 app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <include
+            android:id="@+id/tap_join_view"
+            android:visibility="gone"
+            layout="@layout/layout_conversation_group_call"/>
     </RelativeLayout>
 
     <one.mixin.android.widget.InputAwareFrameLayout

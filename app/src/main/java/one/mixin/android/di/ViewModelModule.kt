@@ -6,6 +6,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
 import one.mixin.android.ui.address.AddressViewModel
+import one.mixin.android.ui.call.CallViewModel
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.profile.MySharedAppsViewModel
 import one.mixin.android.ui.contacts.ContactViewModel
@@ -135,6 +136,11 @@ internal abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(BotManagerViewModel::class)
     internal abstract fun bindBotManagerViewModel(botManagerViewModel: BotManagerViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(CallViewModel::class)
+    internal abstract fun bindCallViewModel(callViewModel: CallViewModel): ViewModel
 
     @Binds
     internal abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory

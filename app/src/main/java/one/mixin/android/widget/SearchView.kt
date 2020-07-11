@@ -94,6 +94,10 @@ class SearchView(context: Context, attrs: AttributeSet?) : AppCompatEditText(con
         }
     }
 
+    fun setHint(hintText: String) {
+        hint = hintText
+    }
+
     private fun checkDrawables() {
         val hasFocus = hasFocus()
         val hasText = !text.isNullOrBlank()

@@ -34,5 +34,5 @@
         android:singleLine="true"
         android:ellipsize="end"
         android:textColor="?attr/text_primary"
-        android:maxWidth="64dp"/>
+        android:maxWidth="84dp"/>
 </LinearLayout>

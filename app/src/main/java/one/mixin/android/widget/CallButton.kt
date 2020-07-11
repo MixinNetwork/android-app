@@ -27,7 +27,6 @@ class CallButton(context: Context, attr: AttributeSet) : LinearLayout(context, a
         bgUnchecked = ta.getResourceId(R.styleable.CallButton_bg_circle_unchecked, 0)
         srcChecked = ta.getResourceId(R.styleable.CallButton_ic_checked, 0)
         srcUnchecked = ta.getResourceId(R.styleable.CallButton_ic_unchecked, 0)
-        text.text = ta.getText(R.styleable.CallButton_android_text)
 
         ta.recycle()
 

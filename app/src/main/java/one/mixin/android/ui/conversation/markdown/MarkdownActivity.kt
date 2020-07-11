@@ -20,6 +20,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.createPostTemp
 import one.mixin.android.extension.getPublicDocumentPath
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
@@ -41,7 +42,7 @@ class MarkdownActivity : BaseActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_markdown)
-        control.mode = isNightMode()
+        control.mode = this.isNightMode()
         control.callback = object : WebControlView.Callback {
             override fun onMoreClick() {
                 showBottomSheet()

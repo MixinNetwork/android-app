@@ -82,7 +82,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.showVerifiedOrBot
-import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.outgoingCall
 import org.threeten.bp.Instant
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -596,9 +596,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     @SuppressLint("CheckResult")
     private fun startVoiceCall() {
-        if (!callState.isIdle()) {
+        if (callState.isNotIdle()) {
             if (callState.user?.userId == user.userId) {
-                CallActivity.show(requireContext(), user)
+                CallActivity.show(requireContext())
             } else {
                 alertDialogBuilder()
                     .setMessage(getString(R.string.chat_call_warning_call))
@@ -627,12 +627,13 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
     private fun callVoice() {
         if (LinkState.isOnline(linkState.state)) {
-            CallService.outgoing(
-                requireContext(), user,
+            outgoingCall(
+                requireContext(),
                 generateConversationId(
                     Session.getAccountId()!!,
                     user.userId
-                )
+                ),
+                user
             )
             RxBus.publish(BotCloseEvent())
             dismiss()

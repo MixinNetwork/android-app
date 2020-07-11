@@ -72,6 +72,7 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.event.BlinkEvent
+import one.mixin.android.event.CallEvent
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.event.ForwardEvent
@@ -122,6 +123,8 @@ import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
+import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.GROUP_VOICE_MAX_COUNT
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -154,6 +157,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
+import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
@@ -174,6 +178,8 @@ import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.outgoingCall
+import one.mixin.android.webrtc.receiveInvite
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.toLocationData
@@ -248,6 +254,9 @@ class ConversationFragment :
 
     @Inject
     lateinit var jobManager: MixinJobManager
+
+    @Inject
+    lateinit var callState: CallStateLiveData
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
@@ -330,10 +339,15 @@ class ConversationFragment :
             }
         }
 
-    private fun callVoice() {
+    private fun voiceCall() {
         if (LinkState.isOnline(linkState.state)) {
-            createConversation {
-                CallService.outgoing(requireContext(), recipient!!, conversationId)
+            if (isGroup) {
+                GroupUsersBottomSheetDialogFragment.newInstance(conversationId)
+                    .showNow(parentFragmentManager, GroupUsersBottomSheetDialogFragment.TAG)
+            } else {
+                createConversation {
+                    outgoingCall(requireContext(), conversationId, recipient!!)
+                }
             }
         } else {
             toast(R.string.error_no_connection)
@@ -669,9 +683,9 @@ class ConversationFragment :
             }
 
             override fun onCallClick(messageItem: MessageItem) {
-                if (!callState.isIdle()) {
+                if (callState.isNotIdle()) {
                     if (recipient != null && callState.user?.userId == recipient?.userId) {
-                        CallActivity.show(requireContext(), recipient)
+                        CallActivity.show(requireContext())
                     } else {
                         alertDialogBuilder()
                             .setMessage(getString(R.string.chat_call_warning_call))
@@ -687,7 +701,7 @@ class ConversationFragment :
                         .subscribe(
                             { granted ->
                                 if (granted) {
-                                    callVoice()
+                                    voiceCall()
                                 } else {
                                     context?.openPermissionSetting()
                                 }
@@ -840,6 +854,19 @@ class ConversationFragment :
                     chatViewModel.markMentionRead(event.messageId, event.conversationId)
                 }
             }
+        RxBus.listen(CallEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { event ->
+                if (event.conversationId == conversationId) {
+                    alertDialogBuilder()
+                        .setMessage(getString(R.string.call_group_full, GROUP_VOICE_MAX_COUNT))
+                        .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                }
+            }
     }
 
     private var paused = false
@@ -926,7 +953,7 @@ class ConversationFragment :
 
     private var isCling: Boolean = false
     override fun onSensorChanged(event: SensorEvent?) {
-        if (!callState.isIdle()) return
+        if (callState.isNotIdle()) return
 
         val values = event?.values ?: return
         if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
@@ -1264,10 +1291,28 @@ class ConversationFragment :
             group_flag.isVisible = false
             driver.isVisible = false
         }
+        tap_join_view.setOnClickListener {
+            if (callState.isNotIdle()) {
+                alertDialogBuilder()
+                    .setMessage(getString(R.string.chat_call_warning_call))
+                    .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
+                return@setOnClickListener
+            }
+            val isForeground = !callState.isBusy(requireContext())
+            receiveInvite(requireContext(), conversationId, playRing = false, foreground = isForeground)
+        }
         callState.observe(
             viewLifecycleOwner,
-            Observer { info ->
-                chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
+            Observer { state ->
+                chat_control.calling = state != CallService.CallState.STATE_IDLE
+                if (isGroup) {
+                    tap_join_view.isVisible = callState.isPendingGroupCall(conversationId)
+                } else {
+                    tap_join_view.isVisible = false
+                }
             }
         )
         bindData()
@@ -2033,9 +2078,9 @@ class ConversationFragment :
                     }
                     MenuType.Voice -> {
                         chat_control.reset()
-                        if (!callState.isIdle()) {
+                        if (callState.isNotIdle()) {
                             if (recipient != null && callState.user?.userId == recipient?.userId) {
-                                CallActivity.show(requireContext(), recipient)
+                                CallActivity.show(requireContext())
                             } else {
                                 alertDialogBuilder()
                                     .setMessage(getString(R.string.chat_call_warning_call))
@@ -2050,7 +2095,7 @@ class ConversationFragment :
                                 .subscribe(
                                     { granted ->
                                         if (granted) {
-                                            callVoice()
+                                            voiceCall()
                                         } else {
                                             context?.openPermissionSetting()
                                         }
@@ -2524,7 +2569,7 @@ class ConversationFragment :
     }
 
     private fun resetAudioMode() {
-        if (!callState.isIdle()) return
+        if (callState.isNotIdle()) return
 
         if (!audioManager.isHeadsetOn()) {
             if (isCling) {

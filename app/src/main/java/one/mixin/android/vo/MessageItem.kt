@@ -145,6 +145,14 @@ fun MessageItem.isCallMessage() =
         type == MessageCategory.WEBRTC_AUDIO_BUSY.name ||
         type == MessageCategory.WEBRTC_AUDIO_FAILED.name
 
+fun MessageItem.isGroupCall() = type.isGroupCallType()
+
+fun String.isGroupCallType() =
+    this == MessageCategory.KRAKEN_END.name ||
+        this == MessageCategory.KRAKEN_DECLINE.name ||
+        this == MessageCategory.KRAKEN_CANCEL.name ||
+        this == MessageCategory.KRAKEN_INVITE.name
+
 fun MessageItem.isLive() = type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name
 
 fun MessageItem.isImage() = type == MessageCategory.PLAIN_IMAGE.name || type == MessageCategory.SIGNAL_IMAGE.name

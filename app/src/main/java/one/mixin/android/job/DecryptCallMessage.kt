@@ -19,7 +19,20 @@ import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createCallMessage
-import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.DEFAULT_TIMEOUT_MINUTES
+import one.mixin.android.webrtc.answerCall
+import one.mixin.android.webrtc.busy
+import one.mixin.android.webrtc.cancelCall
+import one.mixin.android.webrtc.candidate
+import one.mixin.android.webrtc.declineCall
+import one.mixin.android.webrtc.incomingCall
+import one.mixin.android.webrtc.receiveCancel
+import one.mixin.android.webrtc.receiveDecline
+import one.mixin.android.webrtc.receiveEnd
+import one.mixin.android.webrtc.receiveInvite
+import one.mixin.android.webrtc.receivePublish
+import one.mixin.android.webrtc.remoteEnd
+import one.mixin.android.webrtc.remoteFailed
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -48,27 +61,96 @@ class DecryptCallMessage(
     private val listPendingCandidateMap = ArrayMap<String, ArrayList<IceCandidate>>()
 
     fun onRun(data: BlazeMessageData) {
-        if (data.category.startsWith("WEBRTC_") && !isExistMessage(data.messageId)) {
-            try {
-                syncConversation(data)
-                processWebRTC(data)
-            } catch (e: Exception) {
-                Timber.e("DecryptCallMessage failure, $e")
-                updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+        try {
+            syncConversation(data)
+            when {
+                isExistMessage(data.messageId) -> {
+                    updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+                }
+                data.category.startsWith("WEBRTC_") -> {
+                    processWebRTC(data)
+                }
+                data.category.startsWith("KRAKEN_") -> {
+                    processKraken(data)
+                }
+                else -> {
+                    updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+                }
             }
-        } else {
+        } catch (e: Exception) {
+            Timber.e("DecryptCallMessage failure, $e")
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
 
+    private fun processKraken(data: BlazeMessageData) {
+        Timber.d("@@@ processKraken category: ${data.category}, data: $data")
+        if (data.source == LIST_PENDING_MESSAGES && data.category == MessageCategory.KRAKEN_INVITE.name) {
+            val isExpired = isExpired(data)
+            if (!isExpired && !listPendingOfferHandled) {
+                listPendingJobMap[data.messageId] = Pair(
+                    lifecycleScope.launch(listPendingDispatcher) {
+                        delay(LIST_PENDING_CALL_DELAY)
+                        listPendingOfferHandled = true
+                        listPendingJobMap.forEach { entry ->
+                            val pair = entry.value
+                            val job = pair.first
+                            if (entry.key != data.messageId && !job.isCancelled) {
+                                job.cancel()
+
+                                val curData = pair.second
+                                val savedMessage = createCallMessage(
+                                    UUID.randomUUID().toString(), curData.conversationId, curData.userId,
+                                    MessageCategory.KRAKEN_INVITE.name, null, nowInUtc(), MessageStatus.SENDING.name, null
+                                )
+                                database.insertAndNotifyConversation(savedMessage)
+                                listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
+                            }
+                        }
+                        processKrakenCall(data)
+                        listPendingJobMap.clear()
+                    },
+                    data
+                )
+            } else if (isExpired) {
+                val message = createCallMessage(
+                    data.messageId, data.conversationId, data.userId, MessageCategory.KRAKEN_INVITE.name,
+                    null, data.createdAt, data.status
+                )
+                database.insertAndNotifyConversation(message)
+            }
+            notifyServer(data)
+        } else {
+            processKrakenCall(data)
+        }
+    }
+
+    private fun processKrakenCall(data: BlazeMessageData) {
+        val ctx = MixinApplication.appContext
+        when (data.category) {
+            MessageCategory.KRAKEN_PUBLISH.name -> {
+                receivePublish(ctx, data)
+            }
+            MessageCategory.KRAKEN_INVITE.name -> {
+                val isForeground = !callState.isBusy(ctx)
+                receiveInvite(ctx, data.conversationId, userId = data.userId, playRing = true, foreground = isForeground)
+            }
+            MessageCategory.KRAKEN_END.name -> {
+                receiveEnd(ctx, data.conversationId, data.userId)
+            }
+            MessageCategory.KRAKEN_CANCEL.name -> {
+                receiveCancel(ctx, data.conversationId, data.userId)
+            }
+            MessageCategory.KRAKEN_DECLINE.name -> {
+                receiveDecline(ctx, data.conversationId, data.userId)
+            }
+        }
+        notifyServer(data)
+    }
+
     private fun processWebRTC(data: BlazeMessageData) {
         if (data.source == LIST_PENDING_MESSAGES && data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
-            val isExpired = try {
-                val offset = System.currentTimeMillis() - data.createdAt.createAtToLong()
-                offset > CallService.DEFAULT_TIMEOUT_MINUTES * 58 * 1000
-            } catch (e: NumberFormatException) {
-                true
-            }
+            val isExpired = isExpired(data)
             if (!isExpired && !listPendingOfferHandled) {
                 listPendingJobMap[data.messageId] = Pair(
                     lifecycleScope.launch(listPendingDispatcher) {
@@ -112,15 +194,25 @@ class DecryptCallMessage(
         }
     }
 
+    private fun isExpired(data: BlazeMessageData): Boolean {
+        return try {
+            val offset = System.currentTimeMillis() - data.createdAt.createAtToLong()
+            offset > DEFAULT_TIMEOUT_MINUTES * 58 * 1000
+        } catch (e: NumberFormatException) {
+            true
+        }
+    }
+
     private fun processCall(data: BlazeMessageData) {
         val ctx = MixinApplication.appContext
         if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             syncUser(data.userId)?.let { user ->
                 val pendingCandidateList = listPendingCandidateMap[data.messageId]
+                val isForeground = !callState.isBusy(ctx)
                 if (pendingCandidateList == null || pendingCandidateList.isEmpty()) {
-                    CallService.incoming(ctx, user, data)
+                    incomingCall(ctx, user, data, isForeground)
                 } else {
-                    CallService.incoming(ctx, user, data, GsonHelper.customGson.toJson(pendingCandidateList.toArray()))
+                    incomingCall(ctx, user, data, isForeground, GsonHelper.customGson.toJson(pendingCandidateList.toArray()))
                     pendingCandidateList.clear()
                     listPendingCandidateMap.remove(data.messageId, pendingCandidateList)
                 }
@@ -157,50 +249,45 @@ class DecryptCallMessage(
         } else {
             when (data.category) {
                 MessageCategory.WEBRTC_AUDIO_ANSWER.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
-                        data.quoteMessageId != callState.callInfo.messageId
-                    ) {
+                    if (callState.isIdle() || data.quoteMessageId != callState.trackId) {
                         notifyServer(data)
                         return
                     }
-                    CallService.answer(ctx, data)
+                    answerCall(ctx, data)
                 }
                 MessageCategory.WEBRTC_ICE_CANDIDATE.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
-                        data.quoteMessageId != callState.callInfo.messageId
-                    ) {
+                    if (callState.isIdle() || data.quoteMessageId != callState.trackId) {
                         notifyServer(data)
                         return
                     }
-                    CallService.candidate(ctx, data)
+                    candidate(ctx, data)
                 }
                 MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) {
+                    if (callState.isIdle()) {
                         notifyServer(data)
                         return
                     }
                     saveCallMessage(data)
-                    if (data.quoteMessageId != callState.callInfo.messageId) {
+                    if (data.quoteMessageId != callState.trackId) {
                         return
                     }
-                    CallService.cancel(ctx)
+                    cancelCall(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) {
+                    if (callState.isIdle()) {
                         notifyServer(data)
                         return
                     }
 
                     val uId = getUserId()
                     saveCallMessage(data, userId = uId)
-                    if (data.quoteMessageId != callState.callInfo.messageId) {
+                    if (data.quoteMessageId != callState.trackId) {
                         return
                     }
-                    CallService.decline(ctx)
+                    declineCall(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
-                        data.quoteMessageId != callState.callInfo.messageId ||
+                    if (callState.isIdle() || data.quoteMessageId != callState.trackId ||
                         callState.user == null
                     ) {
                         notifyServer(data)
@@ -208,27 +295,27 @@ class DecryptCallMessage(
                     }
 
                     saveCallMessage(data, userId = Session.getAccountId()!!)
-                    CallService.busy(ctx)
+                    busy(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_END.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) {
+                    if (callState.isIdle()) {
                         notifyServer(data)
                         return
                     }
 
                     val duration = System.currentTimeMillis() - callState.connectedTime!!
                     saveCallMessage(data, duration = duration.toString(), userId = getUserId(), status = MessageStatus.READ.name)
-                    CallService.remoteEnd(ctx)
+                    remoteEnd(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) {
+                    if (callState.isIdle()) {
                         notifyServer(data)
                         return
                     }
 
                     val uId = getUserId()
                     saveCallMessage(data, userId = uId)
-                    CallService.remoteFailed(ctx)
+                    remoteFailed(ctx)
                 }
             }
             notifyServer(data)

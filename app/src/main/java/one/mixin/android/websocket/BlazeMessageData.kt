@@ -28,6 +28,7 @@ data class BlazeMessageData(
     val quoteMessageId: String?,
     @SerializedName("session_id")
     val sessionId: String
+
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 5L

@@ -34,6 +34,7 @@ import one.mixin.android.ui.conversation.holder.ContactCardHolder
 import one.mixin.android.ui.conversation.holder.ContactCardQuoteHolder
 import one.mixin.android.ui.conversation.holder.FileHolder
 import one.mixin.android.ui.conversation.holder.FileQuoteHolder
+import one.mixin.android.ui.conversation.holder.GroupCallHolder
 import one.mixin.android.ui.conversation.holder.HyperlinkHolder
 import one.mixin.android.ui.conversation.holder.ImageHolder
 import one.mixin.android.ui.conversation.holder.ImageQuoteHolder
@@ -60,6 +61,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
 import one.mixin.android.vo.isCallMessage
+import one.mixin.android.vo.isGroupCall
 import one.mixin.android.vo.isRecall
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
@@ -372,6 +374,14 @@ class ConversationAdapter(
                         isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
                     )
                 }
+                GROUP_CALL_TYPE -> {
+                    (holder as GroupCallHolder).bind(
+                        it,
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
+                    )
+                }
                 else -> {
                 }
             }
@@ -678,6 +688,11 @@ class ConversationAdapter(
                     .inflate(R.layout.item_chat_location, parent, false)
                 LocationHolder(item)
             }
+            GROUP_CALL_TYPE -> {
+                val item = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_system, parent, false)
+                GroupCallHolder(item)
+            }
             else -> {
                 val item = LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_chat_transparent, parent, false)
@@ -769,6 +784,7 @@ class ConversationAdapter(
                     item.isRecall() -> RECALL_TYPE
                     item.type == MessageCategory.PLAIN_LOCATION.name ||
                         item.type == MessageCategory.SIGNAL_LOCATION.name -> LOCATION_TYPE
+                    item.isGroupCall() -> GROUP_CALL_TYPE
                     else -> UNKNOWN_TYPE
                 }
             },
@@ -806,6 +822,7 @@ class ConversationAdapter(
         const val CALL_TYPE = 18
         const val RECALL_TYPE = 19
         const val LOCATION_TYPE = 20
+        const val GROUP_CALL_TYPE = 21
 
         private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
             override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {

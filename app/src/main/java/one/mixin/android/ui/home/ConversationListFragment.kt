@@ -664,6 +664,11 @@ class ConversationListFragment : LinkFragment() {
                     }
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_recall)
                 }
+                conversationItem.isGroupVoiceCall() -> {
+                    setConversationName(conversationItem)
+                    itemView.msg_tv.setText(R.string.group_call)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_voice)
+                }
                 conversationItem.contentType == MessageCategory.SYSTEM_CONVERSATION.name -> {
                     when (conversationItem.actionName) {
                         SystemConversationAction.CREATE.name -> {

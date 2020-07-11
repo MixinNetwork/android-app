@@ -29,7 +29,10 @@ import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.util.Session
 import one.mixin.android.util.language.Lingver
-import one.mixin.android.webrtc.CallService
+import one.mixin.android.vo.CallStateLiveData
+import one.mixin.android.webrtc.GroupCallService
+import one.mixin.android.webrtc.VoiceCallService
+import one.mixin.android.webrtc.disconnect
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.notificationManager
 import org.jetbrains.anko.uiThread
@@ -47,6 +50,9 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
 
     @Inject
     lateinit var jobManager: MixinJobManager
+
+    @Inject
+    lateinit var callState: CallStateLiveData
 
     lateinit var appComponent: AppComponent
 
@@ -95,7 +101,11 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
             val ise = IllegalStateException("Time error: Server-Time $serverTime - Local-Time ${System.currentTimeMillis()}")
             FirebaseCrashlytics.getInstance().recordException(ise)
             BlazeMessageService.stopService(this)
-            CallService.disconnect(this)
+            if (callState.isGroupCall()) {
+                disconnect<GroupCallService>(this)
+            } else if (callState.isVoiceCall()) {
+                disconnect<VoiceCallService>(this)
+            }
             notificationManager.cancelAll()
             defaultSharedPreferences.putBoolean(Constants.Account.PREF_WRONG_TIME, true)
             InitializeActivity.showWongTimeTop(this)
@@ -107,7 +117,11 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
             val accountId = Session.getAccountId()
             val sessionId = Session.getSessionId()
             BlazeMessageService.stopService(this)
-            CallService.disconnect(this)
+            if (callState.isGroupCall()) {
+                disconnect<GroupCallService>(this)
+            } else if (callState.isVoiceCall()) {
+                disconnect<VoiceCallService>(this)
+            }
             notificationManager.cancelAll()
             Session.clearAccount()
             defaultSharedPreferences.clear()

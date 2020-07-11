@@ -14,13 +14,16 @@ import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.isCall
+import one.mixin.android.vo.isKraken
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isText
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
+import one.mixin.android.websocket.KrakenParam
 import one.mixin.android.websocket.ResendData
 import one.mixin.android.websocket.createCallMessage
+import one.mixin.android.websocket.createKrakenMessage
 import one.mixin.android.websocket.createParamBlazeMessage
 import java.io.File
 
@@ -29,7 +32,9 @@ open class SendMessageJob(
     private val resendData: ResendData? = null,
     private val alreadyExistMessage: Boolean = false,
     private var recipientId: String? = null,
+    private var recipientIds: List<String>? = null,
     private val recallMessageId: String? = null,
+    private val krakenParam: KrakenParam? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(messagePriority).groupBy("send_message_group").requireWebSocketConnected().persist(), message.id) {
 
@@ -137,10 +142,18 @@ open class SendMessageJob(
             message.category,
             content,
             quote_message_id = message.quoteMessageId,
-            mentions = getMentionData(message.id)
+            mentions = getMentionData(message.id),
+            recipient_ids = recipientIds
         )
         val blazeMessage = if (message.isCall()) {
-            createCallMessage(blazeParam)
+            if (message.isKraken()) {
+                blazeParam.jsep = krakenParam?.jsep?.base64Encode()
+                blazeParam.candidate = krakenParam?.candidate?.base64Encode()
+                blazeParam.track_id = krakenParam?.track_id
+                createKrakenMessage(blazeParam)
+            } else {
+                createCallMessage(blazeParam)
+            }
         } else {
             createParamBlazeMessage(blazeParam)
         }

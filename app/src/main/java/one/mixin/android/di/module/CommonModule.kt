@@ -3,6 +3,7 @@ package one.mixin.android.di.module
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
+import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
 import one.mixin.android.ui.common.AppListBottomSheetDialogFragment
 import one.mixin.android.ui.common.CircleManagerFragment
 import one.mixin.android.ui.common.EditDialog
@@ -124,4 +125,7 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeTransactionBottomSheetDialogFragment(): TransactionBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeGroupUsersBottomSheetDialogFragment(): GroupUsersBottomSheetDialogFragment
 }
