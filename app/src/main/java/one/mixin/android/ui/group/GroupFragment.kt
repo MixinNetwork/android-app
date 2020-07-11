@@ -215,6 +215,7 @@ class GroupFragment : BaseFragment() {
         override fun onItemClick(user: User, checked: Boolean) {
             if (checked) {
                 checkedUsers.add(user)
+                search_et?.text?.clear()
             } else {
                 checkedUsers.remove(user)
             }
