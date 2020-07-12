@@ -19,6 +19,7 @@ import one.mixin.android.extension.loadVideo
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.media.pager.MediaPagerActivity.Companion.PREFIX
 import one.mixin.android.util.Session
 import one.mixin.android.util.VideoPlayer
@@ -114,7 +115,7 @@ class VideoHolder(
                 circleProgress.isVisible = true
                 circleProgress.setBindId(messageItem.messageId)
                 if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
-                    circleProgress.enableLoading()
+                    circleProgress.enableLoading(getAttachmentProcess(messageItem.messageId))
                 } else if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
                     if (Session.getAccountId() == messageItem.userId) {
                         circleProgress.enableUpload()

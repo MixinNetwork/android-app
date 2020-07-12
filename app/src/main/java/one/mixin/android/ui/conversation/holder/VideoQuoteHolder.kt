@@ -14,6 +14,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
@@ -161,7 +162,7 @@ class VideoQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
                     itemView.chat_warning.visibility = View.GONE
                     itemView.progress.visibility = View.VISIBLE
                     itemView.play.visibility = View.GONE
-                    itemView.progress.enableLoading()
+                    itemView.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
                     itemView.progress.setBindId(messageItem.messageId)
                     itemView.progress.setOnLongClickListener {
                         if (!hasSelect) {

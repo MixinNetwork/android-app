@@ -365,9 +365,9 @@ class CircleProgress @JvmOverloads constructor(
         }
     }
 
-    fun enableLoading() {
+    fun enableLoading(progress: Int = 0) {
         if (status != STATUS_LOADING) {
-            setProgress(0)
+            setProgress(progress)
             setStatus(STATUS_LOADING)
         }
     }

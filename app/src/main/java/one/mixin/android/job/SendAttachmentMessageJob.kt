@@ -11,6 +11,7 @@ import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
 import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.MediaStatus
@@ -38,6 +39,7 @@ class SendAttachmentMessageJob(
         isCancelled = true
         connection?.disconnect()
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
+        attachmentProcess.remove(message.id)
         disposable?.let {
             if (!it.isDisposed) {
                 it.dispose()
@@ -70,6 +72,7 @@ class SendAttachmentMessageJob(
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {
         super.onCancel(cancelReason, throwable)
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
+        attachmentProcess.remove(message.id)
         removeJob()
     }
 
@@ -94,9 +97,11 @@ class SendAttachmentMessageJob(
             {
                 if (it) {
                     messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
+                    attachmentProcess.remove(message.id)
                     removeJob()
                 } else {
                     messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
+                    attachmentProcess.remove(message.id)
                     removeJob()
                 }
             },
@@ -104,6 +109,7 @@ class SendAttachmentMessageJob(
                 Timber.e("upload attachment error, ${it.getStackTraceString()}")
                 reportException(it)
                 messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
+                attachmentProcess.remove(message.id)
                 removeJob()
             }
         )
@@ -136,6 +142,7 @@ class SendAttachmentMessageJob(
                     } catch (e: Exception) {
                         0f
                     }
+                    attachmentProcess[message.id] = (pg * 100).toInt()
                     RxBus.publish(loadingEvent(message.id, pg))
                 }
             )
@@ -149,6 +156,7 @@ class SendAttachmentMessageJob(
         } catch (e: Exception) {
             Timber.e(e)
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
+            attachmentProcess.remove(message.id)
             removeJob()
             reportException(e)
             return false
