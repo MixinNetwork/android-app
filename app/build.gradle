@@ -183,10 +183,11 @@ dependencies {
 
     // retrofit
     implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
+    implementation("com.squareup.okhttp3:logging-interceptor:${okhttpVersion}")
+    implementation("com.squareup.okhttp3:okhttp-tls:${okhttpVersion}")
     implementation("com.squareup.retrofit2:retrofit:${retrofitVersion}")
     implementation("com.squareup.retrofit2:converter-gson:${retrofitVersion}")
     implementation("com.squareup.retrofit2:adapter-rxjava2:${retrofitVersion}")
-    implementation("com.squareup.okhttp3:logging-interceptor:${okhttpVersion}")
     implementation "com.jakewharton.rxbinding3:rxbinding:${rxbindingVersion}"
     implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:${coroutineAdapterVersion}")
 
