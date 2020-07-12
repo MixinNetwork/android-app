@@ -41,8 +41,10 @@ class CircleProgress @JvmOverloads constructor(
 
     private var currentGlobalAngle: Float = 0f
         set(currentGlobalAngle) {
-            field = currentGlobalAngle
-            invalidate()
+            if (field != currentGlobalAngle) {
+                field = currentGlobalAngle
+                invalidate()
+            }
         }
     private val mBorderWidth: Int
     private var isRunning: Boolean = false
@@ -318,6 +320,7 @@ class CircleProgress @JvmOverloads constructor(
             endAngle > arcAngle + 10 -> arcAngle += 1
             else -> arcAngle = endAngle.toFloat()
         }
+        currentGlobalAngle = arcAngle
         canvas.drawArc(fBounds, startAngle, arcAngle, false, mPaint)
     }
 
@@ -330,6 +333,7 @@ class CircleProgress @JvmOverloads constructor(
     }
 
     fun setProgress(progress: Int) {
+        if (mProgress == progress) return
         mProgress = if (progress >= mMaxProgress) {
             mMaxProgress
         } else {
@@ -368,6 +372,9 @@ class CircleProgress @JvmOverloads constructor(
     fun enableLoading(progress: Int = 0) {
         if (status != STATUS_LOADING) {
             setProgress(progress)
+            if (progress != 0) {
+                currentGlobalAngle = ((350 * mProgress / mMaxProgress + 10).toFloat())
+            }
             setStatus(STATUS_LOADING)
         }
     }
