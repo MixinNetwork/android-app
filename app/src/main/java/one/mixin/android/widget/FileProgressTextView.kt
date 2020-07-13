@@ -9,7 +9,7 @@ import io.reactivex.disposables.Disposable
 import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.fileSize
-import one.mixin.android.extension.fileUnit
+import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 
 class FileProgressTextView @JvmOverloads constructor(
     context: Context,
@@ -32,16 +32,21 @@ class FileProgressTextView @JvmOverloads constructor(
                 .subscribe { event ->
                     if (event.id == mBindId && progress != event.progress) {
                         progress = event.progress
-                        text = "${mediaSize.run { (this * progress).toLong() }.fileSize()} / ${mediaSize.fileSize()}"
+                        updateText()
                     }
                 }
         }
     }
 
     @SuppressLint("SetTextI18n")
+    private fun updateText() {
+        text = "${mediaSize.run { (this * progress).toLong() }.fileSize()} / ${mediaSize.fileSize()}"
+    }
+
     fun setBindId(id: String, mediaSize: Long) {
         if (id != mBindId) {
-            text = "0${mediaSize.fileUnit()} / ${mediaSize.fileSize()}"
+            progress = getAttachmentProcess(id) / 100f
+            updateText()
             this.mediaSize = mediaSize
             mBindId = id
         }
