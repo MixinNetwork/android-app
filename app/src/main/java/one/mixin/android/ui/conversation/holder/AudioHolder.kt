@@ -11,6 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
@@ -118,7 +119,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 MediaStatus.PENDING.name -> {
                     itemView.audio_expired.visibility = View.GONE
                     itemView.audio_progress.visibility = View.VISIBLE
-                    itemView.audio_progress.enableLoading()
+                    itemView.audio_progress.enableLoading(getAttachmentProcess(messageItem.messageId))
                     itemView.audio_progress.setBindOnly(messageItem.messageId)
                     itemView.audio_progress.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)

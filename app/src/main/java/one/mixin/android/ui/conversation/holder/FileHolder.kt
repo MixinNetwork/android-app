@@ -18,6 +18,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
@@ -134,8 +135,8 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                 MediaStatus.PENDING.name -> {
                     itemView.file_expired.visibility = View.GONE
                     itemView.file_progress.visibility = View.VISIBLE
-                    itemView.file_progress.enableLoading()
-                    itemView.file_progress.setBindId(messageItem.messageId)
+                    itemView.file_progress.enableLoading(getAttachmentProcess(messageItem.messageId))
+                    itemView.file_progress.setBindOnly(messageItem.messageId)
                     itemView.file_progress.setOnClickListener {
                         onItemListener.onCancel(messageItem.messageId)
                     }

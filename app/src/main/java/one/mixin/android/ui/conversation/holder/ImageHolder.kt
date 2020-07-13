@@ -16,6 +16,7 @@ import one.mixin.android.extension.loadImageMark
 import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
@@ -99,8 +100,8 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
                 MediaStatus.PENDING.name -> {
                     itemView.chat_warning.visibility = View.GONE
                     itemView.progress.visibility = View.VISIBLE
-                    itemView.progress.enableLoading()
-                    itemView.progress.setBindId(messageItem.messageId)
+                    itemView.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
+                    itemView.progress.setBindOnly(messageItem.messageId)
                     itemView.progress.setOnLongClickListener {
                         if (!hasSelect) {
                             onItemListener.onLongClick(messageItem, absoluteAdapterPosition)

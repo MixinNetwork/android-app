@@ -20,6 +20,7 @@ import one.mixin.android.extension.loadVideoMark
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
@@ -158,8 +159,8 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
                         itemView.chat_warning.visibility = GONE
                         itemView.progress.visibility = VISIBLE
                         itemView.play.visibility = GONE
-                        itemView.progress.enableLoading()
-                        itemView.progress.setBindId(messageItem.messageId)
+                        itemView.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
+                        itemView.progress.setBindOnly(messageItem.messageId)
                         itemView.progress.setOnLongClickListener {
                             if (!hasSelect) {
                                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)

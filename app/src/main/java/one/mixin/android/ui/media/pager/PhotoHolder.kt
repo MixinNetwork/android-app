@@ -13,6 +13,7 @@ import com.bumptech.glide.request.target.Target
 import one.mixin.android.R
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
+import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
@@ -100,7 +101,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
             circleProgress.isVisible = true
             circleProgress.setBindId(messageItem.messageId)
             if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
-                circleProgress.enableLoading()
+                circleProgress.enableLoading(getAttachmentProcess(messageItem.messageId))
             } else if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
                 if (Session.getAccountId() == messageItem.userId) {
                     circleProgress.enableUpload()

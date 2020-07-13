@@ -11,6 +11,7 @@ import com.shizhefei.view.largeimage.factory.FileBitmapDecoderFactory
 import one.mixin.android.R
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.screenWidth
+import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
@@ -37,7 +38,7 @@ class LargeImageHolder(itemView: View) : MediaPagerHolder(itemView) {
             circleProgress.setBindId(messageItem.messageId)
             @Suppress("ControlFlowWithEmptyBody")
             if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
-                circleProgress.enableLoading()
+                circleProgress.enableLoading(getAttachmentProcess(messageItem.messageId))
             } else if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
                 if (Session.getAccountId() == messageItem.userId) {
                     circleProgress.enableUpload()

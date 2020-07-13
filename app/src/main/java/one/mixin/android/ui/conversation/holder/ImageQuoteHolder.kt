@@ -10,6 +10,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MediaStatus
@@ -142,8 +143,8 @@ class ImageQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
                 MediaStatus.PENDING.name -> {
                     itemView.chat_warning.visibility = View.GONE
                     itemView.progress.visibility = View.VISIBLE
-                    itemView.progress.enableLoading()
-                    itemView.progress.setBindId(messageItem.messageId)
+                    itemView.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
+                    itemView.progress.setBindOnly(messageItem.messageId)
                     itemView.progress.setOnLongClickListener {
                         if (!hasSelect) {
                             onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
