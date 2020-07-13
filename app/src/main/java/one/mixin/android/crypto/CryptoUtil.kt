@@ -28,7 +28,7 @@ inline fun KeyPair.getPublicKey(): ByteArray {
     return public.encoded
 }
 
-fun KeyPair.getPrivateKeyPem(): String {
+inline fun KeyPair.getPrivateKeyPem(): String {
     val heldCertificate = HeldCertificate.Builder().keyPair(this).build()
     return heldCertificate.privateKeyPkcs1Pem()
 }
