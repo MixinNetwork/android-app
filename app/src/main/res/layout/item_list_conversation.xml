@@ -23,6 +23,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toEndOf="@id/avatar_iv"
+            android:orientation="horizontal"
             android:layout_above="@id/center">
 
         <TextView
@@ -30,7 +31,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginBottom="2dp"
                 android:maxWidth="220dp"
                 android:singleLine="true"
                 android:textColor="?attr/text_primary"
@@ -40,7 +40,7 @@
                 android:id="@+id/verified_iv"
                 android:layout_width="12dp"
                 android:layout_height="12dp"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="4dp"
                 android:layout_gravity="center_vertical"
                 android:src="@drawable/ic_user_verified"
                 android:visibility="gone"
@@ -51,7 +51,7 @@
                 android:layout_width="12dp"
                 android:layout_height="12dp"
                 android:layout_gravity="center_vertical"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="4dp"
                 android:src="@drawable/ic_bot"
                 android:visibility="gone"
                 android:contentDescription="@null"/>
@@ -61,7 +61,7 @@
                 android:layout_width="12dp"
                 android:layout_height="12dp"
                 android:layout_gravity="center_vertical"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="4dp"
                 android:src="@drawable/ic_mute"
                 android:visibility="gone"
                 tools:ignore="ContentDescription"/>
