@@ -289,7 +289,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
         super.onPause()
     }
 
-    override fun onBackPressed() {
+    override fun onStop() {
+        super.onStop()
         if (callState.isRinging()) {
             hangup()
         } else if (callState.isNotIdle()) {
@@ -298,7 +299,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
             }
             switch2Pip()
         }
-        super.onBackPressed()
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
