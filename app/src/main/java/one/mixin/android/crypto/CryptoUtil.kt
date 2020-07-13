@@ -2,12 +2,9 @@
 package one.mixin.android.crypto
 
 import android.os.Build
+import okhttp3.tls.HeldCertificate
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.toLeByteArray
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
-import org.bouncycastle.util.io.pem.PemObject
-import org.bouncycastle.util.io.pem.PemWriter
-import java.io.StringWriter
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
@@ -31,18 +28,9 @@ inline fun KeyPair.getPublicKey(): ByteArray {
     return public.encoded
 }
 
-fun KeyPair.getPrivateKeyPem(): String {
-    val pkInfo = PrivateKeyInfo.getInstance(private.encoded)
-    val encodable = pkInfo.parsePrivateKey()
-    val primitive2 = encodable.toASN1Primitive()
-    val privateKeyPKCS1 = primitive2.encoded
-
-    val pemObject2 = PemObject("RSA PRIVATE KEY", privateKeyPKCS1)
-    val stringWriter2 = StringWriter()
-    val pemWriter2 = PemWriter(stringWriter2)
-    pemWriter2.writeObject(pemObject2)
-    pemWriter2.close()
-    return stringWriter2.toString()
+inline fun KeyPair.getPrivateKeyPem(): String {
+    val heldCertificate = HeldCertificate.Builder().keyPair(this).build()
+    return heldCertificate.privateKeyPkcs1Pem()
 }
 
 fun aesEncrypt(key: String, iterator: Long, code: String): String? {
