@@ -14,6 +14,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
+import io.alterac.blurkit.BlurKit
 import io.reactivex.plugins.RxJavaPlugins
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.db.SignalDatabase
@@ -58,6 +59,7 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
 
     companion object {
         lateinit var appContext: Context
+
         @JvmField
         var conversationId: String? = null
 
@@ -72,6 +74,7 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
         appContext = applicationContext
         AndroidThreeTen.init(this)
         Lingver.init(this)
+        BlurKit.init(this)
         appComponent = AppInjector.init(this)
         RxJavaPlugins.setErrorHandler {}
     }

@@ -258,6 +258,7 @@ dependencies {
     implementation "io.noties.markwon:ext-tasklist:${markwonVersion}"
     implementation "com.github.SandroMachado:BitcoinPaymentURI:${bitcoinPaymentURI}"
     implementation "com.caverock:androidsvg-aar:${svgVersion}"
+    implementation 'io.alterac.blurkit:blurkit:1.1.0'
 }
 
 task ktlint(type: JavaExec, group: "verification") {

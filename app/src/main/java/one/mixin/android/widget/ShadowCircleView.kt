@@ -4,8 +4,10 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.RelativeLayout
+import io.alterac.blurkit.BlurKit
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import kotlinx.android.synthetic.main.view_shadow_circle.view.*
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.BotEvent
@@ -31,6 +33,7 @@ class ShadowCircleView : RelativeLayout {
                 .subscribe { _ ->
                 }
         }
+        // BlurKit.getInstance().fastBlur(shadow, 25, 0.12f)
     }
 
     override fun onDetachedFromWindow() {
