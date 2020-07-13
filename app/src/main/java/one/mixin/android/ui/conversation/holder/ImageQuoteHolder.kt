@@ -144,7 +144,7 @@ class ImageQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
                     itemView.chat_warning.visibility = View.GONE
                     itemView.progress.visibility = View.VISIBLE
                     itemView.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
-                    itemView.progress.setBindId(messageItem.messageId)
+                    itemView.progress.setBindOnly(messageItem.messageId)
                     itemView.progress.setOnLongClickListener {
                         if (!hasSelect) {
                             onItemListener.onLongClick(messageItem, absoluteAdapterPosition)

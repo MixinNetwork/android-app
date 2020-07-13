@@ -160,7 +160,7 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
                         itemView.progress.visibility = VISIBLE
                         itemView.play.visibility = GONE
                         itemView.progress.enableLoading(getAttachmentProcess(messageItem.messageId))
-                        itemView.progress.setBindId(messageItem.messageId)
+                        itemView.progress.setBindOnly(messageItem.messageId)
                         itemView.progress.setOnLongClickListener {
                             if (!hasSelect) {
                                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)

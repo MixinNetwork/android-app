@@ -371,11 +371,11 @@ class CircleProgress @JvmOverloads constructor(
 
     fun enableLoading(progress: Int = 0) {
         if (status != STATUS_LOADING) {
-            setProgress(progress)
-            if (progress != 0) {
-                currentGlobalAngle = ((350 * mProgress / mMaxProgress + 10).toFloat())
-            }
             setStatus(STATUS_LOADING)
+        }
+        setProgress(progress)
+        if (progress != 0) {
+            arcAngle = ((350 * mProgress / mMaxProgress + 10).toFloat())
         }
     }
 

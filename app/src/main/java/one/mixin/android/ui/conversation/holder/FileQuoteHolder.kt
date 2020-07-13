@@ -154,7 +154,7 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
                     itemView.file_expired.visibility = View.GONE
                     itemView.file_progress.visibility = View.VISIBLE
                     itemView.file_progress.enableLoading(getAttachmentProcess(messageItem.messageId))
-                    itemView.file_progress.setBindId(messageItem.messageId)
+                    itemView.file_progress.setBindOnly(messageItem.messageId)
                     itemView.file_progress.setOnClickListener {
                         onItemListener.onCancel(messageItem.messageId)
                     }
