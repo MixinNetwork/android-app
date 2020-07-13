@@ -77,6 +77,7 @@ class DecryptCallMessage(
                     updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
                 }
             }
+            notifyServer(data)
         } catch (e: Exception) {
             Timber.e("DecryptCallMessage failure, $e")
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
@@ -85,9 +86,21 @@ class DecryptCallMessage(
 
     private fun processKraken(data: BlazeMessageData) {
         Timber.d("@@@ processKraken category: ${data.category}, data: $data")
-        if (data.source == LIST_PENDING_MESSAGES && data.category == MessageCategory.KRAKEN_INVITE.name) {
+        if (data.source == LIST_PENDING_MESSAGES) {
             val isExpired = isExpired(data)
-            if (!isExpired && !listPendingOfferHandled) {
+            if (isExpired) {
+                if (data.category == MessageCategory.KRAKEN_INVITE.name) {
+                    val message = createCallMessage(
+                        data.messageId, data.conversationId, data.userId, MessageCategory.KRAKEN_INVITE.name,
+                        null, data.createdAt, data.status
+                    )
+                    database.insertAndNotifyConversation(message)
+                } else if (data.category == MessageCategory.KRAKEN_PUBLISH.name || data.category == MessageCategory.KRAKEN_END.name) {
+                    processKrakenCall(data)
+                }
+                // ignore KRAKEN_CANCEL, KRAKEN_DECLINE from listPending
+
+            } else if (data.category == MessageCategory.KRAKEN_INVITE.name && !listPendingOfferHandled) {
                 listPendingJobMap[data.messageId] = Pair(
                     lifecycleScope.launch(listPendingDispatcher) {
                         delay(LIST_PENDING_CALL_DELAY)
@@ -112,14 +125,7 @@ class DecryptCallMessage(
                     },
                     data
                 )
-            } else if (isExpired) {
-                val message = createCallMessage(
-                    data.messageId, data.conversationId, data.userId, MessageCategory.KRAKEN_INVITE.name,
-                    null, data.createdAt, data.status
-                )
-                database.insertAndNotifyConversation(message)
             }
-            notifyServer(data)
         } else {
             processKrakenCall(data)
         }
@@ -139,13 +145,16 @@ class DecryptCallMessage(
                 receiveEnd(ctx, data.conversationId, data.userId)
             }
             MessageCategory.KRAKEN_CANCEL.name -> {
+                if (callState.conversationId != data.conversationId) return
+
                 receiveCancel(ctx, data.conversationId, data.userId)
             }
             MessageCategory.KRAKEN_DECLINE.name -> {
+                if (callState.conversationId != data.conversationId) return
+
                 receiveDecline(ctx, data.conversationId, data.userId)
             }
         }
-        notifyServer(data)
     }
 
     private fun processWebRTC(data: BlazeMessageData) {
@@ -188,7 +197,6 @@ class DecryptCallMessage(
                 )
                 database.insertAndNotifyConversation(message)
             }
-            notifyServer(data)
         } else {
             processCall(data)
         }
@@ -216,7 +224,6 @@ class DecryptCallMessage(
                     pendingCandidateList.clear()
                     listPendingCandidateMap.remove(data.messageId, pendingCandidateList)
                 }
-                notifyServer(data)
             }
         } else if (listPendingJobMap.containsKey(data.quoteMessageId)) {
             listPendingJobMap[data.quoteMessageId]?.let { pair ->
@@ -245,26 +252,22 @@ class DecryptCallMessage(
                 )
                 database.insertAndNotifyConversation(message)
             }
-            notifyServer(data)
         } else {
             when (data.category) {
                 MessageCategory.WEBRTC_AUDIO_ANSWER.name -> {
                     if (callState.isIdle() || data.quoteMessageId != callState.trackId) {
-                        notifyServer(data)
                         return
                     }
                     answerCall(ctx, data)
                 }
                 MessageCategory.WEBRTC_ICE_CANDIDATE.name -> {
                     if (callState.isIdle() || data.quoteMessageId != callState.trackId) {
-                        notifyServer(data)
                         return
                     }
                     candidate(ctx, data)
                 }
                 MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
                     if (callState.isIdle()) {
-                        notifyServer(data)
                         return
                     }
                     saveCallMessage(data)
@@ -275,7 +278,6 @@ class DecryptCallMessage(
                 }
                 MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
                     if (callState.isIdle()) {
-                        notifyServer(data)
                         return
                     }
 
@@ -290,7 +292,6 @@ class DecryptCallMessage(
                     if (callState.isIdle() || data.quoteMessageId != callState.trackId ||
                         callState.user == null
                     ) {
-                        notifyServer(data)
                         return
                     }
 
@@ -299,7 +300,6 @@ class DecryptCallMessage(
                 }
                 MessageCategory.WEBRTC_AUDIO_END.name -> {
                     if (callState.isIdle()) {
-                        notifyServer(data)
                         return
                     }
 
@@ -309,7 +309,6 @@ class DecryptCallMessage(
                 }
                 MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
                     if (callState.isIdle()) {
-                        notifyServer(data)
                         return
                     }
 
@@ -318,7 +317,6 @@ class DecryptCallMessage(
                     remoteFailed(ctx)
                 }
             }
-            notifyServer(data)
         }
     }
 
