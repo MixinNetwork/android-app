@@ -99,7 +99,6 @@ class DecryptCallMessage(
                     processKrakenCall(data)
                 }
                 // ignore KRAKEN_CANCEL, KRAKEN_DECLINE from listPending
-
             } else if (data.category == MessageCategory.KRAKEN_INVITE.name && !listPendingOfferHandled) {
                 listPendingJobMap[data.messageId] = Pair(
                     lifecycleScope.launch(listPendingDispatcher) {
