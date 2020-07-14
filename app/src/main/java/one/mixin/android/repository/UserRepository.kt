@@ -1,6 +1,7 @@
 package one.mixin.android.repository
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -101,7 +102,7 @@ constructor(
     suspend fun suspendFindContactByConversationId(conversationId: String): User? =
         userDao.suspendFindContactByConversationId(conversationId)
 
-    fun findSelf(): LiveData<User?> = userDao.findSelf(Session.getAccountId() ?: "")
+    fun findSelf(): LiveData<User?> = userDao.findSelf(Session.getAccountId() ?: "").asLiveData()
 
     suspend fun upsert(user: User) = coroutineScope {
         userDao.insertUpdate(user, appDao)

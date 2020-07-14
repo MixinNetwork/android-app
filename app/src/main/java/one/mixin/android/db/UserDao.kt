@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.User
@@ -27,7 +28,7 @@ interface UserDao : BaseDao<User> {
     fun findUserById(id: String): LiveData<User>
 
     @Query("SELECT * FROM users WHERE user_id = :id")
-    fun findSelf(id: String): LiveData<User?>
+    fun findSelf(id: String): Flow<User?>
 
     @Query("SELECT * FROM users WHERE user_id = :id")
     fun findUser(id: String): User?
