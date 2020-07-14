@@ -34,7 +34,6 @@ import android.view.KeyEvent
 import android.view.ViewConfiguration
 import android.view.Window
 import android.view.WindowManager
-import androidx.appcompat.app.AlertDialog
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -696,7 +695,7 @@ val defaultThemeId = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
     Constants.Theme.THEME_AUTO_ID
 }
 
-fun Context.checkInlinePermissions(): Boolean {
+fun Context.checkInlinePermissions(showAlert: () -> Unit): Boolean {
     if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
         var intent = XiaomiUtilities.getPermissionManagerIntent()
         if (intent != null) {
@@ -719,23 +718,7 @@ fun Context.checkInlinePermissions(): Boolean {
     if (Settings.canDrawOverlays(this)) {
         return true
     } else {
-        this.let { activity ->
-            AlertDialog.Builder(activity)
-                .setTitle(R.string.app_name)
-                .setMessage(R.string.live_permission)
-                .setPositiveButton(R.string.live_setting) { _, _ ->
-                    try {
-                        activity.startActivity(
-                            Intent(
-                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                Uri.parse("package:" + activity.packageName)
-                            )
-                        )
-                    } catch (e: Exception) {
-                        Timber.e(e)
-                    }
-                }.show()
-        }
+        showAlert()
     }
     return false
 }

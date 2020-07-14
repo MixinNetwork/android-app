@@ -6,6 +6,9 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -16,15 +19,19 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.media.AudioManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
+import android.provider.Settings
 import android.view.View
 import android.view.View.VISIBLE
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
+import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -54,6 +61,7 @@ import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.supportsOreo
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.util.Session
@@ -69,6 +77,7 @@ import one.mixin.android.webrtc.muteAudio
 import one.mixin.android.webrtc.speakerPhone
 import one.mixin.android.widget.CallButton
 import one.mixin.android.widget.PipCallView
+import org.jetbrains.anko.notificationManager
 import timber.log.Timber
 import java.util.Timer
 import java.util.TimerTask
@@ -92,6 +101,9 @@ class CallActivity : BaseActivity(), SensorEventListener {
     private var wakeLock: PowerManager.WakeLock? = null
 
     private var userAdapter: CallUserAdapter? = null
+
+    private var permissionAlert: AlertDialog? = null
+    private var setClicked = false
 
     private val self = Session.getAccount()!!.toUser()
 
@@ -294,7 +306,10 @@ class CallActivity : BaseActivity(), SensorEventListener {
         if (callState.isRinging()) {
             hangup()
         } else if (callState.isNotIdle()) {
-            if (!checkInlinePermissions()) {
+            if (!checkPipPermission()) {
+                if (!setClicked) {
+                    showPipPermissionNotification()
+                }
                 return
             }
             switch2Pip()
@@ -317,6 +332,24 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 }
             }
         }
+    }
+
+    private fun showPipPermissionNotification() {
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0,
+            Intent(this, CallActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val builder = NotificationCompat.Builder(this, CHANNEL_PIP_PERMISSION)
+            .setSmallIcon(R.drawable.ic_msg_default)
+            .setContentIntent(pendingIntent)
+            .setContentTitle(getString(R.string.call_pip_permission))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+        supportsOreo {
+            val channel = NotificationChannel(CHANNEL_PIP_PERMISSION, getString(R.string.other), NotificationManager.IMPORTANCE_HIGH)
+            notificationManager.createNotificationChannel(channel)
+        }
+        notificationManager.notify(ID_PIP_PERMISSION, builder.build())
     }
 
     private fun hangup() {
@@ -429,7 +462,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     private var pipAnimationInProgress = false
     private fun switch2Pip() {
-        if (!checkInlinePermissions() || pipAnimationInProgress) {
+        if (!checkPipPermission() || pipAnimationInProgress) {
             return
         }
         pipAnimationInProgress = true
@@ -485,6 +518,33 @@ class CallActivity : BaseActivity(), SensorEventListener {
             start()
         }
     }
+
+    private fun checkPipPermission() =
+        checkInlinePermissions {
+            if (setClicked) {
+                setClicked = false
+                return@checkInlinePermissions
+            }
+            if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
+
+            permissionAlert = AlertDialog.Builder(this)
+                .setTitle(R.string.app_name)
+                .setMessage(R.string.call_pip_permission)
+                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                    try {
+                        startActivity(
+                            Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:$packageName")
+                            )
+                        )
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                    }
+                    dialog.dismiss()
+                    setClicked = true
+                }.show()
+        }
 
     private fun handleDialing() {
         voice_cb.isVisible = true
@@ -589,6 +649,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
     companion object {
         const val TAG = "CallActivity"
         const val EXTRA_JOIN = "extra_join"
+        const val CHANNEL_PIP_PERMISSION = "channel_pip_permission"
+        const val ID_PIP_PERMISSION = 313389
 
         fun show(context: Context, join: Boolean = false) {
             Intent(context, CallActivity::class.java).apply {

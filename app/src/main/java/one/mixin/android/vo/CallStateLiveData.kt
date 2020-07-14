@@ -19,7 +19,7 @@ data class GroupCallUser(
     var type: Type
 ) {
     enum class Type {
-        In, Pending
+        Joined, Pending
     }
 }
 
@@ -46,17 +46,17 @@ data class GroupCallState(
         return ids
     }
 
-    fun inUserIds(): List<String>? {
+    fun joinedUserIds(): List<String>? {
         if (users.isNullOrEmpty()) return null
 
         val ids = mutableListOf<String>()
-        users?.filter { it.type == GroupCallUser.Type.In }
+        users?.filter { it.type == GroupCallUser.Type.Joined }
             ?.mapTo(ids) { it.id }
         return ids
     }
 
-    fun addInUser(inUser: String) {
-        addUserToList(inUser, GroupCallUser.Type.In)
+    fun addJoinedUser(inUser: String) {
+        addUserToList(inUser, GroupCallUser.Type.Joined)
     }
 
     fun removeUser(inUser: String) {
@@ -74,11 +74,11 @@ data class GroupCallState(
         users = us
     }
 
-    fun addInUsers(inUsers: List<String>) {
-        addUsersToList(inUsers, GroupCallUser.Type.In)
+    fun addJoinedUsers(inUsers: List<String>) {
+        addUsersToList(inUsers, GroupCallUser.Type.Joined)
     }
 
-    fun setInUsers(inUsers: List<String>) {
+    fun setJoinedUsers(inUsers: List<String>) {
         val us = mutableListOf<GroupCallUser>().apply {
             users?.let { addAll(it) }
         }
@@ -90,7 +90,7 @@ data class GroupCallState(
                 each.remove()
             } else {
                 if (next.type == GroupCallUser.Type.Pending) {
-                    next.type = GroupCallUser.Type.In
+                    next.type = GroupCallUser.Type.Joined
                 }
             }
         }
@@ -101,10 +101,10 @@ data class GroupCallState(
         addUsersToList(pendingUsers, GroupCallUser.Type.Pending)
     }
 
-    fun pending2In(userId: String) {
+    fun pending2Joined(userId: String) {
         val u = findUser(userId) ?: return
 
-        u.type = GroupCallUser.Type.In
+        u.type = GroupCallUser.Type.Joined
     }
 
     fun clearPendingUsers() {
@@ -113,7 +113,7 @@ data class GroupCallState(
 
         val newUsers = mutableListOf<GroupCallUser>()
         us.forEach { u ->
-            if (u.type == GroupCallUser.Type.In) {
+            if (u.type == GroupCallUser.Type.Joined) {
                 newUsers.add(u)
             }
         }
@@ -143,7 +143,7 @@ data class GroupCallState(
         if (existsUser == null) {
             us.add(0, GroupCallUser(id, type))
         } else {
-            if (type == GroupCallUser.Type.In) {
+            if (type == GroupCallUser.Type.Joined) {
                 existsUser.type = type
             }
         }
@@ -239,15 +239,15 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
             it.conversationId == conversationId
         }?.inviter
 
-    fun getUsersByConversationId(conversationId: String): List<String>? {
+    fun getUsers(conversationId: String): List<String>? {
         val groupCallState = groupCallStates.find {
             it.conversationId == conversationId
         } ?: return null
         return groupCallState.userIds()
     }
 
-    fun getUsersCountByConversationId(conversationId: String): Int =
-        getUsersByConversationId(conversationId)?.size ?: 0
+    fun getUsersCount(conversationId: String): Int =
+        getUsers(conversationId)?.size ?: 0
 
     fun setPendingUsers(conversationId: String, guests: List<String>) {
         if (guests.isNullOrEmpty()) return
@@ -285,25 +285,18 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         return groupCallState.pendingUserIds()
     }
 
-    fun getUsers(conversationId: String): List<String>? {
-        val groupCallState = groupCallStates.find {
-            it.conversationId == conversationId
-        } ?: return null
-        return groupCallState.userIds()
-    }
-
     fun setUsersByConversationId(conversationId: String, newUsers: List<String>?) {
         if (newUsers.isNullOrEmpty()) return
 
         val groupCallState = addGroupCallState(conversationId)
-        groupCallState.setInUsers(newUsers)
+        groupCallState.setJoinedUsers(newUsers)
 
         postValue(state)
     }
 
     fun addUser(conversationId: String, userId: String) {
         val groupCallState = addGroupCallState(conversationId)
-        groupCallState.addInUser(userId)
+        groupCallState.addJoinedUser(userId)
 
         postValue(state)
     }
