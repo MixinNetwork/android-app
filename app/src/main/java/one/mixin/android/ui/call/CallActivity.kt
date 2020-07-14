@@ -289,7 +289,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
         super.onPause()
     }
 
-    override fun onBackPressed() {
+    override fun onStop() {
+        super.onStop()
         if (callState.isRinging()) {
             hangup()
         } else if (callState.isNotIdle()) {
@@ -298,7 +299,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
             }
             switch2Pip()
         }
-        super.onBackPressed()
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
@@ -339,20 +339,17 @@ class CallActivity : BaseActivity(), SensorEventListener {
         val us = callState.getUsers(cid)
         val callees = mutableListOf<String>().apply { us?.let { addAll(it) } }
         var layoutManager: GridLayoutManager? = users_rv?.layoutManager as GridLayoutManager?
-        val spanCount = getSpanCount(callees.size)
         if (layoutManager == null) {
-            layoutManager = GridLayoutManager(this@CallActivity, spanCount)
+            layoutManager = GridLayoutManager(this@CallActivity, 3)
             users_rv?.layoutManager = layoutManager
-        } else {
-            if (layoutManager.spanCount != spanCount) {
-                layoutManager.spanCount = spanCount
-            }
         }
+
         if (callees.isNullOrEmpty()) {
             userAdapter?.submitList(null)
         } else {
             val last = callees.lastOrNull()
             if (callees.size == 1 && last == self.userId) {
+                layoutManager.spanCount = getSpanCount(1)
                 userAdapter?.submitList(listOf(self))
                 return@launch
             }
@@ -365,6 +362,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
             val users = viewModel.findMultiUsersByIds(callees.toSet())
             val orderByIds = callees.withIndex().associate { it.value to it.index }
             val sortedUsers = users.sortedBy { orderByIds[it.userId] }
+            layoutManager.spanCount = getSpanCount(sortedUsers.size)
             userAdapter?.submitList(sortedUsers)
         }
         val currentGuestsNotConnected = userAdapter?.guestsNotConnected
@@ -581,7 +579,12 @@ class CallActivity : BaseActivity(), SensorEventListener {
         timer = null
     }
 
-    private fun getSpanCount(size: Int) = if (size <= 9) 3 else 4
+    private fun getSpanCount(size: Int) = when {
+        size <= 1 -> 1
+        size == 2 -> 2
+        size <= 9 -> 3
+        else -> 4
+    }
 
     companion object {
         const val TAG = "CallActivity"

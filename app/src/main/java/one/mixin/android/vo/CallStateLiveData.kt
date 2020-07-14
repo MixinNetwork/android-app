@@ -78,6 +78,22 @@ data class GroupCallState(
         addUsersToList(inUsers, GroupCallUser.Type.In)
     }
 
+    fun setInUsers(inUsers: List<String>) {
+        val us = mutableListOf<GroupCallUser>().apply {
+            users?.let { addAll(it) }
+        }
+        val each = us.iterator()
+        while (each.hasNext()) {
+            if (each.next().type == GroupCallUser.Type.In) {
+                val exists = inUsers.find { it == each.next().id }
+                if (exists == null) {
+                    each.remove()
+                }
+            }
+        }
+        users = us
+    }
+
     fun addPendingUsers(pendingUsers: List<String>) {
         addUsersToList(pendingUsers, GroupCallUser.Type.Pending)
     }
@@ -277,7 +293,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         if (newUsers.isNullOrEmpty()) return
 
         val groupCallState = addGroupCallState(conversationId)
-        groupCallState.addInUsers(newUsers)
+        groupCallState.setInUsers(newUsers)
 
         postValue(state)
     }
