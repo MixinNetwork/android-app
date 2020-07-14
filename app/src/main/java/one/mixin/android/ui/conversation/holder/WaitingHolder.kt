@@ -76,7 +76,8 @@ class WaitingHolder constructor(
         itemView.chat_tv.highlightLinkText(
             info,
             arrayOf(learn),
-            arrayOf(learnUrl)
+            arrayOf(learnUrl),
+            onItemListener = onItemListener
         )
 
         if (isFirst) {

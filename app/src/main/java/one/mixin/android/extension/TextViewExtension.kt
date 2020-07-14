@@ -14,13 +14,15 @@ import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
 import one.mixin.android.R
+import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.widget.NoUnderLineSpan
 
 fun TextView.highlightLinkText(
     source: String,
     texts: Array<String>,
     links: Array<String>,
-    color: Int = ContextCompat.getColor(context, R.color.colorBlue)
+    color: Int = ContextCompat.getColor(context, R.color.colorBlue),
+    onItemListener: ConversationAdapter.OnItemListener? = null
 ) {
     require(texts.size == links.size) { "texts's length should equals with links" }
     val sp = SpannableString(source)
@@ -29,7 +31,7 @@ fun TextView.highlightLinkText(
         val link = links[i]
         val start = source.indexOf(text)
         require(start != -1) { "start index can not be -1" }
-        sp.setSpan(NoUnderLineSpan(link), start, start + text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        sp.setSpan(NoUnderLineSpan(link, onItemListener), start, start + text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         sp.setSpan(ForegroundColorSpan(color), start, start + text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
     text = sp

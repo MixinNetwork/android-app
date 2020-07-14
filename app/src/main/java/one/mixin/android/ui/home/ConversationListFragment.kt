@@ -646,7 +646,7 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.contentType == MessageCategory.SIGNAL_CONTACT.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_CONTACT.name -> {
                     setConversationName(conversationItem)
-                    itemView.msg_tv.setText(R.string.contact_less_title)
+                    itemView.msg_tv.setText(R.string.conversation_status_contact)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_contact)
                 }
                 conversationItem.isCallMessage() -> {
@@ -665,7 +665,7 @@ class ConversationListFragment : LinkFragment() {
                 }
                 conversationItem.isGroupVoiceCall() -> {
                     setConversationName(conversationItem)
-                    itemView.msg_tv.setText(R.string.group_call)
+                    itemView.msg_tv.setText(R.string.conversation_status_group_call)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_voice)
                 }
                 conversationItem.contentType == MessageCategory.SYSTEM_CONVERSATION.name -> {
