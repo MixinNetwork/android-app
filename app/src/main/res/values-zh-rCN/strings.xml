@@ -631,20 +631,20 @@
     <string name="auth_request">需要访问你的</string>
     <string name="auth_public_profile">个人资料(必须)</string>
     <string name="auth_phone_number">手机号码</string>
-    <string name="auth_assets">资产余额</string>
-    <string name="auth_app_read">读取应用</string>
+    <string name="auth_assets">查看资产</string>
+    <string name="auth_app_read">查看应用</string>
     <string name="auth_apps_read_description">访问你的应用列表</string>
     <string name="auth_apps_write">管理应用</string>
     <string name="auth_apps_write_description">管理你所有的应用</string>
     <string name="auth_profile_content">%1$s, %2$s, 头像</string>
     <string name="auth_assets_more">%1$s 等</string>
-    <string name="auth_permission_contacts_read">读取联系人</string>
+    <string name="auth_permission_contacts_read">查看联系人</string>
     <string name="auth_permission_contacts_read_description">访问你的联系人列表</string>
     <string name="auth_authorization">授权</string>
     <string name="auth_refuse">拒绝</string>
     <string name="auth_messages_represent">代发消息</string>
     <string name="auth_messages_represent_description">允许机器人代表你发消息</string>
-    <string name="auth_snapshot_read">转账记录</string>
+    <string name="auth_snapshot_read">查看转账记录</string>
     <string name="auth_snapshot_read_description">访问你的转账记录</string>
 
     <string name="permission_video">要允许拍摄视频吗?</string>

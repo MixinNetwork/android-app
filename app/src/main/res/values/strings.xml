@@ -643,21 +643,21 @@
     <!--auth-->
     <string name="auth_request">Requests access to your</string>
     <string name="auth_public_profile">Public profile (required)</string>
-    <string name="auth_phone_number">Phone number</string>
-    <string name="auth_assets">Assets balances</string>
-    <string name="auth_app_read">Read apps</string>
+    <string name="auth_phone_number">Phone Number</string>
+    <string name="auth_assets">Read Assets</string>
+    <string name="auth_app_read">Read Apps</string>
     <string name="auth_apps_read_description">access your apps list</string>
-    <string name="auth_apps_write">Manage apps</string>
+    <string name="auth_apps_write">Manage Apps</string>
     <string name="auth_apps_write_description">mange all your apps</string>
     <string name="auth_profile_content">%1$s, %2$s, profile photo</string>
     <string name="auth_assets_more">%1$s and more</string>
-    <string name="auth_permission_contacts_read">Read contacts</string>
+    <string name="auth_permission_contacts_read">Read Contacts</string>
     <string name="auth_permission_contacts_read_description">access your contacts list</string>
     <string name="auth_authorization">Authorization</string>
     <string name="auth_refuse">Refuse</string>
-    <string name="auth_messages_represent">Represent messages</string>
+    <string name="auth_messages_represent">Represent Messages</string>
     <string name="auth_messages_represent_description">allow bot to send messages represent of you</string>
-    <string name="auth_snapshot_read">Snapshots</string>
+    <string name="auth_snapshot_read">Read Snapshots</string>
     <string name="auth_snapshot_read_description">access your snapshots</string>
 
     <string name="permission_video">Allow to record video?</string>
