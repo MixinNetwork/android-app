@@ -780,6 +780,7 @@
     <string name="call_accept">Accept</string>
     <string name="call_mute">Mute</string>
     <string name="call_group_full">Support up to %1$d people group voice</string>
+    <string name="call_pip_permission">You can\'t minimize a voice call as Mixin isn\'t authorized to use floating windows</string>
 
     <!-- restore&backup -->
     <string name="restore_info">Restore your messages from external storage.\nIf you don\'t restore new, you won\'t be able to restore later.</string>

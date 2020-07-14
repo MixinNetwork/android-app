@@ -18,6 +18,7 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View
@@ -27,6 +28,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.core.net.toUri
@@ -91,6 +93,7 @@ import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
+import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import javax.inject.Inject
@@ -454,7 +457,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     private var pipAnimationInProgress = false
     private fun switchToPip(messageItem: MessageItem, view: View) {
-        if (!checkInlinePermissions() || pipAnimationInProgress) {
+        if (!checkPipPermission() || pipAnimationInProgress) {
             return
         }
         pipAnimationInProgress = true
@@ -535,6 +538,30 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             animatorSet.start()
         }
     }
+
+    private var permissionAlert: AlertDialog? = null
+
+    private fun checkPipPermission() =
+        checkInlinePermissions {
+            if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
+
+            permissionAlert = AlertDialog.Builder(this)
+                .setTitle(R.string.app_name)
+                .setMessage(R.string.call_pip_permission)
+                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                    try {
+                        startActivity(
+                            Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:$packageName")
+                            )
+                        )
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                    }
+                    dialog.dismiss()
+                }.show()
+        }
 
     private fun dismiss() {
         view_pager.visibility = View.INVISIBLE

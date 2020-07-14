@@ -175,7 +175,7 @@ class GroupCallService : CallService() {
                         return@subscribe
                     }
                     if (event.userId != null && event.sessionId != null) {
-                        val users = callState.getUsersByConversationId(event.conversationId) ?: return@subscribe
+                        val users = callState.getUsers(event.conversationId) ?: return@subscribe
                         if (users.contains(event.userId)) {
                             val frameKey = getSenderPublicKey(event.userId, event.sessionId) ?: return@subscribe
                             peerConnectionClient.setReceiverFrameKey(event.userId, event.sessionId, frameKey)
@@ -268,7 +268,7 @@ class GroupCallService : CallService() {
         }
         val userIdList = arrayListOf<String>()
         peerList.peers.mapTo(userIdList) { it.userId }
-        val currentList = callState.getUsersByConversationId(conversationId)
+        val currentList = callState.getUsers(conversationId)
         if (currentList != null && currentList.size > userIdList.size) {
             if (userIdList.isEmpty()) {
                 checkSchedules(conversationId)
@@ -470,7 +470,7 @@ class GroupCallService : CallService() {
     }
 
     private fun checkConversationUserCount(conversationId: String) {
-        val count = callState.getUsersCountByConversationId(conversationId)
+        val count = callState.getUsersCount(conversationId)
         if (count == 0) {
             checkSchedules(conversationId)
         }
