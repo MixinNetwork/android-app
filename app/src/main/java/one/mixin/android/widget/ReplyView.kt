@@ -50,7 +50,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
         when {
             messageItem.type.endsWith("_IMAGE") -> {
                 reply_view_tv.setText(R.string.photo)
-                setIcon(R.drawable.ic_status_pic)
+                setIcon(R.drawable.ic_type_pic)
                 reply_view_iv.loadImageCenterCrop(messageItem.mediaUrl, R.drawable.image_holder)
                 (reply_view_tv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
                 reply_view_iv.visibility = View.VISIBLE
@@ -58,7 +58,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             }
             messageItem.type.endsWith("_VIDEO") -> {
                 reply_view_tv.setText(R.string.video)
-                setIcon(R.drawable.ic_status_video)
+                setIcon(R.drawable.ic_type_video)
                 reply_view_iv.loadImageCenterCrop(messageItem.mediaUrl, R.drawable.image_holder)
                 (reply_view_tv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
                 reply_view_iv.visibility = View.VISIBLE
@@ -66,7 +66,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             }
             messageItem.type.endsWith("_LIVE") -> {
                 reply_view_tv.setText(R.string.live)
-                setIcon(R.drawable.ic_status_live)
+                setIcon(R.drawable.ic_type_live)
                 reply_view_iv.loadImageCenterCrop(messageItem.thumbUrl, R.drawable.image_holder)
                 (reply_view_tv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
                 reply_view_iv.visibility = View.VISIBLE
@@ -74,7 +74,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             }
             messageItem.type.endsWith("_STICKER") -> {
                 reply_view_tv.setText(R.string.sticker)
-                setIcon(R.drawable.ic_status_stiker)
+                setIcon(R.drawable.ic_type_stiker)
                 reply_view_iv.loadImageCenterCrop(messageItem.assetUrl, R.drawable.image_holder)
                 (reply_view_tv.layoutParams as LayoutParams).endToStart = R.id.reply_view_iv
                 reply_view_iv.visibility = View.VISIBLE
@@ -82,7 +82,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             }
             messageItem.type.endsWith("_CONTACT") -> {
                 reply_view_tv.setText(R.string.contact)
-                setIcon(R.drawable.ic_status_contact)
+                setIcon(R.drawable.ic_type_contact)
                 (reply_view_tv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 reply_avatar.setInfo(
                     messageItem.sharedUserFullName, messageItem.sharedUserAvatarUrl,
@@ -94,28 +94,28 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             }
             messageItem.type.endsWith("_DATA") -> {
                 reply_view_tv.setText(R.string.document)
-                setIcon(R.drawable.ic_status_file)
+                setIcon(R.drawable.ic_type_file)
                 (reply_view_tv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 reply_view_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE
             }
             messageItem.type.endsWith("_POST") -> {
                 reply_view_tv.setText(R.string.post)
-                setIcon(R.drawable.ic_status_file)
+                setIcon(R.drawable.ic_type_file)
                 (reply_view_tv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 reply_view_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE
             }
             messageItem.type.endsWith("_AUDIO") -> {
                 reply_view_tv.text = messageItem.mediaDuration?.toLongOrNull()?.formatMillis() ?: ""
-                setIcon(R.drawable.ic_status_audio)
+                setIcon(R.drawable.ic_type_audio)
                 (reply_view_tv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 reply_view_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE
             }
             messageItem.type.endsWith("_LOCATION") -> {
                 reply_view_tv.setText(R.string.location)
-                setIcon(R.drawable.ic_status_location)
+                setIcon(R.drawable.ic_type_location)
                 (reply_view_tv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 reply_view_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE
@@ -134,7 +134,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             }
             messageItem.type == MessageCategory.APP_CARD.name || messageItem.type == MessageCategory.APP_BUTTON_GROUP.name -> {
                 reply_view_tv.setText(R.string.extensions)
-                setIcon(R.drawable.ic_touch_app)
+                setIcon(R.drawable.ic_type_touch_app)
                 (reply_view_tv.layoutParams as LayoutParams).endToStart = R.id.reply_close_iv
                 reply_view_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE

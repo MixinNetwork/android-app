@@ -19,7 +19,6 @@ import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -102,7 +101,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.startActivityForResult
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -548,6 +546,7 @@ class ConversationListFragment : LinkFragment() {
         var context: Context = itemView.context
         private fun getText(id: Int) = context.getText(id).toString()
 
+        @SuppressLint("SetTextI18n")
         fun bind(
             onItemClickListener: PagedHeaderAdapter.OnItemListener<ConversationItem>?,
             conversationItem: ConversationItem
@@ -580,55 +579,55 @@ class ConversationListFragment : LinkFragment() {
                 }
                 conversationItem.contentType == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> {
                     itemView.msg_tv.setText(R.string.conversation_status_transfer)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_transfer)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_transfer)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_STICKER.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_STICKER.name -> {
                     setConversationName(conversationItem)
                     itemView.msg_tv.setText(R.string.conversation_status_sticker)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_stiker)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_stiker)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_IMAGE.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_IMAGE.name -> {
                     setConversationName(conversationItem)
                     itemView.msg_tv.setText(R.string.conversation_status_pic)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_pic)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_pic)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_VIDEO.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_VIDEO.name -> {
                     setConversationName(conversationItem)
                     itemView.msg_tv.setText(R.string.conversation_status_video)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_video)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_video)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_LIVE.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_LIVE.name -> {
                     setConversationName(conversationItem)
                     itemView.msg_tv.setText(R.string.conversation_status_live)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_live)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_live)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_DATA.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_DATA.name -> {
                     setConversationName(conversationItem)
                     itemView.msg_tv.setText(R.string.conversation_status_file)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_file)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_POST.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_POST.name -> {
                     setConversationName(conversationItem)
                     itemView.msg_tv.text = MarkwonUtil.parseContent(conversationItem.content)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_file)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_LOCATION.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_LOCATION.name -> {
                     setConversationName(conversationItem)
                     itemView.msg_tv.setText(R.string.conversation_status_location)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_location)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_location)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_AUDIO.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_AUDIO.name -> {
                     setConversationName(conversationItem)
                     itemView.msg_tv.setText(R.string.conversation_status_audio)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_audio)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_audio)
                 }
                 conversationItem.contentType == MessageCategory.APP_BUTTON_GROUP.name -> {
                     itemView.group_name_tv.visibility = GONE
@@ -636,24 +635,24 @@ class ConversationListFragment : LinkFragment() {
                     var content = ""
                     buttons.map { content += "[" + it.label + "]" }
                     itemView.msg_tv.text = content
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_touch_app)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
                 }
                 conversationItem.contentType == MessageCategory.APP_CARD.name -> {
                     itemView.group_name_tv.visibility = GONE
                     val cardData = Gson().fromJson(conversationItem.content, AppCardData::class.java)
-                    itemView.msg_tv.text = cardData.title
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_touch_app)
+                    itemView.msg_tv.text = "[${cardData.title}]"
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_CONTACT.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_CONTACT.name -> {
                     setConversationName(conversationItem)
                     itemView.msg_tv.setText(R.string.contact_less_title)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_contact)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_contact)
                 }
                 conversationItem.isCallMessage() -> {
                     setConversationName(conversationItem)
                     itemView.msg_tv.setText(R.string.conversation_status_voice)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_voice)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_voice)
                 }
                 conversationItem.isRecall() -> {
                     setConversationName(conversationItem)
@@ -662,12 +661,12 @@ class ConversationListFragment : LinkFragment() {
                     } else {
                         itemView.msg_tv.text = itemView.context.getString(R.string.chat_recall_delete)
                     }
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_recall)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_recall)
                 }
                 conversationItem.isGroupVoiceCall() -> {
                     setConversationName(conversationItem)
                     itemView.msg_tv.setText(R.string.group_call)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_voice)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_voice)
                 }
                 conversationItem.contentType == MessageCategory.SYSTEM_CONVERSATION.name -> {
                     when (conversationItem.actionName) {
@@ -751,8 +750,13 @@ class ConversationListFragment : LinkFragment() {
                     null
                 }
             }.also {
-                it?.setBounds(0, 0, itemView.context.dpToPx(12f), itemView.context.dpToPx(12f))
-                TextViewCompat.setCompoundDrawablesRelative(itemView.msg_tv, it, null, null, null)
+                it.notNullWithElse({ drawable ->
+                    drawable.setBounds(0, 0, itemView.context.dpToPx(12f), itemView.context.dpToPx(12f))
+                    itemView.msg_type.setImageDrawable(drawable)
+                    itemView.msg_type.isVisible = true
+                }, {
+                    itemView.msg_type.isVisible = false
+                })
             }
 
             if (conversationItem.senderId == Session.getAccountId() &&
@@ -782,11 +786,11 @@ class ConversationListFragment : LinkFragment() {
                     }
                 }.also {
                     it?.setBounds(0, 0, itemView.context.dpToPx(14f), itemView.context.dpToPx(14f))
-                    itemView.msg_flag.setImageDrawable(it)
-                    itemView.msg_flag.visibility = VISIBLE
+                    itemView.msg_status.setImageDrawable(it)
+                    itemView.msg_status.visibility = VISIBLE
                 }
             } else {
-                itemView.msg_flag.visibility = GONE
+                itemView.msg_status.visibility = GONE
             }
             conversationItem.createdAt?.let {
                 itemView.time_tv.timeAgo(it)

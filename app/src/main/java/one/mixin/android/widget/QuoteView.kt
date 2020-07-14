@@ -58,7 +58,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     dip(8)
                 (reply_name_tv.layoutParams as LayoutParams).marginEnd =
                     dip(8)
-                setIcon(R.drawable.ic_status_recall)
+                setIcon(R.drawable.ic_type_recall)
             }
             quoteMessageItem.type.endsWith("_IMAGE") -> {
                 reply_iv.loadImageCenterCrop(
@@ -66,7 +66,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     R.drawable.image_holder
                 )
                 reply_content_tv.setText(R.string.photo)
-                setIcon(R.drawable.ic_status_pic)
+                setIcon(R.drawable.ic_type_pic)
                 reply_iv.visibility = View.VISIBLE
                 reply_avatar.visibility = View.GONE
                 (reply_content_tv.layoutParams as LayoutParams).marginEnd =
@@ -80,7 +80,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     R.drawable.image_holder
                 )
                 reply_content_tv.setText(R.string.video)
-                setIcon(R.drawable.ic_status_video)
+                setIcon(R.drawable.ic_type_video)
                 reply_iv.visibility = View.VISIBLE
                 reply_avatar.visibility = View.GONE
                 (reply_content_tv.layoutParams as LayoutParams).marginEnd =
@@ -94,7 +94,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     R.drawable.image_holder
                 )
                 reply_content_tv.setText(R.string.live)
-                setIcon(R.drawable.ic_status_live)
+                setIcon(R.drawable.ic_type_live)
                 reply_iv.visibility = View.VISIBLE
                 reply_avatar.visibility = View.GONE
                 (reply_content_tv.layoutParams as LayoutParams).marginEnd =
@@ -111,7 +111,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                         reply_content_tv.setText(R.string.document)
                     }
                 )
-                setIcon(R.drawable.ic_status_file)
+                setIcon(R.drawable.ic_type_file)
                 reply_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE
                 (reply_content_tv.layoutParams as LayoutParams).marginEnd =
@@ -121,7 +121,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             }
             quoteMessageItem.type.endsWith("_POST") -> {
                 reply_content_tv.setText(R.string.post)
-                setIcon(R.drawable.ic_status_file)
+                setIcon(R.drawable.ic_type_file)
                 reply_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE
                 (reply_content_tv.layoutParams as LayoutParams).marginEnd =
@@ -131,7 +131,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             }
             quoteMessageItem.type.endsWith("_LOCATION") -> {
                 reply_content_tv.setText(R.string.location)
-                setIcon(R.drawable.ic_status_location)
+                setIcon(R.drawable.ic_type_location)
                 reply_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE
                 (reply_content_tv.layoutParams as LayoutParams).marginEnd =
@@ -148,7 +148,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                         reply_content_tv.setText(R.string.audio)
                     }
                 )
-                setIcon(R.drawable.ic_status_audio)
+                setIcon(R.drawable.ic_type_audio)
                 reply_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE
                 (reply_content_tv.layoutParams as LayoutParams).marginEnd =
@@ -158,7 +158,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             }
             quoteMessageItem.type.endsWith("_STICKER") -> {
                 reply_content_tv.setText(R.string.conversation_status_sticker)
-                setIcon(R.drawable.ic_status_stiker)
+                setIcon(R.drawable.ic_type_stiker)
                 reply_iv.loadImageCenterCrop(
                     quoteMessageItem.assetUrl,
                     R.drawable.image_holder
@@ -172,7 +172,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             }
             quoteMessageItem.type.endsWith("_CONTACT") -> {
                 reply_content_tv.text = quoteMessageItem.sharedUserIdentityNumber
-                setIcon(R.drawable.ic_status_contact)
+                setIcon(R.drawable.ic_type_contact)
                 reply_avatar.setInfo(
                     quoteMessageItem.sharedUserFullName,
                     quoteMessageItem.sharedUserAvatarUrl,
@@ -188,7 +188,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
             }
             quoteMessageItem.type == MessageCategory.APP_BUTTON_GROUP.name || quoteMessageItem.type == MessageCategory.APP_CARD.name -> {
                 reply_content_tv.setText(R.string.extensions)
-                setIcon(R.drawable.ic_touch_app)
+                setIcon(R.drawable.ic_type_touch_app)
                 reply_iv.visibility = View.GONE
                 reply_avatar.visibility = View.GONE
                 (reply_content_tv.layoutParams as LayoutParams).marginEnd =

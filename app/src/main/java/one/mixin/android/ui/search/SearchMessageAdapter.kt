@@ -37,7 +37,7 @@ class SearchMessageAdapter : SafePagedListAdapter<SearchMessageDetailItem, Searc
 
 class SearchMessageHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     val icon: Drawable? by lazy {
-        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_file).apply {
+        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_file).apply {
             this?.setBounds(0, 0, itemView.dip(12f), itemView.dip(12f))
         }
     }
