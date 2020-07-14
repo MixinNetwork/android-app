@@ -19,7 +19,6 @@ import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
-import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -102,7 +101,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.startActivityForResult
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -751,8 +749,13 @@ class ConversationListFragment : LinkFragment() {
                     null
                 }
             }.also {
-                it?.setBounds(0, 0, itemView.context.dpToPx(12f), itemView.context.dpToPx(12f))
-                TextViewCompat.setCompoundDrawablesRelative(itemView.msg_tv, it, null, null, null)
+                it?.notNullWithElse({ drawable ->
+                    drawable.setBounds(0, 0, itemView.context.dpToPx(12f), itemView.context.dpToPx(12f))
+                    itemView.msg_status.setImageDrawable(drawable)
+                    itemView.msg_status.isVisible = true
+                }, {
+                    itemView.msg_status.isVisible = false
+                })
             }
 
             if (conversationItem.senderId == Session.getAccountId() &&
