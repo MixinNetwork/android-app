@@ -83,55 +83,58 @@
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="23dp"
-            android:layout_toEndOf="@id/avatar_iv"
             android:layout_below="@id/center"
             android:layout_marginEnd="@dimen/margin12"
+            android:layout_toEndOf="@id/avatar_iv"
             android:orientation="horizontal">
 
         <ImageView
             android:id="@+id/msg_status"
             android:layout_width="12dp"
             android:layout_height="12dp"
-            android:layout_marginEnd="3dp"
             android:layout_gravity="center_vertical"
+            android:layout_marginTop="1.5dp"
+            android:layout_marginEnd="3dp"
             android:contentDescription="@null"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <ImageView
             android:id="@+id/msg_type"
             android:layout_width="12dp"
             android:layout_height="12dp"
-            android:layout_marginEnd="3dp"
             android:layout_gravity="center_vertical"
+            android:layout_marginTop="1.5dp"
+            android:layout_marginEnd="3dp"
             android:contentDescription="@null"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/group_name_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="3dp"
             android:layout_gravity="center_vertical"
+            android:layout_marginEnd="3dp"
             android:ellipsize="middle"
             android:fontFamily="@font/sf_pro_light"
+            android:gravity="center_vertical"
             android:maxWidth="120dp"
             android:singleLine="true"
             android:textColor="?attr/text_minor"
             android:textSize="13sp"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <TextView
                 android:id="@+id/msg_tv"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:drawablePadding="3dp"
                 android:layout_gravity="center_vertical"
+                android:layout_weight="1"
                 android:ellipsize="end"
                 android:fontFamily="@font/sf_pro_light"
+                android:gravity="center_vertical"
                 android:maxLines="1"
                 android:textColor="?attr/text_minor"
-                android:textSize="13sp"/>
+                android:textSize="13sp" />
 
         <ImageView
                 android:id="@+id/msg_pin"
@@ -149,21 +152,21 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginStart="8dp"
+                android:contentDescription="@null"
                 android:src="@drawable/ic_mention_flag"
                 android:visibility="gone"
-                tools:ignore="HardcodedText"
-                android:contentDescription="@null" />
+                tools:ignore="HardcodedText" />
 
         <TextView
                 android:id="@+id/unread_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:layout_gravity="center_vertical"
+                android:layout_marginStart="8dp"
                 android:background="@drawable/bg_unread"
                 android:fontFamily="monospace"
                 android:textSize="12sp"
-                android:visibility="gone"/>
+                android:visibility="gone" />
 
         <ProgressBar
                 android:id="@+id/pb"

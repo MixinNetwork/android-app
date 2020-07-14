@@ -546,6 +546,7 @@ class ConversationListFragment : LinkFragment() {
         var context: Context = itemView.context
         private fun getText(id: Int) = context.getText(id).toString()
 
+        @SuppressLint("SetTextI18n")
         fun bind(
             onItemClickListener: PagedHeaderAdapter.OnItemListener<ConversationItem>?,
             conversationItem: ConversationItem
@@ -639,7 +640,7 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.contentType == MessageCategory.APP_CARD.name -> {
                     itemView.group_name_tv.visibility = GONE
                     val cardData = Gson().fromJson(conversationItem.content, AppCardData::class.java)
-                    itemView.msg_tv.text = cardData.title
+                    itemView.msg_tv.text = "[${cardData.title}]"
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_touch_app)
                 }
                 conversationItem.contentType == MessageCategory.SIGNAL_CONTACT.name ||
