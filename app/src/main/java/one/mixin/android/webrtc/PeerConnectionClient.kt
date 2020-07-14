@@ -3,7 +3,6 @@ package one.mixin.android.webrtc
 import android.content.Context
 import androidx.collection.arrayMapOf
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.util.Session
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
@@ -23,7 +22,7 @@ import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
 import timber.log.Timber
 
-class PeerConnectionClient(context: Context, private val events: PeerConnectionEvents, signalProtocol: SignalProtocol) {
+class PeerConnectionClient(context: Context, private val events: PeerConnectionEvents) {
     private var factory: PeerConnectionFactory? = null
     private var isError = false
 

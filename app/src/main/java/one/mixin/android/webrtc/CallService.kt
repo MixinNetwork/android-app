@@ -46,7 +46,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         CallAudioManager(this)
     }
     protected val peerConnectionClient: PeerConnectionClient by lazy {
-        PeerConnectionClient(this, this, signalProtocol)
+        PeerConnectionClient(this, this)
     }
 
     @Inject
