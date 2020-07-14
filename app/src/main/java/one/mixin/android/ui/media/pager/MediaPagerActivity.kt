@@ -451,7 +451,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             type = if (isVideo) "video/*" else "image/*"
         }
         val name =
-            getString(if (isVideo) R.string.conversation_status_video else R.string.conversation_status_pic)
+            getString(if (isVideo) R.string.common_video else R.string.common_pic)
         startActivity(Intent.createChooser(sendIntent, getString(R.string.share_to, name)))
     }
 

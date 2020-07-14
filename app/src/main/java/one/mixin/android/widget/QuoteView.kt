@@ -157,7 +157,7 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     dip(8)
             }
             quoteMessageItem.type.endsWith("_STICKER") -> {
-                reply_content_tv.setText(R.string.conversation_status_sticker)
+                reply_content_tv.setText(R.string.common_sticker)
                 setIcon(R.drawable.ic_type_stiker)
                 reply_iv.loadImageCenterCrop(
                     quoteMessageItem.assetUrl,

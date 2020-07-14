@@ -101,6 +101,11 @@
     <string name="japanese">日本語</string>
     <string name="follow_system">システム設定に従う</string>
     <string name="nobody">なし</string>
+    <string name="common_pic">画像</string>
+    <string name="common_video">動画</string>
+    <string name="common_file">ファイル</string>
+    <string name="common_audio">音声</string>
+    <string name="common_sticker">スタンプ</string>
     <!--error-->
     <string name="error_no_connection">ネットワーク接続がありません</string>
     <string name="error_connection_timeout">ネットワーク接続がタイムアウトしました</string>

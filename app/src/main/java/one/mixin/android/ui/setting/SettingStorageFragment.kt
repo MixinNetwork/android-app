@@ -236,10 +236,10 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
         fun bind(storageUsage: StorageUsage) {
             itemView.check_view.setName(
                 when (storageUsage.type) {
-                    IMAGE -> R.string.conversation_status_pic
-                    DATA -> R.string.conversation_status_file
-                    VIDEO -> R.string.conversation_status_video
-                    AUDIO -> R.string.conversation_status_audio
+                    IMAGE -> R.string.common_pic
+                    DATA -> R.string.common_file
+                    VIDEO -> R.string.common_video
+                    AUDIO -> R.string.common_audio
                     else -> R.string.unknown
                 }
             )
