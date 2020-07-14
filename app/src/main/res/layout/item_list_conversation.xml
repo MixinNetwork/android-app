@@ -40,7 +40,7 @@
                 android:id="@+id/verified_iv"
                 android:layout_width="12dp"
                 android:layout_height="12dp"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="6dp"
                 android:layout_gravity="center_vertical"
                 android:src="@drawable/ic_user_verified"
                 android:visibility="gone"
@@ -51,7 +51,7 @@
                 android:layout_width="12dp"
                 android:layout_height="12dp"
                 android:layout_gravity="center_vertical"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="6dp"
                 android:src="@drawable/ic_bot"
                 android:visibility="gone"
                 android:contentDescription="@null"/>
@@ -61,7 +61,7 @@
                 android:layout_width="12dp"
                 android:layout_height="12dp"
                 android:layout_gravity="center_vertical"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="6dp"
                 android:src="@drawable/ic_mute"
                 android:visibility="gone"
                 tools:ignore="ContentDescription"/>
@@ -86,31 +86,30 @@
             android:layout_toEndOf="@id/avatar_iv"
             android:layout_below="@id/center"
             android:layout_marginEnd="@dimen/margin12"
-            android:layout_marginTop="2dp"
             android:orientation="horizontal">
 
-        <TextView
-                android:id="@+id/group_name_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="3dp"
-                android:layout_gravity="center_vertical"
-                android:ellipsize="middle"
-                android:fontFamily="@font/sf_pro_light"
-                android:maxWidth="120dp"
-                android:singleLine="true"
-                android:textColor="?attr/text_minor"
-                android:textSize="13sp"
-                android:visibility="gone"/>
-
         <ImageView
-                android:id="@+id/msg_flag"
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_marginEnd="3dp"
-                android:layout_gravity="center_vertical"
-                android:contentDescription="@null"
-                android:visibility="gone"/>
+            android:id="@+id/msg_flag"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginEnd="3dp"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@null"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/group_name_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="3dp"
+            android:layout_gravity="center_vertical"
+            android:ellipsize="middle"
+            android:fontFamily="@font/sf_pro_light"
+            android:maxWidth="120dp"
+            android:singleLine="true"
+            android:textColor="?attr/text_minor"
+            android:textSize="13sp"
+            android:visibility="gone"/>
 
         <TextView
                 android:id="@+id/msg_tv"
