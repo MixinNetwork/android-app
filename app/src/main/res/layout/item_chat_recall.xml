@@ -34,7 +34,7 @@
             android:textColor="?attr/text_primary"
             android:layout_marginEnd="8dp"
             app:layout_constraintHorizontal_bias="0"
-            android:drawableStart="@drawable/ic_status_recall"
+            android:drawableStart="@drawable/ic_type_recall"
             android:textSize="14sp"/>
 
         <include
