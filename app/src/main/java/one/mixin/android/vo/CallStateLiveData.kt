@@ -84,10 +84,13 @@ data class GroupCallState(
         }
         val each = us.iterator()
         while (each.hasNext()) {
-            if (each.next().type == GroupCallUser.Type.In) {
-                val exists = inUsers.find { it == each.next().id }
-                if (exists == null) {
-                    each.remove()
+            val next = each.next()
+            val exists = inUsers.find { it == next.id }
+            if (exists == null) {
+                each.remove()
+            } else {
+                if (next.type == GroupCallUser.Type.Pending) {
+                    next.type = GroupCallUser.Type.In
                 }
             }
         }
