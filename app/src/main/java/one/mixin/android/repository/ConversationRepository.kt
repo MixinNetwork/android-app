@@ -24,6 +24,7 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.MessageProvider
+import one.mixin.android.db.MessagesFts4Dao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
@@ -75,6 +76,7 @@ internal constructor(
     private val circleConversationDao: CircleConversationDao,
     @DatabaseCategory(DatabaseCategoryEnum.READ)
     private val readConversationDao: ConversationDao,
+    private val messageFts4Dao: MessagesFts4Dao,
     private val participantDao: ParticipantDao,
     private val messageMentionDao: MessageMentionDao,
     private val participantSessionDao: ParticipantSessionDao,
@@ -356,7 +358,6 @@ internal constructor(
 
     // DELETE
     fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String) {
-        // Todo delete fts
         val count = messageDao.countDeleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory)
         repeat((count / DB_DELETE_LIMIT) + 1) {
             messageDao.deleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, DB_DELETE_LIMIT)
@@ -364,14 +365,13 @@ internal constructor(
     }
 
     suspend fun deleteMessageByConversationId(conversationId: String) = coroutineScope {
-        // Todo
         messageDao.findAllMediaPathByConversationId(conversationId).let { list ->
             if (list.isNotEmpty()) {
                 jobManager.addJobInBackground(AttachmentDeleteJob(* list.toTypedArray()))
             }
         }
-        // Todo delete fts
         repeat(messageDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1) {
+            messageFts4Dao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
             messageDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
         }
         repeat(messageMentionDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1) {
