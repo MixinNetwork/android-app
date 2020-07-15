@@ -19,12 +19,17 @@ interface MessageMentionDao : BaseDao<MessageMention> {
     @Query("UPDATE message_mentions SET has_read = 1 WHERE conversation_id = :conversationId")
     fun markMentionReadByConversationId(conversationId: String)
 
+    @Query("SELECT mentions FROM message_mentions WHERE message_id = :messageId")
+    fun getMentionData(messageId: String): String?
+
+    // DELETE COUNT
+    @Query("SELECT count(*) FROM message_mentions WHERE conversation_id = :conversationId")
+    suspend fun countDeleteMessageByConversationId(conversationId: String): Int
+
+    // DELETE
     @Query("DELETE FROM message_mentions WHERE message_id = :id")
     fun deleteMessage(id: String)
 
-    @Query("DELETE FROM message_mentions WHERE conversation_id = :conversationId")
-    suspend fun deleteMessageByConversationId(conversationId: String)
-
-    @Query("SELECT mentions FROM message_mentions WHERE message_id = :messageId")
-    fun getMentionData(messageId: String): String?
+    @Query("DELETE FROM message_mentions WHERE message_id in (SELECT message_id FROM message_mentions WHERE conversation_id=:conversationId LIMIT :limit)")
+    suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
 }

@@ -374,7 +374,9 @@ internal constructor(
         repeat(messageDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1) {
             messageDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
         }
-        messageMentionDao.deleteMessageByConversationId(conversationId)
+        repeat(messageMentionDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1) {
+            messageMentionDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
+        }
     }
 
     fun deleteMessage(id: String, mediaUrl: String? = null, forceDelete: Boolean = true) {
@@ -385,12 +387,7 @@ internal constructor(
     }
 
     suspend fun deleteConversationById(conversationId: String) {
-        // Todo
-        messageDao.findAllMediaPathByConversationId(conversationId).let { list ->
-            if (list.isNotEmpty()) {
-                jobManager.addJobInBackground(AttachmentDeleteJob(* list.toTypedArray()))
-            }
-        }
+        deleteMessageByConversationId(conversationId)
         conversationDao.deleteConversationById(conversationId)
     }
 }
