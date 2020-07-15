@@ -11,6 +11,6 @@ interface MessagesFts4Dao : BaseDao<MessageFts4> {
     fun deleteByMessageId(messageId: String)
 
     @Query("DELETE FROM messages_fts4 WHERE message_id IN (SELECT id FROM messages where conversation_id =:conversationId LIMIT :limit)")
-    fun deleteMessageByConversationId(conversationId: String, limit: Int)
+    suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
 
 }
