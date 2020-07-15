@@ -241,15 +241,6 @@ interface MessageDao : BaseDao<Message> {
         conversationId: String
     ): DataSource.Factory<Int, SearchMessageDetailItem>
 
-    @Query("DELETE FROM messages WHERE id = :id")
-    fun deleteMessage(id: String)
-
-    @Query("DELETE FROM messages WHERE media_status = 'DONE' AND conversation_id = :conversationId AND category IN (:signalCategory, :plainCategory)")
-    fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String)
-
-    @Query("DELETE FROM messages WHERE conversation_id = :conversationId")
-    suspend fun deleteMessageByConversationId(conversationId: String)
-
     @Query("SELECT m.media_url FROM messages m WHERE m.conversation_id = :conversationId AND m.media_url IS NOT NULL AND m.media_status = 'DONE'")
     suspend fun findAllMediaPathByConversationId(conversationId: String): List<String>
 
@@ -476,4 +467,21 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT rowid FROM messages ORDER BY rowid DESC LIMIT 1")
     fun getLastMessageRowid(): Long
+
+    // DELETE COUNT
+    @Query("SELECT count(id) FROM messages WHERE media_status = 'DONE' AND conversation_id = :conversationId AND category IN (:signalCategory, :plainCategory)")
+    fun countDeleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String): Int
+
+    @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId")
+    suspend fun countDeleteMessageByConversationId(conversationId: String): Int
+
+    // DELETE
+    @Query("DELETE FROM messages WHERE id = :id")
+    fun deleteMessage(id: String)
+
+    @Query("DELETE FROM messages WHERE id in (SELECT id FROM messages WHERE media_status = 'DONE' AND conversation_id = :conversationId AND category IN (:signalCategory, :plainCategory) LIMIT :limit)")
+    fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, limit: Int)
+
+    @Query("DELETE FROM messages WHERE  id in (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
+    suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
 }
