@@ -301,6 +301,7 @@
     <string name="chat_group_call_decline">%1$s 已拒绝群组语音</string>
     <string name="chat_group_call_cancel">%1$s 已取消群组语音</string>
     <string name="chat_group_call_end">群组语音结束，时长 %1$s</string>
+    <string name="chat_group_call_remote_peer_closed">连接已结束，请重试</string>
     <!--contact-->
     <string name="contact_other_send">发消息</string>
     <string name="contact_other_share">发送名片</string>
