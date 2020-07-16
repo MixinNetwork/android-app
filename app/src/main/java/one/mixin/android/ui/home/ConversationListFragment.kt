@@ -750,13 +750,16 @@ class ConversationListFragment : LinkFragment() {
                     null
                 }
             }.also {
-                it.notNullWithElse({ drawable ->
-                    drawable.setBounds(0, 0, itemView.context.dpToPx(12f), itemView.context.dpToPx(12f))
-                    itemView.msg_type.setImageDrawable(drawable)
-                    itemView.msg_type.isVisible = true
-                }, {
-                    itemView.msg_type.isVisible = false
-                })
+                it.notNullWithElse(
+                    { drawable ->
+                        drawable.setBounds(0, 0, itemView.context.dpToPx(12f), itemView.context.dpToPx(12f))
+                        itemView.msg_type.setImageDrawable(drawable)
+                        itemView.msg_type.isVisible = true
+                    },
+                    {
+                        itemView.msg_type.isVisible = false
+                    }
+                )
             }
 
             if (conversationItem.senderId == Session.getAccountId() &&

@@ -323,8 +323,8 @@
     <string name="contact_other_share">Share Contact Card</string>
     <string name="contact_other_search_conversation">Search Conversation</string>
     <string name="contact_other_shared_media">Shared Media</string>
-    <string name="contact_other_block">Block User</string>
-    <string name="contact_other_unblock">Unblock User</string>
+    <string name="contact_other_block">Block</string>
+    <string name="contact_other_unblock">Unblock</string>
     <string name="contact_other_remove">Remove Contact</string>
     <string name="contact_other_remove_bot">Remove Bot</string>
     <string name="contact_other_report">Report</string>
