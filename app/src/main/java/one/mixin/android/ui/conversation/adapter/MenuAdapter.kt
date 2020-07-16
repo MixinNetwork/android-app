@@ -30,8 +30,10 @@ class MenuAdapter(
             if (isSelfCreatedBot) {
                 add(transferMenu)
             }
-        } else {
+        } else if (!isGroup) {
             add(transferMenu)
+            add(voiceMenu)
+        } else {
             add(voiceMenu)
         }
         add(Menu(MenuType.Camera, R.string.camera, R.drawable.ic_menu_camera, null))
