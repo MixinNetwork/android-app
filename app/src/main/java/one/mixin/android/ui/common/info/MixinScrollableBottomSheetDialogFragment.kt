@@ -9,7 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.widget.NestedScrollView
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -39,7 +39,7 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-    protected val bottomViewModel: BottomSheetViewModel by viewModels { viewModelFactory }
+    protected val bottomViewModel: BottomSheetViewModel by activityViewModels { viewModelFactory }
 
     override fun getTheme() = R.style.MixinBottomSheet
 

@@ -9,7 +9,6 @@ import androidx.paging.PagedList
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.api.MixinResponse
@@ -364,13 +363,14 @@ internal constructor(
         }
     }
 
-    suspend fun deleteMessageByConversationId(conversationId: String) = coroutineScope {
+    suspend fun deleteMessageByConversationId(conversationId: String) {
         messageDao.findAllMediaPathByConversationId(conversationId).let { list ->
             if (list.isNotEmpty()) {
                 jobManager.addJobInBackground(AttachmentDeleteJob(* list.toTypedArray()))
             }
         }
-        repeat(messageDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1) {
+        val times = messageDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1
+        repeat(times) {
             messageFts4Dao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
             messageDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
         }

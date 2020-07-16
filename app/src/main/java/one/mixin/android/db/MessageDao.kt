@@ -479,9 +479,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("DELETE FROM messages WHERE id = :id")
     fun deleteMessage(id: String)
 
-    @Query("DELETE FROM messages WHERE id in (SELECT id FROM messages WHERE media_status = 'DONE' AND conversation_id = :conversationId AND category IN (:signalCategory, :plainCategory) LIMIT :limit)")
+    @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE media_status = 'DONE' AND conversation_id = :conversationId AND category IN (:signalCategory, :plainCategory) LIMIT :limit)")
     fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String, limit: Int)
 
-    @Query("DELETE FROM messages WHERE  id in (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
+    @Query("DELETE FROM messages WHERE id IN (SELECT id FROM messages WHERE conversation_id = :conversationId LIMIT :limit)")
     suspend fun deleteMessageByConversationId(conversationId: String, limit: Int)
 }
