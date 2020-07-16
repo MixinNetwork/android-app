@@ -124,8 +124,8 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
             itemView.audio_duration.setTextColor(itemView.context.getColor(R.color.gray_50))
             itemView.audio_waveform.isFresh = false
         }
-        if (AudioPlayer.get().isLoaded(messageItem.messageId)) {
-            itemView.audio_waveform.setProgress(AudioPlayer.get().progress)
+        if (AudioPlayer.isLoaded(messageItem.messageId)) {
+            itemView.audio_waveform.setProgress(AudioPlayer.getProgress())
         } else {
             itemView.audio_waveform.setProgress(0f)
         }
@@ -155,7 +155,7 @@ class AudioQuoteHolder constructor(containerView: View) : MediaHolder(containerV
                     itemView.audio_progress.visibility = View.VISIBLE
                     itemView.audio_progress.setBindOnly(messageItem.messageId)
                     itemView.audio_waveform.setBind(messageItem.messageId)
-                    if (AudioPlayer.get().isPlay(messageItem.messageId)) {
+                    if (AudioPlayer.isPlay(messageItem.messageId)) {
                         itemView.audio_progress.setPause()
                     } else {
                         itemView.audio_progress.setPlay()

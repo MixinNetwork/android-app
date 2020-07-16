@@ -20,6 +20,7 @@ import one.mixin.android.event.ProgressEvent.Companion.pauseEvent
 import one.mixin.android.event.ProgressEvent.Companion.playEvent
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.fileExists
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
@@ -40,7 +41,7 @@ import java.util.concurrent.TimeUnit
 class AudioPlayer private constructor() {
     companion object {
         @Synchronized
-        fun get(): AudioPlayer {
+        private fun get(): AudioPlayer {
             if (instance == null) {
                 instance = AudioPlayer()
             }
@@ -80,6 +81,29 @@ class AudioPlayer private constructor() {
 
         fun audioFilePlaying(): Boolean {
             return instance?.isFile() == true
+        }
+
+        fun isPlay(id: String): Boolean = instance.notNullWithElse({ return it.status == STATUS_PLAY && it.id == id }, false)
+
+        fun isLoaded(id: String): Boolean = instance.notNullWithElse({ it.isLoaded(id) }, false)
+
+        fun seekTo(progress: Int, max: Float = 100f) = instance?.seekTo(progress, max)
+
+        fun getProgress(): Float = instance?.progress ?: 0f
+
+        private var statusListener: StatusListener? = null
+
+        fun setStatusListener(statusListener: StatusListener) {
+            this.statusListener = statusListener
+        }
+
+        fun play(
+            messageItem: MessageItem,
+            autoPlayNext: Boolean = true,
+            continuePlayOnlyToday: Boolean = false,
+            whenPlayNewAudioMessage: ((Message) -> Unit)? = null
+        ) {
+            get().play(messageItem, autoPlayNext, continuePlayOnlyToday, whenPlayNewAudioMessage)
         }
     }
 
@@ -158,12 +182,7 @@ class AudioPlayer private constructor() {
         fun onStatusChange(status: Int)
     }
 
-    private var statusListener: StatusListener? = null
-    fun setStatusListener(statusListener: StatusListener) {
-        this.statusListener = statusListener
-    }
-
-    fun play(
+    private fun play(
         messageItem: MessageItem,
         autoPlayNext: Boolean = true,
         continuePlayOnlyToday: Boolean = false,
@@ -203,7 +222,7 @@ class AudioPlayer private constructor() {
         }
     }
 
-    fun pause() {
+    private fun pause() {
         status = STATUS_PAUSE
         player.pause()
         id?.let { id ->
@@ -212,15 +231,11 @@ class AudioPlayer private constructor() {
         stopTimber()
     }
 
-    fun isPlay(id: String): Boolean {
-        return status == STATUS_PLAY && this.id == id
-    }
-
-    fun isLoaded(id: String): Boolean {
+    private fun isLoaded(id: String): Boolean {
         return this.id == id && status != STATUS_ERROR && status != STATUS_DONE
     }
 
-    fun seekTo(progress: Int, max: Float = 100f) {
+    private fun seekTo(progress: Int, max: Float = 100f) {
         val p = progress * player.duration() / max
         player.seekTo(p.toInt())
         id?.let { id -> RxBus.publish(playEvent(id, p)) }

@@ -482,9 +482,9 @@ class ConversationFragment :
             override fun onAudioClick(messageItem: MessageItem) {
                 when {
                     chat_control.isRecording -> showRecordingAlert()
-                    AudioPlayer.get().isPlay(messageItem.messageId) -> AudioPlayer.get().pause()
+                    AudioPlayer.isPlay(messageItem.messageId) -> AudioPlayer.pause()
                     else -> {
-                        AudioPlayer.get().play(messageItem) {
+                        AudioPlayer.play(messageItem) {
                             chatViewModel.downloadAttachment(it)
                         }
                     }
@@ -544,8 +544,8 @@ class ConversationFragment :
                 if (!MimeTypes.isAudio(messageItem.mediaMimeType)) return
                 when {
                     chat_control.isRecording -> showRecordingAlert()
-                    AudioPlayer.get().isPlay(messageItem.messageId) -> AudioPlayer.get().pause()
-                    else -> AudioPlayer.get().play(messageItem)
+                    AudioPlayer.isPlay(messageItem.messageId) -> AudioPlayer.pause()
+                    else -> AudioPlayer.play(messageItem)
                 }
             }
 
@@ -823,7 +823,7 @@ class ConversationFragment :
         } else {
             initView()
         }
-        AudioPlayer.get().setStatusListener(this)
+        AudioPlayer.setStatusListener(this)
         RxBus.listen(ExitEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(stopScope)
@@ -1202,8 +1202,8 @@ class ConversationFragment :
         tool_view.close_iv.setOnClickListener { activity?.onBackPressed() }
         tool_view.delete_iv.setOnClickListener {
             chatAdapter.selectSet.filter { it.type.endsWith("_AUDIO") }.forEach {
-                if (AudioPlayer.get().isPlay(it.messageId)) {
-                    AudioPlayer.get().pause()
+                if (AudioPlayer.isPlay(it.messageId)) {
+                    AudioPlayer.pause()
                 }
             }
             deleteMessage(chatAdapter.selectSet.toList())
@@ -2606,7 +2606,7 @@ class ConversationFragment :
         }
 
         override fun onRecordStart(audio: Boolean) {
-            AudioPlayer.get().pause()
+            AudioPlayer.pause()
             OpusAudioRecorder.get(conversationId).startRecording(this@ConversationFragment)
             if (!isCling) {
                 if (!aodWakeLock.isHeld) {
