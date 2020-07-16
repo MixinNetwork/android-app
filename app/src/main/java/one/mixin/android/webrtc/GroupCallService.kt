@@ -8,7 +8,6 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import io.reactivex.disposables.Disposable
-import one.mixin.android.Constants
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -574,27 +573,6 @@ class GroupCallService : CallService() {
             blazeMessage.id = UUID.randomUUID().toString()
             return webSocketChannel(blazeMessage)
         } else if (bm.error != null) {
-            if (bm.error.status == 500) {
-                // TODO more check
-                when (val errCode = bm.error.code) {
-                    7000 -> {
-                        Timber.w("try send a ${blazeMessage.action} message,but the remote track has been released.")
-                    }
-                    ERROR_ROOM_FULL -> {
-                        val cid = blazeMessage.params?.conversation_id
-                        Timber.d("try to publish and join a group call, but the room is full, conversation id: $cid.")
-                        cid?.let {
-                            RxBus.publish(CallEvent(it))
-                        }
-                    }
-                    else -> {
-                        Timber.w("send blazeMessage by webSocket get a server internal error, code: $errCode")
-                    }
-                }
-                disconnect()
-                return null
-            }
-
             return when (bm.error.code) {
                 ErrorHandler.CONVERSATION_CHECKSUM_INVALID_ERROR -> {
                     blazeMessage.params?.conversation_id?.let {
@@ -608,8 +586,24 @@ class GroupCallService : CallService() {
                 ErrorHandler.FORBIDDEN -> {
                     null
                 }
+                ERROR_ROOM_FULL -> {
+                    val cid = blazeMessage.params?.conversation_id
+                    Timber.d("try to publish and join a group call, but the room is full, conversation id: $cid.")
+                    cid?.let {
+                        RxBus.publish(CallEvent(it))
+                    }
+                    disconnect()
+                    null
+                }
+                ERROR_PEER_CLOSED -> {
+                    mainThread {
+                        toast(getString(R.string.chat_group_call_remote_peer_closed))
+                    }
+                    disconnect()
+                    null
+                }
                 else -> {
-                    SystemClock.sleep(Constants.SLEEP_MILLIS)
+                    SystemClock.sleep(SLEEP_MILLIS)
                     blazeMessage.id = UUID.randomUUID().toString()
                     webSocketChannel(blazeMessage)
                 }
@@ -797,6 +791,7 @@ private const val EXTRA_PLAY_RING = "extra_play_ring"
 
 const val PUBLISH_PLACEHOLDER = "PLACEHOLDER"
 const val ERROR_ROOM_FULL = 5002000
+const val ERROR_PEER_CLOSED = 5002002
 
 data class PeerList(
     val peers: ArrayList<UserSession>?
