@@ -16,11 +16,13 @@ class MessageDeleteJob(private val conversationId: String, private val deleteMen
 
     override fun onRun() = runBlocking {
         if (deleteMention) {
-            repeat(messageMentionDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1) {
+            val deleteTimes = messageMentionDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1
+            repeat(deleteTimes) {
                 messageMentionDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
             }
         } else {
-            repeat(messageDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1) {
+            val deleteTimes = messageDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1
+            repeat(deleteTimes) {
                 messageFts4Dao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
                 messageDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
             }
