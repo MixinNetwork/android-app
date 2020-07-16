@@ -154,6 +154,10 @@ fun Context.dpToPx(dp: Float): Int {
     }
 }
 
+fun Context.spToPx(sp: Float): Int {
+    return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, resources.displayMetrics).toInt()
+}
+
 fun Context.getPixelsInCM(cm: Float, isX: Boolean): Float =
     cm / 2.54f * if (isX) displayMetrics.xdpi else displayMetrics.ydpi
 
