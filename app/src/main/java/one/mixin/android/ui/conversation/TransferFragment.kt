@@ -10,6 +10,7 @@ import android.text.Editable
 import android.text.InputFilter
 import android.text.Spannable
 import android.text.SpannableStringBuilder
+import android.text.TextPaint
 import android.text.TextWatcher
 import android.text.style.StyleSpan
 import android.view.LayoutInflater
@@ -18,6 +19,8 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
@@ -40,6 +43,7 @@ import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.formatPublicKey
@@ -52,6 +56,7 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.sp
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -175,6 +180,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         contentView.title_view.left_ib.setOnClickListener { dismiss() }
         contentView.amount_et.addTextChangedListener(mWatcher)
         contentView.amount_et.filters = arrayOf(inputFilter)
+        contentView.amount_et.setAdapter(autoCompleteAdapter)
         contentView.amount_rl.setOnClickListener { operateKeyboard(true) }
         contentView.swap_iv.setOnClickListener {
             currentAsset?.let {
@@ -215,7 +221,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.title_view.right_ib.setOnClickListener {
             currentAsset?.let { asset ->
-                TransferOutViewFragment.newInstance(asset.assetId, userId, user?.avatarUrl, asset.symbol, address).show(parentFragmentManager, TransferOutViewFragment.TAG)
+                TransferOutViewFragment.newInstance(asset.assetId, userId, user?.avatarUrl, asset.symbol, address)
+                    .show(parentFragmentManager, TransferOutViewFragment.TAG)
             }
         }
 
@@ -419,11 +426,34 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         contentView.asset_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
 
         operateKeyboard(true)
+        updateAssetAutoComplete(asset)
     }
 
     private fun isInnerTransfer() = userId != null
+    private val autoCompleteAdapter by lazy {
+        ArrayAdapter<String>(
+            requireContext(),
+            R.layout.item_dropdown, mutableListOf("")
+        )
+    }
+
+    private fun updateAssetAutoComplete(asset: AssetItem) {
+        contentView.amount_et.dropDownWidth = measureText(asset.balance) + 24.dp
+        autoCompleteAdapter.clear()
+        autoCompleteAdapter.add(asset.balance)
+    }
 
     private fun getAmountView() = contentView.amount_et
+    private val paint by lazy {
+        TextPaint().apply {
+            typeface = ResourcesCompat.getFont(requireContext(), R.font.sf_pro_regular)
+            textSize = 14.sp.toFloat()
+        }
+    }
+
+    private fun measureText(text: String): Int {
+        return paint.measureText(text).toInt()
+    }
 
     private fun getAmount(): String {
         return if (swaped) {
