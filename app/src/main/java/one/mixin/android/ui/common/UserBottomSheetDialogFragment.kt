@@ -251,6 +251,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             u.userId
                         )
                     )
+                    dismiss()
                 }
             }
         }

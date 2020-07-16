@@ -11,6 +11,7 @@ import io.reactivex.Observable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.DB_DELETE_LIMIT
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
@@ -23,6 +24,7 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.MessageProvider
+import one.mixin.android.db.MessagesFts4Dao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
@@ -74,6 +76,7 @@ internal constructor(
     private val circleConversationDao: CircleConversationDao,
     @DatabaseCategory(DatabaseCategoryEnum.READ)
     private val readConversationDao: ConversationDao,
+    private val messageFts4Dao: MessagesFts4Dao,
     private val participantDao: ParticipantDao,
     private val messageMentionDao: MessageMentionDao,
     private val participantSessionDao: ParticipantSessionDao,
@@ -200,22 +203,6 @@ internal constructor(
     suspend fun updateMediaStatusSuspend(status: String, messageId: String) =
         messageDao.updateMediaStatusSuspend(status, messageId)
 
-    fun deleteMessage(id: String, mediaUrl: String? = null, forceDelete: Boolean = true) {
-        if (!mediaUrl.isNullOrBlank() && forceDelete) {
-            jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
-        }
-        appDatabase.deleteMessage(id)
-    }
-
-    suspend fun deleteConversationById(conversationId: String) {
-        messageDao.findAllMediaPathByConversationId(conversationId).let { list ->
-            if (list.isNotEmpty()) {
-                jobManager.addJobInBackground(AttachmentDeleteJob(* list.toTypedArray()))
-            }
-        }
-        conversationDao.deleteConversationById(conversationId)
-    }
-
     suspend fun updateConversationPinTimeById(conversationId: String, circleId: String?, pinTime: String?) =
         withContext(SINGLE_DB_THREAD) {
             if (circleId == null) {
@@ -224,16 +211,6 @@ internal constructor(
                 circleConversationDao.updateConversationPinTimeById(conversationId, circleId, pinTime)
             }
         }
-
-    suspend fun deleteMessageByConversationId(conversationId: String) = coroutineScope {
-        messageDao.findAllMediaPathByConversationId(conversationId).let { list ->
-            if (list.isNotEmpty()) {
-                jobManager.addJobInBackground(AttachmentDeleteJob(* list.toTypedArray()))
-            }
-        }
-        messageDao.deleteMessageByConversationId(conversationId)
-        messageMentionDao.deleteMessageByConversationId(conversationId)
-    }
 
     suspend fun getRealParticipants(conversationId: String) =
         participantDao.getRealParticipantsSuspend(conversationId)
@@ -371,10 +348,6 @@ internal constructor(
 
     fun observeAllConversationUnread() = conversationDao.observeAllConversationUnread()
 
-    fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String) {
-        messageDao.deleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory)
-    }
-
     suspend fun muteSuspend(id: String, request: ConversationRequest): MixinResponse<ConversationResponse> = conversationService.muteSuspend(id, request)
 
     fun updateGroupMuteUntil(conversationId: String, muteUntil: String) = conversationDao.updateGroupMuteUntil(conversationId, muteUntil)
@@ -382,4 +355,39 @@ internal constructor(
     fun updateMediaStatus(status: String, id: String) = messageDao.updateMediaStatus(status, id)
 
     fun observeConversationNameById(cid: String) = conversationDao.observeConversationNameById(cid)
+
+    // DELETE
+    fun deleteMediaMessageByConversationAndCategory(conversationId: String, signalCategory: String, plainCategory: String) {
+        val count = messageDao.countDeleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory)
+        repeat((count / DB_DELETE_LIMIT) + 1) {
+            messageDao.deleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, DB_DELETE_LIMIT)
+        }
+    }
+
+    suspend fun deleteMessageByConversationId(conversationId: String) = coroutineScope {
+        messageDao.findAllMediaPathByConversationId(conversationId).let { list ->
+            if (list.isNotEmpty()) {
+                jobManager.addJobInBackground(AttachmentDeleteJob(* list.toTypedArray()))
+            }
+        }
+        repeat(messageDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1) {
+            messageFts4Dao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
+            messageDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
+        }
+        repeat(messageMentionDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1) {
+            messageMentionDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
+        }
+    }
+
+    fun deleteMessage(id: String, mediaUrl: String? = null, forceDelete: Boolean = true) {
+        if (!mediaUrl.isNullOrBlank() && forceDelete) {
+            jobManager.addJobInBackground(AttachmentDeleteJob(mediaUrl))
+        }
+        appDatabase.deleteMessage(id)
+    }
+
+    suspend fun deleteConversationById(conversationId: String) {
+        deleteMessageByConversationId(conversationId)
+        conversationDao.deleteConversationById(conversationId)
+    }
 }

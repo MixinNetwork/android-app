@@ -152,9 +152,6 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("UPDATE conversations SET announcement = :announcement WHERE conversation_id = :conversationId")
     suspend fun updateConversationAnnouncement(conversationId: String, announcement: String)
 
-    @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
-    suspend fun deleteConversationById(conversationId: String)
-
     @Query("UPDATE conversations SET mute_until = :muteUntil WHERE conversation_id = :conversationId")
     fun updateGroupMuteUntil(conversationId: String, muteUntil: String)
 
@@ -206,4 +203,8 @@ interface ConversationDao : BaseDao<Conversation> {
     """
     )
     fun hasUnreadMessage(circleId: String): LiveData<Int?>
+
+    // DELETE
+    @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
+    suspend fun deleteConversationById(conversationId: String)
 }
