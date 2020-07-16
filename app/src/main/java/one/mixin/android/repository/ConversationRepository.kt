@@ -34,6 +34,7 @@ import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.replaceQuotationMark
 import one.mixin.android.job.AttachmentDeleteJob
+import one.mixin.android.job.MessageDeleteJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
@@ -363,19 +364,27 @@ internal constructor(
         }
     }
 
-    suspend fun deleteMessageByConversationId(conversationId: String) {
+    suspend fun deleteMessageByConversationId(conversationId: String, deleteConversation: Boolean = false) {
         messageDao.findAllMediaPathByConversationId(conversationId).let { list ->
             if (list.isNotEmpty()) {
                 jobManager.addJobInBackground(AttachmentDeleteJob(* list.toTypedArray()))
             }
         }
-        val times = messageDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1
-        repeat(times) {
+        val deleteMentionCount = messageMentionDao.countDeleteMessageByConversationId(conversationId)
+        if (deleteMentionCount > DB_DELETE_LIMIT) {
+            jobManager.addJobInBackground(MessageDeleteJob(conversationId, true))
+        } else {
+            messageMentionDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
+        }
+        val deleteCount = messageDao.countDeleteMessageByConversationId(conversationId)
+        if (deleteCount > DB_DELETE_LIMIT) {
+            jobManager.addJobInBackground(MessageDeleteJob(conversationId, deleteConversation = deleteConversation))
+        } else {
             messageFts4Dao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
             messageDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
-        }
-        repeat(messageMentionDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1) {
-            messageMentionDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
+            if (deleteConversation) {
+                conversationDao.deleteConversationById(conversationId)
+            }
         }
     }
 
@@ -387,7 +396,6 @@ internal constructor(
     }
 
     suspend fun deleteConversationById(conversationId: String) {
-        deleteMessageByConversationId(conversationId)
-        conversationDao.deleteConversationById(conversationId)
+        deleteMessageByConversationId(conversationId, true)
     }
 }
