@@ -170,5 +170,5 @@ object Constants {
 
     const val BIG_IMAGE_SIZE = 5 * 1024 * 1024
 
-    const val DB_DELETE_LIMIT = 1000
+    const val DB_DELETE_LIMIT = 500
 }
