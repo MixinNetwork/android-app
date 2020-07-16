@@ -30,7 +30,6 @@ import org.jetbrains.anko.textSizeDimen
 import java.math.BigDecimal
 
 class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<BiometricItem>() {
-
     companion object {
         const val TAG = "TransferBottomSheetDialogFragment"
 
@@ -43,6 +42,8 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
     private val t: BiometricItem by lazy {
         requireArguments().getParcelable<BiometricItem>(ARGS_BIOMETRIC_ITEM)!!
     }
+
+    var onDistroyListener: OnDestroyListener? = null
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -155,6 +156,11 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         return false
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        onDistroyListener?.onDestroy()
+    }
+
     private fun shouldShowTransferTip() =
         try {
             val amount = BigDecimal(t.amount).toDouble() * t.asset.priceUsd.toDouble()
@@ -171,5 +177,9 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             firsSet.add(item.addressId)
         }
         defaultSharedPreferences.putStringSet(Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET, firsSet)
+    }
+
+    interface OnDestroyListener {
+        fun onDestroy()
     }
 }

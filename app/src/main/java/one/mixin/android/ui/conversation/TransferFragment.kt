@@ -139,8 +139,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
     private var user: User? = null
 
-    private var swaped = false
+    private var swapped = false
     private var bottomValue = 0.0
+
+    private var transferBottomOpened = false
 
     private val assetsView: View by lazy {
         val view = View.inflate(context, R.layout.view_wallet_transfer_type_bottom, null) as BottomSheetLinearLayout
@@ -184,7 +186,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         contentView.amount_rl.setOnClickListener { operateKeyboard(true) }
         contentView.swap_iv.setOnClickListener {
             currentAsset?.let {
-                swaped = !swaped
+                swapped = !swapped
                 updateAssetUI(it)
             }
         }
@@ -356,6 +358,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         chatViewModel.assetItemsWithBalance().observe(
             this,
             Observer { r: List<AssetItem>? ->
+                if (transferBottomOpened) return@Observer
+
                 if (r != null && r.isNotEmpty()) {
                     assets = r
                     adapter.submitList(r)
@@ -395,12 +399,12 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         if (valuable) {
             contentView.swap_iv.visibility = VISIBLE
         } else {
-            swaped = false
+            swapped = false
             contentView.swap_iv.visibility = GONE
         }
         checkInputForbidden(contentView.amount_et.text.toString())
         if (contentView.amount_et.text.isNullOrEmpty()) {
-            if (swaped) {
+            if (swapped) {
                 contentView.amount_et.hint = "0.00 ${Fiats.getAccountCurrencyAppearance()}"
                 contentView.amount_as_tv.text = "0.00 ${asset.symbol}"
             } else {
@@ -456,11 +460,11 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun getAmount(): String {
-        return if (swaped) {
+        return if (swapped) {
             bottomValue.toString()
         } else {
             val s = contentView.amount_et.text.toString()
-            val symbol = if (swaped) currentAsset?.symbol ?: "" else Fiats.getAccountCurrencyAppearance()
+            val symbol = if (swapped) currentAsset?.symbol ?: "" else Fiats.getAccountCurrencyAppearance()
             val index = s.indexOf(symbol)
             return if (index != -1) {
                 s.substring(0, index)
@@ -471,16 +475,16 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun getTopSymbol(): String {
-        return if (swaped) Fiats.getAccountCurrencyAppearance() else currentAsset?.symbol ?: ""
+        return if (swapped) Fiats.getAccountCurrencyAppearance() else currentAsset?.symbol ?: ""
     }
 
     private fun getBottomText(): String {
         val amount = contentView.amount_et.text.toString().toDoubleOrNull() ?: 0.0
-        val rightSymbol = if (swaped) currentAsset!!.symbol else Fiats.getAccountCurrencyAppearance()
+        val rightSymbol = if (swapped) currentAsset!!.symbol else Fiats.getAccountCurrencyAppearance()
         val value = try {
             if (currentAsset == null || currentAsset!!.priceFiat().toDouble() == 0.0) {
                 BigDecimal(0)
-            } else if (swaped) {
+            } else if (swapped) {
                 BigDecimal(amount).divide(currentAsset!!.priceFiat(), 8, RoundingMode.HALF_UP)
             } else {
                 BigDecimal(amount) * currentAsset!!.priceFiat()
@@ -491,7 +495,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             BigDecimal(0)
         }
         bottomValue = value.toDouble()
-        return "${if (swaped) {
+        return "${if (swapped) {
             value.numberFormat8()
         } else value.numberFormat2()} $rightSymbol"
     }
@@ -540,7 +544,13 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 callback?.onSuccess()
             }
         }
+        bottom.onDistroyListener = object : TransferBottomSheetDialogFragment.OnDestroyListener {
+            override fun onDestroy() {
+                transferBottomOpened = false
+            }
+        }
         bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+        transferBottomOpened = true
     }
 
     private val inputFilter = InputFilter { source, _, _, _, _, _ ->
@@ -559,7 +569,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         } else {
             val num = s.split('.')
             val tail = num[1]
-            if (swaped) {
+            if (swapped) {
                 val tailLen = tail.length
                 if (tailLen > 2) {
                     ignoreFilter = true
@@ -595,9 +605,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 contentView.continue_tv.isEnabled = false
                 contentView.continue_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 if (contentView.amount_rl.isVisible) {
-                    contentView.amount_et.hint = "0.00 ${if (swaped) Fiats.getAccountCurrencyAppearance() else currentAsset?.symbol}"
+                    contentView.amount_et.hint = "0.00 ${if (swapped) Fiats.getAccountCurrencyAppearance() else currentAsset?.symbol}"
                     contentView.symbol_tv.text = ""
-                    contentView.amount_as_tv.text = "0.00 ${if (swaped) currentAsset?.symbol else Fiats.getAccountCurrencyAppearance()}"
+                    contentView.amount_as_tv.text = "0.00 ${if (swapped) currentAsset?.symbol else Fiats.getAccountCurrencyAppearance()}"
                 }
             }
         }
