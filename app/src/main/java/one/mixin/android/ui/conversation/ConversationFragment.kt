@@ -178,6 +178,7 @@ import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.checkPeers
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.webrtc.receiveInvite
 import one.mixin.android.websocket.LocationPayload
@@ -342,8 +343,13 @@ class ConversationFragment :
     private fun voiceCall() {
         if (LinkState.isOnline(linkState.state)) {
             if (isGroup) {
-                GroupUsersBottomSheetDialogFragment.newInstance(conversationId)
-                    .showNow(parentFragmentManager, GroupUsersBottomSheetDialogFragment.TAG)
+                if (callState.getGroupCallStateOrNull(conversationId) != null) {
+                    val isForeground = !callState.isBusy(requireContext())
+                    receiveInvite(requireContext(), conversationId, playRing = false, foreground = isForeground)
+                } else {
+                    GroupUsersBottomSheetDialogFragment.newInstance(conversationId)
+                        .showNow(parentFragmentManager, GroupUsersBottomSheetDialogFragment.TAG)
+                }
             } else {
                 createConversation {
                     outgoingCall(requireContext(), conversationId, recipient!!)
@@ -917,6 +923,8 @@ class ConversationFragment :
                 }
             }
         resetAudioMode()
+
+        checkPeerIfNeeded()
     }
 
     private var lastReadMessage: String? = null
@@ -2687,5 +2695,14 @@ class ConversationFragment :
                 floating_layout.animate2RightHeight(users.size)
             }
         }
+    }
+
+    private fun checkPeerIfNeeded() = lifecycleScope.launch {
+        if (!isGroup) return@launch
+
+        delay(1000)
+        if (callState.getGroupCallStateOrNull(conversationId) != null) return@launch
+
+        checkPeers(requireContext(), conversationId)
     }
 }

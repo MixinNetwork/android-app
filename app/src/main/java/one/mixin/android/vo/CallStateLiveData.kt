@@ -78,19 +78,25 @@ data class GroupCallState(
         addUsersToList(inUsers, GroupCallUser.Type.Joined)
     }
 
-    fun setJoinedUsers(inUsers: List<String>) {
+    fun setJoinedUsers(joinedUsers: List<String>) {
         val us = mutableListOf<GroupCallUser>().apply {
             users?.let { addAll(it) }
         }
-        val each = us.iterator()
-        while (each.hasNext()) {
-            val next = each.next()
-            val exists = inUsers.find { it == next.id }
-            if (exists == null) {
-                each.remove()
-            } else {
-                if (next.type == GroupCallUser.Type.Pending) {
-                    next.type = GroupCallUser.Type.Joined
+        if (us.isEmpty()) {
+            joinedUsers.forEach {
+                us.add(GroupCallUser(it, GroupCallUser.Type.Joined))
+            }
+        } else {
+            val each = us.iterator()
+            while (each.hasNext()) {
+                val next = each.next()
+                val exists = joinedUsers.find { it == next.id }
+                if (exists == null) {
+                    each.remove()
+                } else {
+                    if (next.type == GroupCallUser.Type.Pending) {
+                        next.type = GroupCallUser.Type.Joined
+                    }
                 }
             }
         }
@@ -203,6 +209,12 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     fun isBusy(ctx: Context): Boolean {
         val tm = ctx.getSystemService<TelephonyManager>()
         return isNotIdle() || tm?.callState != TelephonyManager.CALL_STATE_IDLE
+    }
+
+    fun getGroupCallStateOrNull(conversationId: String): GroupCallState? {
+        return groupCallStates.find {
+            it.conversationId == conversationId
+        }
     }
 
     fun addGroupCallState(conversationId: String): GroupCallState {

@@ -98,6 +98,7 @@ class GroupCallService : CallService() {
             ACTION_KRAKEN_CANCEL -> handleKrakenCancel()
             ACTION_KRAKEN_DECLINE -> handleKrakenDecline()
             ACTION_KRAKEN_CANCEL_SILENTLY -> handleCallLocalFailed()
+            ACTION_CHECK_PEER -> handleCheckPeer(intent)
             else -> handled = false
         }
         return handled
@@ -238,6 +239,19 @@ class GroupCallService : CallService() {
         }
     }
 
+    private fun handleCheckPeer(intent: Intent) {
+        val cid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
+        requireNotNull(cid)
+
+        val peerList = sendPeer(cid) ?: return
+        Timber.d("@@@ handleCheckPeer : ${peerList.peers}")
+        if (peerList.peers.isNullOrEmpty()) return
+
+        val userIdList = arrayListOf<String>()
+        peerList.peers.mapTo(userIdList) { it.userId }
+        callState.setUsersByConversationId(cid, userIdList)
+    }
+
     private fun startCheckPeers(cid: String) {
         callState.addGroupCallState(cid)
         val existsFuture = scheduledFutures[cid]
@@ -252,14 +266,7 @@ class GroupCallService : CallService() {
     }
 
     private fun getPeers(conversationId: String) {
-        val blazeMessageParam = BlazeMessageParam(
-            conversation_id = conversationId,
-            category = MessageCategory.KRAKEN_LIST.name,
-            message_id = UUID.randomUUID().toString()
-        )
-        val bm = createListKrakenPeers(blazeMessageParam)
-        val json = getJsonElement(bm) ?: return
-        val peerList = gson.fromJson(json, PeerList::class.java)
+        val peerList = sendPeer(conversationId) ?: return
         Timber.d("@@@ getPeers : ${peerList.peers}")
         if (peerList.peers.isNullOrEmpty()) {
             checkSchedules(conversationId)
@@ -278,6 +285,17 @@ class GroupCallService : CallService() {
                 )
             }
         }
+    }
+
+    private fun sendPeer(conversationId: String): PeerList? {
+        val blazeMessageParam = BlazeMessageParam(
+            conversation_id = conversationId,
+            category = MessageCategory.KRAKEN_LIST.name,
+            message_id = UUID.randomUUID().toString()
+        )
+        val bm = createListKrakenPeers(blazeMessageParam)
+        val json = getJsonElement(bm) ?: return null
+        return gson.fromJson(json, PeerList::class.java)
     }
 
     private fun handleReceiveInvite(intent: Intent) {
@@ -782,6 +800,7 @@ const val ACTION_KRAKEN_ACCEPT_INVITE = "kraken_accept_invite"
 private const val ACTION_KRAKEN_RECEIVE_END = "kraken_receive_end"
 private const val ACTION_KRAKEN_RECEIVE_CANCEL = "kraken_receive_cancel"
 private const val ACTION_KRAKEN_RECEIVE_DECLINE = "kraken_receive_decline"
+private const val ACTION_CHECK_PEER = "check_peer"
 const val ACTION_KRAKEN_END = "kraken_end"
 const val ACTION_KRAKEN_CANCEL = "kraken_cancel"
 const val ACTION_KRAKEN_DECLINE = "kraken_decline"
@@ -831,6 +850,11 @@ fun receiveDecline(ctx: Context, conversationId: String, userId: String) =
     startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_DECLINE) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USER_ID, userId)
+    }
+
+fun checkPeers(ctx: Context, conversationId: String) =
+    startService<GroupCallService>(ctx, ACTION_CHECK_PEER) {
+        it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
     }
 
 fun acceptInvite(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_ACCEPT_INVITE, true) {}
