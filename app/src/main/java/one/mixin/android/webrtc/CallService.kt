@@ -111,7 +111,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     override fun onDestroy() {
-        Timber.d("@@@ onDestroy")
+        Timber.d("$TAG_CALL onDestroy")
         super.onDestroy()
         if (isDestroyed.compareAndSet(false, true)) {
             peerConnectionClient.release()
@@ -121,7 +121,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     protected fun disconnect() {
-        Timber.d("@@@ disconnect")
+        Timber.d("$TAG_CALL disconnect")
         if (isDisconnected.compareAndSet(false, true)) {
             stopForeground(true)
             audioManager.release()
@@ -232,7 +232,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     private fun handleFetchTurnError() {
-        Timber.d("@@@ handleFetchTurnError")
+        Timber.d("$TAG_CALL handleFetchTurnError")
         callExecutor.execute { onTurnServerError() }
     }
 
@@ -270,6 +270,8 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         const val TAG = "CallService"
     }
 }
+
+const val TAG_CALL = "TAG_CALL"
 
 const val DEFAULT_TIMEOUT_MINUTES = 1L
 

@@ -61,7 +61,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                             reportError("createOffer setLocalSdp onSetFailure error: $error")
                         }
                         override fun onSetSuccess() {
-                            Timber.d("createOffer setLocalSdp onSetSuccess")
+                            Timber.d("$TAG_CALL createOffer setLocalSdp onSetSuccess")
                             setLocalSuccess(sdp)
                         }
                     },
@@ -89,7 +89,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                             reportError("createAnswer setLocalSdp onSetFailure error: $error")
                         }
                         override fun onSetSuccess() {
-                            Timber.d("createAnswer setLocalSdp onSetSuccess")
+                            Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
                             setLocalSuccess(sdp)
                         }
                     },
@@ -162,7 +162,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     }
 
     private fun reportError(error: String) {
-        Timber.d("@@@ reportError: $error")
+        Timber.d("$TAG_CALL reportError: $error")
         peerConnection?.let { pc ->
             val localSdp = "{ localDescription: { description: ${pc.localDescription?.description}, type: ${pc.localDescription?.type} }"
             val remoteSdp = "{ remoteDescription: { description: ${pc.remoteDescription?.description}, type: ${pc.remoteDescription?.type} }"
@@ -251,7 +251,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 peerConnection?.addIceCandidate(it)
             }
             remoteCandidateCache.clear()
-            Timber.d("setRemoteSdp onSetSuccess")
+            Timber.d("$TAG_CALL setRemoteSdp onSetSuccess")
         }
     }
 
@@ -268,11 +268,11 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         }
 
         override fun onIceConnectionChange(newState: PeerConnection.IceConnectionState) {
-            Timber.d("onIceConnectionChange: $newState")
+            Timber.d("$TAG_CALL onIceConnectionChange: $newState")
         }
 
         override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
-            Timber.d("onConnectionChange: $newState")
+            Timber.d("$TAG_CALL onConnectionChange: $newState")
             if (newState == PeerConnection.PeerConnectionState.CONNECTED) {
                 events.onConnected()
             } else if (newState == PeerConnection.PeerConnectionState.DISCONNECTED) {
@@ -281,15 +281,15 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         }
 
         override fun onIceGatheringChange(newState: PeerConnection.IceGatheringState?) {
-            Timber.d("onIceGatheringChange: $newState")
+            Timber.d("$TAG_CALL onIceGatheringChange: $newState")
         }
 
         override fun onSignalingChange(newState: PeerConnection.SignalingState) {
-            Timber.d("SignalingState: $newState")
+            Timber.d("$TAG_CALL SignalingState: $newState")
         }
 
         override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {
-            Timber.d("onIceCandidatesRemoved")
+            Timber.d("$TAG_CALL onIceCandidatesRemoved")
             events.onIceCandidatesRemoved(candidates)
         }
 
@@ -303,7 +303,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         }
 
         override fun onTrack(transceiver: RtpTransceiver?) {
-            Timber.d("onTrack=%s", transceiver.toString())
+            Timber.d("$TAG_CALL onTrack=%s", transceiver.toString())
         }
 
         override fun onAddTrack(receiver: RtpReceiver, mediaStreams: Array<out MediaStream>) {
@@ -321,7 +321,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                     receiver.setFrameDecryptor(RTCFrameDecryptor(frameKey))
                 }
             }
-            Timber.d("onAddTrack=%s", receiver.toString())
+            Timber.d("$TAG_CALL onAddTrack=%s", receiver.toString())
             receiver.track()?.setEnabled(true)
         }
     }
