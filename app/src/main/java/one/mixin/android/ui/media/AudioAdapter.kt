@@ -54,8 +54,8 @@ class AudioHolder(itemView: View) : NormalHolder(itemView) {
             itemView.audio_duration.setTextColor(itemView.context.getColor(R.color.gray_50))
             itemView.audio_waveform.isFresh = false
         }
-        if (AudioPlayer.get().isLoaded(item.messageId)) {
-            itemView.audio_waveform.setProgress(AudioPlayer.get().progress)
+        if (AudioPlayer.isLoaded(item.messageId)) {
+            itemView.audio_waveform.setProgress(AudioPlayer.getProgress())
         } else {
             itemView.audio_waveform.setProgress(0f)
         }
@@ -76,7 +76,7 @@ class AudioHolder(itemView: View) : NormalHolder(itemView) {
                     itemView.audio_progress.visibility = View.VISIBLE
                     itemView.audio_progress.setBindOnly(item.messageId)
                     itemView.audio_waveform.setBind(item.messageId)
-                    if (AudioPlayer.get().isPlay(item.messageId)) {
+                    if (AudioPlayer.isPlay(item.messageId)) {
                         itemView.audio_progress.setPause()
                     } else {
                         itemView.audio_progress.setPlay()

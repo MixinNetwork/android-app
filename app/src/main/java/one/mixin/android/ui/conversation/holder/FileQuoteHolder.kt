@@ -135,9 +135,9 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
 
             override fun onStopTrackingTouch(seekBar: SeekBar) {
                 if (MimeTypes.isAudio(messageItem.mediaMimeType) &&
-                    AudioPlayer.get().isPlay(messageItem.messageId)
+                    AudioPlayer.isPlay(messageItem.messageId)
                 ) {
-                    AudioPlayer.get().seekTo(seekBar.progress)
+                    AudioPlayer.seekTo(seekBar.progress)
                 }
             }
         })
@@ -168,7 +168,7 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
                     if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
                         itemView.file_progress.setBindOnly(messageItem.messageId)
                         itemView.bottom_layout.bindId = messageItem.messageId
-                        if (AudioPlayer.get().isPlay(messageItem.messageId)) {
+                        if (AudioPlayer.isPlay(messageItem.messageId)) {
                             itemView.file_progress.setPause()
                             itemView.bottom_layout.showSeekBar()
                         } else {
@@ -187,7 +187,7 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
                         }
                     }
                     itemView.chat_layout.setOnClickListener {
-                        if (AudioPlayer.get().isPlay(messageItem.messageId)) {
+                        if (AudioPlayer.isPlay(messageItem.messageId)) {
                             onItemListener.onAudioFileClick(messageItem)
                         } else {
                             handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
