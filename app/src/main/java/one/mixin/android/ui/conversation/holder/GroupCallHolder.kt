@@ -38,15 +38,22 @@ class GroupCallHolder constructor(containerView: View) : BaseViewHolder(containe
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
+        val isMe = meId == messageItem.userId
+        val name = if (isMe) {
+            context.getString(R.string.you)
+        } else {
+            messageItem.userFullName
+        }
         when (messageItem.type) {
             MessageCategory.KRAKEN_INVITE.name -> {
                 itemView.chat_info.text = context.getString(R.string.chat_group_call_invite, messageItem.userFullName)
             }
             MessageCategory.KRAKEN_CANCEL.name -> {
-                itemView.chat_info.text = context.getString(R.string.chat_group_call_cancel, messageItem.userFullName)
+
+                itemView.chat_info.text = context.getString(R.string.chat_group_call_cancel, name)
             }
             MessageCategory.KRAKEN_DECLINE.name -> {
-                itemView.chat_info.text = context.getString(R.string.chat_group_call_decline, messageItem.userFullName)
+                itemView.chat_info.text = context.getString(R.string.chat_group_call_decline, name)
             }
             MessageCategory.KRAKEN_END.name -> {
                 val duration = try {

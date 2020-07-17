@@ -111,6 +111,7 @@
     <string name="common_file">文件</string>
     <string name="common_audio">语音</string>
     <string name="common_sticker">贴纸</string>
+    <string name="you">你</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
