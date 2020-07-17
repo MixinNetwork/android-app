@@ -765,7 +765,8 @@ class ConversationListFragment : LinkFragment() {
             if (conversationItem.senderId == Session.getAccountId() &&
                 conversationItem.contentType != MessageCategory.SYSTEM_CONVERSATION.name &&
                 conversationItem.contentType != MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name &&
-                !conversationItem.isCallMessage() && !conversationItem.isRecall()
+                !conversationItem.isCallMessage() && !conversationItem.isRecall() &&
+                !conversationItem.isGroupVoiceCall()
             ) {
                 when (conversationItem.messageStatus) {
                     MessageStatus.SENDING.name -> AppCompatResources.getDrawable(

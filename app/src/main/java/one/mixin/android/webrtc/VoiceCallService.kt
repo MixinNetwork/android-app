@@ -138,7 +138,7 @@ class VoiceCallService : CallService() {
             getTurnServer { turns ->
                 val bmd = this.blazeMessageData
                 if (bmd == null) {
-                    Timber.e("try answer a call, but blazeMessageData is null")
+                    Timber.e("$TAG_CALL try answer a call, but blazeMessageData is null")
                     return@getTurnServer
                 }
                 peerConnectionClient.createAnswerWithIceServer(
@@ -228,7 +228,7 @@ class VoiceCallService : CallService() {
             val mId = UUID.randomUUID().toString()
             val cid = callState.conversationId
             if (cid == null) {
-                Timber.e("try save WEBRTC_AUDIO_FAILED message, but conversation id is null")
+                Timber.e("$TAG_CALL try save WEBRTC_AUDIO_FAILED message, but conversation id is null")
                 return
             }
             val m = createCallMessage(
@@ -289,7 +289,7 @@ class VoiceCallService : CallService() {
             val messageId = UUID.randomUUID().toString()
             val conversationId = callState.conversationId
             if (conversationId == null) {
-                Timber.e("try send call message but conversation id is null")
+                Timber.e("$TAG_CALL try send call message but conversation id is null")
                 return
             }
             if (category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
@@ -299,7 +299,7 @@ class VoiceCallService : CallService() {
                 if (category == MessageCategory.WEBRTC_AUDIO_END.name) {
                     var connectedTime = callState.connectedTime
                     if (connectedTime == null) {
-                        Timber.e("try create WEBRTC_AUDIO_END message, but connected time is null")
+                        Timber.e("$TAG_CALL try create WEBRTC_AUDIO_END message, but connected time is null")
                         connectedTime = System.currentTimeMillis()
                     }
                     val duration = System.currentTimeMillis() - connectedTime
@@ -317,14 +317,14 @@ class VoiceCallService : CallService() {
         } else {
             val blazeMessageData = this.blazeMessageData
             if (blazeMessageData == null) {
-                Timber.e("Answer's blazeMessageData can not be null!")
+                Timber.e("$TAG_CALL Answer's blazeMessageData can not be null!")
                 handleCallLocalFailed()
                 return
             }
             if (category == MessageCategory.WEBRTC_AUDIO_END.name) {
                 var connectedTime = callState.connectedTime
                 if (connectedTime == null) {
-                    Timber.e("try create WEBRTC_AUDIO_END message, but connected time is null")
+                    Timber.e("$TAG_CALL try create WEBRTC_AUDIO_END message, but connected time is null")
                     connectedTime = System.currentTimeMillis()
                 }
                 val duration = System.currentTimeMillis() - connectedTime
@@ -355,7 +355,7 @@ class VoiceCallService : CallService() {
         } else {
             val uid = callState.user?.userId
             if (uid == null) {
-                Timber.e("try save a non-offer message, but userId is null")
+                Timber.e("$TAG_CALL try save a non-offer message, but userId is null")
                 return
             }
             uid

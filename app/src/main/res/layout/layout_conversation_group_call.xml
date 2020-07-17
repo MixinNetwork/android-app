@@ -34,6 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:text="@string/group_call"
+            android:textSize="16sp"
             android:textColor="?text_primary"/>
 
         <TextView
@@ -41,6 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:textColor="?text_minor"
+            android:textSize="12sp"
             android:text="@string/chat_tap_join"/>
     </LinearLayout>
 </RelativeLayout>

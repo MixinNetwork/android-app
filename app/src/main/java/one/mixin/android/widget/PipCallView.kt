@@ -30,6 +30,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.Rect
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.webrtc.TAG_CALL
 import org.jetbrains.anko.runOnUiThread
 import timber.log.Timber
 import java.util.Timer
@@ -215,7 +216,7 @@ class PipCallView {
     var shown = false
 
     fun close() {
-        Timber.d("@@@ close shown:$shown")
+        Timber.d("$TAG_CALL$shown")
         if (shown) {
             shown = false
             windowManager.removeView(windowView)
@@ -227,16 +228,17 @@ class PipCallView {
     private var timer: Timer? = null
 
     fun startTimer(connectedTime: Long) {
-        Timber.d("@@@ startTimer timer: $timer")
-        if (timer != null) return
+        Timber.d("$TAG_CALL startTimer timer: $timer")
+        if (timer != null) {
+            setDuration(connectedTime)
+            return
+        }
 
         timer = Timer(true)
         val timerTask = object : TimerTask() {
             override fun run() {
                 appContext.runOnUiThread {
-                    val duration = System.currentTimeMillis() - connectedTime
-                    val text = duration.formatMillis()
-                    timeView?.text = text
+                    setDuration(connectedTime)
                 }
             }
         }
@@ -244,10 +246,16 @@ class PipCallView {
     }
 
     fun stopTimer() {
-        Timber.d("@@@ stopTimer")
+        Timber.d("$TAG_CALL stopTimer")
         timer?.cancel()
         timer?.purge()
         timer = null
+    }
+
+    private fun setDuration(connectedTime: Long) {
+        val duration = System.currentTimeMillis() - connectedTime
+        val text = duration.formatMillis()
+        timeView?.text = text
     }
 
     private var decelerateInterpolator: DecelerateInterpolator? = null
