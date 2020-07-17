@@ -11,6 +11,7 @@ import io.reactivex.Observable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.DB_DELETE_LIMIT
+import one.mixin.android.Constants.DB_DELETE_THRESHOLD
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
@@ -371,17 +372,25 @@ internal constructor(
             }
         }
         val deleteMentionCount = messageMentionDao.countDeleteMessageByConversationId(conversationId)
-        if (deleteMentionCount > DB_DELETE_LIMIT) {
+        if (deleteMentionCount > DB_DELETE_THRESHOLD) {
             jobManager.addJobInBackground(MessageDeleteJob(conversationId, true))
         } else {
-            messageMentionDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
+            val deleteTimes = deleteMentionCount / DB_DELETE_LIMIT + 1
+            repeat(deleteTimes) {
+                messageMentionDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
+            }
         }
         val deleteCount = messageDao.countDeleteMessageByConversationId(conversationId)
-        if (deleteCount > DB_DELETE_LIMIT) {
+        if (deleteCount > DB_DELETE_THRESHOLD) {
             jobManager.addJobInBackground(MessageDeleteJob(conversationId, deleteConversation = deleteConversation))
         } else {
-            messageFts4Dao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
-            messageDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
+            val deleteTimes = deleteCount / DB_DELETE_LIMIT + 1
+            repeat(deleteTimes) {
+                messageFts4Dao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
+                if (!deleteConversation) {
+                    messageDao.deleteMessageByConversationId(conversationId, DB_DELETE_LIMIT)
+                }
+            }
             if (deleteConversation) {
                 conversationDao.deleteConversationById(conversationId)
             }
