@@ -245,7 +245,14 @@ class CallActivity : BaseActivity(), SensorEventListener {
                     call_cl.post { handleDisconnected() }
                     return@Observer
                 }
-                if (uiState >= state) return@Observer
+                if (uiState >= state) {
+                    if (
+                        uiState == CallService.CallState.STATE_CONNECTED && state == CallService.CallState.STATE_CONNECTED
+                    ) {
+                        handleConnected(callState.restarting)
+                    }
+                    return@Observer
+                }
 
                 uiState = state
 
@@ -267,7 +274,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                         call_cl.post { handleAnswering() }
                     }
                     CallService.CallState.STATE_CONNECTED -> {
-                        call_cl.post { handleConnected() }
+                        call_cl.post { handleConnected(false) }
                     }
                     CallService.CallState.STATE_BUSY -> {
                         call_cl.post { handleBusy() }
@@ -596,7 +603,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         action_tv.text = getString(R.string.call_connecting)
     }
 
-    private fun handleConnected() {
+    private fun handleConnected(restarting: Boolean) {
         if (!voice_cb.isVisible) {
             voice_cb.fadeIn()
         }
@@ -607,7 +614,12 @@ class CallActivity : BaseActivity(), SensorEventListener {
             answer_cb.fadeOut()
         }
         moveHangup(true, 250)
-        startTimer()
+        if (restarting) {
+            tip_tv?.isVisible = true
+        } else {
+            tip_tv?.isVisible = false
+            startTimer()
+        }
     }
 
     private fun handleDisconnected() {

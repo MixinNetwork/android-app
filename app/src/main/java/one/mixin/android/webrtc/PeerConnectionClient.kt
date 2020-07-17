@@ -41,6 +41,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private var rtpSender: RtpSender? = null
     private val rtpReceivers = arrayMapOf<String, RtpReceiver>()
     private val sdpConstraint = MediaConstraints()
+    private val restartConstraint = MediaConstraints.KeyValuePair("IceRestart", "true")
 
     fun createPeerConnectionFactory(options: PeerConnectionFactory.Options) {
         if (factory != null) {
@@ -50,8 +51,10 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         createPeerConnectionFactoryInternal(options)
     }
 
-    fun createOffer(iceServerList: List<PeerConnection.IceServer>, setLocalSuccess: ((sdp: SessionDescription) -> Unit), frameKey: ByteArray? = null) {
-        iceServers.addAll(iceServerList)
+    fun createOffer(iceServerList: List<PeerConnection.IceServer>? = null, setLocalSuccess: ((sdp: SessionDescription) -> Unit), frameKey: ByteArray? = null) {
+        if (iceServerList != null) {
+            iceServers.addAll(iceServerList)
+        }
         peerConnection = createPeerConnectionInternal(frameKey)
         val offerSdpObserver = object : SdpObserverWrapper() {
             override fun onCreateSuccess(sdp: SessionDescription) {
@@ -73,13 +76,16 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 reportError("createOffer onCreateFailure error: $error")
             }
         }
+        if (iceServerList == null) {
+            sdpConstraint.mandatory.add(restartConstraint)
+        } else {
+            sdpConstraint.mandatory.remove(restartConstraint)
+        }
         peerConnection?.createOffer(offerSdpObserver, sdpConstraint)
     }
 
     fun createAnswer(remoteSdp: SessionDescription, setLocalSuccess: (sdp: SessionDescription) -> Unit) {
-        if (peerConnection == null) {
-            peerConnection = createPeerConnectionInternal()
-        }
+        peerConnection = createPeerConnectionInternal()
         peerConnection?.setRemoteDescription(remoteSdpObserver, remoteSdp)
         val answerSdpObserver = object : SdpObserverWrapper() {
             override fun onCreateSuccess(sdp: SessionDescription) {
@@ -101,6 +107,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 reportError("createAnswer onCreateFailure error: $error")
             }
         }
+        sdpConstraint.mandatory.remove(restartConstraint)
         peerConnection?.createAnswer(answerSdpObserver, sdpConstraint)
     }
 
@@ -114,6 +121,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     }
 
     fun addRemoteIceCandidate(candidate: IceCandidate) {
+        Timber.d("$TAG_CALL addRemoteIceCandidate peerConnection: $peerConnection")
         if (peerConnection != null && peerConnection!!.remoteDescription != null) {
             peerConnection?.addIceCandidate(candidate)
         } else {
@@ -248,11 +256,11 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         }
 
         override fun onSetSuccess() {
+            Timber.d("$TAG_CALL setRemoteSdp onSetSuccess remoteCandidateCache: ${remoteCandidateCache.size}")
             remoteCandidateCache.forEach {
                 peerConnection?.addIceCandidate(it)
             }
             remoteCandidateCache.clear()
-            Timber.d("$TAG_CALL setRemoteSdp onSetSuccess")
         }
     }
 
@@ -270,6 +278,11 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
 
         override fun onIceConnectionChange(newState: PeerConnection.IceConnectionState) {
             Timber.d("$TAG_CALL onIceConnectionChange: $newState")
+            if (newState == PeerConnection.IceConnectionState.DISCONNECTED) {
+                events.onIceDisconnected()
+            } else if (newState == PeerConnection.IceConnectionState.FAILED) {
+                events.onIceFailed()
+            }
         }
 
         override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
@@ -367,6 +380,8 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
          * DISCONNECTED).
          */
         fun onIceDisconnected()
+
+        fun onIceFailed()
 
         /**
          * Callback fired once DTLS connection is established (PeerConnectionState

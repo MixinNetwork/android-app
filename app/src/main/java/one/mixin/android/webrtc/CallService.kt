@@ -32,6 +32,7 @@ import org.webrtc.StatsReport
 import timber.log.Timber
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
@@ -40,6 +41,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     protected val callExecutor = Executors.newSingleThreadExecutor()
     protected val timeoutExecutor = Executors.newScheduledThreadPool(1)
     protected var timeoutFuture: ScheduledFuture<*>? = null
+    private var restartFuture: ScheduledFuture<*>? = null
 
     protected val audioManager: CallAudioManager by lazy {
         CallAudioManager(this)
@@ -145,6 +147,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     abstract fun onDestroyed()
     abstract fun onTimeout()
     abstract fun onTurnServerError()
+    abstract fun handleLocalEnd()
 
     override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {
     }
@@ -159,26 +162,42 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     override fun onIceDisconnected() {
     }
 
+    override fun onDisconnected() {
+    }
+
     override fun onPeerConnectionStatsReady(reports: Array<StatsReport>) {
     }
 
     override fun onPeerConnectionClosed() {
     }
 
-    private fun handleConnected() {
-        if (callState.isConnected() || callState.isIdle()) return
+    override fun onIceFailed() {
+        if (callState.isConnected()) {
+            callState.restarting = true
+            restartFuture = timeoutExecutor.schedule(RestartRunnable(), 30, TimeUnit.SECONDS)
+        }
+    }
 
-        val connectedTime = System.currentTimeMillis()
-        callState.connectedTime = connectedTime
-        callState.state = CallState.STATE_CONNECTED
-        updateForegroundNotification()
+    private fun handleConnected() {
+        Timber.d("$TAG_CALL callState: ${callState.state}")
+        if (callState.isIdle()) return
+
+        val refreshState = !callState.isConnected()
+        if (refreshState) {
+            val connectedTime = System.currentTimeMillis()
+            callState.connectedTime = connectedTime
+            callState.state = CallState.STATE_CONNECTED
+            updateForegroundNotification()
+            vibrate(longArrayOf(0, 30))
+            audioManager.stop()
+            pipCallView.startTimer(connectedTime)
+        }
         timeoutFuture?.cancel(true)
-        vibrate(longArrayOf(0, 30))
-        audioManager.stop()
+        restartFuture?.cancel(true)
+
         peerConnectionClient.setAudioEnable(callState.audioEnable)
         peerConnectionClient.enableCommunication()
-
-        pipCallView.startTimer(connectedTime)
+        callState.restarting = false
     }
 
     private fun handleMuteAudio(intent: Intent) {
@@ -203,6 +222,12 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         if (callState.isIdle() || callState.isConnected()) return
 
         onTimeout()
+    }
+
+    private fun handleCheckRestart() {
+        if (callState.isIdle()) return
+
+        handleLocalEnd()
     }
 
     protected fun updateForegroundNotification() {
@@ -267,6 +292,12 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     inner class TimeoutRunnable : Runnable {
         override fun run() {
             handleCheckTimeout()
+        }
+    }
+
+    inner class RestartRunnable : Runnable {
+        override fun run() {
+            handleCheckRestart()
         }
     }
 

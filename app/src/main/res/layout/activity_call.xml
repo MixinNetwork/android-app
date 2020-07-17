@@ -130,6 +130,22 @@
         app:drawableStartCompat="@drawable/ic_call_secret" />
 
     <TextView
+        android:id="@+id/tip_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:text="@string/chat_call_bad_network_you"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/action_tv"
+        app:layout_constraintEnd_toEndOf="@id/guideline_end"
+        app:layout_constraintStart_toStartOf="@id/guideline_start"
+        app:layout_constraintTop_toBottomOf="@+id/encryption_tv"
+        app:layout_constraintVertical_bias="1"/>
+
+    <TextView
         android:id="@+id/action_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -142,8 +158,8 @@
         app:layout_constraintEnd_toEndOf="@id/guideline_end"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@id/guideline_start"
-        app:layout_constraintTop_toBottomOf="@+id/avatar"
-        app:layout_constraintVertical_bias="0.95"/>
+        app:layout_constraintTop_toBottomOf="@+id/encryption_tv"
+        app:layout_constraintVertical_bias="0.98"/>
 
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar"

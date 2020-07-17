@@ -92,7 +92,7 @@ class GroupCallService : CallService() {
             ACTION_KRAKEN_RECEIVE_CANCEL -> handleReceiveCancel(intent)
             ACTION_KRAKEN_RECEIVE_DECLINE -> handleReceiveDecline(intent)
             ACTION_KRAKEN_ACCEPT_INVITE -> handleAcceptInvite()
-            ACTION_KRAKEN_END -> handleKrakenEnd()
+            ACTION_KRAKEN_END -> handleLocalEnd()
             ACTION_KRAKEN_CANCEL -> handleKrakenCancel()
             ACTION_KRAKEN_DECLINE -> handleKrakenDecline()
             ACTION_KRAKEN_CANCEL_SILENTLY -> handleCallLocalFailed()
@@ -405,7 +405,7 @@ class GroupCallService : CallService() {
         publish(cid)
     }
 
-    private fun handleKrakenEnd() {
+    override fun handleLocalEnd() {
         Timber.d("$TAG_CALL handleKrakenEnd")
         if (callState.isIdle()) return
 
@@ -512,7 +512,7 @@ class GroupCallService : CallService() {
     }
 
     override fun onPeerConnectionError(description: String) {
-        callExecutor.execute { handleKrakenEnd() }
+        callExecutor.execute { handleLocalEnd() }
     }
 
     override fun onTimeout() {
@@ -525,10 +525,59 @@ class GroupCallService : CallService() {
         handleCallLocalFailed()
     }
 
-    override fun onDisconnected() {
-        callExecutor.execute {
-            handleKrakenEnd()
+    @SuppressLint("AutoDispose")
+    override fun onIceFailed() {
+        super.onIceFailed()
+        if (!callState.isConnected()) return
+
+        val conversationId = callState.conversationId
+        if (conversationId == null) {
+            Timber.d("$TAG_CALL receive onIceFailed try restart but conversationId is null")
+            return
         }
+        val trackId = callState.trackId
+        if (trackId == null) {
+            Timber.d("$TAG_CALL receive onIceFailed try restart but trackId is null")
+            return
+        }
+
+        checkSessionSenderKey(conversationId)
+        val key = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
+        peerConnectionClient.createOffer(
+            null,
+            setLocalSuccess = {
+                val blazeMessageParam = BlazeMessageParam(
+                    conversation_id = conversationId,
+                    category = MessageCategory.KRAKEN_RESTART.name,
+                    message_id = UUID.randomUUID().toString(),
+                    track_id = trackId,
+                    jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode()
+                )
+                val bm = createKrakenMessage(blazeMessageParam)
+                val data = getBlazeMessageData(bm) ?: return@createOffer
+                val krakenData = gson.fromJson(String(data.data.decodeBase64()), KrakenData::class.java)
+                subscribe(krakenData, conversationId)
+            },
+            frameKey = key
+        )
+
+        disposable = RxBus.listen(SenderKeyChange::class.java)
+            .subscribe { event ->
+                if (event.conversationId != conversationId) {
+                    return@subscribe
+                }
+                if (event.userId != null && event.sessionId != null) {
+                    val users = callState.getUsers(event.conversationId) ?: return@subscribe
+                    if (users.contains(event.userId)) {
+                        val frameKey = getSenderPublicKey(event.userId, event.sessionId) ?: return@subscribe
+                        peerConnectionClient.setReceiverFrameKey(event.userId, event.sessionId, frameKey)
+                    }
+                } else {
+                    checkSessionSenderKey(conversationId)
+                    val frameKey = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
+                    peerConnectionClient.setSenderFrameKey(frameKey)
+                }
+            }
     }
 
     override fun getSenderPublicKey(userId: String, sessionId: String): ByteArray? {

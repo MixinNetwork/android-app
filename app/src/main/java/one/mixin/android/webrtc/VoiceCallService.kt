@@ -38,7 +38,7 @@ class VoiceCallService : CallService() {
             ACTION_CANDIDATE -> handleCandidate(intent)
             ACTION_CALL_CANCEL -> handleCallCancel()
             ACTION_CALL_DECLINE -> handleCallDecline()
-            ACTION_CALL_LOCAL_END -> handleCallLocalEnd()
+            ACTION_CALL_LOCAL_END -> handleLocalEnd()
             ACTION_CALL_REMOTE_END -> handleCallRemoteEnd()
             ACTION_CALL_BUSY -> handleCallBusy()
             ACTION_CALL_LOCAL_FAILED -> handleCallLocalFailed()
@@ -49,6 +49,21 @@ class VoiceCallService : CallService() {
     }
 
     private fun handleCallIncoming(intent: Intent) {
+        val blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
+        val user = intent.getParcelableExtra<User>(ARGS_USER)
+
+        if (user?.userId == callState.user?.userId) {
+            Timber.d("$TAG_CALL handleCallIncoming restart")
+            callState.trackId = blazeMessageData.messageId
+            peerConnectionClient.createAnswer(
+                getSdp(blazeMessageData.data.decodeBase64()),
+                setLocalSuccess = {
+                    sendCallMessage(MessageCategory.WEBRTC_AUDIO_ANSWER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
+                }
+            )
+            return
+        }
+
         if (callState.isBusy(this)) {
             val category = MessageCategory.WEBRTC_AUDIO_BUSY.name
             val bmd = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
@@ -72,8 +87,6 @@ class VoiceCallService : CallService() {
         if (isDisconnected.compareAndSet(true, false)) {
             callState.state = CallState.STATE_RINGING
             callState.callType = CallType.Voice
-            val blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
-            val user = intent.getParcelableExtra<User>(ARGS_USER)
 
             val pendingCandidateData = intent.getStringExtra(EXTRA_PENDING_CANDIDATES)
             if (pendingCandidateData != null && pendingCandidateData.isNotEmpty()) {
@@ -125,10 +138,12 @@ class VoiceCallService : CallService() {
             callState.isIdle()
         ) return
 
-        callState.state = CallState.STATE_ANSWERING
-        callState.callType = CallType.Voice
-        updateForegroundNotification()
-        audioManager.stop()
+        if (!callState.isConnected()) {
+            callState.state = CallState.STATE_ANSWERING
+            callState.callType = CallType.Voice
+            updateForegroundNotification()
+            audioManager.stop()
+        }
         if (callState.isOffer) {
             val bmd = intent.getSerializableExtra(EXTRA_BLAZE) ?: return
             val blazeMessageData = bmd as BlazeMessageData
@@ -180,7 +195,7 @@ class VoiceCallService : CallService() {
         disconnect()
     }
 
-    private fun handleCallLocalEnd() {
+    override fun handleLocalEnd() {
         if (callState.isIdle()) return
 
         val category = MessageCategory.WEBRTC_AUDIO_END.name
@@ -273,9 +288,18 @@ class VoiceCallService : CallService() {
         callExecutor.execute { handleCallLocalFailed() }
     }
 
-    override fun onDisconnected() {
+    override fun onIceFailed() {
+        super.onIceFailed()
+        if (!callState.isConnected()) return
+        if (!callState.isOffer) return
+
         callExecutor.execute {
-            handleCallLocalEnd()
+            peerConnectionClient.createOffer(
+                null,
+                setLocalSuccess = {
+                    sendCallMessage(MessageCategory.WEBRTC_AUDIO_OFFER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
+                }
+            )
         }
     }
 
