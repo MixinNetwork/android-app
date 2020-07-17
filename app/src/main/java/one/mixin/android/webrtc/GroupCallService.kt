@@ -303,10 +303,19 @@ class GroupCallService : CallService() {
         val userId = intent.getStringExtra(EXTRA_USER_ID)
 
         if (callState.isBusy(this)) {
-            // TODO send a kraken busy message?
             Timber.d("$TAG_CALL receive a invite from $userId in $cid")
             userId?.let {
                 saveMessage(cid, it, MessageCategory.KRAKEN_INVITE.name)
+
+                val blazeMessageParam = BlazeMessageParam(
+                    conversation_id = cid,
+                    recipient_id = it,
+                    category = MessageCategory.KRAKEN_DECLINE.name,
+                    message_id = UUID.randomUUID().toString()
+                )
+                val bm = createKrakenMessage(blazeMessageParam)
+                val bmData = getBlazeMessageData(bm) ?: return
+                @Suppress("UNUSED_VARIABLE") val krakenData = gson.fromJson(String(bmData.data.decodeBase64()), KrakenData::class.java)
             }
             return
         }
