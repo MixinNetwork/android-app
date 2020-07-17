@@ -19,7 +19,6 @@
         android:gravity="center_horizontal"
         android:layout_marginTop="4dp"
         android:layout_below="@id/icon"
-        android:typeface="monospace"
         android:textSize="12sp"
         android:textColor="@color/call_light_green"/>
 </RelativeLayout>
