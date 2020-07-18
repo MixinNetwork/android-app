@@ -108,7 +108,7 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (callState.isGroupCall() && !inGroupCallUsers.isNullOrEmpty()) {
                 action_iv.setImageResource(R.drawable.ic_check)
             } else {
-                action_iv.setImageResource(R.drawable.ic_pip_call)
+                action_iv.setImageResource(R.drawable.ic_invite_call)
             }
             action_iv.setOnClickListener {
                 val users = arrayListOf<String>()
