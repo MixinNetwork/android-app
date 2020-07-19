@@ -178,6 +178,7 @@ import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.TAG_CALL
 import one.mixin.android.webrtc.checkPeers
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.webrtc.receiveInvite
@@ -873,6 +874,8 @@ class ConversationFragment :
                         .show()
                 }
             }
+
+        checkPeerIfNeeded()
     }
 
     private var paused = false
@@ -923,8 +926,6 @@ class ConversationFragment :
                 }
             }
         resetAudioMode()
-
-        checkPeerIfNeeded()
     }
 
     private var lastReadMessage: String? = null

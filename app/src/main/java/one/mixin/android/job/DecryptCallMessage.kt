@@ -20,6 +20,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.webrtc.DEFAULT_TIMEOUT_MINUTES
+import one.mixin.android.webrtc.TAG_CALL
 import one.mixin.android.webrtc.answerCall
 import one.mixin.android.webrtc.busy
 import one.mixin.android.webrtc.cancelCall
@@ -85,7 +86,7 @@ class DecryptCallMessage(
     }
 
     private fun processKraken(data: BlazeMessageData) {
-        Timber.d("@@@ processKraken category: ${data.category}, data: $data")
+        Timber.d("$TAG_CALL processKraken category: ${data.category}, data: $data")
         if (data.source == LIST_PENDING_MESSAGES) {
             val isExpired = isExpired(data)
             if (isExpired) {
