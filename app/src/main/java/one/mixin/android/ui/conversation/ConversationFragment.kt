@@ -178,7 +178,6 @@ import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
-import one.mixin.android.webrtc.TAG_CALL
 import one.mixin.android.webrtc.checkPeers
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.webrtc.receiveInvite
@@ -1497,19 +1496,21 @@ class ConversationFragment :
     }
 
     private fun liveDataAppList() {
-        chatViewModel.getApp(conversationId, recipient?.userId)
-            .observe(viewLifecycleOwner) { list ->
-                appList = list.filter {
-                    if (isGroup) {
-                        it.capabilities?.contains(AppCap.GROUP.name) == true
-                    } else {
-                        true
+        recipient?.let { recipient ->
+            chatViewModel.getApp(conversationId, recipient.userId)
+                .observe(viewLifecycleOwner) { list ->
+                    appList = list.filter {
+                        if (isGroup) {
+                            it.capabilities?.contains(AppCap.GROUP.name) == true
+                        } else {
+                            true
+                        }
+                    }
+                    appList?.let {
+                        (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
                     }
                 }
-                appList?.let {
-                    (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
-                }
-            }
+        }
     }
 
     private var appList: List<AppItem>? = null
