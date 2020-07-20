@@ -44,6 +44,7 @@ class SendProcessSignalKeyJob(
                 if (!ps.isNullOrEmpty()) {
                     participantSessionDao.insertList(ps)
                 }
+                RxBus.publish(SenderKeyChange(data.conversationId, participantId))
             }
         }
     }
