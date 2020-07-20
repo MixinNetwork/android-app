@@ -178,7 +178,7 @@ class GroupCallService : CallService() {
                             val frameKey = getSenderPublicKey(event.userId, event.sessionId) ?: return@subscribe
                             peerConnectionClient.setReceiverFrameKey(event.userId, event.sessionId, frameKey)
                         }
-                    }else if (event.userId != null) {
+                    } else if (event.userId != null) {
                         checkSessionSenderKey(event.conversationId)
                     } else {
                         checkSessionSenderKey(conversationId)
