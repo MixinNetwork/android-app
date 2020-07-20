@@ -221,6 +221,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         val key = "$userId~$sessionId"
         if (rtpReceivers.containsKey(key) && frameKey != null) {
             val receiver = rtpReceivers[key]
+            Timber.d("$TAG_CALL setFrameDecryptor")
             receiver?.setFrameDecryptor(RTCFrameDecryptor(frameKey))
         }
     }
