@@ -35,6 +35,11 @@ class CallAudioManager(private val context: Context) {
     private var bluetoothState = State.UNINITIALIZED
     private var bluetoothHeadset: BluetoothHeadset? = null
 
+    private val supportedCustomAudioDevices = arrayOf(
+        AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
+        AudioDeviceInfo.TYPE_WIRED_HEADSET
+    )
+
     private val audioManager: AudioManager = context.getSystemService<AudioManager>()!!.apply {
         savedSpeakerOn = isSpeakerphoneOn
         saveMode = mode
@@ -61,6 +66,8 @@ class CallAudioManager(private val context: Context) {
             }
             updateAudioDevice()
         }
+
+    var callback: Callback? = null
 
     private var isInitiator = false
     private var playRingtone = false
@@ -139,7 +146,7 @@ class CallAudioManager(private val context: Context) {
 
         this.isInitiator = isInitiator
 
-        if (!isInitiator && vibrator != null && audioManager.ringerMode != AudioManager.RINGER_MODE_SILENT) {
+        if (playRingtone && !isInitiator && vibrator != null && audioManager.ringerMode != AudioManager.RINGER_MODE_SILENT) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val vibrationEffect = VibrationEffect.createWaveform(longArrayOf(0, 1000, 1000), 1)
                 vibrator.vibrate(vibrationEffect)
@@ -159,7 +166,7 @@ class CallAudioManager(private val context: Context) {
         audioManager.mode = if (bluetoothState == State.SCO_CONNECTED) {
             AudioManager.MODE_NORMAL
         } else AudioManager.MODE_IN_COMMUNICATION
-        
+
         defaultAudioDevice = AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
 
         if (mediaPlayer != null) {
@@ -207,7 +214,7 @@ class CallAudioManager(private val context: Context) {
 
     @Synchronized
     private fun updateMediaPlayer() {
-        if (mediaPlayerStopped) return
+        if (!hasStarted || mediaPlayerStopped) return
 
         if (mediaPlayer == null) {
             mediaPlayer = MediaPlayer()
@@ -323,6 +330,8 @@ class CallAudioManager(private val context: Context) {
                 updateMediaPlayer()
             }
             setAudioDeviceInternal(newAudioDevice)
+
+            callback?.customAudioDeviceAvailable(selectedAudioDevice in supportedCustomAudioDevices)
         }
     }
 
@@ -379,6 +388,10 @@ class CallAudioManager(private val context: Context) {
         SCO_DISCONNECTING,
         SCO_CONNECTING,
         SCO_CONNECTED
+    }
+
+    interface Callback {
+        fun customAudioDeviceAvailable(available: Boolean)
     }
 
     companion object {

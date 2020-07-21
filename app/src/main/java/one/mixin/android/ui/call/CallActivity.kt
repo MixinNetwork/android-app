@@ -360,6 +360,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
     private fun updateUI() {
         mute_cb?.isChecked = !callState.audioEnable
         voice_cb?.isChecked = callState.speakerEnable
+        voice_cb?.isEnabled = !callState.customAudioDeviceAvailable
         pip_iv?.isVisible = callState.isConnected()
         if (pip_iv?.isVisible == true) {
             close_iv?.isVisible = false

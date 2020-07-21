@@ -79,6 +79,11 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         callExecutor.execute {
             peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
         }
+        audioManager.callback = object : CallAudioManager.Callback {
+            override fun customAudioDeviceAvailable(available: Boolean) {
+                callState.customAudioDeviceAvailable = available
+            }
+        }
         Session.getAccount()?.toUser().let { user ->
             if (user == null) {
                 stopSelf()
