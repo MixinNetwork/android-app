@@ -178,7 +178,6 @@ import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
-import one.mixin.android.webrtc.TAG_CALL
 import one.mixin.android.webrtc.checkPeers
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.webrtc.receiveInvite
@@ -345,8 +344,7 @@ class ConversationFragment :
         if (LinkState.isOnline(linkState.state)) {
             if (isGroup) {
                 if (callState.getGroupCallStateOrNull(conversationId) != null) {
-                    val isForeground = !callState.isBusy(requireContext())
-                    receiveInvite(requireContext(), conversationId, playRing = false, foreground = isForeground)
+                    receiveInvite(requireContext(), conversationId, playRing = false)
                 } else {
                     GroupUsersBottomSheetDialogFragment.newInstance(conversationId)
                         .showNow(parentFragmentManager, GroupUsersBottomSheetDialogFragment.TAG)
@@ -1301,7 +1299,8 @@ class ConversationFragment :
             driver.isVisible = false
         }
         tap_join_view.setOnClickListener {
-            if (callState.isNotIdle()) {
+            val isBusy = callState.isBusy(requireContext())
+            if (isBusy) {
                 alertDialogBuilder()
                     .setMessage(getString(R.string.chat_call_warning_call))
                     .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
@@ -1310,8 +1309,7 @@ class ConversationFragment :
                     .show()
                 return@setOnClickListener
             }
-            val isForeground = !callState.isBusy(requireContext())
-            receiveInvite(requireContext(), conversationId, playRing = false, foreground = isForeground)
+            receiveInvite(requireContext(), conversationId, playRing = false)
         }
         callState.observe(
             viewLifecycleOwner,

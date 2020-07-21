@@ -80,7 +80,7 @@ class DecryptCallMessage(
             }
             notifyServer(data)
         } catch (e: Exception) {
-            Timber.e("DecryptCallMessage failure, $e")
+            Timber.e("$TAG_CALL DecryptCallMessage failure, $e")
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
@@ -138,8 +138,7 @@ class DecryptCallMessage(
                 receivePublish(ctx, data)
             }
             MessageCategory.KRAKEN_INVITE.name -> {
-                val isForeground = !callState.isBusy(ctx)
-                receiveInvite(ctx, data.conversationId, userId = data.userId, playRing = true, foreground = isForeground)
+                receiveInvite(ctx, data.conversationId, userId = data.userId, playRing = true)
             }
             MessageCategory.KRAKEN_END.name -> {
                 receiveEnd(ctx, data.conversationId, data.userId)
@@ -216,11 +215,10 @@ class DecryptCallMessage(
         if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             syncUser(data.userId)?.let { user ->
                 val pendingCandidateList = listPendingCandidateMap[data.messageId]
-                val isForeground = !callState.isBusy(ctx)
                 if (pendingCandidateList == null || pendingCandidateList.isEmpty()) {
-                    incomingCall(ctx, user, data, isForeground)
+                    incomingCall(ctx, user, data)
                 } else {
-                    incomingCall(ctx, user, data, isForeground, GsonHelper.customGson.toJson(pendingCandidateList.toArray()))
+                    incomingCall(ctx, user, data, GsonHelper.customGson.toJson(pendingCandidateList.toArray()))
                     pendingCandidateList.clear()
                     listPendingCandidateMap.remove(data.messageId, pendingCandidateList)
                 }

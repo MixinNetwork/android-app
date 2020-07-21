@@ -3,7 +3,6 @@ package one.mixin.android.webrtc
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import com.google.gson.Gson
 import dagger.android.AndroidInjection
@@ -303,16 +302,11 @@ inline fun <reified T : CallService> disconnect(ctx: Context) {
 inline fun <reified T : CallService> startService(
     ctx: Context,
     action: String? = null,
-    foreground: Boolean = false,
     putExtra: ((intent: Intent) -> Unit)
 ) {
     val intent = Intent(ctx, T::class.java).apply {
         this.action = action
         putExtra.invoke(this)
     }
-    if (foreground) {
-        ContextCompat.startForegroundService(ctx, intent)
-    } else {
-        ctx.startService(intent)
-    }
+    ctx.startService(intent)
 }

@@ -51,13 +51,19 @@ class CallAudioManager(private val context: Context) {
             if (value == field) {
                 return
             }
-            changedByUser = true
             field = value
             audioManager.isSpeakerphoneOn = value
+
+            userSelectedAudioDevice = if (value) {
+                AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+            } else {
+                AudioDeviceInfo.TYPE_UNKNOWN
+            }
+            updateAudioDevice()
         }
 
     private var isInitiator = false
-    private var changedByUser = false
+    private var playRingtone = false
 
     private val wiredHeadsetReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
@@ -111,8 +117,9 @@ class CallAudioManager(private val context: Context) {
         }
     }
 
-    fun start(isInitiator: Boolean) {
+    fun start(isInitiator: Boolean, playRingtone: Boolean = true) {
         hasStarted = true
+        this.playRingtone = playRingtone
         context.registerReceiver(wiredHeadsetReceiver, IntentFilter(Intent.ACTION_HEADSET_PLUG))
         context.registerReceiver(
             bluetoothHeadsetReceiver,
@@ -122,6 +129,7 @@ class CallAudioManager(private val context: Context) {
             }
         )
         bluetoothState = State.HEADSET_UNAVAILABLE
+        audioDevices.clear()
         defaultAudioDevice = if (isInitiator) {
             AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
         } else {
@@ -151,12 +159,15 @@ class CallAudioManager(private val context: Context) {
         audioManager.mode = if (bluetoothState == State.SCO_CONNECTED) {
             AudioManager.MODE_NORMAL
         } else AudioManager.MODE_IN_COMMUNICATION
+        
+        defaultAudioDevice = AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
+
         if (mediaPlayer != null) {
             mediaPlayer?.stop()
             mediaPlayer?.release()
             mediaPlayer = null
         }
-        if (!isInitiator && !changedByUser) {
+        if (!isInitiator && !isSpeakerSelected()) {
             audioManager.isSpeakerphoneOn = false
         }
         vibrator?.cancel()
@@ -177,6 +188,7 @@ class CallAudioManager(private val context: Context) {
         }
 
         selectedAudioDevice = AudioDeviceInfo.TYPE_UNKNOWN
+        userSelectedAudioDevice = AudioDeviceInfo.TYPE_UNKNOWN
         stopScoAudio()
         if (bluetoothHeadset != null) {
             bluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset)
@@ -187,9 +199,11 @@ class CallAudioManager(private val context: Context) {
         hasStarted = false
         mediaPlayerStopped = false
         isInitiator = false
-        changedByUser = false
         isSpeakerOn = false
+        playRingtone = false
     }
+
+    private fun isSpeakerSelected() = userSelectedAudioDevice == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
 
     @Synchronized
     private fun updateMediaPlayer() {
@@ -232,6 +246,7 @@ class CallAudioManager(private val context: Context) {
     }
 
     private fun updateAudioDevice() {
+        Timber.d("$TAG_CALL updateAudioDevice")
         if (bluetoothState == State.HEADSET_AVAILABLE ||
             bluetoothState == State.HEADSET_UNAVAILABLE ||
             bluetoothState == State.SCO_CONNECTING
@@ -304,7 +319,7 @@ class CallAudioManager(private val context: Context) {
             }
         }
         if (newAudioDevice != selectedAudioDevice || audioDeviceSetUpdated) {
-            if (newAudioDevice != selectedAudioDevice) {
+            if (newAudioDevice != selectedAudioDevice && playRingtone) {
                 updateMediaPlayer()
             }
             setAudioDeviceInternal(newAudioDevice)
@@ -314,14 +329,15 @@ class CallAudioManager(private val context: Context) {
     private fun setAudioDeviceInternal(device: Int) {
         require(isValidAudioDeviceTypeOut(device))
 
-        audioManager.isSpeakerphoneOn = if (changedByUser) {
-            isSpeakerOn
+        audioManager.isSpeakerphoneOn = if (isSpeakerSelected()) {
+            true
         } else {
             when (device) {
                 AudioDeviceInfo.TYPE_BUILTIN_SPEAKER -> true
                 else -> false
             }
         }
+        Timber.d("$TAG_CALL setAudioDeviceInternal device: $device")
         selectedAudioDevice = device
     }
 

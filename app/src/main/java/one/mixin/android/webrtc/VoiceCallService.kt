@@ -403,8 +403,8 @@ const val ACTION_CALL_BUSY = "call_busy"
 const val ACTION_CALL_LOCAL_FAILED = "call_local_failed"
 const val ACTION_CALL_REMOTE_FAILED = "call_remote_failed"
 
-fun incomingCall(ctx: Context, user: User, data: BlazeMessageData, foreground: Boolean, pendingCandidateData: String? = null) {
-    startService<VoiceCallService>(ctx, ACTION_CALL_INCOMING, foreground) {
+fun incomingCall(ctx: Context, user: User, data: BlazeMessageData, pendingCandidateData: String? = null) {
+    startService<VoiceCallService>(ctx, ACTION_CALL_INCOMING) {
         it.putExtra(ARGS_USER, user)
         it.putExtra(EXTRA_BLAZE, data)
         if (pendingCandidateData != null) {
@@ -414,13 +414,13 @@ fun incomingCall(ctx: Context, user: User, data: BlazeMessageData, foreground: B
 }
 
 fun outgoingCall(ctx: Context, conversationId: String, user: User? = null) =
-    startService<VoiceCallService>(ctx, ACTION_CALL_OUTGOING, true) {
+    startService<VoiceCallService>(ctx, ACTION_CALL_OUTGOING) {
         it.putExtra(ARGS_USER, user)
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
     }
 
 fun answerCall(ctx: Context, data: BlazeMessageData? = null) =
-    startService<VoiceCallService>(ctx, ACTION_CALL_ANSWER, true) { intent ->
+    startService<VoiceCallService>(ctx, ACTION_CALL_ANSWER) { intent ->
         data?.let {
             intent.putExtra(EXTRA_BLAZE, data)
         }
