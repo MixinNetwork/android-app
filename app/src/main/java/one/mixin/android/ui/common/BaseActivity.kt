@@ -12,6 +12,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultThemeId
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import javax.inject.Inject
 
@@ -56,7 +57,7 @@ open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
             // Make sure there is a BaseFragment handle this event.
             fragments.indices.reversed()
                 .map { fragments[it] }
-                .filter { it != null && it is BaseFragment && it.onBackPressed() }
+                .filter { it != null && ((it is BaseFragment && it.onBackPressed()) || (it is WebBottomSheetDialogFragment && it.onBackPressed())) }
                 .forEach { _ -> return }
         }
         super.onBackPressed()

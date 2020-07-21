@@ -176,6 +176,14 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    fun onBackPressed(): Boolean {
+        if (contentView.chat_web_view.canGoBack()) {
+            contentView.chat_web_view.goBack()
+            return true
+        }
+        return false
+    }
+
     override fun onContextItemSelected(item: MenuItem): Boolean {
         contentView.chat_web_view.hitTestResult?.let {
             val url = it.extra
@@ -271,6 +279,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    private var customView: View? = null
+    private var customViewCallback: WebChromeClient.CustomViewCallback? = null
+
     private fun initView() {
         contentView.suspicious_link_view.listener = object : SuspiciousLinkView.SuspiciousListener {
             override fun onBackClick() {
@@ -319,6 +330,34 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             )
 
         contentView.chat_web_view.webChromeClient = object : WebChromeClient() {
+
+            override fun onShowCustomView(view: View, requestedOrientation: Int, callback: CustomViewCallback?) {
+                onShowCustomView(view, callback)
+            }
+
+            override fun onShowCustomView(view: View, callback: CustomViewCallback?) {
+                if (customView != null) {
+                    customViewCallback?.onCustomViewHidden()
+                    return
+                }
+                customView = view
+                customViewCallback = callback
+                contentView.customViewContainer.addView(view)
+                contentView.customViewContainer.isVisible = true
+                contentView.web_ll.isVisible = false
+            }
+
+            override fun onHideCustomView() {
+                super.onHideCustomView()
+                if (customView == null)
+                    return
+                contentView.customViewContainer.isVisible = false
+                contentView.web_ll.isVisible = true
+                contentView.customViewContainer.removeView(customView)
+                customViewCallback?.onCustomViewHidden()
+                customView = null
+            }
+
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 super.onReceivedTitle(view, title)
                 if (!isBot()) {
