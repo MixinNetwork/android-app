@@ -30,6 +30,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.ui.Rect
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.webrtc.TAG_CALL
 import org.jetbrains.anko.runOnUiThread
 import timber.log.Timber
@@ -112,7 +113,8 @@ class PipCallView {
 
     fun show(
         activity: Activity,
-        connectedTime: Long? = null
+        connectedTime: Long? = null,
+        callState: CallStateLiveData
     ) {
         windowView?.let { windowManager.removeView(it) }
 
@@ -206,10 +208,14 @@ class PipCallView {
             Timber.e(e)
         }
 
-        if (connectedTime != null) {
-            startTimer(connectedTime)
+        if (callState.isNotIdle()) {
+            if (connectedTime != null) {
+                startTimer(connectedTime)
+            } else {
+                timeView?.text = appContext.getString(R.string.waiting)
+            }
         } else {
-            timeView?.text = appContext.getString(R.string.waiting)
+            close()
         }
     }
 
@@ -217,11 +223,15 @@ class PipCallView {
 
     fun close() {
         Timber.d("$TAG_CALL$shown")
-        if (shown) {
-            shown = false
-            windowManager.removeView(windowView)
-            windowView = null
+        shown = false
+        if (windowView != null) {
+            try {
+                windowManager.removeView(windowView)
+            } catch (e: Exception) {
+                Timber.w("$TAG_CALL remove windowView throw $e")
+            }
         }
+        windowView = null
         stopTimer()
     }
 

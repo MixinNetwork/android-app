@@ -153,6 +153,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 userAdapter = CallUserAdapter(self)
             }
             users_rv.adapter = userAdapter
+            userAdapter?.rvWidth = realSize().x * .8f
             callState.conversationId?.let {
                 viewModel.observeConversationNameById(it).observe(
                     this,
@@ -486,7 +487,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
             } else {
                 View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
-        pipCallView.show(this, callState.connectedTime)
+        pipCallView.show(this, callState.connectedTime, callState)
         AnimatorSet().apply {
             playTogether(
                 ObjectAnimator.ofFloat(windowView, View.SCALE_X, scale),
