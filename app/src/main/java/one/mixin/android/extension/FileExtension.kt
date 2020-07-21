@@ -345,6 +345,9 @@ fun Context.getGroupAvatarPath(name: String, create: Boolean = true): File {
 
 fun File.createNoMediaDir() {
     val no = File(this, ".nomedia")
+    if (!exists()) {
+        mkdirs()
+    }
     if (!no.exists()) {
         no.createNewFile()
     }
