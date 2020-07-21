@@ -54,6 +54,12 @@
             android:background="@color/white"/>
     </LinearLayout>
 
+    <FrameLayout
+        android:id="@+id/customViewContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
     <one.mixin.android.widget.SuspiciousLinkView
         android:id="@+id/suspicious_link_view"
         android:layout_width="match_parent"
