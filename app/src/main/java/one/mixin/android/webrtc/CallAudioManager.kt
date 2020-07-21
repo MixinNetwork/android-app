@@ -348,6 +348,10 @@ class CallAudioManager(private val context: Context) {
         }
         Timber.d("$TAG_CALL setAudioDeviceInternal device: $device")
         selectedAudioDevice = device
+
+        if (device == AudioDeviceInfo.TYPE_BLUETOOTH_SCO) {
+            audioManager.mode = AudioManager.MODE_NORMAL
+        }
     }
 
     private fun updateBluetoothDevice() {
