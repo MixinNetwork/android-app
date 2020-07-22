@@ -13,22 +13,22 @@
             android:layout_height="wrap_content"
             app:rightText="@string/save" />
 
-    <EditText
-            android:id="@+id/search_et"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="?attr/bg_white"
-            android:drawablePadding="8dp"
-            android:drawableStart="@drawable/ic_search"
-            android:hint="@string/search"
-            android:imeOptions="actionSearch"
-            android:inputType="text"
-            android:maxLines="1"
-            android:paddingEnd="@dimen/margin_start"
-            android:paddingStart="@dimen/margin_start"
-            android:textColor="?attr/text_primary"
-            android:textColorHint="?attr/text_minor"
-            android:textSize="14sp" />
+    <one.mixin.android.widget.SearchView
+        android:id="@+id/search_et"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="?attr/bg_white"
+        android:drawableStart="@drawable/ic_asset_add_search"
+        android:paddingStart="@dimen/margin_start"
+        android:paddingEnd="@dimen/margin_start"
+        android:drawablePadding="8dp"
+        android:hint="@string/search"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:maxLines="1"
+        android:textColor="?attr/text_primary"
+        android:textColorHint="?attr/text_minor"
+        android:textSize="14sp"/>
 
     <View
             android:layout_width="match_parent"
