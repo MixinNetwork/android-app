@@ -86,6 +86,7 @@
         <attr name="bg_circle_unchecked" format="integer"/>
         <attr name="ic_checked" format="integer"/>
         <attr name="ic_unchecked" format="integer"/>
+        <attr name="ic_disable" format="integer"/>
     </declare-styleable>
     <declare-styleable name="KerningTextView">
         <attr name="kv_spacing" format="float" />

@@ -344,8 +344,7 @@ class ConversationFragment :
         if (LinkState.isOnline(linkState.state)) {
             if (isGroup) {
                 if (callState.getGroupCallStateOrNull(conversationId) != null) {
-                    val isForeground = !callState.isBusy(requireContext())
-                    receiveInvite(requireContext(), conversationId, playRing = false, foreground = isForeground)
+                    receiveInvite(requireContext(), conversationId, playRing = false)
                 } else {
                     GroupUsersBottomSheetDialogFragment.newInstance(conversationId)
                         .showNow(parentFragmentManager, GroupUsersBottomSheetDialogFragment.TAG)
@@ -1300,7 +1299,8 @@ class ConversationFragment :
             driver.isVisible = false
         }
         tap_join_view.setOnClickListener {
-            if (callState.isNotIdle()) {
+            val isBusy = callState.isBusy(requireContext())
+            if (isBusy) {
                 alertDialogBuilder()
                     .setMessage(getString(R.string.chat_call_warning_call))
                     .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
@@ -1309,8 +1309,7 @@ class ConversationFragment :
                     .show()
                 return@setOnClickListener
             }
-            val isForeground = !callState.isBusy(requireContext())
-            receiveInvite(requireContext(), conversationId, playRing = false, foreground = isForeground)
+            receiveInvite(requireContext(), conversationId, playRing = false)
         }
         callState.observe(
             viewLifecycleOwner,

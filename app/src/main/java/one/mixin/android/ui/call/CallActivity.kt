@@ -6,6 +6,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.app.KeyguardManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -129,13 +130,23 @@ class CallActivity : BaseActivity(), SensorEventListener {
         belowOreo {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O_MR1) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+            val keyguardManager = getSystemService<KeyguardManager>()
+            keyguardManager?.requestDismissKeyguard(this, null)
+        } else {
+            @Suppress("DEPRECATION")
+            window.addFlags(
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+            )
+        }
+
         setContentView(R.layout.activity_call)
-        @Suppress("DEPRECATION")
-        window.addFlags(
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-        )
         sensorManager = getSystemService()
         powerManager = getSystemService()
         wakeLock = powerManager?.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
@@ -153,6 +164,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 userAdapter = CallUserAdapter(self)
             }
             users_rv.adapter = userAdapter
+            userAdapter?.rvWidth = realSize().x * .8f
             callState.conversationId?.let {
                 viewModel.observeConversationNameById(it).observe(
                     this,
@@ -360,6 +372,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
     private fun updateUI() {
         mute_cb?.isChecked = !callState.audioEnable
         voice_cb?.isChecked = callState.speakerEnable
+        voice_cb?.isEnabled = !callState.customAudioDeviceAvailable
         pip_iv?.isVisible = callState.isConnected()
         if (pip_iv?.isVisible == true) {
             close_iv?.isVisible = false
@@ -485,7 +498,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
             } else {
                 View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
-        pipCallView.show(this, callState.connectedTime)
+        pipCallView.show(this, callState.connectedTime, callState)
         AnimatorSet().apply {
             playTogether(
                 ObjectAnimator.ofFloat(windowView, View.SCALE_X, scale),

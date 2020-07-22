@@ -182,6 +182,13 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
 
     var audioEnable = true
     var speakerEnable = false
+    var customAudioDeviceAvailable = false
+        set(value) {
+            if (field == value) return
+
+            field = value
+            postValue(state)
+        }
 
     var callType = CallType.None
 

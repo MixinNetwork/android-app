@@ -335,9 +335,7 @@ class GroupCallService : CallService() {
             timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
             val playRing = intent.getBooleanExtra(EXTRA_PLAY_RING, true)
             CallActivity.show(this, !playRing)
-            if (playRing) {
-                audioManager.start(false)
-            }
+            audioManager.start(false, playRing)
             startCheckPeers(cid)
 
             userId?.let {
@@ -826,7 +824,7 @@ data class PeerList(
 )
 
 fun publish(ctx: Context, conversationId: String, users: ArrayList<String>? = null) =
-    startService<GroupCallService>(ctx, ACTION_KRAKEN_PUBLISH, true) {
+    startService<GroupCallService>(ctx, ACTION_KRAKEN_PUBLISH) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USERS, users)
     }
@@ -836,8 +834,8 @@ fun receivePublish(ctx: Context, data: BlazeMessageData) =
         it.putExtra(EXTRA_BLAZE, data)
     }
 
-fun receiveInvite(ctx: Context, conversationId: String, userId: String? = null, playRing: Boolean, foreground: Boolean) =
-    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_INVITE, foreground) {
+fun receiveInvite(ctx: Context, conversationId: String, userId: String? = null, playRing: Boolean) =
+    startService<GroupCallService>(ctx, ACTION_KRAKEN_RECEIVE_INVITE) {
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
         it.putExtra(EXTRA_USER_ID, userId)
         it.putExtra(EXTRA_PLAY_RING, playRing)
@@ -866,7 +864,7 @@ fun checkPeers(ctx: Context, conversationId: String) =
         it.putExtra(EXTRA_CONVERSATION_ID, conversationId)
     }
 
-fun acceptInvite(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_ACCEPT_INVITE, true) {}
+fun acceptInvite(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_ACCEPT_INVITE) {}
 
 fun krakenEnd(ctx: Context) = startService<GroupCallService>(ctx, ACTION_KRAKEN_END) {}
 

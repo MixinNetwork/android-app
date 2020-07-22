@@ -17,6 +17,7 @@ class CallButton(context: Context, attr: AttributeSet) : LinearLayout(context, a
     private var bgUnchecked: Int = 0
     private var srcChecked = 0
     private var srcUnchecked = 0
+    private var srcDisable = 0
 
     init {
         LayoutInflater.from(context).inflate(R.layout.view_call_button, this, true)
@@ -27,6 +28,7 @@ class CallButton(context: Context, attr: AttributeSet) : LinearLayout(context, a
         bgUnchecked = ta.getResourceId(R.styleable.CallButton_bg_circle_unchecked, 0)
         srcChecked = ta.getResourceId(R.styleable.CallButton_ic_checked, 0)
         srcUnchecked = ta.getResourceId(R.styleable.CallButton_ic_unchecked, 0)
+        srcDisable = ta.getResourceId(R.styleable.CallButton_ic_disable, 0)
 
         ta.recycle()
 
@@ -42,6 +44,8 @@ class CallButton(context: Context, attr: AttributeSet) : LinearLayout(context, a
     override fun isChecked() = checked
 
     override fun toggle() {
+        if (!isEnabled) return
+
         isChecked = !checked
     }
 
@@ -53,7 +57,18 @@ class CallButton(context: Context, attr: AttributeSet) : LinearLayout(context, a
         update(checked)
     }
 
+    override fun setEnabled(enabled: Boolean) {
+        super.setEnabled(enabled)
+        update(isChecked)
+    }
+
     private fun update(isChecked: Boolean) {
+        if (!isEnabled) {
+            icon.backgroundResource = bgUnchecked
+            icon.setImageResource(srcDisable)
+            return
+        }
+
         if (isChecked) {
             icon.backgroundResource = bgChecked
             icon.setImageResource(srcChecked)
