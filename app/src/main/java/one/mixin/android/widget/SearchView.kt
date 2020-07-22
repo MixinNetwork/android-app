@@ -59,7 +59,7 @@ class SearchView(context: Context, attrs: AttributeSet?) : AppCompatEditText(con
                     event.rawX >= right - (rightDrawable.bounds.width() + context.dpToPx(16f))
                 ) {
                     text?.clear()
-                    return true
+                    return false
                 } else {
                     performClick()
                 }
