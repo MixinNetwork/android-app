@@ -70,6 +70,7 @@ import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.extension.enqueueUniqueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putBoolean
@@ -250,7 +251,6 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
-            WorkManager.getInstance(this@MainActivity).pruneWork()
             jobManager.addJobInBackground(RefreshAccountJob())
 
             if (Fiats.isRateEmpty()) {
@@ -258,11 +258,12 @@ class MainActivity : BlazeBaseActivity() {
             }
 
             WorkManager.getInstance(this@MainActivity)
-                .enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
+                .enqueueUniqueOneTimeNetworkWorkRequest<RefreshContactWorker>("RefreshContactWorker")
             WorkManager.getInstance(this@MainActivity)
-                .enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
+                .enqueueUniqueOneTimeNetworkWorkRequest<RefreshFcmWorker>("RefreshFcmWorker")
             WorkManager.getInstance(this@MainActivity)
-                .enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>()
+                .enqueueUniqueOneTimeNetworkWorkRequest<RefreshAssetsWorker>("RefreshAssetsWorker")
+            WorkManager.getInstance(this@MainActivity).pruneWork()
         }
         checkRoot()
         checkUpdate()

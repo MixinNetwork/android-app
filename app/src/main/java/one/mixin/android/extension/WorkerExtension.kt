@@ -3,6 +3,7 @@ package one.mixin.android.extension
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
 import androidx.work.ListenableWorker
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
@@ -12,6 +13,10 @@ import java.util.concurrent.TimeUnit
 
 inline fun <reified W : ListenableWorker> WorkManager.enqueueOneTimeNetworkWorkRequest(inputData: Data? = null) {
     enqueue(buildNetworkRequest<W>(inputData).build())
+}
+
+inline fun <reified W : ListenableWorker> WorkManager.enqueueUniqueOneTimeNetworkWorkRequest(name: String, inputData: Data? = null) {
+    enqueueUniqueWork(name, ExistingWorkPolicy.REPLACE, buildNetworkRequest<W>(inputData).build())
 }
 
 inline fun <reified W : ListenableWorker> buildRequest(inputData: Data? = null) =
