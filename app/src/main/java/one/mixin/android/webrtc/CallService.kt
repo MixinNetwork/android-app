@@ -174,7 +174,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     override fun onIceFailed() {
         if (callState.isConnected()) {
             callState.restarting = true
-            restartFuture = timeoutExecutor.schedule(RestartRunnable(), 30, TimeUnit.SECONDS)
+            restartFuture = timeoutExecutor.schedule(RestartRunnable(), 60, TimeUnit.SECONDS)
         }
     }
 

@@ -53,8 +53,6 @@ class VoiceCallService : CallService() {
         val user = intent.getParcelableExtra<User>(ARGS_USER)
 
         if (user?.userId == callState.user?.userId) {
-            Timber.d("$TAG_CALL handleCallIncoming restart")
-            callState.trackId = blazeMessageData.messageId
             peerConnectionClient.createAnswer(
                 getSdp(blazeMessageData.data.decodeBase64()),
                 setLocalSuccess = {
@@ -317,7 +315,9 @@ class VoiceCallService : CallService() {
                 return
             }
             if (category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
-                callState.trackId = messageId
+                if (callState.trackId == null) {
+                    callState.trackId = messageId
+                }
                 createCallMessage(messageId, conversationId, self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name)
             } else {
                 if (category == MessageCategory.WEBRTC_AUDIO_END.name) {
