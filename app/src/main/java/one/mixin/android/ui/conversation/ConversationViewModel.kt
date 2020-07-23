@@ -800,17 +800,17 @@ internal constructor(
         }
     }
 
-    fun getApp(conversationId: String, guestId: String?): LiveData<List<AppItem>> {
+    fun getBottomApps(conversationId: String, guestId: String?): LiveData<List<AppItem>> {
         return if (guestId == null) {
-            conversationRepository.getGroupConversationApp(conversationId)
-        } else {
             Transformations.map(
-                conversationRepository.getConversationApp(guestId, Session.getAccountId()!!)
+                conversationRepository.getGroupAppsByConversationId(conversationId)
             ) { list ->
                 list.filter {
                     it.capabilities?.contains(AppCap.GROUP.name) == true
                 }
             }
+        } else {
+            conversationRepository.getFavoriteAppsByUserId(guestId, Session.getAccountId()!!)
         }
     }
 

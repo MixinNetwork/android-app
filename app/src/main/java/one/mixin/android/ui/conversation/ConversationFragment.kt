@@ -1494,7 +1494,7 @@ class ConversationFragment :
     }
 
     private fun liveDataAppList() {
-        chatViewModel.getApp(conversationId, recipient?.userId)
+        chatViewModel.getBottomApps(conversationId, recipient?.userId)
             .observe(viewLifecycleOwner) { list ->
                 appList = list
                 appList?.let {
