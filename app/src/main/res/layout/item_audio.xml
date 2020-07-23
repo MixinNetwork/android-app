@@ -34,7 +34,6 @@
             android:id="@+id/audio_progress"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/ic_avatar_place_holder"
             app:progressColor="@color/white"
             app:playColor="@color/white"
             app:progressWidth="1.5dp"

@@ -2,6 +2,7 @@ package one.mixin.android.ui.media
 
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
+import androidx.recyclerview.widget.DiffUtil
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import kotlinx.android.synthetic.main.item_shared_media_header.view.*
 import one.mixin.android.R
@@ -13,8 +14,8 @@ import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.vo.MessageItem
 import kotlin.math.abs
 
-abstract class SharedMediaHeaderAdapter<VH : NormalHolder> :
-    SafePagedListAdapter<MessageItem, VH>(MessageItem.DIFF_CALLBACK),
+abstract class SharedMediaHeaderAdapter<VH : NormalHolder>(diffCallback: DiffUtil.ItemCallback<MessageItem> = MessageItem.DIFF_CALLBACK) :
+    SafePagedListAdapter<MessageItem, VH>(diffCallback),
     StickyRecyclerHeadersAdapter<MediaHeaderViewHolder> {
 
     override fun getHeaderId(pos: Int): Long {

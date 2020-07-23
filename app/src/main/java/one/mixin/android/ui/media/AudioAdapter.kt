@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import kotlinx.android.synthetic.main.item_audio.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -16,7 +17,19 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 
 class AudioAdapter(private val onClickListener: (messageItem: MessageItem) -> Unit) :
-    SharedMediaHeaderAdapter<AudioHolder>() {
+    SharedMediaHeaderAdapter<AudioHolder>(object : DiffUtil.ItemCallback<MessageItem>() {
+        override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
+            return oldItem.messageId == newItem.messageId
+        }
+
+        override fun areContentsTheSame(
+            oldItem: MessageItem,
+            newItem: MessageItem
+        ): Boolean {
+            return oldItem.mediaStatus == newItem.mediaStatus &&
+                oldItem.status == newItem.status
+        }
+    }) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         AudioHolder(
             LayoutInflater.from(parent.context).inflate(
