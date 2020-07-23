@@ -216,11 +216,11 @@ internal constructor(
     suspend fun getRealParticipants(conversationId: String) =
         participantDao.getRealParticipantsSuspend(conversationId)
 
-    fun getGroupConversationApp(conversationId: String) =
-        readAppDatabase.appDao().getGroupConversationApp(conversationId)
+    fun getGroupAppsByConversationId(conversationId: String) =
+        readAppDatabase.appDao().getGroupAppsByConversationId(conversationId)
 
-    fun getConversationApp(guestId: String, masterId: String) =
-        readAppDatabase.appDao().getConversationApp(guestId, masterId).map { list ->
+    fun getFavoriteAppsByUserId(guestId: String, masterId: String) =
+        readAppDatabase.appDao().getGroupAppsByConversationId(guestId, masterId).map { list ->
             list.distinctBy { app ->
                 app.appId
             }

@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
@@ -71,6 +72,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.util.image.Compressor
+import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
@@ -798,11 +800,17 @@ internal constructor(
         }
     }
 
-    fun getApp(conversationId: String, userId: String?): LiveData<List<AppItem>> {
-        return if (userId == null) {
-            conversationRepository.getGroupConversationApp(conversationId)
+    fun getBottomApps(conversationId: String, guestId: String?): LiveData<List<AppItem>> {
+        return if (guestId == null) {
+            Transformations.map(
+                conversationRepository.getGroupAppsByConversationId(conversationId)
+            ) { list ->
+                list.filter {
+                    it.capabilities?.contains(AppCap.GROUP.name) == true
+                }
+            }
         } else {
-            conversationRepository.getConversationApp(userId, Session.getAccountId()!!)
+            conversationRepository.getFavoriteAppsByUserId(guestId, Session.getAccountId()!!)
         }
     }
 
