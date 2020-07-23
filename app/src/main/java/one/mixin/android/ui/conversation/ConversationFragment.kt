@@ -154,7 +154,6 @@ import one.mixin.android.util.mention.mentionDisplay
 import one.mixin.android.util.mention.mentionEnd
 import one.mixin.android.util.mention.mentionReplace
 import one.mixin.android.vo.App
-import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.CallStateLiveData
@@ -1495,21 +1494,13 @@ class ConversationFragment :
     }
 
     private fun liveDataAppList() {
-        recipient?.let { recipient ->
-            chatViewModel.getApp(conversationId, recipient.userId)
-                .observe(viewLifecycleOwner) { list ->
-                    appList = list.filter {
-                        if (isGroup) {
-                            it.capabilities?.contains(AppCap.GROUP.name) == true
-                        } else {
-                            true
-                        }
-                    }
-                    appList?.let {
-                        (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
-                    }
+        chatViewModel.getApp(conversationId, recipient?.userId)
+            .observe(viewLifecycleOwner) { list ->
+                appList = list
+                appList?.let {
+                    (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
                 }
-        }
+            }
     }
 
     private var appList: List<AppItem>? = null
