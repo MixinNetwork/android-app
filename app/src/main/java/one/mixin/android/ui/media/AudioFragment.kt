@@ -50,7 +50,7 @@ class AudioFragment : BaseViewModelFragment<SharedMediaViewModel>() {
                 messageItem.mediaStatus == MediaStatus.PENDING.name -> {
                     viewModel.cancel(messageItem.messageId)
                 }
-                mediaDownloaded(messageItem.status) ->
+                mediaDownloaded(messageItem.mediaStatus) ->
                     if (AudioPlayer.isPlay(messageItem.messageId)) {
                         AudioPlayer.pause()
                     } else {
