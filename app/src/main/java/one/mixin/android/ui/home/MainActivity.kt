@@ -128,7 +128,6 @@ import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.worker.RefreshAssetsWorker
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
-import org.jetbrains.anko.doAsync
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -250,7 +249,8 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(BackupMigrationJob())
         }
 
-        doAsync {
+        lifecycleScope.launch(Dispatchers.IO) {
+            WorkManager.getInstance(this@MainActivity).pruneWork()
             jobManager.addJobInBackground(RefreshAccountJob())
 
             if (Fiats.isRateEmpty()) {

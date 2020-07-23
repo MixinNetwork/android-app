@@ -8,12 +8,9 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkRequest.MIN_BACKOFF_MILLIS
-import one.mixin.android.worker.DownloadAvatarWorker
-import one.mixin.android.worker.GenerateAvatarWorker
 import java.util.concurrent.TimeUnit
 
 inline fun <reified W : ListenableWorker> WorkManager.enqueueOneTimeNetworkWorkRequest(inputData: Data? = null) {
-    pruneWork()
     enqueue(buildNetworkRequest<W>(inputData).build())
 }
 
@@ -33,10 +30,3 @@ inline fun <reified W : ListenableWorker> buildNetworkRequest(inputData: Data? =
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build()
         )
-
-fun WorkManager.enqueueAvatarWorkRequest(inputData: Data? = null) {
-    pruneWork()
-    beginWith(buildNetworkRequest<DownloadAvatarWorker>(inputData).build())
-        .then(buildRequest<GenerateAvatarWorker>(inputData).build())
-        .enqueue()
-}
