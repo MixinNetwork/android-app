@@ -132,7 +132,7 @@ dependencies {
     implementation "com.google.android.material:material:${mdcVersion}"
     implementation "androidx.recyclerview:recyclerview:${recyclerViewVersion}"
     implementation "androidx.exifinterface:exifinterface:${exifinterfaceVersion}"
-    implementation "androidx.browser:browser:${supportLibVersion}"
+    implementation "androidx.browser:browser:${browser_version}"
     implementation "androidx.constraintlayout:constraintlayout:${constraintLayoutVersion}"
     implementation "androidx.core:core-ktx:${ktxVersion}"
     implementation "androidx.collection:collection-ktx:${collectionx}"
