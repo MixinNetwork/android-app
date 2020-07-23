@@ -395,8 +395,9 @@ class CallActivity : BaseActivity(), SensorEventListener {
         } else {
             val last = callees.lastOrNull()
             if (callees.size == 1 && last == self.userId) {
-                layoutManager.spanCount = getSpanCount(1)
-                userAdapter?.submitList(listOf(self))
+                userAdapter?.submitList(listOf(self)) {
+                    layoutManager.spanCount = getSpanCount(1)
+                }
                 return@launch
             }
             if (last != self.userId) {
@@ -408,8 +409,9 @@ class CallActivity : BaseActivity(), SensorEventListener {
             val users = viewModel.findMultiUsersByIds(callees.toSet())
             val orderByIds = callees.withIndex().associate { it.value to it.index }
             val sortedUsers = users.sortedBy { orderByIds[it.userId] }
-            layoutManager.spanCount = getSpanCount(sortedUsers.size)
-            userAdapter?.submitList(sortedUsers)
+            userAdapter?.submitList(sortedUsers) {
+                layoutManager.spanCount = getSpanCount(sortedUsers.size)
+            }
         }
         val currentGuestsNotConnected = userAdapter?.guestsNotConnected
         val newGuestsNotConnected = callState.getPendingUsers(cid)

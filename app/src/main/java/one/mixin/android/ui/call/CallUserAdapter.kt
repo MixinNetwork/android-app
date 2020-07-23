@@ -6,7 +6,6 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.fragment_recycler_view.view.*
 import kotlinx.android.synthetic.main.item_call_user.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dp
@@ -59,9 +58,14 @@ class CallUserHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                 width = size
                 height = size
             }
+            cover.updateLayoutParams<ViewGroup.LayoutParams> {
+                width = size
+                height = size
+            }
             avatar_view.setInfo(user.fullName, user.avatarUrl, user.userId)
-            connecting_view.isVisible = user.userId != self.userId &&
-                guestsNotConnected?.contains(user.userId) == true
+            val vis = user.userId != self.userId && guestsNotConnected?.contains(user.userId) == true
+            connecting_view.isVisible = vis
+            cover.isVisible = vis
         }
     }
 
