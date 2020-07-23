@@ -9,7 +9,8 @@ import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.UserService
 import one.mixin.android.di.worker.ChildWorkerFactory
-import one.mixin.android.extension.enqueueAvatarWorkRequest
+import one.mixin.android.extension.buildNetworkRequest
+import one.mixin.android.extension.buildRequest
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
 
@@ -35,9 +36,10 @@ class RefreshUserWorker @AssistedInject constructor(
                 userRepo.upsertList(data)
 
                 conversationId?.let {
-                    WorkManager.getInstance(MixinApplication.appContext).enqueueAvatarWorkRequest(
-                        workDataOf(GROUP_ID to conversationId)
-                    )
+                    WorkManager.getInstance(MixinApplication.appContext)
+                        .beginWith(buildNetworkRequest<DownloadAvatarWorker>(workDataOf(GROUP_ID to conversationId)).build())
+                        .then(buildRequest<GenerateAvatarWorker>(workDataOf(GROUP_ID to conversationId)).build())
+                        .enqueue()
                 }
             }
             Result.success()
