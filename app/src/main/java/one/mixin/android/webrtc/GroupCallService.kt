@@ -332,8 +332,10 @@ class GroupCallService : CallService() {
                 callState.addPendingUsers(cid, arrayListOf(it))
             }
             callState.isOffer = false
-            timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
             val playRing = intent.getBooleanExtra(EXTRA_PLAY_RING, true)
+            if (playRing) {
+                timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
+            }
             CallActivity.show(this, !playRing)
             audioManager.start(false, playRing)
             startCheckPeers(cid)
