@@ -128,11 +128,11 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         Timber.d("$TAG_CALL disconnect")
         if (isDisconnected.compareAndSet(false, true)) {
             stopForeground(true)
+            callState.reset()
             audioManager.release()
             pipCallView.close()
             peerConnectionClient.close()
             timeoutFuture?.cancel(true)
-            callState.reset()
 
             onCallDisconnected()
         }

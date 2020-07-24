@@ -528,6 +528,7 @@ class GroupCallService : CallService() {
 
     @SuppressLint("AutoDispose")
     override fun onIceFailed() {
+        Timber.d("$TAG_CALL onIceFailed callState.isConnected(): ${callState.isConnected()}, disconnected: ${callState.disconnected}")
         if (!callState.isConnected()) return
 
         val conversationId = callState.conversationId
@@ -580,6 +581,9 @@ class GroupCallService : CallService() {
 
     override fun onIceCandidate(candidate: IceCandidate) {
         callExecutor.execute {
+            if (!callState.isGroupCall()) {
+                return@execute
+            }
             val trackId = callState.trackId ?: return@execute
             val cid = callState.conversationId ?: return@execute
 
@@ -617,7 +621,7 @@ class GroupCallService : CallService() {
             if (blazeMessage.action == LIST_KRAKEN_PEERS) return null
 
             SystemClock.sleep(SLEEP_MILLIS)
-            return blazeMessage
+            return webSocketChannel(blazeMessage)
         }
 
         blazeMessage.params?.conversation_id?.let {

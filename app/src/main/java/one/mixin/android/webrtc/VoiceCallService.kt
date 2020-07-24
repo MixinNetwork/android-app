@@ -278,6 +278,9 @@ class VoiceCallService : CallService() {
 
     override fun onIceCandidate(candidate: IceCandidate) {
         callExecutor.execute {
+            if (!callState.isVoiceCall()) {
+                return@execute
+            }
             val arr = arrayListOf(candidate)
             sendCallMessage(MessageCategory.WEBRTC_ICE_CANDIDATE.name, gson.toJson(arr))
         }
