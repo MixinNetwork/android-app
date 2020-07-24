@@ -942,7 +942,7 @@ class ConversationFragment :
 
     @SuppressLint("WakelockTimeout")
     override fun onStatusChange(status: Int) {
-        if (isCling) return
+        if (isNearToSensor) return
         if (status == STATUS_PLAY) {
             if (!aodWakeLock.isHeld) {
                 aodWakeLock.acquire()
@@ -957,30 +957,23 @@ class ConversationFragment :
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
     }
 
-    private var isCling: Boolean = false
+    private var isNearToSensor: Boolean = false
     override fun onSensorChanged(event: SensorEvent?) {
         if (callState.isNotIdle()) return
 
         val values = event?.values ?: return
         if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
-            isCling =
-                values[0] < 5.0f && values[0] != sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY).maximumRange
+            isNearToSensor = values[0] < 5.0f && values[0] != sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY).maximumRange
             if (AudioPlayer.isEnd() || AudioPlayer.audioFilePlaying() || audioManager.isHeadsetOn()) {
                 if (wakeLock.isHeld) {
-                    wakeLock.release()
-                    changeToHeadset()
+                    leaveDevice()
                 }
-                return
-            }
-
-            if (isCling) {
-                if (!wakeLock.isHeld) {
-                    wakeLock.acquire(10 * 60 * 1000L)
-                    changeToReceiver()
+            } else if (!audioManager.isHeadsetOn()) {
+                if (isNearToSensor) {
+                    nearDevice()
+                } else {
+                    leaveDevice()
                 }
-            } else if (wakeLock.isHeld) {
-                wakeLock.release()
-                changeToSpeaker()
             }
         }
     }
@@ -2536,6 +2529,20 @@ class ConversationFragment :
             .show()
     }
 
+    private fun nearDevice() {
+        if (!wakeLock.isHeld) {
+            wakeLock.acquire(10 * 60 * 1000L)
+        }
+        changeToReceiver()
+    }
+
+    private fun leaveDevice() {
+        if (wakeLock.isHeld) {
+            wakeLock.release()
+        }
+        changeToSpeaker()
+    }
+
     private fun changeToSpeaker() {
         AudioPlayer.switchAudioStreamType(true)
         audioManager.isSpeakerphoneOn = true
@@ -2572,7 +2579,7 @@ class ConversationFragment :
         if (callState.isNotIdle()) return
 
         if (!audioManager.isHeadsetOn()) {
-            if (isCling) {
+            if (isNearToSensor) {
                 changeToReceiver()
             } else {
                 changeToSpeaker()
@@ -2608,7 +2615,7 @@ class ConversationFragment :
         override fun onRecordStart(audio: Boolean) {
             AudioPlayer.pause()
             OpusAudioRecorder.get(conversationId).startRecording(this@ConversationFragment)
-            if (!isCling) {
+            if (!isNearToSensor) {
                 if (!aodWakeLock.isHeld) {
                     aodWakeLock.acquire()
                 }
@@ -2621,14 +2628,14 @@ class ConversationFragment :
 
         override fun onRecordEnd() {
             OpusAudioRecorder.get(conversationId).stopRecording(true)
-            if (!isCling && aodWakeLock.isHeld) {
+            if (!isNearToSensor && aodWakeLock.isHeld) {
                 aodWakeLock.release()
             }
         }
 
         override fun onRecordCancel() {
             OpusAudioRecorder.get(conversationId).stopRecording(false)
-            if (!isCling && aodWakeLock.isHeld) {
+            if (!isNearToSensor && aodWakeLock.isHeld) {
                 aodWakeLock.release()
             }
         }
