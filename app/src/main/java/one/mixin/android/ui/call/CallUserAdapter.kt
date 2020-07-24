@@ -31,8 +31,8 @@ class CallUserAdapter(private val self: User) : ListAdapter<User, CallUserHolder
         val c = currentList.size
         if ((p <= 2 && c > 2) ||
             (p > 2 && c <= 2) ||
-            (p in 3..10 && c !in 3..10) ||
-            (p !in 3..10 && c in 3..10)
+            (p in 3..9 && c !in 3..9) ||
+            (p !in 3..9 && c in 3..9)
         ) {
             notifyDataSetChanged()
         }
