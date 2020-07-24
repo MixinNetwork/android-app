@@ -180,7 +180,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     var connectedTime: Long? = null
     var isOffer: Boolean = true
 
-    var restarting = false
+    var disconnected = false
         set(value) {
             if (field == value) return
 
@@ -212,7 +212,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         user = null
         connectedTime = null
         isOffer = true
-        restarting = false
+        disconnected = false
         audioEnable = true
         speakerEnable = false
         callType = CallType.None

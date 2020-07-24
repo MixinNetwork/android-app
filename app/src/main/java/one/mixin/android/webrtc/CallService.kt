@@ -32,7 +32,6 @@ import org.webrtc.StatsReport
 import timber.log.Timber
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
@@ -41,7 +40,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     protected val callExecutor = Executors.newSingleThreadExecutor()
     protected val timeoutExecutor = Executors.newScheduledThreadPool(1)
     protected var timeoutFuture: ScheduledFuture<*>? = null
-    private var restartFuture: ScheduledFuture<*>? = null
 
     protected val audioManager: CallAudioManager by lazy {
         CallAudioManager(this)
@@ -132,11 +130,9 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             stopForeground(true)
             audioManager.release()
             pipCallView.close()
-            callState.reset()
             peerConnectionClient.close()
             timeoutFuture?.cancel(true)
-
-            callState.state = CallState.STATE_IDLE
+            callState.reset()
 
             onCallDisconnected()
         }
@@ -159,9 +155,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         callExecutor.execute { handleConnected() }
     }
 
-    override fun onIceDisconnected() {
-    }
-
     override fun onDisconnected() {
     }
 
@@ -171,10 +164,9 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     override fun onPeerConnectionClosed() {
     }
 
-    override fun onIceFailed() {
+    override fun onIceDisconnected() {
         if (callState.isConnected()) {
-            callState.restarting = true
-            restartFuture = timeoutExecutor.schedule(RestartRunnable(), 60, TimeUnit.SECONDS)
+            callState.disconnected = true
         }
     }
 
@@ -193,11 +185,10 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             pipCallView.startTimer(connectedTime)
         }
         timeoutFuture?.cancel(true)
-        restartFuture?.cancel(true)
 
         peerConnectionClient.setAudioEnable(callState.audioEnable)
         peerConnectionClient.enableCommunication()
-        callState.restarting = false
+        callState.disconnected = false
     }
 
     private fun handleMuteAudio(intent: Intent) {

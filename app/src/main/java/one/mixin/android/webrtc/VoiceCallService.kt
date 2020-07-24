@@ -54,6 +54,7 @@ class VoiceCallService : CallService() {
 
         if (user?.userId == callState.user?.userId) {
             peerConnectionClient.createAnswer(
+                null,
                 getSdp(blazeMessageData.data.decodeBase64()),
                 setLocalSuccess = {
                     sendCallMessage(MessageCategory.WEBRTC_AUDIO_ANSWER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
@@ -154,7 +155,7 @@ class VoiceCallService : CallService() {
                     Timber.e("$TAG_CALL try answer a call, but blazeMessageData is null")
                     return@getTurnServer
                 }
-                peerConnectionClient.createAnswerWithIceServer(
+                peerConnectionClient.createAnswer(
                     turns, getSdp(bmd.data.decodeBase64()),
                     setLocalSuccess = {
                         sendCallMessage(MessageCategory.WEBRTC_AUDIO_ANSWER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
@@ -287,7 +288,6 @@ class VoiceCallService : CallService() {
     }
 
     override fun onIceFailed() {
-        super.onIceFailed()
         if (!callState.isConnected()) return
         if (!callState.isOffer) return
 

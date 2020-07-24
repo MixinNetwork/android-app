@@ -51,11 +51,15 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         createPeerConnectionFactoryInternal(options)
     }
 
-    fun createOffer(iceServerList: List<PeerConnection.IceServer>? = null, setLocalSuccess: ((sdp: SessionDescription) -> Unit), frameKey: ByteArray? = null) {
+    fun createOffer(
+        iceServerList: List<PeerConnection.IceServer>? = null,
+        setLocalSuccess: ((sdp: SessionDescription) -> Unit),
+        frameKey: ByteArray? = null
+    ) {
         if (iceServerList != null) {
             iceServers.addAll(iceServerList)
+            peerConnection = createPeerConnectionInternal(frameKey)
         }
-        peerConnection = createPeerConnectionInternal(frameKey)
         val offerSdpObserver = object : SdpObserverWrapper() {
             override fun onCreateSuccess(sdp: SessionDescription) {
                 peerConnection?.setLocalDescription(
@@ -84,8 +88,15 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         peerConnection?.createOffer(offerSdpObserver, sdpConstraint)
     }
 
-    fun createAnswer(remoteSdp: SessionDescription, setLocalSuccess: (sdp: SessionDescription) -> Unit) {
-        peerConnection = createPeerConnectionInternal()
+    fun createAnswer(
+        iceServerList: List<PeerConnection.IceServer>? = null,
+        remoteSdp: SessionDescription,
+        setLocalSuccess: (sdp: SessionDescription) -> Unit
+    ) {
+        if (iceServerList != null) {
+            iceServers.addAll(iceServerList)
+            peerConnection = createPeerConnectionInternal()
+        }
         peerConnection?.setRemoteDescription(remoteSdpObserver, remoteSdp)
         val answerSdpObserver = object : SdpObserverWrapper() {
             override fun onCreateSuccess(sdp: SessionDescription) {
@@ -109,15 +120,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         }
         sdpConstraint.mandatory.remove(restartConstraint)
         peerConnection?.createAnswer(answerSdpObserver, sdpConstraint)
-    }
-
-    fun createAnswerWithIceServer(
-        iceServerList: List<PeerConnection.IceServer>,
-        remoteSdp: SessionDescription,
-        setLocalSuccess: (sdp: SessionDescription) -> Unit
-    ) {
-        iceServers.addAll(iceServerList)
-        createAnswer(remoteSdp, setLocalSuccess)
     }
 
     fun addRemoteIceCandidate(candidate: IceCandidate) {
