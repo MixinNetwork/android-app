@@ -2540,7 +2540,7 @@ class ConversationFragment :
         if (wakeLock.isHeld) {
             wakeLock.release()
         }
-        resetAudioMode()
+        changeToSpeaker()
     }
 
     private fun changeToSpeaker() {
