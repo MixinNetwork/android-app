@@ -102,6 +102,7 @@ import one.mixin.android.extension.isHeadsetOn
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openMedia
@@ -1298,6 +1299,10 @@ class ConversationFragment :
             driver.isVisible = false
         }
         tap_join_view.setOnClickListener {
+            if (!requireContext().networkConnected()) {
+                toast(R.string.error_network)
+                return@setOnClickListener
+            }
             val isBusy = callState.isBusy(requireContext())
             if (isBusy) {
                 alertDialogBuilder()

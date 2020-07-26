@@ -118,6 +118,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         Timber.d("$TAG_CALL onDestroy")
         super.onDestroy()
         if (isDestroyed.compareAndSet(false, true)) {
+            Timber.d("$TAG_CALL real onDestroy")
             peerConnectionClient.release()
 
             onDestroyed()
@@ -127,6 +128,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     protected fun disconnect() {
         Timber.d("$TAG_CALL disconnect")
         if (isDisconnected.compareAndSet(false, true)) {
+            Timber.d("$TAG_CALL real disconnect")
             stopForeground(true)
             callState.reset()
             audioManager.release()
@@ -189,6 +191,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         peerConnectionClient.setAudioEnable(callState.audioEnable)
         peerConnectionClient.enableCommunication()
         callState.disconnected = false
+        callState.reconnecting = false
     }
 
     private fun handleMuteAudio(intent: Intent) {

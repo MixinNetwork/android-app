@@ -51,6 +51,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         createPeerConnectionFactoryInternal(options)
     }
 
+    @Synchronized
     fun createOffer(
         iceServerList: List<PeerConnection.IceServer>? = null,
         setLocalSuccess: ((sdp: SessionDescription) -> Unit),
@@ -58,6 +59,8 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     ) {
         if (iceServerList != null) {
             iceServers.addAll(iceServerList)
+        }
+        if (peerConnection == null) {
             peerConnection = createPeerConnectionInternal(frameKey)
         }
         val offerSdpObserver = object : SdpObserverWrapper() {
@@ -88,6 +91,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         peerConnection?.createOffer(offerSdpObserver, sdpConstraint)
     }
 
+    @Synchronized
     fun createAnswer(
         iceServerList: List<PeerConnection.IceServer>? = null,
         remoteSdp: SessionDescription,
@@ -154,6 +158,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         return peerConnection!!.localDescription != null
     }
 
+    @Synchronized
     fun close() {
         peerConnection?.dispose()
         peerConnection = null

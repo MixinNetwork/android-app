@@ -291,10 +291,11 @@ class VoiceCallService : CallService() {
     }
 
     override fun onIceFailed() {
-        if (!callState.isConnected()) return
+        if (!callState.isConnected() || callState.reconnecting) return
         if (!callState.isOffer) return
 
         callExecutor.execute {
+            callState.reconnecting = true
             peerConnectionClient.createOffer(
                 null,
                 setLocalSuccess = {

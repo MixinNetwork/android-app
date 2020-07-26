@@ -187,6 +187,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
             field = value
             postValue(state)
         }
+    var reconnecting = false
 
     var audioEnable = true
     var speakerEnable = false
@@ -213,6 +214,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         connectedTime = null
         isOffer = true
         disconnected = false
+        reconnecting = false
         audioEnable = true
         speakerEnable = false
         callType = CallType.None

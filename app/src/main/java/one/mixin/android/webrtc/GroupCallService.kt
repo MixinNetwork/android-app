@@ -58,6 +58,7 @@ import one.mixin.android.websocket.createListKrakenPeers
 import one.mixin.android.websocket.createSignalKeyMessage
 import one.mixin.android.websocket.createSignalKeyMessageParam
 import org.webrtc.IceCandidate
+import org.webrtc.PeerConnection
 import org.webrtc.SessionDescription
 import timber.log.Timber
 import java.util.UUID
@@ -141,52 +142,60 @@ class GroupCallService : CallService() {
         }
     }
 
-    @SuppressLint("AutoDispose")
-    private fun publish(conversationId: String) {
+    private fun publish(conversationId: String, getTurnServer: Boolean = true) {
         Timber.d("$TAG_CALL publish")
         if (callState.isIdle()) return
 
         callState.addUser(conversationId, self.userId)
-        getTurnServer { turns ->
-            checkSessionSenderKey(conversationId)
-            val key = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
-            peerConnectionClient.createOffer(
-                turns,
-                setLocalSuccess = {
-                    val blazeMessageParam = BlazeMessageParam(
-                        conversation_id = conversationId,
-                        category = MessageCategory.KRAKEN_PUBLISH.name,
-                        message_id = UUID.randomUUID().toString(),
-                        jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode()
-                    )
-                    val bm = createKrakenMessage(blazeMessageParam)
-                    val data = getBlazeMessageData(bm) ?: return@createOffer
-                    val krakenData = gson.fromJson(String(data.data.decodeBase64()), KrakenData::class.java)
-                    subscribe(krakenData, conversationId)
-                },
-                frameKey = key
-            )
-
-            disposable = RxBus.listen(SenderKeyChange::class.java)
-                .subscribe { event ->
-                    if (event.conversationId != conversationId) {
-                        return@subscribe
-                    }
-                    if (event.userId != null && event.sessionId != null) {
-                        val users = callState.getUsers(event.conversationId) ?: return@subscribe
-                        if (users.contains(event.userId)) {
-                            val frameKey = getSenderPublicKey(event.userId, event.sessionId) ?: return@subscribe
-                            peerConnectionClient.setReceiverFrameKey(event.userId, event.sessionId, frameKey)
-                        }
-                    } else if (event.userId != null) {
-                        checkSessionSenderKey(event.conversationId)
-                    } else {
-                        checkSessionSenderKey(conversationId)
-                        val frameKey = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
-                        peerConnectionClient.setSenderFrameKey(frameKey)
-                    }
-                }
+        if (getTurnServer) {
+            getTurnServer { turns ->
+                createOfferWithTurns(conversationId, turns)
+            }
+        } else {
+            createOfferWithTurns(conversationId)
         }
+    }
+
+    @SuppressLint("AutoDispose")
+    private fun createOfferWithTurns(conversationId: String, turns: List<PeerConnection.IceServer>? = null) {
+        checkSessionSenderKey(conversationId)
+        val key = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
+        peerConnectionClient.createOffer(
+            turns,
+            setLocalSuccess = {
+                val blazeMessageParam = BlazeMessageParam(
+                    conversation_id = conversationId,
+                    category = MessageCategory.KRAKEN_PUBLISH.name,
+                    message_id = UUID.randomUUID().toString(),
+                    jsep = gson.toJson(Sdp(it.description, it.type.canonicalForm())).base64Encode()
+                )
+                val bm = createKrakenMessage(blazeMessageParam)
+                val data = getBlazeMessageData(bm) ?: return@createOffer
+                val krakenData = gson.fromJson(String(data.data.decodeBase64()), KrakenData::class.java)
+                subscribe(krakenData, conversationId)
+            },
+            frameKey = key
+        )
+
+        disposable = RxBus.listen(SenderKeyChange::class.java)
+            .subscribe { event ->
+                if (event.conversationId != conversationId) {
+                    return@subscribe
+                }
+                if (event.userId != null && event.sessionId != null) {
+                    val users = callState.getUsers(event.conversationId) ?: return@subscribe
+                    if (users.contains(event.userId)) {
+                        val frameKey = getSenderPublicKey(event.userId, event.sessionId) ?: return@subscribe
+                        peerConnectionClient.setReceiverFrameKey(event.userId, event.sessionId, frameKey)
+                    }
+                } else if (event.userId != null) {
+                    checkSessionSenderKey(event.conversationId)
+                } else {
+                    checkSessionSenderKey(conversationId)
+                    val frameKey = signalProtocol.getSenderKeyPublic(conversationId, Session.getAccountId()!!)
+                    peerConnectionClient.setSenderFrameKey(frameKey)
+                }
+            }
     }
 
     private fun subscribe(data: KrakenData, conversationId: String) {
@@ -528,8 +537,8 @@ class GroupCallService : CallService() {
 
     @SuppressLint("AutoDispose")
     override fun onIceFailed() {
-        Timber.d("$TAG_CALL onIceFailed callState.isConnected(): ${callState.isConnected()}, disconnected: ${callState.disconnected}")
-        if (!callState.isConnected()) return
+        Timber.d("$TAG_CALL onIceFailed callState.isConnected(): ${callState.isConnected()}, disconnected: ${callState.disconnected}, reconnecting: ${callState.reconnecting}")
+        if (!callState.isConnected() || callState.reconnecting) return
 
         val conversationId = callState.conversationId
         if (conversationId == null) {
@@ -543,6 +552,7 @@ class GroupCallService : CallService() {
         }
 
         callExecutor.execute {
+            callState.reconnecting = true
             peerConnectionClient.createOffer(
                 null,
                 setLocalSuccess = {
@@ -665,7 +675,10 @@ class GroupCallService : CallService() {
                         }
                         disconnect()
                     } else {
-                        publish(cid)
+                        callExecutor.execute {
+                            peerConnectionClient.close()
+                            publish(cid, false)
+                        }
                     }
                     null
                 }
