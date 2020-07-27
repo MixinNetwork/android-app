@@ -42,7 +42,7 @@
             android:layout_gravity="end"
             android:layout_marginEnd="8dp"
             android:padding="8dp"
-            android:src="@drawable/ic_outinline"
+            android:src="@drawable/ic_pip"
             tools:ignore="ContentDescription" />
 
         <TextView

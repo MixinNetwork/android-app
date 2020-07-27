@@ -258,7 +258,7 @@ class PipVideoView {
         inlineButton = ImageView(activity).apply {
             scaleType = ImageView.ScaleType.CENTER
             visibility = GONE
-            setImageResource(R.drawable.ic_inline)
+            setImageResource(R.drawable.ic_pip_maximum)
             windowView.addView(
                 this,
                 FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END)
