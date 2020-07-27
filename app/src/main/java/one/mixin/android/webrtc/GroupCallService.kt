@@ -574,6 +574,7 @@ class GroupCallService : CallService() {
 
     override fun getSenderPublicKey(userId: String, sessionId: String): ByteArray? {
         callState.conversationId?.let {
+            callState.addUser(it, userId)
             return signalProtocol.getSenderKeyPublic(it, userId, sessionId)
         }
         return null
