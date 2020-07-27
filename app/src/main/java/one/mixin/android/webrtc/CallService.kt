@@ -118,6 +118,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         Timber.d("$TAG_CALL onDestroy")
         super.onDestroy()
         if (isDestroyed.compareAndSet(false, true)) {
+            Timber.d("$TAG_CALL real onDestroy")
             peerConnectionClient.release()
 
             onDestroyed()
@@ -127,14 +128,13 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     protected fun disconnect() {
         Timber.d("$TAG_CALL disconnect")
         if (isDisconnected.compareAndSet(false, true)) {
+            Timber.d("$TAG_CALL real disconnect")
             stopForeground(true)
+            callState.reset()
             audioManager.release()
             pipCallView.close()
-            callState.reset()
             peerConnectionClient.close()
             timeoutFuture?.cancel(true)
-
-            callState.state = CallState.STATE_IDLE
 
             onCallDisconnected()
         }
@@ -145,6 +145,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     abstract fun onDestroyed()
     abstract fun onTimeout()
     abstract fun onTurnServerError()
+    abstract fun handleLocalEnd()
 
     override fun onIceCandidatesRemoved(candidates: Array<IceCandidate>) {
     }
@@ -156,7 +157,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         callExecutor.execute { handleConnected() }
     }
 
-    override fun onIceDisconnected() {
+    override fun onDisconnected() {
     }
 
     override fun onPeerConnectionStatsReady(reports: Array<StatsReport>) {
@@ -165,20 +166,32 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     override fun onPeerConnectionClosed() {
     }
 
-    private fun handleConnected() {
-        if (callState.isConnected() || callState.isIdle()) return
+    override fun onIceDisconnected() {
+        if (callState.isConnected()) {
+            callState.disconnected = true
+        }
+    }
 
-        val connectedTime = System.currentTimeMillis()
-        callState.connectedTime = connectedTime
-        callState.state = CallState.STATE_CONNECTED
-        updateForegroundNotification()
+    private fun handleConnected() {
+        Timber.d("$TAG_CALL callState: ${callState.state}")
+        if (callState.isIdle()) return
+
+        val refreshState = !callState.isConnected()
+        if (refreshState) {
+            val connectedTime = System.currentTimeMillis()
+            callState.connectedTime = connectedTime
+            callState.state = CallState.STATE_CONNECTED
+            updateForegroundNotification()
+            vibrate(longArrayOf(0, 30))
+            audioManager.stop()
+            pipCallView.startTimer(connectedTime)
+        }
         timeoutFuture?.cancel(true)
-        vibrate(longArrayOf(0, 30))
-        audioManager.stop()
+
         peerConnectionClient.setAudioEnable(callState.audioEnable)
         peerConnectionClient.enableCommunication()
-
-        pipCallView.startTimer(connectedTime)
+        callState.disconnected = false
+        callState.reconnecting = false
     }
 
     private fun handleMuteAudio(intent: Intent) {
@@ -203,6 +216,12 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         if (callState.isIdle() || callState.isConnected()) return
 
         onTimeout()
+    }
+
+    private fun handleCheckRestart() {
+        if (callState.isIdle()) return
+
+        handleLocalEnd()
     }
 
     protected fun updateForegroundNotification() {
@@ -267,6 +286,12 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     inner class TimeoutRunnable : Runnable {
         override fun run() {
             handleCheckTimeout()
+        }
+    }
+
+    inner class RestartRunnable : Runnable {
+        override fun run() {
+            handleCheckRestart()
         }
     }
 
