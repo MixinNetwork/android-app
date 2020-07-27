@@ -48,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:drawablePadding="3dp"
                 android:paddingEnd="6dp"
-                android:fontFamily="@font/sf_pro_light"
+                android:fontFamily="@font/roboto_light"
                 android:textColor="@color/white"
                 android:singleLine="true"
                 android:textSize="@dimen/chat_date_size"

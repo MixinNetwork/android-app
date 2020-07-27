@@ -450,7 +450,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     private fun getAmountView() = contentView.amount_et
     private val paint by lazy {
         TextPaint().apply {
-            typeface = ResourcesCompat.getFont(requireContext(), R.font.sf_pro_regular)
+            typeface = ResourcesCompat.getFont(requireContext(), R.font.roboto_regular)
             textSize = 14.sp.toFloat()
         }
     }

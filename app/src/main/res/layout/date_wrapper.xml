@@ -26,7 +26,7 @@
             android:id="@+id/chat_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/sf_pro_light"
+            android:fontFamily="@font/roboto_light"
             android:gravity="bottom"
             android:textColor="@color/color_chat_date"
             android:textSize="@dimen/chat_date_size"

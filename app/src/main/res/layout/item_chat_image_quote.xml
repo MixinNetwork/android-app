@@ -90,7 +90,7 @@
                 android:layout_gravity="bottom|end"
                 android:background="@drawable/bg_bubble_shadow"
                 android:drawablePadding="3dp"
-                android:fontFamily="@font/sf_pro_light"
+                android:fontFamily="@font/roboto_light"
                 android:gravity="end|bottom"
                 android:textColor="@color/white"
                 android:textSize="@dimen/chat_date_size"
