@@ -196,19 +196,22 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             context?.mainThread {
                 header.percent_view.setPercents(list)
             }
-
-            when (list.size) {
-                1 -> {
+            when {
+                list.size == 1 -> {
                     val p = list[0]
                     addItem(PercentView.PercentItem(p.name, 1f), 0)
                 }
-                2 -> {
+                list.size == 2 -> {
                     addItem(list[0], 0)
                     val p1 = list[1]
                     val newP1 = PercentView.PercentItem(p1.name, 1 - list[0].percent)
                     addItem(newP1, 1)
                 }
-                3 -> {
+                list[1].percent < 0.01f && list[1].percent > 0f -> {
+                    addItem(list[0], 0)
+                    addItem(PercentView.PercentItem(getString(R.string.other), 0.01f), 1)
+                }
+                list.size == 3 -> {
                     addItem(list[0], 0)
                     addItem(list[1], 1)
                     val p2 = list[2]
@@ -249,9 +252,9 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         }
     }
 
-    private fun addItem(p: PercentView.PercentItem, i: Int) {
+    private fun addItem(p: PercentView.PercentItem, index: Int) {
         val item = PercentItemView(requireContext())
-        item.setPercentItem(p, i)
+        item.setPercentItem(p, index)
         header.pie_item_container.addView(item)
     }
 
