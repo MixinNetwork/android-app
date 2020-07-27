@@ -8,7 +8,7 @@
             android:id="@+id/title_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/sf_pro_light"
+            android:fontFamily="@font/roboto_light"
             android:drawableStart="@drawable/ic_qr_code_preview"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"

@@ -111,7 +111,7 @@
                 android:layout_marginEnd="4dp"
                 android:layout_marginBottom="4dp"
                 android:drawablePadding="3dp"
-                android:fontFamily="@font/sf_pro_light"
+                android:fontFamily="@font/roboto_light"
                 android:gravity="end|bottom"
                 android:textColor="@color/color_chat_date"
                 android:textSize="@dimen/chat_date_size"

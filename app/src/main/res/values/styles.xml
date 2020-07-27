@@ -8,7 +8,7 @@
         <item name="colorAccent">?attr/color_accent</item>
         <item name="colorSurface">?attr/color_primary</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:fontFamily">@font/sf_pro_regular</item>
+        <item name="android:fontFamily">@font/roboto_regular</item>
         <item name="android:windowBackground">?attr/colorPrimary</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:textColorHighlight">@color/blue_highlight</item>
