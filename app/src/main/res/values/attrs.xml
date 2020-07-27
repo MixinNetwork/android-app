@@ -119,15 +119,4 @@
     <declare-styleable name="PlayerView">
         <attr name="use_controller" format="boolean"/>
     </declare-styleable>
-    <declare-styleable name="DotsProgressIndicator">
-        <attr name="dotsMode" format="enum">
-            <enum name="bestFit" value="0" />
-            <enum name="setSize" value="1" />
-        </attr>
-        <attr name="dotsSpacing" format="dimension" />
-        <attr name="dotsDiameter" format="dimension" />
-        <attr name="dotColors" format="reference" />
-        <attr name="numberOfDots" format="integer" />
-        <attr name="visibilityChangeDelay" format="integer" />
-    </declare-styleable>
 </resources>

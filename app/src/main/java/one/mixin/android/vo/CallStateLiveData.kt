@@ -29,6 +29,7 @@ data class GroupCallState(
     var inviter: String? = null
     var users: List<GroupCallUser>? = null
 
+    @Synchronized
     fun userIds(): List<String>? {
         if (users.isNullOrEmpty()) return null
 
@@ -37,6 +38,7 @@ data class GroupCallState(
         return ids
     }
 
+    @Synchronized
     fun pendingUserIds(): List<String>? {
         if (users.isNullOrEmpty()) return null
 
@@ -46,19 +48,12 @@ data class GroupCallState(
         return ids
     }
 
-    fun joinedUserIds(): List<String>? {
-        if (users.isNullOrEmpty()) return null
-
-        val ids = mutableListOf<String>()
-        users?.filter { it.type == GroupCallUser.Type.Joined }
-            ?.mapTo(ids) { it.id }
-        return ids
-    }
-
+    @Synchronized
     fun addJoinedUser(inUser: String) {
         addUserToList(inUser, GroupCallUser.Type.Joined)
     }
 
+    @Synchronized
     fun removeUser(inUser: String) {
         if (users.isNullOrEmpty()) return
 
@@ -74,10 +69,7 @@ data class GroupCallState(
         users = us
     }
 
-    fun addJoinedUsers(inUsers: List<String>) {
-        addUsersToList(inUsers, GroupCallUser.Type.Joined)
-    }
-
+    @Synchronized
     fun setJoinedUsers(joinedUsers: List<String>) {
         val us = mutableListOf<GroupCallUser>().apply {
             users?.let { addAll(it) }
@@ -107,12 +99,7 @@ data class GroupCallState(
         addUsersToList(pendingUsers, GroupCallUser.Type.Pending)
     }
 
-    fun pending2Joined(userId: String) {
-        val u = findUser(userId) ?: return
-
-        u.type = GroupCallUser.Type.Joined
-    }
-
+    @Synchronized
     fun clearPendingUsers() {
         val us = users
         if (us.isNullOrEmpty()) return
@@ -126,6 +113,7 @@ data class GroupCallState(
         users = newUsers
     }
 
+    @Synchronized
     private fun addUserToList(userId: String, type: GroupCallUser.Type) {
         val us = mutableListOf<GroupCallUser>().apply {
             users?.let { addAll(it) }
@@ -134,6 +122,7 @@ data class GroupCallState(
         users = us
     }
 
+    @Synchronized
     private fun addUsersToList(userIds: List<String>, type: GroupCallUser.Type) {
         val us = mutableListOf<GroupCallUser>().apply {
             users?.let { addAll(it) }
@@ -144,6 +133,7 @@ data class GroupCallState(
         users = us
     }
 
+    @Synchronized
     private fun changeOrAnd(us: MutableList<GroupCallUser>, id: String, type: GroupCallUser.Type) {
         val existsUser = us.find { u -> u.id == id }
         if (existsUser == null) {
@@ -153,12 +143,6 @@ data class GroupCallState(
                 existsUser.type = type
             }
         }
-    }
-
-    private fun findUser(userId: String): GroupCallUser? {
-        if (users.isNullOrEmpty()) return null
-
-        return users?.find { u -> u.id == userId }
     }
 }
 
