@@ -72,14 +72,13 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
         init()
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
-        AndroidThreeTen.init(this)
         Lingver.init(this)
         appComponent = AppInjector.init(this)
         RxJavaPlugins.setErrorHandler {}
     }
 
     private fun init() {
-        Bugsnag.init(this, BuildConfig.BUGSNAG_API_KEY)
+
         if (BuildConfig.DEBUG) {
             Stetho.initializeWithDefaults(this)
             Timber.plant(Timber.DebugTree())
