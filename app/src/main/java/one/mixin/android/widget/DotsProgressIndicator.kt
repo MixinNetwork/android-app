@@ -34,9 +34,9 @@ class DotsProgressIndicator : View {
     private var dotPadding: Float = 4f
     private var dotDiameter = 0F
 
-    private lateinit var bitmaps: Array<Bitmap>
-    private lateinit var canvases: Array<Canvas>
-    private lateinit var offsets: Array<Int>
+    private var bitmaps: Array<Bitmap>? = null
+    private var canvases: Array<Canvas>? = null
+    private var offsets: Array<Int>? = null
 
     private var anims: List<Animator>? = null
     private var set: AnimatorSet = AnimatorSet()
@@ -142,7 +142,7 @@ class DotsProgressIndicator : View {
             Bitmap.createBitmap(bmpWidth, bmpWidth, Bitmap.Config.ARGB_4444)
         }
         canvases = Array(dotCount) { i ->
-            val b = bitmaps[i]
+            val b = bitmaps!![i]
             val c = Canvas(b)
             val cx = BigDecimal(b.width).divide(BigDecimal(2)).toFloat()
             c.drawCircle(cx, cx, cx, paints[i])
@@ -194,12 +194,12 @@ class DotsProgressIndicator : View {
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        bitmaps.forEachIndexed { i, it ->
+        bitmaps?.forEachIndexed { i, it ->
             val space = dotPadding * i
             val xadd = (i * it.width)
             val x = viewStart.toFloat() + xadd + space
-            var y = (viewBottom - bitmaps[i].height).toFloat()
-            y -= offsets[i]
+            var y = (viewBottom - bitmaps!![i].height).toFloat()
+            y -= offsets!![i]
             canvas.drawBitmap(it, x, y, paints[i])
         }
     }
@@ -209,15 +209,15 @@ class DotsProgressIndicator : View {
             try {
                 // hack as some times the bitamaps
                 // are not ready when rendering
-                bitmaps[0].height
+                bitmaps!![0].height
             } catch (t: Throwable) {
                 return false
             }
             anims = List<Animator>(dotCount) { i ->
-                val h = bitmaps[0].height
+                val h = bitmaps!![0].height
                 val va = ValueAnimator.ofInt(viewTop, h, viewTop)
                 va.addUpdateListener {
-                    offsets[i] = it.animatedValue as Int
+                    offsets!![i] = it.animatedValue as Int
 //                    if (i == 0)
 //                        Log.d("DotsValueAnimInt", "Num = ${offsets[i]}")
                     invalidate()
