@@ -6,7 +6,9 @@ import android.webkit.CookieManager
 import android.webkit.WebStorage
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
+import androidx.startup.AppInitializer
 import androidx.work.Configuration
+import androidx.work.impl.WorkManagerInitializer
 import com.bugsnag.android.Bugsnag
 import com.facebook.stetho.Stetho
 import com.google.firebase.FirebaseApp
@@ -25,6 +27,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.startup.FirebaseAppInitializer
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.util.Session
@@ -67,17 +70,15 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
     override fun onCreate() {
         super.onCreate()
         init()
-        FirebaseApp.initializeApp(this)
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
-        AndroidThreeTen.init(this)
         Lingver.init(this)
         appComponent = AppInjector.init(this)
         RxJavaPlugins.setErrorHandler {}
     }
 
     private fun init() {
-        Bugsnag.init(this, BuildConfig.BUGSNAG_API_KEY)
+
         if (BuildConfig.DEBUG) {
             Stetho.initializeWithDefaults(this)
             Timber.plant(Timber.DebugTree())

@@ -259,6 +259,7 @@ dependencies {
     implementation "io.noties.markwon:ext-tasklist:${markwonVersion}"
     implementation "com.github.SandroMachado:BitcoinPaymentURI:${bitcoinPaymentURI}"
     implementation "com.caverock:androidsvg-aar:${svgVersion}"
+    implementation "androidx.startup:startup-runtime:${startupVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {
