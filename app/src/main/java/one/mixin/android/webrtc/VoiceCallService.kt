@@ -322,7 +322,7 @@ class VoiceCallService : CallService() {
                 if (callState.trackId == null) {
                     callState.trackId = messageId
                 }
-                createCallMessage(messageId, conversationId, self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name)
+                createCallMessage(messageId, conversationId, self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name, quoteMessageId)
             } else {
                 if (category == MessageCategory.WEBRTC_AUDIO_END.name) {
                     var connectedTime = callState.connectedTime
