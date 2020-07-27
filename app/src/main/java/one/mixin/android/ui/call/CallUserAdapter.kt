@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.item_call_user.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.inflate
+import one.mixin.android.extension.round
 import one.mixin.android.vo.User
 
 class CallUserAdapter(private val self: User) : ListAdapter<User, CallUserHolder>(User.DIFF_CALLBACK) {
@@ -54,7 +55,7 @@ class CallUserHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                 width = size
                 height = size
             }
-            connecting_view.updateLayoutParams<ViewGroup.LayoutParams> {
+            loading.updateLayoutParams<ViewGroup.LayoutParams> {
                 width = size
                 height = size
             }
@@ -63,8 +64,12 @@ class CallUserHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
                 height = size
             }
             avatar_view.setInfo(user.fullName, user.avatarUrl, user.userId)
+            loading.round(size)
+            loading.setAutoRepeat(true)
+            loading.setAnimation(R.raw.anim_call_loading, size, size)
+            loading.playAnimation()
             val vis = user.userId != self.userId && guestsNotConnected?.contains(user.userId) == true
-            connecting_view.isVisible = vis
+            loading.isVisible = vis
             cover.isVisible = vis
         }
     }

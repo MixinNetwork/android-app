@@ -34,18 +34,13 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
 
-    <one.mixin.android.widget.DotsProgressIndicator
-        android:id="@+id/connecting_view"
+    <one.mixin.android.widget.RLottieImageView
+        android:id="@+id/loading"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        app:numberOfDots="3"
-        app:dotsMode="setSize"
-        app:dotsDiameter="8dp"
-        app:dotsSpacing="2dp"
-        app:visibilityChangeDelay="0"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
