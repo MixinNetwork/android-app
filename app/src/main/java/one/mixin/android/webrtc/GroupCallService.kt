@@ -693,7 +693,14 @@ class GroupCallService : CallService() {
         return bm
     }
 
+    @Synchronized
     private fun checkSchedules(conversationId: String) {
+        Timber.d("$TAG_CALL checkSchedules reconnecting: ${callState.reconnecting}")
+        if (callState.reconnecting) {
+            callState.clearUsersKeepSelf(conversationId)
+            return
+        }
+
         callState.removeGroupCallState(conversationId)
         val listFuture = scheduledFutures.remove(conversationId)
         listFuture?.cancel(true)

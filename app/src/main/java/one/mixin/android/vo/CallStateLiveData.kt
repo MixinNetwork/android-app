@@ -285,6 +285,16 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         postValue(state)
     }
 
+    @Synchronized
+    fun clearUsersKeepSelf(conversationId: String) {
+        val groupCallState = groupCallStates.find {
+            it.conversationId == conversationId
+        } ?: return
+        groupCallState.users = listOf(GroupCallUser(Session.getAccountId()!!, GroupCallUser.Type.Joined))
+
+        postValue(state)
+    }
+
     fun clearPendingUsers(conversationId: String) {
         val groupCallState = groupCallStates.find {
             it.conversationId == conversationId
@@ -299,11 +309,23 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         return groupCallState.pendingUserIds()
     }
 
+    @Synchronized
     fun setUsersByConversationId(conversationId: String, newUsers: List<String>?) {
         if (newUsers.isNullOrEmpty()) return
 
         val groupCallState = addGroupCallState(conversationId)
-        groupCallState.setJoinedUsers(newUsers)
+
+        val self = Session.getAccountId()!!
+        if (reconnecting && !newUsers.contains(self)) {
+            groupCallState.setJoinedUsers(
+                mutableListOf<String>().apply {
+                    add(self)
+                    addAll(newUsers)
+                }
+            )
+        } else {
+            groupCallState.setJoinedUsers(newUsers)
+        }
 
         postValue(state)
     }
