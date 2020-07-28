@@ -15,6 +15,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.View;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -295,9 +296,11 @@ public class RLottieDrawable extends BitmapDrawable implements Animatable {
         width = w;
         height = h;
         autoRepeat = 0;
-        String jsonString = readRes(rawRes);
-        if (TextUtils.isEmpty(jsonString)) {
-            return;
+        String jsonString = null;
+        try {
+            jsonString = readResource(MixinApplication.appContext.getResources().openRawResource(rawRes));
+        } catch (Throwable e) {
+            Timber.e(e);
         }
         getPaint().setFlags(Paint.FILTER_BITMAP_FLAG);
         nativePtr = createWithJson(jsonString, name, metaData, colorReplacement);
@@ -307,14 +310,33 @@ public class RLottieDrawable extends BitmapDrawable implements Animatable {
         }
     }
 
-    private String readRes(int rawRes) {
+    public RLottieDrawable(String assetsName, String name, int w, int h) {
+        width = w;
+        height = h;
+        autoRepeat = 0;
+        String jsonString = null;
+        try {
+            jsonString = readResource(MixinApplication.appContext.getResources().getAssets().open(assetsName));
+        } catch (IOException e) {
+            Timber.e(e);
+        }
+        if (TextUtils.isEmpty(jsonString)) {
+            return;
+        }
+        getPaint().setFlags(Paint.FILTER_BITMAP_FLAG);
+        nativePtr = createWithJson(jsonString, name, metaData, null);
+        timeBetweenFrames = Math.max(16, (int) (1000.0f / metaData[1]));
+        setAllowDecodeSingleFrame(true);
+    }
+
+    private String readResource(InputStream inputStream) {
         int totalRead = 0;
         byte[] readBuffer = readBufferLocal.get();
         if (readBuffer == null) {
             readBuffer = new byte[64 * 1024];
             readBufferLocal.set(readBuffer);
         }
-        try (InputStream inputStream = MixinApplication.appContext.getResources().openRawResource(rawRes)) {
+        try {
             int readLen;
             byte[] buffer = bufferLocal.get();
             if (buffer == null) {

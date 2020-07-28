@@ -66,7 +66,7 @@ class CallUserHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             avatar_view.setInfo(user.fullName, user.avatarUrl, user.userId)
             loading.round(size)
             loading.setAutoRepeat(true)
-            loading.setAnimation(R.raw.anim_call_loading, size, size)
+            loading.setAnimation("anim_call_loading.json", size, size)
             loading.playAnimation()
             val vis = user.userId != self.userId && guestsNotConnected?.contains(user.userId) == true
             loading.isVisible = vis
