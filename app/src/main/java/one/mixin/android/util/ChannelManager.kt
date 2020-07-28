@@ -3,6 +3,7 @@ package one.mixin.android.util
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.ContentResolver
 import android.content.Context
 import android.media.AudioAttributes
 import android.net.Uri
@@ -25,7 +26,7 @@ class ChannelManager {
         const val CHANNEL_MESSAGE = "channel_message"
         private const val CHANNEL_CURRENT_VERSION = "channel_current_version"
         private const val CHANNEL_CURRENT_USER_VERSION = "channel_current_user_version"
-        private const val CHANNEL_VERSION = 0
+        private const val CHANNEL_VERSION = 1
 
         fun create(context: Context, channelVersion: Int) {
             supportsOreo {
@@ -37,7 +38,7 @@ class ChannelManager {
                     )
 
                 val uri =
-                    Uri.parse("android.resource://${context.packageName}/${R.raw.mixin}").toString()
+                    Uri.parse("${ContentResolver.SCHEME_ANDROID_RESOURCE}://${context.packageName}/raw/mixin").toString()
                 messageChannel.setSound(
                     Uri.parse(uri),
                     AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
