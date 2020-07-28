@@ -64,6 +64,11 @@ public class RLottieImageView extends ImageView {
         setAnimation(drawable);
     }
 
+    public void setAnimation(String assetsName, int w, int h) {
+        drawable = new RLottieDrawable(assetsName, assetsName, AndroidUtilities.dp(w), AndroidUtilities.dp(h));
+        setAnimation(drawable);
+    }
+
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
