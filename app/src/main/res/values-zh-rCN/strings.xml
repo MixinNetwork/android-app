@@ -204,6 +204,7 @@
     <string name="landing_verification_need_help">需要帮助？</string>
     <string name="landing_verification_cant_receive">接收不到验证码?</string>
     <string name="landing_verification_lost_mobile">手机丢失?</string>
+    <string name="landing_check_updates">检查新版本</string>
     <!--contacts-->
     <string name="contact_new_group_chat_title">新群聊</string>
     <string name="contact_new_group_chat_desc">创建一个最多支持 256 人的群</string>

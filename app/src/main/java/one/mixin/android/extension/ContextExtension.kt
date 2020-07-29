@@ -10,6 +10,7 @@ import android.content.Context
 import android.content.Context.CLIPBOARD_SERVICE
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.database.Cursor
 import android.graphics.BitmapFactory
@@ -44,6 +45,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.common.GooglePlayServicesUtil
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -725,4 +727,25 @@ fun Context.checkInlinePermissions(showAlert: () -> Unit): Boolean {
         showAlert()
     }
     return false
+}
+
+fun Context.isPlayStoreInstalled(): Boolean {
+    return try {
+        packageManager
+            .getPackageInfo(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE, 0)
+        true
+    } catch (e: PackageManager.NameNotFoundException) {
+        false
+    }
+}
+
+fun Context.openMarket() {
+    if (isPlayStoreInstalled()) {
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.data = Uri.parse("market://details?id=${BuildConfig.APPLICATION_ID}")
+        intent.setPackage(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE)
+        startActivity(intent)
+    } else {
+        openUrl(getString(R.string.website))
+    }
 }

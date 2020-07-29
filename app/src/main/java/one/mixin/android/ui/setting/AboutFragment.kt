@@ -8,6 +8,7 @@ import kotlinx.android.synthetic.main.fragment_about.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.common.BaseFragment
 
@@ -31,5 +32,6 @@ class AboutFragment : BaseFragment() {
         help_center.setOnClickListener { context?.openUrl(Constants.HelpLink.CENTER) }
         terms.setOnClickListener { context?.openUrl(getString(R.string.landing_terms_url)) }
         privacy.setOnClickListener { context?.openUrl(getString(R.string.landing_privacy_policy_url)) }
+        checkUpdates.setOnClickListener { context?.openMarket() }
     }
 }

@@ -118,6 +118,7 @@
     <string name="common_audio">Audio</string>
     <string name="common_sticker">Sticker</string>
     <string name="you">You</string>
+    <string name="website" translatable="false">https://mixin.one/messenger</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -217,6 +218,7 @@
     <string name="landing_verification_cant_receive">Can\'t receive code?</string>
     <string name="landing_verification_lost_mobile">Lost your mobile number?</string>
     <string name="landing_verification_tip_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
+    <string name="landing_check_updates">Check for Updates</string>
     <!--contacts-->
     <string name="contact_new_group_chat_title">New Group Chat</string>
     <string name="contact_new_group_chat_desc">Create a group chat with up to  friends</string>
