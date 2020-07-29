@@ -886,19 +886,18 @@ class GroupCallService : CallService() {
     private fun checkReconnectingTimeout() {
         if (callState.isIdle()) return
 
-        callState.reconnecting = true
         val conversationId = callState.conversationId
         if (conversationId == null) {
-            Timber.d("$TAG_CALL receive onIceFailed try restart but conversationId is null")
+            Timber.d("$TAG_CALL checkReconnectingTimeout but conversationId is null")
             disconnect()
             return
         }
+        callState.reconnecting = true
         publish(conversationId, false)
     }
 
     inner class ReconnectingTimeoutRunnable : Runnable {
         override fun run() {
-            Timber.d("$TAG_CALL ReconnectingTimeoutRunnable")
             checkReconnectingTimeout()
         }
     }
