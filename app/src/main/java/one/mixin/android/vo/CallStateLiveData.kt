@@ -316,7 +316,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
         val groupCallState = addGroupCallState(conversationId)
 
         val self = Session.getAccountId()!!
-        if (reconnecting && !newUsers.contains(self)) {
+        if (!isBeforeAnswering() && !newUsers.contains(self)) {
             groupCallState.setJoinedUsers(
                 mutableListOf<String>().apply {
                     add(self)
