@@ -274,7 +274,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                         call_cl.post { handleAnswering() }
                     }
                     CallService.CallState.STATE_CONNECTED -> {
-                        call_cl.post { handleConnected(false) }
+                        call_cl.post { handleConnected(callState.disconnected) }
                     }
                     CallService.CallState.STATE_BUSY -> {
                         call_cl.post { handleBusy() }
