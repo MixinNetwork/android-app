@@ -893,8 +893,10 @@ class GroupCallService : CallService() {
             return
         }
         callState.reconnecting = true
-        peerConnectionClient.close()
-        publish(conversationId, false)
+        callExecutor.execute {
+            peerConnectionClient.close()
+            publish(conversationId, false)
+        }
     }
 
     inner class ReconnectingTimeoutRunnable : Runnable {
