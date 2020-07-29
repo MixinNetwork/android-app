@@ -40,8 +40,10 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     private var audioSource: AudioSource? = null
     private var rtpSender: RtpSender? = null
     private val rtpReceivers = arrayMapOf<String, RtpReceiver>()
-    private val sdpConstraint = MediaConstraints()
+
     private val restartConstraint = MediaConstraints.KeyValuePair("IceRestart", "true")
+    private val offerReceiveAudioConstraint = MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true")
+    private val offerReceiveVideoConstraint = MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false")
 
     fun createPeerConnectionFactory(options: PeerConnectionFactory.Options) {
         if (factory != null) {
@@ -57,8 +59,11 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         frameKey: ByteArray? = null,
         doWhenSetFailure: (() -> Unit)? = null
     ) {
+        val sdpConstraint = createMediaConstraint()
         if (iceServerList != null) {
             iceServers.addAll(iceServerList)
+        } else {
+            sdpConstraint.mandatory.add(restartConstraint)
         }
         if (peerConnection == null) {
             peerConnection = createPeerConnectionInternal(frameKey)
@@ -117,11 +122,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 Timber.d("$TAG_CALL createOffer onSetSuccess")
             }
         }
-        if (iceServerList == null) {
-            sdpConstraint.mandatory.add(restartConstraint)
-        } else {
-            sdpConstraint.mandatory.remove(restartConstraint)
-        }
         peerConnection?.createOffer(offerSdpObserver, sdpConstraint)
     }
 
@@ -131,6 +131,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         setLocalSuccess: (sdp: SessionDescription) -> Unit,
         doWhenSetFailure: (() -> Unit)? = null
     ) {
+        val sdpConstraint = createMediaConstraint()
         if (iceServerList != null) {
             iceServers.addAll(iceServerList)
         }
@@ -225,7 +226,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
             }
         }
-        sdpConstraint.mandatory.remove(restartConstraint)
         peerConnection?.createAnswer(answerSdpObserver, sdpConstraint)
     }
 
@@ -383,9 +383,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         factory = PeerConnectionFactory.builder()
             .setOptions(options)
             .createPeerConnectionFactory()
-
-        sdpConstraint.mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"))
-        sdpConstraint.mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false"))
     }
 
     private fun createAudioTrack(): AudioTrack {
@@ -393,6 +390,11 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         audioTrack = factory!!.createAudioTrack(AUDIO_TRACK_ID, audioSource)
         audioTrack!!.setEnabled(true)
         return audioTrack!!
+    }
+
+    private fun createMediaConstraint() = MediaConstraints().apply {
+        mandatory.add(offerReceiveAudioConstraint)
+        mandatory.add(offerReceiveVideoConstraint)
     }
 
     private inner class PCObserver() : PeerConnection.Observer {

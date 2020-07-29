@@ -893,6 +893,7 @@ class GroupCallService : CallService() {
             return
         }
         callState.reconnecting = true
+        peerConnectionClient.close()
         publish(conversationId, false)
     }
 
