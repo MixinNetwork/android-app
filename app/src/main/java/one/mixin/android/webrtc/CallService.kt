@@ -218,12 +218,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         onTimeout()
     }
 
-    private fun handleCheckRestart() {
-        if (callState.isIdle()) return
-
-        handleLocalEnd()
-    }
-
     protected fun updateForegroundNotification() {
         if (isDisconnected.get() || isDestroyed.get()) return
 
@@ -286,12 +280,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     inner class TimeoutRunnable : Runnable {
         override fun run() {
             handleCheckTimeout()
-        }
-    }
-
-    inner class RestartRunnable : Runnable {
-        override fun run() {
-            handleCheckRestart()
         }
     }
 

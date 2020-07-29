@@ -332,12 +332,16 @@ class PipCallView {
     @Keep
     fun setX(value: Int) {
         windowLayoutParams.x = value
-        windowManager.updateViewLayout(windowView, windowLayoutParams)
+        windowView?.let {
+            windowManager.updateViewLayout(it, windowLayoutParams)
+        }
     }
 
     @Keep
     fun setY(value: Int) {
         windowLayoutParams.y = value
-        windowManager.updateViewLayout(windowView, windowLayoutParams)
+        windowView?.let {
+            windowManager.updateViewLayout(it, windowLayoutParams)
+        }
     }
 }

@@ -51,11 +51,11 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         createPeerConnectionFactoryInternal(options)
     }
 
-    @Synchronized
     fun createOffer(
         iceServerList: List<PeerConnection.IceServer>? = null,
         setLocalSuccess: ((sdp: SessionDescription) -> Unit),
-        frameKey: ByteArray? = null
+        frameKey: ByteArray? = null,
+        doWhenSetFailure: (() -> Unit)? = null
     ) {
         if (iceServerList != null) {
             iceServers.addAll(iceServerList)
@@ -68,7 +68,12 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 peerConnection?.setLocalDescription(
                     object : SdpObserverWrapper() {
                         override fun onSetFailure(error: String?) {
-                            reportError("createOffer setLocalSdp onSetFailure error: $error")
+                            if (doWhenSetFailure != null) {
+                                Timber.d("$TAG_CALL createOffer setLocalSdp onSetSuccess")
+                                doWhenSetFailure.invoke()
+                            } else {
+                                reportError("createOffer setLocalSdp onSetFailure error: $error")
+                            }
                         }
                         override fun onSetSuccess() {
                             Timber.d("$TAG_CALL createOffer setLocalSdp onSetSuccess")
@@ -80,7 +85,25 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             }
 
             override fun onCreateFailure(error: String?) {
-                reportError("createOffer onCreateFailure error: $error")
+                if (doWhenSetFailure != null) {
+                    Timber.d("$TAG_CALL createOffer onCreateFailure error: $error")
+                    doWhenSetFailure.invoke()
+                } else {
+                    reportError("createOffer onCreateFailure error: $error")
+                }
+            }
+
+            override fun onSetFailure(error: String?) {
+                if (doWhenSetFailure != null) {
+                    Timber.d("$TAG_CALL createOffer onSetFailure error: $error")
+                    doWhenSetFailure.invoke()
+                } else {
+                    reportError("createOffer onSetFailure error: $error")
+                }
+            }
+
+            override fun onSetSuccess() {
+                Timber.d("$TAG_CALL createOffer onSetSuccess")
             }
         }
         if (iceServerList == null) {
@@ -91,23 +114,63 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         peerConnection?.createOffer(offerSdpObserver, sdpConstraint)
     }
 
-    @Synchronized
     fun createAnswer(
         iceServerList: List<PeerConnection.IceServer>? = null,
         remoteSdp: SessionDescription,
-        setLocalSuccess: (sdp: SessionDescription) -> Unit
+        setLocalSuccess: (sdp: SessionDescription) -> Unit,
+        doWhenSetFailure: (() -> Unit)? = null
     ) {
         if (iceServerList != null) {
             iceServers.addAll(iceServerList)
+        }
+        if (peerConnection == null) {
             peerConnection = createPeerConnectionInternal()
         }
-        peerConnection?.setRemoteDescription(remoteSdpObserver, remoteSdp)
+        peerConnection?.setRemoteDescription(
+            object : SdpObserverWrapper() {
+                override fun onCreateSuccess(sdp: SessionDescription) {
+                    Timber.d("$TAG_CALL createAnswer setRemoteSdp onCreateSuccess")
+                }
+
+                override fun onCreateFailure(error: String?) {
+                    if (doWhenSetFailure != null) {
+                        Timber.d("$TAG_CALL createAnswer onCreateFailure error: $error")
+                        doWhenSetFailure.invoke()
+                    } else {
+                        reportError("createAnswer onCreateFailure error: $error")
+                    }
+                }
+
+                override fun onSetFailure(error: String?) {
+                    if (doWhenSetFailure != null) {
+                        Timber.d("$TAG_CALL createAnswer setRemoteSdp onSetFailure error: $error")
+                        doWhenSetFailure.invoke()
+                    } else {
+                        reportError("createAnswer setRemoteSdp onSetFailure error: $error")
+                    }
+                }
+
+                override fun onSetSuccess() {
+                    Timber.d("$TAG_CALL createAnswer setRemoteSdp onSetSuccess remoteCandidateCache: ${remoteCandidateCache.size}")
+                    remoteCandidateCache.forEach {
+                        peerConnection?.addIceCandidate(it)
+                    }
+                    remoteCandidateCache.clear()
+                }
+            },
+            remoteSdp
+        )
         val answerSdpObserver = object : SdpObserverWrapper() {
             override fun onCreateSuccess(sdp: SessionDescription) {
                 peerConnection?.setLocalDescription(
                     object : SdpObserverWrapper() {
                         override fun onSetFailure(error: String?) {
-                            reportError("createAnswer setLocalSdp onSetFailure error: $error")
+                            if (doWhenSetFailure != null) {
+                                Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
+                                doWhenSetFailure.invoke()
+                            } else {
+                                reportError("createAnswer setLocalSdp onSetFailure error: $error")
+                            }
                         }
                         override fun onSetSuccess() {
                             Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
@@ -119,7 +182,25 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
             }
 
             override fun onCreateFailure(error: String?) {
-                reportError("createAnswer onCreateFailure error: $error")
+                if (doWhenSetFailure != null) {
+                    Timber.d("$TAG_CALL createAnswer setLocalSdp onCreateFailure error: $error")
+                    doWhenSetFailure.invoke()
+                } else {
+                    reportError("createAnswer setLocalSdp onCreateFailure error: $error")
+                }
+            }
+
+            override fun onSetFailure(error: String?) {
+                if (doWhenSetFailure != null) {
+                    Timber.d("$TAG_CALL createAnswer setLocalSdp onSetFailure error: $error")
+                    doWhenSetFailure.invoke()
+                } else {
+                    reportError("createAnswer setLocalSdp onSetFailure error: $error")
+                }
+            }
+
+            override fun onSetSuccess() {
+                Timber.d("$TAG_CALL createAnswer setLocalSdp onSetSuccess")
             }
         }
         sdpConstraint.mandatory.remove(restartConstraint)
@@ -135,8 +216,44 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         }
     }
 
-    fun setAnswerSdp(sdp: SessionDescription) {
-        peerConnection?.setRemoteDescription(remoteSdpObserver, sdp)
+    fun setAnswerSdp(
+        sdp: SessionDescription,
+        doWhenSetFailure: (() -> Unit)? = null
+    ) {
+        peerConnection?.setRemoteDescription(
+            object : SdpObserverWrapper() {
+                override fun onCreateSuccess(sdp: SessionDescription) {
+                    Timber.d("$TAG_CALL setAnswerSdp setRemoteSdp onCreateSuccess")
+                }
+
+                override fun onCreateFailure(error: String?) {
+                    if (doWhenSetFailure != null) {
+                        Timber.d("$TAG_CALL setAnswerSdp setRemoteSdp onCreateFailure error: $error")
+                        doWhenSetFailure.invoke()
+                    } else {
+                        reportError("setAnswerSdp setRemoteSdp onCreateFailure error: $error")
+                    }
+                }
+
+                override fun onSetFailure(error: String?) {
+                    if (doWhenSetFailure != null) {
+                        Timber.d("$TAG_CALL setAnswerSdp setRemoteSdp onSetFailure error: $error")
+                        doWhenSetFailure.invoke()
+                    } else {
+                        reportError("setAnswerSdp setRemoteSdp onSetFailure error: $error")
+                    }
+                }
+
+                override fun onSetSuccess() {
+                    Timber.d("$TAG_CALL setAnswerSdp setRemoteSdp onSetSuccess remoteCandidateCache: ${remoteCandidateCache.size}")
+                    remoteCandidateCache.forEach {
+                        peerConnection?.addIceCandidate(it)
+                    }
+                    remoteCandidateCache.clear()
+                }
+            },
+            sdp
+        )
     }
 
     fun setAudioEnable(enable: Boolean) {
@@ -158,7 +275,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         return peerConnection!!.localDescription != null
     }
 
-    @Synchronized
     fun close() {
         peerConnection?.dispose()
         peerConnection = null
@@ -257,20 +373,6 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         return audioTrack!!
     }
 
-    private val remoteSdpObserver = object : SdpObserverWrapper() {
-        override fun onSetFailure(error: String?) {
-            reportError("setRemoteSdp onSetFailure error: $error")
-        }
-
-        override fun onSetSuccess() {
-            Timber.d("$TAG_CALL setRemoteSdp onSetSuccess remoteCandidateCache: ${remoteCandidateCache.size}")
-            remoteCandidateCache.forEach {
-                peerConnection?.addIceCandidate(it)
-            }
-            remoteCandidateCache.clear()
-        }
-    }
-
     private inner class PCObserver() : PeerConnection.Observer {
 
         override fun onIceCandidate(candidate: IceCandidate) {
@@ -321,6 +423,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         }
 
         override fun onRenegotiationNeeded() {
+            Timber.d("$TAG_CALL onRenegotiationNeeded")
         }
 
         override fun onTrack(transceiver: RtpTransceiver?) {

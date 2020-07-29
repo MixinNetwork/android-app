@@ -71,6 +71,7 @@ class GroupCallService : CallService() {
 
     private val scheduledExecutors = Executors.newScheduledThreadPool(1)
     private val scheduledFutures = mutableMapOf<String, ScheduledFuture<*>>()
+    private var reconnectingTimeoutFuture: ScheduledFuture<*>? = null
 
     @Inject
     lateinit var chatWebSocket: ChatWebSocket
@@ -143,7 +144,7 @@ class GroupCallService : CallService() {
     }
 
     private fun publish(conversationId: String, getTurnServer: Boolean = true) {
-        Timber.d("$TAG_CALL publish")
+        Timber.d("$TAG_CALL publish getTurnServer: $getTurnServer")
         if (callState.isIdle()) return
 
         callState.addUser(conversationId, self.userId)
@@ -152,6 +153,9 @@ class GroupCallService : CallService() {
                 createOfferWithTurns(conversationId, turns)
             }
         } else {
+            reconnectingTimeoutFuture?.cancel(true)
+            reconnectingTimeoutFuture = timeoutExecutor.schedule(ReconnectingTimeoutRunnable(), 30, TimeUnit.SECONDS)
+
             createOfferWithTurns(conversationId)
         }
     }
@@ -174,7 +178,10 @@ class GroupCallService : CallService() {
                 val krakenData = gson.fromJson(String(data.data.decodeBase64()), KrakenData::class.java)
                 subscribe(krakenData, conversationId)
             },
-            frameKey = key
+            frameKey = key,
+            doWhenSetFailure = {
+                publish(conversationId, false)
+            }
         )
 
         disposable = RxBus.listen(SenderKeyChange::class.java)
@@ -244,6 +251,9 @@ class GroupCallService : CallService() {
                     val bm = createKrakenMessage(blazeMessageParam)
                     val data = webSocketChannel(bm) ?: return@createAnswer
                     Timber.d("$TAG_CALL answer data: $data")
+                },
+                doWhenSetFailure = {
+                    publish(conversationId, false)
                 }
             )
         }
@@ -521,6 +531,13 @@ class GroupCallService : CallService() {
         cid?.let { checkConversationUserCount(cid) }
     }
 
+    override fun onConnected() {
+        super.onConnected()
+        callExecutor.execute {
+            reconnectingTimeoutFuture?.cancel(true)
+        }
+    }
+
     override fun onPeerConnectionError(description: String) {
         callExecutor.execute { handleLocalEnd() }
     }
@@ -543,16 +560,21 @@ class GroupCallService : CallService() {
         val conversationId = callState.conversationId
         if (conversationId == null) {
             Timber.d("$TAG_CALL receive onIceFailed try restart but conversationId is null")
+            disconnect()
             return
         }
         val trackId = callState.trackId
         if (trackId == null) {
             Timber.d("$TAG_CALL receive onIceFailed try restart but trackId is null")
+            disconnect()
             return
         }
 
         callExecutor.execute {
             callState.reconnecting = true
+            reconnectingTimeoutFuture?.cancel(true)
+            reconnectingTimeoutFuture = timeoutExecutor.schedule(ReconnectingTimeoutRunnable(), 30, TimeUnit.SECONDS)
+
             peerConnectionClient.createOffer(
                 null,
                 setLocalSuccess = {
@@ -567,6 +589,9 @@ class GroupCallService : CallService() {
                     val data = getBlazeMessageData(bm) ?: return@createOffer
                     val krakenData = gson.fromJson(String(data.data.decodeBase64()), KrakenData::class.java)
                     subscribe(krakenData, conversationId)
+                },
+                doWhenSetFailure = {
+                    publish(conversationId)
                 }
             )
         }
@@ -696,7 +721,7 @@ class GroupCallService : CallService() {
     @Synchronized
     private fun checkSchedules(conversationId: String) {
         Timber.d("$TAG_CALL checkSchedules reconnecting: ${callState.reconnecting}")
-        if (callState.reconnecting) {
+        if (!callState.isBeforeAnswering()) {
             callState.clearUsersKeepSelf(conversationId)
             return
         }
@@ -856,6 +881,26 @@ class GroupCallService : CallService() {
             mediaDuration = duration
         )
         database.insertAndNotifyConversation(message)
+    }
+
+    private fun checkReconnectingTimeout() {
+        if (callState.isIdle()) return
+
+        callState.reconnecting = true
+        val conversationId = callState.conversationId
+        if (conversationId == null) {
+            Timber.d("$TAG_CALL receive onIceFailed try restart but conversationId is null")
+            disconnect()
+            return
+        }
+        publish(conversationId, false)
+    }
+
+    inner class ReconnectingTimeoutRunnable : Runnable {
+        override fun run() {
+            Timber.d("$TAG_CALL ReconnectingTimeoutRunnable")
+            checkReconnectingTimeout()
+        }
     }
 
     companion object {
