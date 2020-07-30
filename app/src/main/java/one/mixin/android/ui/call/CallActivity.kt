@@ -322,6 +322,9 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     override fun onStop() {
         super.onStop()
+        if (powerManager?.isInteractive == false) {
+            return
+        }
         if (callState.isRinging()) {
             hangup()
         } else if (callState.isNotIdle()) {
