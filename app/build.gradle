@@ -179,7 +179,6 @@ dependencies {
         exclude group: "com.bugsnag", module: "bugsnag-plugin-android-anr"
         exclude group: "com.bugsnag", module: "bugsnag-plugin-android-ndk"
     }
-    implementation "org.jsoup:jsoup:${jsoupVersion}"
 
     // retrofit
     implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"

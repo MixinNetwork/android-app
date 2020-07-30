@@ -28,6 +28,7 @@ import one.mixin.android.extension.autoDownloadPhoto
 import one.mixin.android.extension.autoDownloadVideo
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.nowInUtc
@@ -38,6 +39,7 @@ import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
 import one.mixin.android.util.Session
+import one.mixin.android.util.hyperlink.parsHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
@@ -391,7 +393,9 @@ class DecryptMessage : Injector() {
                 var quoteMe = false
                 val message = generateMessage(data) { quoteMessageItem ->
                     if (quoteMessageItem == null) {
-                        createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status)
+                        createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status).apply {
+                            this.content?.findLastUrl()?.let { parsHyperlink(data.messageId, it, hyperlinkDao, messageDao) }
+                        }
                     } else {
                         if (quoteMessageItem.userId == Session.getAccountId() && data.userId != Session.getAccountId()) {
                             quoteMe = true

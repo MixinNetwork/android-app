@@ -64,7 +64,6 @@ class LinkHolder(itemView: View) : NormalHolder(itemView) {
     @SuppressLint("CheckResult")
     fun bind(item: HyperlinkItem, onClickListener: (url: String) -> Unit) {
         itemView.link_tv.text = item.hyperlink
-        itemView.desc_tv.text = item.siteName
         itemView.clicks()
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(1, TimeUnit.SECONDS)
