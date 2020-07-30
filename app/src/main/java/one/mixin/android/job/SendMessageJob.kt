@@ -5,6 +5,7 @@ import com.bugsnag.android.Bugsnag
 import one.mixin.android.RxBus
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MessageFts4Helper
@@ -65,6 +66,7 @@ open class SendMessageJob(
             } else {
                 if (message.isText()) {
                     message.content?.let { content ->
+                        content.findLastUrl()?.let { jobManager.addJobInBackground(ParseHyperlinkJob(it, message.id)) }
                         parseMentionData(content, message.id, message.conversationId, userDao, messageMentionDao, message.userId)
                     }
                 }

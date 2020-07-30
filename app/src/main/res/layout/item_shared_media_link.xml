@@ -5,12 +5,6 @@
     android:layout_height="90dp"
     android:foreground="?android:attr/selectableItemBackground">
 
-    <Space
-        android:id="@+id/center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"/>
-
     <FrameLayout
         android:id="@+id/left_fl"
         android:layout_width="50dp"
@@ -29,27 +23,15 @@
     </FrameLayout>
 
     <TextView
-        android:id="@+id/desc_tv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/center"
-        android:layout_toEndOf="@id/left_fl"
-        android:layout_marginEnd="@dimen/margin20"
-        android:layout_marginBottom="2dp"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:textColor="?attr/text_primary"/>
-
-    <TextView
         android:id="@+id/link_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/center"
-        android:layout_toEndOf="@id/left_fl"
+        android:layout_centerVertical="true"
         android:layout_marginTop="2dp"
         android:layout_marginEnd="@dimen/margin20"
-        android:maxLines="1"
+        android:layout_toEndOf="@id/left_fl"
         android:ellipsize="end"
-        android:textSize="12sp"
-        android:textColor="@color/wallet_pending_text_color"/>
+        android:maxLines="1"
+        android:textColor="@color/wallet_pending_text_color"
+        android:textSize="12sp" />
 </RelativeLayout>
