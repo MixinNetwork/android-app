@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.SystemClock
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import io.reactivex.disposables.Disposable
@@ -84,6 +85,8 @@ class GroupCallService : CallService() {
 
     private var disposable: Disposable? = null
 
+    private var reconnectTimeoutCount = 0
+
     override fun handleIntent(intent: Intent): Boolean {
         var handled = true
         when (intent.action) {
@@ -143,19 +146,25 @@ class GroupCallService : CallService() {
         }
     }
 
-    private fun publish(conversationId: String, getTurnServer: Boolean = true) {
-        Timber.d("$TAG_CALL publish getTurnServer: $getTurnServer")
+    private fun publish(conversationId: String) {
+        Timber.d("$TAG_CALL publish")
         if (callState.isIdle()) return
 
         callState.addUser(conversationId, self.userId)
-        if (getTurnServer) {
-            getTurnServer { turns ->
-                createOfferWithTurns(conversationId, turns)
-            }
-        } else {
-            reconnectingTimeoutFuture?.cancel(true)
-            reconnectingTimeoutFuture = timeoutExecutor.schedule(ReconnectingTimeoutRunnable(), 30, TimeUnit.SECONDS)
+        getTurnServer { turns ->
+            createOfferWithTurns(conversationId, turns)
+        }
+    }
 
+    private fun reconnect(conversationId: String) {
+        reconnectingTimeoutFuture?.cancel(true)
+        reconnectingTimeoutFuture = timeoutExecutor.schedule(ReconnectingTimeoutRunnable(), RECONNECTING_TIMEOUT, TimeUnit.SECONDS)
+
+        val pc = peerConnectionClient.getPeerConnection()
+        if (pc != null) {
+            callState.reconnecting = true
+            pc.close()
+        } else {
             createOfferWithTurns(conversationId)
         }
     }
@@ -180,7 +189,7 @@ class GroupCallService : CallService() {
             },
             frameKey = key,
             doWhenSetFailure = {
-                publish(conversationId, false)
+                reconnect(conversationId)
             }
         )
 
@@ -253,7 +262,7 @@ class GroupCallService : CallService() {
                     Timber.d("$TAG_CALL answer data: $data")
                 },
                 doWhenSetFailure = {
-                    publish(conversationId, false)
+                    reconnect(conversationId)
                 }
             )
         }
@@ -534,7 +543,27 @@ class GroupCallService : CallService() {
     override fun onConnected() {
         super.onConnected()
         callExecutor.execute {
+            reconnectTimeoutCount = 0
             reconnectingTimeoutFuture?.cancel(true)
+        }
+    }
+
+    override fun onClosed() {
+        Timber.d("$TAG_CALL onClosed callState.reconnecting: ${callState.reconnecting}")
+        if (!callState.reconnecting) {
+            return
+        }
+
+        val conversationId = callState.conversationId
+        if (conversationId == null) {
+            Timber.d("$TAG_CALL onClosed conversationId is null")
+            disconnect()
+            return
+        }
+
+        callExecutor.execute {
+            peerConnectionClient.getPeerConnection()
+            createOfferWithTurns(conversationId)
         }
     }
 
@@ -573,7 +602,7 @@ class GroupCallService : CallService() {
         callExecutor.execute {
             callState.reconnecting = true
             reconnectingTimeoutFuture?.cancel(true)
-            reconnectingTimeoutFuture = timeoutExecutor.schedule(ReconnectingTimeoutRunnable(), 30, TimeUnit.SECONDS)
+            reconnectingTimeoutFuture = timeoutExecutor.schedule(ReconnectingTimeoutRunnable(), RECONNECTING_TIMEOUT, TimeUnit.SECONDS)
 
             peerConnectionClient.createOffer(
                 null,
@@ -591,7 +620,7 @@ class GroupCallService : CallService() {
                     subscribe(krakenData, conversationId)
                 },
                 doWhenSetFailure = {
-                    publish(conversationId)
+                    reconnect(conversationId)
                 }
             )
         }
@@ -607,6 +636,7 @@ class GroupCallService : CallService() {
 
     override fun onCallDisconnected() {
         disposable?.dispose()
+        reconnectTimeoutCount = 0
     }
 
     override fun onDestroyed() {
@@ -666,6 +696,7 @@ class GroupCallService : CallService() {
         val bm = chatWebSocket.sendMessage(blazeMessage)
         Timber.d("$TAG_CALL webSocketChannel $blazeMessage, bm: $bm")
         if (bm == null) {
+            Timber.d("$TAG_CALL callExecutor: $callExecutor")
             SystemClock.sleep(SLEEP_MILLIS)
             blazeMessage.id = UUID.randomUUID().toString()
             return webSocketChannel(blazeMessage)
@@ -701,10 +732,7 @@ class GroupCallService : CallService() {
                         }
                         disconnect()
                     } else {
-                        callExecutor.execute {
-                            peerConnectionClient.close()
-                            publish(cid, false)
-                        }
+                        reconnect(cid)
                     }
                     null
                 }
@@ -718,7 +746,6 @@ class GroupCallService : CallService() {
         return bm
     }
 
-    @Synchronized
     private fun checkSchedules(conversationId: String) {
         Timber.d("$TAG_CALL checkSchedules reconnecting: ${callState.reconnecting}")
         if (!callState.isBeforeAnswering()) {
@@ -884,6 +911,7 @@ class GroupCallService : CallService() {
     }
 
     private fun checkReconnectingTimeout() {
+        Timber.d("$TAG_CALL checkReconnectingTimeout")
         if (callState.isIdle()) return
 
         val conversationId = callState.conversationId
@@ -894,8 +922,37 @@ class GroupCallService : CallService() {
         }
         callState.reconnecting = true
         callExecutor.execute {
-            peerConnectionClient.close()
-            publish(conversationId, false)
+            if (reconnectTimeoutCount == 2) {
+                reportReconnectTimeoutInfo()
+            }
+            reconnectTimeoutCount++
+
+            reconnect(conversationId)
+        }
+    }
+
+    private fun reportReconnectTimeoutInfo() {
+        Timber.d("$TAG_CALL reportReconnectTimeoutInfo")
+        peerConnectionClient.getPeerConnection()?.let { pc ->
+            val networkState = "{ networkConnected: ${networkConnected()} }"
+            val localSdp = "{ localDescription: { description: ${pc.localDescription?.description}, type: ${pc.localDescription?.type} }"
+            val remoteSdp = "{ remoteDescription: { description: ${pc.remoteDescription?.description}, type: ${pc.remoteDescription?.type} }"
+            val signalingState = "{ signalingState: ${pc.signalingState()} }"
+            val iceGatheringState = "{ iceGatheringState: ${pc.iceGatheringState()} }"
+            val iceConnectionState = "{ iceConnectionState: ${pc.iceConnectionState()} }"
+            val connectionState = "{ connectionState: ${pc.connectionState()} }"
+            FirebaseCrashlytics.getInstance().log(
+                """
+                    WebRTC reconnection timeout info:
+                    $networkState,
+                    $localSdp,
+                    $remoteSdp,
+                    $signalingState,
+                    $iceGatheringState,
+                    $iceConnectionState,
+                    $connectionState
+                """
+            )
         }
     }
 
@@ -907,6 +964,7 @@ class GroupCallService : CallService() {
 
     companion object {
         private const val KRAKEN_LIST_INTERVAL = 30L
+        private const val RECONNECTING_TIMEOUT = 60L
     }
 }
 
