@@ -562,7 +562,6 @@ class GroupCallService : CallService() {
         }
 
         callExecutor.execute {
-            peerConnectionClient.getPeerConnection()
             createOfferWithTurns(conversationId)
         }
     }
