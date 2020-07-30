@@ -69,7 +69,6 @@ import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.enqueueUniqueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog

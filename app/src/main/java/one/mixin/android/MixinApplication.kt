@@ -6,14 +6,9 @@ import android.webkit.CookieManager
 import android.webkit.WebStorage
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
-import androidx.startup.AppInitializer
 import androidx.work.Configuration
-import androidx.work.impl.WorkManagerInitializer
-import com.bugsnag.android.Bugsnag
 import com.facebook.stetho.Stetho
-import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import io.reactivex.plugins.RxJavaPlugins
@@ -27,7 +22,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.startup.FirebaseAppInitializer
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.util.Session
