@@ -186,8 +186,19 @@ class WebBottomFragment : BaseFragment() {
         }
     }
 
+    // todo enter transition
     fun showNow(supportFragmentManager: FragmentManager, tag: String) {
         supportFragmentManager.beginTransaction().add(R.id.root_view, this, tag).commit()
+    }
+
+    // todo hide self save instance
+    fun hide(){
+
+    }
+
+    // todo hide self and release
+    fun dismiss(){
+
     }
 
     override fun onBackPressed(): Boolean {
@@ -299,7 +310,7 @@ class WebBottomFragment : BaseFragment() {
     private fun initView() {
         contentView.suspicious_link_view.listener = object : SuspiciousLinkView.SuspiciousListener {
             override fun onBackClick() {
-                // dismiss()
+                dismiss()
             }
 
             override fun onContinueClick() {
@@ -313,7 +324,7 @@ class WebBottomFragment : BaseFragment() {
             }
 
             override fun onCloseClick() {
-                // dismiss()
+                dismiss()
             }
         }
         contentView.chat_web_view.settings.javaScriptEnabled = true
@@ -479,6 +490,7 @@ class WebBottomFragment : BaseFragment() {
             }
         }
 
+        // Todo dismiss release webview
         // dialog?.setOnDismissListener {
         //     contentView.hideKeyboard()
         //     contentView.chat_web_view.stopLoading()
@@ -732,6 +744,7 @@ class WebBottomFragment : BaseFragment() {
         dark: Boolean,
         color: Int
     ) {
+        // Todo change system ui
         // dialog?.window?.decorView?.let {
         //     if (dark) {
         //         contentView.title_tv.setTextColor(Color.WHITE)
