@@ -58,6 +58,7 @@
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/start_view"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_max="220dp"
         tools:text="Alejandro Dean" />
 
     <TextView
@@ -78,6 +79,7 @@
         app:layout_constraintEnd_toStartOf="@id/reply_iv"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@id/reply_name_tv"
-        app:layout_constraintTop_toBottomOf="@id/reply_name_tv" />
+        app:layout_constraintTop_toBottomOf="@id/reply_name_tv"
+        app:layout_constraintWidth_max="220dp" />
 </merge>
 
