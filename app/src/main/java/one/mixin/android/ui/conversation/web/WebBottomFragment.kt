@@ -1,9 +1,7 @@
 package one.mixin.android.ui.conversation.web
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -12,12 +10,13 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
 import android.view.ContextMenu
+import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
@@ -36,6 +35,8 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
@@ -59,7 +60,6 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getPublicPicturePath
-import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
@@ -74,7 +74,8 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.supportsQ
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.QRCodeProcessor
@@ -96,8 +97,9 @@ import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
-class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class WebBottomFragment : BaseFragment() {
 
     companion object {
         const val TAG = "WebBottomSheetDialogFragment"
@@ -130,13 +132,21 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             conversationId: String?,
             app: App? = null,
             appCard: AppCardData? = null
-        ) = WebBottomSheetDialogFragment().withArgs {
+        ) = WebBottomFragment().withArgs {
             putString(URL, url)
             putString(CONVERSATION_ID, conversationId)
             putParcelable(ARGS_APP, app)
             putParcelable(ARGS_APP_CARD, appCard)
         }
     }
+
+    private lateinit var contentView: View
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+    private val bottomViewModel: BottomSheetViewModel by viewModels { viewModelFactory }
+
+    private fun getTheme() = R.style.AppTheme_Dialog
 
     private val url: String by lazy {
         requireArguments().getString(URL)!!
@@ -176,7 +186,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    fun onBackPressed(): Boolean {
+    fun showNow(supportFragmentManager: FragmentManager, tag: String) {
+        supportFragmentManager.beginTransaction().add(R.id.root_view, this, tag).commit()
+    }
+
+    override fun onBackPressed(): Boolean {
         if (contentView.chat_web_view.canGoBack()) {
             contentView.chat_web_view.goBack()
             return true
@@ -223,10 +237,13 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     var uploadMessage: ValueCallback<Array<Uri>>? = null
 
-    @SuppressLint("RestrictedApi", "SetJavaScriptEnabled")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         contentView = View.inflate(context, R.layout.fragment_web, null)
+        return contentView
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         val statusBarHeight = requireContext().statusBarHeight()
         contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = statusBarHeight
@@ -235,9 +252,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             topMargin = requireContext().dpToPx(6f) + statusBarHeight
         }
         registerForContextMenu(contentView.chat_web_view)
-        (dialog as BottomSheet).apply {
-            setCustomView(contentView)
-        }
 
         if (BuildConfig.DEBUG) {
             WebView.setWebContentsDebuggingEnabled(true)
@@ -285,7 +299,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun initView() {
         contentView.suspicious_link_view.listener = object : SuspiciousLinkView.SuspiciousListener {
             override fun onBackClick() {
-                dismiss()
+                // dismiss()
             }
 
             override fun onContinueClick() {
@@ -299,7 +313,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
             override fun onCloseClick() {
-                dismiss()
+                // dismiss()
             }
         }
         contentView.chat_web_view.settings.javaScriptEnabled = true
@@ -465,12 +479,12 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
 
-        dialog?.setOnDismissListener {
-            contentView.hideKeyboard()
-            contentView.chat_web_view.stopLoading()
-            contentView.chat_web_view.webViewClient = null
-            contentView.chat_web_view.webChromeClient = null
-        }
+        // dialog?.setOnDismissListener {
+        //     contentView.hideKeyboard()
+        //     contentView.chat_web_view.stopLoading()
+        //     contentView.chat_web_view.webViewClient = null
+        //     contentView.chat_web_view.webChromeClient = null
+        // }
     }
 
     @Override
@@ -718,16 +732,16 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         dark: Boolean,
         color: Int
     ) {
-        dialog?.window?.decorView?.let {
-            if (dark) {
-                contentView.title_tv.setTextColor(Color.WHITE)
-                it.systemUiVisibility =
-                    it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-            } else {
-                contentView.title_tv.setTextColor(Color.BLACK)
-                it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            }
-        }
+        // dialog?.window?.decorView?.let {
+        //     if (dark) {
+        //         contentView.title_tv.setTextColor(Color.WHITE)
+        //         it.systemUiVisibility =
+        //             it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+        //     } else {
+        //         contentView.title_tv.setTextColor(Color.BLACK)
+        //         it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        //     }
+        // }
         contentView.title_ll.setBackgroundColor(color)
         contentView.ph.setBackgroundColor(color)
         contentView.web_control.mode = dark

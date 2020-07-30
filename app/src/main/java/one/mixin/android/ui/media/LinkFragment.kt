@@ -13,7 +13,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseViewModelFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.web.WebBottomFragment
 
 class LinkFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     companion object {
@@ -29,8 +29,8 @@ class LinkFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     }
 
     private val adapter = LinkAdapter {
-        WebBottomSheetDialogFragment.newInstance(it, conversationId)
-            .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+        WebBottomFragment.newInstance(it, conversationId)
+            .showNow(parentFragmentManager, WebBottomFragment.TAG)
     }
 
     override fun getModelClass() = SharedMediaViewModel::class.java

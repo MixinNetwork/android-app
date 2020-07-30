@@ -24,7 +24,7 @@ import one.mixin.android.ui.conversation.WithdrawalTipBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.web.WebBottomFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.bot.BotManagerBottomSheetDialogFragment
 import one.mixin.android.ui.search.SearchMessageFragment
@@ -49,7 +49,7 @@ abstract class CommonModule {
     internal abstract fun contributeLinkBottomSheetDialogFragment(): LinkBottomSheetDialogFragment
 
     @ContributesAndroidInjector
-    internal abstract fun contributeWebBottomSheetDialogFragment(): WebBottomSheetDialogFragment
+    internal abstract fun contributeWebBottomSheetDialogFragment(): WebBottomFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeTransferFragment(): TransferFragment

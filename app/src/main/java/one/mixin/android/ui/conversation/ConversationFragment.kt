@@ -140,7 +140,7 @@ import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.web.WebBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
@@ -782,7 +782,7 @@ class ConversationFragment :
         }
     private var positionBeforeClickQuote: String? = null
 
-    private var botWebBottomSheet: WebBottomSheetDialogFragment? = null
+    private var botWebBottomSheet: WebBottomFragment? = null
 
     private val sensorManager: SensorManager by lazy {
         requireContext().getSystemService<SensorManager>()!!
@@ -1002,7 +1002,7 @@ class ConversationFragment :
     }
 
     override fun onDestroyView() {
-        botWebBottomSheet?.dismiss()
+        // botWebBottomSheet?.dismiss()
         chat_rv?.let { rv ->
             rv.children.forEach {
                 val vh = rv.getChildViewHolder(it)
@@ -1929,8 +1929,8 @@ class ConversationFragment :
 
     private fun open(url: String, app: App?, appCard: AppCardData? = null) {
         chat_control.chat_et.hideKeyboard()
-        botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(url, conversationId, app, appCard)
-        botWebBottomSheet?.showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+        botWebBottomSheet = WebBottomFragment.newInstance(url, conversationId, app, appCard)
+        botWebBottomSheet?.showNow(parentFragmentManager, WebBottomFragment.TAG)
     }
 
     private fun openInputAction(action: String): Boolean {
@@ -2122,11 +2122,11 @@ class ConversationFragment :
                     MenuType.App -> {
                         menu.app?.let { app ->
                             chat_control.chat_et.hideKeyboard()
-                            WebBottomSheetDialogFragment.newInstance(
+                            WebBottomFragment.newInstance(
                                 app.homeUri,
                                 conversationId,
                                 app.toApp()
-                            ).showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                            ).showNow(parentFragmentManager, WebBottomFragment.TAG)
                         }
                     }
                 }

@@ -74,7 +74,7 @@ import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.web.WebBottomFragment
 import one.mixin.android.ui.home.bot.BotManagerBottomSheetDialogFragment
 import one.mixin.android.ui.home.bot.DefaultTopBots
 import one.mixin.android.ui.home.bot.INTERNAL_CAMERA_ID
@@ -489,9 +489,9 @@ class ConversationListFragment : LinkFragment() {
                                     view.isVisible = true
                                     view.setImageResource(app.getCategoryIcon())
                                     view.setOnClickListener {
-                                        WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app).show(
-                                            parentFragmentManager, WebBottomSheetDialogFragment.TAG
-                                        )
+                                        // WebBottomFragment.newInstance(app.homeUri, null, app).show(
+                                        //     parentFragmentManager, WebBottomFragment.TAG
+                                        // )
                                     }
                                 },
                                 {

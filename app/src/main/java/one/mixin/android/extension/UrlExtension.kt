@@ -12,7 +12,7 @@ import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.web.WebBottomFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.donateSupported
@@ -27,8 +27,8 @@ fun String.openAsUrlOrWeb(
     scope: CoroutineScope,
     app: App? = null
 ) = openAsUrl(supportFragmentManager, scope) {
-    WebBottomSheetDialogFragment.newInstance(this, conversationId, app)
-        .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+    WebBottomFragment.newInstance(this, conversationId, app)
+        .showNow(supportFragmentManager, WebBottomFragment.TAG)
 }
 
 fun String.openAsUrlOrQrScan(
@@ -153,8 +153,8 @@ fun String.checkUserOrApp(
             if (isOpenApp && user.appId != null) {
                 val app = appDao.findAppById(user.appId!!)
                 if (app != null) {
-                    WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app)
-                        .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+                    // WebBottomFragment.newInstance(app.homeUri, null, app)
+                    //     .showNow(supportFragmentManager, WebBottomFragment.TAG)
                     return@launch
                 }
             }

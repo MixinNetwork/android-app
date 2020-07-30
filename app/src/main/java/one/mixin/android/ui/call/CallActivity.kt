@@ -64,7 +64,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.web.WebBottomFragment
 import one.mixin.android.util.Session
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.CallStateLiveData
@@ -456,8 +456,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
         alertDialogBuilder()
             .setMessage(R.string.end_to_end_encryption_tip)
             .setNeutralButton(R.string.chat_learn) { dialog, _ ->
-                WebBottomSheetDialogFragment.newInstance(getString(R.string.chat_waiting_url), callState.conversationId)
-                    .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+                WebBottomFragment.newInstance(getString(R.string.chat_waiting_url), callState.conversationId)
+                    .showNow(supportFragmentManager, WebBottomFragment.TAG)
                 dialog.dismiss()
             }
             .setPositiveButton(R.string.ok) { dialog, _ ->

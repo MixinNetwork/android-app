@@ -19,7 +19,7 @@ import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.web.WebBottomFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import java.util.concurrent.TimeUnit
@@ -64,8 +64,8 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .throttleFirst(1, TimeUnit.SECONDS)
                 .autoDispose(stopScope).subscribe {
-                    WebBottomSheetDialogFragment.newInstance(text, conversationId)
-                        .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                    WebBottomFragment.newInstance(text, conversationId)
+                        .showNow(parentFragmentManager, WebBottomFragment.TAG)
                     dismiss()
                 }
         } else {

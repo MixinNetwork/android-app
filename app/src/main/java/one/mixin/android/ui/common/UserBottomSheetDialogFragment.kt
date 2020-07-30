@@ -67,7 +67,7 @@ import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.UserTransactionsFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.web.WebBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
@@ -698,9 +698,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     .autoDispose(stopScope).subscribe {
                         dismiss()
                         RxBus.publish(BotCloseEvent())
-                        WebBottomSheetDialogFragment
+                        WebBottomFragment
                             .newInstance(app.homeUri, conversationId, app)
-                            .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                            .showNow(parentFragmentManager, WebBottomFragment.TAG)
                     }
                 bottomViewModel.findUserById(app.creatorId)
                     .observe(
