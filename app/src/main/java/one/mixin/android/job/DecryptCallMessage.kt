@@ -19,6 +19,7 @@ import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createCallMessage
+import one.mixin.android.webrtc.DEFAULT_IGNORE_MINUTES
 import one.mixin.android.webrtc.DEFAULT_TIMEOUT_MINUTES
 import one.mixin.android.webrtc.TAG_CALL
 import one.mixin.android.webrtc.answerCall
@@ -97,7 +98,10 @@ class DecryptCallMessage(
                     )
                     database.insertAndNotifyConversation(message)
                 } else if (data.category == MessageCategory.KRAKEN_PUBLISH.name || data.category == MessageCategory.KRAKEN_END.name) {
-                    processKrakenCall(data)
+                    // ignore KRAKEN_PUBLISH, KRAKEN_END from listPending 1 hour away
+                    if (!isIgnored(data)) {
+                        processKrakenCall(data)
+                    }
                 }
                 // ignore KRAKEN_CANCEL, KRAKEN_DECLINE from listPending
             } else if (data.category == MessageCategory.KRAKEN_INVITE.name && !listPendingOfferHandled) {
@@ -205,6 +209,15 @@ class DecryptCallMessage(
         return try {
             val offset = System.currentTimeMillis() - data.createdAt.createAtToLong()
             offset > DEFAULT_TIMEOUT_MINUTES * 58 * 1000
+        } catch (e: NumberFormatException) {
+            true
+        }
+    }
+
+    private fun isIgnored(data: BlazeMessageData): Boolean {
+        return try {
+            val offset = System.currentTimeMillis() - data.createdAt.createAtToLong()
+            offset > DEFAULT_IGNORE_MINUTES * 60 * 1000
         } catch (e: NumberFormatException) {
             true
         }
