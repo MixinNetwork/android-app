@@ -32,6 +32,7 @@ import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.util.hyperlink.parsHyperlink
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
@@ -393,7 +394,7 @@ class DecryptMessage : Injector() {
                 val message = generateMessage(data) { quoteMessageItem ->
                     if (quoteMessageItem == null) {
                         createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status).apply {
-                            this.content?.findLastUrl()?.let { jobManager.addJobInBackground(ParseHyperlinkJob(it, data.messageId)) }
+                            this.content?.findLastUrl()?.let { parsHyperlink(data.messageId, it, hyperlinkDao, messageDao) }
                         }
                     } else {
                         if (quoteMessageItem.userId == Session.getAccountId() && data.userId != Session.getAccountId()) {
