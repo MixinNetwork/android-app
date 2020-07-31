@@ -118,6 +118,9 @@
     <string name="common_audio">Audio</string>
     <string name="common_sticker">Sticker</string>
     <string name="you">You</string>
+    <string name="know">I know</string>
+    <string name="storage_low_title">Your phone is low on storage</string>
+    <string name="storage_low_message">Your phone is low on storage, which can seriously affect your Mixin experience and may even result in corrupted or lost chats and other important data. So it\'s recommended to offload unused apps to clear up enough space</string>
     <string name="website" translatable="false">https://mixin.one/messenger</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>

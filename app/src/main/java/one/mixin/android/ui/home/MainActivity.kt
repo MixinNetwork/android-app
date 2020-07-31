@@ -48,6 +48,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_ATTACHMENT
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
+import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
 import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
@@ -68,6 +69,8 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.alert
+import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.checkStorageNotLow
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueUniqueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.inTransaction
@@ -266,6 +269,7 @@ class MainActivity : BlazeBaseActivity() {
         }
         checkRoot()
         checkUpdate()
+        checkStorage()
 
         initView()
         handlerCode(intent)
@@ -395,6 +399,25 @@ class MainActivity : BlazeBaseActivity() {
             } else if (appUpdateInfo.installStatus() == InstallStatus.INSTALLED) {
                 appUpdateManager.unregisterListener(updatedListener)
             }
+        }
+    }
+
+    private fun checkStorage() {
+        val lastTime = defaultSharedPreferences.getLong(PREF_CHECK_STORAGE, 0)
+        if (System.currentTimeMillis() - lastTime > INTERVAL_24_HOURS) {
+            defaultSharedPreferences.putLong(PREF_CHECK_STORAGE, System.currentTimeMillis())
+            checkStorageNotLow({
+                alertDialogBuilder()
+                    .setTitle(R.string.storage_low_title)
+                    .setMessage(R.string.storage_low_message)
+                    .setCancelable(false)
+                    .setNegativeButton(getString(R.string.know)) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
+            }, {
+
+            })
         }
     }
 

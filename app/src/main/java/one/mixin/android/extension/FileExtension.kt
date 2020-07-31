@@ -57,6 +57,14 @@ fun hasWritePermission(): Boolean {
     ) == PackageManager.PERMISSION_GRANTED
 }
 
+fun Context.checkStorageNotLow(lowAction: () -> Unit, defaultAction: () -> Unit) {
+    if (cacheDir.freeSpace * 100 / cacheDir.totalSpace <= 10) {
+        lowAction()
+    } else {
+        defaultAction()
+    }
+}
+
 private fun Context.getAppPath(): File? {
     return if (!hasWritePermission()) {
         null

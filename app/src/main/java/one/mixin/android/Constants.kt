@@ -45,6 +45,7 @@ object Constants {
         const val PREF_ATTACHMENT_LAST = "pref_attachment_last"
         const val PREF_ATTACHMENT_OFFSET = "pref_attachment_row_offset"
         const val PREF_BACKUP = "pref_attachment_backup"
+        const val PREF_CHECK_STORAGE = "pref_check_storage"
     }
 
     object Scheme {
