@@ -758,7 +758,7 @@ class GroupCallService : CallService() {
 
     private fun checkSchedules(conversationId: String) {
         Timber.d("$TAG_CALL checkSchedules reconnecting: ${callState.reconnecting}")
-        if (!callState.isBeforeAnswering()) {
+        if (callState.inConversationAndAtLeastAnswering(conversationId)) {
             callState.clearUsersKeepSelf(conversationId)
             return
         }
