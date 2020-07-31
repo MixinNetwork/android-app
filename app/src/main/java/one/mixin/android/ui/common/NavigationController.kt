@@ -17,7 +17,7 @@ import javax.inject.Inject
 class NavigationController
 @Inject
 constructor(mainActivity: MainActivity) {
-    private val containerId: Int = R.id.container
+    private val containerId: Int = R.id.container_view
     private val fragmentManager: FragmentManager = mainActivity.supportFragmentManager
     private val context = mainActivity
 
