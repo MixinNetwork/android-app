@@ -65,7 +65,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         } else {
             sdpConstraint.mandatory.add(restartConstraint)
         }
-        if (peerConnection == null) {
+        if (peerConnection == null || peerConnection?.connectionState() == PeerConnection.PeerConnectionState.CLOSED) {
             peerConnection = createPeerConnectionInternal(frameKey)
         }
         val offerSdpObserver = object : SdpObserverWrapper() {
@@ -135,7 +135,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         if (iceServerList != null) {
             iceServers.addAll(iceServerList)
         }
-        if (peerConnection == null) {
+        if (peerConnection == null || peerConnection?.connectionState() == PeerConnection.PeerConnectionState.CLOSED) {
             peerConnection = createPeerConnectionInternal()
         }
         peerConnection?.setRemoteDescription(
@@ -297,7 +297,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         return peerConnection!!.localDescription != null
     }
 
-    fun close() {
+    fun dispose() {
         peerConnection?.dispose()
         peerConnection = null
         audioSource?.dispose()
@@ -309,10 +309,12 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     }
 
     fun release() {
-        close()
+        dispose()
         factory?.dispose()
         factory = null
     }
+
+    fun getPeerConnection() = peerConnection
 
     private fun reportError(error: String) {
         Timber.d("$TAG_CALL reportError: $error")
@@ -424,6 +426,8 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
                 events.onConnected()
             } else if (newState == PeerConnection.PeerConnectionState.DISCONNECTED) {
                 events.onDisconnected()
+            } else if (newState == PeerConnection.PeerConnectionState.CLOSED) {
+                events.onClosed()
             }
         }
 
@@ -528,6 +532,8 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
          * is DISCONNECTED).
          */
         fun onDisconnected()
+
+        fun onClosed()
 
         /**
          * Callback fired once peer connection is closed.

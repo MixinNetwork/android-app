@@ -32,12 +32,13 @@ import org.webrtc.StatsReport
 import timber.log.Timber
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnectionEvents {
 
-    protected val callExecutor = Executors.newSingleThreadExecutor()
+    protected val callExecutor: ThreadPoolExecutor = Executors.newFixedThreadPool(1) as ThreadPoolExecutor
     protected val timeoutExecutor = Executors.newScheduledThreadPool(1)
     protected var timeoutFuture: ScheduledFuture<*>? = null
 
@@ -133,7 +134,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             callState.reset()
             audioManager.release()
             pipCallView.close()
-            peerConnectionClient.close()
+            peerConnectionClient.dispose()
             timeoutFuture?.cancel(true)
 
             onCallDisconnected()
@@ -158,6 +159,9 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     override fun onDisconnected() {
+    }
+
+    override fun onClosed() {
     }
 
     override fun onPeerConnectionStatsReady(reports: Array<StatsReport>) {
@@ -291,6 +295,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
 const val TAG_CALL = "TAG_CALL"
 
 const val DEFAULT_TIMEOUT_MINUTES = 1L
+const val DEFAULT_IGNORE_MINUTES = 60L
 
 const val ACTION_CALL_DISCONNECT = "call_disconnect"
 
