@@ -114,7 +114,7 @@
     <string name="you">你</string>
     <string name="know">我知道了</string>
     <string name="storage_low_title">手机储存空间即将用尽</string>
-    <string name="storage_low_message">你的手机储存空间即将用尽，这会严重影响Mixin的使用体验，甚至可能造成聊天等重要数据损坏或丢失，建议卸载不常用的软件，以便清理出足够的空间</string>
+    <string name="storage_low_message">手机存储空间严重不足，建议清理不重要的视频和文件、卸载不常用的软件，以免影响 Mixin 的使用体验，甚至可能造成聊天丢失或数据损坏</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
