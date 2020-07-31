@@ -79,7 +79,7 @@ class AvatarActivity : AppCompatActivity() {
             }
         }).into(avatar)
 
-        root.setOnClickListener { finish() }
+        container.setOnClickListener { finish() }
     }
 
     override fun onBackPressed() {
@@ -91,7 +91,7 @@ class AvatarActivity : AppCompatActivity() {
             playTogether(
                 ObjectAnimator.ofFloat(avatar, View.SCALE_X, 0f),
                 ObjectAnimator.ofFloat(avatar, View.SCALE_Y, 0f),
-                ObjectAnimator.ofFloat(root, View.ALPHA, 0f)
+                ObjectAnimator.ofFloat(container, View.ALPHA, 0f)
             )
             duration = 200
             interpolator = DecelerateInterpolator()

@@ -30,7 +30,7 @@ constructor(mainActivity: MainActivity) {
             WalletActivity.show(context)
         } else {
             fragmentManager.beginTransaction()
-                .replace(R.id.root_view, WalletPasswordFragment.newInstance(false))
+                .replace(R.id.container, WalletPasswordFragment.newInstance(false))
                 .addToBackStack(null)
                 .commitAllowingStateLoss()
         }

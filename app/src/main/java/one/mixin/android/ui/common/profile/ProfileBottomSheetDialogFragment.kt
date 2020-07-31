@@ -282,7 +282,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                             R.anim.slide_in_bottom, R.anim.slide_out_bottom
                         )
                             .add(
-                                R.id.container,
+                                R.id.root_view,
                                 VerifyFragment.newInstance(VerifyFragment.FROM_PHONE)
                             )
                             .addToBackStack(null)
@@ -294,7 +294,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                             R.anim.slide_in_bottom, R.anim.slide_out_bottom
                         )
                             .add(
-                                R.id.container,
+                                R.id.root_view,
                                 WalletPasswordFragment.newInstance(),
                                 WalletPasswordFragment.TAG
                             )

@@ -59,7 +59,7 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
                     R.anim.slide_in_bottom, R.anim.slide_out_bottom,
                     R.anim.slide_in_bottom, R.anim.slide_out_bottom
                 )
-                    .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
+                    .add(R.id.root_view, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
                     .addToBackStack(null)
             }
         }

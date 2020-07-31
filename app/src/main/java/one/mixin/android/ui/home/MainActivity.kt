@@ -317,7 +317,7 @@ class MainActivity : BlazeBaseActivity() {
                         R.anim.slide_in_bottom, R.anim.slide_out_bottom,
                         R.anim.slide_in_bottom, R.anim.slide_out_bottom
                     )
-                        .add(R.id.root_view, VerifyFragment.newInstance(VerifyFragment.FROM_PHONE))
+                        .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_PHONE))
                         .addToBackStack(null)
                     dialog.dismiss()
                 }
@@ -400,7 +400,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun popupSnackbarForCompleteUpdate() {
         Snackbar.make(
-            root_view,
+            container,
             getString(R.string.update_downloaded),
             Snackbar.LENGTH_INDEFINITE
         ).apply {
@@ -635,7 +635,7 @@ class MainActivity : BlazeBaseActivity() {
             (supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
         }
         search_bar?.logo?.text = defaultSharedPreferences.getString(CIRCLE_NAME, "Mixin")
-        root_view.setOnKeyListener { _, keyCode, _ ->
+        container.setOnKeyListener { _, keyCode, _ ->
             if (keyCode == KeyEvent.KEYCODE_BACK && search_bar.isOpen) {
                 search_bar.closeSearch()
                 true

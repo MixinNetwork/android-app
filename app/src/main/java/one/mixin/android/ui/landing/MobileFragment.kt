@@ -237,7 +237,7 @@ class MobileFragment : BaseFragment() {
     private fun showCountry() {
         activity?.supportFragmentManager?.inTransaction {
             setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
-                .add(R.id.container, countryPicker).addToBackStack(null)
+                .add(R.id.root_view, countryPicker).addToBackStack(null)
         }
     }
 

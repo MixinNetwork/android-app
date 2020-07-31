@@ -242,7 +242,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                     refreshUsers()
                 }
                 if (state == CallService.CallState.STATE_IDLE) {
-                    call_cl.post { handleDisconnected() }
+                    container.post { handleDisconnected() }
                     return@Observer
                 }
                 if (uiState >= state) {
@@ -259,10 +259,10 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 when (state) {
                     CallService.CallState.STATE_DIALING -> {
                         volumeControlStream = AudioManager.STREAM_VOICE_CALL
-                        call_cl.post { handleDialing() }
+                        container.post { handleDialing() }
                     }
                     CallService.CallState.STATE_RINGING -> {
-                        call_cl.post {
+                        container.post {
                             if (join) {
                                 handleJoin()
                             } else {
@@ -271,13 +271,13 @@ class CallActivity : BaseActivity(), SensorEventListener {
                         }
                     }
                     CallService.CallState.STATE_ANSWERING -> {
-                        call_cl.post { handleAnswering() }
+                        container.post { handleAnswering() }
                     }
                     CallService.CallState.STATE_CONNECTED -> {
-                        call_cl.post { handleConnected(callState.disconnected) }
+                        container.post { handleConnected(callState.disconnected) }
                     }
                     CallService.CallState.STATE_BUSY -> {
-                        call_cl.post { handleBusy() }
+                        container.post { handleBusy() }
                     }
                 }
             }
@@ -492,7 +492,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         }
         pipAnimationInProgress = true
         val rect = PipCallView.getPipRect()
-        val windowView = call_cl
+        val windowView = container
         val isLandscape = isLandscape()
         if (isLandscape) {
             val screenHeight = realSize().y
@@ -636,14 +636,14 @@ class CallActivity : BaseActivity(), SensorEventListener {
     private fun moveHangup(center: Boolean, duration: Long) {
         hangup_cb.visibility = VISIBLE
         val constraintSet = ConstraintSet().apply {
-            clone(call_cl)
+            clone(container)
             setHorizontalBias(hangup_cb.id, if (center) 0.5f else 0.1f)
         }
         val transition = AutoTransition().apply {
             this.duration = duration
         }
-        TransitionManager.beginDelayedTransition(call_cl, transition)
-        constraintSet.applyTo(call_cl)
+        TransitionManager.beginDelayedTransition(container, transition)
+        constraintSet.applyTo(container)
     }
 
     private var timer: Timer? = null

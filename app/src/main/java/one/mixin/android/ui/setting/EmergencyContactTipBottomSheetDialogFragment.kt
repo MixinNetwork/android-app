@@ -32,7 +32,7 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                         R.anim.slide_in_bottom, R.anim.slide_out_bottom,
                         R.anim.slide_in_bottom, R.anim.slide_out_bottom
                     )
-                        .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
+                        .add(R.id.root_view, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
                         .addToBackStack(null)
                 }
             } else {
@@ -43,7 +43,7 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                             .anim.slide_in_bottom,
                         R.anim.slide_out_bottom
                     )
-                        .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
+                        .add(R.id.root_view, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
                         .addToBackStack(null)
                 }
             }

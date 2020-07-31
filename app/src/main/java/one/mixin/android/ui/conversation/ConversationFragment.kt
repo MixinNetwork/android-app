@@ -2046,7 +2046,7 @@ class ConversationFragment :
                                     R.anim.slide_out_bottom
                                 )
                                     .add(
-                                        R.id.container,
+                                        R.id.root_view,
                                         WalletPasswordFragment.newInstance(),
                                         WalletPasswordFragment.TAG
                                     )
@@ -2063,7 +2063,7 @@ class ConversationFragment :
                                 R.anim.slide_out_bottom
                             )
                                 .add(
-                                    R.id.container,
+                                    R.id.root_view,
                                     FriendsFragment.newInstance(conversationId).apply {
                                         setOnFriendClick {
                                             sendContactMessage(it.userId)
