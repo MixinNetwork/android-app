@@ -7,6 +7,7 @@ import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.google.firebase.iid.FirebaseInstanceId
+import com.google.gson.JsonSyntaxException
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import dagger.Module
 import dagger.Provides
@@ -143,7 +144,12 @@ internal class AppModule {
                     val body = bytes.toResponseBody(contentType)
                     response = response.newBuilder().body(body).build()
                     if (bytes.isEmpty()) return@run
-                    val mixinResponse = GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)
+                    val mixinResponse = try {
+                        GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)
+                    } catch (e: JsonSyntaxException) {
+                        HostSelectionInterceptor.get().switch()
+                        throw ServerErrorException(response.code)
+                    }
                     if (mixinResponse.errorCode != 401) return@run
                     val authorization = response.request.header("Authorization")
                     if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
@@ -165,6 +171,7 @@ internal class AppModule {
                 if (!response.isSuccessful) {
                     val code = response.code
                     if (code in 500..599) {
+                        HostSelectionInterceptor.get().switch()
                         throw ServerErrorException(code)
                     }
                 }
