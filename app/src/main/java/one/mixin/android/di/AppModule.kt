@@ -129,9 +129,7 @@ internal class AppModule {
                 var response = try {
                     chain.proceed(request)
                 } catch (e: Exception) {
-                    if (e.message?.contains("502") == true) {
-                        throw ServerErrorException(502)
-                    } else throw e.apply {
+                     throw e.apply {
                         if (this is SocketTimeoutException || this is UnknownHostException || this is ConnectException) {
                             HostSelectionInterceptor.get().switch()
                         }
@@ -140,8 +138,10 @@ internal class AppModule {
 
                 if (!response.isSuccessful) {
                     val code = response.code
-                    if (code in 500..599) {
+                    if (code in 501..599) {
                         HostSelectionInterceptor.get().switch()
+                        throw ServerErrorException(code)
+                    } else if (code == 500) {
                         throw ServerErrorException(code)
                     }
                 }
