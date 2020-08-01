@@ -138,6 +138,14 @@ internal class AppModule {
                     }
                 }
 
+                if (!response.isSuccessful) {
+                    val code = response.code
+                    if (code in 500..599) {
+                        HostSelectionInterceptor.get().switch()
+                        throw ServerErrorException(code)
+                    }
+                }
+
                 response.body?.run {
                     val bytes = this.bytes()
                     val contentType = this.contentType()
@@ -168,13 +176,6 @@ internal class AppModule {
                     }
                 }
 
-                if (!response.isSuccessful) {
-                    val code = response.code
-                    if (code in 500..599) {
-                        HostSelectionInterceptor.get().switch()
-                        throw ServerErrorException(code)
-                    }
-                }
                 return@addInterceptor response
             } else {
                 throw NetworkException()
