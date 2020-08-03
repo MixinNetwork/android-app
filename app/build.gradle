@@ -259,6 +259,7 @@ dependencies {
     implementation "com.github.SandroMachado:BitcoinPaymentURI:${bitcoinPaymentURI}"
     implementation "com.caverock:androidsvg-aar:${svgVersion}"
     implementation "androidx.startup:startup-runtime:${startupVersion}"
+    implementation "dnsjava:dnsjava:${dnsVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

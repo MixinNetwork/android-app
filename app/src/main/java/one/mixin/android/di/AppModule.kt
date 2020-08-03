@@ -20,6 +20,7 @@ import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.URL
+import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse
@@ -116,6 +117,7 @@ internal class AppModule {
         builder.writeTimeout(10, TimeUnit.SECONDS)
         builder.readTimeout(10, TimeUnit.SECONDS)
         builder.pingInterval(15, TimeUnit.SECONDS)
+        builder.dns(DNS)
 
         builder.addInterceptor { chain ->
             val sourceRequest = chain.request()
@@ -129,7 +131,7 @@ internal class AppModule {
                 var response = try {
                     chain.proceed(request)
                 } catch (e: Exception) {
-                     throw e.apply {
+                    throw e.apply {
                         if (this is SocketTimeoutException || this is UnknownHostException || this is ConnectException) {
                             HostSelectionInterceptor.get().switch()
                         }
