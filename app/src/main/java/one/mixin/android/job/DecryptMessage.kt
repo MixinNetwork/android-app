@@ -53,6 +53,7 @@ import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.MessageMentionStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.ResendSessionMessage
@@ -633,11 +634,15 @@ class DecryptMessage : Injector() {
                 jobManager.addJobInBackground(RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
             }
         } else if (systemMessage.action == SystemConversationAction.REMOVE.name || systemMessage.action == SystemConversationAction.EXIT.name) {
-            if (systemMessage.participantId == accountId) {
-                conversationDao.updateConversationStatusById(data.conversationId, ConversationStatus.QUIT.ordinal)
-            }
             syncUser(systemMessage.participantId!!)
             jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.REMOVE_PARTICIPANT, systemMessage.participantId))
+            if (systemMessage.participantId == accountId) {
+                conversationDao.updateConversationStatusById(data.conversationId, ConversationStatus.QUIT.ordinal)
+            } else if (participantDao.getRoleByConversationIdAndUserId(data.conversationId, accountId!!)
+                    .run { this != null && this != ParticipantRole.ADMIN.name && this != ParticipantRole.OWNER.name }
+            ) {
+                return
+            }
         } else if (systemMessage.action == SystemConversationAction.CREATE.name) {
         } else if (systemMessage.action == SystemConversationAction.UPDATE.name) {
             if (!systemMessage.participantId.isNullOrBlank()) {

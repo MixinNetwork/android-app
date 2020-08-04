@@ -43,6 +43,9 @@ interface ParticipantDao : BaseDao<Participant> {
     @Query("UPDATE participants SET role = :role where conversation_id = :conversationId AND user_id = :userId")
     fun updateParticipantRole(conversationId: String, userId: String, role: String)
 
+    @Query("SELECT role FROM participants WHERE conversation_id = :conversationId AND user_id = :userId")
+    fun getRoleByConversationIdAndUserId(conversationId: String, userId: String): String?
+
     @Transaction
     @Query("SELECT * FROM participants WHERE conversation_id = :conversationId")
     fun getRealParticipants(conversationId: String): List<Participant>
