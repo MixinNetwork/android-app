@@ -1,5 +1,9 @@
 package one.mixin.android
 
+import okhttp3.Dns
+import one.mixin.android.net.CustomDns
+import one.mixin.android.net.SequentialDns
+
 object Constants {
 
     object API {
@@ -173,4 +177,6 @@ object Constants {
 
     const val DB_DELETE_THRESHOLD = 5000
     const val DB_DELETE_LIMIT = 500
+
+    val DNS: Dns = SequentialDns(Dns.SYSTEM, CustomDns("1.1.1.1"))
 }
