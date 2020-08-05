@@ -814,9 +814,9 @@ class ChatControlView : FrameLayout {
 
             if (activity == null || !currentAudio()) return@Runnable
 
-            if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO)) {
+            if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO) || !RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 RxPermissions(activity!! as FragmentActivity)
-                    .request(Manifest.permission.RECORD_AUDIO)
+                    .request(Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     .autoDispose(this)
                     .subscribe({}, { Bugsnag.notify(it) })
                 return@Runnable
