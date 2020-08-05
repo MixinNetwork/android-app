@@ -8,6 +8,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import android.webkit.CookieManager
+import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -91,6 +93,7 @@ class PermissionListFragment : BaseFragment() {
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
                 viewModel.deauthApp(app.appId).autoDispose(stopScope).subscribe(
                     {
+                        clearRelatedCookies(app)
                         deauthCallback?.onSuccess()
                         activity?.onBackPressed()
                     },
@@ -104,6 +107,24 @@ class PermissionListFragment : BaseFragment() {
                     getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(Color.RED)
                 }
             }.show()
+    }
+
+    private fun clearRelatedCookies(app: App) {
+        val cm = CookieManager.getInstance()
+        val cookieString = cm.getCookie(app.homeUri)
+        if (cookieString.isNullOrBlank()) return
+
+        val cookies = cookieString.split(";")
+        val keys = mutableListOf<String>()
+        cookies.forEach { c ->
+            val kv = c.split("=")
+            keys.add(kv[0].trim())
+        }
+        val domain = ".${app.homeUri.toUri().host}"
+        keys.forEach { k ->
+            // TODO not working when setting some cookies
+            cm.setCookie(domain, "$k=")
+        }
     }
 
     class PermissionListAdapter : FooterListAdapter<Scope, RecyclerView.ViewHolder>(Scope.DIFF_CALLBACK) {
