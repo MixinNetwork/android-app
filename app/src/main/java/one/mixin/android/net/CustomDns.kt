@@ -18,15 +18,15 @@ class CustomDns(private val dnsHostname: String) : Dns {
         val lookup: Lookup = doLookup(hostname)
         lookup.setResolver(resolver)
         val records: Array<Record> = lookup.run()
-        val ipv4Addresses = records.filter { it.type == Type.A }
+        val ipAddresses = records.filter { it.type == Type.A || it.type == Type.AAAA }
             .map { r ->
                 r as ARecord
             }.map {
                 val kFunction = ARecord::getAddress
                 kFunction(it)
             }
-        if (ipv4Addresses.isNotEmpty()) {
-            return ipv4Addresses
+        if (ipAddresses.isNotEmpty()) {
+            return ipAddresses
         }
         throw UnknownHostException(hostname)
     }
