@@ -87,6 +87,7 @@ buildscript {
         ext.svgVersion = '1.4'
         ext.startupVersion ='1.0.0-alpha02'
         ext.dnsVersion = '2.1.9'
+        ext.bouncycastleVersion = '1.65.01'
     }
 
     repositories {

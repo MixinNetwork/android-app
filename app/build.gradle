@@ -260,6 +260,7 @@ dependencies {
     implementation "com.caverock:androidsvg-aar:${svgVersion}"
     implementation "androidx.startup:startup-runtime:${startupVersion}"
     implementation "dnsjava:dnsjava:${dnsVersion}"
+    implementation "org.bouncycastle:bcprov-jdk15on:${bouncycastleVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {
