@@ -406,18 +406,20 @@ class MainActivity : BlazeBaseActivity() {
         val lastTime = defaultSharedPreferences.getLong(PREF_CHECK_STORAGE, 0)
         if (System.currentTimeMillis() - lastTime > INTERVAL_24_HOURS) {
             defaultSharedPreferences.putLong(PREF_CHECK_STORAGE, System.currentTimeMillis())
-            checkStorageNotLow({
-                alertDialogBuilder()
-                    .setTitle(R.string.storage_low_title)
-                    .setMessage(R.string.storage_low_message)
-                    .setCancelable(false)
-                    .setNegativeButton(getString(R.string.know)) { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .show()
-            }, {
-
-            })
+            checkStorageNotLow(
+                {
+                    alertDialogBuilder()
+                        .setTitle(R.string.storage_low_title)
+                        .setMessage(R.string.storage_low_message)
+                        .setCancelable(false)
+                        .setNegativeButton(getString(R.string.know)) { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                },
+                {
+                }
+            )
         }
     }
 

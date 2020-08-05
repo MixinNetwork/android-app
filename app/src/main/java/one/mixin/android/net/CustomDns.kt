@@ -8,7 +8,6 @@ import org.xbill.DNS.Resolver
 import org.xbill.DNS.SimpleResolver
 import org.xbill.DNS.TextParseException
 import org.xbill.DNS.Type
-import timber.log.Timber
 import java.net.InetAddress
 import java.net.UnknownHostException
 
