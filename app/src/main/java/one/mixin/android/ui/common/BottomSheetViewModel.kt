@@ -49,6 +49,7 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
@@ -523,4 +524,11 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun getParticipantsWithoutBot(conversationId: String) =
         conversationRepo.getParticipantsWithoutBot(conversationId)
+
+    suspend fun insertTrace(trace: Trace) = assetRepository.insertTrace(trace)
+
+    suspend fun suspendFindTraceById(traceId: String) = assetRepository.suspendFindTraceById(traceId)
+
+    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
+        assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
 }

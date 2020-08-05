@@ -18,7 +18,7 @@ abstract class ValuableBiometricBottomSheetDialogFragment<T : BiometricItem> : B
     protected fun setBiometricItem() {
         val t = getBiometricItem()
         contentView.asset_balance.setInfo(t)
-        checkState(t.state)
+        checkState(t)
     }
 
     protected fun getDescription(): String {
@@ -28,7 +28,7 @@ abstract class ValuableBiometricBottomSheetDialogFragment<T : BiometricItem> : B
         return "$pre ($post)"
     }
 
-    abstract fun checkState(state: String)
+    abstract fun checkState(t: BiometricItem)
 
     abstract fun getBiometricItem(): T
 }

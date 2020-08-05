@@ -1,6 +1,8 @@
 package one.mixin.android.repository
 
 import androidx.paging.DataSource
+import kotlinx.coroutines.Dispatchers
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.TransferRequest
@@ -12,11 +14,14 @@ import one.mixin.android.db.AssetDao
 import one.mixin.android.db.AssetsExtraDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TopAssetDao
+import one.mixin.android.db.TraceDao
+import one.mixin.android.extension.within24Hours
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetsExtra
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.Trace
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,7 +35,8 @@ constructor(
     private val snapshotDao: SnapshotDao,
     private val addressDao: AddressDao,
     private val addressService: AddressService,
-    private val hotAssetDao: TopAssetDao
+    private val hotAssetDao: TopAssetDao,
+    private val traceDao: TraceDao
 ) {
 
     fun assets() = assetService.assets()
@@ -163,4 +169,36 @@ constructor(
 
     suspend fun getSnapshots(assetId: String, offset: String?, limit: Int, opponent: String?, destination: String?, tag: String?) =
         assetService.getSnapshots(assetId, offset, limit, opponent, destination, tag)
+
+    suspend fun insertTrace(trace: Trace) = traceDao.insertSuspend(trace)
+
+    suspend fun suspendFindTraceById(traceId: String): Trace? = traceDao.suspendFindTraceById(traceId)
+
+    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String): Trace? {
+        val trace = traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return null
+
+        val with24hours = trace.createdAt.within24Hours()
+        if (!with24hours) {
+            return null
+        }
+
+        if (trace.snapshotId == null) {
+            return handleMixinResponse(
+                invokeNetwork = {
+                    // TODO use new trace API instead
+                    getSnapshotByTraceId(trace.traceId)
+                },
+                switchContext = Dispatchers.IO,
+                successBlock = { r ->
+                    val snapshot = r.data ?: return@handleMixinResponse null
+
+                    trace.snapshotId = snapshot.snapshotId
+                    traceDao.insertSuspend(trace)
+                    return@handleMixinResponse trace
+                }
+            )
+        } else {
+            return trace
+        }
+    }
 }

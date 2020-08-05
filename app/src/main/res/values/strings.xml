@@ -374,6 +374,8 @@
     <string name="wallet_transaction_tip_title">Large Amount Confirmation</string>
     <string name="wallet_transaction_tip_title_with_symbol">Large Amount Confirmation(%1$s)</string>
     <string name="wallet_transaction_tip">Are you sure you want to transfer %3$s worth %2$s to %1$s ？</string>
+    <string name="wallet_transfer_recent_tip">%1$s你已成功给 %2$s 转账了 %3$s，确认还要再给 TA 转 %4$s 吗？</string>
+    <string name="wallet_withdrawal_recent_tip">%1$s你已成功提现到地址 %2$s %3$s，确认还要再给此地址提现 %4$s 吗？</string>
     <string name="wallet_password_change">Change PIN</string>
     <string name="wallet_password_old_title">Old PIN</string>
     <string name="wallet_password_not_equal">The PIN did not match the re-typed PIN, please try again.</string>

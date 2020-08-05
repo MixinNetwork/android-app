@@ -99,8 +99,8 @@ class MultisigsBottomSheetDialogFragment :
         }
     }
 
-    override fun checkState(state: String) {
-        when (state) {
+    override fun checkState(t: BiometricItem) {
+        when (t.state) {
             MultisigsState.signed.name -> {
                 contentView.error_btn.visibility = GONE
                 showErrorInfo(getString(R.string.multisig_state_signed))
@@ -164,7 +164,7 @@ class MultisigsBottomSheetDialogFragment :
                         opponentMultisig = OpponentMultisig(t.receivers, t.threshold),
                         amount = t.amount,
                         pin = "",
-                        traceId = t.trace,
+                        traceId = t.traceId,
                         memo = t.memo
                     ),
                     pin

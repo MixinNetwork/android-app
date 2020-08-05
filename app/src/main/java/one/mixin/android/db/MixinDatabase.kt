@@ -26,6 +26,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_28_29
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_29_30
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_30_31
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_31_32
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_32_33
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -52,6 +53,7 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.TopAsset
+import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 
 @Database(
@@ -82,7 +84,8 @@ import one.mixin.android.vo.User
         (MessageMention::class),
         (MessageFts4::class),
         (Circle::class),
-        (CircleConversation::class)
+        (CircleConversation::class),
+        (Trace::class)
     ],
     version = CURRENT_VERSION
 )
@@ -112,6 +115,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun messageFts4Dao(): MessagesFts4Dao
     abstract fun circleDao(): CircleDao
     abstract fun circleConversationDao(): CircleConversationDao
+    abstract fun traceDao(): TraceDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null
@@ -124,7 +128,11 @@ abstract class MixinDatabase : RoomDatabase() {
             synchronized(lock) {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
-                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28, MIGRATION_28_29, MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32)
+                        .addMigrations(
+                            MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21,
+                            MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28,
+                            MIGRATION_28_29, MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32, MIGRATION_32_33
+                        )
                         .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)
                         .build()
@@ -141,7 +149,11 @@ abstract class MixinDatabase : RoomDatabase() {
             synchronized(lock) {
                 if (READINSTANCE == null) {
                     READINSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
-                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28, MIGRATION_28_29, MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32)
+                        .addMigrations(
+                            MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21,
+                            MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26, MIGRATION_26_27, MIGRATION_27_28,
+                            MIGRATION_28_29, MIGRATION_29_30, MIGRATION_30_31, MIGRATION_31_32, MIGRATION_32_33
+                        )
                         .enableMultiInstanceInvalidation()
                         .build()
                 }

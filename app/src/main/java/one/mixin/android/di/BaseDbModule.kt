@@ -126,4 +126,8 @@ internal class BaseDbModule {
     @Singleton
     @Provides
     fun providesCircleConversationDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.circleConversationDao()
+
+    @Singleton
+    @Provides
+    fun providesTraceDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.traceDao()
 }

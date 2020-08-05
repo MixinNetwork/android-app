@@ -212,6 +212,18 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("ALTER TABLE users ADD COLUMN is_scam INTEGER")
             }
         }
+
+        val MIGRATION_32_33: Migration = object : SafeMigration(32, 33) {
+            override fun safeMigrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    """
+                        CREATE TABLE IF NOT EXISTS `traces` (`trace_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, 
+                        `opponent_id` TEXT, `destination` TEXT, `tag` TEXT, `snapshot_id` TEXT, `created_at` TEXT NOT NULL, 
+                        PRIMARY KEY(`trace_id`))
+                """
+                )
+            }
+        }
     }
 }
 

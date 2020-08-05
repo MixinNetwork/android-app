@@ -25,6 +25,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkManager
@@ -35,6 +36,7 @@ import kotlinx.android.synthetic.main.item_transfer_type.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.*
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
@@ -511,29 +513,30 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun showTransferBottom() {
+    private fun showTransferBottom() = lifecycleScope.launch {
         if (currentAsset == null || (user == null && address == null)) {
-            return
+            return@launch
         }
         val amount = getAmount()
         try {
             BigDecimal(amount)
         } catch (e: NumberFormatException) {
-            return
+            return@launch
         }
 
         val memo = contentView.transfer_memo.text.toString()
         if (memo.toByteArray().size > 140) {
             toast("${contentView.transfer_memo.hint} ${getString(R.string.group_edit_too_long)}")
-            return
+            return@launch
         }
-
+        val traceId = UUID.randomUUID().toString()
+        val trace = chatViewModel.findLatestTrace(user?.userId, address?.destination, address?.tag, amount, currentAsset!!.assetId)
         val biometricItem = if (user != null) {
-            TransferBiometricItem(user!!, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo, PaymentStatus.pending.name)
+            TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace)
         } else {
             WithdrawBiometricItem(
-                address!!.displayAddress(), address!!.addressId, address!!.label,
-                address!!.fee, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo, ""
+                address!!.destination, address!!.tag, address!!.addressId, address!!.label,
+                address!!.fee, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace
             )
         }
 
@@ -544,7 +547,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 callback?.onSuccess()
             }
         }
-        bottom.onDistroyListener = object : TransferBottomSheetDialogFragment.OnDestroyListener {
+        bottom.onDestroyListener = object : TransferBottomSheetDialogFragment.OnDestroyListener {
             override fun onDestroy() {
                 transferBottomOpened = false
             }
