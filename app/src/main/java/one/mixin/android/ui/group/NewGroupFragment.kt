@@ -152,7 +152,7 @@ class NewGroupFragment : BaseFragment() {
                             liveData.removeObservers(viewLifecycleOwner)
                             name_desc_et.hideKeyboard()
                             dialog?.dismiss()
-                            startActivity(Intent(context, MainActivity::class.java))
+                            MainActivity.reopen(requireContext())
                         }
                     }
                 }
