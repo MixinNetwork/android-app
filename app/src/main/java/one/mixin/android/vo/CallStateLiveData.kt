@@ -324,7 +324,7 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
             val groupCallState = addGroupCallState(conversationId)
 
             val self = Session.getAccountId()!!
-            if (!isBeforeAnswering() && !newUsers.contains(self)) {
+            if (inConversationAndAtLeastAnswering(conversationId) && !newUsers.contains(self)) {
                 groupCallState.setJoinedUsers(
                     mutableListOf<String>().apply {
                         add(self)
@@ -361,6 +361,9 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     fun isConnected() = state == CallService.CallState.STATE_CONNECTED
     fun isRinging() = state == CallService.CallState.STATE_RINGING
     fun isBeforeAnswering() = state < CallService.CallState.STATE_ANSWERING
+
+    fun inConversationAndAtLeastAnswering(conversationId: String) =
+        state >= CallService.CallState.STATE_ANSWERING && conversationId == this.conversationId
 
     fun isPendingGroupCall(conversationId: String) =
         if (this.conversationId == conversationId) {

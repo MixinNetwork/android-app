@@ -7,6 +7,7 @@ import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.google.firebase.iid.FirebaseInstanceId
+import com.google.gson.JsonSyntaxException
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import dagger.Module
 import dagger.Provides
@@ -19,6 +20,7 @@ import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.URL
+import one.mixin.android.Constants.DNS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse
@@ -115,6 +117,7 @@ internal class AppModule {
         builder.writeTimeout(10, TimeUnit.SECONDS)
         builder.readTimeout(10, TimeUnit.SECONDS)
         builder.pingInterval(15, TimeUnit.SECONDS)
+        builder.dns(DNS)
 
         builder.addInterceptor { chain ->
             val sourceRequest = chain.request()
@@ -128,12 +131,20 @@ internal class AppModule {
                 var response = try {
                     chain.proceed(request)
                 } catch (e: Exception) {
-                    if (e.message?.contains("502") == true) {
-                        throw ServerErrorException(502)
-                    } else throw e.apply {
+                    throw e.apply {
                         if (this is SocketTimeoutException || this is UnknownHostException || this is ConnectException) {
                             HostSelectionInterceptor.get().switch()
                         }
+                    }
+                }
+
+                if (!response.isSuccessful) {
+                    val code = response.code
+                    if (code in 501..599) {
+                        HostSelectionInterceptor.get().switch()
+                        throw ServerErrorException(code)
+                    } else if (code == 500) {
+                        throw ServerErrorException(code)
                     }
                 }
 
@@ -143,7 +154,12 @@ internal class AppModule {
                     val body = bytes.toResponseBody(contentType)
                     response = response.newBuilder().body(body).build()
                     if (bytes.isEmpty()) return@run
-                    val mixinResponse = GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)
+                    val mixinResponse = try {
+                        GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)
+                    } catch (e: JsonSyntaxException) {
+                        HostSelectionInterceptor.get().switch()
+                        throw ServerErrorException(response.code)
+                    }
                     if (mixinResponse.errorCode != 401) return@run
                     val authorization = response.request.header("Authorization")
                     if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
@@ -162,12 +178,6 @@ internal class AppModule {
                     }
                 }
 
-                if (!response.isSuccessful) {
-                    val code = response.code
-                    if (code in 500..599) {
-                        throw ServerErrorException(code)
-                    }
-                }
                 return@addInterceptor response
             } else {
                 throw NetworkException()

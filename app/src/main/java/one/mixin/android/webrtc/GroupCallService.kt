@@ -165,7 +165,7 @@ class GroupCallService : CallService() {
             callState.reconnecting = true
             pc.close()
         } else {
-            createOfferWithTurns(conversationId)
+            publish(conversationId)
         }
     }
 
@@ -562,7 +562,7 @@ class GroupCallService : CallService() {
         }
 
         callExecutor.execute {
-            createOfferWithTurns(conversationId)
+            publish(conversationId)
         }
     }
 
@@ -577,7 +577,18 @@ class GroupCallService : CallService() {
     }
 
     override fun onTurnServerError() {
-        handleCallLocalFailed()
+        if (callState.reconnecting) {
+            SystemClock.sleep(SLEEP_MILLIS)
+            val conversationId = callState.conversationId
+            if (conversationId == null) {
+                Timber.d("$TAG_CALL reconnecting onTurnServerError conversationId is null")
+                handleCallLocalFailed()
+                return
+            }
+            publish(conversationId)
+        } else {
+            handleCallLocalFailed()
+        }
     }
 
     @SuppressLint("AutoDispose")
@@ -747,7 +758,7 @@ class GroupCallService : CallService() {
 
     private fun checkSchedules(conversationId: String) {
         Timber.d("$TAG_CALL checkSchedules reconnecting: ${callState.reconnecting}")
-        if (!callState.isBeforeAnswering()) {
+        if (callState.inConversationAndAtLeastAnswering(conversationId)) {
             callState.clearUsersKeepSelf(conversationId)
             return
         }

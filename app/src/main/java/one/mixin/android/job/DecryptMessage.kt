@@ -192,6 +192,10 @@ class DecryptMessage : Injector() {
     }
 
     private fun processAppCard(data: BlazeMessageData) {
+        if (!data.representativeId.isNullOrBlank()) {
+            data.userId = data.representativeId
+        }
+        syncUser(data.userId)
         val message = createMessage(
             data.messageId, data.conversationId, data.userId, data.category,
             String(Base64.decode(data.data)), data.createdAt, data.status

@@ -741,10 +741,14 @@ fun Context.isPlayStoreInstalled(): Boolean {
 
 fun Context.openMarket() {
     if (isPlayStoreInstalled()) {
-        val intent = Intent(Intent.ACTION_VIEW)
-        intent.data = Uri.parse("market://details?id=${BuildConfig.APPLICATION_ID}")
-        intent.setPackage(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE)
-        startActivity(intent)
+        try {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse("market://details?id=${BuildConfig.APPLICATION_ID}")
+            intent.setPackage(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE)
+            startActivity(intent)
+        } catch (e: Exception) {
+            openUrl(getString(R.string.website))
+        }
     } else {
         openUrl(getString(R.string.website))
     }

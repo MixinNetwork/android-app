@@ -61,6 +61,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     ) {
         val sdpConstraint = createMediaConstraint()
         if (iceServerList != null) {
+            iceServers.clear()
             iceServers.addAll(iceServerList)
         } else {
             sdpConstraint.mandatory.add(restartConstraint)
@@ -133,6 +134,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
     ) {
         val sdpConstraint = createMediaConstraint()
         if (iceServerList != null) {
+            iceServers.clear()
             iceServers.addAll(iceServerList)
         }
         if (peerConnection == null || peerConnection?.connectionState() == PeerConnection.PeerConnectionState.CLOSED) {

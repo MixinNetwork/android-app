@@ -1,7 +1,7 @@
 def versionMajor = 0
-def versionMinor = 25
-def versionPatch = 9
-def versionBuild = 0
+def versionMinor = 26
+def versionPatch = 1
+def versionBuild = 1
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
@@ -259,6 +259,8 @@ dependencies {
     implementation "com.github.SandroMachado:BitcoinPaymentURI:${bitcoinPaymentURI}"
     implementation "com.caverock:androidsvg-aar:${svgVersion}"
     implementation "androidx.startup:startup-runtime:${startupVersion}"
+    implementation "dnsjava:dnsjava:${dnsVersion}"
+    implementation "org.bouncycastle:bcprov-jdk15on:${bouncycastleVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {
