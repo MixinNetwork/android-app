@@ -127,6 +127,8 @@ class WebBottomFragment : BaseFragment() {
             }) ();
             """
 
+        var instance: WebBottomFragment? = null
+
         fun newInstance(
             url: String,
             conversationId: String?,
@@ -137,6 +139,8 @@ class WebBottomFragment : BaseFragment() {
             putString(CONVERSATION_ID, conversationId)
             putParcelable(ARGS_APP, app)
             putParcelable(ARGS_APP_CARD, appCard)
+        }.apply {
+            instance = this
         }
     }
 
@@ -188,22 +192,29 @@ class WebBottomFragment : BaseFragment() {
 
     // todo enter transition
     fun showNow(supportFragmentManager: FragmentManager, tag: String) {
-        supportFragmentManager.beginTransaction().add(R.id.root_view, this, tag).commit()
+        supportFragmentManager.beginTransaction()
+            .setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R.anim.no_transition, R.anim.no_transition)
+            .add(R.id.root_view, this, tag)
+            .commit()
     }
 
     // todo hide self save instance
-    fun hide(){
-
+    fun hide(supportFragmentManager: FragmentManager) {
+        supportFragmentManager.beginTransaction()
+            .remove(this).commit()
     }
 
     // todo hide self and release
-    fun dismiss(){
-
+    fun dismiss(supportFragmentManager: FragmentManager) {
+        supportFragmentManager.beginTransaction()
+            .remove(this).commit()
+        instance = null
     }
 
     override fun onBackPressed(): Boolean {
         if (contentView.chat_web_view.canGoBack()) {
             contentView.chat_web_view.goBack()
+            instance = null
             return true
         }
         return false
@@ -310,7 +321,7 @@ class WebBottomFragment : BaseFragment() {
     private fun initView() {
         contentView.suspicious_link_view.listener = object : SuspiciousLinkView.SuspiciousListener {
             override fun onBackClick() {
-                dismiss()
+                dismiss(parentFragmentManager)
             }
 
             override fun onContinueClick() {
@@ -324,7 +335,7 @@ class WebBottomFragment : BaseFragment() {
             }
 
             override fun onCloseClick() {
-                dismiss()
+                dismiss(parentFragmentManager)
             }
         }
         contentView.chat_web_view.settings.javaScriptEnabled = true
