@@ -13,7 +13,6 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import io.noties.markwon.recycler.MarkwonAdapter
 import kotlinx.android.synthetic.main.activity_markdown.*
 import kotlinx.android.synthetic.main.view_markdown.view.*
-import kotlinx.android.synthetic.main.view_web_bottom.view.forward
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
