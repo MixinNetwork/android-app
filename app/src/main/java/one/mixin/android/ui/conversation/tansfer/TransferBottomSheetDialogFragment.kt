@@ -17,6 +17,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
+import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putStringSet
@@ -109,9 +110,14 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                     tickMillis = 4000L,
                     errorAction = BiometricLayout.ErrorAction.LargeAmount
                 ) {
-                    contentView.title.text =
-                        getString(R.string.wallet_bottom_transfer_to, t.user.fullName ?: "")
-                    contentView.title.textSizeDimen = R.dimen.wallet_balance_text
+                    if (t.trace != null) {
+                        checkTransferTrace(t)
+                    } else {
+                        showPin()
+                        contentView.title.text =
+                            getString(R.string.wallet_bottom_transfer_to, t.user.fullName ?: "")
+                        contentView.title.textSizeDimen = R.dimen.wallet_balance_text
+                    }
                 }
             } else if (t is TransferBiometricItem) {
                 checkTransferTrace(t)
@@ -202,10 +208,10 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
     private fun checkTransferTrace(t: TransferBiometricItem) {
         val trace = t.trace ?: return
 
-        val time = getTime(trace.createdAt)
+        val time = trace.createdAt.getRelativeTimeSpan()
         val amount = "${t.amount} ${t.asset.symbol}"
         showErrorInfo(
-            getString(R.string.wallet_transfer_recent_tip, time, t.user.fullName, amount, amount),
+            getString(R.string.wallet_transfer_recent_tip, time, t.user.fullName, amount),
             tickMillis = 4000L,
             errorAction = BiometricLayout.ErrorAction.RecentPaid
         ) {
@@ -218,11 +224,11 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
     private fun checkWithdrawTrace(t: WithdrawBiometricItem) {
         val trace = t.trace ?: return
 
-        val time = getTime(trace.createdAt)
+        val time = trace.createdAt.getRelativeTimeSpan()
         val amount = "${t.amount} ${t.asset.symbol}"
         showErrorInfo(
             getString(
-                R.string.wallet_withdrawal_recent_tip, time, t.label, amount, amount
+                R.string.wallet_withdrawal_recent_tip, time, t.label, amount
             ),
             tickMillis = 4000L,
             errorAction = BiometricLayout.ErrorAction.RecentPaid
@@ -231,21 +237,6 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             contentView.sub_title.text = t.destination
             contentView.title.textSizeDimen = R.dimen.wallet_balance_text
         }
-    }
-
-    private fun getTime(createdAt: String): String {
-        val createTime = ZonedDateTime.parse(createdAt).toOffsetDateTime().toEpochSecond() * 1000L
-        val now = Date().time
-        val time = DateUtils.getRelativeTimeSpanString(
-            createTime, now,
-            when {
-                ((now - createTime) < 60000L) -> DateUtils.SECOND_IN_MILLIS
-                ((now - createTime) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
-                ((now - createTime) < 86400000L) -> DateUtils.HOUR_IN_MILLIS
-                else -> DateUtils.DAY_IN_MILLIS
-            }
-        )
-        return time.toString()
     }
 
     private fun shouldShowTransferTip() =

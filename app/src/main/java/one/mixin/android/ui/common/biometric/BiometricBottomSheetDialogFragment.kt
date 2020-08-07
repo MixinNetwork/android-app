@@ -89,7 +89,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         biometricDialog?.show()
     }
 
-    private fun showPin() {
+    protected fun showPin() {
         if (!isAdded) return
         contentView.biometric_layout.showPin(true)
     }

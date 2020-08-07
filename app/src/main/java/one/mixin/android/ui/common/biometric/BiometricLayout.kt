@@ -141,7 +141,13 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
                 error_btn.text = getString(R.string.bottom_withdrawal_change_amount)
                 error_btn.setOnClickListener { callback?.onDismiss() }
             }
-            ErrorAction.LargeAmount, ErrorAction.RecentPaid -> {
+            ErrorAction.LargeAmount -> {
+                error_btn.text = getString(R.string.common_continue)
+                error_btn.setOnClickListener {
+                    clickCallback?.invoke()
+                }
+            }
+        ErrorAction.RecentPaid -> {
                 error_btn.text = getString(R.string.common_continue)
                 error_btn.setOnClickListener {
                     showPin(true)

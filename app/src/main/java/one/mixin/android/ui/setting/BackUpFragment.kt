@@ -3,7 +3,6 @@ package one.mixin.android.ui.setting
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -26,6 +25,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
+import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
@@ -35,7 +35,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.delete
 import one.mixin.android.util.backup.findBackup
-import java.util.Date
 import javax.inject.Inject
 
 class BackUpFragment : BaseFragment() {
@@ -149,17 +148,7 @@ class BackUpFragment : BaseFragment() {
                 delete_bn.visibility = GONE
             } else {
                 val time = file.lastModified().run {
-                    val now = Date().time
-                    val createTime = file.lastModified()
-                    DateUtils.getRelativeTimeSpanString(
-                        createTime, now,
-                        when {
-                            ((now - createTime) < 60000L) -> DateUtils.SECOND_IN_MILLIS
-                            ((now - createTime) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
-                            ((now - createTime) < 86400000L) -> DateUtils.HOUR_IN_MILLIS
-                            else -> DateUtils.DAY_IN_MILLIS
-                        }
-                    )
+                    this.getRelativeTimeSpan()
                 }
                 backup_info.text = getString(R.string.backup_external_storage, time)
                 backup_size.text = getString(R.string.restore_size, file.length().fileSize())

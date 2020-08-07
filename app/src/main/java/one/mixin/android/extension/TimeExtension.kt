@@ -1,6 +1,7 @@
 package one.mixin.android.extension
 
 import android.content.Context
+import android.text.format.DateUtils
 import one.mixin.android.R
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.language.Lingver
@@ -10,6 +11,7 @@ import org.threeten.bp.LocalTime
 import org.threeten.bp.ZoneId
 import org.threeten.bp.ZonedDateTime
 import org.threeten.bp.format.DateTimeFormatter
+import java.util.Date
 
 private val LocaleZone by lazy {
     ZoneId.systemDefault()
@@ -189,4 +191,23 @@ fun String.createAtToLong(): Long {
 fun String.getRFC3339Nano(): String {
     val date = ZonedDateTime.parse(this).toOffsetDateTime()
     return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'").withZone(LocaleZone))
+}
+
+fun Long.getRelativeTimeSpan(): String {
+    val now = Date().time
+    val time = DateUtils.getRelativeTimeSpanString(
+        this, now,
+        when {
+            ((now - this) < 60000L) -> DateUtils.SECOND_IN_MILLIS
+            ((now - this) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
+            ((now - this) < 86400000L) -> DateUtils.HOUR_IN_MILLIS
+            else -> DateUtils.DAY_IN_MILLIS
+        }
+    )
+    return time.toString()
+}
+
+fun String.getRelativeTimeSpan(): String {
+    val createTime = ZonedDateTime.parse(this).toOffsetDateTime().toEpochSecond() * 1000L
+    return createTime.getRelativeTimeSpan()
 }

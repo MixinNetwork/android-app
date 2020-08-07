@@ -20,6 +20,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
+import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.MixinJobManager
@@ -118,17 +119,7 @@ class RestoreActivity : BaseActivity() {
     private fun initUI(data: File) {
         setContentView(R.layout.activity_restore)
         restore_time.text = data.lastModified().run {
-            val now = Date().time
-            val createTime = data.lastModified()
-            DateUtils.getRelativeTimeSpanString(
-                createTime, now,
-                when {
-                    ((now - createTime) < 60000L) -> DateUtils.SECOND_IN_MILLIS
-                    ((now - createTime) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
-                    ((now - createTime) < 86400000L) -> DateUtils.HOUR_IN_MILLIS
-                    else -> DateUtils.DAY_IN_MILLIS
-                }
-            )
+            this.getRelativeTimeSpan()
         }
         restore_restore.setOnClickListener {
             RxPermissions(this)
