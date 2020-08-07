@@ -1929,8 +1929,7 @@ class ConversationFragment :
 
     private fun open(url: String, app: App?, appCard: AppCardData? = null) {
         chat_control.chat_et.hideKeyboard()
-        botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(url, conversationId, app, appCard)
-        botWebBottomSheet?.showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+        url.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope, app, appCard)
     }
 
     private fun openInputAction(action: String): Boolean {

@@ -18,6 +18,7 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.donateSupported
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 
@@ -25,9 +26,10 @@ fun String.openAsUrlOrWeb(
     conversationId: String?,
     supportFragmentManager: FragmentManager,
     scope: CoroutineScope,
-    app: App? = null
+    app: App? = null,
+    appCard: AppCardData? = null
 ) = openAsUrl(supportFragmentManager, scope) {
-    WebBottomSheetDialogFragment.newInstance(this, conversationId, app)
+    WebBottomSheetDialogFragment.newInstance(this, conversationId, app, appCard)
         .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
 }
 
