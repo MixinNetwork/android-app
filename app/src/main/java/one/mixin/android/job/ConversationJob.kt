@@ -153,7 +153,8 @@ class ConversationJob(
         } else {
             if (type != TYPE_CREATE || type != TYPE_MUTE) {
                 RxBus.publish(ConversationEvent(type, false))
-            } else if (type == TYPE_CREATE) {
+            }
+            if (type == TYPE_CREATE) {
                 request?.let {
                     conversationDao.updateConversationStatusById(
                         request.conversationId,
