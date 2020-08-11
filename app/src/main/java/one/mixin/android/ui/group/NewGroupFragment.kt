@@ -2,7 +2,6 @@ package one.mixin.android.ui.group
 
 import android.Manifest
 import android.app.Dialog
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore

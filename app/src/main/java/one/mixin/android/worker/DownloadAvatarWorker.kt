@@ -5,7 +5,7 @@ import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
-import one.mixin.android.api.LocalJobException
+import one.mixin.android.api.NetworkException
 import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.vo.User
 import java.util.concurrent.TimeUnit
@@ -24,7 +24,7 @@ class DownloadAvatarWorker @AssistedInject constructor(
         try {
             downloadBitmaps(users)
         } catch (e: Exception) {
-            throw LocalJobException()
+            throw NetworkException()
         }
         return Result.success()
     }
