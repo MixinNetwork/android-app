@@ -265,7 +265,7 @@ class ConversationFragment :
 
     private var unreadTipCount: Int = 0
     private val chatAdapter: ConversationAdapter by lazy {
-        ConversationAdapter(requireContext(), keyword, onItemListener, isGroup, !isPlainMessage(), isBot).apply {
+        ConversationAdapter(requireContext(), jobManager, keyword, onItemListener, isGroup, !isPlainMessage(), isBot).apply {
             registerAdapterDataObserver(chatAdapterDataObserver)
         }
     }

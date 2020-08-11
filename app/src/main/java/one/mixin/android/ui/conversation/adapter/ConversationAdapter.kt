@@ -13,13 +13,23 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.item_chat_unread.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.PAGE_SIZE
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.BlinkEvent
+import one.mixin.android.extension.autoDownload
+import one.mixin.android.extension.autoDownloadDocument
+import one.mixin.android.extension.autoDownloadPhoto
+import one.mixin.android.extension.autoDownloadVideo
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.job.AttachmentDownloadJob
+import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
@@ -39,6 +49,7 @@ import one.mixin.android.ui.conversation.holder.HyperlinkHolder
 import one.mixin.android.ui.conversation.holder.ImageHolder
 import one.mixin.android.ui.conversation.holder.ImageQuoteHolder
 import one.mixin.android.ui.conversation.holder.LocationHolder
+import one.mixin.android.ui.conversation.holder.MediaHolder
 import one.mixin.android.ui.conversation.holder.PostHolder
 import one.mixin.android.ui.conversation.holder.RecallHolder
 import one.mixin.android.ui.conversation.holder.SecretHolder
@@ -63,6 +74,7 @@ import one.mixin.android.vo.create
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isGroupCall
 import one.mixin.android.vo.isRecall
+import one.mixin.android.vo.toMessage
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -70,6 +82,7 @@ import kotlin.math.abs
 
 class ConversationAdapter(
     private val context: Context,
+    private val jobManager: MixinJobManager,
     private val keyword: String?,
     private val onItemListener: OnItemListener,
     private val isGroup: Boolean,
@@ -701,16 +714,38 @@ class ConversationAdapter(
         }
 
     override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
-        getItem(holder.layoutPosition)?.let {
-            (holder as BaseViewHolder).listen(it.messageId)
+        getItem(holder.layoutPosition)?.let { messageItem ->
+            (holder as BaseViewHolder).listen(messageItem.messageId)
             if (holder is BaseMentionHolder) {
                 holder.onViewAttachedToWindow()
+            } else if (holder is MediaHolder) {
+                val flag = if (messageItem.type == MessageCategory.SIGNAL_IMAGE.name || messageItem.type == MessageCategory.PLAIN_IMAGE.name) {
+                    autoDownloadPhoto
+                } else if (messageItem.type == MessageCategory.SIGNAL_VIDEO.name || messageItem.type == MessageCategory.PLAIN_VIDEO.name) {
+                    autoDownloadVideo
+                } else if (messageItem.type == MessageCategory.SIGNAL_DATA.name || messageItem.type == MessageCategory.PLAIN_DATA.name) {
+                    autoDownloadDocument
+                } else {
+                    null
+                }
+                flag?.let {
+                    MixinApplication.appContext.autoDownload(it) {
+                        jobManager.addJobInBackground(AttachmentDownloadJob(messageItem.toMessage()))
+                    }
+                }
             }
         }
     }
 
     override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
-        (holder as BaseViewHolder).stopListen()
+        getItem(holder.layoutPosition)?.let {
+            (holder as BaseViewHolder).stopListen()
+            if (holder is MediaHolder) {
+                GlobalScope.launch(Dispatchers.IO) {
+                    jobManager.cancelJobByMixinJobId(it.messageId)
+                }
+            }
+        }
     }
 
     private fun getItemType(messageItem: MessageItem?): Int =
