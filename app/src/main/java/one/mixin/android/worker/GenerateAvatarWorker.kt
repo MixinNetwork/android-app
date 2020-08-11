@@ -49,7 +49,11 @@ class GenerateAvatarWorker @AssistedInject constructor(
         val result = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val c = Canvas(result)
         val bitmaps = mutableListOf<Bitmap>()
-        getBitmaps(bitmaps, users)
+        try {
+            getBitmaps(bitmaps, users)
+        } catch (e: Exception) {
+            return Result.success()
+        }
         drawInternal(c, bitmaps)
         result.saveGroupAvatar(applicationContext, triple.second)
         if (icon != null && icon != f.absolutePath) {
