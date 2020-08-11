@@ -17,7 +17,6 @@ import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.LocalJobException
 import one.mixin.android.event.AvatarEvent
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.getColorCode
@@ -36,7 +35,7 @@ class GenerateAvatarJob(
 ) : BaseJob(
     Params(
         PRIORITY_BACKGROUND
-    ).addTags(TAG)
+    ).requireNetwork().addTags(TAG)
 ) {
     companion object {
         const val TAG = "GenerateAvatarJob"
@@ -47,6 +46,8 @@ class GenerateAvatarJob(
     private lateinit var texts: ArrayMap<Int, String>
 
     private val size = 256
+
+    override fun getRetryLimit() = 0
 
     override fun onRun() {
         val users = mutableListOf<User>()
@@ -73,7 +74,7 @@ class GenerateAvatarJob(
         try {
             getBitmaps(bitmaps, users)
         } catch (e: Exception) {
-            throw LocalJobException()
+            return
         }
         drawInternal(c, bitmaps)
         result.saveGroupAvatar(applicationContext, name)

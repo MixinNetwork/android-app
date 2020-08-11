@@ -128,14 +128,14 @@ class StickerAddFragment : BaseFragment() {
         }
 
         if (w == dp100) {
-            sticker_iv.updateLayoutParams<ViewGroup.LayoutParams> {
+            sticker_iv?.updateLayoutParams<ViewGroup.LayoutParams> {
                 width = w
                 height = w
             }
         } else {
-            sticker_iv.scaleType = ImageView.ScaleType.CENTER_INSIDE
+            sticker_iv?.scaleType = ImageView.ScaleType.CENTER_INSIDE
         }
-        sticker_iv.loadImage(url)
+        sticker_iv?.loadImage(url)
     }
 
     private fun addSticker() = lifecycleScope.launch {
