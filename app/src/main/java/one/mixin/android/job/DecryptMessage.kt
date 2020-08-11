@@ -22,10 +22,6 @@ import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.CircleDeleteEvent
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.event.SenderKeyChange
-import one.mixin.android.extension.autoDownload
-import one.mixin.android.extension.autoDownloadDocument
-import one.mixin.android.extension.autoDownloadPhoto
-import one.mixin.android.extension.autoDownloadVideo
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findLastUrl
@@ -452,9 +448,6 @@ class DecryptMessage : Injector() {
                 }
 
                 database.insertAndNotifyConversation(message)
-                MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
-                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
-                }
 
                 sendNotificationJob(message, data.source)
             }
@@ -476,9 +469,7 @@ class DecryptMessage : Injector() {
                 }
 
                 database.insertAndNotifyConversation(message)
-                MixinApplication.appContext.autoDownload(autoDownloadVideo) {
-                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
-                }
+
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_DATA") -> {
@@ -496,9 +487,7 @@ class DecryptMessage : Injector() {
 
                 database.insertAndNotifyConversation(message)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
-                MixinApplication.appContext.autoDownload(autoDownloadDocument) {
-                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
-                }
+
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_AUDIO") -> {
