@@ -35,7 +35,7 @@ class GenerateAvatarJob(
 ) : BaseJob(
     Params(
         PRIORITY_BACKGROUND
-    ).requireNetwork().addTags(TAG)
+    ).requireNetwork().persist().addTags(TAG)
 ) {
     companion object {
         const val TAG = "GenerateAvatarJob"
@@ -337,6 +337,9 @@ class GenerateAvatarJob(
     }
 
     private fun getBitmapByPlaceHolder(userId: String): Bitmap {
+        if (!::avatarArray.isInitialized) {
+            avatarArray = applicationContext.resources.getIntArray(R.array.avatar_colors)
+        }
         val color = try {
             val num = userId.getColorCode(CodeType.Avatar(avatarArray.size))
             avatarArray[num]
@@ -357,21 +360,16 @@ class GenerateAvatarJob(
         } else {
             val b = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
             val c = Canvas(b)
+            val paint = Paint().apply {
+                    style = Paint.Style.FILL
+                }
             paint.color = color
             c.drawRect(Rect(0, 0, c.width, c.height), paint)
             return b
         }
     }
 
-    private val paint by lazy {
-        Paint().apply {
-            style = Paint.Style.FILL
-        }
-    }
-
-    private val avatarArray by lazy {
-        applicationContext.resources.getIntArray(R.array.avatar_colors)
-    }
+    private lateinit var avatarArray: IntArray
 }
 
 fun getIconUrlName(groupId: String, users: List<User>): String {
