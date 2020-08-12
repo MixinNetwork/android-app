@@ -178,5 +178,5 @@ object Constants {
     const val DB_DELETE_THRESHOLD = 5000
     const val DB_DELETE_LIMIT = 500
 
-    val DNS: Dns = SequentialDns(Dns.SYSTEM, CustomDns("1.1.1.1"))
+    val DNS: Dns = SequentialDns(CustomDns("1.1.1.1"), CustomDns("2001:4860:4860::8888"), Dns.SYSTEM)
 }
