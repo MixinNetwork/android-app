@@ -502,7 +502,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                         address == null -> error(R.string.error_address_exists)
                                         asset == null -> error(R.string.error_asset_exists)
                                         else -> {
-                                            val trace = linkViewModel.findLatestTrace(null, address.destination, address.tag, amount, assetId)
+                                            val trace = linkViewModel.findLatestTrace(null, addressId, address.destination, address.tag, amount, assetId)
                                             val biometricItem =
                                                 WithdrawBiometricItem(
                                                     address.destination, address.tag, address.addressId, address.label, address.fee,
@@ -611,7 +611,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
             successBlock = { r ->
                 val response = r.data ?: return@handleMixinResponse false
 
-                val lastTrace = linkViewModel.findLatestTrace(response.recipient.userId, null, null, amount, assetId)
+                val lastTrace = linkViewModel.findLatestTrace(response.recipient.userId, null, null, null, amount, assetId)
                 val bottomSheet = TransferBottomSheetDialogFragment
                     .newInstance(
                         TransferBiometricItem(

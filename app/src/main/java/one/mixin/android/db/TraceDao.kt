@@ -17,7 +17,7 @@ interface TraceDao : BaseDao<Trace> {
         """
         SELECT * FROM traces 
         WHERE (opponent_id = :opponentId OR (destination = :destination AND tag = :tag))
-        AND amount = :amount AND asset_id = :assetId
+        AND amount = CAST(:amount AS REAL) AND asset_id = :assetId
         ORDER BY created_at DESC
         LIMIT 1
     """

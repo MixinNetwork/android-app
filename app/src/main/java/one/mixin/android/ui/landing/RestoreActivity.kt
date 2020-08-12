@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.text.format.DateUtils
 import android.view.View
 import androidx.annotation.RequiresPermission
 import androidx.lifecycle.lifecycleScope
@@ -29,7 +28,6 @@ import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.restore
 import java.io.File
-import java.util.Date
 import javax.inject.Inject
 
 class RestoreActivity : BaseActivity() {

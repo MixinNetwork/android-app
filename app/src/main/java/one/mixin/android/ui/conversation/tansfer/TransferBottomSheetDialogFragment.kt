@@ -3,7 +3,6 @@ package one.mixin.android.ui.conversation.tansfer
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.TextUtils
-import android.text.format.DateUtils
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -35,9 +34,7 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textSizeDimen
-import org.threeten.bp.ZonedDateTime
 import java.math.BigDecimal
-import java.util.Date
 
 class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<BiometricItem>() {
     companion object {

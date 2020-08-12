@@ -98,6 +98,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         const val ASSET_PREFERENCE = "TRANSFER_ASSET"
         const val ARGS_SWITCH_ASSET = "args_switch_asset"
 
+        const val POST_TEXT = 0
+        const val POST_PB = 1
+
         fun newInstance(
             userId: String? = null,
             asset: AssetItem? = null,
@@ -529,8 +532,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             toast("${contentView.transfer_memo.hint} ${getString(R.string.group_edit_too_long)}")
             return@launch
         }
+        contentView.continue_va?.displayedChild = POST_PB
         val traceId = UUID.randomUUID().toString()
-        val trace = chatViewModel.findLatestTrace(user?.userId, address?.destination, address?.tag, amount, currentAsset!!.assetId)
+        val trace = chatViewModel.findLatestTrace(user?.userId, address?.addressId, address?.destination, address?.tag, amount, currentAsset!!.assetId)
         val biometricItem = if (user != null) {
             TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace)
         } else {
@@ -539,6 +543,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 address!!.fee, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace
             )
         }
+        contentView.continue_va?.displayedChild = POST_TEXT
 
         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
         bottom.callback = object : BiometricBottomSheetDialogFragment.Callback {

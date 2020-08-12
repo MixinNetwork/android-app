@@ -7,6 +7,7 @@ import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
+import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AddressDao
@@ -16,6 +17,7 @@ import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.extension.within24Hours
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetsExtra
@@ -174,7 +176,7 @@ constructor(
 
     suspend fun suspendFindTraceById(traceId: String): Trace? = traceDao.suspendFindTraceById(traceId)
 
-    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String): Trace? {
+    suspend fun findLatestTrace(opponentId: String?, addressId: String?, destination: String?, tag: String?, amount: String, assetId: String): Trace? {
         val trace = traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return null
 
         val with24hours = trace.createdAt.within24Hours()
@@ -182,19 +184,31 @@ constructor(
             return null
         }
 
-        if (trace.snapshotId == null) {
+        if (trace.snapshotId.isNullOrBlank()) {
             return handleMixinResponse(
                 invokeNetwork = {
-                    // TODO use new trace API instead
-                    getSnapshotByTraceId(trace.traceId)
+                    assetService.trace(
+                        trace.traceId,
+                        TransferRequest(assetId, opponentId, amount, null, trace.traceId, null, addressId)
+                    )
                 },
                 switchContext = Dispatchers.IO,
                 successBlock = { r ->
-                    val snapshot = r.data ?: return@handleMixinResponse null
+                    val paymentResponse = r.data ?: return@handleMixinResponse null
 
-                    trace.snapshotId = snapshot.snapshotId
+                    val snapshotId = paymentResponse.snapshot?.snapshotId
+                    if (paymentResponse.status == PaymentStatus.pending.name || snapshotId.isNullOrBlank()) {
+                        return@handleMixinResponse null
+                    }
+                    trace.snapshotId = snapshotId
                     traceDao.insertSuspend(trace)
                     return@handleMixinResponse trace
+                },
+                failureBlock = {
+                    if (it.errorCode == ErrorHandler.FORBIDDEN) {
+                        traceDao.deleteById(trace.traceId)
+                    }
+                    return@handleMixinResponse true
                 }
             )
         } else {
