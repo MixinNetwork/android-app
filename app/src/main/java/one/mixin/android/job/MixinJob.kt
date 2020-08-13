@@ -291,7 +291,7 @@ abstract class MixinJob(
         if (conversation.isGroup()) {
             syncConversation(conversation.conversationId)
         } else {
-            createConversation(conversation)
+            checkConversationExist(conversation)
         }
     }
 

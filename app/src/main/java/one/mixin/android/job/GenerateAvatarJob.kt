@@ -361,8 +361,8 @@ class GenerateAvatarJob(
             val b = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
             val c = Canvas(b)
             val paint = Paint().apply {
-                    style = Paint.Style.FILL
-                }
+                style = Paint.Style.FILL
+            }
             paint.color = color
             c.drawRect(Rect(0, 0, c.width, c.height), paint)
             return b
