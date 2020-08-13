@@ -20,6 +20,8 @@ class SequentialDns(vararg dns: Dns) : Dns {
                 }
             } catch (e: UnknownHostException) {
                 Timber.w("Failed to resolve %s using %s. Continuing.", hostname, dns.javaClass.simpleName)
+            } catch (e: IllegalStateException) {
+                Timber.w("Failed to resolve %s using %s. Continuing.", hostname, dns.javaClass.simpleName)
             }
         }
         Timber.w("Failed to resolve using any DNS.")
