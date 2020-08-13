@@ -966,9 +966,7 @@ class ConversationFragment :
         if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
             isNearToSensor = values[0] < 5.0f && values[0] != sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY).maximumRange
             if (AudioPlayer.isEnd() || AudioPlayer.audioFilePlaying() || audioManager.isHeadsetOn()) {
-                if (wakeLock.isHeld) {
-                    leaveDevice()
-                }
+                leaveDevice()
             } else if (!audioManager.isHeadsetOn()) {
                 if (isNearToSensor) {
                     nearDevice()
