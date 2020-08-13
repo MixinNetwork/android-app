@@ -181,6 +181,7 @@ class VoiceCallService : CallService() {
             val category = MessageCategory.WEBRTC_AUDIO_CANCEL.name
             sendCallMessage(category)
         }
+        audioManager.stop()
         disconnect()
     }
 
@@ -191,6 +192,7 @@ class VoiceCallService : CallService() {
             val category = MessageCategory.WEBRTC_AUDIO_DECLINE.name
             sendCallMessage(category)
         }
+        audioManager.stop()
         disconnect()
     }
 

@@ -482,6 +482,7 @@ class GroupCallService : CallService() {
             message_id = UUID.randomUUID().toString()
         )
 
+        audioManager.stop()
         disconnect()
 
         saveMessage(cid, self.userId, MessageCategory.KRAKEN_CANCEL.name)
@@ -504,6 +505,7 @@ class GroupCallService : CallService() {
 
         val inviter = callState.getInviter(cid)
 
+        audioManager.stop()
         disconnect()
 
         saveMessage(cid, self.userId, MessageCategory.KRAKEN_DECLINE.name)
