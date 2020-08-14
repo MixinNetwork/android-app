@@ -125,14 +125,15 @@ open class Injector : Injectable {
                 val call = userApi.getUserById(userId).execute()
                 val response = call.body()
                 if (response != null && response.isSuccess && response.data != null) {
-                    user = response.data
+                    response.data?.let { u ->
+                        userDao.insert(u)
+                        user = u
+                    }
                 }
             } catch (e: IOException) {
             }
         }
-        if (user != null) {
-            userDao.insert(user)
-        } else {
+        if (user == null) {
             jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
         }
         return user

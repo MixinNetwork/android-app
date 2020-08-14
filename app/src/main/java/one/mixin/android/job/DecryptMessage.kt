@@ -641,7 +641,7 @@ class DecryptMessage : Injector() {
                 conversationDao.updateConversationStatusById(data.conversationId, ConversationStatus.QUIT.ordinal)
             }
             syncUser(systemMessage.participantId!!)
-            jobManager.addJobInBackground(RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
+            jobManager.addJobInBackground(GenerateAvatarJob(data.conversationId))
             jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.REMOVE_PARTICIPANT, systemMessage.participantId))
         } else if (systemMessage.action == SystemConversationAction.CREATE.name) {
         } else if (systemMessage.action == SystemConversationAction.UPDATE.name) {
