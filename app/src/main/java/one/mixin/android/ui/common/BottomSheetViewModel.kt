@@ -214,6 +214,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun getUser(id: String) = userRepository.getUser(id)
 
+    suspend fun refreshUser(id: String) = userRepository.refreshUser(id)
     fun startGenerateAvatar(conversationId: String, list: List<String>? = null) {
         jobManager.addJobInBackground(GenerateAvatarJob(conversationId, list))
     }
@@ -529,6 +530,6 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun suspendFindTraceById(traceId: String) = assetRepository.suspendFindTraceById(traceId)
 
-    suspend fun findLatestTrace(opponentId: String?, addressId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
-        assetRepository.findLatestTrace(opponentId, addressId, destination, tag, amount, assetId)
+    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
+        assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
 }

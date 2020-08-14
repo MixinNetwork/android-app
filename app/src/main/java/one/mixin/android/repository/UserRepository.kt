@@ -72,6 +72,24 @@ constructor(
 
     fun getUser(id: String) = userService.getUserById(id)
 
+    suspend fun refreshUser(id: String): User? {
+        val user = userDao.suspendFindUserById(id)
+        if (user != null) return user
+
+        return handleMixinResponse(
+            invokeNetwork = {
+                userService.getUserByIdSuspend(id)
+            },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                it.data?.let { u ->
+                    upsert(u)
+                    return@handleMixinResponse u
+                }
+            }
+        )
+    }
+
     suspend fun getAppAndCheckUser(id: String, updatedAt: String?): App? {
         val app = findAppById(id)
         if (app?.updatedAt != null && app.updatedAt == updatedAt) {

@@ -7,7 +7,6 @@ import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
-import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AddressDao
@@ -176,7 +175,7 @@ constructor(
 
     suspend fun suspendFindTraceById(traceId: String): Trace? = traceDao.suspendFindTraceById(traceId)
 
-    suspend fun findLatestTrace(opponentId: String?, addressId: String?, destination: String?, tag: String?, amount: String, assetId: String): Trace? {
+    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String): Trace? {
         val trace = traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return null
 
         val with24hours = trace.createdAt.within24Hours()
@@ -187,20 +186,11 @@ constructor(
         if (trace.snapshotId.isNullOrBlank()) {
             return handleMixinResponse(
                 invokeNetwork = {
-                    assetService.trace(
-                        trace.traceId,
-                        TransferRequest(assetId, opponentId, amount, null, trace.traceId, null, addressId)
-                    )
+                    assetService.trace(trace.traceId)
                 },
                 switchContext = Dispatchers.IO,
                 successBlock = { r ->
-                    val paymentResponse = r.data ?: return@handleMixinResponse null
-
-                    val snapshotId = paymentResponse.snapshot?.snapshotId
-                    if (paymentResponse.status == PaymentStatus.pending.name || snapshotId.isNullOrBlank()) {
-                        return@handleMixinResponse null
-                    }
-                    trace.snapshotId = snapshotId
+                    trace.snapshotId = r.data?.snapshotId
                     traceDao.insertSuspend(trace)
                     return@handleMixinResponse trace
                 },

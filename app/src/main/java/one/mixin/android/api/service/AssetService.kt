@@ -91,6 +91,6 @@ interface AssetService {
     @GET("network/assets/top")
     fun topAssets(): Call<MixinResponse<List<TopAsset>>>
 
-    @POST("/snapshots/trace/{id}")
-    suspend fun trace(@Path("id") traceId: String, @Body request: TransferRequest): MixinResponse<PaymentResponse>
+    @GET("/snapshots/trace/{id}")
+    suspend fun trace(@Path("id") traceId: String): MixinResponse<Snapshot>
 }
