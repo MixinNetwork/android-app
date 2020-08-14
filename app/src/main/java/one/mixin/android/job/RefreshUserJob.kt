@@ -52,9 +52,6 @@ class RefreshUserJob(
     private suspend fun refreshConversationAvatar() {
         if (conversationId == null) return
 
-        val users = if (!conversationAvatarUserIds.isNullOrEmpty()) {
-            userDao.findMultiUsersByIds(conversationAvatarUserIds.take(4).toSet())
-        } else null
-        jobManager.addJobInBackground(GenerateAvatarJob(conversationId, users))
+        jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
     }
 }
