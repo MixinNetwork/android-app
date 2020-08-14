@@ -166,14 +166,14 @@ constructor(
 
     suspend fun getSnapshotById(snapshotId: String) = assetService.getSnapshotById(snapshotId)
 
-    suspend fun getSnapshotByTraceId(traceId: String) = assetService.getSnapshotByTraceId(traceId)
-
     suspend fun getSnapshots(assetId: String, offset: String?, limit: Int, opponent: String?, destination: String?, tag: String?) =
         assetService.getSnapshots(assetId, offset, limit, opponent, destination, tag)
 
     suspend fun insertTrace(trace: Trace) = traceDao.insertSuspend(trace)
 
     suspend fun suspendFindTraceById(traceId: String): Trace? = traceDao.suspendFindTraceById(traceId)
+
+    suspend fun getTrace(traceId: String) = assetService.getTrace(traceId)
 
     suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String): Trace? {
         val trace = traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return null
@@ -186,7 +186,7 @@ constructor(
         if (trace.snapshotId.isNullOrBlank()) {
             return handleMixinResponse(
                 invokeNetwork = {
-                    assetService.trace(trace.traceId)
+                    assetService.getTrace(trace.traceId)
                 },
                 switchContext = Dispatchers.IO,
                 successBlock = { r ->

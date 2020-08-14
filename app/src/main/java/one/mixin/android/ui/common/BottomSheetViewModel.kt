@@ -345,7 +345,7 @@ class BottomSheetViewModel @Inject internal constructor(
             } else {
                 handleMixinResponse(
                     invokeNetwork = {
-                        assetRepository.getSnapshotByTraceId(traceId)
+                        assetRepository.getTrace(traceId)
                     },
                     successBlock = { response ->
                         response.data?.let { snapshot ->

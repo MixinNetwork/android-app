@@ -75,9 +75,6 @@ interface AssetService {
     @GET("snapshots/{id}")
     suspend fun getSnapshotById(@Path("id") id: String): MixinResponse<Snapshot>
 
-    @GET("transfers/trace/{id}")
-    suspend fun getSnapshotByTraceId(@Path("id") traceId: String): MixinResponse<Snapshot>
-
     @GET("external/transactions")
     suspend fun pendingDeposits(
         @Query("asset") asset: String,
@@ -92,5 +89,5 @@ interface AssetService {
     fun topAssets(): Call<MixinResponse<List<TopAsset>>>
 
     @GET("/snapshots/trace/{id}")
-    suspend fun trace(@Path("id") traceId: String): MixinResponse<Snapshot>
+    suspend fun getTrace(@Path("id") traceId: String): MixinResponse<Snapshot>
 }

@@ -38,7 +38,6 @@ import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.api.response.PaymentCodeResponse
-import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.getScopes
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.booleanFromAttribute
@@ -499,12 +498,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                             address == null -> error(R.string.error_address_exists)
                             asset == null -> error(R.string.error_asset_exists)
                             else -> {
-                                val existsTrace = linkViewModel.suspendFindTraceById(traceId)
-                                if (existsTrace != null && !existsTrace.snapshotId.isNullOrBlank()) {
-                                    showWithdrawalBottom(address, amount, asset!!, traceId, PaymentStatus.paid.name, memo)
-                                    return@launch
-                                }
-
                                 val transferRequest = TransferRequest(assetId, null, amount, null, traceId, memo, addressId)
                                 handleMixinResponse(
                                     invokeNetwork = {
@@ -605,14 +598,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
         var asset = linkViewModel.findAssetItemById(assetId)
         if (asset == null) {
             asset = linkViewModel.refreshAsset(assetId) ?: return false
-        }
-
-        val existsTrace = linkViewModel.suspendFindTraceById(trace)
-        if (existsTrace != null && !existsTrace.snapshotId.isNullOrBlank()) {
-            val user = linkViewModel.refreshUser(userId) ?: return false
-
-            showTransferBottom(user, amount, asset, trace, PaymentStatus.paid.name, memo)
-            return true
         }
 
         val transferRequest = TransferRequest(assetId, userId, amount, null, trace, memo)
