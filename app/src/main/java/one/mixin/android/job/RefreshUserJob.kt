@@ -10,7 +10,6 @@ import kotlinx.coroutines.runBlocking
 class RefreshUserJob(
     private val userIds: List<String>,
     private val conversationId: String? = null,
-    private val conversationAvatarUserIds: List<String>? = null,
     private val forceRefresh: Boolean = false
 ) : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requireNetwork().persist()) {
 
@@ -49,9 +48,8 @@ class RefreshUserJob(
         }
     }
 
-    private suspend fun refreshConversationAvatar() {
+    private fun refreshConversationAvatar() {
         if (conversationId == null) return
-
         jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
     }
 }
