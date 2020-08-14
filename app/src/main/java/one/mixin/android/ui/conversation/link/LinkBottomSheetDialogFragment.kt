@@ -244,7 +244,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                         null
                                     } else {
                                         val avatarUsers = linkViewModel.findMultiUsersByIds(avatar4List.toSet())
-                                        linkViewModel.startGenerateAvatar(response.conversationId, avatarUsers)
+                                        linkViewModel.startGenerateAvatar(response.conversationId, avatar4List)
 
                                         val name = getIconUrlName(response.conversationId, avatarUsers)
                                         val f = requireContext().getGroupAvatarPath(name, false)

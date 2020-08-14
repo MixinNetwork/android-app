@@ -15,6 +15,7 @@ import android.text.TextPaint
 import androidx.collection.ArrayMap
 import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.AvatarEvent
@@ -31,7 +32,7 @@ import java.util.concurrent.TimeUnit
 
 class GenerateAvatarJob(
     private val groupId: String,
-    val list: List<User>? = null
+    val list: List<String>? = null
 ) : BaseJob(
     Params(
         PRIORITY_BACKGROUND
@@ -55,7 +56,8 @@ class GenerateAvatarJob(
         if (list == null) {
             users.addAll(participantDao.getParticipantsAvatar(groupId))
         } else {
-            users.addAll(list)
+            val us = runBlocking { userDao.findMultiUsersByIds(list.toSet()) }
+            users.addAll(us)
         }
         val name = getIconUrlName(groupId, users)
         val f = applicationContext.getGroupAvatarPath(name, false)
