@@ -225,7 +225,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         val amount = "${t.amount} ${t.asset.symbol}"
         showErrorInfo(
             getString(
-                R.string.wallet_withdrawal_recent_tip, time, t.label, amount
+                R.string.wallet_withdrawal_recent_tip, time, t.displayAddress().formatPublicKey(), amount
             ),
             tickMillis = 4000L,
             errorAction = BiometricLayout.ErrorAction.RecentPaid
