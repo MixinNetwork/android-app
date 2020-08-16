@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -462,6 +463,7 @@ class DecryptMessage : Injector() {
                 val decoded = Base64.decode(plainText)
                 val mediaData = gson.fromJson(String(decoded), AttachmentMessagePayload::class.java)
                 if (mediaData.invalidData()) {
+                    insertInvalidMessage(data)
                     return
                 }
 
@@ -722,7 +724,11 @@ class DecryptMessage : Injector() {
                             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
                             messageHistoryDao.insert(MessageHistory(data.messageId))
                         } else {
-                            processDecryptSuccess(data, plaintext)
+                            try {
+                                processDecryptSuccess(data, plaintext)
+                            } catch (e: JsonSyntaxException) {
+                                insertInvalidMessage(data)
+                            }
                         }
                     }
                 }
