@@ -600,6 +600,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
             asset = linkViewModel.refreshAsset(assetId) ?: return false
         }
 
+        val user = linkViewModel.refreshUser(userId) ?: return false
+
         val transferRequest = TransferRequest(assetId, userId, amount, null, trace, memo)
         return handleMixinResponse(
             invokeNetwork = {
@@ -609,7 +611,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
             successBlock = { r ->
                 val response = r.data ?: return@handleMixinResponse false
 
-                showTransferBottom(response.recipient, amount, asset, trace, response.status, memo)
+                showTransferBottom(user, amount, asset, trace, response.status, memo)
                 return@handleMixinResponse true
             }
         ) ?: false

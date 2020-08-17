@@ -58,9 +58,6 @@ interface AssetService {
     suspend fun transfer(@Body request: TransferRequest): MixinResponse<Snapshot>
 
     @POST("payments")
-    fun pay(@Body request: TransferRequest): Observable<MixinResponse<PaymentResponse>>
-
-    @POST("payments")
     suspend fun paySuspend(@Body request: TransferRequest): MixinResponse<PaymentResponse>
 
     @GET("assets/{id}/fee")

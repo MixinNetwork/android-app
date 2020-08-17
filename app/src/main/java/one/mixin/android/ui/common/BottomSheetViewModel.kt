@@ -25,7 +25,6 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
-import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
@@ -98,9 +97,6 @@ class BottomSheetViewModel @Inject internal constructor(
         accountRepository.authorize(request).subscribeOn(Schedulers.io()).observeOn(
             AndroidSchedulers.mainThread()
         )
-
-    fun pay(request: TransferRequest): Observable<MixinResponse<PaymentResponse>> =
-        assetRepository.pay(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     suspend fun paySuspend(request: TransferRequest) = assetRepository.paySuspend(request)
 
@@ -215,6 +211,7 @@ class BottomSheetViewModel @Inject internal constructor(
     fun getUser(id: String) = userRepository.getUser(id)
 
     suspend fun refreshUser(id: String) = userRepository.refreshUser(id)
+
     fun startGenerateAvatar(conversationId: String, list: List<String>? = null) {
         jobManager.addJobInBackground(GenerateAvatarJob(conversationId, list))
     }
