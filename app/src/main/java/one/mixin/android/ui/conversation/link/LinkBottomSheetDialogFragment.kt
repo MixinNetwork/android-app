@@ -616,20 +616,29 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
     }
 
     private suspend fun showTransferBottom(user: User, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
-        val lastTrace = linkViewModel.findLatestTrace(user.userId, null, null, amount, asset.assetId)
+        val pair = linkViewModel.findLatestTrace(user.userId, null, null, amount, asset.assetId)
+        if (pair.second) {
+            return
+        }
+
         val bottomSheet = TransferBottomSheetDialogFragment
             .newInstance(
-                TransferBiometricItem(user, asset, amount, null, traceId, memo, status, lastTrace)
+                TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first, true)
             )
         bottomSheet.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
     }
 
     private suspend fun showWithdrawalBottom(address: Address, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
-        val lastTrace = linkViewModel.findLatestTrace(null, address.destination, address.tag, amount, asset.assetId)
+        val pair = linkViewModel.findLatestTrace(null, address.destination, address.tag, amount, asset.assetId)
+        if (pair.second) {
+            dismiss()
+            return
+        }
+
         val biometricItem =
             WithdrawBiometricItem(
                 address.destination, address.tag, address.addressId, address.label, address.fee,
-                asset, amount, null, traceId, memo, status, lastTrace
+                asset, amount, null, traceId, memo, status, pair.first
             )
         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
         bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)

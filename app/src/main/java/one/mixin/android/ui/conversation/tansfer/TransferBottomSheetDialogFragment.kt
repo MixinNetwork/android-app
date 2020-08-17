@@ -28,6 +28,12 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
+import one.mixin.android.util.ErrorHandler.Companion.BLOCKCHAIN_ERROR
+import one.mixin.android.util.ErrorHandler.Companion.INSUFFICIENT_BALANCE
+import one.mixin.android.util.ErrorHandler.Companion.INSUFFICIENT_TRANSACTION_FEE
+import one.mixin.android.util.ErrorHandler.Companion.INVALID_PIN_FORMAT
+import one.mixin.android.util.ErrorHandler.Companion.PIN_INCORRECT
+import one.mixin.android.util.ErrorHandler.Companion.TOO_SMALL
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Snapshot
@@ -63,7 +69,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         when (t) {
             is TransferBiometricItem -> {
                 (t as TransferBiometricItem).let {
-                    if (shouldShowTransferTip()) {
+                    if (shouldShowTransferTip(it)) {
                         contentView.title.text = getString(R.string.wallet_transaction_tip_title)
                         contentView.title.textSize = 18f
                     } else {
@@ -96,7 +102,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             contentView.error_btn.visibility = GONE
             showErrorInfo(getString(R.string.pay_paid))
         } else if (state == PaymentStatus.pending.name) {
-            if (shouldShowTransferTip() && t is TransferBiometricItem) {
+            if (t is TransferBiometricItem && shouldShowTransferTip(t)) {
                 val fiatAmount =
                     (BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()
                 showErrorInfo(
@@ -168,6 +174,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             }
         }
         bottomViewModel.insertTrace(trace)
+        bottomViewModel.delete1DayAgoTraces()
         return request
     }
 
@@ -195,6 +202,20 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
 
         showDone()
         return false
+    }
+
+    override fun doWithMixinErrorCode(errorCode: Int) {
+        if (errorCode in arrayOf(
+            INSUFFICIENT_BALANCE, INVALID_PIN_FORMAT, PIN_INCORRECT,
+            TOO_SMALL, INSUFFICIENT_TRANSACTION_FEE, BLOCKCHAIN_ERROR
+        )
+        ) {
+            t.traceId?.let { traceId ->
+                lifecycleScope.launch {
+                    bottomViewModel.suspendDeleteTraceById(traceId)
+                }
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -236,7 +257,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         }
     }
 
-    private fun shouldShowTransferTip() =
+    private fun shouldShowTransferTip(t: TransferBiometricItem) = !t.ignoreLargeAmountTip &&
         try {
             val amount = BigDecimal(t.amount).toDouble() * t.asset.priceUsd.toDouble()
             amount >= (Session.getAccount()!!.transferConfirmationThreshold)

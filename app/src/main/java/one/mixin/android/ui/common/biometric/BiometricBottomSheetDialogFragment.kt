@@ -50,6 +50,9 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
      */
     abstract fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean
 
+    open fun doWithMixinErrorCode(errorCode: Int) {
+    }
+
     protected fun setBiometricLayout() {
         contentView.title_view.right_iv.setOnClickListener { dismiss() }
         contentView.biometric_layout.setKeyboard(contentView.keyboard)
@@ -120,6 +123,8 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 callback?.onSuccess() ?: toast(R.string.successful)
             }
         } else {
+            doWithMixinErrorCode(response.errorCode)
+
             contentView.biometric_layout?.let { layout ->
                 layout.setErrorButton(layout.getErrorActionByErrorCode(response.errorCode))
                 layout.pin.clear()

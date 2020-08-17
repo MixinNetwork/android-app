@@ -2,7 +2,7 @@ package one.mixin.android.repository
 
 import androidx.paging.DataSource
 import kotlinx.coroutines.Dispatchers
-import one.mixin.android.api.handleMixinResponse
+import kotlinx.coroutines.withContext
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.TransferRequest
@@ -17,6 +17,8 @@ import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
+import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetsExtra
@@ -175,34 +177,44 @@ constructor(
 
     suspend fun getTrace(traceId: String) = assetService.getTrace(traceId)
 
-    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String): Trace? {
-        val trace = traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return null
+    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String): Pair<Trace?, Boolean> {
+        val trace = traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return Pair(null, false)
 
         val with24hours = trace.createdAt.within24Hours()
         if (!with24hours) {
-            return null
+            return Pair(null, false)
         }
 
         if (trace.snapshotId.isNullOrBlank()) {
-            return handleMixinResponse(
-                invokeNetwork = {
+            val response = try {
+                withContext(Dispatchers.IO) {
                     assetService.getTrace(trace.traceId)
-                },
-                switchContext = Dispatchers.IO,
-                successBlock = { r ->
-                    trace.snapshotId = r.data?.snapshotId
-                    traceDao.insertSuspend(trace)
-                    return@handleMixinResponse trace
-                },
-                failureBlock = {
-                    if (it.errorCode == ErrorHandler.FORBIDDEN) {
-                        traceDao.deleteById(trace.traceId)
-                    }
-                    return@handleMixinResponse true
                 }
-            )
+            } catch (t: Throwable) {
+                ErrorHandler.handleError(t)
+                return Pair(null, true)
+            }
+            return if (response.isSuccess) {
+                trace.snapshotId = response.data?.snapshotId
+                traceDao.insertSuspend(trace)
+                Pair(trace, false)
+            } else {
+                if (response.errorCode == NOT_FOUND) {
+                    Pair(null, false)
+                } else {
+                    if (response.errorCode == FORBIDDEN) {
+                        traceDao.suspendDeleteById(trace.traceId)
+                    }
+                    ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+                    Pair(null, true)
+                }
+            }
         } else {
-            return trace
+            return Pair(trace, false)
         }
     }
+
+    suspend fun delete1DayAgoTraces() = traceDao.delete1DayAgoRecords()
+
+    suspend fun suspendDeleteTraceById(traceId: String) = traceDao.suspendDeleteById(traceId)
 }

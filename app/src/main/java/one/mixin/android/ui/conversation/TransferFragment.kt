@@ -534,9 +534,15 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.continue_va?.displayedChild = POST_PB
         val traceId = UUID.randomUUID().toString()
-        val trace = chatViewModel.findLatestTrace(user?.userId, address?.destination, address?.tag, amount, currentAsset!!.assetId)
+        val pair = chatViewModel.findLatestTrace(user?.userId, address?.destination, address?.tag, amount, currentAsset!!.assetId)
+        if (pair.second) {
+            contentView.continue_va?.displayedChild = POST_TEXT
+            return@launch
+        }
+
+        val trace = pair.first
         val biometricItem = if (user != null) {
-            TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace)
+            TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace, false)
         } else {
             WithdrawBiometricItem(
                 address!!.destination, address!!.tag, address!!.addressId, address!!.label,

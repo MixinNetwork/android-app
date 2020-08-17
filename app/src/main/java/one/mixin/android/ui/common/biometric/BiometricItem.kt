@@ -25,7 +25,8 @@ class TransferBiometricItem(
     override val traceId: String?,
     override val memo: String?,
     override val state: String,
-    val trace: Trace?
+    val trace: Trace?,
+    val ignoreLargeAmountTip: Boolean
 ) : BiometricItem(asset, amount, pin, traceId, memo, state)
 
 @Parcelize

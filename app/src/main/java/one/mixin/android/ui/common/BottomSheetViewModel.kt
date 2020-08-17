@@ -532,4 +532,8 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
         assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
+
+    suspend fun delete1DayAgoTraces() = assetRepository.delete1DayAgoTraces()
+
+    suspend fun suspendDeleteTraceById(traceId: String) = assetRepository.suspendDeleteTraceById(traceId)
 }
