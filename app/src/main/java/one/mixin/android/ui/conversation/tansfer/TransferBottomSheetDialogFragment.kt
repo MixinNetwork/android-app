@@ -113,13 +113,13 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                     tickMillis = 4000L,
                     errorAction = BiometricLayout.ErrorAction.LargeAmount
                 ) {
+                    contentView.title.text =
+                        getString(R.string.wallet_bottom_transfer_to, t.user.fullName ?: "")
+                    contentView.title.textSizeDimen = R.dimen.wallet_balance_text
                     if (t.trace != null) {
                         checkTransferTrace(t)
                     } else {
                         showPin()
-                        contentView.title.text =
-                            getString(R.string.wallet_bottom_transfer_to, t.user.fullName ?: "")
-                        contentView.title.textSizeDimen = R.dimen.wallet_balance_text
                     }
                 }
             } else if (t is TransferBiometricItem) {
