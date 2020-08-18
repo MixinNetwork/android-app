@@ -303,7 +303,8 @@ fun Fragment.openCamera(output: Uri) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
         intent.putExtra(MediaStore.EXTRA_OUTPUT, output)
     } else {
-        val file = File(output.path)
+        val path = output.path ?: return
+        val file = File(path)
         val photoUri = FileProvider.getUriForFile(
             requireContext().applicationContext,
             BuildConfig.APPLICATION_ID + ".provider", file
@@ -330,13 +331,16 @@ fun Context.openMedia(messageItem: MessageItem) {
                 intent.setDataAndType(uri, messageItem.mediaMimeType)
                 startActivity(intent)
             } else {
-                val file = File(
-                    if (uri.scheme == ContentResolver.SCHEME_FILE) {
-                        uri.path
-                    } else {
-                        messageItem.mediaUrl
-                    }
-                )
+                val path = if (uri.scheme == ContentResolver.SCHEME_FILE) {
+                    uri.path
+                } else {
+                    messageItem.mediaUrl
+                }
+                if (path == null) {
+                    toast(R.string.error_file_exists)
+                    return@let
+                }
+                val file = File(path)
                 if (!file.exists()) {
                     toast(R.string.error_file_exists)
                 } else {
@@ -403,7 +407,7 @@ fun Fragment.selectDocument() {
     selectMediaType("*/*", arrayOf("*/*"), REQUEST_FILE)
 }
 
-fun Fragment.selectAudio(requestCode: Int) {
+fun Fragment.selectAudio() {
     selectMediaType("audio/*", null, REQUEST_AUDIO)
 }
 
@@ -411,7 +415,8 @@ fun Context.getAttachment(local: Uri): Attachment? {
     var cursor: Cursor? = null
     try {
         val uri = if (local.authority == null) {
-            getUriForFile(File(local.path))
+            val path = local.path ?: return null
+            getUriForFile(File(path))
         } else {
             local
         }

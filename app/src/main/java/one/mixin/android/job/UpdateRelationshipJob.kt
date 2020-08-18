@@ -41,25 +41,28 @@ class UpdateRelationshipJob(
         }
     }
 
+
     @SuppressLint("CheckResult")
-    override fun onRun() = runBlocking {
-        if (request.user_id == Session.getAccountId()) {
-            return@runBlocking
-        }
-        handleMixinResponse(
-            invokeNetwork = {
-                if (report) {
-                    userService.report(request)
-                } else {
-                    userService.relationship(request)
-                }
-            },
-            successBlock = { r ->
-                r.data?.let { u ->
-                    updateUser(u)
-                }
+    override fun onRun() {
+        runBlocking {
+            if (request.user_id == Session.getAccountId()) {
+                return@runBlocking
             }
-        )
+            handleMixinResponse(
+                invokeNetwork = {
+                    if (report) {
+                        userService.report(request)
+                    } else {
+                        userService.relationship(request)
+                    }
+                },
+                successBlock = { r ->
+                    r.data?.let { u ->
+                        updateUser(u)
+                    }
+                }
+            )
+        }
     }
 
     private suspend fun updateUser(u: User) {
