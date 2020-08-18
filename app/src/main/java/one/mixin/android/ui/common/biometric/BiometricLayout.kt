@@ -150,7 +150,6 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
             ErrorAction.RecentPaid -> {
                 error_btn.text = getString(R.string.common_continue)
                 error_btn.setOnClickListener {
-                    showPin(true)
                     clickCallback?.invoke()
                 }
             }

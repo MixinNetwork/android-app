@@ -64,18 +64,11 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         contentView = View.inflate(context, R.layout.fragment_transfer_bottom_sheet, null)
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()
-        setBiometricItem()
-
         when (t) {
             is TransferBiometricItem -> {
                 (t as TransferBiometricItem).let {
-                    if (shouldShowTransferTip(it)) {
-                        contentView.title.text = getString(R.string.wallet_transaction_tip_title)
-                        contentView.title.textSize = 18f
-                    } else {
-                        contentView.title.text =
-                            getString(R.string.wallet_bottom_transfer_to, it.user.fullName ?: "")
-                    }
+                    contentView.title.text =
+                        getString(R.string.wallet_bottom_transfer_to, it.user.fullName ?: "")
                     contentView.sub_title.text = "Mixin ID: ${it.user.identityNumber}"
                 }
                 contentView.pay_tv.setText(R.string.wallet_pay_with_pwd)
@@ -94,6 +87,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             contentView.memo.visibility = VISIBLE
             contentView.memo.text = t.memo
         }
+        setBiometricItem()
     }
 
     override fun checkState(t: BiometricItem) {
@@ -102,27 +96,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             contentView.error_btn.visibility = GONE
             showErrorInfo(getString(R.string.pay_paid))
         } else if (state == PaymentStatus.pending.name) {
-            if (t is TransferBiometricItem && shouldShowTransferTip(t)) {
-                val fiatAmount =
-                    (BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()
-                showErrorInfo(
-                    getString(
-                        R.string.wallet_transaction_tip, t.user.fullName,
-                        "$fiatAmount${Fiats.getSymbol()}", t.asset.symbol
-                    ),
-                    tickMillis = 4000L,
-                    errorAction = BiometricLayout.ErrorAction.LargeAmount
-                ) {
-                    contentView.title.text =
-                        getString(R.string.wallet_bottom_transfer_to, t.user.fullName ?: "")
-                    contentView.title.textSizeDimen = R.dimen.wallet_balance_text
-                    if (t.trace != null) {
-                        checkTransferTrace(t)
-                    } else {
-                        showPin()
-                    }
-                }
-            } else if (t is TransferBiometricItem) {
+            if (t is TransferBiometricItem) {
                 checkTransferTrace(t)
             } else if (t is WithdrawBiometricItem) {
                 checkWithdrawTrace(t)
@@ -224,7 +198,13 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
     }
 
     private fun checkTransferTrace(t: TransferBiometricItem) {
-        val trace = t.trace ?: return
+        val trace = t.trace
+        if (trace == null) {
+            if (shouldShowTransferTip(t)) {
+                showLargeAmountTip(t)
+            }
+            return
+        }
 
         val time = trace.createdAt.getRelativeTimeSpan()
         val amount = "${t.amount} ${t.asset.symbol}"
@@ -233,9 +213,14 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             tickMillis = 4000L,
             errorAction = BiometricLayout.ErrorAction.RecentPaid
         ) {
-            contentView.title.text =
-                getString(R.string.wallet_bottom_transfer_to, t.user.fullName ?: "")
-            contentView.title.textSizeDimen = R.dimen.wallet_balance_text
+            if (shouldShowTransferTip(t)) {
+                showLargeAmountTip(t)
+            } else {
+                contentView.title.text =
+                    getString(R.string.wallet_bottom_transfer_to, t.user.fullName ?: "")
+                contentView.title.textSizeDimen = R.dimen.wallet_balance_text
+                showPin()
+            }
         }
     }
 
@@ -254,6 +239,27 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             contentView.title.text = getString(R.string.withdrawal_to, t.label)
             contentView.sub_title.text = t.destination
             contentView.title.textSizeDimen = R.dimen.wallet_balance_text
+            showPin()
+        }
+    }
+
+    private fun showLargeAmountTip(t: TransferBiometricItem) {
+        contentView.title.text = getString(R.string.wallet_transaction_tip_title)
+        contentView.title.textSize = 18f
+        val fiatAmount =
+            (BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()
+        showErrorInfo(
+            getString(
+                R.string.wallet_transaction_tip, t.user.fullName,
+                "$fiatAmount${Fiats.getSymbol()}", t.asset.symbol
+            ),
+            tickMillis = 4000L,
+            errorAction = BiometricLayout.ErrorAction.LargeAmount
+        ) {
+            contentView.title.text =
+                getString(R.string.wallet_bottom_transfer_to, t.user.fullName ?: "")
+            contentView.title.textSizeDimen = R.dimen.wallet_balance_text
+            showPin()
         }
     }
 
