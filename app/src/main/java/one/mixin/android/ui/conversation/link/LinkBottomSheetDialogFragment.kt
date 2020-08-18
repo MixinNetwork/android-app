@@ -579,11 +579,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
     private suspend fun showTransfer(text: String): Boolean {
         val uri = text.toUri()
-        val amount = try {
-            uri.getQueryParameter("amount")!!.toDouble()
-        } catch (e: Exception) {
-            return false
-        }.toString()
+        val amount = uri.getQueryParameter("amount")?.toDoubleOrNull()?.toString() ?: return false
         val userId = uri.getQueryParameter("recipient")
         if (userId == null || !userId.isUUID()) {
             return false
