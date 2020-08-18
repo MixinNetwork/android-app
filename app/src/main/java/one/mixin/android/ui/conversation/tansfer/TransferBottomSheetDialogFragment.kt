@@ -263,7 +263,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         }
     }
 
-    private fun shouldShowTransferTip(t: TransferBiometricItem) = !t.ignoreLargeAmountTip &&
+    private fun shouldShowTransferTip(t: TransferBiometricItem) =
         try {
             val amount = BigDecimal(t.amount).toDouble() * t.asset.priceUsd.toDouble()
             amount >= (Session.getAccount()!!.transferConfirmationThreshold)

@@ -621,7 +621,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
         val bottomSheet = TransferBottomSheetDialogFragment
             .newInstance(
-                TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first, true)
+                TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first)
             )
         bottomSheet.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
     }

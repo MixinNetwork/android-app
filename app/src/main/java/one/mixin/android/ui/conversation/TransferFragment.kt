@@ -542,7 +542,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         val trace = pair.first
         val biometricItem = if (user != null) {
-            TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace, false)
+            TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace)
         } else {
             WithdrawBiometricItem(
                 address!!.destination, address!!.tag, address!!.addressId, address!!.label,
