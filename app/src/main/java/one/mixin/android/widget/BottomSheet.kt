@@ -45,7 +45,6 @@ import one.mixin.android.util.SystemUIManager
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.displayMetrics
 import kotlin.math.abs
-import kotlin.math.max
 import kotlin.math.min
 
 class BottomSheet(
@@ -110,7 +109,6 @@ class BottomSheet(
                 height -= lastInsets!!.systemWindowInsetBottom
             }
             setMeasuredDimension(width, height)
-            val isPortrait = width < height
             val widthSpec = if (context.isTablet()) {
                 MeasureSpec.makeMeasureSpec(
                     (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.8f).toInt(),
@@ -118,8 +116,7 @@ class BottomSheet(
                 )
             } else {
                 MeasureSpec.makeMeasureSpec(
-                    if (isPortrait) width
-                    else max(width * 0.8f, minOf(context.dip(480f), width).toFloat()).toInt(),
+                    width,
                     MeasureSpec.EXACTLY
                 )
             }
