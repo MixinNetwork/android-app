@@ -16,14 +16,11 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
-import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
-import one.mixin.android.ui.common.biometric.BiometricLayout
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
@@ -34,13 +31,9 @@ import one.mixin.android.util.ErrorHandler.Companion.INSUFFICIENT_TRANSACTION_FE
 import one.mixin.android.util.ErrorHandler.Companion.INVALID_PIN_FORMAT
 import one.mixin.android.util.ErrorHandler.Companion.PIN_INCORRECT
 import one.mixin.android.util.ErrorHandler.Companion.TOO_SMALL
-import one.mixin.android.util.Session
-import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet
-import org.jetbrains.anko.textSizeDimen
-import java.math.BigDecimal
 
 class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<BiometricItem>() {
     companion object {
@@ -95,12 +88,6 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         if (state == PaymentStatus.paid.name) {
             contentView.error_btn.visibility = GONE
             showErrorInfo(getString(R.string.pay_paid))
-        } else if (state == PaymentStatus.pending.name) {
-            if (t is TransferBiometricItem) {
-                checkTransferTrace(t)
-            } else if (t is WithdrawBiometricItem) {
-                checkWithdrawTrace(t)
-            }
         }
     }
 
@@ -196,80 +183,6 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         super.onDestroy()
         onDestroyListener?.onDestroy()
     }
-
-    private fun checkTransferTrace(t: TransferBiometricItem) {
-        val trace = t.trace
-        if (trace == null) {
-            if (shouldShowTransferTip(t)) {
-                showLargeAmountTip(t)
-            }
-            return
-        }
-
-        val time = trace.createdAt.getRelativeTimeSpan()
-        val amount = "${t.amount} ${t.asset.symbol}"
-        showErrorInfo(
-            getString(R.string.wallet_transfer_recent_tip, time, t.user.fullName, amount),
-            tickMillis = 4000L,
-            errorAction = BiometricLayout.ErrorAction.RecentPaid
-        ) {
-            if (shouldShowTransferTip(t)) {
-                showLargeAmountTip(t)
-            } else {
-                contentView.title.text =
-                    getString(R.string.wallet_bottom_transfer_to, t.user.fullName ?: "")
-                contentView.title.textSizeDimen = R.dimen.wallet_balance_text
-                showPin()
-            }
-        }
-    }
-
-    private fun checkWithdrawTrace(t: WithdrawBiometricItem) {
-        val trace = t.trace ?: return
-
-        val time = trace.createdAt.getRelativeTimeSpan()
-        val amount = "${t.amount} ${t.asset.symbol}"
-        showErrorInfo(
-            getString(
-                R.string.wallet_withdrawal_recent_tip, time, t.displayAddress().formatPublicKey(), amount
-            ),
-            tickMillis = 4000L,
-            errorAction = BiometricLayout.ErrorAction.RecentPaid
-        ) {
-            contentView.title.text = getString(R.string.withdrawal_to, t.label)
-            contentView.sub_title.text = t.destination
-            contentView.title.textSizeDimen = R.dimen.wallet_balance_text
-            showPin()
-        }
-    }
-
-    private fun showLargeAmountTip(t: TransferBiometricItem) {
-        contentView.title.text = getString(R.string.wallet_transaction_tip_title)
-        contentView.title.textSize = 18f
-        val fiatAmount =
-            (BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()
-        showErrorInfo(
-            getString(
-                R.string.wallet_transaction_tip, t.user.fullName,
-                "$fiatAmount${Fiats.getSymbol()}", t.asset.symbol
-            ),
-            tickMillis = 4000L,
-            errorAction = BiometricLayout.ErrorAction.LargeAmount
-        ) {
-            contentView.title.text =
-                getString(R.string.wallet_bottom_transfer_to, t.user.fullName ?: "")
-            contentView.title.textSizeDimen = R.dimen.wallet_balance_text
-            showPin()
-        }
-    }
-
-    private fun shouldShowTransferTip(t: TransferBiometricItem) =
-        try {
-            val amount = BigDecimal(t.amount).toDouble() * t.asset.priceUsd.toDouble()
-            amount >= (Session.getAccount()!!.transferConfirmationThreshold)
-        } catch (e: NumberFormatException) {
-            false
-        }
 
     private fun updateFirstWithdrawalSet(item: WithdrawBiometricItem) {
         var firsSet = defaultSharedPreferences.getStringSet(Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET, null)

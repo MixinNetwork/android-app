@@ -23,7 +23,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:text="@string/bottom_withdrawal_title"
                 android:textSize="18sp"
                 android:layout_marginTop="70dp"
                 android:textColor="?attr/text_primary"
@@ -34,22 +33,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin16"
+                android:layout_marginBottom="24dp"
                 android:gravity="center_horizontal"
-                android:textColor="@color/colorRed"
-                android:text="@string/bottom_withdrawal_address_tips"/>
+                android:textColor="@color/colorRed"/>
 
-            <ImageView
-                android:id="@+id/image_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="36dp"
-                android:layout_marginBottom="36dp"
-                android:layout_gravity="center_horizontal"
-                android:src="@drawable/ic_withdrawal"/>
+            <one.mixin.android.ui.common.biometric.AssetBalanceLayout
+                android:id="@+id/asset_balance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
             <Button
                 style="@style/AppTheme.MaterialButton"
-                android:id="@+id/change_tv"
+                android:id="@+id/continue_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
                 android:enabled="false"
@@ -57,12 +52,11 @@
                 android:paddingEnd="@dimen/margin20"
                 android:layout_gravity="center_horizontal|bottom"
                 android:layout_marginTop="32dp"
-                android:text="@string/bottom_withdrawal_change_amount"
-                android:textColor="@color/white"
+                android:text="@string/common_continue"
                 android:textSize="14sp"/>
 
             <TextView
-                android:id="@+id/continue_tv"
+                android:id="@+id/cancel_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:padding="8dp"
@@ -71,7 +65,7 @@
                 android:enabled="false"
                 android:layout_gravity="center_horizontal"
                 android:textColor="?attr/text_minor"
-                android:text="@string/common_continue"/>
+                android:text="@string/cancel"/>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

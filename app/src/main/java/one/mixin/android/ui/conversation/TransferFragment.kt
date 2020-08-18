@@ -38,7 +38,6 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER_ID
-import one.mixin.android.Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
@@ -67,6 +66,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
@@ -237,47 +237,13 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             if (!isAdded) return@setOnClickListener
 
             operateKeyboard(false)
-
-            when {
-                isInnerTransfer() -> showTransferBottom()
-                shouldShowWithdrawalTip() -> {
-                    currentAsset?.let {
-                        val withdrawalBottom = WithdrawalTipBottomSheetDialogFragment.newInstance(it)
-                        withdrawalBottom.showNow(parentFragmentManager, WithdrawalTipBottomSheetDialogFragment.TAG)
-                        withdrawalBottom.callback = object : WithdrawalTipBottomSheetDialogFragment.Callback {
-                            override fun onSuccess() {
-                                showTransferBottom()
-                            }
-                        }
-                    }
-                }
-                else -> showTransferBottom()
-            }
+            prepareTransferBottom()
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_CODE && resultCode == RESULT_CODE) {
             contentView.transfer_memo.setText(data?.getStringExtra(CaptureActivity.ARGS_MEMO_RESULT))
-        }
-    }
-
-    private fun shouldShowWithdrawalTip(): Boolean {
-        if (currentAsset == null && address == null) return false
-
-        try {
-            val amount = BigDecimal(getAmount()).toDouble() * currentAsset!!.priceUsd.toDouble()
-            if (amount <= 10) {
-                return false
-            }
-        } catch (e: NumberFormatException) {
-            return false
-        }
-        val hasWithdrawalAddressSet = defaultSharedPreferences.getStringSet(PREF_HAS_WITHDRAWAL_ADDRESS_SET, null)
-        return if (hasWithdrawalAddressSet == null) {
-            true
-        } else {
-            !hasWithdrawalAddressSet.contains(address!!.addressId)
         }
     }
 
@@ -516,7 +482,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun showTransferBottom() = lifecycleScope.launch {
+    private fun prepareTransferBottom() = lifecycleScope.launch {
         if (currentAsset == null || (user == null && address == null)) {
             return@launch
         }
@@ -525,6 +491,15 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             BigDecimal(amount)
         } catch (e: NumberFormatException) {
             return@launch
+        }
+
+        if (user == null) {
+            val dust = address!!.dust?.toDoubleOrNull()
+            val amountDouble = amount.toDoubleOrNull()
+            if (dust != null && amountDouble != null && amountDouble < dust) {
+                toast(getString(R.string.bottom_withdrawal_least_tip, address!!.dust))
+                return@launch
+            }
         }
 
         val memo = contentView.transfer_memo.text.toString()
@@ -545,12 +520,22 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             TransferBiometricItem(user!!, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace)
         } else {
             WithdrawBiometricItem(
-                address!!.destination, address!!.tag, address!!.addressId, address!!.label,
-                address!!.fee, currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace
+                address!!.destination, address!!.tag, address!!.addressId, address!!.label, address!!.fee,
+                currentAsset!!, amount, null, traceId, memo, PaymentStatus.pending.name, trace
             )
         }
         contentView.continue_va?.displayedChild = POST_TEXT
 
+        val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem)
+        preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
+            override fun onSuccess() {
+                showTransferBottom(biometricItem)
+            }
+        }
+        preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
+    }
+
+    private fun showTransferBottom(biometricItem: BiometricItem) {
         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
         bottom.callback = object : BiometricBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
@@ -563,7 +548,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 transferBottomOpened = false
             }
         }
-        bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+        bottom.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         transferBottomOpened = true
     }
 
