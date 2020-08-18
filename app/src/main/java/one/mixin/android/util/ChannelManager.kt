@@ -28,7 +28,7 @@ class ChannelManager {
         private const val CHANNEL_CURRENT_USER_VERSION = "channel_current_user_version"
         private const val CHANNEL_VERSION = 1
 
-        fun create(context: Context, channelVersion: Int) {
+        fun create(context: Context) {
             supportsOreo {
                 val messageChannel =
                     NotificationChannel(
@@ -73,7 +73,7 @@ class ChannelManager {
                 deleteChannels(context)
 
                 // finally create new channel and update SP
-                create(context, CHANNEL_VERSION)
+                create(context)
                 context.defaultSharedPreferences.putBoolean(channelUpdatedWithVersion, true)
             }
         }
@@ -83,7 +83,7 @@ class ChannelManager {
                 val currentUserVersion = context.defaultSharedPreferences.getInt(CHANNEL_CURRENT_USER_VERSION, 0)
                 deleteChannels(context)
                 context.defaultSharedPreferences.putInt(CHANNEL_CURRENT_USER_VERSION, currentUserVersion + 1)
-                create(context, CHANNEL_VERSION)
+                create(context)
             }
         }
 

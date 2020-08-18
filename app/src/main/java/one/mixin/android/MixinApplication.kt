@@ -109,7 +109,6 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
 
     fun closeAndClear() {
         if (onlining.compareAndSet(true, false)) {
-            val accountId = Session.getAccountId()
             val sessionId = Session.getSessionId()
             BlazeMessageService.stopService(this)
             if (callState.isGroupCall()) {
