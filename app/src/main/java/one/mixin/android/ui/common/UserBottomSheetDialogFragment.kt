@@ -910,7 +910,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             resource!!,
                             ConversationActivity.getShortcutIntent(
                                 requireContext(),
-                                conversationId
+                                conversationId,
+                                user.userId
                             )
                         )
                     }
