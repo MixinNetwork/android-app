@@ -722,7 +722,7 @@ class ConversationAdapter(
                     item.type == MessageCategory.SECRET.name -> SECRET_TYPE
                     item.status == MessageStatus.FAILED.name -> WAITING_TYPE
                     item.type == MessageCategory.SIGNAL_TEXT.name || item.type == MessageCategory.PLAIN_TEXT.name -> {
-                        if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        if (!item.quoteId.isNullOrEmpty()) {
                             TEXT_QUOTE_TYPE
                         } else if (!item.siteName.isNullOrBlank() || !item.siteDescription.isNullOrBlank()) {
                             LINK_TYPE
@@ -732,7 +732,7 @@ class ConversationAdapter(
                     }
                     item.type == MessageCategory.SIGNAL_IMAGE.name ||
                         item.type == MessageCategory.PLAIN_IMAGE.name -> {
-                        if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        if (!item.quoteId.isNullOrEmpty()) {
                             IMAGE_QUOTE_TYPE
                         } else {
                             IMAGE_TYPE
@@ -742,7 +742,7 @@ class ConversationAdapter(
                     item.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name -> BILL_TYPE
                     item.type == MessageCategory.SIGNAL_DATA.name ||
                         item.type == MessageCategory.PLAIN_DATA.name -> {
-                        if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        if (!item.quoteId.isNullOrEmpty()) {
                             FILE_QUOTE_TYPE
                         } else {
                             FILE_TYPE
@@ -754,7 +754,7 @@ class ConversationAdapter(
                     item.type == MessageCategory.APP_CARD.name -> ACTION_CARD_TYPE
                     item.type == MessageCategory.SIGNAL_CONTACT.name ||
                         item.type == MessageCategory.PLAIN_CONTACT.name -> {
-                        if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        if (!item.quoteId.isNullOrEmpty()) {
                             CONTACT_CARD_QUOTE_TYPE
                         } else {
                             CONTACT_CARD_TYPE
@@ -764,7 +764,7 @@ class ConversationAdapter(
                         item.type == MessageCategory.PLAIN_VIDEO.name ||
                         item.type == MessageCategory.SIGNAL_LIVE.name ||
                         item.type == MessageCategory.PLAIN_LIVE.name -> {
-                        if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        if (!item.quoteId.isNullOrEmpty()) {
                             VIDEO_QUOTE_TYPE
                         } else {
                             VIDEO_TYPE
@@ -772,7 +772,7 @@ class ConversationAdapter(
                     }
                     item.type == MessageCategory.SIGNAL_AUDIO.name ||
                         item.type == MessageCategory.PLAIN_AUDIO.name -> {
-                        if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        if (!item.quoteId.isNullOrEmpty()) {
                             AUDIO_QUOTE_TYPE
                         } else {
                             AUDIO_TYPE
