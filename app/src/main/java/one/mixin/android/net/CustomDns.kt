@@ -8,8 +8,10 @@ import org.xbill.DNS.Resolver
 import org.xbill.DNS.SimpleResolver
 import org.xbill.DNS.TextParseException
 import org.xbill.DNS.Type
+import java.lang.NullPointerException
 import java.net.InetAddress
 import java.net.UnknownHostException
+import kotlin.jvm.Throws
 
 class CustomDns(private val dnsHostname: String) : Dns {
 
@@ -17,7 +19,11 @@ class CustomDns(private val dnsHostname: String) : Dns {
         val resolver: Resolver = SimpleResolver(dnsHostname)
         val lookup: Lookup = doLookup(hostname)
         lookup.setResolver(resolver)
-        val records: Array<Record> = lookup.run()
+        val records: Array<Record> = try {
+            lookup.run()
+        } catch (e: NullPointerException) {
+            throw UnknownHostException(hostname)
+        }
         val ipAddresses = records.filter { it.type == Type.A || it.type == Type.AAAA }
             .map { r ->
                 r as ARecord

@@ -48,6 +48,7 @@ import org.jetbrains.anko.dip
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.io.IOException
+import kotlin.jvm.Throws
 
 const val ANIMATION_DURATION_SHORTEST = 260L
 

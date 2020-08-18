@@ -14,6 +14,7 @@ import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyStore
 import java.io.IOException
 import java.util.LinkedList
+import kotlin.jvm.Throws
 
 class MixinPreKeyStore(context: Context) : PreKeyStore, SignedPreKeyStore {
 
