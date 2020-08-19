@@ -10,6 +10,7 @@ import androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import kotlin.jvm.Throws
 
 internal object ImageUtil {
 

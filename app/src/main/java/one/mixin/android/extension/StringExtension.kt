@@ -36,6 +36,7 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 import kotlin.collections.set
+import kotlin.jvm.Throws
 import kotlin.math.abs
 
 fun String.generateQRCode(size: Int): Bitmap? {

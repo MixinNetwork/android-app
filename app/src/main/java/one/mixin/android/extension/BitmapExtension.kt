@@ -18,6 +18,7 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.util.EnumMap
 import java.util.EnumSet
+import kotlin.jvm.Throws
 
 fun Bitmap.toBytes(): ByteArray {
     ByteArrayOutputStream().use { stream ->

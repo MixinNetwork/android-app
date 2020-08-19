@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import io.reactivex.Flowable
 import java.io.File
 import java.io.IOException
+import kotlin.jvm.Throws
 
 class Compressor {
     private var maxWidth = 1080
