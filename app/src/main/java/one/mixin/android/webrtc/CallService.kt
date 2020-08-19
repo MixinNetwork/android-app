@@ -159,6 +159,9 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     override fun onDisconnected() {
+        if (callState.isConnected()) {
+            callState.disconnected = true
+        }
     }
 
     override fun onClosed() {
@@ -171,9 +174,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     override fun onIceDisconnected() {
-        if (callState.isConnected()) {
-            callState.disconnected = true
-        }
     }
 
     private fun handleConnected() {
