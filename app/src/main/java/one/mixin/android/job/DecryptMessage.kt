@@ -398,7 +398,7 @@ class DecryptMessage : Injector() {
                 var quoteMe = false
                 val message = generateMessage(data) { quoteMessageItem ->
                     if (quoteMessageItem == null) {
-                        createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status).apply {
+                        createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status, quoteMessageId = data.quoteMessageId).apply {
                             this.content?.findLastUrl()?.let { parsHyperlink(data.messageId, it, hyperlinkDao, messageDao) }
                         }
                     } else {

@@ -273,12 +273,14 @@ fun createMessage(
     status: String,
     action: String? = null,
     participantId: String? = null,
-    snapshotId: String? = null
+    snapshotId: String? = null,
+    quoteMessageId: String? = null
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
     .setAction(action)
     .setParticipantId(participantId)
     .setSnapshotId(snapshotId)
+    .setQuoteMessageId(quoteMessageId)
     .build()
 
 fun createPostMessage(

@@ -74,12 +74,14 @@
         android:singleLine="true"
         android:textColor="?attr/text_minor"
         android:textSize="12sp"
+        android:textStyle="italic"
         app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/reply_iv"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@id/reply_name_tv"
         app:layout_constraintTop_toBottomOf="@id/reply_name_tv"
-        app:layout_constraintWidth_max="220dp" />
+        app:layout_constraintWidth_max="220dp"
+        app:layout_goneMarginStart="4dp" />
 </merge>
 
