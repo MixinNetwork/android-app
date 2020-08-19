@@ -129,17 +129,9 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         clickCallback: (() -> Unit)? = null
     ) {
         when (errorAction) {
-            ErrorAction.TryLater -> {
-                error_btn.text = getString(R.string.group_ok)
-                error_btn.setOnClickListener { callback?.onDismiss() }
-            }
             ErrorAction.RetryPin -> {
                 error_btn.text = getString(R.string.try_again)
                 error_btn.setOnClickListener { showPin(true) }
-            }
-            ErrorAction.ChangeAmount -> {
-                error_btn.text = getString(R.string.bottom_withdrawal_change_amount)
-                error_btn.setOnClickListener { callback?.onDismiss() }
             }
             ErrorAction.Close -> {
                 error_btn.text = getString(R.string.group_ok)
@@ -150,14 +142,8 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
 
     fun getErrorActionByErrorCode(errorCode: Int): ErrorAction {
         return when (errorCode) {
-            ErrorHandler.TOO_MANY_REQUEST -> {
-                ErrorAction.TryLater
-            }
             ErrorHandler.INVALID_PIN_FORMAT, ErrorHandler.PIN_INCORRECT -> {
                 ErrorAction.RetryPin
-            }
-            ErrorHandler.INSUFFICIENT_BALANCE, ErrorHandler.TOO_SMALL -> {
-                ErrorAction.ChangeAmount
             }
             else -> {
                 ErrorAction.Close
@@ -195,7 +181,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
     private fun getString(resId: Int) = context.getString(resId)
 
     enum class ErrorAction {
-        TryLater, RetryPin, ChangeAmount, Close
+        RetryPin, Close
     }
 
     interface Callback {
