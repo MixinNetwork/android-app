@@ -7,6 +7,7 @@ import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -281,6 +282,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private var customView: View? = null
     private var customViewCallback: WebChromeClient.CustomViewCallback? = null
+    private var originalSystemUiVisibility = 0
 
     private fun initView() {
         contentView.suspicious_link_view.listener = object : SuspiciousLinkView.SuspiciousListener {
@@ -342,20 +344,36 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
                 customView = view
                 customViewCallback = callback
+                originalSystemUiVisibility = requireActivity().window.decorView.systemUiVisibility
+
                 contentView.customViewContainer.addView(view)
                 contentView.customViewContainer.isVisible = true
                 contentView.web_ll.isVisible = false
+                contentView.web_control.isVisible = false
+
+                requireActivity().window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_IMMERSIVE
+                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             }
 
             override fun onHideCustomView() {
-                super.onHideCustomView()
                 if (customView == null)
                     return
                 contentView.customViewContainer.isVisible = false
                 contentView.web_ll.isVisible = true
+                contentView.web_control.isVisible = true
                 contentView.customViewContainer.removeView(customView)
-                customViewCallback?.onCustomViewHidden()
                 customView = null
+
+                requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
+                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+                customViewCallback?.onCustomViewHidden()
+                customViewCallback = null
             }
 
             override fun onReceivedTitle(view: WebView?, title: String?) {
@@ -470,6 +488,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.chat_web_view.stopLoading()
             contentView.chat_web_view.webViewClient = null
             contentView.chat_web_view.webChromeClient = null
+            if (requireActivity().requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
+                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
         }
     }
 
