@@ -326,6 +326,7 @@
     <string name="chat_group_call_remote_peer_closed">Peer connection has been closed, please try again</string>
     <string name="chat_call_bad_network_you">Connection is unstable</string>
     <string name="chat_call_bad_network">Other user\'s connection is unstable</string>
+    <string name="chat_not_found">Message not found</string>
     <!--contact-->
     <string name="contact_other_send">Send Message</string>
     <string name="contact_other_share">Share Contact Card</string>

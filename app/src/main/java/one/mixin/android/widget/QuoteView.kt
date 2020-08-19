@@ -1,6 +1,7 @@
 package one.mixin.android.widget
 
 import android.content.Context
+import android.graphics.Typeface
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -10,6 +11,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.view_quote.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImageCenterCrop
@@ -21,6 +23,7 @@ import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.QuoteMessageItem
 import org.jetbrains.anko.dip
+import java.time.format.TextStyle
 
 class QuoteView constructor(context: Context, attrs: AttributeSet) :
     ConstraintLayout(context, attrs) {
@@ -29,7 +32,21 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
         round(dip(4))
     }
 
-    fun bind(quoteMessageItem: QuoteMessageItem) {
+    fun bind(quoteMessageItem: QuoteMessageItem?) {
+        if (quoteMessageItem == null) {
+            setBackgroundColor(context.getColor(R.color.colorAccent))
+            background.alpha = 0x0D
+            start_view.setBackgroundColor(context.getColor(R.color.colorAccent))
+            reply_name_tv.visibility = View.GONE
+            reply_iv.visibility = View.GONE
+            reply_avatar.visibility = View.GONE
+            reply_content_tv.setText(R.string.chat_not_found)
+            reply_content_tv.setTypeface(null, Typeface.ITALIC)
+            setIcon(R.drawable.ic_type_recall)
+            return
+        }
+        reply_content_tv.setTypeface(null, Typeface.NORMAL)
+        reply_name_tv.visibility = View.VISIBLE
         reply_name_tv.text = quoteMessageItem.userFullName
         reply_name_tv.setTextColor(BaseViewHolder.getColorById(quoteMessageItem.userId))
         setBackgroundColor(BaseViewHolder.getColorById(quoteMessageItem.userId))
