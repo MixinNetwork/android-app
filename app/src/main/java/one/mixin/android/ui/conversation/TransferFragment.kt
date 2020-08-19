@@ -531,6 +531,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             override fun onSuccess() {
                 showTransferBottom(biometricItem)
             }
+
+            override fun onCancel() {
+            }
         }
         preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
     }

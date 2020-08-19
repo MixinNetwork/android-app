@@ -655,6 +655,10 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                 bottom.show(preconditionBottom.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
                 dismiss()
             }
+
+            override fun onCancel() {
+                dismiss()
+            }
         }
         preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
     }

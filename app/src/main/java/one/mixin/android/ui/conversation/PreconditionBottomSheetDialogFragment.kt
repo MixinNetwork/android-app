@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.fragment_precondition_bottom_sheet.view.as
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getRelativeTimeSpan
@@ -52,7 +53,10 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             dismissClickOutside = false
         }
         contentView.asset_balance.setInfo(t)
-        contentView.cancel_tv.setOnClickListener { dismiss() }
+        contentView.cancel_tv.setOnClickListener {
+            callback?.onCancel()
+            dismiss()
+        }
 
         val t = this.t
         if (t.state == PaymentStatus.pending.name) {
@@ -173,6 +177,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.continue_tv.isEnabled = false
         contentView.cancel_tv.isEnabled = false
         contentView.continue_tv.textColor = ContextCompat.getColor(requireContext(), R.color.wallet_text_gray)
+        contentView.cancel_tv.textColor = requireContext().colorFromAttribute(R.attr.text_minor)
         mCountDownTimer?.cancel()
         mCountDownTimer = object : CountDownTimer(4000, 1000) {
 
@@ -199,5 +204,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     interface Callback {
         fun onSuccess()
+
+        fun onCancel()
     }
 }
