@@ -124,7 +124,7 @@
                     android:layout_marginEnd="@dimen/margin12"
                     android:layout_toStartOf="@id/swap_iv">
 
-                    <one.mixin.android.widget.TailInputEditText
+                    <androidx.appcompat.widget.AppCompatAutoCompleteTextView
                         android:id="@+id/amount_et"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
