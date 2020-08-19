@@ -373,8 +373,12 @@
     <string name="wallet_transaction_continue">Continue</string>
     <string name="wallet_transaction_continue_count">Continue (%1$d)</string>
     <string name="wallet_transaction_tip_title">Large Amount Confirmation</string>
+    <string name="transfer_duplicate_title">Duplicate Transfer Confirmation</string>
+    <string name="withdraw_duplicate_title">Duplicate Withdraw Confirmation</string>
     <string name="wallet_transaction_tip_title_with_symbol">Large Amount Confirmation(%1$s)</string>
     <string name="wallet_transaction_tip">Are you sure you want to transfer %3$s worth %2$s to %1$s ？</string>
+    <string name="wallet_transfer_recent_tip">You have already transferred %3$s to %2$s %1$s. Do you want to transfer it again?</string>
+    <string name="wallet_withdrawal_recent_tip">You have already withdrawn %3$s to %2$s %1$s, Do you want to withdraw it again?</string>
     <string name="wallet_password_change">Change PIN</string>
     <string name="wallet_password_old_title">Old PIN</string>
     <string name="wallet_password_not_equal">The PIN did not match the re-typed PIN, please try again.</string>
@@ -602,6 +606,7 @@
     <string name="link_error">This link is invalid</string>
     <string name="bottom_sheet_check_payment_info">Checking payment info</string>
     <string name="bottom_sheet_invalid_payment">Invalid payment</string>
+    <string name="bottom_sheet_check_trace_failed">Check trace info failed, please try again</string>
     <string name="group_wait">Please wait a moment</string>
     <string name="group_invite">Invite to Group via Link</string>
     <!-- invite -->
@@ -752,6 +757,7 @@
     <string name="bottom_withdrawal_change_amount">Change Amount</string>
     <string name="bottom_withdrawal_change_amount_count">Change Amount (%1$d)</string>
     <string name="bottom_withdrawal_address_tips">For the first withdraw to the new address, please try a small amount.</string>
+    <string name="bottom_withdrawal_least_tip">Minimum withdraw amount is %1$s</string>
     <string name="bottom_deposit_title">%1$s Deposit</string>
     <string name="bottom_deposit_tip_eos">This address supports all base on EOS tokens, such as EOS, IQ, BLACK, OCT, KARMA, etc.</string>
     <string name="bottom_deposit_tip_eth">This address supports all ERC-20 tokens, such as ETH, XIN, TUSD, HT, LOOM, LEO, etc.</string>

@@ -6,28 +6,34 @@ import android.text.TextUtils
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricItem
-import one.mixin.android.ui.common.biometric.BiometricLayout
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
-import one.mixin.android.util.Session
-import one.mixin.android.vo.Fiats
+import one.mixin.android.ui.common.biometric.displayAddress
+import one.mixin.android.util.ErrorHandler.Companion.BLOCKCHAIN_ERROR
+import one.mixin.android.util.ErrorHandler.Companion.INSUFFICIENT_BALANCE
+import one.mixin.android.util.ErrorHandler.Companion.INSUFFICIENT_TRANSACTION_FEE
+import one.mixin.android.util.ErrorHandler.Companion.INVALID_PIN_FORMAT
+import one.mixin.android.util.ErrorHandler.Companion.PIN_INCORRECT
+import one.mixin.android.util.ErrorHandler.Companion.TOO_SMALL
+import one.mixin.android.vo.Snapshot
+import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet
-import org.jetbrains.anko.textSizeDimen
-import java.math.BigDecimal
 
 class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<BiometricItem>() {
     companion object {
@@ -43,26 +49,19 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         requireArguments().getParcelable<BiometricItem>(ARGS_BIOMETRIC_ITEM)!!
     }
 
-    var onDistroyListener: OnDestroyListener? = null
+    var onDestroyListener: OnDestroyListener? = null
 
-    @SuppressLint("RestrictedApi")
+    @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_transfer_bottom_sheet, null)
         (dialog as BottomSheet).setCustomView(contentView)
         setBiometricLayout()
-        setBiometricItem()
-
         when (t) {
             is TransferBiometricItem -> {
                 (t as TransferBiometricItem).let {
-                    if (shouldShowTransferTip()) {
-                        contentView.title.text = getString(R.string.wallet_transaction_tip_title)
-                        contentView.title.textSize = 18f
-                    } else {
-                        contentView.title.text =
-                            getString(R.string.wallet_bottom_transfer_to, it.user.fullName ?: "")
-                    }
+                    contentView.title.text =
+                        getString(R.string.wallet_bottom_transfer_to, it.user.fullName ?: "")
                     contentView.sub_title.text = "Mixin ID: ${it.user.identityNumber}"
                 }
                 contentView.pay_tv.setText(R.string.wallet_pay_with_pwd)
@@ -71,7 +70,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             is WithdrawBiometricItem -> {
                 (t as WithdrawBiometricItem).let {
                     contentView.title.text = getString(R.string.withdrawal_to, it.label)
-                    contentView.sub_title.text = it.destination
+                    contentView.sub_title.text = it.displayAddress()
                 }
                 contentView.pay_tv.setText(R.string.withdrawal_with_pwd)
                 contentView.biometric_tv.setText(R.string.withdrawal_with_biometric)
@@ -81,29 +80,14 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             contentView.memo.visibility = VISIBLE
             contentView.memo.text = t.memo
         }
+        setBiometricItem()
     }
 
-    override fun checkState(state: String) {
+    override fun checkState(t: BiometricItem) {
+        val state = t.state
         if (state == PaymentStatus.paid.name) {
             contentView.error_btn.visibility = GONE
             showErrorInfo(getString(R.string.pay_paid))
-        } else if (state == PaymentStatus.pending.name && shouldShowTransferTip() && t is TransferBiometricItem) {
-            (t as TransferBiometricItem).let {
-                val fiatAmount =
-                    (BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()
-                showErrorInfo(
-                    getString(
-                        R.string.wallet_transaction_tip, it.user.fullName,
-                        "$fiatAmount${Fiats.getSymbol()}", t.asset.symbol
-                    ),
-                    tickMillis = 4000L,
-                    errorAction = BiometricLayout.ErrorAction.LargeAmount
-                ) {
-                    contentView.title.text =
-                        getString(R.string.wallet_bottom_transfer_to, it.user.fullName ?: "")
-                    contentView.title.textSizeDimen = R.dimen.wallet_balance_text
-                }
-            }
         }
     }
 
@@ -127,7 +111,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                 t as WithdrawBiometricItem
                 BiometricInfo(
                     getString(R.string.withdrawal_to, t.label),
-                    t.destination.formatPublicKey(),
+                    t.displayAddress().formatPublicKey(),
                     getDescription(),
                     getString(R.string.wallet_pay_with_pwd)
                 )
@@ -138,36 +122,67 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
     override fun getBiometricItem() = t
 
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
-        return when (val t = this.t) {
-            is TransferBiometricItem ->
-                bottomViewModel.transfer(t.asset.assetId, t.user.userId, t.amount, pin, t.trace, t.memo)
+        val trace: Trace
+        val request = when (val t = this.t) {
+            is TransferBiometricItem -> {
+                trace = Trace(t.traceId!!, t.asset.assetId, t.amount, t.user.userId, null, null, null, nowInUtc())
+                bottomViewModel.transfer(t.asset.assetId, t.user.userId, t.amount, pin, t.traceId, t.memo)
+            }
             else -> {
                 t as WithdrawBiometricItem
-                bottomViewModel.withdrawal(t.addressId, t.amount, pin, t.trace!!, t.memo)
+                trace = Trace(t.traceId!!, t.asset.assetId, t.amount, null, t.destination, t.tag, null, nowInUtc())
+                bottomViewModel.withdrawal(t.addressId, t.amount, pin, t.traceId!!, t.memo)
             }
         }
+        bottomViewModel.insertTrace(trace)
+        bottomViewModel.delete1DayAgoTraces()
+        return request
     }
 
     override fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean {
-        if (t is WithdrawBiometricItem) {
-            updateFirstWithdrawalSet(t as WithdrawBiometricItem)
+        when (val t = this@TransferBottomSheetDialogFragment.t) {
+            is TransferBiometricItem -> {}
+            else -> {
+                t as WithdrawBiometricItem
+                updateFirstWithdrawalSet(t)
+            }
         }
+
+        t.traceId?.let { traceId ->
+            lifecycleScope.launch {
+                val trace = bottomViewModel.suspendFindTraceById(traceId)
+                if (trace != null) {
+                    val data = response.data
+                    if (data is Snapshot) {
+                        trace.snapshotId = data.snapshotId
+                        bottomViewModel.insertTrace(trace)
+                    }
+                }
+            }
+        }
+
         showDone()
         return false
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        onDistroyListener?.onDestroy()
+    override fun doWithMixinErrorCode(errorCode: Int) {
+        if (errorCode in arrayOf(
+            INSUFFICIENT_BALANCE, INVALID_PIN_FORMAT, PIN_INCORRECT,
+            TOO_SMALL, INSUFFICIENT_TRANSACTION_FEE, BLOCKCHAIN_ERROR
+        )
+        ) {
+            t.traceId?.let { traceId ->
+                lifecycleScope.launch {
+                    bottomViewModel.suspendDeleteTraceById(traceId)
+                }
+            }
+        }
     }
 
-    private fun shouldShowTransferTip() =
-        try {
-            val amount = BigDecimal(t.amount).toDouble() * t.asset.priceUsd.toDouble()
-            amount >= (Session.getAccount()!!.transferConfirmationThreshold)
-        } catch (e: NumberFormatException) {
-            false
-        }
+    override fun onDestroy() {
+        super.onDestroy()
+        onDestroyListener?.onDestroy()
+    }
 
     private fun updateFirstWithdrawalSet(item: WithdrawBiometricItem) {
         var firsSet = defaultSharedPreferences.getStringSet(Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET, null)

@@ -357,8 +357,12 @@
     <string name="wallet_transaction_continue">继续</string>
     <string name="wallet_transaction_continue_count">继续 （%1$d）</string>
     <string name="wallet_transaction_tip_title">大额转账确认</string>
+    <string name="transfer_duplicate_title">重复转账确认</string>
+    <string name="withdraw_duplicate_title">重复提现确认</string>
     <string name="wallet_transaction_tip_title_with_symbol">大额转账确认(%1$s)</string>
     <string name="wallet_transaction_tip">确定给 %1$s 转价值 %2$s 的 %3$s ？</string>
+    <string name="wallet_transfer_recent_tip">你已经在 %1$s 给 %2$s 转账了 %3$s，确认还要再转一次吗？</string>
+    <string name="wallet_withdrawal_recent_tip">你已经在 %1$s 提现 %3$s 到 %2$s，确认还要再提一次吗？</string>
     <string name="wallet_password_change">修改密码</string>
     <string name="wallet_password_old_title">验证旧的密码</string>
     <string name="wallet_password_not_equal">密码不一致, 请重新输入</string>
@@ -587,6 +591,7 @@
     <string name="link_error">无效链接</string>
     <string name="bottom_sheet_check_payment_info">请检查支付信息</string>
     <string name="bottom_sheet_invalid_payment">无效支付信息</string>
+    <string name="bottom_sheet_check_trace_failed">检查支付信息失败，请重试</string>
     <string name="group_wait">请稍等</string>
     <string name="group_invite">群邀请链接</string>
     <!-- invite -->
@@ -737,6 +742,7 @@
     <string name="bottom_withdrawal_change_amount">修改金额</string>
     <string name="bottom_withdrawal_change_amount_count">修改金额 （%1$d）</string>
     <string name="bottom_withdrawal_address_tips">首次提现到新地址，请小额尝试！</string>
+    <string name="bottom_withdrawal_least_tip">提现金额最小 %1$s</string>
     <string name="bottom_deposit_title">%1$s 充值</string>
     <string name="bottom_deposit_tip_eos">该充值地址支持所有基于 EOS 发行的代币，例如 EOS、IQ、BLACK、OCT、KARMA 等。</string>
     <string name="bottom_deposit_tip_eth">该充值地址支持所有符合 ERC-20 标准的代币，例如 ETH、XIN、HT、LOOM、LEO、PRS 等。</string>

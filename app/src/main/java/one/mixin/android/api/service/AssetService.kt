@@ -55,10 +55,7 @@ interface AssetService {
     ): MixinResponse<List<Snapshot>>
 
     @POST("transfers")
-    suspend fun transfer(@Body request: TransferRequest): MixinResponse<Void>
-
-    @POST("payments")
-    fun pay(@Body request: TransferRequest): Observable<MixinResponse<PaymentResponse>>
+    suspend fun transfer(@Body request: TransferRequest): MixinResponse<Snapshot>
 
     @POST("payments")
     suspend fun paySuspend(@Body request: TransferRequest): MixinResponse<PaymentResponse>
@@ -67,16 +64,13 @@ interface AssetService {
     fun assetsFee(@Path("id") id: String): Observable<MixinResponse<AssetFee>>
 
     @POST("withdrawals")
-    suspend fun withdrawals(@Body request: WithdrawalRequest): MixinResponse<Void>
+    suspend fun withdrawals(@Body request: WithdrawalRequest): MixinResponse<Snapshot>
 
     @GET("assets/{id}/addresses")
     fun addresses(@Path("id") id: String): Call<MixinResponse<List<Address>>>
 
     @GET("snapshots/{id}")
     suspend fun getSnapshotById(@Path("id") id: String): MixinResponse<Snapshot>
-
-    @GET("transfers/trace/{id}")
-    suspend fun getSnapshotByTraceId(@Path("id") traceId: String): MixinResponse<Snapshot>
 
     @GET("external/transactions")
     suspend fun pendingDeposits(
@@ -90,4 +84,7 @@ interface AssetService {
 
     @GET("network/assets/top")
     fun topAssets(): Call<MixinResponse<List<TopAsset>>>
+
+    @GET("/snapshots/trace/{id}")
+    suspend fun getTrace(@Path("id") traceId: String): MixinResponse<Snapshot>
 }

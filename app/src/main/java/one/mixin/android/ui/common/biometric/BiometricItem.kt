@@ -3,6 +3,7 @@ package one.mixin.android.ui.common.biometric
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 
 @Parcelize
@@ -10,7 +11,7 @@ open class BiometricItem(
     open val asset: AssetItem,
     open val amount: String,
     open var pin: String?,
-    open val trace: String?,
+    open val traceId: String?,
     open val memo: String?,
     open val state: String
 ) : Parcelable
@@ -21,24 +22,35 @@ class TransferBiometricItem(
     override val asset: AssetItem,
     override val amount: String,
     override var pin: String?,
-    override val trace: String?,
+    override val traceId: String?,
     override val memo: String?,
-    override val state: String
-) : BiometricItem(asset, amount, pin, trace, memo, state)
+    override val state: String,
+    val trace: Trace?
+) : BiometricItem(asset, amount, pin, traceId, memo, state)
 
 @Parcelize
 class WithdrawBiometricItem(
     val destination: String,
+    val tag: String?,
     val addressId: String,
     val label: String,
     val fee: String,
     override val asset: AssetItem,
     override val amount: String,
     override var pin: String?,
-    override val trace: String?,
+    override val traceId: String?,
     override val memo: String?,
-    override val state: String
-) : BiometricItem(asset, amount, pin, trace, memo, state)
+    override val state: String,
+    val trace: Trace?
+) : BiometricItem(asset, amount, pin, traceId, memo, state)
+
+fun WithdrawBiometricItem.displayAddress(): String {
+    return if (!tag.isNullOrEmpty()) {
+        "$destination:$tag"
+    } else {
+        destination
+    }
+}
 
 @Parcelize
 open class MultisigsBiometricItem(
@@ -47,10 +59,10 @@ open class MultisigsBiometricItem(
     override val asset: AssetItem,
     override val amount: String,
     override var pin: String?,
-    override val trace: String?,
+    override val traceId: String?,
     override val memo: String?,
     override val state: String
-) : BiometricItem(asset, amount, pin, trace, memo, state)
+) : BiometricItem(asset, amount, pin, traceId, memo, state)
 
 @Parcelize
 class Multi2MultiBiometricItem(
@@ -61,10 +73,10 @@ class Multi2MultiBiometricItem(
     override val asset: AssetItem,
     override val amount: String,
     override var pin: String?,
-    override val trace: String?,
+    override val traceId: String?,
     override val memo: String?,
     override val state: String
-) : MultisigsBiometricItem(senders, receivers, asset, amount, pin, trace, memo, state)
+) : MultisigsBiometricItem(senders, receivers, asset, amount, pin, traceId, memo, state)
 
 @Parcelize
 class One2MultiBiometricItem(
@@ -74,7 +86,7 @@ class One2MultiBiometricItem(
     override val asset: AssetItem,
     override val amount: String,
     override var pin: String?,
-    override val trace: String?,
+    override val traceId: String?,
     override val memo: String?,
     override val state: String
-) : MultisigsBiometricItem(senders, receivers, asset, amount, pin, trace, memo, state)
+) : MultisigsBiometricItem(senders, receivers, asset, amount, pin, traceId, memo, state)

@@ -233,18 +233,34 @@
                 android:textSize="12sp"
                 android:visibility="gone"/>
 
-            <Button
-                android:id="@+id/continue_tv"
-                style="@style/AppTheme.MaterialButton"
+            <ViewAnimator
+                android:id="@+id/continue_va"
                 android:layout_width="116dp"
                 android:layout_height="40dp"
+                android:enabled="false"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="50dp"
                 android:layout_marginBottom="20dp"
-                android:enabled="false"
-                android:text="@string/common_continue"
-                android:textColor="?attr/text_minor"
-                android:textSize="14sp"/>
+                android:inAnimation="@anim/fade_in"
+                android:outAnimation="@anim/fade_out"
+                android:background="@drawable/bg_round_blue_btn">
+
+                <TextView
+                    android:id="@+id/continue_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/common_continue"
+                    android:textColor="?attr/text_minor"
+                    android:textSize="14sp" />
+
+                <ProgressBar
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:theme="@style/AppTheme.WhiteAccent" />
+            </ViewAnimator>
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>

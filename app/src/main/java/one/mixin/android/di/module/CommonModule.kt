@@ -18,9 +18,9 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.profile.MySharedAppsFragment
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.GiphyBottomSheetFragment
+import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.UserTransactionsFragment
-import one.mixin.android.ui.conversation.WithdrawalTipBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
@@ -70,7 +70,7 @@ abstract class CommonModule {
     internal abstract fun contributePinAddrBottomSheetFragment(): PinAddrBottomSheetDialogFragment
 
     @ContributesAndroidInjector
-    internal abstract fun contributeWithdrawalTipBottomSheetFragment(): WithdrawalTipBottomSheetDialogFragment
+    internal abstract fun contributePreconditionBottomSheetDialogFragment(): PreconditionBottomSheetDialogFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeWalletPasswordFragment(): WalletPasswordFragment

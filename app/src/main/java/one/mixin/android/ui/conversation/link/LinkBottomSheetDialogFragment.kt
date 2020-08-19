@@ -57,20 +57,23 @@ import one.mixin.android.ui.common.JoinGroupConversation
 import one.mixin.android.ui.common.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.vo.Address
+import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import timber.log.Timber
 import java.util.UUID
@@ -202,7 +205,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
             }
             lifecycleScope.launch {
                 if (!showTransfer(url)) {
-                    error(R.string.bottom_sheet_invalid_payment)
+                    showError(R.string.bottom_sheet_invalid_payment)
                 } else {
                     dismiss()
                 }
@@ -305,7 +308,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                         asset = asset,
                                         amount = multisigs.amount,
                                         pin = null,
-                                        trace = null,
+                                        traceId = null,
                                         memo = multisigs.memo,
                                         state = multisigs.state
                                     )
@@ -313,7 +316,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                         .showNow(parentFragmentManager, MultisigsBottomSheetDialogFragment.TAG)
                                     dismiss()
                                 } else {
-                                    error()
+                                    showError()
                                 }
                             }
                         }
@@ -332,7 +335,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                         asset = asset!!,
                                         amount = paymentCodeResponse.amount,
                                         pin = null,
-                                        trace = paymentCodeResponse.traceId,
+                                        traceId = paymentCodeResponse.traceId,
                                         memo = paymentCodeResponse.memo,
                                         state = paymentCodeResponse.status
                                     )
@@ -340,15 +343,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                         .showNow(parentFragmentManager, MultisigsBottomSheetDialogFragment.TAG)
                                     dismiss()
                                 } else {
-                                    error()
+                                    showError()
                                 }
                             }
                         }
-                        else -> error()
+                        else -> showError()
                     }
                 },
                 {
-                    error()
+                    showError()
                 }
             )
         } else if (url.startsWith(Scheme.HTTPS_ADDRESS, true) || url.startsWith(Scheme.ADDRESS, true)) {
@@ -366,7 +369,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                     lifecycleScope.launch {
                         val address = linkViewModel.findAddressById(addressId, assetId)
                         if (address == null) {
-                            error(R.string.error_address_exists)
+                            showError(R.string.error_address_exists)
                         } else {
                             var asset = linkViewModel.findAssetItemById(assetId)
                             if (asset == null) {
@@ -386,12 +389,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                 ).showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
                                 dismiss()
                             } else {
-                                error()
+                                showError()
                             }
                         }
                     }
                 } else {
-                    error()
+                    showError()
                 }
             } else {
                 val assetId = uri.getQueryParameter("asset")
@@ -422,11 +425,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                 .showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
                             dismiss()
                         } else {
-                            error()
+                            showError()
                         }
                     }
                 } else {
-                    error()
+                    showError()
                 }
             }
         } else if (url.startsWith(Scheme.SNAPSHOTS, true)) {
@@ -445,14 +448,14 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                         TransactionBottomSheetDialogFragment.newInstance(result.first, result.second)
                             .show(parentFragmentManager, TransactionBottomSheetDialogFragment.TAG)
                     } else {
-                        error()
+                        showError()
                     }
                 }
                 return
             }
             val snapshotId = uri.lastPathSegment
             if (snapshotId.isNullOrEmpty() || !snapshotId.isUUID()) {
-                error()
+                showError()
             } else {
                 lifecycleScope.launch {
                     val result = linkViewModel.getSnapshotAndAsset(snapshotId)
@@ -461,7 +464,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                         TransactionBottomSheetDialogFragment.newInstance(result.first, result.second)
                             .show(parentFragmentManager, TransactionBottomSheetDialogFragment.TAG)
                     } else {
-                        error()
+                        showError()
                     }
                 }
             }
@@ -484,48 +487,54 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                 amount.isNullOrEmpty() || traceId.isNullOrEmpty() || !assetId.isUUID() ||
                 !traceId.isUUID()
             ) {
-                error()
+                showError()
             } else {
-                val transferRequest = TransferRequest(assetId, null, amount, null, traceId, memo, addressId)
-                linkViewModel.pay(transferRequest).autoDispose(scopeProvider).subscribe(
-                    { r ->
-                        if (r.isSuccess) {
-                            val paymentResponse = r.data!!
-                            lifecycleScope.launch {
-                                val address = linkViewModel.findAddressById(addressId, assetId)
-                                var asset = linkViewModel.findAssetItemById(assetId)
-                                if (asset == null) {
-                                    asset = linkViewModel.refreshAsset(assetId)
-                                }
-                                if (asset != null) {
-                                    when {
-                                        address == null -> error(R.string.error_address_exists)
-                                        asset == null -> error(R.string.error_asset_exists)
-                                        else -> {
-                                            val biometricItem =
-                                                WithdrawBiometricItem(
-                                                    address.destination, address.addressId, address.label, address.fee,
-                                                    asset!!, amount, null, traceId, memo, paymentResponse.status
-                                                )
-                                            val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
-                                            bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
-                                            dismiss()
-                                        }
-                                    }
-                                } else {
-                                    error()
-                                }
-                            }
-                        } else {
-                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                            error(R.string.bottom_sheet_invalid_payment)
-                        }
-                    },
-                    {
-                        error(R.string.bottom_sheet_check_payment_info)
-                        ErrorHandler.handleError(it)
+                lifecycleScope.launch {
+                    val address = linkViewModel.findAddressById(addressId, assetId)
+                    var asset = linkViewModel.findAssetItemById(assetId)
+                    if (asset == null) {
+                        asset = linkViewModel.refreshAsset(assetId)
                     }
-                )
+                    if (asset != null) {
+                        when {
+                            address == null -> showError(R.string.error_address_exists)
+                            asset == null -> showError(R.string.error_asset_exists)
+                            else -> {
+                                val dust = address.dust?.toDoubleOrNull()
+                                val amountDouble = amount.toDoubleOrNull()
+                                if (dust != null && amountDouble != null && amountDouble < dust) {
+                                    val errorString = getString(R.string.bottom_withdrawal_least_tip, address.dust)
+                                    showError(errorString)
+                                    toast(errorString)
+                                    return@launch
+                                }
+
+                                val transferRequest = TransferRequest(assetId, null, amount, null, traceId, memo, addressId)
+                                handleMixinResponse(
+                                    invokeNetwork = {
+                                        linkViewModel.paySuspend(transferRequest)
+                                    },
+                                    switchContext = Dispatchers.IO,
+                                    successBlock = { r ->
+                                        val response = r.data ?: return@handleMixinResponse false
+
+                                        showWithdrawalBottom(address, amount, asset!!, traceId, response.status, memo)
+                                    },
+                                    failureBlock = {
+                                        showError(R.string.bottom_sheet_invalid_payment)
+                                        return@handleMixinResponse false
+                                    },
+                                    exceptionBlock = {
+                                        showError(R.string.bottom_sheet_check_payment_info)
+                                        return@handleMixinResponse false
+                                    }
+                                )
+                            }
+                        }
+                    } else {
+                        showError()
+                    }
+                }
             }
         } else if (url.isDonateUrl()) {
             if (Session.getAccount()?.hasPin == false) {
@@ -542,7 +551,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                 dismiss()
             }
         } else {
-            error()
+            showError()
         }
     }
 
@@ -581,11 +590,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
     private suspend fun showTransfer(text: String): Boolean {
         val uri = text.toUri()
-        val amount = try {
-            uri.getQueryParameter("amount")!!.toDouble()
-        } catch (e: Exception) {
-            return false
-        }.toString()
+        val amount = uri.getQueryParameter("amount")?.toDoubleOrNull()?.toString() ?: return false
         val userId = uri.getQueryParameter("recipient")
         if (userId == null || !userId.isUUID()) {
             return false
@@ -601,6 +606,9 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
         if (asset == null) {
             asset = linkViewModel.refreshAsset(assetId) ?: return false
         }
+
+        val user = linkViewModel.refreshUser(userId) ?: return false
+
         val transferRequest = TransferRequest(assetId, userId, amount, null, trace, memo)
         return handleMixinResponse(
             invokeNetwork = {
@@ -610,21 +618,59 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
             successBlock = { r ->
                 val response = r.data ?: return@handleMixinResponse false
 
-                val bottomSheet = TransferBottomSheetDialogFragment
-                    .newInstance(
-                        TransferBiometricItem(
-                            response.recipient, asset, amount,
-                            null, trace, memo, response.status
-                        )
-                    )
-                bottomSheet.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                showTransferBottom(user, amount, asset, trace, response.status, memo)
                 return@handleMixinResponse true
             }
         ) ?: false
     }
 
-    private fun error(@StringRes errorRes: Int = R.string.link_error) {
+    private suspend fun showTransferBottom(user: User, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
+        val pair = linkViewModel.findLatestTrace(user.userId, null, null, amount, asset.assetId)
+        if (pair.second) {
+            showError(getString(R.string.bottom_sheet_check_trace_failed))
+            return
+        }
+        val biometricItem = TransferBiometricItem(user, asset, amount, null, traceId, memo, status, pair.first)
+        showPreconditionBottom(biometricItem)
+    }
+
+    private suspend fun showWithdrawalBottom(address: Address, amount: String, asset: AssetItem, traceId: String, status: String, memo: String?) {
+        val pair = linkViewModel.findLatestTrace(null, address.destination, address.tag, amount, asset.assetId)
+        if (pair.second) {
+            showError(getString(R.string.bottom_sheet_check_trace_failed))
+            return
+        }
+        val biometricItem = WithdrawBiometricItem(
+            address.destination, address.tag, address.addressId, address.label, address.fee,
+            asset, amount, null, traceId, memo, status, pair.first
+        )
+        showPreconditionBottom(biometricItem)
+    }
+
+    private fun showPreconditionBottom(biometricItem: BiometricItem) {
+        val preconditionBottom = PreconditionBottomSheetDialogFragment.newInstance(biometricItem)
+        preconditionBottom.callback = object : PreconditionBottomSheetDialogFragment.Callback {
+            override fun onSuccess() {
+                val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
+                bottom.show(preconditionBottom.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                dismiss()
+            }
+
+            override fun onCancel() {
+                dismiss()
+            }
+        }
+        preconditionBottom.showNow(parentFragmentManager, PreconditionBottomSheetDialogFragment.TAG)
+    }
+
+    private fun showError(@StringRes errorRes: Int = R.string.link_error) {
         contentView.link_error_info.setText(errorRes)
+        contentView.link_loading.visibility = GONE
+        contentView.link_error_info.visibility = VISIBLE
+    }
+
+    private fun showError(error: String) {
+        contentView.link_error_info.text = error
         contentView.link_loading.visibility = GONE
         contentView.link_error_info.visibility = VISIBLE
     }

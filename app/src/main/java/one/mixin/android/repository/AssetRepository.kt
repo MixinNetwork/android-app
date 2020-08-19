@@ -1,6 +1,8 @@
 package one.mixin.android.repository
 
 import androidx.paging.DataSource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.TransferRequest
@@ -12,11 +14,17 @@ import one.mixin.android.db.AssetDao
 import one.mixin.android.db.AssetsExtraDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TopAssetDao
+import one.mixin.android.db.TraceDao
+import one.mixin.android.extension.within24Hours
+import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
+import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetsExtra
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.Trace
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,7 +38,8 @@ constructor(
     private val snapshotDao: SnapshotDao,
     private val addressDao: AddressDao,
     private val addressService: AddressService,
-    private val hotAssetDao: TopAssetDao
+    private val hotAssetDao: TopAssetDao,
+    private val traceDao: TraceDao
 ) {
 
     fun assets() = assetService.assets()
@@ -81,8 +90,6 @@ constructor(
     fun getXIN() = assetDao.getXIN()
 
     suspend fun transfer(transferRequest: TransferRequest) = assetService.transfer(transferRequest)
-
-    fun pay(request: TransferRequest) = assetService.pay(request)
 
     suspend fun paySuspend(request: TransferRequest) = assetService.paySuspend(request)
 
@@ -159,8 +166,53 @@ constructor(
 
     suspend fun getSnapshotById(snapshotId: String) = assetService.getSnapshotById(snapshotId)
 
-    suspend fun getSnapshotByTraceId(traceId: String) = assetService.getSnapshotByTraceId(traceId)
-
     suspend fun getSnapshots(assetId: String, offset: String?, limit: Int, opponent: String?, destination: String?, tag: String?) =
         assetService.getSnapshots(assetId, offset, limit, opponent, destination, tag)
+
+    suspend fun insertTrace(trace: Trace) = traceDao.insertSuspend(trace)
+
+    suspend fun suspendFindTraceById(traceId: String): Trace? = traceDao.suspendFindTraceById(traceId)
+
+    suspend fun getTrace(traceId: String) = assetService.getTrace(traceId)
+
+    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String): Pair<Trace?, Boolean> {
+        val trace = traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return Pair(null, false)
+
+        val with24hours = trace.createdAt.within24Hours()
+        if (!with24hours) {
+            return Pair(null, false)
+        }
+
+        if (trace.snapshotId.isNullOrBlank()) {
+            val response = try {
+                withContext(Dispatchers.IO) {
+                    assetService.getTrace(trace.traceId)
+                }
+            } catch (t: Throwable) {
+                ErrorHandler.handleError(t)
+                return Pair(null, true)
+            }
+            return if (response.isSuccess) {
+                trace.snapshotId = response.data?.snapshotId
+                traceDao.insertSuspend(trace)
+                Pair(trace, false)
+            } else {
+                if (response.errorCode == NOT_FOUND) {
+                    Pair(null, false)
+                } else {
+                    if (response.errorCode == FORBIDDEN) {
+                        traceDao.suspendDeleteById(trace.traceId)
+                    }
+                    ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+                    Pair(null, true)
+                }
+            }
+        } else {
+            return Pair(trace, false)
+        }
+    }
+
+    suspend fun delete1DayAgoTraces() = traceDao.delete1DayAgoRecords()
+
+    suspend fun suspendDeleteTraceById(traceId: String) = traceDao.suspendDeleteById(traceId)
 }

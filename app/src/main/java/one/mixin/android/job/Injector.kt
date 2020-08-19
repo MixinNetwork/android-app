@@ -25,6 +25,7 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.ResendSessionMessageDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
+import one.mixin.android.db.TraceDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.di.Injectable
@@ -74,6 +75,8 @@ open class Injector : Injectable {
     lateinit var circleDao: CircleDao
     @Inject
     lateinit var circleConversationDao: CircleConversationDao
+    @Inject
+    lateinit var traceDao: TraceDao
     @Inject
     lateinit var circleService: CircleService
     @Inject

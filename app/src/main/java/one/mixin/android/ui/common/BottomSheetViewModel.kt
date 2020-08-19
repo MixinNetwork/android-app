@@ -25,7 +25,6 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
-import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
@@ -49,6 +48,7 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
@@ -97,9 +97,6 @@ class BottomSheetViewModel @Inject internal constructor(
         accountRepository.authorize(request).subscribeOn(Schedulers.io()).observeOn(
             AndroidSchedulers.mainThread()
         )
-
-    fun pay(request: TransferRequest): Observable<MixinResponse<PaymentResponse>> =
-        assetRepository.pay(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     suspend fun paySuspend(request: TransferRequest) = assetRepository.paySuspend(request)
 
@@ -212,6 +209,8 @@ class BottomSheetViewModel @Inject internal constructor(
     fun getUserById(id: String) = userRepository.getUserById(id)
 
     fun getUser(id: String) = userRepository.getUser(id)
+
+    suspend fun refreshUser(id: String) = userRepository.refreshUser(id)
 
     fun startGenerateAvatar(conversationId: String, list: List<String>? = null) {
         jobManager.addJobInBackground(GenerateAvatarJob(conversationId, list))
@@ -343,7 +342,7 @@ class BottomSheetViewModel @Inject internal constructor(
             } else {
                 handleMixinResponse(
                     invokeNetwork = {
-                        assetRepository.getSnapshotByTraceId(traceId)
+                        assetRepository.getTrace(traceId)
                     },
                     successBlock = { response ->
                         response.data?.let { snapshot ->
@@ -523,4 +522,15 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun getParticipantsWithoutBot(conversationId: String) =
         conversationRepo.getParticipantsWithoutBot(conversationId)
+
+    suspend fun insertTrace(trace: Trace) = assetRepository.insertTrace(trace)
+
+    suspend fun suspendFindTraceById(traceId: String) = assetRepository.suspendFindTraceById(traceId)
+
+    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
+        assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
+
+    suspend fun delete1DayAgoTraces() = assetRepository.delete1DayAgoTraces()
+
+    suspend fun suspendDeleteTraceById(traceId: String) = assetRepository.suspendDeleteTraceById(traceId)
 }

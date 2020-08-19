@@ -1162,4 +1162,7 @@ internal constructor(
 
     suspend fun conversationZeroClear(conversationId: String) =
         conversationRepository.conversationZeroClear(conversationId)
+
+    suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
+        assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
 }
