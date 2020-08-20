@@ -17,10 +17,10 @@ class HostSelectionInterceptor private constructor() : Interceptor {
         this.host = url.toHttpUrlOrNull()
     }
 
-    private var flag = false
-    fun switch() {
-        flag = !flag
-        if (flag) {
+    fun switch(request: Request) {
+        val currentUrl = "${request.url.scheme}://${request.url.host}/"
+        if (currentUrl != host.toString()) return
+        if (currentUrl == URL) {
             setHost(Constants.API.Mixin_URL)
         } else {
             setHost(URL)
