@@ -41,7 +41,6 @@ class UpdateRelationshipJob(
         }
     }
 
-
     @SuppressLint("CheckResult")
     override fun onRun() {
         runBlocking {
