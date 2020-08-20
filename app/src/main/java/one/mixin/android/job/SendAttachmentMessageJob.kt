@@ -146,10 +146,13 @@ class SendAttachmentMessageJob(
                     AttachmentCipherOutputStreamFactory(key)
                 }
             ) { total, progress ->
-                val pg = try {
+                var pg = try {
                     progress.toFloat() / total.toFloat()
                 } catch (e: Exception) {
                     0f
+                }
+                if (message.isVideo()) {
+                    pg = 50 + pg / 2f
                 }
                 attachmentProcess[message.id] = (pg * 100).toInt()
                 RxBus.publish(loadingEvent(message.id, pg))

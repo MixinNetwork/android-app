@@ -5,15 +5,12 @@ import android.media.MediaCodecInfo;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.Build;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.*;
-import com.googlecode.mp4parser.util.Path;
 import timber.log.Timber;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.List;
+
+import static one.mixin.android.util.CrashExceptionReportKt.reportException;
 
 public class MediaCodecVideoConvertor {
 
@@ -468,6 +465,7 @@ public class MediaCodecVideoConvertor {
                                             } catch (Exception e) {
                                                 errorWait = true;
                                                 Timber.e(e);
+                                                reportException(e);
                                             }
                                             if (!errorWait) {
                                                 outputSurface.drawImage(false);
@@ -500,6 +498,7 @@ public class MediaCodecVideoConvertor {
                         }
                         Timber.e("bitrate: " + bitrate + " framerate: " + framerate + " size: " + resultHeight + "x" + resultWidth);
                         Timber.e(e);
+                        reportException(e);
                         error = true;
                     }
 
@@ -530,6 +529,7 @@ public class MediaCodecVideoConvertor {
             error = true;
             Timber.e("bitrate: " + bitrate + " framerate: " + framerate + " size: " + resultHeight + "x" + resultWidth);
             Timber.e(e);
+            reportException(e);
         } finally {
             if (extractor != null) {
                 extractor.release();
@@ -539,6 +539,7 @@ public class MediaCodecVideoConvertor {
                     mediaMuxer.finishMovie();
                 } catch (Exception e) {
                     Timber.e(e);
+                    reportException(e);
                 }
             }
         }
