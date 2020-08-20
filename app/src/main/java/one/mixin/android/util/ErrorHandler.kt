@@ -99,7 +99,7 @@ open class ErrorHandler {
         const val BAD_DATA = 10002
         const val PHONE_SMS_DELIVERY = 10003
         const val RECAPTCHA_IS_INVALID = 10004
-        const val NEED_RECAPTCHA = 10005
+        const val NEED_CAPTCHA = 10005
         const val OLD_VERSION = 10006
         const val PHONE_INVALID_FORMAT = 20110
         const val INSUFFICIENT_IDENTITY_NUMBER = 20111
