@@ -117,6 +117,7 @@ internal class AppModule {
         builder.writeTimeout(10, TimeUnit.SECONDS)
         builder.readTimeout(10, TimeUnit.SECONDS)
         builder.pingInterval(15, TimeUnit.SECONDS)
+        builder.retryOnConnectionFailure(false)
         builder.dns(DNS)
 
         builder.addInterceptor { chain ->
