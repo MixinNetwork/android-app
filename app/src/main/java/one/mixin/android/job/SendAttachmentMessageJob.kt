@@ -3,7 +3,11 @@ package one.mixin.android.job
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.AttachmentResponse
 import one.mixin.android.crypto.Util
@@ -11,6 +15,7 @@ import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
 import one.mixin.android.event.ProgressEvent.Companion.loadingEvent
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager.Companion.attachmentProcess
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.reportException
@@ -21,6 +26,7 @@ import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.AttachmentMessagePayload
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
+import java.net.SocketTimeoutException
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
@@ -155,6 +161,11 @@ class SendAttachmentMessageJob(
             }
         } catch (e: Exception) {
             Timber.e(e)
+            if (e is SocketTimeoutException){
+                GlobalScope.launch(Dispatchers.Main) {
+                    MixinApplication.get().toast(R.string.upload_timeout)
+                }
+            }
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
             attachmentProcess.remove(message.id)
             removeJob()
