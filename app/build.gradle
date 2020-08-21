@@ -31,6 +31,7 @@ android {
         }
 
         buildConfigField 'String', 'BUGSNAG_API_KEY', "\"${propOrEmpty('MIXIN_BUGSNAG_API_KEY')}\""
+        buildConfigField 'String', 'APPCENTER_API_KEY', "\"${propOrEmpty('MIXIN_APPCENTER_API_KEY')}\""
         buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('MIXIN_RECAPTCHA_KEY')}\""
         buildConfigField 'String', 'GIPHY_KEY', "\"${propOrEmpty('MIXIN_GIPHY_KEY')}\""
         buildConfigField 'String', 'SafetyNet_API_KEY', "\"${propOrEmpty('MIXIN_SAFETYNET_API_KEY')}\""
@@ -265,6 +266,8 @@ dependencies {
     implementation "com.caverock:androidsvg-aar:${svgVersion}"
     implementation "androidx.startup:startup-runtime:${startupVersion}"
     implementation "dnsjava:dnsjava:${dnsVersion}"
+    implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
+    implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

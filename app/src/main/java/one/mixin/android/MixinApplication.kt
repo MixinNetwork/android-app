@@ -9,6 +9,9 @@ import androidx.camera.core.CameraXConfig
 import androidx.work.Configuration
 import com.facebook.stetho.Stetho
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.microsoft.appcenter.AppCenter
+import com.microsoft.appcenter.analytics.Analytics
+import com.microsoft.appcenter.crashes.Crashes
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import io.reactivex.plugins.RxJavaPlugins
@@ -69,6 +72,10 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
         Lingver.init(this)
         appComponent = AppInjector.init(this)
         RxJavaPlugins.setErrorHandler {}
+        AppCenter.start(
+            this, BuildConfig.APPCENTER_API_KEY,
+            Analytics::class.java, Crashes::class.java
+        )
     }
 
     private fun init() {
