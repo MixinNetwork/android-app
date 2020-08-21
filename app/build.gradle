@@ -173,7 +173,12 @@ dependencies {
     // RxJava
     implementation "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"
     implementation "io.reactivex.rxjava2:rxandroid:${rxAndroidVersion}"
-    implementation("io.jsonwebtoken:jjwt:${jwtVersion}")
+    implementation 'com.github.MixinNetwork.jjwt:jjwt-api:-SNAPSHOT'
+
+    runtimeOnly 'com.github.MixinNetwork.jjwt:jjwt-impl:-SNAPSHOT'
+    runtimeOnly('com.github.MixinNetwork.jjwt:jjwt-orgjson:-SNAPSHOT') {
+        exclude group: 'org.json', module: 'json' //provided by Android natively
+    }
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
     implementation("com.bugsnag:bugsnag-android:${bugsnagVersion}") {
         exclude group: "com.bugsnag", module: "bugsnag-plugin-android-anr"

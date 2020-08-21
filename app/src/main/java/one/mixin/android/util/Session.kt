@@ -139,7 +139,7 @@ object Session {
                     put("scp", "FULL")
                 }
             )
-            .signWith(SignatureAlgorithm.RS512, key)
+            .signWith(key, SignatureAlgorithm.RS512)
             .compact()
     }
 
@@ -150,7 +150,7 @@ object Session {
         }
         val key = getRSAPrivateKeyFromString(token)
         return try {
-            val iat = Jwts.parser().setSigningKey(key).parseClaimsJws(string).body[Claims.ISSUED_AT] as Long
+            val iat = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(string).body[Claims.ISSUED_AT] as Long
             abs(System.currentTimeMillis() / 1000 - iat) > offset
         } catch (e: Exception) {
             false
