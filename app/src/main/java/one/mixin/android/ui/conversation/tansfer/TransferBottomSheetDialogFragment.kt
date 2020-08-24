@@ -135,7 +135,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
             }
         }
         bottomViewModel.insertTrace(trace)
-        bottomViewModel.delete1DayAgoTraces()
+        bottomViewModel.deletePreviousTraces()
         return request
     }
 
