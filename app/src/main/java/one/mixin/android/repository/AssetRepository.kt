@@ -15,7 +15,7 @@ import one.mixin.android.db.AssetsExtraDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TraceDao
-import one.mixin.android.extension.within24Hours
+import one.mixin.android.extension.within6Hours
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
@@ -178,8 +178,8 @@ constructor(
     suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String): Pair<Trace?, Boolean> {
         val trace = traceDao.suspendFindTrace(opponentId, destination, tag, amount, assetId) ?: return Pair(null, false)
 
-        val with24hours = trace.createdAt.within24Hours()
-        if (!with24hours) {
+        val with6hours = trace.createdAt.within6Hours()
+        if (!with6hours) {
             return Pair(null, false)
         }
 
@@ -212,7 +212,7 @@ constructor(
         }
     }
 
-    suspend fun delete1DayAgoTraces() = traceDao.delete1DayAgoRecords()
+    suspend fun deletePreviousTraces() = traceDao.deletePreviousTraces()
 
     suspend fun suspendDeleteTraceById(traceId: String) = traceDao.suspendDeleteById(traceId)
 }

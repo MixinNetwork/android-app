@@ -36,10 +36,14 @@ fun String.date(): String {
     return date as String
 }
 
-fun String.within24Hours(): Boolean {
+fun String.within24Hours() = withinTime(60 * 60 * 1000 * 24)
+
+fun String.within6Hours() = withinTime(60 * 60 * 1000 * 6)
+
+fun String.withinTime(hours: Long): Boolean {
     val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)
     val offset = System.currentTimeMillis() - date.toInstant().toEpochMilli()
-    return offset < 86400000L // 24hours
+    return offset < hours
 }
 
 fun String.timeAgo(context: Context): String {
