@@ -122,6 +122,7 @@
     <string name="storage_low_title">Your phone is low on storage</string>
     <string name="storage_low_message">Your phone is low on storage, which can seriously affect your Mixin experience and may even result in corrupted or lost chats and other important data. So it\'s recommended to uninstall unused apps to clear up enough space</string>
     <string name="website" translatable="false">https://mixin.one/messenger</string>
+    <string name="upload_timeout">Upload timeout</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
