@@ -5,7 +5,6 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import one.mixin.android.util.QueryMessage
-import one.mixin.android.util.Session
 import one.mixin.android.vo.AttachmentMigration
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaMessageMinimal
@@ -372,7 +371,7 @@ interface MessageDao : BaseDao<Message> {
     )
     fun findUnreadMessagesSync(
         conversationId: String,
-        userId: String = Session.getAccountId()!!
+        userId: String
     ): List<MessageMinimal>?
 
     @Query(

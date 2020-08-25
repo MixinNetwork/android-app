@@ -65,7 +65,8 @@ class SendService : IntentService("SendService") {
         val manager = getSystemService<NotificationManager>()
         manager?.cancel(conversationId.hashCode())
         messageMentionDao.markMentionReadByConversationId(conversationId)
-        messageDao.findUnreadMessagesSync(conversationId)?.let { list ->
+        val accountId = Session.getAccountId() ?: return
+        messageDao.findUnreadMessagesSync(conversationId, accountId)?.let { list ->
             if (list.isNotEmpty()) {
                 messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().createdAt)
                 list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->

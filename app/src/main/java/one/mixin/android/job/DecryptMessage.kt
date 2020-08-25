@@ -263,6 +263,7 @@ class DecryptMessage : Injector() {
 
     private fun processRecallMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.MESSAGE_RECALL.name) {
+            val accountId = Session.getAccountId() ?: return
             val decoded = Base64.decode(data.data)
             val transferRecallData = gson.fromJson(String(decoded), RecallMessagePayload::class.java)
             messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
@@ -270,7 +271,7 @@ class DecryptMessage : Injector() {
                 messageDao.recallFailedMessage(msg.id)
                 messageDao.recallMessage(msg.id)
                 messageMentionDao.deleteMessage(msg.id)
-                messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
+                messageDao.takeUnseen(accountId, msg.conversationId)
                 if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     msg.mediaUrl.getFilePath()?.let {
                         File(it).let { file ->
@@ -305,7 +306,7 @@ class DecryptMessage : Injector() {
             } else if (plainData.action == PlainDataAction.NO_KEY.name) {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, data.sessionId.getDeviceId()).toString())
             } else if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
-                val accountId = Session.getAccountId()!!
+                val accountId = Session.getAccountId() ?: return
                 plainData.ackMessages?.let {
                     val updateMessageList = arrayListOf<String>()
                     for (m in it) {
@@ -358,7 +359,8 @@ class DecryptMessage : Injector() {
             if (resendMessage != null) {
                 continue
             }
-            val needResendMessage = messageDao.findMessageById(id, Session.getAccountId()!!)
+            val accountId = Session.getAccountId() ?: return
+            val needResendMessage = messageDao.findMessageById(id, accountId)
             if (needResendMessage == null || needResendMessage.category == MessageCategory.MESSAGE_RECALL.name) {
                 resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId, 0, nowInUtc()))
                 continue
@@ -674,7 +676,8 @@ class DecryptMessage : Injector() {
                 jobManager.addJobInBackground(RefreshCircleJob(systemMessage.circleId))
             }
             SystemCircleMessageAction.ADD.name -> {
-                val conversationId = systemMessage.conversationId ?: generateConversationId(Session.getAccountId()!!, systemMessage.userId ?: return)
+                val accountId = Session.getAccountId() ?: return
+                val conversationId = systemMessage.conversationId ?: generateConversationId(accountId, systemMessage.userId ?: return)
                 if (circleDao.findCircleById(systemMessage.circleId) == null) {
                     jobManager.addJobInBackground(RefreshCircleJob(systemMessage.circleId))
                 }
@@ -685,7 +688,8 @@ class DecryptMessage : Injector() {
                 circleConversationDao.insertUpdate(circleConversation)
             }
             SystemCircleMessageAction.REMOVE.name -> {
-                val conversationId = systemMessage.conversationId ?: generateConversationId(Session.getAccountId()!!, systemMessage.userId ?: return)
+                val accountId = Session.getAccountId() ?: return
+                val conversationId = systemMessage.conversationId ?: generateConversationId(accountId, systemMessage.userId ?: return)
                 circleConversationDao.deleteByIds(conversationId, systemMessage.circleId)
             }
             SystemCircleMessageAction.DELETE.name -> {
