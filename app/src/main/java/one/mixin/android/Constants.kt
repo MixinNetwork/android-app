@@ -24,7 +24,6 @@ object Constants {
     }
 
     object Account {
-
         const val PREF_PIN_CHECK = "pref_pin_check"
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_WRONG_TIME = "pref_wrong_time"

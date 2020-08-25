@@ -6,14 +6,14 @@ import android.view.View
 import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.crypto.getPrivateKeyPem
-import one.mixin.android.crypto.rsaDecrypt
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.vibrate
@@ -94,9 +94,8 @@ abstract class PinCodeFragment : FabLoadingFragment() {
             defaultSharedPreferences.clear()
         }
         Session.storeAccount(account)
-        Session.storeToken(sessionKey.getPrivateKeyPem())
-        val key = rsaDecrypt(sessionKey.private, account.sessionId, account.pinToken)
-        Session.storePinToken(key)
+        val privateKey = sessionKey.private as EdDSAPrivateKey
+        Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
         verification_keyboard.animate().translationY(300f).start()
         MixinApplication.get().onlining.set(true)
 

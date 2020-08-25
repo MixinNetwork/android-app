@@ -34,6 +34,7 @@ object Session {
     private const val PREF_PIN_TOKEN = "pref_pin_token"
     private const val PREF_NAME_ACCOUNT = "pref_name_account"
     private const val PREF_NAME_TOKEN = "pref_name_token"
+    private const val PREF_ED25519_PRIVATE_KEY = "pref_ed25519_private_key"
 
     fun storeAccount(account: Account) {
         self = account
@@ -57,6 +58,16 @@ object Session {
         self = null
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.clear()
+    }
+
+    fun storeEd25519PrivateKey(token: String) {
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_ED25519_PRIVATE_KEY)
+        preference.putString(PREF_ED25519_PRIVATE_KEY, token)
+    }
+
+    fun getEd25519PrivateKey(): String? {
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_ED25519_PRIVATE_KEY)
+        return preference.getString(PREF_ED25519_PRIVATE_KEY, null)
     }
 
     fun storeToken(token: String) {
@@ -123,11 +134,12 @@ object Session {
 
     fun checkToken() = getAccount() != null && !getToken().isNullOrBlank()
 
-    fun signToken(acct: Account?, request: Request, token: String? = getToken()): String {
-        if (acct == null || token == null || token.isBlank()) {
+    fun signToken(acct: Account?, request: Request): String {
+        val keyBase64 = getEd25519PrivateKey()
+        if (acct == null || keyBase64 == null || keyBase64.isBlank()) {
             return ""
         }
-        val key = getRSAPrivateKeyFromString(token)
+
         val expire = System.currentTimeMillis() / 1000 + 1800
         val iat = System.currentTimeMillis() / 1000
 
@@ -150,7 +162,7 @@ object Session {
                     put("scp", "FULL")
                 }
             )
-            .signWith(key, SignatureAlgorithm.RS512)
+            .signWith(key, SignatureAlgorithm.EdDSA)
             .compact()
     }
 

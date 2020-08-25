@@ -24,6 +24,11 @@ fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     return kpg.genKeyPair()
 }
 
+
+fun generateEd25519KeyPair(): KeyPair {
+    return net.i2p.crypto.eddsa.KeyPairGenerator().generateKeyPair()
+}
+
 inline fun KeyPair.getPublicKey(): ByteArray {
     return public.encoded
 }
