@@ -155,7 +155,7 @@ class SendAttachmentMessageJob(
             }
         } catch (e: Exception) {
             Timber.e(e)
-            if (e is SocketTimeoutException){
+            if (e is SocketTimeoutException) {
                 GlobalScope.launch(Dispatchers.Main) {
                     MixinApplication.get().toast(R.string.upload_timeout)
                 }
@@ -192,11 +192,11 @@ class SendAttachmentMessageJob(
     }
 
     private fun uploadPlainAttachment(url: String, size: Long, attachment: PushAttachmentData) {
-        Util.uploadAttachment(url, attachment.data, size, attachment.outputStreamFactory, attachment.listener)
+        Util.uploadAttachment(url, attachment.data, size, attachment.outputStreamFactory, attachment.listener, { isCancelled })
     }
 
     private fun uploadAttachment(url: String, attachment: PushAttachmentData): ByteArray {
         val dataSize = attachment.outputStreamFactory.getCipherTextLength(attachment.dataSize)
-        return Util.uploadAttachment(url, attachment.data, dataSize, attachment.outputStreamFactory, attachment.listener)
+        return Util.uploadAttachment(url, attachment.data, dataSize, attachment.outputStreamFactory, attachment.listener, { isCancelled })
     }
 }
