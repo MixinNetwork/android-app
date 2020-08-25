@@ -10,6 +10,7 @@ import one.mixin.android.crypto.attachment.PushAttachmentData;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 public class DigestingRequestBody extends RequestBody {
 
@@ -42,14 +43,20 @@ public class DigestingRequestBody extends RequestBody {
 
     @Override
     public void writeTo(BufferedSink sink) throws IOException {
-        DigestingOutputStream outputStream = outputStreamFactory.createFor(new SkippingOutputStream(0, sink.outputStream()));
+        OutputStream outputStream;
+        if (outputStreamFactory == null) {
+            outputStream = new SkippingOutputStream(0, sink.outputStream());
+        } else {
+            outputStream = outputStreamFactory.createFor(new SkippingOutputStream(0, sink.outputStream()));
+        }
         byte[] buffer = new byte[8192];
 
         int read;
         long total = 0;
 
         while ((read = inputStream.read(buffer, 0, buffer.length)) != -1) {
-            if (cancelationSignal != null && cancelationSignal.isCanceled()) throw new IOException("Canceled!");
+            if (cancelationSignal != null && cancelationSignal.isCanceled())
+                throw new IOException("Canceled!");
             outputStream.write(buffer, 0, read);
             total += read;
 
@@ -59,7 +66,9 @@ public class DigestingRequestBody extends RequestBody {
         }
 
         outputStream.flush();
-        digest = outputStream.getTransmittedDigest();
+        if (outputStream instanceof DigestingOutputStream) {
+            digest = ((DigestingOutputStream) outputStream).getTransmittedDigest();
+        }
     }
 
     @Override
