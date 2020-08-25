@@ -66,7 +66,7 @@ public class DigestingRequestBody extends RequestBody {
         }
 
         outputStream.flush();
-        if (outputStream instanceof DigestingOutputStream) {
+        if (outputStreamFactory != null) {
             digest = ((DigestingOutputStream) outputStream).getTransmittedDigest();
         }
     }
