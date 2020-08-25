@@ -355,7 +355,8 @@ class DecryptCallMessage(
         userId: String = data.userId,
         status: String? = null
     ) {
-        if (data.userId == Session.getAccountId()!! || data.quoteMessageId == null) {
+        val accountId = Session.getAccountId() ?: return
+        if (data.userId == accountId || data.quoteMessageId == null) {
             return
         }
         var messageStatus = data.status

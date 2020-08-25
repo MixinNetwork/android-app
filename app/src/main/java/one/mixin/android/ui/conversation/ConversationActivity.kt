@@ -89,7 +89,8 @@ class ConversationActivity : BlazeBaseActivity() {
             val cid: String
             if (userId != null) {
                 val user = userRepository.suspendFindUserById(userId)
-                cid = conversationId ?: generateConversationId(Session.getAccountId()!!, userId)
+                val accountId = Session.getAccountId() ?: return@launch
+                cid = conversationId ?: generateConversationId(accountId, userId)
                 require(user != null && userId != Session.getAccountId()) {
                     "error data userId: $userId"
                 }

@@ -1490,13 +1490,12 @@ class ConversationFragment :
     }
 
     private fun liveDataAppList() {
-        chatViewModel.getBottomApps(conversationId, recipient?.userId)
-            .observe(viewLifecycleOwner) { list ->
-                appList = list
-                appList?.let {
-                    (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
-                }
+        chatViewModel.getBottomApps(conversationId, recipient?.userId)?.observe(viewLifecycleOwner) { list ->
+            appList = list
+            appList?.let {
+                (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
             }
+        }
     }
 
     private var appList: List<AppItem>? = null

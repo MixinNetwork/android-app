@@ -246,8 +246,8 @@ internal constructor(
     suspend fun findMessageIndex(conversationId: String, messageId: String) =
         readMessageDao.findMessageIndex(conversationId, messageId)
 
-    fun findUnreadMessagesSync(conversationId: String) =
-        readMessageDao.findUnreadMessagesSync(conversationId)
+    fun findUnreadMessagesSync(conversationId: String, accountId: String) =
+        readMessageDao.findUnreadMessagesSync(conversationId, accountId)
 
     fun batchMarkReadAndTake(conversationId: String, userId: String, createdAt: String) {
         messageDao.batchMarkReadAndTake(conversationId, userId, createdAt)

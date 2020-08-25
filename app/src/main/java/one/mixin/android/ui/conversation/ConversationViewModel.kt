@@ -800,7 +800,7 @@ internal constructor(
         }
     }
 
-    fun getBottomApps(conversationId: String, guestId: String?): LiveData<List<AppItem>> {
+    fun getBottomApps(conversationId: String, guestId: String?): LiveData<List<AppItem>>? {
         return if (guestId == null) {
             Transformations.map(
                 conversationRepository.getGroupAppsByConversationId(conversationId)
@@ -810,7 +810,8 @@ internal constructor(
                 }
             }
         } else {
-            conversationRepository.getFavoriteAppsByUserId(guestId, Session.getAccountId()!!)
+            val accountId = Session.getAccountId() ?: return null
+            conversationRepository.getFavoriteAppsByUserId(guestId, accountId)
         }
     }
 
@@ -836,8 +837,10 @@ internal constructor(
     suspend fun findMessageIndex(conversationId: String, messageId: String) =
         conversationRepository.findMessageIndex(conversationId, messageId)
 
-    private fun findUnreadMessagesSync(conversationId: String) =
-        conversationRepository.findUnreadMessagesSync(conversationId)
+    private fun findUnreadMessagesSync(conversationId: String): List<MessageMinimal>? {
+        val accountId = Session.getAccountId() ?: return null
+        return conversationRepository.findUnreadMessagesSync(conversationId, accountId)
+    }
 
     private fun sendForwardMessages(
         conversationId: String,
