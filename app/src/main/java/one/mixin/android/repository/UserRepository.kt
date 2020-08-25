@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.CircleConversationRequest
@@ -122,16 +121,16 @@ constructor(
 
     fun findSelf(): LiveData<User?> = userDao.findSelf(Session.getAccountId() ?: "").asLiveData()
 
-    suspend fun upsert(user: User) = coroutineScope {
+    suspend fun upsert(user: User) = withContext(Dispatchers.IO) {
         userDao.insertUpdate(user, appDao)
     }
 
-    suspend fun upsertList(users: List<User>) = coroutineScope {
+    suspend fun upsertList(users: List<User>) = withContext(Dispatchers.IO) {
         userDao.insertUpdateList(users, appDao)
     }
 
-    suspend fun insertApp(app: App) = coroutineScope {
-        appDao.insert(app)
+    suspend fun insertApp(app: App) {
+        appDao.insertSuspend(app)
     }
 
     suspend fun upsertBlock(user: User) = withContext(Dispatchers.IO) {
