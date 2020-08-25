@@ -11,9 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class Util {
 
@@ -53,10 +50,6 @@ public class Util {
         return value == null || value.trim().length() == 0;
     }
 
-    public static String getSecret(int size) {
-        byte[] secret = getSecretBytes(size);
-        return Base64.encodeBytes(secret);
-    }
 
     public static byte[] getSecretBytes(int size) {
         byte[] secret = new byte[size];
@@ -64,49 +57,14 @@ public class Util {
         return secret;
     }
 
-    public static byte[] getRandomLengthBytes(int maxSize) {
-        SecureRandom secureRandom = new SecureRandom();
-        byte[]       result       = new byte[secureRandom.nextInt(maxSize) + 1];
-        secureRandom.nextBytes(result);
-        return result;
-    }
-
-    public static byte[] getRequestNonce(String data) {
-        SecureRandom random = new SecureRandom();
-        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-        byte[] bytes = new byte[24];
-        random.nextBytes(bytes);
-        try {
-            byteStream.write(bytes);
-            byteStream.write(data.getBytes());
-        } catch (IOException e) {
-            return null;
-        }
-        return byteStream.toByteArray();
-    }
-
-    public static String readFully(InputStream in) throws IOException {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-        byte[] buffer              = new byte[4096];
-        int read;
-
-        while ((read = in.read(buffer)) != -1) {
-            bout.write(buffer, 0, read);
-        }
-
-        in.close();
-
-        return new String(bout.toByteArray());
-    }
-
     public static void readFully(InputStream in, byte[] buffer) throws IOException {
         int offset = 0;
 
-        for (;;) {
+        for (; ; ) {
             int read = in.read(buffer, offset, buffer.length - offset);
 
             if (read + offset < buffer.length) offset += read;
-            else                		           return;
+            else return;
         }
     }
 
@@ -123,15 +81,10 @@ public class Util {
     }
 
     public static int toIntExact(long value) {
-        if ((int)value != value) {
+        if ((int) value != value) {
             throw new ArithmeticException("integer overflow");
         }
-        return (int)value;
-    }
-
-    @SafeVarargs
-    public static <T> List<T> immutableList(T... elements) {
-        return Collections.unmodifiableList(Arrays.asList(elements.clone()));
+        return (int) value;
     }
 
     public static byte[] uploadAttachment(String url, InputStream data, long dataSize, OutputStreamFactory outputStreamFactory, PushAttachmentData.ProgressListener listener) throws IOException {
