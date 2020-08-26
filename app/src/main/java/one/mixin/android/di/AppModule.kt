@@ -51,6 +51,7 @@ import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.di.worker.MixinWorkerFactory
 import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.extension.show
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
@@ -59,6 +60,7 @@ import one.mixin.android.job.MyJobService
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.Session
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
@@ -149,6 +151,7 @@ internal class AppModule {
                     }
                 }
 
+                var expiredToken = false
                 response.body?.run {
                     val bytes = this.bytes()
                     val contentType = this.contentType()
@@ -167,6 +170,8 @@ internal class AppModule {
                         val jwt = authorization.substring(7)
                         if (Session.requestDelay(Session.getAccount(), jwt, Constants.DELAY_SECOND)) {
                             throw ExpiredTokenException()
+                        } else {
+                            expiredToken = true
                         }
                     }
                 }
@@ -175,6 +180,10 @@ internal class AppModule {
                     response.header("X-Server-Time")?.toLong()?.let { serverTime ->
                         if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= ALLOW_INTERVAL) {
                             MixinApplication.get().gotoTimeWrong(serverTime)
+                        } else if (expiredToken) {
+                            val ise = IllegalStateException("Force logout. request: ${request.show()}, response: ${response.show()}")
+                            reportException(ise)
+                            MixinApplication.get().closeAndClear()
                         }
                     }
                 }

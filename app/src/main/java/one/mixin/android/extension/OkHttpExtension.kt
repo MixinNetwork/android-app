@@ -13,7 +13,7 @@ fun RequestBody.bodyToString(): String {
 }
 
 fun HttpUrl.cutOut(): String {
-    return toString().removePrefix(scheme + "://" + host)
+    return toString().removePrefix("$scheme://$host")
 }
 
 fun Request.show(): String {
