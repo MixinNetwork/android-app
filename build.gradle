@@ -68,7 +68,7 @@ buildscript {
         ext.prism4jVersion = '2.0.0'
 
         ext.junitVersion = '4.13'
-        ext.androidxJunitVersion = '1.1.1'
+        ext.androidxJunitVersion = '1.1.2'
         ext.leakcanaryVerison = '1.5.1'
         ext.mockitoVersion = '1.10.19'
         ext.hamcrestVersion = '1.3'
