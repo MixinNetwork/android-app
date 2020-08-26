@@ -104,6 +104,11 @@ object Session {
         preference.putString(PREF_PIN_TOKEN, pinToken)
     }
 
+    fun storeNewPinToken(pinToken: String) {
+        val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
+        preference.putString(Constants.Account.PREF_PIN_TOKEN, pinToken)
+    }
+
     fun getPinToken(): String? {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         return preference.getString(PREF_PIN_TOKEN, null)

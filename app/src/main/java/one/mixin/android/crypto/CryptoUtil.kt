@@ -8,6 +8,7 @@ import one.mixin.android.extension.toLeByteArray
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
+import java.security.MessageDigest
 import java.security.PrivateKey
 import java.security.SecureRandom
 import java.security.spec.MGF1ParameterSpec
@@ -17,6 +18,8 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.OAEPParameterSpec
 import javax.crypto.spec.PSource
 import javax.crypto.spec.SecretKeySpec
+import kotlin.experimental.and
+import kotlin.experimental.or
 
 fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     val kpg = KeyPairGenerator.getInstance("RSA")
@@ -27,6 +30,15 @@ fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
 
 fun generateEd25519KeyPair(): KeyPair {
     return net.i2p.crypto.eddsa.KeyPairGenerator().generateKeyPair()
+}
+
+fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {
+    val md = MessageDigest.getInstance("SHA-512")
+    val h = md.digest(edSeed)
+    h[0] = h[0] and 248.toByte()
+    h[31] = h[31] and 127
+    h[31] = h[31] or 64
+    return h
 }
 
 inline fun KeyPair.getPublicKey(): ByteArray {
