@@ -43,7 +43,7 @@ buildscript {
         ext.firebaseMessageVersion = '20.2.4'
         ext.firebaseDylinkVersion = '19.1.0'
         ext.firebaseMLVersion = '24.0.3'
-        ext.mlkitBarcodeVersion = '16.0.2'
+        ext.mlkitBarcodeVersion = '16.0.3'
         ext.jwtVersion = '0.9.1'
         ext.zxingVersion = '3.3.3'
         ext.rxpermissionsVersion = '0.10.3'
