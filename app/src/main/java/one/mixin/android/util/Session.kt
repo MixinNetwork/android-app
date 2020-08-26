@@ -6,6 +6,9 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import net.i2p.crypto.eddsa.EdDSAPrivateKey
+import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
+import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import okhttp3.Request
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.aesEncrypt
@@ -13,6 +16,7 @@ import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.cutOut
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
@@ -134,12 +138,16 @@ object Session {
 
     fun checkToken() = getAccount() != null && !getToken().isNullOrBlank()
 
+    val ed25519 = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519)
+
     fun signToken(acct: Account?, request: Request): String {
         val keyBase64 = getEd25519PrivateKey()
         if (acct == null || keyBase64 == null || keyBase64.isBlank()) {
             return ""
         }
-
+        val key = EdDSAPrivateKey(
+            EdDSAPrivateKeySpec(keyBase64.decodeBase64(), ed25519)
+        )
         val expire = System.currentTimeMillis() / 1000 + 1800
         val iat = System.currentTimeMillis() / 1000
 
