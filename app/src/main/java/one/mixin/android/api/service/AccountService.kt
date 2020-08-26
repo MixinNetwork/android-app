@@ -10,9 +10,11 @@ import one.mixin.android.api.request.LogoutRequest
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.RawTransactionsRequest
 import one.mixin.android.api.request.SessionRequest
+import one.mixin.android.api.request.SessionSecretRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.DeviceCheckResponse
+import one.mixin.android.api.response.SessionSecretResponse
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Fiat
@@ -103,4 +105,7 @@ interface AccountService {
 
     @POST("transactions")
     suspend fun transactions(@Body request: RawTransactionsRequest): MixinResponse<Void>
+
+    @POST("session/secret")
+    suspend fun modifySessionSecret(@Body request: SessionSecretRequest): MixinResponse<SessionSecretResponse>
 }

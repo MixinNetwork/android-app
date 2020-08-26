@@ -27,14 +27,17 @@ fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     return kpg.genKeyPair()
 }
 
-
 fun generateEd25519KeyPair(): KeyPair {
     return net.i2p.crypto.eddsa.KeyPairGenerator().generateKeyPair()
 }
 
 fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {
     val md = MessageDigest.getInstance("SHA-512")
-    val h = md.digest(edSeed)
+    val d = md.digest(edSeed)
+    val h = ByteArray(32)
+    for (i in 0..31) {
+        h[i] = d[i]
+    }
     h[0] = h[0] and 248.toByte()
     h[31] = h[31] and 127
     h[31] = h[31] or 64

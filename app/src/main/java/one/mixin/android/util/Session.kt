@@ -5,7 +5,6 @@ import com.google.gson.reflect.TypeToken
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
-import io.jsonwebtoken.SignatureAlgorithm
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
@@ -25,6 +24,7 @@ import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
 import one.mixin.android.vo.Account
 import timber.log.Timber
+import java.security.Key
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
@@ -104,11 +104,6 @@ object Session {
         preference.putString(PREF_PIN_TOKEN, pinToken)
     }
 
-    fun storeNewPinToken(pinToken: String) {
-        val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-        preference.putString(Constants.Account.PREF_PIN_TOKEN, pinToken)
-    }
-
     fun getPinToken(): String? {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         return preference.getString(PREF_PIN_TOKEN, null)
@@ -141,18 +136,18 @@ object Session {
         return account?.sessionId
     }
 
-    fun checkToken() = getAccount() != null && !getToken().isNullOrBlank()
+    fun checkToken() = getAccount() != null && (!getToken().isNullOrBlank() || !getPinToken().isNullOrBlank())
+
+    fun shouldUpdateKey() = !getPinToken().isNullOrBlank() && getEd25519PrivateKey().isNullOrBlank()
 
     val ed25519 = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519)
 
     fun signToken(acct: Account?, request: Request): String {
-        val keyBase64 = getEd25519PrivateKey()
-        if (acct == null || keyBase64 == null || keyBase64.isBlank()) {
+        if (acct == null) {
             return ""
         }
-        val key = EdDSAPrivateKey(
-            EdDSAPrivateKeySpec(keyBase64.decodeBase64(), ed25519)
-        )
+        val key = getJwtKey() ?: return ""
+
         val expire = System.currentTimeMillis() / 1000 + 1800
         val iat = System.currentTimeMillis() / 1000
 
@@ -175,16 +170,16 @@ object Session {
                     put("scp", "FULL")
                 }
             )
-            .signWith(key, SignatureAlgorithm.EdDSA)
+            .signWith(key)
             .compact()
     }
 
     fun requestDelay(acct: Account?, string: String, offset: Int, token: String? = getToken()): JwtResult {
-        if (acct == null || token == null || token.isNullOrBlank()) {
-            reportException(IllegalStateException("Error data: [${acct == null}|${token == null}|${token.isNullOrBlank()}]"))
+        if (acct == null) {
             return JwtResult(false)
         }
-        val key = getRSAPrivateKeyFromString(token)
+        val key = getJwtKey() ?: return JwtResult(false)
+
         return try {
             val iat = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(string).body[Claims.ISSUED_AT] as Int
             JwtResult(abs(System.currentTimeMillis() / 1000 - iat) > offset, requestTime = iat.toLong())
@@ -200,6 +195,22 @@ object Session {
     }
 
     fun getFiatCurrency() = getAccount()?.fiatCurrency ?: "USD"
+
+    private fun getJwtKey(): Key? {
+        val keyBase64 = getEd25519PrivateKey()
+        val isRsa = keyBase64.isNullOrBlank()
+        return if (isRsa) {
+            val token = getToken()
+            if (token.isNullOrBlank()) {
+                return null
+            }
+            getRSAPrivateKeyFromString(token)
+        } else {
+            EdDSAPrivateKey(
+                EdDSAPrivateKeySpec(keyBase64?.decodeBase64(), ed25519)
+            )
+        }
+    }
 }
 
 fun encryptPin(key: String, code: String?): String? {

@@ -44,6 +44,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import net.i2p.crypto.eddsa.EdDSAPrivateKey
+import net.i2p.crypto.eddsa.EdDSAPublicKey
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_ATTACHMENT
@@ -59,11 +61,14 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.SessionRequest
+import one.mixin.android.api.request.SessionSecretRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
+import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
@@ -71,7 +76,9 @@ import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.checkStorageNotLow
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueUniqueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.inTransaction
@@ -133,6 +140,7 @@ import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.worker.RefreshAssetsWorker
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
+import org.whispersystems.curve25519.Curve25519
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -257,6 +265,10 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
+            if (Session.shouldUpdateKey()) {
+                updateRsa2EdDsa()
+            }
+
             jobManager.addJobInBackground(RefreshAccountJob())
 
             if (Fiats.isRateEmpty()) {
@@ -781,6 +793,32 @@ class MainActivity : BlazeBaseActivity() {
             )
             dialog.dismiss()
         }
+    }
+
+    private suspend fun updateRsa2EdDsa() {
+        val sessionKey = generateEd25519KeyPair()
+        val publicKey = sessionKey.public as EdDSAPublicKey
+        val privateKey = sessionKey.private as EdDSAPrivateKey
+        val sessionSecret =  publicKey.abyte.base64Encode()
+
+        handleMixinResponse(
+            invokeNetwork = {
+                accountRepo.modifySessionSecret(SessionSecretRequest(sessionSecret))
+            },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                it.data?.let {  r ->
+                    val account = Session.getAccount()
+                    account?.let { acc ->
+                        acc.pinToken = r.serverPublicKey
+                        Session.storeAccount(acc)
+                    }
+                    Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
+                    val key = Curve25519.getInstance(Curve25519.BEST).calculateAgreement(r.serverPublicKey.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
+                    Session.storePinToken(key.base64Encode())
+                }
+            }
+        )
     }
 
     override fun onBackPressed() {

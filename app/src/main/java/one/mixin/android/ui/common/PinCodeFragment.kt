@@ -13,9 +13,9 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.extension.base64Encode
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.vibrate
@@ -100,9 +100,8 @@ abstract class PinCodeFragment : FabLoadingFragment() {
         Session.storeAccount(account)
         val privateKey = sessionKey.private as EdDSAPrivateKey
         Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
-        val key = Curve25519.getInstance(BEST).calculateAgreement(Base64.decode(account.pinToken), privateKeyToCurve25519(privateKey.seed))
-        Session.storeNewPinToken(key.base64Encode())
-
+        val key = Curve25519.getInstance(BEST).calculateAgreement(account.pinToken.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
+        Session.storePinToken(key.base64Encode())
         verification_keyboard.animate().translationY(300f).start()
         MixinApplication.get().onlining.set(true)
 

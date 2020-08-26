@@ -16,6 +16,7 @@ import one.mixin.android.api.request.LogoutRequest
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.RawTransactionsRequest
 import one.mixin.android.api.request.SessionRequest
+import one.mixin.android.api.request.SessionSecretRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AuthorizationResponse
@@ -46,6 +47,7 @@ import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
+import retrofit2.http.Body
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -251,4 +253,6 @@ constructor(
             }
         }
     }
+
+    suspend fun modifySessionSecret(request: SessionSecretRequest) = accountService.modifySessionSecret(request)
 }
