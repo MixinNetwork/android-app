@@ -136,11 +136,11 @@ object Session {
         return account?.sessionId
     }
 
-    fun checkToken() = getAccount() != null && (!getToken().isNullOrBlank() || !getPinToken().isNullOrBlank())
+    fun checkToken() = getAccount() != null && !getPinToken().isNullOrBlank()
 
-    fun shouldUpdateKey() = !getPinToken().isNullOrBlank() && getEd25519PrivateKey().isNullOrBlank()
+    fun shouldUpdateKey() = getEd25519PrivateKey().isNullOrBlank()
 
-    val ed25519 = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519)
+    private val ed25519 = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519)
 
     fun signToken(acct: Account?, request: Request): String {
         if (acct == null) {

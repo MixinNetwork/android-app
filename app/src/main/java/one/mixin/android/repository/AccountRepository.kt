@@ -47,7 +47,6 @@ import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
-import retrofit2.http.Body
 import javax.inject.Inject
 import javax.inject.Singleton
 

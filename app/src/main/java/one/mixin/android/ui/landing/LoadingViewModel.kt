@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.ALLOW_INTERVAL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.SessionSecretRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.UserService
@@ -117,4 +118,6 @@ constructor(
             }
         }
     }
+
+    suspend fun modifySessionSecret(request: SessionSecretRequest) = accountService.modifySessionSecret(request)
 }
