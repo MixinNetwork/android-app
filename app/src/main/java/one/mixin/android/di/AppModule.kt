@@ -134,7 +134,7 @@ internal class AppModule {
                 } catch (e: Exception) {
                     throw e.apply {
                         if (this is SocketTimeoutException || this is UnknownHostException || this is ConnectException) {
-                            HostSelectionInterceptor.get().switch()
+                            HostSelectionInterceptor.get().switch(request)
                         }
                     }
                 }
@@ -142,7 +142,7 @@ internal class AppModule {
                 if (!response.isSuccessful) {
                     val code = response.code
                     if (code in 501..599) {
-                        HostSelectionInterceptor.get().switch()
+                        HostSelectionInterceptor.get().switch(request)
                         throw ServerErrorException(code)
                     } else if (code == 500) {
                         throw ServerErrorException(code)
@@ -158,7 +158,7 @@ internal class AppModule {
                     val mixinResponse = try {
                         GsonHelper.customGson.fromJson(String(bytes), MixinResponse::class.java)
                     } catch (e: JsonSyntaxException) {
-                        HostSelectionInterceptor.get().switch()
+                        HostSelectionInterceptor.get().switch(request)
                         throw ServerErrorException(response.code)
                     }
                     if (mixinResponse.errorCode != 401) return@run
