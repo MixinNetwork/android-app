@@ -225,9 +225,9 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
-        val isUpdateKey = defaultSharedPreferences.getBoolean(IS_UPDATE_KEY, false)
-        val shouldUpdateKey = Session.shouldUpdateKey()
-        if (shouldUpdateKey && !isUpdateKey) {
+        if (Session.shouldUpdateKey() &&
+            !defaultSharedPreferences.getBoolean(IS_UPDATE_KEY, false)
+        ) {
             InitializeActivity.showLoading(this, false)
             finish()
             return

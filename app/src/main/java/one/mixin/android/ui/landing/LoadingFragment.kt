@@ -55,18 +55,18 @@ class LoadingFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         MixinApplication.get().onlining.set(true)
         lifecycleScope.launch {
+            if (Session.shouldUpdateKey() &&
+                !defaultSharedPreferences.getBoolean(IS_UPDATE_KEY, false)
+            ) {
+                updateRsa2EdDsa()
+            }
+            
             if (!getIsLoaded(requireContext(), false)) {
                 load()
             }
 
             if (!getIsSyncSession(requireContext(), false)) {
                 syncSession()
-            }
-
-            if (Session.shouldUpdateKey() &&
-                !defaultSharedPreferences.getBoolean(IS_UPDATE_KEY, false)
-            ) {
-                updateRsa2EdDsa()
             }
 
             context?.let {
