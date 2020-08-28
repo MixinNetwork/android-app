@@ -54,7 +54,6 @@ import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.INTERVAL_24_HOURS
-import one.mixin.android.Constants.Load.IS_UPDATE_KEY
 import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -225,9 +224,7 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
-        if (Session.shouldUpdateKey() &&
-            !defaultSharedPreferences.getBoolean(IS_UPDATE_KEY, false)
-        ) {
+        if (Session.shouldUpdateKey()) {
             InitializeActivity.showLoading(this, false)
             finish()
             return

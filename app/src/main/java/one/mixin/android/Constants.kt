@@ -110,10 +110,6 @@ object Constants {
         const val THEME_AUTO_ID = 2
     }
 
-    object Load {
-        const val IS_UPDATE_KEY = "is_update_key"
-    }
-
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
 

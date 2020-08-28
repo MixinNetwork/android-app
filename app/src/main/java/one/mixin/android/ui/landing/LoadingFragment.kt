@@ -18,15 +18,12 @@ import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
-import one.mixin.android.Constants.Load.IS_UPDATE_KEY
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.SessionSecretRequest
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
@@ -55,9 +52,7 @@ class LoadingFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         MixinApplication.get().onlining.set(true)
         lifecycleScope.launch {
-            if (Session.shouldUpdateKey() &&
-                !defaultSharedPreferences.getBoolean(IS_UPDATE_KEY, false)
-            ) {
+            if (Session.shouldUpdateKey()) {
                 updateRsa2EdDsa()
             }
             
@@ -97,7 +92,6 @@ class LoadingFragment : BaseFragment() {
                     Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
                     val key = Curve25519.getInstance(Curve25519.BEST).calculateAgreement(r.serverPublicKey.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
                     Session.storePinToken(key.base64Encode())
-                    requireContext().defaultSharedPreferences.putBoolean(IS_UPDATE_KEY, true)
                 }
             }
         )
