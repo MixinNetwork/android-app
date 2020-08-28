@@ -29,7 +29,6 @@ object Session {
     private var self: Account? = null
     fun storeAccount(account: Account) {
         self = account
-        AppCenter.setUserId("${account.identityNumber}_${account.userId}")
         val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
         preference.putString(Constants.Account.PREF_NAME_ACCOUNT, Gson().toJson(account))
     }

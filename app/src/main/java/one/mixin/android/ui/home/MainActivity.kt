@@ -33,6 +33,7 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.microsoft.appcenter.AppCenter
 import com.uber.autodispose.autoDispose
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -236,6 +237,7 @@ class MainActivity : BlazeBaseActivity() {
         Bugsnag.setUser(account?.userId, account?.identityNumber, account?.fullName)
         account?.let {
             FirebaseCrashlytics.getInstance().setUserId(it.userId)
+            AppCenter.setUserId("${it.identityNumber}_${it.userId}")
         }
 
         if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
