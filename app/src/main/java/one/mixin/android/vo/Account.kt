@@ -5,26 +5,37 @@ import com.google.gson.annotations.SerializedName
 open class Account(
     @SerializedName("user_id")
     val userId: String,
-    val session_id: String,
+    @SerializedName("session_id")
+    val sessionId: String,
     val type: String,
-    val identity_number: String,
+    @SerializedName("identity_number")
+    val identityNumber: String,
     /**
      * @see UserRelationship
      */
     val relationship: String,
-    val full_name: String?,
+    @SerializedName("full_name")
+    val fullName: String?,
     var biography: String?,
-    val avatar_url: String?,
+    @SerializedName("avatar_url")
+    val avatarUrl: String?,
     var phone: String,
-    val avatar_base64: String?,
-    var pin_token: String,
-    val code_id: String,
-    val code_url: String,
-    val created_at: String,
-    val receive_message_source: String,
+    @SerializedName("avatar_base64")
+    val avatarBase64: String?,
+    @SerializedName("pin_token")
+    var pinToken: String,
+    @SerializedName("code_id")
+    val codeId: String,
+    @SerializedName("code_url")
+    val codeUrl: String,
+    @SerializedName("created_at")
+    val createdAt: String,
+    @SerializedName("receive_message_source")
+    val receiveMessageSource: String,
     @SerializedName("has_pin")
     val hasPin: Boolean,
-    val accept_conversation_source: String,
+    @SerializedName("accept_conversation_source")
+    val acceptConversationSource: String,
     @SerializedName("accept_search_source")
     val acceptSearchSource: String,
     @SerializedName("has_emergency_contact")
@@ -38,8 +49,5 @@ open class Account(
 )
 
 fun Account.toUser(): User {
-    if (biography == null) {
-        biography = ""
-    }
-    return User(userId, identity_number, relationship, biography!!, full_name, avatar_url, phone, null, created_at, null, hasPin)
+    return User(userId, identityNumber, relationship, biography ?: "", fullName, avatarUrl, phone, null, createdAt, null, hasPin)
 }

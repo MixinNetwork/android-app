@@ -29,7 +29,7 @@ object Session {
     private var self: Account? = null
     fun storeAccount(account: Account) {
         self = account
-        AppCenter.setUserId("${account.identity_number}_${account.userId}")
+        AppCenter.setUserId("${account.identityNumber}_${account.userId}")
         val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
         preference.putString(Constants.Account.PREF_NAME_ACCOUNT, Gson().toJson(account))
     }
@@ -111,7 +111,7 @@ object Session {
 
     fun getSessionId(): String? {
         val account = getAccount()
-        return account?.session_id
+        return account?.sessionId
     }
 
     fun checkToken() = getAccount() != null && !getToken().isNullOrBlank()
@@ -136,7 +136,7 @@ object Session {
                     put(Claims.EXPIRATION, expire)
                     put(Claims.ISSUED_AT, iat)
                     put("uid", acct.userId)
-                    put("sid", acct.session_id)
+                    put("sid", acct.sessionId)
                     put("sig", content.sha256().toHex())
                     put("scp", "FULL")
                 }

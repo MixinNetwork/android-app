@@ -188,7 +188,7 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
-        if (Session.getAccount()?.full_name.isNullOrBlank()) {
+        if (Session.getAccount()?.fullName.isNullOrBlank()) {
             InitializeActivity.showSetupName(this)
             finish()
             return
@@ -233,7 +233,7 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         val account = Session.getAccount()
-        Bugsnag.setUser(account?.userId, account?.identity_number, account?.full_name)
+        Bugsnag.setUser(account?.userId, account?.identityNumber, account?.fullName)
         account?.let {
             FirebaseCrashlytics.getInstance().setUserId(it.userId)
         }

@@ -86,7 +86,7 @@ private fun Context.getAppPath(): File? {
 
 fun Context.getMediaPath(): File? {
     val path = getAppPath() ?: return null
-    val identityNumber = Session.getAccount()?.identity_number ?: return null
+    val identityNumber = Session.getAccount()?.identityNumber ?: return null
     return File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Media")
 }
 
@@ -101,7 +101,7 @@ fun Context.getOldMediaPath(): File? {
 
 fun Context.getBackupPath(create: Boolean = false): File? {
     val path = getAppPath() ?: return null
-    val identityNumber = Session.getAccount()?.identity_number ?: return null
+    val identityNumber = Session.getAccount()?.identityNumber ?: return null
     val f = File("${path.absolutePath}${File.separator}$identityNumber${File.separator}Backup")
     if (create && (!f.exists() || !f.isDirectory)) {
         f.delete()
@@ -112,7 +112,7 @@ fun Context.getBackupPath(create: Boolean = false): File? {
 
 fun Context.getOldBackupPath(create: Boolean = false): File? {
     val path = getAppPath() ?: return null
-    val identityNumber = Session.getAccount()?.identity_number ?: return null
+    val identityNumber = Session.getAccount()?.identityNumber ?: return null
     val f = File("${path.absolutePath}${File.separator}Backup${File.separator}$identityNumber")
     if (create && (!f.exists() || !f.isDirectory)) {
         f.delete()

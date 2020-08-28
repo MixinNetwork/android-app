@@ -165,7 +165,7 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
             identityKeyPair.publicKey.serialize(),
             identityKeyPair.privateKey.serialize(),
             account.userId,
-            account.session_id,
+            account.sessionId,
             verificationCode
         )
         val cipherText = cipher.encrypt(message)

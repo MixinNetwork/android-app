@@ -81,9 +81,9 @@ interface TransactionInterface {
             SnapshotType.transfer.name -> {
                 if (isPositive) {
                     contentView.sender_tv.text = snapshot.opponentFullName
-                    contentView.receiver_tv.text = Session.getAccount()!!.full_name
+                    contentView.receiver_tv.text = Session.getAccount()!!.fullName
                 } else {
-                    contentView.sender_tv.text = Session.getAccount()!!.full_name
+                    contentView.sender_tv.text = Session.getAccount()!!.fullName
                     contentView.receiver_tv.text = snapshot.opponentFullName
                 }
             }

@@ -114,7 +114,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 url.openAsUrlOrWeb(null, parentFragmentManager, lifecycleScope)
                 dismiss()
             }
-            created_tv.text = getString(R.string.profile_join_in, account.created_at.dayTime())
+            created_tv.text = getString(R.string.profile_join_in, account.createdAt.dayTime())
             refreshInfo(account)
         }
 
@@ -131,9 +131,9 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
 
     private fun refreshInfo(account: Account) {
         contentView.apply {
-            name.text = account.full_name
-            avatar.setInfo(account.full_name, account.avatar_url, account.userId)
-            id_tv.text = getString(R.string.contact_mixin_id, account.identity_number)
+            name.text = account.fullName
+            avatar.setInfo(account.fullName, account.avatarUrl, account.userId)
+            id_tv.text = getString(R.string.contact_mixin_id, account.identityNumber)
             detail_tv.text = account.biography
         }
     }
@@ -312,7 +312,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         }
         editDialog {
             titleText = this@ProfileBottomSheetDialogFragment.getString(R.string.edit_name)
-            editText = Session.getAccount()?.full_name
+            editText = Session.getAccount()?.fullName
             maxTextCount = 40
             allowEmpty = false
             rightAction = {
