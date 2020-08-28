@@ -197,10 +197,10 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
                     itemView.context.getString(R.string.contact_mobile, self.phone)
             } else {
                 if (account != null) {
-                    itemView.contact_header_avatar.setInfo(account.full_name, account.avatar_url, account.userId)
-                    itemView.contact_header_name_tv.text = account.full_name
+                    itemView.contact_header_avatar.setInfo(account.fullName, account.avatarUrl, account.userId)
+                    itemView.contact_header_name_tv.text = account.fullName
                     itemView.contact_header_id_tv.text =
-                        itemView.context.getString(R.string.contact_mixin_id, account.identity_number)
+                        itemView.context.getString(R.string.contact_mixin_id, account.identityNumber)
                     itemView.contact_header_mobile_tv.text =
                         itemView.context.getString(R.string.contact_mobile, account.phone)
                 }

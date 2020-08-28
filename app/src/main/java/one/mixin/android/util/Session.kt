@@ -2,6 +2,7 @@ package one.mixin.android.util
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.microsoft.appcenter.AppCenter
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -109,7 +110,7 @@ object Session {
 
     fun getSessionId(): String? {
         val account = getAccount()
-        return account?.session_id
+        return account?.sessionId
     }
 
     fun checkToken() = getAccount() != null && !getToken().isNullOrBlank()
@@ -134,7 +135,7 @@ object Session {
                     put(Claims.EXPIRATION, expire)
                     put(Claims.ISSUED_AT, iat)
                     put("uid", acct.userId)
-                    put("sid", acct.session_id)
+                    put("sid", acct.sessionId)
                     put("sig", content.sha256().toHex())
                     put("scp", "FULL")
                 }

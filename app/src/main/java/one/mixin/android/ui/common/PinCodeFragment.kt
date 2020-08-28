@@ -65,7 +65,7 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
         val ctx = MixinApplication.appContext
         ctx.windowManager.defaultDisplay?.getSize(p)
         val size = minOf(p.x, p.y)
-        val b = account.code_url.generateQRCode(size)
+        val b = account.codeUrl.generateQRCode(size)
         b?.saveQRCode(ctx, account.userId)
     }
 
@@ -80,7 +80,7 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
         }
 
         val account = response.data as Account
-        if (account.code_id.isNotEmpty()) {
+        if (account.codeId.isNotEmpty()) {
             saveQrCode(account)
         }
 
@@ -92,7 +92,7 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
         }
         Session.storeAccount(account)
         Session.storeToken(sessionKey.getPrivateKeyPem())
-        val key = rsaDecrypt(sessionKey.private, account.session_id, account.pin_token)
+        val key = rsaDecrypt(sessionKey.private, account.sessionId, account.pinToken)
         Session.storePinToken(key)
         verification_keyboard.animate().translationY(300f).start()
         MixinApplication.get().onlining.set(true)
@@ -104,7 +104,7 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
                 insertUser(account.toUser())
                 InitializeActivity.showLoading(requireContext())
             }
-            account.full_name.isNullOrBlank() -> {
+            account.fullName.isNullOrBlank() -> {
                 insertUser(account.toUser())
                 InitializeActivity.showSetupName(requireContext())
             }

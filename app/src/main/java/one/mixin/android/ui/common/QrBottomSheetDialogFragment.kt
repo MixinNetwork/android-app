@@ -92,7 +92,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             Observable.create<Bitmap> { e ->
                                 val account = Session.getAccount() ?: return@create
                                 val code = when (type) {
-                                    TYPE_MY_QR -> account.code_url
+                                    TYPE_MY_QR -> account.codeUrl
                                     TYPE_RECEIVE_QR -> "$TRANSFER/${user.userId}"
                                     else -> ""
                                 }

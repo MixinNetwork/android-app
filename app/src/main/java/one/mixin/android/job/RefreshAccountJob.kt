@@ -28,22 +28,22 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requir
             val u = account!!.toUser()
             userRepo.upsert(u)
             Session.storeAccount(account)
-            if (account.code_id.isNotEmpty()) {
+            if (account.codeId.isNotEmpty()) {
                 val p = Point()
                 MixinApplication.appContext.windowManager.defaultDisplay?.getSize(p)
                 val size = minOf(p.x, p.y)
-                val b = account.code_url.generateQRCode(size)
+                val b = account.codeUrl.generateQRCode(size)
                 b?.saveQRCode(MixinApplication.appContext, account.userId)
             }
 
             val receive = MixinApplication.appContext.defaultSharedPreferences
                 .getInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
-            if (response.data!!.receive_message_source == MessageSource.EVERYBODY.name &&
+            if (response.data!!.receiveMessageSource == MessageSource.EVERYBODY.name &&
                 receive != MessageSource.EVERYBODY.ordinal
             ) {
                 MixinApplication.appContext.defaultSharedPreferences
                     .putInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
-            } else if (response.data!!.receive_message_source == MessageSource.CONTACTS.name &&
+            } else if (response.data!!.receiveMessageSource == MessageSource.CONTACTS.name &&
                 receive != MessageSource.CONTACTS.ordinal
             ) {
                 MixinApplication.appContext.defaultSharedPreferences
@@ -52,12 +52,12 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).requir
 
             val receiveGroup = MixinApplication.appContext.defaultSharedPreferences
                 .getInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
-            if (response.data!!.accept_conversation_source == MessageSource.EVERYBODY.name &&
+            if (response.data!!.acceptConversationSource == MessageSource.EVERYBODY.name &&
                 receiveGroup != MessageSource.EVERYBODY.ordinal
             ) {
                 MixinApplication.appContext.defaultSharedPreferences
                     .putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
-            } else if (response.data!!.accept_conversation_source == MessageSource.CONTACTS.name &&
+            } else if (response.data!!.acceptConversationSource == MessageSource.CONTACTS.name &&
                 receiveGroup != MessageSource.CONTACTS.ordinal
             ) {
                 MixinApplication.appContext.defaultSharedPreferences

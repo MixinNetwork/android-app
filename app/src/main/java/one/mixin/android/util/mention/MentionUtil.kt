@@ -76,7 +76,7 @@ fun parseMentionData(
         return Pair(null, false)
     }
     val mentionData = GsonHelper.customGson.toJson(mentions)
-    val mentionMe = userId != account?.userId && numbers.contains(account?.identity_number)
+    val mentionMe = userId != account?.userId && numbers.contains(account?.identityNumber)
     messageMentionDao.insert(MessageMention(messageId, conversationId, mentionData, !mentionMe))
     return Pair(mentions, mentionMe)
 }

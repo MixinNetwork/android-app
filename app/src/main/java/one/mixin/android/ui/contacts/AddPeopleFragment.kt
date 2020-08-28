@@ -56,7 +56,7 @@ class AddPeopleFragment : BaseFragment() {
         }
         val account = Session.getAccount()
         if (account != null) {
-            tip_tv.text = getString(R.string.add_people_tip, account.identity_number)
+            tip_tv.text = getString(R.string.add_people_tip, account.identityNumber)
         }
         search_et.addTextChangedListener(mWatcher)
         search_et.showSoftInputOnFocus = false
