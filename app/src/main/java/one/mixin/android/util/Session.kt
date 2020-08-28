@@ -2,6 +2,7 @@ package one.mixin.android.util
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.microsoft.appcenter.AppCenter
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -28,6 +29,7 @@ object Session {
     private var self: Account? = null
     fun storeAccount(account: Account) {
         self = account
+        AppCenter.setUserId("${account.identity_number}_${account.userId}")
         val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
         preference.putString(Constants.Account.PREF_NAME_ACCOUNT, Gson().toJson(account))
     }
