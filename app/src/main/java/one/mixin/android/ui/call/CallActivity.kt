@@ -168,7 +168,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
             callState.conversationId?.let {
                 viewModel.observeConversationNameById(it).observe(
                     this,
-                    Observer { name ->
+                    { name ->
                         name_tv?.text = name
                     }
                 )

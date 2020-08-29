@@ -11,7 +11,6 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
@@ -137,7 +136,7 @@ class NewGroupFragment : BaseFragment() {
         val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)
         liveData.observe(
             viewLifecycleOwner,
-            Observer { c ->
+            { c ->
                 if (c != null) {
                     when (c.status) {
                         ConversationStatus.SUCCESS.ordinal -> {

@@ -34,7 +34,6 @@ class UrlInterpreterActivity : BaseActivity() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val urlViewModel: UrlInterpreterViewModel by viewModels { viewModelFactory }
 
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_Transparent

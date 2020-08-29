@@ -161,7 +161,7 @@ class SendAttachmentMessageJob(
             }
         } catch (e: Exception) {
             Timber.e(e)
-            if (e is SocketTimeoutException){
+            if (e is SocketTimeoutException) {
                 GlobalScope.launch(Dispatchers.Main) {
                     MixinApplication.get().toast(R.string.upload_timeout)
                 }

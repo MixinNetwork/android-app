@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isVisible
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -69,7 +68,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         itemTouchHelper.attachToRecyclerView(circle_rv)
         conversationViewModel.observeAllCircleItem().observe(
             viewLifecycleOwner,
-            Observer {
+            {
                 val list = mutableListOf<ConversationCircleItem>()
                 list.addAll(it)
                 conversationAdapter.conversationCircles = list
@@ -77,7 +76,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         )
         conversationViewModel.observeAllConversationUnread().observe(
             viewLifecycleOwner,
-            Observer {
+            {
                 conversationAdapter.allUnread = it
             }
         )

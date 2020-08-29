@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -51,7 +50,7 @@ class StickerAlbumFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         stickerViewModel.getSystemAlbums().observe(
             viewLifecycleOwner,
-            Observer { r ->
+            { r ->
                 r?.let {
                     albums.clear()
                     albums.addAll(r)

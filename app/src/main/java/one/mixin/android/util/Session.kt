@@ -2,7 +2,6 @@ package one.mixin.android.util
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.microsoft.appcenter.AppCenter
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
