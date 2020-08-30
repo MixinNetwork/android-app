@@ -1,11 +1,14 @@
 package one.mixin.android.job
 
+import android.util.ArrayMap
 import com.birbit.android.jobqueue.CancelReason
 import com.birbit.android.jobqueue.Job
 import com.birbit.android.jobqueue.Params
 import com.birbit.android.jobqueue.RetryConstraint
 import com.bugsnag.android.Bugsnag
 import com.bugsnag.android.MetaData
+import com.microsoft.appcenter.AppCenter
+import com.microsoft.appcenter.crashes.Crashes
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.LocalJobException
@@ -55,6 +58,7 @@ import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
 import java.io.IOException
 import java.net.SocketTimeoutException
+import java.util.Dictionary
 import javax.inject.Inject
 
 abstract class BaseJob(params: Params) : Job(params), Injectable {
@@ -206,12 +210,15 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
     }
 
     public override fun shouldReRunOnThrowable(throwable: Throwable, runCount: Int, maxRunCount: Int): RetryConstraint {
-        if (runCount >= 100) {
+        if (runCount >= 10) {
             Bugsnag.notify(throwable) { report ->
                 report.error.metaData = MetaData().apply {
                     addToTab("Job", "shouldReRunOnThrowable", "Retry max count:$runCount")
                 }
             }
+            Crashes.trackError(throwable, ArrayMap<String, String>().apply {
+                put("Job_shouldReRunOnThrowable","Retry max count:$runCount")
+            }, null);
         }
         return if (shouldRetry(throwable)) {
             RetryConstraint.RETRY
