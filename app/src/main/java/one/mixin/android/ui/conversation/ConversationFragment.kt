@@ -2547,33 +2547,39 @@ class ConversationFragment :
     private fun changeToSpeaker() {
         AudioPlayer.switchAudioStreamType(true)
         audioManager.isSpeakerphoneOn = true
-        audioManager.mode = AudioManager.MODE_NORMAL
-        audioManager.setStreamVolume(
-            AudioManager.STREAM_MUSIC,
-            audioManager.getStreamVolume(AudioManager.STREAM_MUSIC), 0
-        )
+        if (audioManager.mode != AudioManager.MODE_NORMAL) {
+            audioManager.mode = AudioManager.MODE_NORMAL
+            audioManager.setStreamVolume(
+                AudioManager.STREAM_MUSIC,
+                audioManager.getStreamVolume(AudioManager.STREAM_MUSIC), 0
+            )
+        }
     }
 
     private fun changeToHeadset() {
         AudioPlayer.switchAudioStreamType(true)
         audioManager.isSpeakerphoneOn = false
         audioManager.isBluetoothScoOn = false
-        audioManager.mode = AudioManager.MODE_NORMAL
-        audioManager.setStreamVolume(
-            AudioManager.STREAM_MUSIC,
-            audioManager.getStreamVolume(AudioManager.STREAM_MUSIC), 0
-        )
+        if (audioManager.mode != AudioManager.MODE_NORMAL) {
+            audioManager.mode = AudioManager.MODE_NORMAL
+            audioManager.setStreamVolume(
+                AudioManager.STREAM_MUSIC,
+                audioManager.getStreamVolume(AudioManager.STREAM_MUSIC), 0
+            )
+        }
     }
 
     private fun changeToReceiver() {
         AudioPlayer.switchAudioStreamType(false)
         audioManager.isSpeakerphoneOn = false
         audioManager.isBluetoothScoOn = false
-        audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
-        audioManager.setStreamVolume(
-            AudioManager.STREAM_VOICE_CALL,
-            audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL), 0
-        )
+        if (audioManager.mode != AudioManager.MODE_IN_COMMUNICATION) {
+            audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+            audioManager.setStreamVolume(
+                AudioManager.STREAM_VOICE_CALL,
+                audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL), 0
+            )
+        }
     }
 
     private fun resetAudioMode() {
