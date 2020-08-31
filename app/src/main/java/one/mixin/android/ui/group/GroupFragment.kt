@@ -175,7 +175,7 @@ class GroupFragment : BaseFragment() {
 
         RxBus.listen(ConversationEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(stopScope)
+            .autoDispose(destroyScope)
             .subscribe {
                 if (it.type == TYPE_ADD || it.type == TYPE_REMOVE) {
                     dialog?.dismiss()

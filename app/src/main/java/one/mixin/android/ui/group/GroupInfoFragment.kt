@@ -266,7 +266,7 @@ class GroupInfoFragment : BaseFragment() {
 
         RxBus.listen(ConversationEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(stopScope)
+            .autoDispose(destroyScope)
             .subscribe {
                 if (it.type == TYPE_MAKE_ADMIN || it.type == TYPE_REMOVE ||
                     it.type == TYPE_EXIT || it.type == TYPE_DISMISS_ADMIN
