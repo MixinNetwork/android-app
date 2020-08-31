@@ -735,6 +735,7 @@
     <string name="action_open">在浏览器中打开</string>
     <string name="action_refresh">刷新</string>
     <string name="action_update">升级</string>
+    <string name="action_reload">重新载入</string>
     <string name="slide_to_cancel">滑动取消</string>
     <string name="gallery_all">全部</string>
     <string name="gallery_empty_text">还没有图片或视频</string>
@@ -880,4 +881,8 @@
     <!-- share -->
     <string name="share_message_description">你确定要发送来自%1$s的%2$s？</string>
     <string name="share_message_description_empty">你确定要发送该%1$s？</string>
+    <!-- web -->
+    <string name="web_cannot_reached_title" >重新载入</string>
+    <string name="web_cannot_reached_desc">无法访问 %1$s，请检查你的网络并尝试切换 4G、Wi-Fi 或 VPN 后重新载入页面。</string>
+    <string name="web_contact_developer">联系开发者</string>
 </resources>
