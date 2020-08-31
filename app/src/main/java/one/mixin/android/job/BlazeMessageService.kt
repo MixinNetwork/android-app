@@ -62,7 +62,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             val intent = Intent(ctx, BlazeMessageService::class.java).apply {
                 this.action = action
             }
-            ContextCompat.startForegroundService(ctx, intent)
+            ctx.startService(intent)
         }
 
         fun stopService(ctx: Context) {
