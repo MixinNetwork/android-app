@@ -142,8 +142,9 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
             invokeNetwork = { viewModel.loginVerifyEmergency(verificationId, buildLoginEmergencyRequest(sessionKey)) },
             switchContext = Dispatchers.IO,
             successBlock = { response ->
-                defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_EMERGENCY)
-                handleAccount(response, sessionKey)
+                handleAccount(response, sessionKey) {
+                    defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_EMERGENCY)
+                }
             },
             doAfterNetworkSuccess = { hideLoading() },
             defaultErrorHandle = {

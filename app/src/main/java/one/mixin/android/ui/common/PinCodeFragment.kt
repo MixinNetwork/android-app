@@ -13,6 +13,8 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.crypto.getPrivateKeyPem
 import one.mixin.android.crypto.rsaDecrypt
+import one.mixin.android.extension.clear
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.vibrate
@@ -71,7 +73,8 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
 
     protected suspend fun handleAccount(
         response: MixinResponse<Account>,
-        sessionKey: KeyPair
+        sessionKey: KeyPair,
+        action: () -> Unit
     ) = withContext(Dispatchers.Main) {
         if (!response.isSuccess) {
             hideLoading()
@@ -89,6 +92,7 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
         if (!sameUser) {
             showLoading()
             clearDatabase(requireContext())
+            defaultSharedPreferences.clear()
         }
         Session.storeAccount(account)
         Session.storeToken(sessionKey.getPrivateKeyPem())
@@ -98,6 +102,7 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
         MixinApplication.get().onlining.set(true)
 
         hideLoading()
+        action.invoke()
 
         when {
             sameUser -> {

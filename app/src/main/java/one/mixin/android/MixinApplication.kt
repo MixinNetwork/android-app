@@ -125,7 +125,6 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
             }
             notificationManager.cancelAll()
             Session.clearAccount()
-            defaultSharedPreferences.clear()
             CookieManager.getInstance().removeAllCookies(null)
             CookieManager.getInstance().flush()
             WebStorage.getInstance().deleteAllData()

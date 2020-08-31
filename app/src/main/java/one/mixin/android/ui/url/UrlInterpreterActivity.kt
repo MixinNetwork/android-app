@@ -2,7 +2,6 @@ package one.mixin.android.ui.url
 
 import android.net.Uri
 import android.os.Bundle
-import androidx.activity.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import one.mixin.android.R

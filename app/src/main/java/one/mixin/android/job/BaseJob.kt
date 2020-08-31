@@ -7,7 +7,6 @@ import com.birbit.android.jobqueue.Params
 import com.birbit.android.jobqueue.RetryConstraint
 import com.bugsnag.android.Bugsnag
 import com.bugsnag.android.MetaData
-import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.crashes.Crashes
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.ExpiredTokenException
@@ -58,7 +57,6 @@ import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
 import java.io.IOException
 import java.net.SocketTimeoutException
-import java.util.Dictionary
 import javax.inject.Inject
 
 abstract class BaseJob(params: Params) : Job(params), Injectable {
