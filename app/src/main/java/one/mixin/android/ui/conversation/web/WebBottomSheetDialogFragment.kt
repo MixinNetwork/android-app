@@ -319,9 +319,13 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
             override fun onContactClick() {
                 app?.let { app ->
-                    // Todo check user
-                    ConversationActivity.show(requireContext(), recipientId = app.creatorId)
-                    dismiss()
+                    lifecycleScope.launch {
+                        val user = bottomViewModel.refreshUser(app.creatorId)
+                        if (user != null) {
+                            ConversationActivity.show(requireContext(), recipientId = app.creatorId)
+                            dismiss()
+                        }
+                    }
                 }
             }
         }
