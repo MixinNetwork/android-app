@@ -9,16 +9,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
-import com.uber.autodispose.autoDispose
-import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_group.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
-import one.mixin.android.RxBus
-import one.mixin.android.event.ConversationEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -121,18 +119,7 @@ class GroupFragment : BaseFragment() {
         title_view.right_animator.setOnClickListener {
             search_et.hideKeyboard()
             if (from == TYPE_ADD || from == TYPE_REMOVE) {
-                groupViewModel.modifyGroupMembers(conversationId!!, checkedUsers, from)
-                if (dialog == null) {
-                    val title =
-                        if (from == TYPE_ADD) R.string.group_adding else R.string.group_removing
-                    dialog = indeterminateProgressDialog(
-                        message = R.string.pb_dialog_message,
-                        title = title
-                    ).apply {
-                        setCancelable(false)
-                    }
-                }
-                dialog!!.show()
+                handleAddOrRemove()
             } else {
                 activity?.addFragment(
                     this@GroupFragment,
@@ -172,18 +159,6 @@ class GroupFragment : BaseFragment() {
                 it.isFocusable = true
             }
         }
-
-        RxBus.listen(ConversationEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
-            .subscribe {
-                if (it.type == TYPE_ADD || it.type == TYPE_REMOVE) {
-                    dialog?.dismiss()
-                    if (it.isSuccess) {
-                        activity?.supportFragmentManager?.popBackStackImmediate()
-                    }
-                }
-            }
     }
 
     private fun filterAndSet(keyword: String, userList: List<User>?) {
@@ -199,6 +174,29 @@ class GroupFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         dialog?.dismiss()
+    }
+
+    private fun handleAddOrRemove() = lifecycleScope.launch {
+        if (dialog == null) {
+            val title =
+                if (from == TYPE_ADD) R.string.group_adding else R.string.group_removing
+            dialog = indeterminateProgressDialog(
+                message = R.string.pb_dialog_message,
+                title = title
+            ).apply {
+                setCancelable(false)
+            }
+        }
+        dialog?.show()
+        val result = groupViewModel.modifyMember(conversationId!!, checkedUsers, from)
+        dialog?.dismiss()
+        if (result) {
+            if (isAdded) {
+                activity?.supportFragmentManager?.popBackStackImmediate()
+            } else {
+                activity?.supportFragmentManager?.popBackStack()
+            }
+        }
     }
 
     private fun updateTitle(size: Int) {

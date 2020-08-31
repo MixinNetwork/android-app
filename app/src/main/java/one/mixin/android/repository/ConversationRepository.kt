@@ -15,6 +15,7 @@ import one.mixin.android.Constants.DB_DELETE_THRESHOLD
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
+import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
@@ -407,4 +408,9 @@ internal constructor(
     suspend fun deleteConversationById(conversationId: String) {
         deleteMessageByConversationId(conversationId, true)
     }
+
+    fun create(request: ConversationRequest) = conversationService.create(request)
+
+    fun participants(id: String, action: String, requests: List<ParticipantRequest>) =
+        conversationService.participants(id, action, requests)
 }

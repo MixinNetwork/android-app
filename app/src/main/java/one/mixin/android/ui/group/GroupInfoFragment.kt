@@ -15,16 +15,12 @@ import androidx.collection.ArrayMap
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.uber.autodispose.autoDispose
-import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_group_info.*
 import kotlinx.android.synthetic.main.view_group_info_header.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
-import one.mixin.android.RxBus
-import one.mixin.android.event.ConversationEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.hideKeyboard
@@ -32,7 +28,6 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
 import one.mixin.android.job.ConversationJob.Companion.TYPE_DELETE
 import one.mixin.android.job.ConversationJob.Companion.TYPE_DISMISS_ADMIN
-import one.mixin.android.job.ConversationJob.Companion.TYPE_EXIT
 import one.mixin.android.job.ConversationJob.Companion.TYPE_MAKE_ADMIN
 import one.mixin.android.job.ConversationJob.Companion.TYPE_REMOVE
 import one.mixin.android.job.MixinJobManager
@@ -264,17 +259,6 @@ class GroupInfoFragment : BaseFragment() {
             }
         )
 
-        RxBus.listen(ConversationEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
-            .subscribe {
-                if (it.type == TYPE_MAKE_ADMIN || it.type == TYPE_REMOVE ||
-                    it.type == TYPE_EXIT || it.type == TYPE_DISMISS_ADMIN
-                ) {
-                    dialog?.dismiss()
-                }
-            }
-
         search_et.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
@@ -304,13 +288,14 @@ class GroupInfoFragment : BaseFragment() {
         }
     }
 
-    private fun handleAdminRole(userRole: String, user: User) {
+    private fun handleAdminRole(userRole: String, user: User) = lifecycleScope.launch {
         showPb()
         if (userRole == ParticipantRole.ADMIN.name) {
-            groupViewModel.dismissAdmin(conversationId, user)
+            groupViewModel.modifyMember(conversationId, listOf(user), TYPE_DISMISS_ADMIN, "")
         } else {
-            groupViewModel.makeAdmin(conversationId, user)
+            groupViewModel.modifyMember(conversationId, listOf(user), TYPE_MAKE_ADMIN, "ADMIN")
         }
+        dialog?.dismiss()
     }
 
     private fun openChat(user: User) {
@@ -330,10 +315,7 @@ class GroupInfoFragment : BaseFragment() {
                 showPb()
                 when (type) {
                     TYPE_REMOVE -> {
-                        groupViewModel.modifyGroupMembers(conversationId, listOf(user!!), TYPE_REMOVE)
-                    }
-                    TYPE_EXIT -> {
-                        groupViewModel.exitGroup(conversationId)
+                        handleRemove(user!!)
                     }
                     TYPE_DELETE -> {
                         groupViewModel.deleteMessageByConversationId(conversationId)
@@ -342,6 +324,11 @@ class GroupInfoFragment : BaseFragment() {
                 }
                 dialog.dismiss()
             }.show()
+    }
+
+    private fun handleRemove(user: User) = lifecycleScope.launch {
+        groupViewModel.modifyMember(conversationId, listOf(user), TYPE_REMOVE)
+        dialog?.dismiss()
     }
 
     private fun showPb() {
