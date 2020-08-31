@@ -168,7 +168,7 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
             account.sessionId,
             verificationCode
         )
-        val cipherText = cipher.encrypt(message)
+        val cipherText = cipher.encrypt(message.toByteArray())
         val encoded = cipherText.base64Encode()
         val response =
             provisioningService.updateProvisioningAsync(ephemeralId, ProvisioningRequest(encoded))

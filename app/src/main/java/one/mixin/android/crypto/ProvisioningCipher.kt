@@ -16,14 +16,14 @@ import kotlin.jvm.Throws
 class ProvisioningCipher(private val theirPublicKey: ECPublicKey) {
 
     @Throws(InvalidKeyException::class)
-    fun encrypt(message: ProvisionMessage): ByteArray {
+    fun encrypt(message: ByteArray): ByteArray {
         val ourKeyPair = Curve.generateKeyPair()
         val sharedSecret = Curve.calculateAgreement(theirPublicKey, ourKeyPair.privateKey)
         val derivedSecret = HKDFv3().deriveSecrets(sharedSecret, "Mixin Provisioning Message".toByteArray(), 64)
         val parts = Util.split(derivedSecret, 32, 32)
 
         val version = byteArrayOf(0x01)
-        val ciphertext = getCiphertext(parts[0], message.toByteArray())
+        val ciphertext = getCiphertext(parts[0], message)
         val mac = getMac(parts[1], Util.join(version, ciphertext))
         val body = Util.join(version, ciphertext, mac)
         return ProvisionEnvelope(ourKeyPair.publicKey.serialize(), body).toByteArray()
