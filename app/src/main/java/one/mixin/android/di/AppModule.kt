@@ -106,14 +106,23 @@ internal class AppModule {
 
     @Singleton
     @Provides
-    fun provideOkHttp(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?): OkHttpClient {
+    fun provideStethoInterceptor(): StethoInterceptor? {
+        if (!BuildConfig.DEBUG) {
+            return null
+        }
+        return StethoInterceptor()
+    }
+
+    @Singleton
+    @Provides
+    fun provideOkHttp(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?, stethoInterceptor: StethoInterceptor?): OkHttpClient {
         val builder = OkHttpClient.Builder()
         builder.addInterceptor(HostSelectionInterceptor.get())
-        if (BuildConfig.DEBUG) {
-            builder.addNetworkInterceptor(StethoInterceptor())
+        httpLoggingInterceptor?.let { interceptor ->
+            builder.addNetworkInterceptor(interceptor)
         }
-        if (httpLoggingInterceptor != null) {
-            builder.addNetworkInterceptor(httpLoggingInterceptor)
+        stethoInterceptor?.let { interceptor ->
+            builder.addNetworkInterceptor(interceptor)
         }
         builder.connectTimeout(10, TimeUnit.SECONDS)
         builder.writeTimeout(10, TimeUnit.SECONDS)
@@ -326,13 +335,13 @@ internal class AppModule {
 
     @Provides
     @Singleton
-    fun provideGiphyService(): GiphyService {
+    fun provideGiphyService(httpLoggingInterceptor: HttpLoggingInterceptor?, stethoInterceptor: StethoInterceptor?): GiphyService {
         val client = OkHttpClient.Builder().apply {
-            if (BuildConfig.DEBUG) {
-                val logging = HttpLoggingInterceptor()
-                logging.level = HttpLoggingInterceptor.Level.BODY
-                addNetworkInterceptor(logging)
-                addNetworkInterceptor(StethoInterceptor())
+            httpLoggingInterceptor?.let { interceptor ->
+                addNetworkInterceptor(interceptor)
+            }
+            stethoInterceptor?.let { interceptor ->
+                addNetworkInterceptor(interceptor)
             }
         }.build()
         val retrofit = Retrofit.Builder()
@@ -346,13 +355,13 @@ internal class AppModule {
 
     @Provides
     @Singleton
-    fun provideFoursquareService(): FoursquareService {
+    fun provideFoursquareService(httpLoggingInterceptor: HttpLoggingInterceptor?, stethoInterceptor: StethoInterceptor?): FoursquareService {
         val client = OkHttpClient.Builder().apply {
-            if (BuildConfig.DEBUG) {
-                val logging = HttpLoggingInterceptor()
-                logging.level = HttpLoggingInterceptor.Level.BODY
-                addNetworkInterceptor(logging)
-                addNetworkInterceptor(StethoInterceptor())
+            httpLoggingInterceptor?.let { interceptor ->
+                addNetworkInterceptor(interceptor)
+            }
+            stethoInterceptor?.let { interceptor ->
+                addNetworkInterceptor(interceptor)
             }
         }.build()
         val retrofit = Retrofit.Builder()
