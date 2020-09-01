@@ -26,6 +26,7 @@ import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.AttachmentMessagePayload
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
+import java.io.FileNotFoundException
 import java.net.SocketTimeoutException
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
@@ -131,7 +132,14 @@ class SendAttachmentMessageJob(
         } else {
             Util.getSecretBytes(64)
         }
-        val inputStream = MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.mediaUrl))
+        val inputStream = try{
+            MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.mediaUrl))
+        }catch (e: FileNotFoundException){
+            GlobalScope.launch(Dispatchers.Main) {
+                MixinApplication.get().toast(R.string.error_file_exists)
+            }
+            null
+        }
         val attachmentData =
             PushAttachmentData(
                 message.mediaMimeType,
@@ -141,17 +149,16 @@ class SendAttachmentMessageJob(
                     null
                 } else {
                     AttachmentCipherOutputStreamFactory(key)
-                },
-                PushAttachmentData.ProgressListener { total, progress ->
-                    val pg = try {
-                        progress.toFloat() / total.toFloat()
-                    } catch (e: Exception) {
-                        0f
-                    }
-                    attachmentProcess[message.id] = (pg * 100).toInt()
-                    RxBus.publish(loadingEvent(message.id, pg))
                 }
-            )
+            ) { total, progress ->
+                val pg = try {
+                    progress.toFloat() / total.toFloat()
+                } catch (e: Exception) {
+                    0f
+                }
+                attachmentProcess[message.id] = (pg * 100).toInt()
+                RxBus.publish(loadingEvent(message.id, pg))
+            }
         val digest = try {
             if (isPlain()) {
                 uploadPlainAttachment(attachResponse.upload_url!!, message.mediaSize, attachmentData)
