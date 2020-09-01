@@ -281,7 +281,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     override fun onUserClick(userId: String) {
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             val user = withContext(Dispatchers.IO) {
                 walletViewModel.getUser(userId)
             } ?: return@launch
