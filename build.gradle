@@ -61,7 +61,7 @@ buildscript {
         ext.google_play_services_version = '17.0.0'
         ext.svgVersion = '1.4'
         ext.reboundVersion = '0.3.8'
-        ext.ktlintVersion = '0.37.2'
+        ext.ktlintVersion = '0.38.1'
         ext.exoplayerVersion = '2.11.8'
         ext.perfVersion = '19.0.8'
         ext.markwonVersion = '4.5.1'
