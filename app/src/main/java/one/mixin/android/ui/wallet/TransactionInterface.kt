@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_transaction.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
@@ -64,7 +65,17 @@ interface TransactionInterface {
         contentView.value_tv.text = if (isPositive) "+${snapshot.amount.numberFormat()}"
         else snapshot.amount.numberFormat()
         contentView.symbol_tv.text = asset.symbol
-        contentView.value_tv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
+        contentView.value_tv.textColorResource = when {
+            snapshot.type == SnapshotType.pending.name -> {
+                R.color.wallet_text_gray
+            }
+            isPositive -> {
+                R.color.wallet_green
+            }
+            else -> {
+                R.color.wallet_pink
+            }
+        }
         val amount = (BigDecimal(snapshot.amount) * asset.priceFiat()).priceFormat()
         contentView.value_as_tv.text = "≈ ${Fiats.getSymbol()}$amount"
         contentView.transaction_id_tv.text = snapshot.snapshotId
@@ -93,6 +104,13 @@ interface TransactionInterface {
                 } else {
                     contentView.receiver_title.text = fragment.getString(R.string.receiver)
                 }
+                if (snapshot.type == SnapshotType.pending.name) {
+                    contentView.transaction_status.isVisible = true
+                    contentView.transaction_status_tv.text =
+                        contentView.context.getString(R.string.pending_confirmations, snapshot.confirmations, snapshot.assetConfirmations)
+                } else {
+                    contentView.transaction_status.isVisible = false
+                }
                 contentView.sender_title.text = fragment.getString(R.string.transaction_hash)
                 contentView.sender_tv.text = snapshot.transactionHash
                 contentView.receiver_tv.text = snapshot.receiver
@@ -103,12 +121,11 @@ interface TransactionInterface {
     fun getSnapshotType(fragment: Fragment, type: String): String {
         val s = when (type) {
             SnapshotType.transfer.name -> R.string.transfer
-            SnapshotType.deposit.name -> R.string.wallet_bottom_deposit
+            SnapshotType.deposit.name, SnapshotType.pending.name -> R.string.wallet_bottom_deposit
             SnapshotType.withdrawal.name -> R.string.withdrawal
             SnapshotType.fee.name -> R.string.fee
             SnapshotType.rebate.name -> R.string.rebate
             SnapshotType.raw.name -> R.string.filters_raw
-            // SnapshotType.pending can NOT access this page
             else -> R.string.not_any
         }
         return fragment.requireContext().getString(s)

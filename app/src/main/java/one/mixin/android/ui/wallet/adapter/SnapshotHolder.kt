@@ -66,9 +66,7 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
         itemView.symbol_tv.text = snapshot.assetSymbol
 
         itemView.setOnClickListener {
-            if (snapshot.type != SnapshotType.pending.name) {
-                listener?.onNormalItemClick(snapshot)
-            }
+            listener?.onNormalItemClick(snapshot)
         }
     }
 }

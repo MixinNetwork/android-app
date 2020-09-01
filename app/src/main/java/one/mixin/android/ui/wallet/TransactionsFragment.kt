@@ -147,7 +147,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         bindLiveData()
         walletViewModel.assetItem(asset.assetId).observe(
             viewLifecycleOwner,
-            Observer { assetItem ->
+            { assetItem ->
                 assetItem?.let {
                     asset = it
                     updateHeader(headerView, it)
