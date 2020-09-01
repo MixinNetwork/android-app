@@ -26,6 +26,7 @@ import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.AttachmentMessagePayload
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
+import java.io.FileNotFoundException
 import java.net.SocketTimeoutException
 
 class SendAttachmentMessageJob(
@@ -126,7 +127,14 @@ class SendAttachmentMessageJob(
         } else {
             Util.getSecretBytes(64)
         }
-        val inputStream = MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.mediaUrl))
+        val inputStream = try{
+            MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.mediaUrl))
+        }catch (e: FileNotFoundException){
+            GlobalScope.launch(Dispatchers.Main) {
+                MixinApplication.get().toast(R.string.error_file_exists)
+            }
+            null
+        }
         val attachmentData =
             PushAttachmentData(
                 message.mediaMimeType,
