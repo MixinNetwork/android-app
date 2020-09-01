@@ -62,7 +62,6 @@ open class ErrorHandler {
                     AUTHENTICATION -> {
                         toast(getString(R.string.error_authentication, AUTHENTICATION))
                         reportException(IllegalStateException("Force logout error code."))
-                        MixinApplication.get().closeAndClear()
                     }
                     FORBIDDEN -> {
                         toast(R.string.error_forbidden)

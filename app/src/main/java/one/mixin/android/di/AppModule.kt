@@ -181,7 +181,7 @@ internal class AppModule {
                         if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= ALLOW_INTERVAL) {
                             MixinApplication.get().gotoTimeWrong(serverTime)
                         } else if (expiredToken) {
-                            val ise = IllegalStateException("Force logout. request: ${request.show()}, response: ${response.show()}")
+                            val ise = IllegalStateException("Force logout, current time: ${System.currentTimeMillis()}. request: ${request.show()}, response: ${response.show()}")
                             reportException(ise)
                             MixinApplication.get().closeAndClear()
                         }
