@@ -6,8 +6,10 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
+import net.i2p.crypto.eddsa.EdDSAPublicKey
 import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
+import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import okhttp3.Request
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.aesEncrypt
@@ -174,12 +176,13 @@ object Session {
             .compact()
     }
 
-    fun requestDelay(acct: Account?, string: String, offset: Int, token: String? = getToken()): JwtResult {
+    fun requestDelay(acct: Account?, string: String, offset: Int): JwtResult {
         if (acct == null) {
             return JwtResult(false)
         }
-        val key = getJwtKey() ?: return JwtResult(false)
+        val privateKeyA = (getJwtKey() as? EdDSAPrivateKey)?.a ?: return JwtResult(false)
 
+        val key = EdDSAPublicKey(EdDSAPublicKeySpec(privateKeyA, ed25519))
         return try {
             val iat = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(string).body[Claims.ISSUED_AT] as Int
             JwtResult(abs(System.currentTimeMillis() / 1000 - iat) > offset, requestTime = iat.toLong())
