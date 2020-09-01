@@ -141,6 +141,27 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/transaction_status"
+                    android:visibility="gone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/transactions_status" />
+
+                    <TextView
+                        android:id="@+id/transaction_status_tv"
+                        style="@style/TransactionDescTextStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textIsSelectable="true" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:id="@+id/sender_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
