@@ -224,6 +224,12 @@ class MixinDatabaseMigrations private constructor() {
                 )
             }
         }
+
+        val MIGRATION_33_34: Migration = object : SafeMigration(33,34) {
+            override fun safeMigrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS `Properties` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY(`key`))")
+            }
+        }
     }
 }
 
