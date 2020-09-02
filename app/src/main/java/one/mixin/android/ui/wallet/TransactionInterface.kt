@@ -89,6 +89,15 @@ interface TransactionInterface {
                 contentView.receiver_title.text = fragment.getString(R.string.transaction_hash)
                 contentView.receiver_tv.text = snapshot.transactionHash
             }
+            SnapshotType.pending.name -> {
+                contentView.sender_title.text = fragment.getString(R.string.sender)
+                contentView.sender_tv.text = snapshot.sender
+                contentView.receiver_title.text = fragment.getString(R.string.transaction_hash)
+                contentView.receiver_tv.text = snapshot.transactionHash
+                contentView.transaction_status.isVisible = true
+                contentView.transaction_status_tv.text =
+                    contentView.context.getString(R.string.pending_confirmations, snapshot.confirmations, snapshot.assetConfirmations)
+            }
             SnapshotType.transfer.name -> {
                 if (isPositive) {
                     contentView.sender_tv.text = snapshot.opponentFullName
@@ -103,13 +112,6 @@ interface TransactionInterface {
                     contentView.receiver_title.text = fragment.getString(R.string.account_name)
                 } else {
                     contentView.receiver_title.text = fragment.getString(R.string.receiver)
-                }
-                if (snapshot.type == SnapshotType.pending.name) {
-                    contentView.transaction_status.isVisible = true
-                    contentView.transaction_status_tv.text =
-                        contentView.context.getString(R.string.pending_confirmations, snapshot.confirmations, snapshot.assetConfirmations)
-                } else {
-                    contentView.transaction_status.isVisible = false
                 }
                 contentView.sender_title.text = fragment.getString(R.string.transaction_hash)
                 contentView.sender_tv.text = snapshot.transactionHash
