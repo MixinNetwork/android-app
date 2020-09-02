@@ -55,7 +55,7 @@ object Session {
         preference.putString(Constants.Account.PREF_NAME_TOKEN, token)
     }
 
-    fun getToken(): String? {
+    private fun getToken(): String? {
         val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
         return preference.getString(Constants.Account.PREF_NAME_TOKEN, null)
     }
@@ -114,8 +114,7 @@ object Session {
 
     fun checkToken() = getAccount() != null && !getToken().isNullOrBlank()
 
-    fun signToken(acct: Account?, request: Request): String {
-        val token = getToken()
+    fun signToken(acct: Account?, request: Request, token: String? = getToken()): String {
         if (acct == null || token == null || token.isBlank()) {
             return ""
         }
@@ -124,9 +123,12 @@ object Session {
         val iat = System.currentTimeMillis() / 1000
 
         var content = "${request.method}${request.url.cutOut()}"
-        if (request.body != null && request.body!!.contentLength() > 0) {
-            content += request.body!!.bodyToString()
+        request.body?.apply {
+            if (contentLength() > 0) {
+                content += bodyToString()
+            }
         }
+
         return Jwts.builder()
             .setClaims(
                 ConcurrentHashMap<String, Any>().apply {
@@ -143,8 +145,7 @@ object Session {
             .compact()
     }
 
-    fun requestDelay(acct: Account?, string: String, offset: Int): Boolean {
-        val token = getToken()
+    fun requestDelay(acct: Account?, string: String, offset: Int, token: String? = getToken()): Boolean {
         if (acct == null || token == null || token.isBlank()) {
             return false
         }
