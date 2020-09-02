@@ -223,6 +223,8 @@
     <string name="landing_verification_lost_mobile">Lost your mobile number?</string>
     <string name="landing_verification_tip_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
     <string name="landing_check_updates">Check for Updates</string>
+    <string name="update_mixin">Update Mixin</string>
+    <string name="update_mixin_description">The current version (%1$s) is no longer avaliable!\nPlease click "Update" below to update to the latest version from the App Store.</string>
     <!--contacts-->
     <string name="contact_new_group_chat_title">New Group Chat</string>
     <string name="contact_new_group_chat_desc">Create a group chat with up to  friends</string>
@@ -743,6 +745,7 @@
     <string name="default_time" translatable="false">00:00</string>
     <string name="action_open">Open in browser</string>
     <string name="action_refresh">Refresh</string>
+    <string name="action_update">Update</string>
     <string name="slide_to_cancel">Slide to Cancel</string>
     <string name="gallery_all">All Media</string>
     <string name="gallery_empty_text">No media yet</string>

@@ -57,6 +57,8 @@ import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
+import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
+import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.Session
@@ -173,7 +175,12 @@ internal class AppModule {
                         HostSelectionInterceptor.get().switch(request)
                         throw ServerErrorException(response.code)
                     }
-                    if (mixinResponse.errorCode != 401) return@run
+                    if (mixinResponse.errorCode == OLD_VERSION){
+                        MixinApplication.get().gotoOldVersionAlert()
+                        return@run
+                    }
+                    else if (mixinResponse.errorCode != AUTHENTICATION) return@run
+
                     val authorization = response.request.header("Authorization")
                     if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
                         val jwt = authorization.substring(7)
