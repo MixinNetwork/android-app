@@ -751,6 +751,7 @@
     <string name="action_refresh">Refresh</string>
     <string name="action_update">Update</string>
     <string name="action_reload">Reload</string>
+    <string name="action_update">Update</string>
     <string name="slide_to_cancel">Slide to Cancel</string>
     <string name="gallery_all">All Media</string>
     <string name="gallery_empty_text">No media yet</string>

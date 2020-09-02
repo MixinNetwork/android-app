@@ -736,6 +736,7 @@
     <string name="action_refresh">刷新</string>
     <string name="action_update">升级</string>
     <string name="action_reload">重新载入</string>
+    <string name="action_update">升级</string>
     <string name="slide_to_cancel">滑动取消</string>
     <string name="gallery_all">全部</string>
     <string name="gallery_empty_text">还没有图片或视频</string>
