@@ -110,6 +110,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     override fun onApplyClick() {
+        initialLoadKey = null
         bindLiveData()
         filtersSheet.dismiss()
     }
