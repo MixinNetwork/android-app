@@ -28,8 +28,6 @@ import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.net.SocketTimeoutException
-import java.net.URL
-import javax.net.ssl.HttpsURLConnection
 
 class SendAttachmentMessageJob(
     val message: Message
@@ -44,7 +42,6 @@ class SendAttachmentMessageJob(
 
     override fun cancel() {
         isCancelled = true
-        connection?.disconnect()
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
         attachmentProcess.remove(message.id)
         disposable?.let {
@@ -54,8 +51,6 @@ class SendAttachmentMessageJob(
         }
         removeJob()
     }
-
-    private val TAG = SendAttachmentMessageJob::class.java.simpleName
 
     override fun onAdded() {
         super.onAdded()
@@ -204,23 +199,12 @@ class SendAttachmentMessageJob(
         return true
     }
 
-    @Transient
-    private var connection: HttpsURLConnection? = null
-
     private fun uploadPlainAttachment(url: String, size: Long, attachment: PushAttachmentData) {
-        connection = URL(url).openConnection() as HttpsURLConnection
-        Util.uploadAttachment(
-            "PUT", connection, attachment.data,
-            size, attachment.outputStreamFactory, attachment.listener
-        )
+        Util.uploadAttachment(url, attachment.data, size, attachment.outputStreamFactory, attachment.listener, { isCancelled })
     }
 
     private fun uploadAttachment(url: String, attachment: PushAttachmentData): ByteArray {
         val dataSize = attachment.outputStreamFactory.getCipherTextLength(attachment.dataSize)
-        connection = URL(url).openConnection() as HttpsURLConnection
-        return Util.uploadAttachment(
-            "PUT", connection, attachment.data,
-            dataSize, attachment.outputStreamFactory, attachment.listener
-        )
+        return Util.uploadAttachment(url, attachment.data, dataSize, attachment.outputStreamFactory, attachment.listener, { isCancelled })
     }
 }

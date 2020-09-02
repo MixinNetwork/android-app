@@ -397,6 +397,7 @@
     <string name="pin_check_tip">You\'ll be asked for it periodically to help you remember it.</string>
     <string name="transactions_id">Transaction Id</string>
     <string name="transactions_type">Transaction Type</string>
+    <string name="transactions_status">Status</string>
     <string name="asset_no_hidden">No hidden assets</string>
     <string name="asset_none">N/A</string>
     <string name="wallet_pay_with_biometrics">Pay with Biometrics</string>

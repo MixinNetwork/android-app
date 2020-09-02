@@ -20,6 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toEndOf="@id/avatar"
+        android:layout_toStartOf="@id/value"
         android:ellipsize="end"
         android:maxWidth="200dp"
         android:singleLine="true"
