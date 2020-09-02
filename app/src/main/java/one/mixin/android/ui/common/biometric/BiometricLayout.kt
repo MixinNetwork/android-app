@@ -34,37 +34,41 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         biometric_tv.setOnClickListener { callback?.onShowBiometric() }
         biometric_tv.isVisible = BiometricUtil.shouldShowBiometric(context)
 
-        pin.setListener(object : PinView.OnPinListener {
-            override fun onUpdate(index: Int) {
-                if (index == pin.getCount()) {
-                    callback?.onPinComplete(pin.code())
+        pin.setListener(
+            object : PinView.OnPinListener {
+                override fun onUpdate(index: Int) {
+                    if (index == pin.getCount()) {
+                        callback?.onPinComplete(pin.code())
+                    }
                 }
             }
-        })
+        )
     }
 
     fun setKeyboard(keyboard: Keyboard) {
         this.keyboard = keyboard
         keyboard.setKeyboardKeys(Constants.KEYS)
-        keyboard.setOnClickKeyboardListener(object : Keyboard.OnClickKeyboardListener {
-            override fun onKeyClick(position: Int, value: String) {
-                context?.vibrate(longArrayOf(0, 30))
-                if (position == 11) {
-                    pin.delete()
-                } else {
-                    pin.append(value)
+        keyboard.setOnClickKeyboardListener(
+            object : Keyboard.OnClickKeyboardListener {
+                override fun onKeyClick(position: Int, value: String) {
+                    context?.vibrate(longArrayOf(0, 30))
+                    if (position == 11) {
+                        pin.delete()
+                    } else {
+                        pin.append(value)
+                    }
                 }
-            }
 
-            override fun onLongClick(position: Int, value: String) {
-                context?.vibrate(longArrayOf(0, 30))
-                if (position == 11) {
-                    pin.clear()
-                } else {
-                    pin.append(value)
+                override fun onLongClick(position: Int, value: String) {
+                    context?.vibrate(longArrayOf(0, 30))
+                    if (position == 11) {
+                        pin.clear()
+                    } else {
+                        pin.append(value)
+                    }
                 }
             }
-        })
+        )
     }
 
     fun showErrorInfo(

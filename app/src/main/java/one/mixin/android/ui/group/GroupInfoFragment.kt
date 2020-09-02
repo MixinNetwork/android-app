@@ -91,119 +91,125 @@ class GroupInfoFragment : BaseFragment() {
         header = LayoutInflater.from(context).inflate(R.layout.view_group_info_header, group_info_rv, false)
         adapter.headerView = header
         group_info_rv.adapter = adapter
-        adapter.setGroupInfoListener(object : GroupInfoAdapter.GroupInfoListener {
-            override fun onAdd() {
-                modifyMember(true)
-            }
+        adapter.setGroupInfoListener(
+            object : GroupInfoAdapter.GroupInfoListener {
+                override fun onAdd() {
+                    modifyMember(true)
+                }
 
-            override fun onClick(name: View, user: User) {
-                val choices = mutableListOf<String>()
-                choices.add(getString(R.string.group_pop_menu_message, user.fullName))
-                choices.add(getString(R.string.group_pop_menu_view, user.fullName))
-                var role: String? = null
-                self?.let {
-                    val p = participantsMap[it.userId]
-                    p?.let { role = p.role }
+                override fun onClick(name: View, user: User) {
+                    val choices = mutableListOf<String>()
+                    choices.add(getString(R.string.group_pop_menu_message, user.fullName))
+                    choices.add(getString(R.string.group_pop_menu_view, user.fullName))
+                    var role: String? = null
+                    self?.let {
+                        val p = participantsMap[it.userId]
+                        p?.let { role = p.role }
+                    }
+                    val userRole = (participantsMap[user.userId] as Participant).role
+                    if (role == ParticipantRole.OWNER.name) {
+                        if (userRole == ParticipantRole.ADMIN.name) {
+                            choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
+                            choices.add(getString(R.string.group_pop_menu_dismiss_admin))
+                        } else {
+                            choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
+                            choices.add(getString(R.string.group_pop_menu_make_admin))
+                        }
+                    } else if (role == ParticipantRole.ADMIN.name) {
+                        if (userRole != ParticipantRole.OWNER.name && userRole != ParticipantRole.ADMIN.name) {
+                            choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
+                        }
+                    }
+                    alertDialogBuilder()
+                        .setItems(choices.toTypedArray()) { _, which ->
+                            when (which) {
+                                0 -> {
+                                    openChat(user)
+                                }
+                                1 -> {
+                                    UserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                }
+                                2 -> {
+                                    showConfirmDialog(
+                                        getString(
+                                            R.string.group_info_remove_tip,
+                                            user.fullName,
+                                            adapter.conversation?.name
+                                        ),
+                                        TYPE_REMOVE,
+                                        user = user
+                                    )
+                                }
+                                3 -> {
+                                    handleAdminRole(userRole, user)
+                                }
+                            }
+                        }.show()
                 }
-                val userRole = (participantsMap[user.userId] as Participant).role
-                if (role == ParticipantRole.OWNER.name) {
-                    if (userRole == ParticipantRole.ADMIN.name) {
-                        choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
-                        choices.add(getString(R.string.group_pop_menu_dismiss_admin))
+
+                override fun onLongClick(name: View, user: User): Boolean {
+                    val popMenu = PopupMenu(activity!!, name)
+                    val c = adapter.conversation
+                    if (c == null || !c.isGroup()) {
+                        return false
+                    }
+                    var role: String? = null
+                    self?.let {
+                        val p = participantsMap[it.userId]
+                        p?.let { role = p.role }
+                    }
+                    val userRole = (participantsMap[user.userId] as Participant).role
+                    if (role == ParticipantRole.OWNER.name) {
+                        if (userRole == ParticipantRole.ADMIN.name) {
+                            popMenu.menuInflater.inflate(R.menu.group_item_owner_dismiss, popMenu.menu)
+                        } else {
+                            popMenu.menuInflater.inflate(R.menu.group_item_owner, popMenu.menu)
+                        }
+                        popMenu.menu.findItem(R.id.remove).title = getString(R.string.group_pop_menu_remove, user.fullName)
+                    } else if (role == ParticipantRole.ADMIN.name) {
+                        if (userRole == ParticipantRole.OWNER.name || userRole == ParticipantRole.ADMIN.name) {
+                            popMenu.menuInflater.inflate(R.menu.group_item_simple, popMenu.menu)
+                        } else {
+                            popMenu.menuInflater.inflate(R.menu.group_item_admin, popMenu.menu)
+                            popMenu.menu.findItem(R.id.remove).title =
+                                getString(R.string.group_pop_menu_remove, user.fullName)
+                        }
                     } else {
-                        choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
-                        choices.add(getString(R.string.group_pop_menu_make_admin))
+                        popMenu.menuInflater.inflate(R.menu.group_item_simple, popMenu.menu)
                     }
-                } else if (role == ParticipantRole.ADMIN.name) {
-                    if (userRole != ParticipantRole.OWNER.name && userRole != ParticipantRole.ADMIN.name) {
-                        choices.add(getString(R.string.group_pop_menu_remove, user.fullName))
-                    }
-                }
-                alertDialogBuilder()
-                    .setItems(choices.toTypedArray()) { _, which ->
-                        when (which) {
-                            0 -> {
+                    popMenu.menu.findItem(R.id.message).title = getString(R.string.group_pop_menu_message, user.fullName)
+                    popMenu.menu.findItem(R.id.view).title = getString(R.string.group_pop_menu_view, user.fullName)
+                    popMenu.setOnMenuItemClickListener {
+                        when (it.itemId) {
+                            R.id.message -> {
                                 openChat(user)
                             }
-                            1 -> {
-                                UserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                            R.id.view -> {
+                                UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                             }
-                            2 -> {
+                            R.id.remove -> {
                                 showConfirmDialog(
                                     getString(
                                         R.string.group_info_remove_tip,
-                                        user.fullName, adapter.conversation?.name
+                                        user.fullName,
+                                        adapter.conversation?.name
                                     ),
-                                    TYPE_REMOVE, user = user
+                                    TYPE_REMOVE,
+                                    user = user
                                 )
                             }
-                            3 -> {
+                            R.id.admin -> {
                                 handleAdminRole(userRole, user)
                             }
                         }
-                    }.show()
+                        return@setOnMenuItemClickListener true
+                    }
+                    popMenu.show()
+                    return true
+                }
             }
-
-            override fun onLongClick(name: View, user: User): Boolean {
-                val popMenu = PopupMenu(activity!!, name)
-                val c = adapter.conversation
-                if (c == null || !c.isGroup()) {
-                    return false
-                }
-                var role: String? = null
-                self?.let {
-                    val p = participantsMap[it.userId]
-                    p?.let { role = p.role }
-                }
-                val userRole = (participantsMap[user.userId] as Participant).role
-                if (role == ParticipantRole.OWNER.name) {
-                    if (userRole == ParticipantRole.ADMIN.name) {
-                        popMenu.menuInflater.inflate(R.menu.group_item_owner_dismiss, popMenu.menu)
-                    } else {
-                        popMenu.menuInflater.inflate(R.menu.group_item_owner, popMenu.menu)
-                    }
-                    popMenu.menu.findItem(R.id.remove).title = getString(R.string.group_pop_menu_remove, user.fullName)
-                } else if (role == ParticipantRole.ADMIN.name) {
-                    if (userRole == ParticipantRole.OWNER.name || userRole == ParticipantRole.ADMIN.name) {
-                        popMenu.menuInflater.inflate(R.menu.group_item_simple, popMenu.menu)
-                    } else {
-                        popMenu.menuInflater.inflate(R.menu.group_item_admin, popMenu.menu)
-                        popMenu.menu.findItem(R.id.remove).title =
-                            getString(R.string.group_pop_menu_remove, user.fullName)
-                    }
-                } else {
-                    popMenu.menuInflater.inflate(R.menu.group_item_simple, popMenu.menu)
-                }
-                popMenu.menu.findItem(R.id.message).title = getString(R.string.group_pop_menu_message, user.fullName)
-                popMenu.menu.findItem(R.id.view).title = getString(R.string.group_pop_menu_view, user.fullName)
-                popMenu.setOnMenuItemClickListener {
-                    when (it.itemId) {
-                        R.id.message -> {
-                            openChat(user)
-                        }
-                        R.id.view -> {
-                            UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
-                        }
-                        R.id.remove -> {
-                            showConfirmDialog(
-                                getString(
-                                    R.string.group_info_remove_tip,
-                                    user.fullName, adapter.conversation?.name
-                                ),
-                                TYPE_REMOVE, user = user
-                            )
-                        }
-                        R.id.admin -> {
-                            handleAdminRole(userRole, user)
-                        }
-                    }
-                    return@setOnMenuItemClickListener true
-                }
-                popMenu.show()
-                return true
-            }
-        })
+        )
 
         groupViewModel.getGroupParticipantsLiveData(conversationId).observe(
             viewLifecycleOwner,
@@ -259,15 +265,17 @@ class GroupInfoFragment : BaseFragment() {
             }
         )
 
-        search_et.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        search_et.addTextChangedListener(
+            object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
-            override fun afterTextChanged(s: Editable) {
-                keyword = s.toString()
+                override fun afterTextChanged(s: Editable) {
+                    keyword = s.toString()
+                }
             }
-        })
+        )
 
         jobManager.addJobInBackground(RefreshConversationJob(conversationId))
     }
@@ -347,7 +355,8 @@ class GroupInfoFragment : BaseFragment() {
         }
         activity?.addFragment(
             this@GroupInfoFragment,
-            GroupFragment.newInstance(if (isAdd) TYPE_ADD else TYPE_REMOVE, list, conversationId), GroupFragment.TAG
+            GroupFragment.newInstance(if (isAdd) TYPE_ADD else TYPE_REMOVE, list, conversationId),
+            GroupFragment.TAG
         )
     }
 }

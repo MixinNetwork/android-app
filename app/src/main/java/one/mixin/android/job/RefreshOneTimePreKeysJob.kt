@@ -50,7 +50,8 @@ class RefreshOneTimePreKeysJob : MixinJob(
             val oneTimePreKeys = PreKeyUtil.generatePreKeys(MixinApplication.appContext)
             val signedPreKeyRecord = PreKeyUtil.generateSignedPreKey(
                 MixinApplication.appContext,
-                identityKeyPair, false
+                identityKeyPair,
+                false
             )
             return SignalKeyRequest(identityKeyPair.publicKey, signedPreKeyRecord, oneTimePreKeys)
         }

@@ -277,8 +277,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 val ssb = SpannableStringBuilder(str)
                 val start = str.indexOf(bold)
                 ssb.setSpan(
-                    StyleSpan(Typeface.BOLD), start,
-                    start + bold.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                    StyleSpan(Typeface.BOLD),
+                    start,
+                    start + bold.length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
                 contentView.fee_tv?.visibility = VISIBLE
                 contentView.fee_tv?.text = ssb
@@ -292,14 +294,16 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 operateKeyboard(false)
                 context?.let {
                     adapter.submitList(assets)
-                    adapter.setTypeListener(object : OnTypeClickListener {
-                        override fun onTypeClick(asset: AssetItem) {
-                            currentAsset = asset
-                            updateAssetUI(asset)
-                            adapter.notifyDataSetChanged()
-                            assetsBottomSheet.dismiss()
+                    adapter.setTypeListener(
+                        object : OnTypeClickListener {
+                            override fun onTypeClick(asset: AssetItem) {
+                                currentAsset = asset
+                                updateAssetUI(asset)
+                                adapter.notifyDataSetChanged()
+                                assetsBottomSheet.dismiss()
+                            }
                         }
-                    })
+                    )
 
                     assetsView.close_iv.setOnClickListener {
                         assetsBottomSheet.dismiss()
@@ -408,7 +412,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     private val autoCompleteAdapter by lazy {
         ArrayAdapter<String>(
             requireContext(),
-            R.layout.item_dropdown, mutableListOf("")
+            R.layout.item_dropdown,
+            mutableListOf("")
         )
     }
 

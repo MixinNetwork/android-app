@@ -51,12 +51,14 @@ class SlidePanelView : RelativeLayout {
         val animSet = AnimatorSet().apply {
             interpolator = DecelerateInterpolator()
             duration = 200
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
-                    blinkingDrawable?.blinking()
-                    postDelayed(updateTimeRunnable, 200)
+            addListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator?) {
+                        blinkingDrawable?.blinking()
+                        postDelayed(updateTimeRunnable, 200)
+                    }
                 }
-            })
+            )
         }
         animSet.playTogether(
             ObjectAnimator.ofFloat(this, "translationX", 0f),
@@ -104,17 +106,19 @@ class SlidePanelView : RelativeLayout {
         val animSet = AnimatorSet().apply {
             interpolator = AccelerateInterpolator()
             duration = 200
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
-                    handleEnd()
-                    onEnding = false
-                }
+            addListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator?) {
+                        handleEnd()
+                        onEnding = false
+                    }
 
-                override fun onAnimationCancel(animation: Animator?) {
-                    handleEnd()
-                    onEnding = false
+                    override fun onAnimationCancel(animation: Animator?) {
+                        handleEnd()
+                        onEnding = false
+                    }
                 }
-            })
+            )
         }
         animSet.playTogether(
             ObjectAnimator.ofFloat(this, "translationX", measuredWidth.toFloat()),

@@ -320,8 +320,10 @@ class MainActivity : BlazeBaseActivity() {
             .setPositiveButton(R.string.change) { dialog, _ ->
                 supportFragmentManager.inTransaction {
                     setCustomAnimations(
-                        R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                        R.anim.slide_in_bottom, R.anim.slide_out_bottom
+                        R.anim.slide_in_bottom,
+                        R.anim.slide_out_bottom,
+                        R.anim.slide_in_bottom,
+                        R.anim.slide_out_bottom
                     )
                         .add(R.id.root_view, VerifyFragment.newInstance(VerifyFragment.FROM_PHONE))
                         .addToBackStack(null)
@@ -336,9 +338,9 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun checkRoot() {
         if (RootUtil.isDeviceRooted && defaultSharedPreferences.getBoolean(
-            Constants.Account.PREF_BIOMETRICS,
-            false
-        )
+                Constants.Account.PREF_BIOMETRICS,
+                false
+            )
         ) {
             BiometricUtil.deleteKey(this)
         }
@@ -649,15 +651,17 @@ class MainActivity : BlazeBaseActivity() {
             }
         }
 
-        search_bar.setSearchViewListener(object : MaterialSearchView.SearchViewListener {
-            override fun onSearchViewClosed() {
-                navigationController.hideSearch()
-            }
+        search_bar.setSearchViewListener(
+            object : MaterialSearchView.SearchViewListener {
+                override fun onSearchViewClosed() {
+                    navigationController.hideSearch()
+                }
 
-            override fun onSearchViewOpened() {
-                navigationController.showSearch()
+                override fun onSearchViewOpened() {
+                    navigationController.showSearch()
+                }
             }
-        })
+        )
         search_bar.hideAction = {
             (supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as? CirclesFragment)?.cancelSort()
         }

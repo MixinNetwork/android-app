@@ -184,9 +184,9 @@ class PipVideoView {
                     startY = y
                 } else if (event.action == MotionEvent.ACTION_MOVE) {
                     if (abs(startX - x) >= appContext.getPixelsInCM(
-                        0.3f,
-                        true
-                    ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
+                            0.3f,
+                            true
+                        ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
                     ) {
                         startX = x
                         startY = y
@@ -347,50 +347,52 @@ class PipVideoView {
             }
         }
 
-        VideoPlayer.player().setOnMediaPlayerListener(object : MixinPlayer.MediaPlayerListenerWrapper() {
-            override fun onPlayerError(mid: String, error: ExoPlaybackException) {
-                playView?.fadeIn()
-                playView?.status = PlayView.STATUS_REFRESH
-            }
+        VideoPlayer.player().setOnMediaPlayerListener(
+            object : MixinPlayer.MediaPlayerListenerWrapper() {
+                override fun onPlayerError(mid: String, error: ExoPlaybackException) {
+                    playView?.fadeIn()
+                    playView?.status = PlayView.STATUS_REFRESH
+                }
 
-            override fun onPlayerStateChanged(mid: String, playWhenReady: Boolean, playbackState: Int) {
-                when (playbackState) {
-                    STATE_ENDED -> {
-                        stop()
-                        if (aodWakeLock.isHeld) {
-                            aodWakeLock.release()
-                        }
-                    }
-                    STATE_IDLE -> {
-                        if (isVideo) {
+                override fun onPlayerStateChanged(mid: String, playWhenReady: Boolean, playbackState: Int) {
+                    when (playbackState) {
+                        STATE_ENDED -> {
                             stop()
-                            fadeIn()
-                        } else {
+                            if (aodWakeLock.isHeld) {
+                                aodWakeLock.release()
+                            }
+                        }
+                        STATE_IDLE -> {
+                            if (isVideo) {
+                                stop()
+                                fadeIn()
+                            } else {
+                                playView?.fadeIn()
+                                playView?.status = PlayView.STATUS_REFRESH
+                            }
+                            if (aodWakeLock.isHeld) {
+                                aodWakeLock.release()
+                            }
+                        }
+                        STATE_READY -> {
+                            if (playWhenReady) {
+                                fadeOut()
+                                playView?.status = STATUS_PLAYING
+                            } else {
+                                playView?.status = STATUS_PAUSE
+                            }
+                            if (!aodWakeLock.isHeld) {
+                                aodWakeLock.acquire()
+                            }
+                        }
+                        STATE_BUFFERING -> {
                             playView?.fadeIn()
-                            playView?.status = PlayView.STATUS_REFRESH
+                            playView?.status = STATUS_LOADING
                         }
-                        if (aodWakeLock.isHeld) {
-                            aodWakeLock.release()
-                        }
-                    }
-                    STATE_READY -> {
-                        if (playWhenReady) {
-                            fadeOut()
-                            playView?.status = STATUS_PLAYING
-                        } else {
-                            playView?.status = STATUS_PAUSE
-                        }
-                        if (!aodWakeLock.isHeld) {
-                            aodWakeLock.acquire()
-                        }
-                    }
-                    STATE_BUFFERING -> {
-                        playView?.fadeIn()
-                        playView?.status = STATUS_LOADING
                     }
                 }
             }
-        })
+        )
 
         textureView.setOnClickListener {
             if (closeButton?.isVisible == true) {
@@ -547,12 +549,14 @@ class PipVideoView {
             animatorSet.duration = 150
             if (slideOut) {
                 animators.add(ObjectAnimator.ofFloat(windowView, "alpha", 0.0f))
-                animatorSet.addListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        close(true)
-                        VideoPlayer.destroy()
+                animatorSet.addListener(
+                    object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            close(true)
+                            VideoPlayer.destroy()
+                        }
                     }
-                })
+                )
             }
             animatorSet.playTogether(animators)
             animatorSet.start()

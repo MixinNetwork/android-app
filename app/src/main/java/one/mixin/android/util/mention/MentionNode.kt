@@ -35,7 +35,8 @@ class MentionNode(val content: String, val normalTextColor: Int, val pressedText
 
         sp.setSpan(
             clickableSpan,
-            0, name.length,
+            0,
+            name.length,
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
         builder.append(sp)

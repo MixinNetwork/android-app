@@ -128,8 +128,12 @@ class SharedMediaViewModel @Inject constructor(
                 try {
                     jobManager.addJobInBackground(
                         ConvertVideoJob(
-                            it.conversationId, it.userId, Uri.parse(it.mediaUrl),
-                            it.category.startsWith("PLAIN"), it.id, it.createdAt
+                            it.conversationId,
+                            it.userId,
+                            Uri.parse(it.mediaUrl),
+                            it.category.startsWith("PLAIN"),
+                            it.id,
+                            it.createdAt
                         )
                     )
                 } catch (e: NullPointerException) {

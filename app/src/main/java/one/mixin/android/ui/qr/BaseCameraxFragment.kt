@@ -210,7 +210,11 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
                 try {
                     camera = cameraProvider.bindToLifecycle(
-                        this as LifecycleOwner, cameraSelector, preview, imageAnalysis, *otherUseCases
+                        this as LifecycleOwner,
+                        cameraSelector,
+                        preview,
+                        imageAnalysis,
+                        *otherUseCases
                     )
                     preview?.setSurfaceProvider(view_finder.createSurfaceProvider())
                 } catch (e: Exception) {

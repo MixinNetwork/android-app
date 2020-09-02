@@ -135,8 +135,13 @@ class DecryptMessage : Injector() {
             if (data.category.isIllegalMessageCategory()) {
                 if (data.conversationId != SYSTEM_USER && data.conversationId != Session.getAccountId()) {
                     val message = createMessage(
-                        data.messageId, data.conversationId, data.userId, data.category,
-                        data.data, data.createdAt, MessageStatus.UNKNOWN.name
+                        data.messageId,
+                        data.conversationId,
+                        data.userId,
+                        data.category,
+                        data.data,
+                        data.createdAt,
+                        MessageStatus.UNKNOWN.name
                     )
                     database.insertAndNotifyConversation(message)
                 }
@@ -180,8 +185,13 @@ class DecryptMessage : Injector() {
 
     private fun processAppButton(data: BlazeMessageData) {
         val message = createMessage(
-            data.messageId, data.conversationId, data.userId, data.category,
-            String(Base64.decode(data.data)), data.createdAt, data.status
+            data.messageId,
+            data.conversationId,
+            data.userId,
+            data.category,
+            String(Base64.decode(data.data)),
+            data.createdAt,
+            data.status
         )
         val appButton = gson.fromJson(message.content, Array<AppButtonData>::class.java)
         for (item in appButton) {
@@ -198,8 +208,13 @@ class DecryptMessage : Injector() {
         }
         syncUser(data.userId)
         val message = createMessage(
-            data.messageId, data.conversationId, data.userId, data.category,
-            String(Base64.decode(data.data)), data.createdAt, data.status
+            data.messageId,
+            data.conversationId,
+            data.userId,
+            data.category,
+            String(Base64.decode(data.data)),
+            data.createdAt,
+            data.status
         )
         val appCardData = gson.fromJson(message.content, AppCardData::class.java)
         appCardData.appId?.let { id ->
@@ -374,7 +389,9 @@ class DecryptMessage : Injector() {
             jobManager.addJobInBackground(
                 SendMessageJob(
                     needResendMessage,
-                    ResendData(data.userId, id, data.sessionId), true, messagePriority = PRIORITY_SEND_ATTACHMENT_MESSAGE
+                    ResendData(data.userId, id, data.sessionId),
+                    true,
+                    messagePriority = PRIORITY_SEND_ATTACHMENT_MESSAGE
                 )
             )
             resendMessageDao.insert(ResendSessionMessage(id, data.userId, data.sessionId, 1, nowInUtc()))
@@ -400,7 +417,16 @@ class DecryptMessage : Injector() {
                 var quoteMe = false
                 val message = generateMessage(data) { quoteMessageItem ->
                     if (quoteMessageItem == null) {
-                        createMessage(data.messageId, data.conversationId, data.userId, data.category, plain, data.createdAt, data.status, quoteMessageId = data.quoteMessageId).apply {
+                        createMessage(
+                            data.messageId,
+                            data.conversationId,
+                            data.userId,
+                            data.category,
+                            plain,
+                            data.createdAt,
+                            data.status,
+                            quoteMessageId = data.quoteMessageId
+                        ).apply {
                             this.content?.findLastUrl()?.let { parsHyperlink(data.messageId, it, hyperlinkDao, messageDao) }
                         }
                     } else {
@@ -423,8 +449,14 @@ class DecryptMessage : Injector() {
             data.category.endsWith("_POST") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_POST.name) String(Base64.decode(plainText)) else plainText
                 val message = createPostMessage(
-                    data.messageId, data.conversationId, data.userId, data.category, plain,
-                    plain.postOptimize(), data.createdAt, data.status
+                    data.messageId,
+                    data.conversationId,
+                    data.userId,
+                    data.category,
+                    plain,
+                    plain.postOptimize(),
+                    data.createdAt,
+                    data.status
                 )
                 database.insertAndNotifyConversation(message)
                 MessageFts4Helper.insertOrReplaceMessageFts4(message)
@@ -716,7 +748,12 @@ class DecryptMessage : Injector() {
         val (keyType, cipherText, resendMessageId) = SignalProtocol.decodeMessageData(data.data)
         try {
             signalProtocol.decrypt(
-                data.conversationId, data.userId, keyType, cipherText, data.category, data.sessionId,
+                data.conversationId,
+                data.userId,
+                keyType,
+                cipherText,
+                data.category,
+                data.sessionId,
                 DecryptionCallback {
                     if (data.category == MessageCategory.SIGNAL_KEY.name && data.userId != Session.getAccountId()) {
                         RxBus.publish(SenderKeyChange(data.conversationId, data.userId, data.sessionId))
@@ -797,8 +834,13 @@ class DecryptMessage : Injector() {
         ) {
             database.insertAndNotifyConversation(
                 createMessage(
-                    data.messageId, data.conversationId,
-                    data.userId, data.category, data.data, data.createdAt, MessageStatus.FAILED.name
+                    data.messageId,
+                    data.conversationId,
+                    data.userId,
+                    data.category,
+                    data.data,
+                    data.createdAt,
+                    MessageStatus.FAILED.name
                 )
             )
         }

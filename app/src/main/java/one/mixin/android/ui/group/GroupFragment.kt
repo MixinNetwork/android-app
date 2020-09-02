@@ -123,7 +123,8 @@ class GroupFragment : BaseFragment() {
             } else {
                 activity?.addFragment(
                     this@GroupFragment,
-                    NewGroupFragment.newInstance(ArrayList(checkedUsers)), NewGroupFragment.TAG
+                    NewGroupFragment.newInstance(ArrayList(checkedUsers)),
+                    NewGroupFragment.TAG
                 )
             }
         }

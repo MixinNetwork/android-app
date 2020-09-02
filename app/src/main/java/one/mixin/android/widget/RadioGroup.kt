@@ -37,14 +37,16 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
                             }
                         )
                     } else if (child is RadioButton) {
-                        child.setOnCheckedChangeListener(object : RadioButton.OnCheckedChangeListener {
-                            override fun onCheckedChanged(id: Int, checked: Boolean) {
-                                if (checked) {
-                                    update(id)
-                                    onCheckedListener?.onChecked(id)
+                        child.setOnCheckedChangeListener(
+                            object : RadioButton.OnCheckedChangeListener {
+                                override fun onCheckedChanged(id: Int, checked: Boolean) {
+                                    if (checked) {
+                                        update(id)
+                                        onCheckedListener?.onChecked(id)
+                                    }
                                 }
                             }
-                        })
+                        )
                     }
                 }
             }

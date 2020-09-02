@@ -241,11 +241,11 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 )
             }
             val muteMenu = if (conversation.muteUntil.notNullWithElse(
-                {
-                    Instant.now().isBefore(Instant.parse(it))
-                },
-                false
-            )
+                    {
+                        Instant.now().isBefore(Instant.parse(it))
+                    },
+                    false
+                )
             ) {
                 menu {
                     title = getString(R.string.un_mute)
@@ -342,12 +342,19 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     private fun startSearchConversation() = lifecycleScope.launch(Dispatchers.IO) {
         bottomViewModel.getConversation(conversationId)?.let {
             val searchMessageItem = SearchMessageItem(
-                it.conversationId, it.category, it.name,
-                0, "", null, null, it.iconUrl
+                it.conversationId,
+                it.category,
+                it.name,
+                0,
+                "",
+                null,
+                null,
+                it.iconUrl
             )
             activity?.addFragment(
                 this@GroupBottomSheetDialogFragment,
-                SearchMessageFragment.newInstance(searchMessageItem, ""), SearchMessageFragment.TAG
+                SearchMessageFragment.newInstance(searchMessageItem, ""),
+                SearchMessageFragment.TAG
             )
         }
     }

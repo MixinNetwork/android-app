@@ -130,35 +130,37 @@ class AudioPlayer private constructor() {
 
     private val player: MixinPlayer = MixinPlayer(true).also {
         it.setCycle(false)
-        it.setOnVideoPlayerListener(object : MixinPlayer.VideoPlayerListenerWrapper() {
-            override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-                if (playbackState == Player.STATE_ENDED) {
-                    id?.let { id -> RxBus.publish(pauseEvent(id)) }
+        it.setOnVideoPlayerListener(
+            object : MixinPlayer.VideoPlayerListenerWrapper() {
+                override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+                    if (playbackState == Player.STATE_ENDED) {
+                        id?.let { id -> RxBus.publish(pauseEvent(id)) }
+                        stopTimber()
+                        status = STATUS_DONE
+
+                        if (autoPlayNext) {
+                            checkNext()
+                        }
+                    }
+                }
+
+                override fun onPlayerError(error: ExoPlaybackException) {
+                    if (error.cause is UnrecognizedInputFormatException) {
+                        status = STATUS_ERROR
+                        id?.let { id -> RxBus.publish(errorEvent(id)) }
+                        MixinApplication.appContext.toast(R.string.error_not_supported_audio_format)
+                        messageItem?.let {
+                            MixinApplication.appContext.openMedia(it)
+                        }
+                    } else {
+                        status = STATUS_PAUSE
+                        id?.let { id -> RxBus.publish(pauseEvent(id)) }
+                    }
                     stopTimber()
-                    status = STATUS_DONE
-
-                    if (autoPlayNext) {
-                        checkNext()
-                    }
+                    it.stop()
                 }
             }
-
-            override fun onPlayerError(error: ExoPlaybackException) {
-                if (error.cause is UnrecognizedInputFormatException) {
-                    status = STATUS_ERROR
-                    id?.let { id -> RxBus.publish(errorEvent(id)) }
-                    MixinApplication.appContext.toast(R.string.error_not_supported_audio_format)
-                    messageItem?.let {
-                        MixinApplication.appContext.openMedia(it)
-                    }
-                } else {
-                    status = STATUS_PAUSE
-                    id?.let { id -> RxBus.publish(pauseEvent(id)) }
-                }
-                stopTimber()
-                it.stop()
-            }
-        })
+        )
     }
 
     private var id: String? = null
@@ -300,7 +302,9 @@ class AudioPlayer private constructor() {
             messageDao.updateMediaStatus(MediaStatus.READ.name, currentMessage.messageId)
         }
         val message = messageDao.findNextAudioMessage(
-            currentMessage.conversationId, currentMessage.createdAt, currentMessage.messageId
+            currentMessage.conversationId,
+            currentMessage.createdAt,
+            currentMessage.messageId
         )
             ?: return@launch
         if (message.userId == Session.getAccountId()) return@launch

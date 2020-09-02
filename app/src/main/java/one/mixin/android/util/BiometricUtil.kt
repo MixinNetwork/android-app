@@ -137,7 +137,8 @@ object BiometricUtil {
         try {
             if (key == null) {
                 val keyGenerator = KeyGenerator.getInstance(
-                    KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore"
+                    KeyProperties.KEY_ALGORITHM_AES,
+                    "AndroidKeyStore"
                 )
                 keyGenerator.init(
                     KeyGenParameterSpec.Builder(

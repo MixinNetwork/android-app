@@ -53,7 +53,10 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
         when {
             quoteMessageItem.type.endsWith("_TEXT") -> {
                 if (quoteMessageItem.mentions != null) {
-                    reply_content_tv.renderConversation(quoteMessageItem.content, MentionRenderCache.singleton.getMentionRenderContext(quoteMessageItem.mentions) {})
+                    reply_content_tv.renderConversation(
+                        quoteMessageItem.content,
+                        MentionRenderCache.singleton.getMentionRenderContext(quoteMessageItem.mentions) {}
+                    )
                 } else {
                     reply_content_tv.text = quoteMessageItem.content
                 }

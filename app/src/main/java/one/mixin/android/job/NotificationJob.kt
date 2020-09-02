@@ -38,7 +38,9 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.isRepresentativeMessage
 import org.jetbrains.anko.notificationManager
 
-class NotificationJob(val message: Message, private val userMap: Map<String, String>? = null, private val force: Boolean = false) : BaseJob(Params(PRIORITY_UI_HIGH).requireNetwork().groupBy("notification_group")) {
+class NotificationJob(val message: Message, private val userMap: Map<String, String>? = null, private val force: Boolean = false) : BaseJob(
+    Params(PRIORITY_UI_HIGH).requireNetwork().groupBy("notification_group")
+) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -88,8 +90,10 @@ class NotificationJob(val message: Message, private val userMap: Map<String, Str
 
         notificationBuilder.setContentIntent(
             PendingIntent.getActivities(
-                context, message.id.hashCode(),
-                arrayOf(mainIntent, conversationIntent), PendingIntent.FLAG_UPDATE_CURRENT
+                context,
+                message.id.hashCode(),
+                arrayOf(mainIntent, conversationIntent),
+                PendingIntent.FLAG_UPDATE_CURRENT
             )
         )
         supportsNougat {
@@ -100,11 +104,15 @@ class NotificationJob(val message: Message, private val userMap: Map<String, Str
             sendIntent.putExtra(CONVERSATION_ID, message.conversationId)
             sendIntent.putExtra(IS_PLAIN, user.isBot() || message.isRepresentativeMessage(conversation))
             val pendingIntent = PendingIntent.getService(
-                context, message.conversationId.hashCode(), sendIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                context,
+                message.conversationId.hashCode(),
+                sendIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
             )
             val action = NotificationCompat.Action.Builder(
                 R.mipmap.ic_launcher,
-                context.getString(R.string.notification_reply), pendingIntent
+                context.getString(R.string.notification_reply),
+                pendingIntent
             )
                 .addRemoteInput(remoteInput)
                 .setAllowGeneratedReplies(true)
@@ -112,7 +120,8 @@ class NotificationJob(val message: Message, private val userMap: Map<String, Str
             notificationBuilder.addAction(action)
             val readAction = NotificationCompat.Action.Builder(
                 R.mipmap.ic_launcher,
-                context.getString(R.string.notification_mark), pendingIntent
+                context.getString(R.string.notification_mark),
+                pendingIntent
             )
                 .build()
             notificationBuilder.addAction(readAction)
@@ -316,33 +325,35 @@ class NotificationJob(val message: Message, private val userMap: Map<String, Str
                         .asBitmap()
                         .load(it.avatarUrl)
                         .apply(RequestOptions().fitCenter().circleCrop())
-                        .listener(object : RequestListener<Bitmap> {
-                            override fun onResourceReady(
-                                resource: Bitmap?,
-                                model: Any?,
-                                target: Target<Bitmap>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                            ): Boolean {
-                                notificationBuilder.setLargeIcon(resource)
-                                notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
-                                return false
-                            }
-
-                            override fun onLoadFailed(
-                                e: GlideException?,
-                                model: Any?,
-                                target: Target<Bitmap>?,
-                                isFirstResource: Boolean
-                            ):
-                                Boolean {
-                                    notificationBuilder.setLargeIcon(
-                                        BitmapFactory.decodeResource(context.resources, R.drawable.default_avatar)
-                                    )
+                        .listener(
+                            object : RequestListener<Bitmap> {
+                                override fun onResourceReady(
+                                    resource: Bitmap?,
+                                    model: Any?,
+                                    target: Target<Bitmap>?,
+                                    dataSource: DataSource?,
+                                    isFirstResource: Boolean
+                                ): Boolean {
+                                    notificationBuilder.setLargeIcon(resource)
                                     notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
                                     return false
                                 }
-                        }).submit(width, height)
+
+                                override fun onLoadFailed(
+                                    e: GlideException?,
+                                    model: Any?,
+                                    target: Target<Bitmap>?,
+                                    isFirstResource: Boolean
+                                ):
+                                    Boolean {
+                                        notificationBuilder.setLargeIcon(
+                                            BitmapFactory.decodeResource(context.resources, R.drawable.default_avatar)
+                                        )
+                                        notificationManager.notify(message.conversationId.hashCode(), notificationBuilder.build())
+                                        return false
+                                    }
+                            }
+                        ).submit(width, height)
                 }
             },
             {

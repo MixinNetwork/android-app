@@ -54,14 +54,23 @@ fun createAckListParam(messages: List<BlazeAckMessage>) =
 
 fun createSignalKeyParam(conversationId: String, recipientId: String, cipherText: String) =
     BlazeMessageParam(
-        conversationId, recipientId, UUID.randomUUID().toString(), MessageCategory.SIGNAL_KEY.name,
-        cipherText, MessageStatus.SENT.name
+        conversationId,
+        recipientId,
+        UUID.randomUUID().toString(),
+        MessageCategory.SIGNAL_KEY.name,
+        cipherText,
+        MessageStatus.SENT.name
     )
 
 fun createPlainJsonParam(conversationId: String, userId: String, encoded: String, sessionId: String? = null) =
     BlazeMessageParam(
-        conversationId, userId, UUID.randomUUID().toString(), MessageCategory.PLAIN_JSON.name,
-        encoded, MessageStatus.SENDING.name, session_id = sessionId
+        conversationId,
+        userId,
+        UUID.randomUUID().toString(),
+        MessageCategory.PLAIN_JSON.name,
+        encoded,
+        MessageStatus.SENDING.name,
+        session_id = sessionId
     )
 
 fun createConsumeSignalKeysParam(recipients: ArrayList<BlazeMessageParamSession>?) =

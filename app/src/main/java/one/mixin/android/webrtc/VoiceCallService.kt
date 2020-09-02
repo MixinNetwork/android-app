@@ -67,14 +67,26 @@ class VoiceCallService : CallService() {
             val category = MessageCategory.WEBRTC_AUDIO_BUSY.name
             val bmd = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
             val m = createCallMessage(
-                UUID.randomUUID().toString(), bmd.conversationId, self.userId, category, null,
-                nowInUtc(), MessageStatus.SENDING.name, bmd.messageId
+                UUID.randomUUID().toString(),
+                bmd.conversationId,
+                self.userId,
+                category,
+                null,
+                nowInUtc(),
+                MessageStatus.SENDING.name,
+                bmd.messageId
             )
             jobManager.addJobInBackground(SendMessageJob(m, recipientId = bmd.userId))
 
             val savedMessage = createCallMessage(
-                bmd.messageId, m.conversationId, bmd.userId, m.category, m.content,
-                m.createdAt, bmd.status, bmd.messageId
+                bmd.messageId,
+                m.conversationId,
+                bmd.userId,
+                m.category,
+                m.content,
+                m.createdAt,
+                bmd.status,
+                bmd.messageId
             )
             if (checkConversation(m)) {
                 database.insertAndNotifyConversation(savedMessage)
@@ -156,7 +168,8 @@ class VoiceCallService : CallService() {
                     return@getTurnServer
                 }
                 peerConnectionClient.createAnswer(
-                    turns, getSdp(bmd.data.decodeBase64()),
+                    turns,
+                    getSdp(bmd.data.decodeBase64()),
                     setLocalSuccess = {
                         sendCallMessage(MessageCategory.WEBRTC_AUDIO_ANSWER.name, gson.toJson(Sdp(it.description, it.type.canonicalForm())))
                     }
@@ -248,8 +261,14 @@ class VoiceCallService : CallService() {
                 return
             }
             val m = createCallMessage(
-                mId, cid, self.userId, MessageCategory.WEBRTC_AUDIO_FAILED.name,
-                null, nowInUtc(), MessageStatus.READ.name, mId
+                mId,
+                cid,
+                self.userId,
+                MessageCategory.WEBRTC_AUDIO_FAILED.name,
+                null,
+                nowInUtc(),
+                MessageStatus.READ.name,
+                mId
             )
             database.insertAndNotifyConversation(m)
         } else if (state != CallState.STATE_CONNECTED) {
@@ -339,8 +358,14 @@ class VoiceCallService : CallService() {
                     )
                 } else {
                     createCallMessage(
-                        messageId, conversationId, self.userId, category, content,
-                        nowInUtc(), MessageStatus.SENDING.name, quoteMessageId
+                        messageId,
+                        conversationId,
+                        self.userId,
+                        category,
+                        content,
+                        nowInUtc(),
+                        MessageStatus.SENDING.name,
+                        quoteMessageId
                     )
                 }
             }
@@ -365,8 +390,14 @@ class VoiceCallService : CallService() {
                 )
             } else {
                 createCallMessage(
-                    UUID.randomUUID().toString(), blazeMessageData.conversationId,
-                    self.userId, category, content, nowInUtc(), MessageStatus.SENDING.name, quoteMessageId
+                    UUID.randomUUID().toString(),
+                    blazeMessageData.conversationId,
+                    self.userId,
+                    category,
+                    content,
+                    nowInUtc(),
+                    MessageStatus.SENDING.name,
+                    quoteMessageId
                 )
             }
         }

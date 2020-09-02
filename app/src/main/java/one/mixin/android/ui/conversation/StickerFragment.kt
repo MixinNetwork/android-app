@@ -139,18 +139,20 @@ class StickerFragment : BaseFragment() {
         sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
         stickerAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
         sticker_rv.adapter = stickerAdapter
-        stickerAdapter.setOnStickerListener(object : StickerListener {
-            override fun onItemClick(pos: Int, stickerId: String) {
-                if (type != TYPE_RECENT) {
-                    stickerViewModel.updateStickerUsedAt(stickerId)
+        stickerAdapter.setOnStickerListener(
+            object : StickerListener {
+                override fun onItemClick(pos: Int, stickerId: String) {
+                    if (type != TYPE_RECENT) {
+                        stickerViewModel.updateStickerUsedAt(stickerId)
+                    }
+                    callback?.onStickerClick(stickerId)
                 }
-                callback?.onStickerClick(stickerId)
-            }
 
-            override fun onAddClick() {
-                StickerActivity.show(requireContext(), personalAlbumId)
+                override fun onAddClick() {
+                    StickerActivity.show(requireContext(), personalAlbumId)
+                }
             }
-        })
+        )
         sticker_rv.callback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
                 rvCallback?.onScroll(dis)
@@ -205,13 +207,15 @@ class StickerFragment : BaseFragment() {
                 val s = stickers[if (needAdd) position - 1 else position]
                 if (s.isLottie()) {
                     LottieLoader.fromUrl(ctx, s.assetUrl, s.assetUrl, size, size)
-                        .addListener(object : ImageListener<RLottieDrawable> {
-                            override fun onResult(result: RLottieDrawable) {
-                                item.setAnimation(result)
-                                item.playAnimation()
-                                item.setAutoRepeat(true)
+                        .addListener(
+                            object : ImageListener<RLottieDrawable> {
+                                override fun onResult(result: RLottieDrawable) {
+                                    item.setAnimation(result)
+                                    item.playAnimation()
+                                    item.setAutoRepeat(true)
+                                }
                             }
-                        })
+                        )
                 } else {
                     item.loadSticker(s.assetUrl, s.assetType)
                 }

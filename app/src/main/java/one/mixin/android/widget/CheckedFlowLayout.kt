@@ -28,14 +28,16 @@ class CheckedFlowLayout @JvmOverloads constructor(
                     id = View.generateViewId()
                     child.setId(id)
                 } else {
-                    child.setOnCheckedChangeListener(object : CheckedFlowItem.OnCheckedChangeListener {
-                        override fun onCheckedChanged(id: Int, checked: Boolean) {
-                            if (checked) {
-                                update(id)
-                                onCheckedListener?.onChecked(id)
+                    child.setOnCheckedChangeListener(
+                        object : CheckedFlowItem.OnCheckedChangeListener {
+                            override fun onCheckedChanged(id: Int, checked: Boolean) {
+                                if (checked) {
+                                    update(id)
+                                    onCheckedListener?.onChecked(id)
+                                }
                             }
                         }
-                    })
+                    )
                 }
             }
 

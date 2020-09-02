@@ -186,8 +186,14 @@ open class Injector : Injectable {
                     }
                     participantDao.replaceAll(conversationId, remote)
                     conversationDao.updateConversation(
-                        conversationData.conversationId, ownerId, conversationData.category, conversationData.name,
-                        conversationData.announcement, conversationData.muteUntil, conversationData.createdAt, status
+                        conversationData.conversationId,
+                        ownerId,
+                        conversationData.category,
+                        conversationData.name,
+                        conversationData.announcement,
+                        conversationData.muteUntil,
+                        conversationData.createdAt,
+                        status
                     )
 
                     conversationData.circles?.let { circles ->

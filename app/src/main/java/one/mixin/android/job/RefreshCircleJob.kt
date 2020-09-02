@@ -45,7 +45,9 @@ class RefreshCircleJob(
 
     private fun handleCircle(c: Circle, offset: String? = null) {
         val ccResponse = circleService.getCircleConversations(
-            c.circleId, offset, REFRESH_CIRCLE_CONVERSATION_LIMIT
+            c.circleId,
+            offset,
+            REFRESH_CIRCLE_CONVERSATION_LIMIT
         ).execute().body()
         if (ccResponse?.isSuccess == true) {
             ccResponse.data?.let { ccList ->

@@ -54,7 +54,15 @@ class LocationAdapter(val currentCallback: () -> Unit, val callback: (LocationPa
             holder.itemView.sub_title.text = venue?.location?.address ?: venue?.location?.formattedAddress?.get(0)
             holder.itemView.setOnClickListener {
                 venue ?: return@setOnClickListener
-                callback(LocationPayload(venue.location.lat, venue.location.lng, venue.name, venue.location.address ?: venue.location.formattedAddress?.get(0), venue.getVenueType()))
+                callback(
+                    LocationPayload(
+                        venue.location.lat,
+                        venue.location.lng,
+                        venue.name,
+                        venue.location.address ?: venue.location.formattedAddress?.get(0),
+                        venue.getVenueType()
+                    )
+                )
             }
         }
     }

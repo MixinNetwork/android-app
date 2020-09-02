@@ -170,15 +170,17 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
             location_empty.isVisible = false
         }
         search_et.addTextChangedListener(textWatcher)
-        search_et.setOnEditorActionListener(object : TextView.OnEditorActionListener {
-            override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    search_et.hideKeyboard()
-                    return true
+        search_et.setOnEditorActionListener(
+            object : TextView.OnEditorActionListener {
+                override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
+                    if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                        search_et.hideKeyboard()
+                        return true
+                    }
+                    return false
                 }
-                return false
             }
-        })
+        )
 
         location.notNullWithElse(
             { location ->
@@ -196,7 +198,9 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 )
                 ic_location_shared.setOnClickListener {
                     try {
-                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}")))
+                        startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse("geo:${location.latitude},${location.longitude}?q=${location.latitude},${location.longitude}"))
+                        )
                     } catch (e: ActivityNotFoundException) {
                         toast(R.string.error_open_location)
                     }
@@ -204,7 +208,14 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
                 location_go_iv.setOnClickListener {
                     selfPosition?.let { selfPosition ->
                         try {
-                            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("http://maps.google.com/maps?saddr=${selfPosition.latitude},${selfPosition.longitude}&daddr=${location.latitude},${location.longitude}")))
+                            startActivity(
+                                Intent(
+                                    Intent.ACTION_VIEW,
+                                    Uri.parse(
+                                        "http://maps.google.com/maps?saddr=${selfPosition.latitude},${selfPosition.longitude}&daddr=${location.latitude},${location.longitude}"
+                                    )
+                                )
+                            )
                         } catch (e: ActivityNotFoundException) {
                             toast(R.string.error_open_location)
                         }

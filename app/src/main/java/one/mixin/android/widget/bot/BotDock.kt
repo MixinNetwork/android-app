@@ -237,20 +237,22 @@ class BotDock : ViewGroup, View.OnLongClickListener {
     private val animatorSet = arraySetOf<ViewPropertyAnimatorCompat>()
     private fun viewPropertyAnimator(view: View) = ViewCompat.animate(view).setDuration(120).apply {
         val animator = this
-        setListener(object : ViewPropertyAnimatorListener {
-            override fun onAnimationStart(view: View) {
-                animatorSet.add(animator)
-            }
+        setListener(
+            object : ViewPropertyAnimatorListener {
+                override fun onAnimationStart(view: View) {
+                    animatorSet.add(animator)
+                }
 
-            override fun onAnimationEnd(view: View) {
-                animatorSet.remove(animator)
-            }
+                override fun onAnimationEnd(view: View) {
+                    animatorSet.remove(animator)
+                }
 
-            override fun onAnimationCancel(view: View) {
-                view.translationX = 0f
-                animatorSet.remove(animator)
+                override fun onAnimationCancel(view: View) {
+                    view.translationX = 0f
+                    animatorSet.remove(animator)
+                }
             }
-        })
+        )
     }
 
     private var onDockListener: OnDockListener? = null

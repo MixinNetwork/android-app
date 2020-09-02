@@ -42,7 +42,8 @@ constructor(
         accountRepository.changePhone(
             id,
             AccountRequest(
-                verificationCode, purpose = VerificationPurpose.PHONE.name,
+                verificationCode,
+                purpose = VerificationPurpose.PHONE.name,
                 pin = encryptPin(Session.getPinToken()!!, pin)
             )
         ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())

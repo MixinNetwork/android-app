@@ -10,7 +10,8 @@ data class ProgressEvent(val id: String, var progress: Float, val status: Int) {
     }
     companion object {
         fun loadingEvent(id: String, progress: Float) = ProgressEvent(
-            id, progress,
+            id,
+            progress,
             CircleProgress.STATUS_LOADING
         )
 

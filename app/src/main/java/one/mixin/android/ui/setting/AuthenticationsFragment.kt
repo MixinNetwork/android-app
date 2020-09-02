@@ -35,20 +35,22 @@ class AuthenticationsFragment : BaseViewModelFragment<SettingViewModel>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        val adapter = AuthenticationAdapter(object : OnAppClick {
-            override fun onClick(app: App, position: Int) {
-                val auth = authResponseList?.get(position) ?: return
-                val fragment = PermissionListFragment.newInstance(app, auth)
-                fragment.deauthCallback = object : PermissionListFragment.DeauthCallback {
-                    override fun onSuccess() {
-                        list?.removeAt(position)
-                        authResponseList?.removeAt(position)
-                        auth_rv.adapter?.notifyItemRemoved(position)
+        val adapter = AuthenticationAdapter(
+            object : OnAppClick {
+                override fun onClick(app: App, position: Int) {
+                    val auth = authResponseList?.get(position) ?: return
+                    val fragment = PermissionListFragment.newInstance(app, auth)
+                    fragment.deauthCallback = object : PermissionListFragment.DeauthCallback {
+                        override fun onSuccess() {
+                            list?.removeAt(position)
+                            authResponseList?.removeAt(position)
+                            auth_rv.adapter?.notifyItemRemoved(position)
+                        }
                     }
+                    navTo(fragment, PermissionListFragment.TAG)
                 }
-                navTo(fragment, PermissionListFragment.TAG)
             }
-        })
+        )
         viewModel.authorizations().autoDispose(stopScope).subscribe(
             { list ->
                 if (list.isSuccess) {

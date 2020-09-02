@@ -130,7 +130,10 @@ class NewGroupFragment : BaseFragment() {
         val conversation = withContext(Dispatchers.IO) {
             groupViewModel.createGroupConversation(
                 name_desc_et.text.toString(),
-                notice_desc_et.text.toString(), groupIcon, adapter.users!!, sender
+                notice_desc_et.text.toString(),
+                groupIcon,
+                adapter.users!!,
+                sender
             )
         }
         val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)

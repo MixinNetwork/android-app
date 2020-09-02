@@ -310,7 +310,8 @@ class ConversationFragment :
                         }
                         if (position >= itemCount - 1) {
                             (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
-                                itemCount - 1, 0
+                                itemCount - 1,
+                                0
                             )
                         } else {
                             (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(
@@ -529,9 +530,9 @@ class ConversationFragment :
             override fun onFileClick(messageItem: MessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
                     messageItem.mediaMimeType.equals(
-                        "application/vnd.android.package-archive",
-                        true
-                    )
+                            "application/vnd.android.package-archive",
+                            true
+                        )
                 ) {
                     if (requireContext().packageManager.canRequestPackageInstalls()) {
                         requireContext().openMedia(messageItem)
@@ -586,7 +587,8 @@ class ConversationFragment :
                     chatViewModel.updateRelationship(
                         RelationshipRequest(
                             user.userId,
-                            RelationshipAction.ADD.name, user.fullName
+                            RelationshipAction.ADD.name,
+                            user.fullName
                         )
                     )
                 }
@@ -597,7 +599,8 @@ class ConversationFragment :
                     chatViewModel.updateRelationship(
                         RelationshipRequest(
                             user.userId,
-                            RelationshipAction.BLOCK.name, user.fullName
+                            RelationshipAction.BLOCK.name,
+                            user.fullName
                         )
                     )
                 }
@@ -622,7 +625,8 @@ class ConversationFragment :
                 activity?.addFragment(
                     this@ConversationFragment,
                     TransactionFragment.newInstance(
-                        assetId = messageItem.assetId, snapshotId = messageItem.snapshotId
+                        assetId = messageItem.assetId,
+                        snapshotId = messageItem.snapshotId
                     ),
                     TransactionFragment.TAG
                 )
@@ -724,16 +728,18 @@ class ConversationFragment :
     }
 
     private val mentionAdapter: MentionAdapter by lazy {
-        MentionAdapter(object : OnUserClickListener {
-            @SuppressLint("SetTextI18n")
-            override fun onUserClick(user: User) {
-                val text = chat_control.chat_et.text ?: return
-                chat_control.chat_et.setText(mentionReplace(text, user))
-                chat_control.chat_et.setSelection(chat_control.chat_et.text!!.length)
-                mentionAdapter.submitList(null)
-                floating_layout.hideMention()
+        MentionAdapter(
+            object : OnUserClickListener {
+                @SuppressLint("SetTextI18n")
+                override fun onUserClick(user: User) {
+                    val text = chat_control.chat_et.text ?: return
+                    chat_control.chat_et.setText(mentionReplace(text, user))
+                    chat_control.chat_et.setSelection(chat_control.chat_et.text!!.length)
+                    mentionAdapter.submitList(null)
+                    floating_layout.hideMention()
+                }
             }
-        })
+        )
     }
 
     private var imageUri: Uri? = null
@@ -1107,7 +1113,8 @@ class ConversationFragment :
         chat_control.galleryContainer = gallery_container
         chat_control.recordTipView = record_tip_tv
         chat_control.setCircle(record_circle)
-        chat_control.chat_et.setCommitContentListener(object :
+        chat_control.chat_et.setCommitContentListener(
+            object :
                 ContentEditText.OnCommitContentListener {
                 override fun onCommitContent(
                     inputContentInfo: InputContentInfoCompat?,
@@ -1121,28 +1128,31 @@ class ConversationFragment :
                     }
                     return true
                 }
-            })
+            }
+        )
         chat_rv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
         chat_rv.addItemDecoration(decoration)
         chat_rv.itemAnimator = null
 
-        chat_rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        chat_rv.addOnScrollListener(
+            object : RecyclerView.OnScrollListener() {
 
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                firstPosition = (chat_rv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
-                if (firstPosition > 0) {
-                    if (isBottom) {
-                        isBottom = false
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    firstPosition = (chat_rv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                    if (firstPosition > 0) {
+                        if (isBottom) {
+                            isBottom = false
+                        }
+                    } else {
+                        if (!isBottom) {
+                            isBottom = true
+                        }
+                        unreadTipCount = 0
+                        flag_layout.bottomCountFlag = false
                     }
-                } else {
-                    if (!isBottom) {
-                        isBottom = true
-                    }
-                    unreadTipCount = 0
-                    flag_layout.bottomCountFlag = false
                 }
             }
-        })
+        )
         chat_rv.callback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
                 val currentContainer = chat_control.getDraggableContainer()
@@ -1170,7 +1180,11 @@ class ConversationFragment :
                 chat_rv.dispatchTouchEvent(
                     MotionEvent.obtain(
                         SystemClock.uptimeMillis(),
-                        SystemClock.uptimeMillis(), MotionEvent.ACTION_CANCEL, 0f, 0f, 0
+                        SystemClock.uptimeMillis(),
+                        MotionEvent.ACTION_CANCEL,
+                        0f,
+                        0f,
+                        0
                     )
                 )
             }
@@ -1343,7 +1357,8 @@ class ConversationFragment :
             }
         } else {
             ErrorHandler.handleMixinError(
-                r.errorCode, r.errorDescription,
+                r.errorCode,
+                r.errorDescription,
                 getString(R.string.sticker_add_failed)
             )
         }
@@ -1583,20 +1598,20 @@ class ConversationFragment :
                 getRelyMessage()
             )
                 ?.autoDispose(stopScope)?.subscribe(
-                {
-                    when (it) {
-                        0 -> {
-                            scrollToDown()
-                            markRead()
+                    {
+                        when (it) {
+                            0 -> {
+                                scrollToDown()
+                                markRead()
+                            }
+                            -1 -> context?.toast(R.string.error_image)
+                            -2 -> context?.toast(R.string.error_format)
                         }
-                        -1 -> context?.toast(R.string.error_image)
-                        -2 -> context?.toast(R.string.error_format)
+                    },
+                    {
+                        context?.toast(R.string.error_image)
                     }
-                },
-                {
-                    context?.toast(R.string.error_image)
-                }
-            )
+                )
         }
     }
 
@@ -1696,8 +1711,10 @@ class ConversationFragment :
     private fun sendStickerMessage(stickerId: String) {
         createConversation {
             chatViewModel.sendStickerMessage(
-                conversationId, sender,
-                StickerMessagePayload(stickerId), isPlainMessage()
+                conversationId,
+                sender,
+                StickerMessagePayload(stickerId),
+                isPlainMessage()
             )
             scrollToDown()
             markRead()
@@ -1870,7 +1887,8 @@ class ConversationFragment :
                 chatViewModel.updateRelationship(
                     RelationshipRequest(
                         user.userId,
-                        RelationshipAction.UNBLOCK.name, user.fullName
+                        RelationshipAction.UNBLOCK.name,
+                        user.fullName
                     )
                 )
             }
@@ -2036,7 +2054,8 @@ class ConversationFragment :
                         } else {
                             parentFragmentManager.inTransaction {
                                 setCustomAnimations(
-                                    R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                                    R.anim.slide_in_bottom,
+                                    R.anim.slide_out_bottom,
                                     R
                                         .anim.slide_in_bottom,
                                     R.anim.slide_out_bottom
@@ -2053,7 +2072,8 @@ class ConversationFragment :
                     MenuType.Contact -> {
                         parentFragmentManager.inTransaction {
                             setCustomAnimations(
-                                R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                                R.anim.slide_in_bottom,
+                                R.anim.slide_out_bottom,
                                 R
                                     .anim.slide_in_bottom,
                                 R.anim.slide_out_bottom
@@ -2137,25 +2157,27 @@ class ConversationFragment :
             R.id.sticker_container,
             StickerAlbumFragment.TAG
         )
-        stickerAlbumFragment.setCallback(object : StickerAlbumFragment.Callback {
-            override fun onStickerClick(stickerId: String) {
-                if (isAdded) {
-                    if (sticker_container.height != input_layout.keyboardHeight) {
-                        sticker_container.animateHeight(
-                            sticker_container.height,
-                            input_layout.keyboardHeight
-                        )
+        stickerAlbumFragment.setCallback(
+            object : StickerAlbumFragment.Callback {
+                override fun onStickerClick(stickerId: String) {
+                    if (isAdded) {
+                        if (sticker_container.height != input_layout.keyboardHeight) {
+                            sticker_container.animateHeight(
+                                sticker_container.height,
+                                input_layout.keyboardHeight
+                            )
+                        }
+                        sendStickerMessage(stickerId)
                     }
-                    sendStickerMessage(stickerId)
                 }
-            }
 
-            override fun onGiphyClick(image: Image, previewUrl: String) {
-                if (isAdded) {
-                    sendGiphy(image, previewUrl)
+                override fun onGiphyClick(image: Image, previewUrl: String) {
+                    if (isAdded) {
+                        sendGiphy(image, previewUrl)
+                    }
                 }
             }
-        })
+        )
         stickerAlbumFragment.rvCallback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
                 val currentContainer = chat_control.getDraggableContainer()
@@ -2219,7 +2241,8 @@ class ConversationFragment :
         findMessageAction?.invoke(index)
         if (index == 0) {
             scrollTo(
-                0, chat_rv.measuredHeight * 3 / 4,
+                0,
+                chat_rv.measuredHeight * 3 / 4,
                 action = {
                     requireContext().mainThreadDelayed(
                         {
@@ -2233,7 +2256,8 @@ class ConversationFragment :
             chatAdapter.loadAround(index)
             if (index == chatAdapter.itemCount - 1) {
                 scrollTo(
-                    index, 0,
+                    index,
+                    0,
                     action = {
                         requireContext().mainThreadDelayed(
                             {
@@ -2256,7 +2280,8 @@ class ConversationFragment :
                     )
                 } else {
                     scrollTo(
-                        index + 1, chat_rv.measuredHeight * 3 / 4,
+                        index + 1,
+                        chat_rv.measuredHeight * 3 / 4,
                         action = {
                             requireContext().mainThreadDelayed(
                                 {
@@ -2551,7 +2576,8 @@ class ConversationFragment :
             audioManager.mode = AudioManager.MODE_NORMAL
             audioManager.setStreamVolume(
                 AudioManager.STREAM_MUSIC,
-                audioManager.getStreamVolume(AudioManager.STREAM_MUSIC), 0
+                audioManager.getStreamVolume(AudioManager.STREAM_MUSIC),
+                0
             )
         }
     }
@@ -2564,7 +2590,8 @@ class ConversationFragment :
             audioManager.mode = AudioManager.MODE_NORMAL
             audioManager.setStreamVolume(
                 AudioManager.STREAM_MUSIC,
-                audioManager.getStreamVolume(AudioManager.STREAM_MUSIC), 0
+                audioManager.getStreamVolume(AudioManager.STREAM_MUSIC),
+                0
             )
         }
     }
@@ -2577,7 +2604,8 @@ class ConversationFragment :
             audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
             audioManager.setStreamVolume(
                 AudioManager.STREAM_VOICE_CALL,
-                audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL), 0
+                audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL),
+                0
             )
         }
     }

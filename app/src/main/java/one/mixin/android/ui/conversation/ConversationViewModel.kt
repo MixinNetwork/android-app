@@ -178,8 +178,13 @@ internal constructor(
         val category =
             if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
         val message = createMessage(
-            UUID.randomUUID().toString(), conversationId,
-            sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING.name
+            UUID.randomUUID().toString(),
+            conversationId,
+            sender.userId,
+            category,
+            content.trim(),
+            nowInUtc(),
+            MessageStatus.SENDING.name
         )
         viewModelScope.launch {
             val botNumber = message.content?.getBotNumber()
@@ -198,16 +203,26 @@ internal constructor(
         val category =
             if (isPlain) MessageCategory.PLAIN_POST.name else MessageCategory.SIGNAL_POST.name
         val message = createPostMessage(
-            UUID.randomUUID().toString(), conversationId,
-            sender.userId, category, content.trim(), content.postOptimize(), nowInUtc(), MessageStatus.SENDING.name
+            UUID.randomUUID().toString(),
+            conversationId,
+            sender.userId,
+            category,
+            content.trim(),
+            content.postOptimize(),
+            nowInUtc(),
+            MessageStatus.SENDING.name
         )
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
     fun sendAppCardMessage(conversationId: String, sender: User, content: String) {
         val message = createAppCardMessage(
-            UUID.randomUUID().toString(), conversationId,
-            sender.userId, content, nowInUtc(), MessageStatus.SENDING.name
+            UUID.randomUUID().toString(),
+            conversationId,
+            sender.userId,
+            content,
+            nowInUtc(),
+            MessageStatus.SENDING.name
         )
         jobManager.addJobInBackground(SendMessageJob(message))
     }
@@ -320,8 +335,13 @@ internal constructor(
             val transferRecallData = RecallMessagePayload(messageItem.messageId)
             val encoded = GsonHelper.customGson.toJson(transferRecallData).base64Encode()
             val message = createRecallMessage(
-                UUID.randomUUID().toString(), conversationId, sender.userId,
-                MessageCategory.MESSAGE_RECALL.name, encoded, MessageStatus.SENDING.name, nowInUtc()
+                UUID.randomUUID().toString(),
+                conversationId,
+                sender.userId,
+                MessageCategory.MESSAGE_RECALL.name,
+                encoded,
+                MessageStatus.SENDING.name,
+                nowInUtc()
             )
             jobManager.addJobInBackground(
                 SendMessageJob(
@@ -547,7 +567,8 @@ internal constructor(
                             return@map -1
                         }
                         sendLiveMessage(
-                            conversationId, sender,
+                            conversationId,
+                            sender,
                             LiveMessagePayload(
                                 message.mediaWidth,
                                 message.mediaHeight,
@@ -665,8 +686,10 @@ internal constructor(
     fun initConversation(conversationId: String, recipient: User, sender: User) {
         val createdAt = nowInUtc()
         val conversation = createConversation(
-            conversationId, ConversationCategory.CONTACT.name,
-            recipient.userId, ConversationStatus.START.ordinal
+            conversationId,
+            ConversationCategory.CONTACT.name,
+            recipient.userId,
+            ConversationStatus.START.ordinal
         )
         val participants = arrayListOf(
             Participant(conversationId, sender.userId, "", createdAt),
@@ -696,8 +719,12 @@ internal constructor(
                         conversationRepository.updateMediaStatus(MediaStatus.PENDING.name, it.id)
                         jobManager.addJobInBackground(
                             ConvertVideoJob(
-                                it.conversationId, it.userId, Uri.parse(it.mediaUrl),
-                                it.category.startsWith("PLAIN"), it.id, it.createdAt
+                                it.conversationId,
+                                it.userId,
+                                Uri.parse(it.mediaUrl),
+                                it.category.startsWith("PLAIN"),
+                                it.id,
+                                it.createdAt
                             )
                         )
                     } catch (e: NullPointerException) {
@@ -776,7 +803,9 @@ internal constructor(
         viewModelScope.launch(SINGLE_DB_THREAD) {
             list.forEach { item ->
                 conversationRepository.deleteMessage(
-                    item.messageId, item.mediaUrl, item.mediaStatus == MediaStatus.DONE.name
+                    item.messageId,
+                    item.mediaUrl,
+                    item.mediaStatus == MediaStatus.DONE.name
                 )
                 jobManager.cancelJobByMixinJobId(item.messageId)
                 notificationManager.cancel(item.userId.hashCode())

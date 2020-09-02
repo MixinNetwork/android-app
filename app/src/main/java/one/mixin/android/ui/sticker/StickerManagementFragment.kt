@@ -89,32 +89,34 @@ class StickerManagementFragment : BaseFragment() {
         sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
         stickerAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
         sticker_rv.adapter = stickerAdapter
-        stickerAdapter.setOnStickerListener(object : StickerListener {
-            override fun onAddClick() {
-                RxPermissions(activity!!)
-                    .request(
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        Manifest.permission.READ_EXTERNAL_STORAGE
-                    )
-                    .autoDispose(stopScope)
-                    .subscribe(
-                        { granted ->
-                            if (granted) {
-                                openGalleryFromSticker()
-                            } else {
-                                context?.openPermissionSetting()
+        stickerAdapter.setOnStickerListener(
+            object : StickerListener {
+                override fun onAddClick() {
+                    RxPermissions(activity!!)
+                        .request(
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_EXTERNAL_STORAGE
+                        )
+                        .autoDispose(stopScope)
+                        .subscribe(
+                            { granted ->
+                                if (granted) {
+                                    openGalleryFromSticker()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            },
+                            {
+                                Bugsnag.notify(it)
                             }
-                        },
-                        {
-                            Bugsnag.notify(it)
-                        }
-                    )
-            }
+                        )
+                }
 
-            override fun onDelete() {
-                title_view.right_tv.text = getString(R.string.conversation_delete)
+                override fun onDelete() {
+                    title_view.right_tv.text = getString(R.string.conversation_delete)
+                }
             }
-        })
+        )
 
         if (albumId == null) { // not add any personal sticker yet
             stickerViewModel.observePersonalStickers().observe(
@@ -151,7 +153,8 @@ class StickerManagementFragment : BaseFragment() {
             data?.data?.let {
                 requireActivity().addFragment(
                     this@StickerManagementFragment,
-                    StickerAddFragment.newInstance(it.toString(), true), StickerAddFragment.TAG
+                    StickerAddFragment.newInstance(it.toString(), true),
+                    StickerAddFragment.TAG
                 )
             }
         }

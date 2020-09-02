@@ -52,7 +52,9 @@ fun TextView.highLight(
     while (index != -1) {
         spannable.setSpan(
             TextAppearanceSpan(null, 0, 0, ColorStateList.valueOf(color), null),
-            index, index + target.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            index,
+            index + target.length,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
         index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
     }
@@ -89,7 +91,9 @@ fun TextView.highLightClick(
                     ds.isUnderlineText = false
                 }
             },
-            index, index + target.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            index,
+            index + target.length,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
         index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
     }

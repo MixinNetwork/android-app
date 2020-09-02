@@ -14,6 +14,6 @@ fun addShortcut(context: Context, conversationId: String, name: String, icon: Bi
         .setIcon(IconCompat.createWithBitmap(icon))
         .setIntent(launcher)
         .build()
-    val successCallback = PendingIntent.getBroadcast(context,0, ShortcutManagerCompat.createShortcutResultIntent(context, shortcut),0)
+    val successCallback = PendingIntent.getBroadcast(context, 0, ShortcutManagerCompat.createShortcutResultIntent(context, shortcut), 0)
     ShortcutManagerCompat.requestPinShortcut(context, shortcut, successCallback.intentSender)
 }

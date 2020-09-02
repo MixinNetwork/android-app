@@ -127,9 +127,9 @@ class SendAttachmentMessageJob(
         } else {
             Util.getSecretBytes(64)
         }
-        val inputStream = try{
+        val inputStream = try {
             MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.mediaUrl))
-        }catch (e: FileNotFoundException){
+        } catch (e: FileNotFoundException) {
             GlobalScope.launch(Dispatchers.Main) {
                 MixinApplication.get().toast(R.string.error_file_exists)
             }

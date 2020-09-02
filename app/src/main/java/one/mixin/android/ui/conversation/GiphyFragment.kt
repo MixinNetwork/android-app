@@ -71,21 +71,23 @@ class GiphyFragment : BaseFragment() {
         sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
         giphyAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
         sticker_rv.adapter = giphyAdapter
-        giphyAdapter.setOnGiphyListener(object : GiphyListener {
-            override fun onItemClick(pos: Int, image: Image, previewUrl: String) {
-                callback?.onGiphyClick(image, previewUrl)
-            }
+        giphyAdapter.setOnGiphyListener(
+            object : GiphyListener {
+                override fun onItemClick(pos: Int, image: Image, previewUrl: String) {
+                    callback?.onGiphyClick(image, previewUrl)
+                }
 
-            override fun onSearchClick() {
-                val f = GiphyBottomSheetFragment.newInstance()
-                f.showNow(parentFragmentManager, GiphyBottomSheetFragment.TAG)
-                f.callback = object : GiphyBottomSheetFragment.Callback {
-                    override fun onGiphyClick(image: Image, previewUrl: String) {
-                        callback?.onGiphyClick(image, previewUrl)
+                override fun onSearchClick() {
+                    val f = GiphyBottomSheetFragment.newInstance()
+                    f.showNow(parentFragmentManager, GiphyBottomSheetFragment.TAG)
+                    f.callback = object : GiphyBottomSheetFragment.Callback {
+                        override fun onGiphyClick(image: Image, previewUrl: String) {
+                            callback?.onGiphyClick(image, previewUrl)
+                        }
                     }
                 }
             }
-        })
+        )
         sticker_rv.callback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
                 rvCallback?.onScroll(dis)

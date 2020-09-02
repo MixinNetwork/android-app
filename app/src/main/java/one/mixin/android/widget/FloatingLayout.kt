@@ -41,11 +41,13 @@ class FloatingLayout @JvmOverloads constructor(
     override fun onFinishInflate() {
         super.onFinishInflate()
         val child = getChildAt(POS_RECYCLER_VIEW) as RecyclerView
-        child.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
-            override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
-                return !itemClickEnable
+        child.addOnItemTouchListener(
+            object : RecyclerView.SimpleOnItemTouchListener() {
+                override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+                    return !itemClickEnable
+                }
             }
-        })
+        )
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {

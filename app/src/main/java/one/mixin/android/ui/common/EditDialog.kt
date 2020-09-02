@@ -83,19 +83,21 @@ class EditDialog : MixinBottomSheetDialogFragment() {
         if (!editText.isNullOrEmpty()) {
             contentView.edit_et.setSelection(editText!!.length)
         }
-        contentView.edit_et.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {}
+        contentView.edit_et.addTextChangedListener(
+            object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {}
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                contentView.edit_save.isEnabled = when {
-                    s.isNullOrEmpty() -> allowEmpty
-                    maxTextCount == -1 -> true
-                    else -> s.length <= maxTextCount
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    contentView.edit_save.isEnabled = when {
+                        s.isNullOrEmpty() -> allowEmpty
+                        maxTextCount == -1 -> true
+                        else -> s.length <= maxTextCount
+                    }
                 }
-            }
 
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-        })
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            }
+        )
         contentView.edit_cancel.setText(leftText)
         contentView.edit_cancel.setOnClickListener {
             leftAction?.invoke()

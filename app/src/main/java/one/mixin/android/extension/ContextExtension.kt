@@ -307,7 +307,8 @@ fun Fragment.openCamera(output: Uri) {
         val file = File(path)
         val photoUri = FileProvider.getUriForFile(
             requireContext().applicationContext,
-            BuildConfig.APPLICATION_ID + ".provider", file
+            BuildConfig.APPLICATION_ID + ".provider",
+            file
         )
         intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
     }
@@ -510,7 +511,8 @@ fun Context.openUrl(url: String) {
             .setShowTitle(true)
             .setActionButton(
                 BitmapFactory.decodeResource(this.resources, R.drawable.ic_share),
-                this.getString(R.string.share), pendingIntent
+                this.getString(R.string.share),
+                pendingIntent
             )
             .build()
         customTabsIntent.launchUrl(this, uri)
@@ -697,7 +699,8 @@ fun Fragment.toast(textResource: Int) = requireActivity().toast(textResource)
 fun Fragment.toast(text: CharSequence) = requireActivity().toast(text)
 
 fun Context.getCurrentThemeId() = defaultSharedPreferences.getInt(
-    Constants.Theme.THEME_CURRENT_ID, defaultThemeId
+    Constants.Theme.THEME_CURRENT_ID,
+    defaultThemeId
 )
 
 val defaultThemeId = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {

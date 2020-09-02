@@ -194,7 +194,9 @@ class Migration30Test : BaseMigrationTest() {
     fun migrate_25_30() {
         create25()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 30, true,
+            Constants.DataBase.DB_NAME,
+            30,
+            true,
             MixinDatabaseMigrations.MIGRATION_25_26,
             MixinDatabaseMigrations.MIGRATION_26_27,
             MixinDatabaseMigrations.MIGRATION_27_28,
@@ -207,7 +209,9 @@ class Migration30Test : BaseMigrationTest() {
     fun migrate_26_30() {
         create26()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 30, true,
+            Constants.DataBase.DB_NAME,
+            30,
+            true,
             MixinDatabaseMigrations.MIGRATION_26_27,
             MixinDatabaseMigrations.MIGRATION_27_28,
             MixinDatabaseMigrations.MIGRATION_28_29,
@@ -219,7 +223,9 @@ class Migration30Test : BaseMigrationTest() {
     fun migrate_27_30() {
         create27()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 30, true,
+            Constants.DataBase.DB_NAME,
+            30,
+            true,
             MixinDatabaseMigrations.MIGRATION_27_28,
             MixinDatabaseMigrations.MIGRATION_28_29,
             MixinDatabaseMigrations.MIGRATION_29_30
@@ -230,7 +236,9 @@ class Migration30Test : BaseMigrationTest() {
     fun migrate_28_30() {
         create28()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 30, true,
+            Constants.DataBase.DB_NAME,
+            30,
+            true,
             MixinDatabaseMigrations.MIGRATION_28_29,
             MixinDatabaseMigrations.MIGRATION_29_30
         )
@@ -240,7 +248,9 @@ class Migration30Test : BaseMigrationTest() {
     fun migrate_29_30() {
         create28()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 30, true,
+            Constants.DataBase.DB_NAME,
+            30,
+            true,
             MixinDatabaseMigrations.MIGRATION_29_30
         )
     }

@@ -36,7 +36,11 @@ class Compressor {
     @JvmOverloads
     fun compressToFile(imageFile: File, compressedFilePath: String = imageFile.name): File {
         return ImageUtil.compressImage(
-            imageFile, maxWidth, maxHeight, compressFormat, quality,
+            imageFile,
+            maxWidth,
+            maxHeight,
+            compressFormat,
+            quality,
             compressedFilePath
         )
     }

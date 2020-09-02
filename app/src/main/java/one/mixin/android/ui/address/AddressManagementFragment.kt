@@ -114,21 +114,23 @@ class AddressManagementFragment : BaseFragment() {
             }
         }
         ItemTouchHelper(
-            ItemCallback(object : ItemCallback.ItemCallbackListener {
-                override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                    val deletePos = viewHolder.bindingAdapterPosition
-                    val addr = adapter.addresses!![deletePos]
-                    val deleteItem = adapter.removeItem(viewHolder.bindingAdapterPosition)!!
-                    val bottomSheet = showBottomSheet(addr, asset)
-                    parentFragmentManager.executePendingTransactions()
-                    bottomSheet.dialog?.setOnDismissListener {
-                        bottomSheet.dismiss()
-                        if (!deleteSuccess) {
-                            adapter.restoreItem(deleteItem, deletePos)
+            ItemCallback(
+                object : ItemCallback.ItemCallbackListener {
+                    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                        val deletePos = viewHolder.bindingAdapterPosition
+                        val addr = adapter.addresses!![deletePos]
+                        val deleteItem = adapter.removeItem(viewHolder.bindingAdapterPosition)!!
+                        val bottomSheet = showBottomSheet(addr, asset)
+                        parentFragmentManager.executePendingTransactions()
+                        bottomSheet.dialog?.setOnDismissListener {
+                            bottomSheet.dismiss()
+                            if (!deleteSuccess) {
+                                adapter.restoreItem(deleteItem, deletePos)
+                            }
                         }
                     }
                 }
-            })
+            )
         ).apply { attachToRecyclerView(addr_rv) }
         addr_rv.adapter = adapter
         adapter.setAddrListener(addrListener)
@@ -153,7 +155,8 @@ class AddressManagementFragment : BaseFragment() {
             destination = addr.destination,
             label = addr.label,
             tag = addr.tag,
-            assetName = asset.name, type = DELETE
+            assetName = asset.name,
+            type = DELETE
         )
         bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
         bottomSheet.callback = object : BiometricBottomSheetDialogFragment.Callback {

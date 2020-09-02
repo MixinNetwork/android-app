@@ -49,7 +49,8 @@ fun String.withinTime(hours: Long): Boolean {
 fun String.timeAgo(context: Context): String {
     val today = ZonedDateTime.of(
         ZonedDateTime.now().toLocalDate(),
-        LocalTime.MIN, LocaleZone.normalized()
+        LocalTime.MIN,
+        LocaleZone.normalized()
     )
     var timeAgo = TimeCache.singleton.getTimeAgo(this + today)
     if (timeAgo == null) {
@@ -81,7 +82,8 @@ fun String.timeAgo(context: Context): String {
 fun String.timeAgoDate(context: Context): String {
     val today = ZonedDateTime.of(
         ZonedDateTime.now().toLocalDate(),
-        LocalTime.MIN, LocaleZone.normalized()
+        LocalTime.MIN,
+        LocaleZone.normalized()
     )
     val todayMilli = today.toInstant().toEpochMilli()
     var timeAgoDate = TimeCache.singleton.getTimeAgoDate(this + today)
@@ -120,7 +122,8 @@ fun String.timeAgoDate(context: Context): String {
 fun String.timeAgoDay(patten: String = "dd/MM/yyyy"): String {
     val today = ZonedDateTime.of(
         ZonedDateTime.now().toLocalDate(),
-        LocalTime.MIN, LocaleZone.normalized()
+        LocalTime.MIN,
+        LocaleZone.normalized()
     ).toInstant().toEpochMilli()
     var timeAgoDate = TimeCache.singleton.getTimeAgoDate(this + today)
     if (timeAgoDate == null) {
@@ -200,7 +203,8 @@ fun String.getRFC3339Nano(): String {
 fun Long.getRelativeTimeSpan(): String {
     val now = Date().time
     val time = DateUtils.getRelativeTimeSpanString(
-        this, now,
+        this,
+        now,
         when {
             ((now - this) < 60000L) -> DateUtils.SECOND_IN_MILLIS
             ((now - this) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS

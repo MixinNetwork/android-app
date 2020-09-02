@@ -89,9 +89,9 @@ class MediaPagerAdapter(
             messageItem.type == MessageCategory.PLAIN_IMAGE.name
         ) {
             if (!messageItem.mediaMimeType.equals(
-                MimeType.GIF.toString(),
-                true
-            ) && messageItem.mediaHeight != null && messageItem.mediaWidth != null &&
+                    MimeType.GIF.toString(),
+                    true
+                ) && messageItem.mediaHeight != null && messageItem.mediaWidth != null &&
                 (
                     messageItem.mediaHeight / messageItem.mediaWidth.toFloat() > context.displayRatio() * 1.5f ||
                         messageItem.mediaHeight > context.screenHeight() * 3 ||
@@ -117,7 +117,8 @@ class MediaPagerAdapter(
         val photoViewAttacher = PhotoViewAttacher(imageView)
         photoViewAttacher.isZoomable = false
         imageView.layoutParams = ViewGroup.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
         )
         return imageView
     }

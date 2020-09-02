@@ -125,25 +125,27 @@ class ForwardFragment : BaseFragment() {
             search_et?.hideKeyboard()
             sendMessages(adapter.selectItem.size == 1)
         }
-        adapter.setForwardListener(object : ForwardAdapter.ForwardListener {
-            override fun onConversationItemClick(item: ConversationItem) {
-                if (adapter.selectItem.contains(item)) {
-                    adapter.selectItem.remove(item)
-                } else {
-                    adapter.selectItem.add(item)
+        adapter.setForwardListener(
+            object : ForwardAdapter.ForwardListener {
+                override fun onConversationItemClick(item: ConversationItem) {
+                    if (adapter.selectItem.contains(item)) {
+                        adapter.selectItem.remove(item)
+                    } else {
+                        adapter.selectItem.add(item)
+                    }
+                    setForwardText()
                 }
-                setForwardText()
-            }
 
-            override fun onUserItemClick(user: User) {
-                if (adapter.selectItem.contains(user)) {
-                    adapter.selectItem.remove(user)
-                } else {
-                    adapter.selectItem.add(user)
+                override fun onUserItemClick(user: User) {
+                    if (adapter.selectItem.contains(user)) {
+                        adapter.selectItem.remove(user)
+                    } else {
+                        adapter.selectItem.add(user)
+                    }
+                    setForwardText()
                 }
-                setForwardText()
             }
-        })
+        )
         search_et.addTextChangedListener(mWatcher)
 
         loadData()

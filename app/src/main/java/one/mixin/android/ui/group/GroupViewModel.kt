@@ -56,8 +56,12 @@ internal constructor(
         val participantRequestList = mutableListOf<ParticipantRequest>()
         mutableList.mapTo(participantRequestList) { ParticipantRequest(it.userId, it.role) }
         val request = ConversationRequest(
-            conversationId, ConversationCategory.GROUP.name,
-            groupName, icon, announcement, participantRequestList
+            conversationId,
+            ConversationCategory.GROUP.name,
+            groupName,
+            icon,
+            announcement,
+            participantRequestList
         )
         jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))
 

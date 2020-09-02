@@ -119,7 +119,10 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val amount = "${t.amount} ${t.asset.symbol}"
         contentView.title_tv.text = getString(R.string.withdraw_duplicate_title)
         contentView.warning_tv.text = getString(
-            R.string.wallet_withdrawal_recent_tip, time, t.displayAddress().formatPublicKey(), amount
+            R.string.wallet_withdrawal_recent_tip,
+            time,
+            t.displayAddress().formatPublicKey(),
+            amount
         )
         contentView.continue_tv.setOnClickListener {
             callback?.onSuccess()
@@ -133,8 +136,10 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val fiatAmount =
             (BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()
         contentView.warning_tv.text = getString(
-            R.string.wallet_transaction_tip, t.user.fullName,
-            "$fiatAmount${Fiats.getSymbol()}", t.asset.symbol
+            R.string.wallet_transaction_tip,
+            t.user.fullName,
+            "$fiatAmount${Fiats.getSymbol()}",
+            t.asset.symbol
         )
         contentView.continue_tv.setOnClickListener {
             callback?.onSuccess()

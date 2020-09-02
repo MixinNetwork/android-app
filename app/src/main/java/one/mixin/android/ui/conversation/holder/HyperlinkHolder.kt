@@ -49,7 +49,9 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout, R.drawable.chat_bubble_me, R.drawable.chat_bubble_me_night
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_me,
+                    R.drawable.chat_bubble_me_night
                 )
             }
         } else {
@@ -143,8 +145,10 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
                         if (start >= 0) {
                             val sp = SpannableString(str)
                             sp.setSpan(
-                                BackgroundColorSpan(HIGHLIGHTED), start,
-                                start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                                BackgroundColorSpan(HIGHLIGHTED),
+                                start,
+                                start + k.length,
+                                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                             )
                             itemView.chat_tv.text = sp
                         } else {

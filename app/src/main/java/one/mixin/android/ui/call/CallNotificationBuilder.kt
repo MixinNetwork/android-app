@@ -60,7 +60,10 @@ class CallNotificationBuilder {
                     } else ACTION_CALL_CANCEL
                     builder.addAction(
                         getAction(
-                            context, clazz, action, R.drawable.ic_close_black,
+                            context,
+                            clazz,
+                            action,
+                            R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_cancel
                         )
@@ -76,14 +79,20 @@ class CallNotificationBuilder {
                     } else ACTION_CALL_DECLINE
                     builder.addAction(
                         getAction(
-                            context, clazz, answerAction, R.drawable.ic_close_black,
+                            context,
+                            clazz,
+                            answerAction,
+                            R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_answer
                         )
                     )
                     builder.addAction(
                         getAction(
-                            context, clazz, declineAction, R.drawable.ic_close_black,
+                            context,
+                            clazz,
+                            declineAction,
+                            R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_decline
                         )
@@ -96,7 +105,10 @@ class CallNotificationBuilder {
                     } else ACTION_CALL_LOCAL_END
                     builder.addAction(
                         getAction(
-                            context, clazz, action, R.drawable.ic_close_black,
+                            context,
+                            clazz,
+                            action,
+                            R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_hang_up
                         )
@@ -111,7 +123,10 @@ class CallNotificationBuilder {
                     }
                     builder.addAction(
                         getAction(
-                            context, clazz, action, R.drawable.ic_close_black,
+                            context,
+                            clazz,
+                            action,
+                            R.drawable.ic_close_black,
                             R.string
                                 .call_notification_action_hang_up
                         )

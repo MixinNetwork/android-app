@@ -30,7 +30,8 @@ class MixinHeadersDecoration private constructor(
 
     constructor(adapter: MixinStickyRecyclerHeadersAdapter<*>) : this(
         adapter,
-        LinearLayoutOrientationProvider(), DimensionCalculator()
+        LinearLayoutOrientationProvider(),
+        DimensionCalculator()
     )
 
     private constructor(
@@ -38,7 +39,10 @@ class MixinHeadersDecoration private constructor(
         orientationProvider: OrientationProvider,
         dimensionCalculator: DimensionCalculator
     ) : this(
-        adapter, orientationProvider, dimensionCalculator, HeaderRenderer(orientationProvider),
+        adapter,
+        orientationProvider,
+        dimensionCalculator,
+        HeaderRenderer(orientationProvider),
         HeaderViewCache(adapter, orientationProvider)
     )
 
@@ -49,9 +53,15 @@ class MixinHeadersDecoration private constructor(
         headerRenderer: HeaderRenderer,
         headerProvider: HeaderProvider
     ) : this(
-        adapter, headerRenderer, orientationProvider, dimensionCalculator, headerProvider,
+        adapter,
+        headerRenderer,
+        orientationProvider,
+        dimensionCalculator,
+        headerProvider,
         HeaderPositionCalculator(
-            adapter, headerProvider, orientationProvider,
+            adapter,
+            headerProvider,
+            orientationProvider,
             dimensionCalculator
         )
     )
@@ -104,7 +114,8 @@ class MixinHeadersDecoration private constructor(
             }
             val hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(
                 itemView,
-                mOrientationProvider.getOrientation(parent), position
+                mOrientationProvider.getOrientation(parent),
+                position
             )
             if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(position, mOrientationProvider.isReverseLayout(parent))) {
                 val header = mHeaderProvider.getHeader(parent, position)
@@ -132,7 +143,8 @@ class MixinHeadersDecoration private constructor(
             }
             val hasStickyHeader = mHeaderPositionCalculator.hasStickyHeader(
                 itemView,
-                mOrientationProvider.getOrientation(parent), position
+                mOrientationProvider.getOrientation(parent),
+                position
             )
             if (hasStickyHeader || mHeaderPositionCalculator.hasNewHeader(position, mOrientationProvider.isReverseLayout(parent))) {
                 val header = mHeaderProvider.getHeader(parent, position)
@@ -171,18 +183,21 @@ class MixinHeadersDecoration private constructor(
             val attachView = mAdapter.onCreateAttach(parent)
             if (attachView.layoutParams == null) {
                 attachView.layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
                 )
             }
             val widthSpec = View.MeasureSpec.makeMeasureSpec(parent.width, View.MeasureSpec.EXACTLY)
             val heightSpec = View.MeasureSpec.makeMeasureSpec(parent.height, View.MeasureSpec.UNSPECIFIED)
             val childWidth = ViewGroup.getChildMeasureSpec(
                 widthSpec,
-                parent.paddingLeft + parent.paddingRight, attachView.layoutParams.width
+                parent.paddingLeft + parent.paddingRight,
+                attachView.layoutParams.width
             )
             val childHeight = ViewGroup.getChildMeasureSpec(
                 heightSpec,
-                parent.paddingTop + parent.paddingBottom, attachView.layoutParams.height
+                parent.paddingTop + parent.paddingBottom,
+                attachView.layoutParams.height
             )
             attachView.measure(childWidth, childHeight)
             attachView.layout(0, 0, attachView.measuredWidth, attachView.measuredHeight)

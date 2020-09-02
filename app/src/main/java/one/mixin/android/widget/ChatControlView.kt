@@ -443,12 +443,14 @@ class ChatControlView : FrameLayout {
 
     private fun rotateChatMenu(checked: Boolean) {
         val anim = chat_menu_iv.animate().rotation(if (checked) 45f else -45f)
-        anim.setListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator?) {
-                chat_menu_iv.rotation = 0f
-                chat_menu_iv.setImageResource(if (checked) R.drawable.ic_chat_more_checked else R.drawable.ic_chat_more)
+        anim.setListener(
+            object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    chat_menu_iv.rotation = 0f
+                    chat_menu_iv.setImageResource(if (checked) R.drawable.ic_chat_more_checked else R.drawable.ic_chat_more)
+                }
             }
-        })
+        )
         anim.start()
     }
 
@@ -739,7 +741,8 @@ class ChatControlView : FrameLayout {
                 val x = recordCircle.setLockTranslation(event.y)
                 if (x == 2) {
                     ObjectAnimator.ofFloat(
-                        recordCircle, "lockAnimatedTranslation",
+                        recordCircle,
+                        "lockAnimatedTranslation",
                         recordCircle.startTranslation
                     ).apply {
                         duration = 150
@@ -814,7 +817,10 @@ class ChatControlView : FrameLayout {
 
             if (activity == null || !currentAudio()) return@Runnable
 
-            if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO) || !RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO) || !RxPermissions(activity!! as FragmentActivity).isGranted(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+            ) {
                 RxPermissions(activity!! as FragmentActivity)
                     .request(Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     .autoDispose(this)

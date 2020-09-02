@@ -70,7 +70,9 @@ class MaterialSearchView : FrameLayout {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true)
         val typedArray = context.obtainStyledAttributes(
             attributeSet,
-            R.styleable.MaterialSearchView, defStyleAttribute, 0
+            R.styleable.MaterialSearchView,
+            defStyleAttribute,
+            0
         )
         if (typedArray.hasValue(R.styleable.MaterialSearchView_android_hint)) {
             setHint(typedArray.getString(R.styleable.MaterialSearchView_android_hint))
@@ -102,7 +104,8 @@ class MaterialSearchView : FrameLayout {
         if (typedArray.hasValue(R.styleable.MaterialSearchView_searchBarHeight)) {
             setSearchBarHeight(
                 typedArray.getDimensionPixelSize(
-                    R.styleable.MaterialSearchView_searchBarHeight, context.appCompatActionBarHeight()
+                    R.styleable.MaterialSearchView_searchBarHeight,
+                    context.appCompatActionBarHeight()
                 )
             )
         } else {
@@ -213,37 +216,43 @@ class MaterialSearchView : FrameLayout {
 
     fun openSearch() {
         logo_layout.animate().apply {
-            setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
-                    op()
-                }
+            setListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator?) {
+                        op()
+                    }
 
-                override fun onAnimationCancel(animation: Animator?) {
-                    op()
-                }
+                    override fun onAnimationCancel(animation: Animator?) {
+                        op()
+                    }
 
-                private fun op() {
-                    setListener(null)
-                    logo_layout.isVisible = false
-                    search_et.isVisible = true
-                    search_et.showKeyboard()
-                    search_et.animate().apply {
-                        setListener(object : AnimatorListenerAdapter() {
-                            override fun onAnimationCancel(animation: Animator?) {
-                                search_et.alpha = 1f
-                            }
-                        })
-                    }.setDuration(150L).alpha(1f).start()
-                    back_ib.isVisible = true
-                    back_ib.animate().apply {
-                        setListener(object : AnimatorListenerAdapter() {
-                            override fun onAnimationCancel(animation: Animator?) {
-                                back_ib.alpha = 1f
-                            }
-                        })
-                    }.setDuration(150L).alpha(1f).start()
+                    private fun op() {
+                        setListener(null)
+                        logo_layout.isVisible = false
+                        search_et.isVisible = true
+                        search_et.showKeyboard()
+                        search_et.animate().apply {
+                            setListener(
+                                object : AnimatorListenerAdapter() {
+                                    override fun onAnimationCancel(animation: Animator?) {
+                                        search_et.alpha = 1f
+                                    }
+                                }
+                            )
+                        }.setDuration(150L).alpha(1f).start()
+                        back_ib.isVisible = true
+                        back_ib.animate().apply {
+                            setListener(
+                                object : AnimatorListenerAdapter() {
+                                    override fun onAnimationCancel(animation: Animator?) {
+                                        back_ib.alpha = 1f
+                                    }
+                                }
+                            )
+                        }.setDuration(150L).alpha(1f).start()
+                    }
                 }
-            })
+            )
         }.alpha(0f).setDuration(150L).start()
 
         right_clear.visibility = View.GONE
@@ -259,45 +268,51 @@ class MaterialSearchView : FrameLayout {
 
     fun closeSearch() {
         search_et.animate().apply {
-            setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
-                    op()
-                }
+            setListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator?) {
+                        op()
+                    }
 
-                override fun onAnimationCancel(animation: Animator?) {
-                    op()
-                }
+                    override fun onAnimationCancel(animation: Animator?) {
+                        op()
+                    }
 
-                private fun op() {
-                    setListener(null)
-                    search_et.isGone = true
+                    private fun op() {
+                        setListener(null)
+                        search_et.isGone = true
+                    }
                 }
-            })
+            )
         }.alpha(0f).setDuration(150L).start()
         back_ib.animate().apply {
-            setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
-                    op()
-                }
+            setListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator?) {
+                        op()
+                    }
 
-                override fun onAnimationCancel(animation: Animator?) {
-                    op()
-                }
+                    override fun onAnimationCancel(animation: Animator?) {
+                        op()
+                    }
 
-                private fun op() {
-                    setListener(null)
-                    back_ib.isGone = true
-                    logo_layout.alpha = 0f
-                    logo_layout.isVisible = true
-                    logo_layout.animate().apply {
-                        setListener(object : AnimatorListenerAdapter() {
-                            override fun onAnimationCancel(animation: Animator?) {
-                                logo_layout.alpha = 1f
-                            }
-                        })
-                    }.setDuration(150L).alpha(1f).start()
+                    private fun op() {
+                        setListener(null)
+                        back_ib.isGone = true
+                        logo_layout.alpha = 0f
+                        logo_layout.isVisible = true
+                        logo_layout.animate().apply {
+                            setListener(
+                                object : AnimatorListenerAdapter() {
+                                    override fun onAnimationCancel(animation: Animator?) {
+                                        logo_layout.alpha = 1f
+                                    }
+                                }
+                            )
+                        }.setDuration(150L).alpha(1f).start()
+                    }
                 }
-            })
+            )
         }.setDuration(150L).alpha(0f).start()
         right_clear.visibility = View.GONE
 

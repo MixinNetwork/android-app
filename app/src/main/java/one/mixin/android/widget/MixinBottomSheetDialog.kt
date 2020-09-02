@@ -78,21 +78,23 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         animatorSet.duration = 200
         animatorSet.startDelay = 20
         animatorSet.interpolator = DecelerateInterpolator()
-        animatorSet.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator?) {
-                if (curSheetAnimation != null && curSheetAnimation == animation) {
-                    curSheetAnimation = null
-                    container.setLayerType(View.LAYER_TYPE_NONE, null)
-                    isShown = true
+        animatorSet.addListener(
+            object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    if (curSheetAnimation != null && curSheetAnimation == animation) {
+                        curSheetAnimation = null
+                        container.setLayerType(View.LAYER_TYPE_NONE, null)
+                        isShown = true
+                    }
                 }
-            }
 
-            override fun onAnimationCancel(animation: Animator?) {
-                if (curSheetAnimation != null && curSheetAnimation == animation) {
-                    curSheetAnimation = null
+                override fun onAnimationCancel(animation: Animator?) {
+                    if (curSheetAnimation != null && curSheetAnimation == animation) {
+                        curSheetAnimation = null
+                    }
                 }
             }
-        })
+        )
         animatorSet.start()
         curSheetAnimation = animatorSet
     }
@@ -115,22 +117,24 @@ class MixinBottomSheetDialog(context: Context, theme: Int) : BottomSheetDialog(c
         )
         animatorSet.duration = 180
         animatorSet.interpolator = AccelerateInterpolator()
-        animatorSet.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                if (curSheetAnimation != null && curSheetAnimation == animation) {
-                    curSheetAnimation = null
-                    sheetContainer.post {
-                        superDismiss()
+        animatorSet.addListener(
+            object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    if (curSheetAnimation != null && curSheetAnimation == animation) {
+                        curSheetAnimation = null
+                        sheetContainer.post {
+                            superDismiss()
+                        }
+                    }
+                }
+
+                override fun onAnimationCancel(animation: Animator) {
+                    if (curSheetAnimation != null && curSheetAnimation == animation) {
+                        curSheetAnimation = null
                     }
                 }
             }
-
-            override fun onAnimationCancel(animation: Animator) {
-                if (curSheetAnimation != null && curSheetAnimation == animation) {
-                    curSheetAnimation = null
-                }
-            }
-        })
+        )
         animatorSet.start()
         curSheetAnimation = animatorSet
     }

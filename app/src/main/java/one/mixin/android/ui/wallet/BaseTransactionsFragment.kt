@@ -57,16 +57,20 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
         val view = View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transaction_filters, null)
         view.filters_title.right_iv.setOnClickListener { filtersSheet.dismiss() }
         view.apply_tv.setOnClickListener { onApplyClick() }
-        view.filter_flow.setOnCheckedListener(object : CheckedFlowLayout.OnCheckedListener {
-            override fun onChecked(id: Int) {
-                currentType = id
+        view.filter_flow.setOnCheckedListener(
+            object : CheckedFlowLayout.OnCheckedListener {
+                override fun onChecked(id: Int) {
+                    currentType = id
+                }
             }
-        })
-        view.sort_flow.setOnCheckedListener(object : CheckedFlowLayout.OnCheckedListener {
-            override fun onChecked(id: Int) {
-                currentOrder = id
+        )
+        view.sort_flow.setOnCheckedListener(
+            object : CheckedFlowLayout.OnCheckedListener {
+                override fun onChecked(id: Int) {
+                    currentOrder = id
+                }
             }
-        })
+        )
         view
     }
 
@@ -99,16 +103,18 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
         transactionsRv = view.findViewById(R.id.transactions_rv)
         val transactionLayoutManager = LinearLayoutManager(requireContext())
         transactionsRv?.layoutManager = transactionLayoutManager
-        transactionsRv?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                val lastPos = transactionLayoutManager.findLastVisibleItemPosition()
-                if (lastPos >= refreshPosition + LIMIT - 1 && lastRefreshOffset != refreshOffset) {
-                    refreshPosition += LIMIT - 1
-                    refreshSnapshots()
-                    lastRefreshOffset = refreshOffset
+        transactionsRv?.addOnScrollListener(
+            object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    val lastPos = transactionLayoutManager.findLastVisibleItemPosition()
+                    if (lastPos >= refreshPosition + LIMIT - 1 && lastRefreshOffset != refreshOffset) {
+                        refreshPosition += LIMIT - 1
+                        refreshSnapshots()
+                        lastRefreshOffset = refreshOffset
+                    }
                 }
             }
-        })
+        )
     }
 
     override fun onStop() {

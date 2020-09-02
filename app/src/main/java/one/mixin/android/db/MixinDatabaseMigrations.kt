@@ -121,15 +121,21 @@ class MixinDatabaseMigrations private constructor() {
 
         val MIGRATION_24_25: Migration = object : SafeMigration(24, 25) {
             override fun safeMigrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS participant_session (`conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `sent_to_server` INTEGER, `created_at` TEXT, PRIMARY KEY(`conversation_id`, `user_id`, `session_id`))")
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS participant_session (`conversation_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `sent_to_server` INTEGER, `created_at` TEXT, PRIMARY KEY(`conversation_id`, `user_id`, `session_id`))"
+                )
                 database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_insert")
             }
         }
 
         val MIGRATION_25_26: Migration = object : SafeMigration(25, 26) {
             override fun safeMigrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS favorite_apps (`app_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`app_id`, `user_id`))")
-                database.execSQL("CREATE TABLE IF NOT EXISTS resend_session_messages (`message_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `status` INTEGER NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`message_id`, `user_id`, `session_id`))")
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS favorite_apps (`app_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`app_id`, `user_id`))"
+                )
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS resend_session_messages (`message_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `session_id` TEXT NOT NULL, `status` INTEGER NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`message_id`, `user_id`, `session_id`))"
+                )
             }
         }
 
@@ -171,7 +177,9 @@ class MixinDatabaseMigrations private constructor() {
 
         val MIGRATION_27_28: Migration = object : SafeMigration(27, 28) {
             override fun safeMigrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS `message_mentions` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `mentions` TEXT NOT NULL, `has_read` INTEGER NOT NULL, PRIMARY KEY(`message_id`))")
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `message_mentions` (`message_id` TEXT NOT NULL, `conversation_id` TEXT NOT NULL, `mentions` TEXT NOT NULL, `has_read` INTEGER NOT NULL, PRIMARY KEY(`message_id`))"
+                )
                 database.execSQL("CREATE INDEX IF NOT EXISTS `index_message_mentions_conversation_id` ON `message_mentions` (`conversation_id`)")
                 database.execSQL("ALTER TABLE apps ADD COLUMN resource_patterns TEXT")
             }
@@ -195,8 +203,12 @@ class MixinDatabaseMigrations private constructor() {
 
         val MIGRATION_29_30: Migration = object : SafeMigration(29, 30) {
             override fun safeMigrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS `circles` (`circle_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `ordered_at` TEXT, PRIMARY KEY(`circle_id`))")
-                database.execSQL("CREATE TABLE IF NOT EXISTS `circle_conversations` (`conversation_id` TEXT NOT NULL, `circle_id` TEXT NOT NULL, `user_id` TEXT, `created_at` TEXT NOT NULL, `pin_time` TEXT, PRIMARY KEY(`conversation_id`, `circle_id`))")
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `circles` (`circle_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `ordered_at` TEXT, PRIMARY KEY(`circle_id`))"
+                )
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `circle_conversations` (`conversation_id` TEXT NOT NULL, `circle_id` TEXT NOT NULL, `user_id` TEXT, `created_at` TEXT NOT NULL, `pin_time` TEXT, PRIMARY KEY(`conversation_id`, `circle_id`))"
+                )
             }
         }
 

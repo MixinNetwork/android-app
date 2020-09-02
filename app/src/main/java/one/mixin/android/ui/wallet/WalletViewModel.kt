@@ -221,7 +221,11 @@ internal constructor(
 
     suspend fun getSnapshots(assetId: String, offset: String?, limit: Int, opponent: String?, destination: String?, tag: String?) =
         assetRepository.getSnapshots(
-            assetId, offset, limit, opponent, destination,
+            assetId,
+            offset,
+            limit,
+            opponent,
+            destination,
             if (tag?.isEmpty() == true) {
                 null
             } else {

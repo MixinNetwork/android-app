@@ -16,7 +16,8 @@ open class BaseMigrationTest {
     @get: Rule
     val migrationTestHelper = MigrationTestHelper(
         InstrumentationRegistry.getInstrumentation(),
-        MixinDatabase::class.java.canonicalName, FrameworkSQLiteOpenHelperFactory()
+        MixinDatabase::class.java.canonicalName,
+        FrameworkSQLiteOpenHelperFactory()
     )
 
     @Before

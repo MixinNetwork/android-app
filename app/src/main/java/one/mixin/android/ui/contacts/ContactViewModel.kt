@@ -59,9 +59,12 @@ internal constructor(
                 ConversationJob(
                     ConversationRequest(
                         conversationId,
-                        ConversationCategory.CONTACT.name, duration = duration, participants = listOf(participantRequest)
+                        ConversationCategory.CONTACT.name,
+                        duration = duration,
+                        participants = listOf(participantRequest)
                     ),
-                    recipientId = recipientId, type = TYPE_MUTE
+                    recipientId = recipientId,
+                    type = TYPE_MUTE
                 )
             )
         }

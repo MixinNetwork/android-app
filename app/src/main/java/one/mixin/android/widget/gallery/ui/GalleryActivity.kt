@@ -191,7 +191,8 @@ class GalleryActivity :
     override fun onUpdate() {
         if (mSpec.onSelectedListener != null) {
             mSpec.onSelectedListener.onSelected(
-                mSelectedCollection.asListOfUri(), mSelectedCollection.asListOfString()
+                mSelectedCollection.asListOfUri(),
+                mSelectedCollection.asListOfString()
             )
         }
     }

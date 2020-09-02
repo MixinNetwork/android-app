@@ -45,7 +45,8 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
         response.data?.let {
             if (fromWalletSetting) {
                 val success = BiometricUtil.savePin(
-                    requireContext(), pin,
+                    requireContext(),
+                    pin,
                     this@PinBiometricsBottomSheetDialogFragment
                 )
                 if (success) callback?.onSuccess() else dismiss()
@@ -58,7 +59,9 @@ class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
 
     override fun getBiometricInfo() = BiometricInfo(
         getString(R.string.verify_by_biometric),
-        "", "", getString(R.string.verify_by_PIN)
+        "",
+        "",
+        getString(R.string.verify_by_PIN)
     )
 
     private fun getTipTextRes(): Int =

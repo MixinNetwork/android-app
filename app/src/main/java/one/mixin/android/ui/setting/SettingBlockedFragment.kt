@@ -97,7 +97,8 @@ class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() 
             itemView.normal.text = user.fullName
             itemView.setOnClickListener {
                 UserBottomSheetDialogFragment.newInstance(user).show(
-                    (it.context as FragmentActivity).supportFragmentManager, UserBottomSheetDialogFragment.TAG
+                    (it.context as FragmentActivity).supportFragmentManager,
+                    UserBottomSheetDialogFragment.TAG
                 )
             }
         }

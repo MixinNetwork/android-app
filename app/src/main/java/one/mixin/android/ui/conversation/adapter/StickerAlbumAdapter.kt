@@ -58,14 +58,16 @@ class StickerAlbumAdapter(activity: FragmentActivity, private val albums: List<S
             fragment.rvCallback = rvCallback
         } else {
             fragment as StickerFragment
-            fragment.setCallback(object : Callback {
-                override fun onGiphyClick(image: Image, previewUrl: String) {
-                }
+            fragment.setCallback(
+                object : Callback {
+                    override fun onGiphyClick(image: Image, previewUrl: String) {
+                    }
 
-                override fun onStickerClick(stickerId: String) {
-                    callback?.onStickerClick(stickerId)
+                    override fun onStickerClick(stickerId: String) {
+                        callback?.onStickerClick(stickerId)
+                    }
                 }
-            })
+            )
             fragment.rvCallback = rvCallback
         }
         return fragment

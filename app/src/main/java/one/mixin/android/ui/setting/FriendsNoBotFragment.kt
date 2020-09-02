@@ -73,8 +73,10 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, Emergen
             successBlock = { response ->
                 navTo(
                     VerificationEmergencyFragment.newInstance(
-                        user, pin,
-                        (response.data as VerificationResponse).id, FROM_CONTACT
+                        user,
+                        pin,
+                        (response.data as VerificationResponse).id,
+                        FROM_CONTACT
                     ),
                     VerificationEmergencyFragment.TAG
                 )

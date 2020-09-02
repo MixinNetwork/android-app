@@ -9,7 +9,9 @@ class Migration16Test : BaseMigrationTest() {
     fun migrate_15_16() {
         create15()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 16, true,
+            Constants.DataBase.DB_NAME,
+            16,
+            true,
             MixinDatabaseMigrations.MIGRATION_15_16
         )
     }

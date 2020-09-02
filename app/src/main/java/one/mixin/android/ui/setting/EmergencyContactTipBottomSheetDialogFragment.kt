@@ -29,8 +29,10 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
             if (Session.getAccount()?.hasPin == true) {
                 activity?.supportFragmentManager?.inTransaction {
                     setCustomAnimations(
-                        R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                        R.anim.slide_in_bottom, R.anim.slide_out_bottom
+                        R.anim.slide_in_bottom,
+                        R.anim.slide_out_bottom,
+                        R.anim.slide_in_bottom,
+                        R.anim.slide_out_bottom
                     )
                         .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))
                         .addToBackStack(null)
@@ -38,7 +40,8 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
             } else {
                 parentFragmentManager.inTransaction {
                     setCustomAnimations(
-                        R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                        R.anim.slide_in_bottom,
+                        R.anim.slide_out_bottom,
                         R
                             .anim.slide_in_bottom,
                         R.anim.slide_out_bottom

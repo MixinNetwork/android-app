@@ -122,7 +122,14 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
             }
             R.id.filters_radio_transfer -> {
-                bindLiveData(walletViewModel.allSnapshots(SnapshotType.transfer.name, SnapshotType.pending.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+                bindLiveData(
+                    walletViewModel.allSnapshots(
+                        SnapshotType.transfer.name,
+                        SnapshotType.pending.name,
+                        initialLoadKey = initialLoadKey,
+                        orderByAmount = orderByAmount
+                    )
+                )
             }
             R.id.filters_radio_deposit -> {
                 bindLiveData(walletViewModel.allSnapshots(SnapshotType.deposit.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))

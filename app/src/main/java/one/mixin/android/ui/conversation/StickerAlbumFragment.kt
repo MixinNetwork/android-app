@@ -84,26 +84,29 @@ class StickerAlbumFragment : BaseFragment() {
         }
         view_pager.adapter = albumAdapter
         TabLayoutMediator(
-            album_tl, view_pager,
+            album_tl,
+            view_pager,
             TabLayoutMediator.TabConfigurationStrategy { tab, _ ->
                 view_pager.setCurrentItem(tab.position, true)
             }
         ).attach()
         album_tl.tabMode = TabLayout.MODE_SCROLLABLE
         view_pager.currentItem = 0
-        album_tl.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabReselected(tab: TabLayout.Tab?) {
-                // Left empty
-            }
+        album_tl.addOnTabSelectedListener(
+            object : TabLayout.OnTabSelectedListener {
+                override fun onTabReselected(tab: TabLayout.Tab?) {
+// Left empty
+                }
 
-            override fun onTabUnselected(tab: TabLayout.Tab) {
-                tab.customView?.setBackgroundResource(0)
-            }
+                override fun onTabUnselected(tab: TabLayout.Tab) {
+                    tab.customView?.setBackgroundResource(0)
+                }
 
-            override fun onTabSelected(tab: TabLayout.Tab) {
-                tab.customView?.setBackgroundResource(R.drawable.bg_sticker_tab)
+                override fun onTabSelected(tab: TabLayout.Tab) {
+                    tab.customView?.setBackgroundResource(R.drawable.bg_sticker_tab)
+                }
             }
-        })
+        )
     }
 
     fun setCallback(callback: Callback) {

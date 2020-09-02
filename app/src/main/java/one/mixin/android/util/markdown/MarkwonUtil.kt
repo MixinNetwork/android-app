@@ -57,48 +57,52 @@ class MarkwonUtil {
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(TableEntryPlugin.create(context))
                 .usePlugin(createGlidePlugin(context))
-                .usePlugin(object : AbstractMarkwonPlugin() {
-                    override fun configureTheme(builder: MarkwonTheme.Builder) {
-                        builder.headingBreakHeight(0)
-                            .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
-                    }
-
-                    override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {
-                        val spansFactory = builder.getFactory(Link::class.java)
-                        if (spansFactory != null) {
-                            builder.setFactory(Link::class.java) { configuration, props ->
-                                arrayOf(RemoveUnderlineSpan(), spansFactory.getSpans(configuration, props))
-                            }
+                .usePlugin(
+                    object : AbstractMarkwonPlugin() {
+                        override fun configureTheme(builder: MarkwonTheme.Builder) {
+                            builder.headingBreakHeight(0)
+                                .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
                         }
-                    }
 
-                    override fun configureVisitor(builder: MarkwonVisitor.Builder) {
-                        builder.on(FencedCodeBlock::class.java) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
-                            val code = visitor.configuration()
-                                .syntaxHighlight()
-                                .highlight(
-                                    fencedCodeBlock.info,
-                                    fencedCodeBlock.literal.trim { it <= ' ' }
-                                )
-                            visitor.builder().append(code)
-                        }
-                        builder.on(SoftLineBreak::class.java) { visitor: MarkwonVisitor, _: SoftLineBreak ->
-                            visitor.forceNewLine()
-                        }
-                    }
-
-                    override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
-                        builder.linkResolver(object : LinkResolverDef() {
-                            override fun resolve(view: View, link: String) {
-                                if (link.isMixinUrl()) {
-                                    mixinLinkResolver.invoke(link)
-                                } else {
-                                    linkResolver.invoke(link)
+                        override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {
+                            val spansFactory = builder.getFactory(Link::class.java)
+                            if (spansFactory != null) {
+                                builder.setFactory(Link::class.java) { configuration, props ->
+                                    arrayOf(RemoveUnderlineSpan(), spansFactory.getSpans(configuration, props))
                                 }
                             }
-                        })
+                        }
+
+                        override fun configureVisitor(builder: MarkwonVisitor.Builder) {
+                            builder.on(FencedCodeBlock::class.java) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
+                                val code = visitor.configuration()
+                                    .syntaxHighlight()
+                                    .highlight(
+                                        fencedCodeBlock.info,
+                                        fencedCodeBlock.literal.trim { it <= ' ' }
+                                    )
+                                visitor.builder().append(code)
+                            }
+                            builder.on(SoftLineBreak::class.java) { visitor: MarkwonVisitor, _: SoftLineBreak ->
+                                visitor.forceNewLine()
+                            }
+                        }
+
+                        override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
+                            builder.linkResolver(
+                                object : LinkResolverDef() {
+                                    override fun resolve(view: View, link: String) {
+                                        if (link.isMixinUrl()) {
+                                            mixinLinkResolver.invoke(link)
+                                        } else {
+                                            linkResolver.invoke(link)
+                                        }
+                                    }
+                                }
+                            )
+                        }
                     }
-                }).build()
+                ).build()
         }
 
         fun getMiniMarkwon(context: Context): Markwon {
@@ -115,42 +119,44 @@ class MarkwonUtil {
                 .usePlugin(SyntaxHighlightPlugin.create(prism4j, prism4jTheme))
                 .usePlugin(TablePlugin.create(context))
                 .usePlugin(createGlidePlugin(context))
-                .usePlugin(object : AbstractMarkwonPlugin() {
-                    override fun configureTheme(builder: MarkwonTheme.Builder) {
-                        builder.headingBreakHeight(0)
-                            .codeBlockBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
-                            .codeBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
-                            .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
-                    }
+                .usePlugin(
+                    object : AbstractMarkwonPlugin() {
+                        override fun configureTheme(builder: MarkwonTheme.Builder) {
+                            builder.headingBreakHeight(0)
+                                .codeBlockBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
+                                .codeBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
+                                .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
+                        }
 
-                    override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
-                        builder.linkResolver { _, _ -> }
-                    }
+                        override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
+                            builder.linkResolver { _, _ -> }
+                        }
 
-                    override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {
-                        val spansFactory = builder.getFactory(Link::class.java)
-                        if (spansFactory != null) {
-                            builder.setFactory(Link::class.java) { configuration, props ->
-                                arrayOf(RemoveUnderlineSpan(), spansFactory.getSpans(configuration, props))
+                        override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {
+                            val spansFactory = builder.getFactory(Link::class.java)
+                            if (spansFactory != null) {
+                                builder.setFactory(Link::class.java) { configuration, props ->
+                                    arrayOf(RemoveUnderlineSpan(), spansFactory.getSpans(configuration, props))
+                                }
+                            }
+                        }
+
+                        override fun configureVisitor(builder: MarkwonVisitor.Builder) {
+                            builder.on(FencedCodeBlock::class.java) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
+                                val code = visitor.configuration()
+                                    .syntaxHighlight()
+                                    .highlight(
+                                        fencedCodeBlock.info,
+                                        fencedCodeBlock.literal.trim { it <= ' ' }
+                                    )
+                                visitor.builder().append(code)
+                            }
+                            builder.on(SoftLineBreak::class.java) { visitor: MarkwonVisitor, _: SoftLineBreak ->
+                                visitor.forceNewLine()
                             }
                         }
                     }
-
-                    override fun configureVisitor(builder: MarkwonVisitor.Builder) {
-                        builder.on(FencedCodeBlock::class.java) { visitor: MarkwonVisitor, fencedCodeBlock: FencedCodeBlock ->
-                            val code = visitor.configuration()
-                                .syntaxHighlight()
-                                .highlight(
-                                    fencedCodeBlock.info,
-                                    fencedCodeBlock.literal.trim { it <= ' ' }
-                                )
-                            visitor.builder().append(code)
-                        }
-                        builder.on(SoftLineBreak::class.java) { visitor: MarkwonVisitor, _: SoftLineBreak ->
-                            visitor.forceNewLine()
-                        }
-                    }
-                })
+                )
                 .build()
         }
 
@@ -163,16 +169,18 @@ class MarkwonUtil {
             return markwon.toMarkdown(content.postOptimize()).toString()
         }
 
-        private fun createGlidePlugin(context: Context): GlideImagesPlugin = GlideImagesPlugin.create(object : GlideStore {
-            override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
-                if (context.isActivityNotDestroyed()) {
-                    Glide.with(context).clear(target)
+        private fun createGlidePlugin(context: Context): GlideImagesPlugin = GlideImagesPlugin.create(
+            object : GlideStore {
+                override fun cancel(target: com.bumptech.glide.request.target.Target<*>) {
+                    if (context.isActivityNotDestroyed()) {
+                        Glide.with(context).clear(target)
+                    }
+                }
+
+                override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
+                    return Glide.with(context).load(drawable.destination)
                 }
             }
-
-            override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
-                return Glide.with(context).load(drawable.destination)
-            }
-        })
+        )
     }
 }

@@ -99,7 +99,8 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
             select_rv.layoutManager = LinearLayoutManager(
                 requireContext(),
-                LinearLayoutManager.HORIZONTAL, false
+                LinearLayoutManager.HORIZONTAL,
+                false
             )
             select_rv.adapter = selectAdapter
             user_rv.layoutManager = LinearLayoutManager(requireContext())
@@ -114,8 +115,13 @@ class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val users = arrayListOf<String>()
                 checkedUsers.mapTo(users) { it.userId }
                 val message = createCallMessage(
-                    UUID.randomUUID().toString(), conversationId,
-                    "", MessageCategory.KRAKEN_INVITE.name, "", nowInUtc(), MessageStatus.SENDING.name
+                    UUID.randomUUID().toString(),
+                    conversationId,
+                    "",
+                    MessageCategory.KRAKEN_INVITE.name,
+                    "",
+                    nowInUtc(),
+                    MessageStatus.SENDING.name
                 )
                 if (callState.isIdle()) {
                     publish(requireContext(), conversationId, users)

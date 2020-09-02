@@ -167,9 +167,13 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
 
     override fun doWithMixinErrorCode(errorCode: Int) {
         if (errorCode in arrayOf(
-            INSUFFICIENT_BALANCE, INVALID_PIN_FORMAT, PIN_INCORRECT,
-            TOO_SMALL, INSUFFICIENT_TRANSACTION_FEE, BLOCKCHAIN_ERROR
-        )
+                INSUFFICIENT_BALANCE,
+                INVALID_PIN_FORMAT,
+                PIN_INCORRECT,
+                TOO_SMALL,
+                INSUFFICIENT_TRANSACTION_FEE,
+                BLOCKCHAIN_ERROR
+            )
         ) {
             t.traceId?.let { traceId ->
                 lifecycleScope.launch {

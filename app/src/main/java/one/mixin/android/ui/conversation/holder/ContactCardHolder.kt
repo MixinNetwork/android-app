@@ -32,7 +32,8 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
         itemView.avatar_iv.setInfo(
-            messageItem.sharedUserFullName, messageItem.sharedUserAvatarUrl,
+            messageItem.sharedUserFullName,
+            messageItem.sharedUserAvatarUrl,
             messageItem.sharedUserId
                 ?: "0"
         )

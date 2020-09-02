@@ -74,7 +74,9 @@ class SizeNotifierFrameLayout : FrameLayout {
                     val scale: Float = 2.0f / context.resources.displayMetrics.density
                     canvas.scale(scale, scale)
                     backgroundImage!!.setBounds(
-                        0, 0, ceil((measuredWidth / scale).toDouble()).toInt(),
+                        0,
+                        0,
+                        ceil((measuredWidth / scale).toDouble()).toInt(),
                         ceil((measuredHeight / scale).toDouble()).toInt()
                     )
                     backgroundImage!!.draw(canvas)

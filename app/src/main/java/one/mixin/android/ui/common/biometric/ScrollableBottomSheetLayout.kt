@@ -27,7 +27,8 @@ class ScrollableBottomSheetLayout(context: Context, attributeSet: AttributeSet) 
         if (diffHeight > 0) {
             val scrollView = getChildAt(1)
             measureChild(
-                scrollView, widthMeasureSpec,
+                scrollView,
+                widthMeasureSpec,
                 MeasureSpec.makeMeasureSpec(scrollView.measuredHeight - diffHeight, MeasureSpec.EXACTLY)
             )
         } else {
