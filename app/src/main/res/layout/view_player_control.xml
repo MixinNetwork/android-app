@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
 
     <FrameLayout
         android:id="@+id/top_fl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_gradient_bar"
         android:paddingTop="24dp"
-        android:visibility="gone"
-        android:background="@drawable/bg_gradient_bar">
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/close_iv"
@@ -29,9 +29,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_marginEnd="48dp"
+            android:padding="8dp"
             android:scaleX="1.3"
             android:scaleY="1.3"
-            android:padding="8dp"
             android:src="@drawable/ic_fullscreen"
             tools:ignore="ContentDescription" />
 
@@ -75,9 +75,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginStart="@dimen/margin12"
-        android:layout_marginEnd="@dimen/margin12"
-        android:layout_marginBottom="24dp">
+        android:background="@drawable/bg_gradient_bottom_bar"
+        android:paddingStart="12dp"
+        android:paddingTop="24dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="24dp">
 
         <TextView
             android:id="@id/exo_position"
@@ -91,9 +93,9 @@
         <com.google.android.exoplayer2.ui.DefaultTimeBar
             android:id="@id/exo_progress"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
+            android:layout_weight="1"
             app:bar_height="2dp"
             app:scrubber_drawable="@drawable/ic_seek_bar" />
 
