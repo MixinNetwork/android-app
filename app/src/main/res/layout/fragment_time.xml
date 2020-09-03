@@ -38,25 +38,25 @@
         android:id="@+id/continue_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/bottom_bottom_margin"
         android:text="@string/common_continue"
         android:textColor="@color/selector_tv"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/info" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ProgressBar
         android:id="@+id/everybody_pb"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:layout_marginBottom="@dimen/bottom_bottom_margin"
         android:theme="@style/AppTheme.BlueProgress"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/info" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -363,17 +363,19 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         reloadTheme()
                     }
                 },
-                conversationId,
-                this.parentFragmentManager,
-                lifecycleScope
-            ) { request, error ->
-                contentView.fail_load_view.web_fail_description.text = getString(R.string.web_cannot_reached_desc, request?.url)
-                contentView.fail_load_view.isVisible = true
-                currentUrl = request?.url.toString()
-                error?.let {
-                    reportException(Exception(it.description.toString()))
-                }
-            }
+                conversationId, this.parentFragmentManager, lifecycleScope,
+                { url ->
+                    contentView.fail_load_view.isVisible = false
+                    currentUrl = url
+                },
+                { request, error ->
+                    contentView.fail_load_view.web_fail_description.text = getString(R.string.web_cannot_reached_desc, request?.url)
+                    contentView.fail_load_view.isVisible = true
+                    currentUrl = request?.url.toString()
+                    error?.let {
+                        reportException(Exception(it.description.toString()))
+                    }
+                })
 
         contentView.chat_web_view.webChromeClient = object : WebChromeClient() {
 
@@ -810,12 +812,14 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val conversationId: String?,
         private val fragmentManager: FragmentManager,
         private val scope: CoroutineScope,
+        private val onFinished: (url: String?) -> Unit,
         private val onReceivedError: (request: WebResourceRequest?, error: WebResourceError?) -> Unit
     ) : WebViewClient() {
 
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
             onPageFinishedListener.onPageFinished()
+            onFinished(url)
         }
 
         override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {

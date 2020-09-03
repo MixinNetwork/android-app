@@ -35,4 +35,5 @@
     <dimen name="album_item_height">72dp</dimen>
     <dimen name="call_button_size">64dp</dimen>
     <dimen name="setting_divider">16dp</dimen>
+    <dimen name="bottom_bottom_margin">100dp</dimen>
 </resources>
