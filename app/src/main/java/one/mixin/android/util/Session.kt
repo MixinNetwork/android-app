@@ -20,6 +20,7 @@ import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
 import one.mixin.android.vo.Account
+import timber.log.Timber
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
@@ -154,6 +155,7 @@ object Session {
             val iat = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(string).body[Claims.ISSUED_AT] as Int
             abs(System.currentTimeMillis() / 1000 - iat) > offset
         } catch (e: Exception) {
+            Timber.e(e)
             false
         }
     }
