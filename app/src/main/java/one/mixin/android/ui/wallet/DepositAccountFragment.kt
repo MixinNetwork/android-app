@@ -61,7 +61,7 @@ class DepositAccountFragment : DepositFragment() {
         val reserveTip = if (asset.needShowReserve()) {
             getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
         } else ""
-        warning_tv.text = "${getString(R.string.deposit_account_attention)} $reserveTip"
+        warning_tv.text = "${getString(R.string.deposit_account_attention, asset.symbol)} $reserveTip"
         account_name_qr_fl.setOnClickListener {
             DepositQrBottomFragment.newInstance(asset).show(parentFragmentManager, DepositQrBottomFragment.TAG)
         }
