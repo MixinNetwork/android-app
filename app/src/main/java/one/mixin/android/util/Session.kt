@@ -20,6 +20,7 @@ import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
 import one.mixin.android.vo.Account
+import timber.log.Timber
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
@@ -55,7 +56,7 @@ object Session {
         preference.putString(Constants.Account.PREF_NAME_TOKEN, token)
     }
 
-    fun getToken(): String? {
+    private fun getToken(): String? {
         val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
         return preference.getString(Constants.Account.PREF_NAME_TOKEN, null)
     }
@@ -114,8 +115,7 @@ object Session {
 
     fun checkToken() = getAccount() != null && !getToken().isNullOrBlank()
 
-    fun signToken(acct: Account?, request: Request): String {
-        val token = getToken()
+    fun signToken(acct: Account?, request: Request, token: String? = getToken()): String {
         if (acct == null || token == null || token.isBlank()) {
             return ""
         }
@@ -124,9 +124,12 @@ object Session {
         val iat = System.currentTimeMillis() / 1000
 
         var content = "${request.method}${request.url.cutOut()}"
-        if (request.body != null && request.body!!.contentLength() > 0) {
-            content += request.body!!.bodyToString()
+        request.body?.apply {
+            if (contentLength() > 0) {
+                content += bodyToString()
+            }
         }
+
         return Jwts.builder()
             .setClaims(
                 ConcurrentHashMap<String, Any>().apply {
@@ -143,8 +146,7 @@ object Session {
             .compact()
     }
 
-    fun requestDelay(acct: Account?, string: String, offset: Int): Boolean {
-        val token = getToken()
+    fun requestDelay(acct: Account?, string: String, offset: Int, token: String? = getToken()): Boolean {
         if (acct == null || token == null || token.isBlank()) {
             return false
         }
@@ -153,6 +155,7 @@ object Session {
             val iat = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(string).body[Claims.ISSUED_AT] as Int
             abs(System.currentTimeMillis() / 1000 - iat) > offset
         } catch (e: Exception) {
+            Timber.e(e)
             false
         }
     }

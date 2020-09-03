@@ -236,6 +236,8 @@ dependencies {
     implementation "com.facebook.rebound:rebound:${reboundVersion}"
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
     testImplementation "junit:junit:${junitVersion}"
+    testImplementation "androidx.test:core:${testCoreVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
     androidTestImplementation "junit:junit:${junitVersion}"
     androidTestImplementation("androidx.test.espresso:espresso-core:${espressoVersion}", {
         exclude group: 'com.android.support', module: 'support-annotations'
