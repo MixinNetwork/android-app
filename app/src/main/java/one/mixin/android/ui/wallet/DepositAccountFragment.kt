@@ -57,7 +57,7 @@ class DepositAccountFragment : DepositFragment() {
         account_memo_qr_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         account_name_key_code.text = asset.destination
         account_memo_key_code.text = asset.tag
-        tip_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
+        tip_tv.text = getTipsByAsset(asset) + " " + getString(R.string.deposit_confirmation, asset.confirmations)
         val reserveTip = if (asset.needShowReserve()) {
             getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
         } else ""

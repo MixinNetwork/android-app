@@ -55,7 +55,7 @@ class DepositPublicKeyFragment : DepositFragment() {
             context?.toast(R.string.copy_success)
         }
         key_code.text = asset.destination
-        confirm_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
+        confirm_tv.text = getTipsByAsset(asset) + " " + getString(R.string.deposit_confirmation, asset.confirmations)
         val reserveTip = if (asset.needShowReserve()) {
             getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
         } else ""
