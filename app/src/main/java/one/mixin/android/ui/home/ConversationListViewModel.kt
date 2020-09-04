@@ -72,8 +72,12 @@ internal constructor(
             val participantRequestList = mutableListOf<ParticipantRequest>()
             mutableList.mapTo(participantRequestList) { ParticipantRequest(it.userId, it.role) }
             val request = ConversationRequest(
-                conversationId, it.category!!, it.name, it.iconUrl,
-                it.announcement, participantRequestList
+                conversationId,
+                it.category!!,
+                it.name,
+                it.iconUrl,
+                it.announcement,
+                participantRequestList
             )
             jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))
         }
@@ -107,7 +111,9 @@ internal constructor(
             val participantRequest = ParticipantRequest(recipientId, "")
             val request = ConversationRequest(
                 cid,
-                ConversationCategory.CONTACT.name, duration = duration, participants = listOf(participantRequest)
+                ConversationCategory.CONTACT.name,
+                duration = duration,
+                participants = listOf(participantRequest)
             )
             return conversationRepository.muteSuspend(cid, request)
         }

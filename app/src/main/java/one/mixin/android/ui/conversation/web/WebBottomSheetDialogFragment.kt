@@ -328,7 +328,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         reloadTheme()
                     }
                 },
-                conversationId, this.parentFragmentManager, lifecycleScope
+                conversationId,
+                this.parentFragmentManager,
+                lifecycleScope
             )
 
         contentView.chat_web_view.webChromeClient = object : WebChromeClient() {
@@ -832,7 +834,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         @JavascriptInterface
         fun getContext(): String? = Gson().toJson(
             MixinContext(
-                conversationId, immersive,
+                conversationId,
+                immersive,
                 appearance = if (context.isNightMode()) {
                     "dark"
                 } else {

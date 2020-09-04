@@ -1,6 +1,6 @@
 def versionMajor = 0
 def versionMinor = 26
-def versionPatch = 6
+def versionPatch = 7
 def versionBuild = 0
 
 apply plugin: 'com.android.application'
@@ -121,7 +121,7 @@ android {
     }
 
     configurations.all {
-        resolutionStrategy.force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta09"
+        resolutionStrategy.force "com.android.tools.build.jetifier:jetifier-core:1.0.0-beta10"
     }
 }
 
@@ -236,6 +236,8 @@ dependencies {
     implementation "com.facebook.rebound:rebound:${reboundVersion}"
     ktlint "com.pinterest:ktlint:${ktlintVersion}"
     testImplementation "junit:junit:${junitVersion}"
+    testImplementation "androidx.test:core:${testCoreVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
     androidTestImplementation "junit:junit:${junitVersion}"
     androidTestImplementation("androidx.test.espresso:espresso-core:${espressoVersion}", {
         exclude group: 'com.android.support', module: 'support-annotations'

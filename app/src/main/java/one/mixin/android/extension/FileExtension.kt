@@ -614,7 +614,8 @@ private fun File.blurThumbnail(width: Int, height: Int): Bitmap? {
     try {
         return ThumbnailUtils.extractThumbnail(
             BitmapFactory.decodeFile(this.absolutePath),
-            width, height
+            width,
+            height
         ).fastBlur(1f, 10)
     } catch (e: Exception) {
     }

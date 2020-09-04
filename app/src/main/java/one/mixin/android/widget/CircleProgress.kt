@@ -209,8 +209,10 @@ class CircleProgress @JvmOverloads constructor(
         val centerX = w / 2
         val centerY = h / 2
         bounds.set(
-            (centerX - mSize / 2).toFloat(), (centerY - mSize / 2).toFloat(),
-            (centerX + mSize / 2).toFloat(), (centerY + mSize / 2).toFloat()
+            (centerX - mSize / 2).toFloat(),
+            (centerY - mSize / 2).toFloat(),
+            (centerX + mSize / 2).toFloat(),
+            (centerY + mSize / 2).toFloat()
         )
         fBounds.left = bounds.left + mBorderWidth
         fBounds.right = bounds.right - mBorderWidth
@@ -275,7 +277,9 @@ class CircleProgress @JvmOverloads constructor(
                 fBounds.centerX() + fBounds.width() * 0.16f,
                 fBounds.centerY() + fBounds.height() * 0.16f
             ),
-            cornerRadius, 0f, mPaint
+            cornerRadius,
+            0f,
+            mPaint
         )
     }
 

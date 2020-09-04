@@ -176,28 +176,30 @@ class StickerAddFragment : BaseFragment() {
         } else {
             stickerViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)
         }
-        Glide.with(requireContext()).load(r.data?.assetUrl).listener(object : RequestListener<Drawable> {
-            override fun onLoadFailed(
-                e: GlideException?,
-                model: Any?,
-                target: Target<Drawable>?,
-                isFirstResource: Boolean
-            ): Boolean {
-                handleBack(R.string.add_success)
-                return true
-            }
+        Glide.with(requireContext()).load(r.data?.assetUrl).listener(
+            object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    handleBack(R.string.add_success)
+                    return true
+                }
 
-            override fun onResourceReady(
-                resource: Drawable?,
-                model: Any?,
-                target: Target<Drawable>?,
-                dataSource: DataSource?,
-                isFirstResource: Boolean
-            ): Boolean {
-                handleBack(R.string.add_success)
-                return true
+                override fun onResourceReady(
+                    resource: Drawable?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    handleBack(R.string.add_success)
+                    return true
+                }
             }
-        }).submit(r.data!!.assetWidth, r.data!!.assetHeight)
+        ).submit(r.data!!.assetWidth, r.data!!.assetHeight)
     }
 
     private suspend fun getStickerAddRequest(
@@ -246,7 +248,8 @@ class StickerAddFragment : BaseFragment() {
             bitmap = bitmap.maxSizeScale(MAX_SIZE, MAX_SIZE)
             StickerAddRequest(
                 Base64.encodeToString(
-                    if (mimeType == MimeType.PNG.toString()) bitmap.toPNGBytes() else bitmap.toBytes(), Base64.NO_WRAP
+                    if (mimeType == MimeType.PNG.toString()) bitmap.toPNGBytes() else bitmap.toBytes(),
+                    Base64.NO_WRAP
                 )
             )
         }

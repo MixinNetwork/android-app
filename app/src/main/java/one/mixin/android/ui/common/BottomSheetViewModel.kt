@@ -183,7 +183,9 @@ class BottomSheetViewModel @Inject internal constructor(
             val participantRequest = ParticipantRequest(recipientId, "")
             val request = ConversationRequest(
                 cid,
-                ConversationCategory.CONTACT.name, duration = duration, participants = listOf(participantRequest)
+                ConversationCategory.CONTACT.name,
+                duration = duration,
+                participants = listOf(participantRequest)
             )
             conversationRepo.muteSuspend(cid, request)
         }
@@ -240,13 +242,16 @@ class BottomSheetViewModel @Inject internal constructor(
         announcement: String? = null
     ) {
         val request = ConversationRequest(
-            conversationId, name = name,
-            iconBase64 = iconBase64, announcement = announcement
+            conversationId,
+            name = name,
+            iconBase64 = iconBase64,
+            announcement = announcement
         )
         jobManager.addJobInBackground(
             ConversationJob(
                 conversationId = conversationId,
-                request = request, type = ConversationJob.TYPE_UPDATE
+                request = request,
+                type = ConversationJob.TYPE_UPDATE
             )
         )
     }

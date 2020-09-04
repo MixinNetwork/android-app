@@ -64,7 +64,8 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
             )
         } else {
             imageView.loadImage(
-                messageItem.mediaUrl, messageItem.thumbImage,
+                messageItem.mediaUrl,
+                messageItem.thumbImage,
                 object : RequestListener<Drawable?> {
                     override fun onResourceReady(
                         resource: Drawable?,

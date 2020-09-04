@@ -26,16 +26,20 @@ sealed class ImageLoader<T> {
 
         val task = ImageTask(callable)
         if (cacheKey != null) {
-            task.addListener(object : ImageListener<T> {
-                override fun onResult(result: T) {
-                    taskCache.remove(cacheKey)
+            task.addListener(
+                object : ImageListener<T> {
+                    override fun onResult(result: T) {
+                        taskCache.remove(cacheKey)
+                    }
                 }
-            })
-            task.addFailureListener(object : ImageListener<Throwable> {
-                override fun onResult(result: Throwable) {
-                    taskCache.remove(cacheKey)
+            )
+            task.addFailureListener(
+                object : ImageListener<Throwable> {
+                    override fun onResult(result: Throwable) {
+                        taskCache.remove(cacheKey)
+                    }
                 }
-            })
+            )
             taskCache[cacheKey] = task
         }
         return task
@@ -54,7 +58,8 @@ object LottieLoader : ImageLoader<RLottieDrawable>() {
         limitFps: Boolean = false
     ): ImageTask<RLottieDrawable> {
         return fromUrl(
-            url, cacheKey,
+            url,
+            cacheKey,
             Callable {
                 val file = NetworkFetcher.fetchSync(context, url)
                 ImageResult(RLottieDrawable(file.value, w, h, precache, limitFps))
@@ -71,7 +76,8 @@ object HeicLoader : ImageLoader<Drawable>() {
     @RequiresApi(Build.VERSION_CODES.P)
     fun fromUrl(context: Context, uri: Uri, cacheKey: String? = uri.toString()): ImageTask<Drawable> {
         return fromUrl(
-            uri.toString(), cacheKey,
+            uri.toString(),
+            cacheKey,
             Callable {
                 val source = ImageDecoder.createSource(context.contentResolver, uri)
                 return@Callable ImageResult(ImageDecoder.decodeDrawable(source))

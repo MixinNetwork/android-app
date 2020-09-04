@@ -176,16 +176,18 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
         View.inflate(requireContext(), R.layout.view_stotage_list, null) as RecyclerView
     }
     private val menuAdapter: MenuAdapter by lazy {
-        MenuAdapter(object : (Boolean, StorageUsage) -> Unit {
-            override fun invoke(checked: Boolean, storageUsage: StorageUsage) {
-                if (checked) {
-                    selectSet.add(storageUsage)
-                } else {
-                    selectSet.remove(storageUsage)
+        MenuAdapter(
+            object : (Boolean, StorageUsage) -> Unit {
+                override fun invoke(checked: Boolean, storageUsage: StorageUsage) {
+                    if (checked) {
+                        selectSet.add(storageUsage)
+                    } else {
+                        selectSet.remove(storageUsage)
+                    }
+                    menuDialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = selectSet.size > 0
                 }
-                menuDialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = selectSet.size > 0
             }
-        })
+        )
     }
 
     class MenuAdapter(private val checkAction: (Boolean, StorageUsage) -> Unit) : RecyclerView.Adapter<CheckHolder>() {

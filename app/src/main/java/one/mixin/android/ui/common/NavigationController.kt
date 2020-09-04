@@ -60,12 +60,14 @@ constructor(mainActivity: MainActivity) {
     fun hideSearch() {
         val f = fragmentManager.findFragmentByTag(SearchFragment.TAG)
         f?.view?.animate()?.apply {
-            setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
-                    setListener(null)
-                    f.view?.isVisible = false
+            setListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator?) {
+                        setListener(null)
+                        f.view?.isVisible = false
+                    }
                 }
-            })
+            )
         }?.alpha(0f)?.start()
     }
 }

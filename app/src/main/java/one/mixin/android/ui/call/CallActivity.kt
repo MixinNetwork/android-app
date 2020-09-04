@@ -209,24 +209,28 @@ class CallActivity : BaseActivity(), SensorEventListener {
         encryption_tv.setOnClickListener {
             showE2EETip()
         }
-        mute_cb.setOnCheckedChangeListener(object : CallButton.OnCheckedChangeListener {
-            override fun onCheckedChanged(id: Int, checked: Boolean) {
-                if (callState.isGroupCall()) {
-                    muteAudio<GroupCallService>(this@CallActivity, checked)
-                } else if (callState.isVoiceCall()) {
-                    muteAudio<VoiceCallService>(this@CallActivity, checked)
+        mute_cb.setOnCheckedChangeListener(
+            object : CallButton.OnCheckedChangeListener {
+                override fun onCheckedChanged(id: Int, checked: Boolean) {
+                    if (callState.isGroupCall()) {
+                        muteAudio<GroupCallService>(this@CallActivity, checked)
+                    } else if (callState.isVoiceCall()) {
+                        muteAudio<VoiceCallService>(this@CallActivity, checked)
+                    }
                 }
             }
-        })
-        voice_cb.setOnCheckedChangeListener(object : CallButton.OnCheckedChangeListener {
-            override fun onCheckedChanged(id: Int, checked: Boolean) {
-                if (callState.isGroupCall()) {
-                    speakerPhone<GroupCallService>(this@CallActivity, checked)
-                } else if (callState.isVoiceCall()) {
-                    speakerPhone<VoiceCallService>(this@CallActivity, checked)
+        )
+        voice_cb.setOnCheckedChangeListener(
+            object : CallButton.OnCheckedChangeListener {
+                override fun onCheckedChanged(id: Int, checked: Boolean) {
+                    if (callState.isGroupCall()) {
+                        speakerPhone<GroupCallService>(this@CallActivity, checked)
+                    } else if (callState.isVoiceCall()) {
+                        speakerPhone<VoiceCallService>(this@CallActivity, checked)
+                    }
                 }
             }
-        })
+        )
         updateUI()
 
         callState.observe(
@@ -358,8 +362,10 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     private fun showPipPermissionNotification() {
         val pendingIntent = PendingIntent.getActivity(
-            this, 0,
-            Intent(this, CallActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT
+            this,
+            0,
+            Intent(this, CallActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT
         )
         val builder = NotificationCompat.Builder(this, CHANNEL_PIP_PERMISSION)
             .setSmallIcon(R.drawable.ic_msg_default)
@@ -516,30 +522,34 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 ObjectAnimator.ofFloat(windowView, View.SCALE_X, scale),
                 ObjectAnimator.ofFloat(windowView, View.SCALE_Y, scale),
                 ObjectAnimator.ofFloat(
-                    windowView, View.TRANSLATION_X,
+                    windowView,
+                    View.TRANSLATION_X,
                     rect.x - realSize().x * (1f - scale) / 2
                 ),
                 ObjectAnimator.ofFloat(
-                    windowView, View.TRANSLATION_Y,
+                    windowView,
+                    View.TRANSLATION_Y,
                     rect.y - statusBarHeight() - (windowView.height - rect.height) / 2
                 )
             )
             interpolator = DecelerateInterpolator()
             duration = 250
-            addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationStart(animation: Animator?) {
-                    if (!SystemUIManager.hasCutOut(window)) {
-                        SystemUIManager.clearStyle(window)
+            addListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationStart(animation: Animator?) {
+                        if (!SystemUIManager.hasCutOut(window)) {
+                            SystemUIManager.clearStyle(window)
+                        }
+                    }
+
+                    override fun onAnimationEnd(animation: Animator?) {
+                        pipAnimationInProgress = false
+
+                        overridePendingTransition(0, 0)
+                        finish()
                     }
                 }
-
-                override fun onAnimationEnd(animation: Animator?) {
-                    pipAnimationInProgress = false
-
-                    overridePendingTransition(0, 0)
-                    finish()
-                }
-            })
+            )
             start()
         }
     }

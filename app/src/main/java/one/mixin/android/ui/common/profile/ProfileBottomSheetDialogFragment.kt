@@ -278,8 +278,10 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 if (Session.getAccount()?.hasPin == true) {
                     activity?.supportFragmentManager?.inTransaction {
                         setCustomAnimations(
-                            R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                            R.anim.slide_in_bottom, R.anim.slide_out_bottom
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom,
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom
                         )
                             .add(
                                 R.id.container,
@@ -290,8 +292,10 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 } else {
                     activity?.supportFragmentManager?.inTransaction {
                         setCustomAnimations(
-                            R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                            R.anim.slide_in_bottom, R.anim.slide_out_bottom
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom,
+                            R.anim.slide_in_bottom,
+                            R.anim.slide_out_bottom
                         )
                             .add(
                                 R.id.container,

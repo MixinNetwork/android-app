@@ -146,9 +146,21 @@ class WaveformView : View {
             for (b in 0 until drawBarCount) {
                 val x = barNum * context.dip(3f)
                 if (x < thumbX && x + context.dip(2f) < thumbX) {
-                    canvas.drawRect(x.toFloat(), (y - context.dip(max(1f, 14.0f * value / 31.0f))).toFloat(), (x + context.dip(2f)).toFloat(), (y).toFloat(), paintOuter)
+                    canvas.drawRect(
+                        x.toFloat(),
+                        (y - context.dip(max(1f, 14.0f * value / 31.0f))).toFloat(),
+                        (x + context.dip(2f)).toFloat(),
+                        (y).toFloat(),
+                        paintOuter
+                    )
                 } else {
-                    canvas.drawRect(x.toFloat(), (y - context.dip(max(1f, 14.0f * value / 31.0f))).toFloat(), (x + context.dip(2f)).toFloat(), (y).toFloat(), paintInner)
+                    canvas.drawRect(
+                        x.toFloat(),
+                        (y - context.dip(max(1f, 14.0f * value / 31.0f))).toFloat(),
+                        (x + context.dip(2f)).toFloat(),
+                        (y).toFloat(),
+                        paintInner
+                    )
                     if (x < thumbX) {
                         canvas.drawRect(x.toFloat(), (y - context.dip(max(1f, 14.0f * value / 31.0f))).toFloat(), thumbX.toFloat(), (y).toFloat(), paintOuter)
                     }

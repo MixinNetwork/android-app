@@ -192,7 +192,11 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     }
 
     private fun buildDataSourceFactory(): DataSource.Factory {
-        return DefaultDataSourceFactory(MixinApplication.appContext, null, DefaultHttpDataSourceFactory(Util.getUserAgent(MixinApplication.appContext, "Mixin"), null))
+        return DefaultDataSourceFactory(
+            MixinApplication.appContext,
+            null,
+            DefaultHttpDataSourceFactory(Util.getUserAgent(MixinApplication.appContext, "Mixin"), null)
+        )
     }
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {

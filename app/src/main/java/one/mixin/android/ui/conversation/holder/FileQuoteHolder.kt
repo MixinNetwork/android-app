@@ -107,8 +107,10 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
                     if (start >= 0) {
                         val sp = SpannableString(str)
                         sp.setSpan(
-                            BackgroundColorSpan(HIGHLIGHTED), start,
-                            start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                            BackgroundColorSpan(HIGHLIGHTED),
+                            start,
+                            start + k.length,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                         )
                         itemView.file_name_tv.text = sp
                     } else {
@@ -126,21 +128,23 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
             itemView.file_size_tv.text = "${messageItem.mediaSize?.fileSize()}"
         }
 
-        itemView.seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-            }
+        itemView.seek_bar.setOnSeekBarChangeListener(
+            object : SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                }
 
-            override fun onStartTrackingTouch(seekBar: SeekBar) {
-            }
+                override fun onStartTrackingTouch(seekBar: SeekBar) {
+                }
 
-            override fun onStopTrackingTouch(seekBar: SeekBar) {
-                if (MimeTypes.isAudio(messageItem.mediaMimeType) &&
-                    AudioPlayer.isPlay(messageItem.messageId)
-                ) {
-                    AudioPlayer.seekTo(seekBar.progress)
+                override fun onStopTrackingTouch(seekBar: SeekBar) {
+                    if (MimeTypes.isAudio(messageItem.mediaMimeType) &&
+                        AudioPlayer.isPlay(messageItem.messageId)
+                    ) {
+                        AudioPlayer.seekTo(seekBar.progress)
+                    }
                 }
             }
-        })
+        )
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {

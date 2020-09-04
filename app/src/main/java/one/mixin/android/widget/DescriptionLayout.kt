@@ -76,14 +76,18 @@ class DescriptionLayout : ViewGroup {
         val firstView = getChildAt(0) as TextView
         val secondView = getChildAt(1)
         firstView.layout(
-            paddingStart, paddingTop, firstView.measuredWidth + paddingStart,
+            paddingStart,
+            paddingTop,
+            firstView.measuredWidth + paddingStart,
             firstView.measuredHeight + paddingTop
         )
         when (type) {
             EXPAND, DEFAULT -> {
                 secondView.layout(0, 0, 0, 0)
                 firstView.layout(
-                    paddingStart, paddingTop, firstView.measuredWidth + paddingStart,
+                    paddingStart,
+                    paddingTop,
+                    firstView.measuredWidth + paddingStart,
                     firstView
                         .measuredHeight + paddingTop
                 )
@@ -92,7 +96,9 @@ class DescriptionLayout : ViewGroup {
                 val left = paddingStart + lineWidth
                 val top = lineHeight * 3 + paddingTop - lineHeight
                 firstView.layout(
-                    paddingStart, paddingTop, firstView.measuredWidth + paddingStart,
+                    paddingStart,
+                    paddingTop,
+                    firstView.measuredWidth + paddingStart,
                     firstView
                         .measuredHeight + paddingTop
                 )
@@ -101,7 +107,9 @@ class DescriptionLayout : ViewGroup {
             BOTTOM -> {
                 val top = lineHeight * 3 + paddingTop - lineHeight
                 firstView.layout(
-                    paddingStart, paddingTop, firstView.measuredWidth + paddingStart,
+                    paddingStart,
+                    paddingTop,
+                    firstView.measuredWidth + paddingStart,
                     paddingTop + lineHeight * 2
                 )
                 secondView.layout(paddingStart, top, firstView.measuredWidth + paddingStart, top + lineHeight)

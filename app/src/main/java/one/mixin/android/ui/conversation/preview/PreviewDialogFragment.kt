@@ -119,7 +119,8 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
             } else {
                 R.layout.fragment_preview
             },
-            null, false
+            null,
+            false
         )
         if (isVideo) {
             mediaDialogView!!.dialog_play.setOnCheckedChangeListener { _, isChecked ->

@@ -205,9 +205,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
             context?.let { ctx ->
                 if (MixinApplication.conversationId == null || generateConversationId(
-                    user.userId,
-                    Session.getAccountId()!!
-                ) != MixinApplication.conversationId
+                        user.userId,
+                        Session.getAccountId()!!
+                    ) != MixinApplication.conversationId
                 ) {
                     RxBus.publish(BotCloseEvent())
                     ConversationActivity.show(ctx, null, user.userId)
@@ -256,11 +256,11 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             }
         }
         val muteMenu = if (u.muteUntil.notNullWithElse(
-            {
-                Instant.now().isBefore(Instant.parse(it))
-            },
-            false
-        )
+                {
+                    Instant.now().isBefore(Instant.parse(it))
+                },
+                false
+            )
         ) {
             menu {
                 title = getString(R.string.un_mute)
@@ -570,13 +570,25 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         )?.let {
             val searchMessageItem = if (it.category == ConversationCategory.CONTACT.name) {
                 SearchMessageItem(
-                    it.conversationId, it.category, null,
-                    0, user.userId, user.fullName, user.avatarUrl, null
+                    it.conversationId,
+                    it.category,
+                    null,
+                    0,
+                    user.userId,
+                    user.fullName,
+                    user.avatarUrl,
+                    null
                 )
             } else {
                 SearchMessageItem(
-                    it.conversationId, it.category, it.name,
-                    0, "", null, null, it.iconUrl
+                    it.conversationId,
+                    it.category,
+                    it.name,
+                    0,
+                    "",
+                    null,
+                    null,
+                    it.iconUrl
                 )
             }
             activity?.addFragment(
@@ -783,7 +795,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 bottomViewModel.updateRelationship(
                     RelationshipRequest(
                         user.userId,
-                        RelationshipAction.UPDATE.name, it
+                        RelationshipAction.UPDATE.name,
+                        it
                     )
                 )
             }
@@ -893,41 +906,43 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         Glide.with(requireContext())
             .asBitmap()
             .load(user.avatarUrl)
-            .listener(object : RequestListener<Bitmap> {
-                override fun onResourceReady(
-                    resource: Bitmap?,
-                    model: Any?,
-                    target: Target<Bitmap>?,
-                    dataSource: DataSource?,
-                    isFirstResource: Boolean
-                ): Boolean {
-                    user.fullName?.let {
-                        val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
-                        one.mixin.android.util.addShortcut(
-                            requireContext(),
-                            conversationId,
-                            it,
-                            resource!!,
-                            ConversationActivity.getShortcutIntent(
+            .listener(
+                object : RequestListener<Bitmap> {
+                    override fun onResourceReady(
+                        resource: Bitmap?,
+                        model: Any?,
+                        target: Target<Bitmap>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        user.fullName?.let {
+                            val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
+                            one.mixin.android.util.addShortcut(
                                 requireContext(),
                                 conversationId,
-                                user.userId
+                                it,
+                                resource!!,
+                                ConversationActivity.getShortcutIntent(
+                                    requireContext(),
+                                    conversationId,
+                                    user.userId
+                                )
                             )
-                        )
+                        }
+                        return false
                     }
-                    return false
-                }
 
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: Target<Bitmap>?,
-                    isFirstResource: Boolean
-                ): Boolean {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Bitmap>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
 
-                    return false
+                        return false
+                    }
                 }
-            }).submit()
+            ).submit()
     }
 
     override fun onStateChanged(bottomSheet: View, newState: Int) {

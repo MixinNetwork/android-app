@@ -137,7 +137,8 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
         lastPassword = null
         pin.clear()
         title_view.setSubTitle(
-            getString(if (change) R.string.wallet_password_set_new_pin else R.string.wallet_password_set_pin), getSubTitle()
+            getString(if (change) R.string.wallet_password_set_new_pin else R.string.wallet_password_set_pin),
+            getSubTitle()
         )
         tip_tv.text = getString(if (change) R.string.wallet_password_set_new_pin_desc else R.string.wallet_password_set_pin_desc)
     }

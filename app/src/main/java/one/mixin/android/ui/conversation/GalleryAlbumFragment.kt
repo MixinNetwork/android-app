@@ -46,7 +46,8 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
         super.onViewCreated(view, savedInstanceState)
         view_pager.adapter = albumAdapter
         TabLayoutMediator(
-            album_tl, view_pager,
+            album_tl,
+            view_pager,
             TabLayoutMediator.TabConfigurationStrategy { tab, position ->
                 tab.text = albumAdapter.albums?.get(position)?.getDisplayName(requireContext())
                 view_pager.setCurrentItem(tab.position, true)

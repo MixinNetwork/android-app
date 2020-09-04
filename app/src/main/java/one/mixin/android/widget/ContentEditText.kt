@@ -22,7 +22,14 @@ class ContentEditText : AppCompatEditText {
 
     var listener: OnCommitContentListener? = null
 
-    private val mimeTypes = arrayOf(MimeType.PNG.toString(), MimeType.GIF.toString(), MimeType.JPEG.toString(), MimeType.JPG.toString(), MimeType.WEBP.toString(), MimeType.HEIC.toString())
+    private val mimeTypes = arrayOf(
+        MimeType.PNG.toString(),
+        MimeType.GIF.toString(),
+        MimeType.JPEG.toString(),
+        MimeType.JPG.toString(),
+        MimeType.WEBP.toString(),
+        MimeType.HEIC.toString()
+    )
     override fun onCreateInputConnection(editorInfo: EditorInfo): InputConnection {
         val ic = super.onCreateInputConnection(editorInfo)
         if (listener == null) {

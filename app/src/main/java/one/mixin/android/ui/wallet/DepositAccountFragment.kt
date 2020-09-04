@@ -57,11 +57,11 @@ class DepositAccountFragment : DepositFragment() {
         account_memo_qr_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         account_name_key_code.text = asset.destination
         account_memo_key_code.text = asset.tag
-        tip_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
+        tip_tv.text = getTipsByAsset(asset) + " " + getString(R.string.deposit_confirmation, asset.confirmations)
         val reserveTip = if (asset.needShowReserve()) {
             getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
         } else ""
-        warning_tv.text = "${getString(R.string.deposit_account_attention)} $reserveTip"
+        warning_tv.text = "${getString(R.string.deposit_account_attention, asset.symbol)} $reserveTip"
         account_name_qr_fl.setOnClickListener {
             DepositQrBottomFragment.newInstance(asset).show(parentFragmentManager, DepositQrBottomFragment.TAG)
         }

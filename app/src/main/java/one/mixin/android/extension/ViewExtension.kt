@@ -78,15 +78,17 @@ fun View.fadeIn(maxAlpha: Float = 1f) {
 fun View.fadeIn(duration: Long, maxAlpha: Float = 1f) {
     this.visibility = VISIBLE
     this.alpha = 0f
-    ViewCompat.animate(this).alpha(maxAlpha).setDuration(duration).setListener(object : ViewPropertyAnimatorListener {
-        override fun onAnimationStart(view: View) {
-        }
+    ViewCompat.animate(this).alpha(maxAlpha).setDuration(duration).setListener(
+        object : ViewPropertyAnimatorListener {
+            override fun onAnimationStart(view: View) {
+            }
 
-        override fun onAnimationEnd(view: View) {
-        }
+            override fun onAnimationEnd(view: View) {
+            }
 
-        override fun onAnimationCancel(view: View) {}
-    }).start()
+            override fun onAnimationCancel(view: View) {}
+        }
+    ).start()
 }
 
 fun View.fadeOut(isGone: Boolean = false) {
@@ -95,19 +97,21 @@ fun View.fadeOut(isGone: Boolean = false) {
 
 fun View.fadeOut(duration: Long, delay: Long = 0, isGone: Boolean = false) {
     this.alpha = 1f
-    ViewCompat.animate(this).alpha(0f).setStartDelay(delay).setDuration(duration).setListener(object : ViewPropertyAnimatorListener {
-        override fun onAnimationStart(view: View) {
-            view.isDrawingCacheEnabled = true
-        }
+    ViewCompat.animate(this).alpha(0f).setStartDelay(delay).setDuration(duration).setListener(
+        object : ViewPropertyAnimatorListener {
+            override fun onAnimationStart(view: View) {
+                view.isDrawingCacheEnabled = true
+            }
 
-        override fun onAnimationEnd(view: View) {
-            view.visibility = if (isGone) GONE else INVISIBLE
-            view.alpha = 0f
-            view.isDrawingCacheEnabled = false
-        }
+            override fun onAnimationEnd(view: View) {
+                view.visibility = if (isGone) GONE else INVISIBLE
+                view.alpha = 0f
+                view.isDrawingCacheEnabled = false
+            }
 
-        override fun onAnimationCancel(view: View) {}
-    })
+            override fun onAnimationCancel(view: View) {}
+        }
+    )
 }
 
 fun View.translationX(value: Float) {
@@ -124,17 +128,19 @@ fun View.translationY(value: Float, endAction: (() -> Unit)? = null) {
 
 fun View.translationY(value: Float, duration: Long, endAction: (() -> Unit)? = null) {
     ViewCompat.animate(this).setDuration(duration).translationY(value)
-        .setListener(object : ViewPropertyAnimatorListener {
-            override fun onAnimationEnd(view: View?) {
-                endAction?.let { it() }
-            }
+        .setListener(
+            object : ViewPropertyAnimatorListener {
+                override fun onAnimationEnd(view: View?) {
+                    endAction?.let { it() }
+                }
 
-            override fun onAnimationCancel(view: View?) {
-                endAction?.let { it() }
-            }
+                override fun onAnimationCancel(view: View?) {
+                    endAction?.let { it() }
+                }
 
-            override fun onAnimationStart(view: View?) {}
-        })
+                override fun onAnimationStart(view: View?) {}
+            }
+        )
         .start()
 }
 
@@ -269,8 +275,10 @@ fun View.capture(context: Context): String? {
     b.save(outFile)
     return try {
         MediaStore.Images.Media.insertImage(
-            context.contentResolver, outFile.absolutePath,
-            outFile.name, null
+            context.contentResolver,
+            outFile.absolutePath,
+            outFile.name,
+            null
         )
         context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
         outFile.absolutePath
@@ -286,13 +294,15 @@ private val sprintConfig = SpringConfig.fromOrigamiTensionAndFriction(80.0, 4.0)
 fun View.bounce() {
     val spring = springSystem.createSpring()
         .setSpringConfig(sprintConfig)
-        .addListener(object : SimpleSpringListener() {
-            override fun onSpringUpdate(spring: Spring) {
-                val value = spring.currentValue.toFloat()
-                scaleX = value
-                scaleY = value
+        .addListener(
+            object : SimpleSpringListener() {
+                override fun onSpringUpdate(spring: Spring) {
+                    val value = spring.currentValue.toFloat()
+                    scaleX = value
+                    scaleY = value
+                }
             }
-        })
+        )
     spring.endValue = 1.0
 }
 
@@ -344,8 +354,10 @@ fun TextView.renderMessage(text: CharSequence?, mentionRenderContext: MentionRen
         val start = sp.indexOf(keyWord, 0, true)
         if (start >= 0) {
             sp.setSpan(
-                BackgroundColorSpan(BaseViewHolder.HIGHLIGHTED), start,
-                start + keyWord.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                BackgroundColorSpan(BaseViewHolder.HIGHLIGHTED),
+                start,
+                start + keyWord.length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             )
         }
     }

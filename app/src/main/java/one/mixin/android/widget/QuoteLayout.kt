@@ -43,12 +43,14 @@ class QuoteLayout : ViewGroup {
         val secondView = getChildAt(1)
         if (ratio != 0f) {
             measureChild(
-                secondView, MeasureSpec.makeMeasureSpec(minWidth, MeasureSpec.EXACTLY),
+                secondView,
+                MeasureSpec.makeMeasureSpec(minWidth, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec((minWidth / ratio).toInt(), MeasureSpec.EXACTLY)
             )
         } else {
             measureChild(
-                secondView, widthMeasureSpec,
+                secondView,
+                widthMeasureSpec,
                 heightMeasureSpec
             )
         }

@@ -245,7 +245,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             .setPageSize(1)
             .build()
         val pagedList = PagedList.Builder<Int, MessageItem>(
-            FixedMessageDataSource(listOf(messageItem)), pagedConfig
+            FixedMessageDataSource(listOf(messageItem)),
+            pagedConfig
         ).setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
             .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
             .build()
@@ -486,8 +487,14 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                 }
             val changedTextureView = pipVideoView.show(
-                this, videoAspectRatioLayout.aspectRatio, videoAspectRatioLayout.videoRotation,
-                conversationId, messageItem.messageId, messageItem.isVideo(), excludeLive, messageItem.mediaUrl
+                this,
+                videoAspectRatioLayout.aspectRatio,
+                videoAspectRatioLayout.videoRotation,
+                conversationId,
+                messageItem.messageId,
+                messageItem.isVideo(),
+                excludeLive,
+                messageItem.mediaUrl
             )
 
             val videoTexture = view.findViewById<TextureView>(R.id.video_texture)
@@ -510,31 +517,33 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             )
             animatorSet.interpolator = DecelerateInterpolator()
             animatorSet.duration = 250
-            animatorSet.addListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationStart(animation: Animator?) {
-                    windowView.pip_iv.fadeOut()
-                    windowView.close_iv.fadeOut()
-                    if (windowView.live_tv.isEnabled) {
-                        windowView.live_tv.fadeOut()
+            animatorSet.addListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationStart(animation: Animator?) {
+                        windowView.pip_iv.fadeOut()
+                        windowView.close_iv.fadeOut()
+                        if (windowView.live_tv.isEnabled) {
+                            windowView.live_tv.fadeOut()
+                        }
+                        if (!SystemUIManager.hasCutOut(window)) {
+                            SystemUIManager.clearStyle(window)
+                        }
                     }
-                    if (!SystemUIManager.hasCutOut(window)) {
-                        SystemUIManager.clearStyle(window)
-                    }
-                }
 
-                override fun onAnimationEnd(animation: Animator?) {
-                    pipAnimationInProgress = false
-                    if (messageItem.isVideo() && VideoPlayer.player().player.playbackState == Player.STATE_IDLE) {
-                        VideoPlayer.player()
-                            .loadVideo(messageItem.mediaUrl!!, messageItem.messageId, true)
-                        VideoPlayer.player().setVideoTextureView(changedTextureView)
-                        VideoPlayer.player().pause()
-                    } else {
-                        VideoPlayer.player().setVideoTextureView(changedTextureView)
+                    override fun onAnimationEnd(animation: Animator?) {
+                        pipAnimationInProgress = false
+                        if (messageItem.isVideo() && VideoPlayer.player().player.playbackState == Player.STATE_IDLE) {
+                            VideoPlayer.player()
+                                .loadVideo(messageItem.mediaUrl!!, messageItem.messageId, true)
+                            VideoPlayer.player().setVideoTextureView(changedTextureView)
+                            VideoPlayer.player().pause()
+                        } else {
+                            VideoPlayer.player().setVideoTextureView(changedTextureView)
+                        }
+                        dismiss()
                     }
-                    dismiss()
                 }
-            })
+            )
             animatorSet.start()
         }
     }
@@ -810,7 +819,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             activity.startActivity(
                 intent,
                 ActivityOptions.makeSceneTransitionAnimation(
-                    activity, imageView,
+                    activity,
+                    imageView,
                     "transition"
                 ).toBundle()
             )

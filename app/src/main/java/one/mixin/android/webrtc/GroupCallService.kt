@@ -231,8 +231,10 @@ class GroupCallService : CallService() {
         if (callState.isIdle()) return
 
         val blazeMessageParam = BlazeMessageParam(
-            conversation_id = conversationId, category = MessageCategory.KRAKEN_SUBSCRIBE.name,
-            message_id = UUID.randomUUID().toString(), track_id = trackId
+            conversation_id = conversationId,
+            category = MessageCategory.KRAKEN_SUBSCRIBE.name,
+            message_id = UUID.randomUUID().toString(),
+            track_id = trackId
         )
         val bm = createKrakenMessage(blazeMessageParam)
         Timber.d("$TAG_CALL subscribe track id: $trackId")
@@ -289,7 +291,9 @@ class GroupCallService : CallService() {
 
             scheduledFutures[cid] = scheduledExecutors.scheduleAtFixedRate(
                 ListRunnable(cid),
-                KRAKEN_LIST_INTERVAL, KRAKEN_LIST_INTERVAL, TimeUnit.SECONDS
+                KRAKEN_LIST_INTERVAL,
+                KRAKEN_LIST_INTERVAL,
+                TimeUnit.SECONDS
             )
         }
     }
@@ -595,7 +599,9 @@ class GroupCallService : CallService() {
 
     @SuppressLint("AutoDispose")
     override fun onIceFailed() {
-        Timber.d("$TAG_CALL onIceFailed callState.isConnected(): ${callState.isConnected()}, disconnected: ${callState.disconnected}, reconnecting: ${callState.reconnecting}")
+        Timber.d(
+            "$TAG_CALL onIceFailed callState.isConnected(): ${callState.isConnected()}, disconnected: ${callState.disconnected}, reconnecting: ${callState.reconnecting}"
+        )
         if (!callState.isConnected() || callState.reconnecting) return
 
         val conversationId = callState.conversationId
@@ -915,8 +921,13 @@ class GroupCallService : CallService() {
         if (!category.isGroupCallType()) return
 
         val message = createCallMessage(
-            UUID.randomUUID().toString(), cid, userId, category,
-            "", nowInUtc(), MessageStatus.READ.name,
+            UUID.randomUUID().toString(),
+            cid,
+            userId,
+            category,
+            "",
+            nowInUtc(),
+            MessageStatus.READ.name,
             mediaDuration = duration
         )
         database.insertAndNotifyConversation(message)

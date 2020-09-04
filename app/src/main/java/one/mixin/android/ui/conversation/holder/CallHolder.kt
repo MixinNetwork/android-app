@@ -112,7 +112,9 @@ class CallHolder constructor(containerView: View) : BaseViewHolder(containerView
                 )
             } else {
                 setItemBackgroundResource(
-                    itemView.chat_layout, R.drawable.chat_bubble_me, R.drawable.chat_bubble_me_night
+                    itemView.chat_layout,
+                    R.drawable.chat_bubble_me,
+                    R.drawable.chat_bubble_me_night
                 )
             }
         } else {

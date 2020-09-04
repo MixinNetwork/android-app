@@ -134,9 +134,9 @@ class PipCallView {
                     startY = y
                 } else if (event.action == MotionEvent.ACTION_MOVE) {
                     if (abs(startX - x) >= appContext.getPixelsInCM(
-                        0.3f,
-                        true
-                    ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
+                            0.3f,
+                            true
+                        ) || abs(startY - y) >= appContext.getPixelsInCM(0.3f, true)
                     ) {
                         startX = x
                         startY = y

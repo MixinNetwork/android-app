@@ -38,7 +38,9 @@ class Migration22Test : BaseMigrationTest() {
     fun migrate_17_22() {
         create17()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 22, true,
+            Constants.DataBase.DB_NAME,
+            22,
+            true,
             MixinDatabaseMigrations.MIGRATION_17_18,
             MixinDatabaseMigrations.MIGRATION_18_19,
             MixinDatabaseMigrations.MIGRATION_19_20,
@@ -51,7 +53,9 @@ class Migration22Test : BaseMigrationTest() {
     fun migrate_18_22() {
         create18()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 22, true,
+            Constants.DataBase.DB_NAME,
+            22,
+            true,
             MixinDatabaseMigrations.MIGRATION_18_19,
             MixinDatabaseMigrations.MIGRATION_19_20,
             MixinDatabaseMigrations.MIGRATION_20_21,
@@ -63,7 +67,9 @@ class Migration22Test : BaseMigrationTest() {
     fun migrate_19_22() {
         create19()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 22, true,
+            Constants.DataBase.DB_NAME,
+            22,
+            true,
             MixinDatabaseMigrations.MIGRATION_19_20,
             MixinDatabaseMigrations.MIGRATION_20_21,
             MixinDatabaseMigrations.MIGRATION_21_22
@@ -74,8 +80,11 @@ class Migration22Test : BaseMigrationTest() {
     fun migrate_20_22() {
         create20()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 22, true,
-            MixinDatabaseMigrations.MIGRATION_20_21, MixinDatabaseMigrations.MIGRATION_21_22
+            Constants.DataBase.DB_NAME,
+            22,
+            true,
+            MixinDatabaseMigrations.MIGRATION_20_21,
+            MixinDatabaseMigrations.MIGRATION_21_22
         )
     }
 
@@ -83,7 +92,9 @@ class Migration22Test : BaseMigrationTest() {
     fun migrate_21_22() {
         create21()
         migrationTestHelper.runMigrationsAndValidate(
-            Constants.DataBase.DB_NAME, 22, true,
+            Constants.DataBase.DB_NAME,
+            22,
+            true,
             MixinDatabaseMigrations.MIGRATION_21_22
         )
     }

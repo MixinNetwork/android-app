@@ -126,13 +126,17 @@ class MessageLayout : ViewGroup {
         val thirdView = getThird()
         if (thirdView == null) {
             firstView.layout(
-                paddingStart, paddingTop, firstView.measuredWidth + paddingStart,
+                paddingStart,
+                paddingTop,
+                firstView.measuredWidth + paddingStart,
                 firstView.measuredHeight + paddingTop
             )
         } else {
             val lp = thirdView.layoutParams as MarginLayoutParams
             thirdView.layout(
-                paddingStart, paddingTop + lp.topMargin, thirdView.measuredWidth + paddingStart,
+                paddingStart,
+                paddingTop + lp.topMargin,
+                thirdView.measuredWidth + paddingStart,
                 thirdView.measuredHeight + paddingTop + lp.bottomMargin
             )
             firstView.layout(

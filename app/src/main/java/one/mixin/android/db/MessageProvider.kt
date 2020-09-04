@@ -512,7 +512,16 @@ class MessageProvider {
                                 val tmpContent = cursor.getString(cursorIndexOfContent)
                                 val tmpCreatedAt = cursor.getString(cursorIndexOfCreatedAt)
                                 val tmpMediaName = cursor.getString(cursorIndexOfMediaName)
-                                item = SearchMessageDetailItem(tmpMessageId, tmpType, tmpContent, tmpCreatedAt, tmpMediaName, tmpUserId, tmpUserFullName, tmpUserAvatarUrl)
+                                item = SearchMessageDetailItem(
+                                    tmpMessageId,
+                                    tmpType,
+                                    tmpContent,
+                                    tmpCreatedAt,
+                                    tmpMediaName,
+                                    tmpUserId,
+                                    tmpUserFullName,
+                                    tmpUserAvatarUrl
+                                )
                                 res.add(item)
                             }
                             return res

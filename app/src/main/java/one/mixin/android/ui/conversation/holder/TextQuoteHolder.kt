@@ -157,8 +157,10 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
                         if (start >= 0) {
                             val sp = SpannableString(str)
                             sp.setSpan(
-                                BackgroundColorSpan(HIGHLIGHTED), start,
-                                start + k.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                                BackgroundColorSpan(HIGHLIGHTED),
+                                start,
+                                start + k.length,
+                                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                             )
                             itemView.chat_tv.text = sp
                         } else {

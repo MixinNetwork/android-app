@@ -169,8 +169,10 @@ class MobileFragment : BaseFragment() {
                     activity?.addFragment(
                         this@MobileFragment,
                         VerificationFragment.newInstance(
-                            verificationResponse.id, phoneNum,
-                            pin, verificationResponse.hasEmergencyContact
+                            verificationResponse.id,
+                            phoneNum,
+                            pin,
+                            verificationResponse.hasEmergencyContact
                         ),
                         VerificationFragment.TAG
                     )

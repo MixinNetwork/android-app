@@ -22,6 +22,7 @@ import kotlinx.android.synthetic.main.view_wallet_transactions_bottom.view.*
 import kotlinx.android.synthetic.main.view_wallet_transactions_send_bottom.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -143,10 +144,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 refreshedSnapshots = true
             }
         }
-        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = currentOrder == R.id.sort_amount))
+        bindLiveData()
         walletViewModel.assetItem(asset.assetId).observe(
             viewLifecycleOwner,
-            Observer { assetItem ->
+            { assetItem ->
                 assetItem?.let {
                     asset = it
                     updateHeader(headerView, it)
@@ -280,17 +281,19 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     override fun onUserClick(userId: String) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            walletViewModel.getUser(userId)?.let {
-                val f = UserBottomSheetDialogFragment.newInstance(it)
-                f.showUserTransactionAction = {
-                    view?.navigate(
-                        R.id.action_transactions_to_user_transactions,
-                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) }
-                    )
-                }
-                f.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+        lifecycleScope.launch {
+            val user = withContext(Dispatchers.IO) {
+                walletViewModel.getUser(userId)
+            } ?: return@launch
+
+            val f = UserBottomSheetDialogFragment.newInstance(user)
+            f.showUserTransactionAction = {
+                view?.navigate(
+                    R.id.action_transactions_to_user_transactions,
+                    Bundle().apply { putString(Constants.ARGS_USER_ID, userId) }
+                )
             }
+            f.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
         }
     }
 
@@ -299,6 +302,11 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     override fun onApplyClick() {
+        bindLiveData()
+        filtersSheet.dismiss()
+    }
+
+    private fun bindLiveData() {
         val orderByAmount = currentOrder == R.id.sort_amount
         when (currentType) {
             R.id.filters_radio_all -> {
@@ -307,37 +315,54 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
             }
             R.id.filters_radio_transfer -> {
-                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name, SnapshotType.pending.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+                bindLiveData(
+                    walletViewModel.snapshotsFromDb(
+                        asset.assetId,
+                        SnapshotType.transfer.name,
+                        SnapshotType.pending.name,
+                        initialLoadKey = initialLoadKey,
+                        orderByAmount = orderByAmount
+                    )
+                )
                 headerView.group_info_member_title.setText(R.string.filters_transfer)
                 headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
             }
             R.id.filters_radio_deposit -> {
-                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+                bindLiveData(
+                    walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
+                )
                 headerView.group_info_member_title.setText(R.string.filters_deposit)
                 headerView.wallet_transactions_empty.setText(R.string.wallet_deposits_empty)
             }
             R.id.filters_radio_withdrawal -> {
-                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.withdrawal.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+                bindLiveData(
+                    walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.withdrawal.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
+                )
                 headerView.group_info_member_title.setText(R.string.filters_withdrawal)
                 headerView.wallet_transactions_empty.setText(R.string.wallet_withdrawals_empty)
             }
             R.id.filters_radio_fee -> {
-                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+                bindLiveData(
+                    walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
+                )
                 headerView.group_info_member_title.setText(R.string.filters_fee)
                 headerView.wallet_transactions_empty.setText(R.string.wallet_fees_empty)
             }
             R.id.filters_radio_rebate -> {
-                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+                bindLiveData(
+                    walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
+                )
                 headerView.group_info_member_title.setText(R.string.filters_rebate)
                 headerView.wallet_transactions_empty.setText(R.string.wallet_rebates_empty)
             }
             R.id.filters_radio_raw -> {
-                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+                bindLiveData(
+                    walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount)
+                )
                 headerView.group_info_member_title.setText(R.string.filters_raw)
                 headerView.wallet_transactions_empty.setText(R.string.wallet_raw_empty)
             }
         }
-        filtersSheet.dismiss()
     }
 
     private fun updateHeaderBottomLayout(show: Boolean) {

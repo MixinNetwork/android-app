@@ -2,15 +2,17 @@ package one.mixin.android.ui.group
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.api.request.ConversationRequest
+import one.mixin.android.api.request.ParticipantAction
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ConversationJob
+import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
-import one.mixin.android.job.ConversationJob.Companion.TYPE_DISMISS_ADMIN
-import one.mixin.android.job.ConversationJob.Companion.TYPE_EXIT
-import one.mixin.android.job.ConversationJob.Companion.TYPE_MAKE_ADMIN
+import one.mixin.android.job.ConversationJob.Companion.TYPE_REMOVE
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
@@ -54,8 +56,12 @@ internal constructor(
         val participantRequestList = mutableListOf<ParticipantRequest>()
         mutableList.mapTo(participantRequestList) { ParticipantRequest(it.userId, it.role) }
         val request = ConversationRequest(
-            conversationId, ConversationCategory.GROUP.name,
-            groupName, icon, announcement, participantRequestList
+            conversationId,
+            ConversationCategory.GROUP.name,
+            groupName,
+            icon,
+            announcement,
+            participantRequestList
         )
         jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))
 
@@ -63,15 +69,6 @@ internal constructor(
     }
 
     fun getConversationStatusById(id: String) = conversationRepository.getConversationById(id)
-
-    /**
-     * @param type only support 2 types
-     * @see ConversationJob.TYPE_ADD
-     * @see ConversationJob.TYPE_REMOVE
-     */
-    fun modifyGroupMembers(conversationId: String, users: List<User>, type: Int) {
-        startGroupJob(conversationId, users, type)
-    }
 
     fun getGroupParticipantsLiveData(conversationId: String) =
         conversationRepository.getGroupParticipantsLiveData(conversationId)
@@ -81,32 +78,7 @@ internal constructor(
 
     fun findSelf() = userRepository.findSelf()
 
-    fun makeAdmin(conversationId: String, user: User) {
-        startGroupJob(conversationId, listOf(user), TYPE_MAKE_ADMIN, "ADMIN")
-    }
-
-    fun dismissAdmin(conversationId: String, user: User) {
-        startGroupJob(conversationId, listOf(user), TYPE_DISMISS_ADMIN, "")
-    }
-
-    private fun startGroupJob(conversationId: String, users: List<User>, type: Int, role: String = "") {
-        val participantRequests = mutableListOf<ParticipantRequest>()
-        users.mapTo(participantRequests) {
-            ParticipantRequest(it.userId, role)
-        }
-        jobManager.addJobInBackground(
-            ConversationJob(
-                conversationId = conversationId,
-                participantRequests = participantRequests, type = type
-            )
-        )
-    }
-
     suspend fun getRealParticipants(conversationId: String) = conversationRepository.getRealParticipants(conversationId)
-
-    fun exitGroup(conversationId: String) {
-        jobManager.addJobInBackground(ConversationJob(conversationId = conversationId, type = TYPE_EXIT))
-    }
 
     fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch {
         conversationRepository.deleteMessageByConversationId(conversationId)
@@ -120,5 +92,29 @@ internal constructor(
                 type = ConversationJob.TYPE_MUTE
             )
         )
+    }
+
+    suspend fun modifyMember(conversationId: String, users: List<User>, type: Int, role: String = "") = withContext(Dispatchers.IO) {
+        val participantRequests = mutableListOf<ParticipantRequest>()
+        users.mapTo(participantRequests) {
+            ParticipantRequest(it.userId, role)
+        }
+        val action = when (type) {
+            TYPE_ADD -> {
+                ParticipantAction.ADD.name
+            }
+            TYPE_REMOVE -> {
+                ParticipantAction.REMOVE.name
+            }
+            else -> {
+                ParticipantAction.ROLE.name
+            }
+        }
+        try {
+            val response = conversationRepository.participants(conversationId, action, participantRequests).execute().body()
+            return@withContext response != null && response.isSuccess && response.data != null
+        } catch (e: Exception) {
+            return@withContext false
+        }
     }
 }

@@ -279,8 +279,12 @@ abstract class MixinJob(
         val plainText = Gson().toJson(PlainJsonMessagePayload(PlainDataAction.NO_KEY.name))
         val encoded = plainText.base64Encode()
         val params = BlazeMessageParam(
-            conversationId, recipientId, UUID.randomUUID().toString(),
-            MessageCategory.PLAIN_JSON.name, encoded, MessageStatus.SENDING.name
+            conversationId,
+            recipientId,
+            UUID.randomUUID().toString(),
+            MessageCategory.PLAIN_JSON.name,
+            encoded,
+            MessageStatus.SENDING.name
         )
         val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, params)
         deliverNoThrow(bm)
@@ -298,7 +302,8 @@ abstract class MixinJob(
     private fun createConversation(conversation: Conversation) {
         val request = ConversationRequest(
             conversationId = conversation.conversationId,
-            category = conversation.category, participants = arrayListOf(ParticipantRequest(conversation.ownerId!!, ""))
+            category = conversation.category,
+            participants = arrayListOf(ParticipantRequest(conversation.ownerId!!, ""))
         )
         val response = conversationApi.create(request).execute().body()
         if (response != null && response.isSuccess && response.data != null && !isCancelled) {
@@ -391,8 +396,14 @@ abstract class MixinJob(
                 ConversationStatus.QUIT.ordinal
             }
             conversationDao.updateConversation(
-                data.conversationId, ownerId, data.category, data.name,
-                data.announcement, data.muteUntil, data.createdAt, status
+                data.conversationId,
+                ownerId,
+                data.category,
+                data.name,
+                data.announcement,
+                data.muteUntil,
+                data.createdAt,
+                status
             )
             if (!data.announcement.isBlank() && c.announcement != data.announcement) {
                 RxBus.publish(GroupEvent(data.conversationId))

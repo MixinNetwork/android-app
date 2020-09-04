@@ -160,7 +160,8 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
                 ConversationViewHolder(
                     LayoutInflater.from(parent.context).inflate(
                         R.layout.item_forward_conversation,
-                        parent, false
+                        parent,
+                        false
                     ).apply {
                         if (disableCheck) {
                             (this as ConversationCheckView).disableCheck()
@@ -172,7 +173,8 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
                 FriendViewHolder(
                     LayoutInflater.from(parent.context).inflate(
                         R.layout.item_contact_friend,
-                        parent, false
+                        parent,
+                        false
                     ).apply {
                         if (disableCheck) {
                             (this as ConversationCheckView).disableCheck()
@@ -184,7 +186,8 @@ class ForwardAdapter(private val disableCheck: Boolean = false) :
                 BotViewHolder(
                     LayoutInflater.from(parent.context).inflate(
                         R.layout.item_contact_friend,
-                        parent, false
+                        parent,
+                        false
                     ).apply {
                         if (disableCheck) {
                             (this as ConversationCheckView).disableCheck()

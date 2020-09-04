@@ -140,7 +140,8 @@ class EditFragment : VisionFragment() {
                     requireContext(),
                     arrayListOf(
                         ForwardMessage(
-                            ForwardCategory.VIDEO.name, mediaUrl = path
+                            ForwardCategory.VIDEO.name,
+                            mediaUrl = path
                         )
                     ),
                     isShare = true
@@ -150,7 +151,8 @@ class EditFragment : VisionFragment() {
                     requireContext(),
                     arrayListOf(
                         ForwardMessage(
-                            ForwardCategory.IMAGE.name, mediaUrl = path
+                            ForwardCategory.IMAGE.name,
+                            mediaUrl = path
                         )
                     ),
                     isShare = true

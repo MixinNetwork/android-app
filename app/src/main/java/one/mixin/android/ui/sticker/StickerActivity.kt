@@ -33,13 +33,15 @@ class StickerActivity : BaseActivity() {
             val url = intent.getStringExtra(ARGS_URL)
             require(url != null)
             replaceFragment(
-                StickerAddFragment.newInstance(url), R.id.container,
+                StickerAddFragment.newInstance(url),
+                R.id.container,
                 StickerAddFragment.TAG
             )
         } else {
             replaceFragment(
                 StickerManagementFragment.newInstance(intent.getStringExtra(ARGS_PERSONAL_ALBUM_ID)),
-                R.id.container, StickerManagementFragment.TAG
+                R.id.container,
+                StickerManagementFragment.TAG
             )
         }
     }

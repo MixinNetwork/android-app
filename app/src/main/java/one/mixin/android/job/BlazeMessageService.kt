@@ -169,7 +169,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         supportsOreo {
             val channel = NotificationChannel(
                 CHANNEL_NODE,
-                MixinApplication.get().getString(R.string.notification_node), NotificationManager.IMPORTANCE_LOW
+                MixinApplication.get().getString(R.string.notification_node),
+                NotificationManager.IMPORTANCE_LOW
             )
             channel.lockscreenVisibility = Notification.VISIBILITY_SECRET
             channel.setSound(null, null)

@@ -18,8 +18,14 @@ data class Scope(val name: String, val desc: String) : Parcelable {
         }
 
         val SCOPES = arrayListOf(
-            "PROFILE:READ", "PHONE:READ", "MESSAGES:REPRESENT",
-            "CONTACTS:READ", "ASSETS:READ", "SNAPSHOTS:READ", "APPS:READ", "APPS:WRITE"
+            "PROFILE:READ",
+            "PHONE:READ",
+            "MESSAGES:REPRESENT",
+            "CONTACTS:READ",
+            "ASSETS:READ",
+            "SNAPSHOTS:READ",
+            "APPS:READ",
+            "APPS:WRITE"
         )
     }
 }

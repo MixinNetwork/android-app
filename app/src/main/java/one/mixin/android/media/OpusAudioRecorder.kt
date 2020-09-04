@@ -170,8 +170,11 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
             }
 
             audioRecord = AudioRecord(
-                MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT, recordBufferSize * BUFFER_SIZE_FACTOR
+                MediaRecorder.AudioSource.MIC,
+                SAMPLE_RATE,
+                AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_16BIT,
+                recordBufferSize * BUFFER_SIZE_FACTOR
             )
 
             if (audioRecord == null || audioRecord!!.state != AudioRecord.STATE_INITIALIZED) {

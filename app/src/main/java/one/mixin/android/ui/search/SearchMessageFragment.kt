@@ -79,7 +79,8 @@ class SearchMessageFragment : BaseFragment() {
             title_view.title_tv.text = searchMessageItem.userFullName
             title_view.avatar_iv.setInfo(
                 searchMessageItem.userFullName,
-                searchMessageItem.userAvatarUrl, searchMessageItem.userId
+                searchMessageItem.userAvatarUrl,
+                searchMessageItem.userId
             )
         } else {
             title_view.title_tv.text = searchMessageItem.conversationName

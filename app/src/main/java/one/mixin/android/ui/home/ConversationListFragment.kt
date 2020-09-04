@@ -176,22 +176,24 @@ class ConversationListFragment : LinkFragment() {
         message_rv.adapter = messageAdapter
         message_rv.itemAnimator = null
         message_rv.setHasFixedSize(true)
-        message_rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (distance < -touchSlop && !shadowVisible) {
-                    shadow_view.animate().translationY(0f).duration = 200
-                    distance = 0
-                    shadowVisible = true
-                } else if (distance > touchSlop && shadowVisible) {
-                    shadow_view.animate().translationY(shadow_view.height.toFloat()).duration = 200
-                    distance = 0
-                    shadowVisible = false
-                }
-                if ((dy > 0 && shadowVisible) || (dy < 0 && !shadowVisible)) {
-                    distance += dy
+        message_rv.addOnScrollListener(
+            object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    if (distance < -touchSlop && !shadowVisible) {
+                        shadow_view.animate().translationY(0f).duration = 200
+                        distance = 0
+                        shadowVisible = true
+                    } else if (distance > touchSlop && shadowVisible) {
+                        shadow_view.animate().translationY(shadow_view.height.toFloat()).duration = 200
+                        distance = 0
+                        shadowVisible = false
+                    }
+                    if ((dy > 0 && shadowVisible) || (dy < 0 && !shadowVisible)) {
+                        distance += dy
+                    }
                 }
             }
-        })
+        )
         message_rv.callback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
                 if (top_fl.isGone) {
@@ -230,7 +232,8 @@ class ConversationListFragment : LinkFragment() {
                     (requireActivity() as MainActivity).closeSearch()
                 }
                 top_fl.animateHeight(
-                    top_fl.height, 0,
+                    top_fl.height,
+                    0,
                     onEndAction = {
                         vibrated = false
                     }
@@ -490,7 +493,8 @@ class ConversationListFragment : LinkFragment() {
                                     view.setImageResource(app.getCategoryIcon())
                                     view.setOnClickListener {
                                         WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app).show(
-                                            parentFragmentManager, WebBottomSheetDialogFragment.TAG
+                                            parentFragmentManager,
+                                            WebBottomSheetDialogFragment.TAG
                                         )
                                     }
                                 },
@@ -845,7 +849,8 @@ class ConversationListFragment : LinkFragment() {
             } else {
                 itemView.avatar_iv.setInfo(
                     conversationItem.getConversationName(),
-                    conversationItem.iconUrl(), conversationItem.ownerId
+                    conversationItem.iconUrl(),
+                    conversationItem.ownerId
                 )
             }
             itemView.setOnClickListener { onItemClickListener?.onNormalItemClick(conversationItem) }

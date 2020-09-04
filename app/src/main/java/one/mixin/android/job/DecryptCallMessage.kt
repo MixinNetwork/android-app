@@ -93,8 +93,13 @@ class DecryptCallMessage(
             if (isExpired) {
                 if (data.category == MessageCategory.KRAKEN_INVITE.name) {
                     val message = createCallMessage(
-                        data.messageId, data.conversationId, data.userId, MessageCategory.KRAKEN_INVITE.name,
-                        null, data.createdAt, data.status
+                        data.messageId,
+                        data.conversationId,
+                        data.userId,
+                        MessageCategory.KRAKEN_INVITE.name,
+                        null,
+                        data.createdAt,
+                        data.status
                     )
                     database.insertAndNotifyConversation(message)
                 } else if (data.category == MessageCategory.KRAKEN_PUBLISH.name || data.category == MessageCategory.KRAKEN_END.name) {
@@ -117,8 +122,14 @@ class DecryptCallMessage(
 
                                 val curData = pair.second
                                 val savedMessage = createCallMessage(
-                                    UUID.randomUUID().toString(), curData.conversationId, curData.userId,
-                                    MessageCategory.KRAKEN_INVITE.name, null, nowInUtc(), MessageStatus.SENDING.name, null
+                                    UUID.randomUUID().toString(),
+                                    curData.conversationId,
+                                    curData.userId,
+                                    MessageCategory.KRAKEN_INVITE.name,
+                                    null,
+                                    nowInUtc(),
+                                    MessageStatus.SENDING.name,
+                                    null
                                 )
                                 database.insertAndNotifyConversation(savedMessage)
                                 listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
@@ -175,14 +186,26 @@ class DecryptCallMessage(
                             if (entry.key != data.messageId && !job.isCancelled) {
                                 job.cancel()
                                 val m = createCallMessage(
-                                    UUID.randomUUID().toString(), curData.conversationId, Session.getAccountId()!!,
-                                    MessageCategory.WEBRTC_AUDIO_BUSY.name, null, nowInUtc(), MessageStatus.SENDING.name, curData.messageId
+                                    UUID.randomUUID().toString(),
+                                    curData.conversationId,
+                                    Session.getAccountId()!!,
+                                    MessageCategory.WEBRTC_AUDIO_BUSY.name,
+                                    null,
+                                    nowInUtc(),
+                                    MessageStatus.SENDING.name,
+                                    curData.messageId
                                 )
                                 jobManager.addJobInBackground(SendMessageJob(m, recipientId = curData.userId))
 
                                 val savedMessage = createCallMessage(
-                                    curData.messageId, m.conversationId, curData.userId, m.category, m.content,
-                                    m.createdAt, curData.status, m.quoteMessageId
+                                    curData.messageId,
+                                    m.conversationId,
+                                    curData.userId,
+                                    m.category,
+                                    m.content,
+                                    m.createdAt,
+                                    curData.status,
+                                    m.quoteMessageId
                                 )
                                 database.insertAndNotifyConversation(savedMessage)
                                 listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
@@ -195,8 +218,13 @@ class DecryptCallMessage(
                 )
             } else if (isExpired) {
                 val message = createCallMessage(
-                    data.messageId, data.conversationId, data.userId, MessageCategory.WEBRTC_AUDIO_CANCEL.name,
-                    null, data.createdAt, data.status
+                    data.messageId,
+                    data.conversationId,
+                    data.userId,
+                    MessageCategory.WEBRTC_AUDIO_CANCEL.name,
+                    null,
+                    data.createdAt,
+                    data.status
                 )
                 database.insertAndNotifyConversation(message)
             }
@@ -258,8 +286,13 @@ class DecryptCallMessage(
                 listPendingJobMap.remove(data.quoteMessageId)
 
                 val message = createCallMessage(
-                    data.quoteMessageId!!, data.conversationId, data.userId,
-                    MessageCategory.WEBRTC_AUDIO_CANCEL.name, null, data.createdAt, data.status
+                    data.quoteMessageId!!,
+                    data.conversationId,
+                    data.userId,
+                    MessageCategory.WEBRTC_AUDIO_CANCEL.name,
+                    null,
+                    data.createdAt,
+                    data.status
                 )
                 database.insertAndNotifyConversation(message)
             }
@@ -365,8 +398,14 @@ class DecryptCallMessage(
         }
         val realCategory = category ?: data.category
         val message = createCallMessage(
-            data.quoteMessageId, data.conversationId, userId, realCategory,
-            null, data.createdAt, messageStatus, mediaDuration = duration
+            data.quoteMessageId,
+            data.conversationId,
+            userId,
+            realCategory,
+            null,
+            data.createdAt,
+            messageStatus,
+            mediaDuration = duration
         )
         database.insertAndNotifyConversation(message)
     }

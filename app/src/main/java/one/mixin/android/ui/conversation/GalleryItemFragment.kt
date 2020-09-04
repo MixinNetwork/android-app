@@ -80,13 +80,15 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
                 callback?.onCameraClick()
             }
         }
-        rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                if (rv.scrollState != SCROLL_STATE_IDLE) {
-                    adapter.hideBLur()
+        rv.addOnScrollListener(
+            object : RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    if (rv.scrollState != SCROLL_STATE_IDLE) {
+                        adapter.hideBLur()
+                    }
                 }
             }
-        })
+        )
         rv.callback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
                 rvCallback?.onScroll(dis)

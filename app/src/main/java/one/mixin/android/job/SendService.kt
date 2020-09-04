@@ -57,8 +57,13 @@ class SendService : IntentService("SendService") {
             }
 
             val message = createMessage(
-                UUID.randomUUID().toString(), conversationId,
-                Session.getAccountId().toString(), category, content.toString().trim(), nowInUtc(), MessageStatus.SENDING.name
+                UUID.randomUUID().toString(),
+                conversationId,
+                Session.getAccountId().toString(),
+                category,
+                content.toString().trim(),
+                nowInUtc(),
+                MessageStatus.SENDING.name
             )
             jobManager.addJobInBackground(SendMessageJob(message))
         }

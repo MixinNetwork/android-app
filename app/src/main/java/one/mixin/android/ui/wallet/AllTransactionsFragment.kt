@@ -16,6 +16,7 @@ import kotlinx.android.synthetic.main.layout_empty_transaction.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.navigate
@@ -65,13 +66,15 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 refreshedSnapshots = true
             }
         }
-        bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey, orderByAmount = currentOrder == R.id.sort_amount))
+        bindLiveData()
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             val snapshot = item as SnapshotItem
-            val a = walletViewModel.simpleAssetItem(snapshot.assetId)
+            val a = withContext(Dispatchers.IO) {
+                walletViewModel.simpleAssetItem(snapshot.assetId)
+            }
             a?.let {
                 if (!isAdded) return@launch
 
@@ -87,17 +90,18 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     override fun onUserClick(userId: String) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            walletViewModel.getUser(userId)?.let {
-                val f = UserBottomSheetDialogFragment.newInstance(it)
-                f.showUserTransactionAction = {
-                    view?.navigate(
-                        R.id.action_all_transactions_to_user_transactions,
-                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) }
-                    )
-                }
-                f.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+        lifecycleScope.launch {
+            val user = withContext(Dispatchers.IO) {
+                walletViewModel.getUser(userId)
+            } ?: return@launch
+            val f = UserBottomSheetDialogFragment.newInstance(user)
+            f.showUserTransactionAction = {
+                view?.navigate(
+                    R.id.action_all_transactions_to_user_transactions,
+                    Bundle().apply { putString(Constants.ARGS_USER_ID, userId) }
+                )
             }
+            f.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
         }
     }
 
@@ -106,13 +110,26 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     override fun onApplyClick() {
+        initialLoadKey = null
+        bindLiveData()
+        filtersSheet.dismiss()
+    }
+
+    private fun bindLiveData() {
         val orderByAmount = currentOrder == R.id.sort_amount
         when (currentType) {
             R.id.filters_radio_all -> {
                 bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
             }
             R.id.filters_radio_transfer -> {
-                bindLiveData(walletViewModel.allSnapshots(SnapshotType.transfer.name, SnapshotType.pending.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+                bindLiveData(
+                    walletViewModel.allSnapshots(
+                        SnapshotType.transfer.name,
+                        SnapshotType.pending.name,
+                        initialLoadKey = initialLoadKey,
+                        orderByAmount = orderByAmount
+                    )
+                )
             }
             R.id.filters_radio_deposit -> {
                 bindLiveData(walletViewModel.allSnapshots(SnapshotType.deposit.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
@@ -130,7 +147,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 bindLiveData(walletViewModel.allSnapshots(SnapshotType.raw.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
             }
         }
-        filtersSheet.dismiss()
     }
 
     private fun showEmpty(show: Boolean) {

@@ -30,23 +30,25 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderFooterAdapter<A
             data = newAssets
             notifyItemRangeInserted(0, newAssets.size)
         } else {
-            val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
-                override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                    val old = data!![oldItemPosition]
-                    val new = newAssets[newItemPosition]
-                    return old.assetId == new.assetId
+            val diffResult = DiffUtil.calculateDiff(
+                object : DiffUtil.Callback() {
+                    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                        val old = data!![oldItemPosition]
+                        val new = newAssets[newItemPosition]
+                        return old.assetId == new.assetId
+                    }
+
+                    override fun getOldListSize() = data!!.size
+
+                    override fun getNewListSize() = newAssets.size
+
+                    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                        val old = data!![oldItemPosition]
+                        val new = newAssets[newItemPosition]
+                        return old == new
+                    }
                 }
-
-                override fun getOldListSize() = data!!.size
-
-                override fun getNewListSize() = newAssets.size
-
-                override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                    val old = data!![oldItemPosition]
-                    val new = newAssets[newItemPosition]
-                    return old == new
-                }
-            })
+            )
             data = newAssets
             if (headerView != null) {
                 diffResult.dispatchUpdatesTo(HeaderListUpdateCallback(this))

@@ -48,9 +48,12 @@ fun aesEncrypt(key: String, iterator: Long, code: String): String? {
 fun rsaDecrypt(privateKey: PrivateKey, iv: String, pinToken: String): String {
     val deCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding")
     deCipher.init(
-        Cipher.DECRYPT_MODE, privateKey,
+        Cipher.DECRYPT_MODE,
+        privateKey,
         OAEPParameterSpec(
-            "SHA-256", "MGF1", MGF1ParameterSpec.SHA256,
+            "SHA-256",
+            "MGF1",
+            MGF1ParameterSpec.SHA256,
             PSource.PSpecified(iv.toByteArray())
         )
     )

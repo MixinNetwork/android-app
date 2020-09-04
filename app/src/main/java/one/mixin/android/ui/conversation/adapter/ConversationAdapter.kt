@@ -184,14 +184,23 @@ class ConversationAdapter(
                 }
                 TEXT_QUOTE_TYPE -> {
                     (holder as TextQuoteHolder).bind(
-                        it, keyword, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        keyword,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 POST_TYPE -> {
                     (holder as PostHolder).bind(
-                        it, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener,
+                        it,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener,
                         miniMarkwon
                     )
                 }
@@ -237,13 +246,22 @@ class ConversationAdapter(
                 }
                 AUDIO_TYPE -> {
                     (holder as AudioHolder).bind(
-                        it, isFirst(position),
-                        isLast(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        isFirst(position),
+                        isLast(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 AUDIO_QUOTE_TYPE -> {
                     (holder as AudioQuoteHolder).bind(
-                        it, isFirst(position), isLast(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        isFirst(position),
+                        isLast(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 SYSTEM_TYPE -> {
@@ -259,20 +277,33 @@ class ConversationAdapter(
                 }
                 BILL_TYPE -> {
                     (holder as BillHolder).bind(
-                        it, isLast(position),
-                        selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        isLast(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 FILE_TYPE -> {
                     (holder as FileHolder).bind(
-                        it, keyword, isFirst(position),
-                        isLast(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        keyword,
+                        isFirst(position),
+                        isLast(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 FILE_QUOTE_TYPE -> {
                     (holder as FileQuoteHolder).bind(
-                        it, keyword, isFirst(position),
-                        isLast(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        keyword,
+                        isFirst(position),
+                        isLast(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 WAITING_TYPE -> {
@@ -337,13 +368,22 @@ class ConversationAdapter(
                 }
                 CONTACT_CARD_TYPE -> {
                     (holder as ContactCardHolder).bind(
-                        it, isFirst(position), isLast(position),
-                        selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        isFirst(position),
+                        isLast(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 CONTACT_CARD_QUOTE_TYPE -> {
                     (holder as ContactCardQuoteHolder).bind(
-                        it, isFirst(position), isLast(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        isFirst(position),
+                        isLast(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 SECRET_TYPE -> {
@@ -370,8 +410,12 @@ class ConversationAdapter(
                 }
                 LOCATION_TYPE -> {
                     (holder as LocationHolder).bind(
-                        it, isLast(position),
-                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener
+                        it,
+                        isLast(position),
+                        isFirst(position),
+                        selectSet.size > 0,
+                        isSelect(position),
+                        onItemListener
                     )
                 }
                 GROUP_CALL_TYPE -> {

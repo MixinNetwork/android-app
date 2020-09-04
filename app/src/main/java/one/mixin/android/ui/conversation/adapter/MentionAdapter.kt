@@ -9,10 +9,12 @@ import one.mixin.android.ui.conversation.holder.MentionHolder
 import one.mixin.android.vo.User
 
 class MentionAdapter constructor(private val onClickListener: OnUserClickListener) :
-    ListAdapter<User, MentionHolder>(object : DiffUtil.ItemCallback<User>() {
-        override fun areItemsTheSame(oldItem: User, newItem: User) = false
-        override fun areContentsTheSame(oldItem: User, newItem: User) = false
-    }) {
+    ListAdapter<User, MentionHolder>(
+        object : DiffUtil.ItemCallback<User>() {
+            override fun areItemsTheSame(oldItem: User, newItem: User) = false
+            override fun areContentsTheSame(oldItem: User, newItem: User) = false
+        }
+    ) {
 
     var list: List<User>? = null
     var keyword: String? = null

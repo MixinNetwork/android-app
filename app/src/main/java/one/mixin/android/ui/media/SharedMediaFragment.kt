@@ -43,7 +43,8 @@ class SharedMediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         view_pager.adapter = adapter
         TabLayoutMediator(
-            shared_tl, view_pager,
+            shared_tl,
+            view_pager,
             TabLayoutMediator.TabConfigurationStrategy { tab, position ->
                 tab.text = getString(
                     when (position) {

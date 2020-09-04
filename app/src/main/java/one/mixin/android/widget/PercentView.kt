@@ -118,7 +118,9 @@ class PercentView : View {
         shadowBounds.set(radius / 2, 0f, width.toFloat(), height.toFloat())
         if (blurShadow == null) {
             blurShadow = Bitmap.createBitmap(
-                shadowBounds.width().toInt(), (shadowBounds.height() * 1.5f).toInt(), Bitmap.Config.ARGB_8888
+                shadowBounds.width().toInt(),
+                (shadowBounds.height() * 1.5f).toInt(),
+                Bitmap.Config.ARGB_8888
             )
         } else {
             blurShadow?.eraseColor(Color.TRANSPARENT)

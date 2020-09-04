@@ -73,8 +73,10 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
         appComponent = AppInjector.init(this)
         RxJavaPlugins.setErrorHandler {}
         AppCenter.start(
-            this, BuildConfig.APPCENTER_API_KEY,
-            Analytics::class.java, Crashes::class.java
+            this,
+            BuildConfig.APPCENTER_API_KEY,
+            Analytics::class.java,
+            Crashes::class.java
         )
     }
 

@@ -20,7 +20,8 @@ suspend fun getLastUserId(context: Context): String? = withContext(Dispatchers.I
 
     try {
         db = SQLiteDatabase.openDatabase(
-            dbFile.absolutePath, null,
+            dbFile.absolutePath,
+            null,
             SQLiteDatabase.OPEN_READONLY
         )
         c = db.rawQuery("SELECT user_id FROM users WHERE relationship = 'ME'", null)
@@ -47,7 +48,8 @@ suspend fun clearDatabase(context: Context) = withContext(Dispatchers.IO) {
     var db: SQLiteDatabase? = null
     try {
         db = SQLiteDatabase.openDatabase(
-            dbFile.absolutePath, null,
+            dbFile.absolutePath,
+            null,
             SQLiteDatabase.OPEN_READWRITE
         )
         if (!supportsDeferForeignKeys) {

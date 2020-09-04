@@ -86,6 +86,8 @@ interface ParticipantDao : BaseDao<Participant> {
     @Query("SELECT * FROM participants")
     suspend fun getAllParticipants(): List<Participant>
 
-    @Query("SELECT p.conversation_id FROM participants p, conversations c WHERE p.user_id = :userId AND p.conversation_id = c.conversation_id AND c.status = 2 LIMIT 1")
+    @Query(
+        "SELECT p.conversation_id FROM participants p, conversations c WHERE p.user_id = :userId AND p.conversation_id = c.conversation_id AND c.status = 2 LIMIT 1"
+    )
     fun joinedConversationId(userId: String): String
 }

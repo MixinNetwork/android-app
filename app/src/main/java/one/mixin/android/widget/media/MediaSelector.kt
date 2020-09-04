@@ -80,13 +80,15 @@ class MediaSelector(
     fun show(anchor: View) {
         this.currentAnchor = anchor
         showAtLocation(anchor, Gravity.BOTTOM, 0, 0)
-        contentView.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                contentView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+        contentView.viewTreeObserver.addOnGlobalLayoutListener(
+            object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    contentView.viewTreeObserver.removeOnGlobalLayoutListener(this)
 
-                animateWindowInCircular(anchor, contentView)
+                    animateWindowInCircular(anchor, contentView)
+                }
             }
-        })
+        )
         animateButtonIn(menuCamera, ANIMATION_DURATION / 2)
         animateButtonIn(menuGallery, ANIMATION_DURATION / 2)
         animateButtonIn(menuVideo, ANIMATION_DURATION / 3)
@@ -100,8 +102,14 @@ class MediaSelector(
     private fun animateButtonIn(button: View, delay: Int) {
         val animation = AnimationSet(true)
         val scale = ScaleAnimation(
-            0.0f, 1.0f, 0.0f, 1.0f,
-            Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.0f
+            0.0f,
+            1.0f,
+            0.0f,
+            1.0f,
+            Animation.RELATIVE_TO_SELF,
+            0.5f,
+            Animation.RELATIVE_TO_SELF,
+            0.0f
         )
 
         animation.addAnimation(scale)
@@ -144,17 +152,19 @@ class MediaSelector(
         )
 
         animator.duration = ANIMATION_DURATION.toLong()
-        animator.addListener(object : Animator.AnimatorListener {
-            override fun onAnimationStart(animation: Animator) {}
+        animator.addListener(
+            object : Animator.AnimatorListener {
+                override fun onAnimationStart(animation: Animator) {}
 
-            override fun onAnimationEnd(animation: Animator) {
-                super@MediaSelector.dismiss()
+                override fun onAnimationEnd(animation: Animator) {
+                    super@MediaSelector.dismiss()
+                }
+
+                override fun onAnimationCancel(animation: Animator) {}
+
+                override fun onAnimationRepeat(animation: Animator) {}
             }
-
-            override fun onAnimationCancel(animation: Animator) {}
-
-            override fun onAnimationRepeat(animation: Animator) {}
-        })
+        )
 
         animator.start()
     }
@@ -162,15 +172,17 @@ class MediaSelector(
     private fun animateWindowOutTranslate(contentView: View) {
         val animation = TranslateAnimation(0f, 0f, 0f, (contentView.top + contentView.height).toFloat())
         animation.duration = ANIMATION_DURATION.toLong()
-        animation.setAnimationListener(object : Animation.AnimationListener {
-            override fun onAnimationStart(animation: Animation) {}
+        animation.setAnimationListener(
+            object : Animation.AnimationListener {
+                override fun onAnimationStart(animation: Animation) {}
 
-            override fun onAnimationEnd(animation: Animation) {
-                super@MediaSelector.dismiss()
+                override fun onAnimationEnd(animation: Animation) {
+                    super@MediaSelector.dismiss()
+                }
+
+                override fun onAnimationRepeat(animation: Animation) {}
             }
-
-            override fun onAnimationRepeat(animation: Animation) {}
-        })
+        )
 
         getContentView().startAnimation(animation)
     }

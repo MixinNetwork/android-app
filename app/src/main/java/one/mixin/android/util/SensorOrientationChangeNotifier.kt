@@ -31,7 +31,8 @@ object SensorOrientationChangeNotifier {
     fun resume() {
         sensorManager?.registerListener(
             notifierSensorEventListener,
-            sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL
+            sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+            SensorManager.SENSOR_DELAY_NORMAL
         )
     }
 

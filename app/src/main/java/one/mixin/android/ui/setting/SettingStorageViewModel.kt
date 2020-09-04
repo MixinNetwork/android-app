@@ -66,19 +66,35 @@ internal constructor(
             when (type) {
                 IMAGE -> {
                     MixinApplication.get().getConversationImagePath(conversationId)?.deleteRecursively()
-                    conversationRepository.deleteMediaMessageByConversationAndCategory(conversationId, MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name)
+                    conversationRepository.deleteMediaMessageByConversationAndCategory(
+                        conversationId,
+                        MessageCategory.SIGNAL_IMAGE.name,
+                        MessageCategory.PLAIN_IMAGE.name
+                    )
                 }
                 VIDEO -> {
                     MixinApplication.get().getConversationVideoPath(conversationId)?.deleteRecursively()
-                    conversationRepository.deleteMediaMessageByConversationAndCategory(conversationId, MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name)
+                    conversationRepository.deleteMediaMessageByConversationAndCategory(
+                        conversationId,
+                        MessageCategory.SIGNAL_VIDEO.name,
+                        MessageCategory.PLAIN_VIDEO.name
+                    )
                 }
                 AUDIO -> {
                     MixinApplication.get().getConversationAudioPath(conversationId)?.deleteRecursively()
-                    conversationRepository.deleteMediaMessageByConversationAndCategory(conversationId, MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name)
+                    conversationRepository.deleteMediaMessageByConversationAndCategory(
+                        conversationId,
+                        MessageCategory.SIGNAL_AUDIO.name,
+                        MessageCategory.PLAIN_AUDIO.name
+                    )
                 }
                 DATA -> {
                     MixinApplication.get().getConversationDocumentPath(conversationId)?.deleteRecursively()
-                    conversationRepository.deleteMediaMessageByConversationAndCategory(conversationId, MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name)
+                    conversationRepository.deleteMediaMessageByConversationAndCategory(
+                        conversationId,
+                        MessageCategory.SIGNAL_DATA.name,
+                        MessageCategory.PLAIN_DATA.name
+                    )
                 }
             }
         } else {

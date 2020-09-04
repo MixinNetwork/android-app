@@ -84,11 +84,13 @@ class GalleryItemAdapter(
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && item.isHeif) {
                     holder.itemView.thumbnail_iv.scaleType = ImageView.ScaleType.CENTER_CROP
                     imageView.setImageDrawable(null)
-                    HeicLoader.fromUrl(ctx, item.uri).addListener(object : ImageListener<Drawable> {
-                        override fun onResult(result: Drawable) {
-                            imageView.setImageDrawable(result)
+                    HeicLoader.fromUrl(ctx, item.uri).addListener(
+                        object : ImageListener<Drawable> {
+                            override fun onResult(result: Drawable) {
+                                imageView.setImageDrawable(result)
+                            }
                         }
-                    })
+                    )
                 } else {
                     imageView.loadImageCenterCrop(item.uri, R.drawable.image_holder)
                 }

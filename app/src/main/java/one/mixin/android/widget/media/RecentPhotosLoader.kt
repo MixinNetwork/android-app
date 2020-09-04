@@ -10,7 +10,9 @@ class RecentPhotosLoader(context: Context) : CursorLoader(context) {
     override fun loadInBackground(): Cursor? {
         return context.contentResolver.query(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            PROJECTION, WHERE, null,
+            PROJECTION,
+            WHERE,
+            null,
             MediaStore.Images.ImageColumns.DATE_MODIFIED + " DESC"
         )
     }

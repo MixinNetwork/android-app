@@ -214,9 +214,13 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
                     addToTab("Job", "shouldReRunOnThrowable", "Retry max count:$runCount")
                 }
             }
-            Crashes.trackError(throwable, ArrayMap<String, String>().apply {
-                put("Job_shouldReRunOnThrowable","Retry max count:$runCount")
-            }, null);
+            Crashes.trackError(
+                throwable,
+                ArrayMap<String, String>().apply {
+                    put("Job_shouldReRunOnThrowable", "Retry max count:$runCount")
+                },
+                null
+            )
         }
         return if (shouldRetry(throwable)) {
             RetryConstraint.RETRY

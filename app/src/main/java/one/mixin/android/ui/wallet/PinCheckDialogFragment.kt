@@ -52,13 +52,15 @@ class PinCheckDialogFragment : DialogFragment(), Injectable {
         contentView = View.inflate(context, R.layout.fragment_pin_check, null)
         dialog.setContentView(contentView)
 
-        contentView.pin.setListener(object : PinView.OnPinListener {
-            override fun onUpdate(index: Int) {
-                if (index == contentView.pin.getCount()) {
-                    verify(contentView.pin.code())
+        contentView.pin.setListener(
+            object : PinView.OnPinListener {
+                override fun onUpdate(index: Int) {
+                    if (index == contentView.pin.getCount()) {
+                        verify(contentView.pin.code())
+                    }
                 }
             }
-        })
+        )
         contentView.got_it_tv.setOnClickListener { activity?.finish() }
         contentView.keyboard.setKeyboardKeys(KEYS)
         contentView.keyboard.setOnClickKeyboardListener(mKeyboardListener)

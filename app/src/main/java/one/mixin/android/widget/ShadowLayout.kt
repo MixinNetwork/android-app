@@ -35,8 +35,10 @@ class ShadowLayout : ViewGroup {
                 val thirdView = getChildAt(2)
                 val thirdLp = thirdView.layoutParams as MarginLayoutParams
                 firstView.layout(
-                    firstLp.marginStart, firstLp.topMargin,
-                    width - firstLp.marginEnd, height - firstLp.bottomMargin
+                    firstLp.marginStart,
+                    firstLp.topMargin,
+                    width - firstLp.marginEnd,
+                    height - firstLp.bottomMargin
                 )
                 secondView.layout(
                     width - secondView.measuredWidth - secondLp.marginEnd,
@@ -53,8 +55,10 @@ class ShadowLayout : ViewGroup {
             }
             firstLp.marginStart > 0 -> {
                 firstView.layout(
-                    firstLp.marginStart, 0,
-                    firstLp.marginStart + firstView.measuredWidth, firstView.measuredHeight
+                    firstLp.marginStart,
+                    0,
+                    firstLp.marginStart + firstView.measuredWidth,
+                    firstView.measuredHeight
                 )
                 secondView.layout(
                     width - secondView.measuredWidth - secondLp.marginEnd,
@@ -66,7 +70,9 @@ class ShadowLayout : ViewGroup {
             firstLp.marginEnd > 0 -> {
                 firstView.layout(
                     width - firstLp.marginEnd - firstView.measuredWidth,
-                    0, width - firstLp.marginEnd, firstView.measuredHeight
+                    0,
+                    width - firstLp.marginEnd,
+                    firstView.measuredHeight
                 )
                 secondView.layout(
                     width - secondView.measuredWidth - secondLp.marginEnd,

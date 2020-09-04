@@ -152,29 +152,31 @@ fun ImageView.loadGifMark(uri: String?, mark: Int, useSignature: Boolean = true)
         options = options.signature(StringSignature("$uri$mark"))
     }
     Glide.with(this).asGif().load(uri).apply(options)
-        .listener(object : RequestListener<GifDrawable> {
-            override fun onLoadFailed(
-                e: GlideException?,
-                model: Any?,
-                target: Target<GifDrawable>?,
-                isFirstResource: Boolean
-            ): Boolean {
-                return true
-            }
-
-            override fun onResourceReady(
-                resource: GifDrawable?,
-                model: Any?,
-                target: Target<GifDrawable>?,
-                dataSource: DataSource?,
-                isFirstResource: Boolean
-            ): Boolean {
-                this@loadGifMark.context.runOnUiThread {
-                    setImageDrawable(resource)
+        .listener(
+            object : RequestListener<GifDrawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: Target<GifDrawable>?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    return true
                 }
-                return true
+
+                override fun onResourceReady(
+                    resource: GifDrawable?,
+                    model: Any?,
+                    target: Target<GifDrawable>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    this@loadGifMark.context.runOnUiThread {
+                        setImageDrawable(resource)
+                    }
+                    return true
+                }
             }
-        })
+        )
         .submit(layoutParams.width, layoutParams.height)
 }
 
@@ -208,29 +210,31 @@ fun ImageView.loadImageMark(uri: String?, mark: Int) {
         RequestOptions().dontAnimate()
             .signature(StringSignature("$uri$mark"))
     )
-        .listener(object : RequestListener<Drawable> {
-            override fun onLoadFailed(
-                e: GlideException?,
-                model: Any?,
-                target: Target<Drawable>?,
-                isFirstResource: Boolean
-            ): Boolean {
-                return true
-            }
-
-            override fun onResourceReady(
-                resource: Drawable?,
-                model: Any?,
-                target: Target<Drawable>?,
-                dataSource: DataSource?,
-                isFirstResource: Boolean
-            ): Boolean {
-                this@loadImageMark.context.runOnUiThread {
-                    setImageDrawable(resource)
+        .listener(
+            object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    return true
                 }
-                return true
+
+                override fun onResourceReady(
+                    resource: Drawable?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    this@loadImageMark.context.runOnUiThread {
+                        setImageDrawable(resource)
+                    }
+                    return true
+                }
             }
-        })
+        )
         .submit(layoutParams.width, layoutParams.height)
 }
 
@@ -265,29 +269,31 @@ fun ImageView.loadLongImageMark(uri: String?, mark: Int) {
         )
             .dontAnimate()
             .signature(StringSignature("$uri$mark"))
-    ).listener(object : RequestListener<Drawable> {
-        override fun onLoadFailed(
-            e: GlideException?,
-            model: Any?,
-            target: Target<Drawable>?,
-            isFirstResource: Boolean
-        ): Boolean {
-            return true
-        }
-
-        override fun onResourceReady(
-            resource: Drawable?,
-            model: Any?,
-            target: Target<Drawable>?,
-            dataSource: DataSource?,
-            isFirstResource: Boolean
-        ): Boolean {
-            this@loadLongImageMark.context.runOnUiThread {
-                setImageDrawable(resource)
+    ).listener(
+        object : RequestListener<Drawable> {
+            override fun onLoadFailed(
+                e: GlideException?,
+                model: Any?,
+                target: Target<Drawable>?,
+                isFirstResource: Boolean
+            ): Boolean {
+                return true
             }
-            return true
+
+            override fun onResourceReady(
+                resource: Drawable?,
+                model: Any?,
+                target: Target<Drawable>?,
+                dataSource: DataSource?,
+                isFirstResource: Boolean
+            ): Boolean {
+                this@loadLongImageMark.context.runOnUiThread {
+                    setImageDrawable(resource)
+                }
+                return true
+            }
         }
-    }).submit(layoutParams.width, layoutParams.height)
+    ).submit(layoutParams.width, layoutParams.height)
 }
 
 fun ImageView.loadVideoMark(
@@ -305,34 +311,36 @@ fun ImageView.loadVideoMark(
                         this.placeholder(holder.toDrawable(width, height))
                     }
                 }
-        ).listener(object : RequestListener<Drawable> {
-            override fun onLoadFailed(
-                e: GlideException?,
-                model: Any?,
-                target: Target<Drawable>?,
-                isFirstResource: Boolean
-            ): Boolean {
-                this@loadVideoMark.context.runOnUiThread {
-                    holder?.toDrawable(width, height)?.let {
-                        setImageDrawable(it)
+        ).listener(
+            object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    this@loadVideoMark.context.runOnUiThread {
+                        holder?.toDrawable(width, height)?.let {
+                            setImageDrawable(it)
+                        }
                     }
+                    return true
                 }
-                return true
-            }
 
-            override fun onResourceReady(
-                resource: Drawable?,
-                model: Any?,
-                target: Target<Drawable>?,
-                dataSource: DataSource?,
-                isFirstResource: Boolean
-            ): Boolean {
-                this@loadVideoMark.context.runOnUiThread {
-                    setImageDrawable(resource)
+                override fun onResourceReady(
+                    resource: Drawable?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    this@loadVideoMark.context.runOnUiThread {
+                        setImageDrawable(resource)
+                    }
+                    return true
                 }
-                return true
             }
-        }).submit(layoutParams.width, layoutParams.height)
+        ).submit(layoutParams.width, layoutParams.height)
 }
 
 @SuppressLint("CheckResult")

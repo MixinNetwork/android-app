@@ -90,7 +90,9 @@ class GenerateAvatarWorker @AssistedInject constructor(
         val verticalDividerRectF = RectF(size / 2f - dividerOffset, 0f, size / 2f + dividerOffset, size.toFloat())
         val horizontalDividerRectF = RectF(0f, size / 2f - dividerOffset, size.toFloat(), size / 2f + dividerOffset)
         val halfHorizontalDividerRectF = RectF(
-            size / 2f, size / 2f - dividerOffset, size.toFloat(),
+            size / 2f,
+            size / 2f - dividerOffset,
+            size.toFloat(),
             size / 2f + dividerOffset
         )
         val rectF = RectF()
@@ -120,7 +122,9 @@ class GenerateAvatarWorker @AssistedInject constructor(
                     if (texts[i] != null) {
                         val offset = b.width * .2f
                         val src = Rect(
-                            offset.toInt(), offset.toInt(), b.width - offset.toInt(),
+                            offset.toInt(),
+                            offset.toInt(),
+                            b.width - offset.toInt(),
                             b.height - offset.toInt()
                         )
                         val dst = if (i == 0) {
@@ -171,7 +175,9 @@ class GenerateAvatarWorker @AssistedInject constructor(
                         if (texts[i] != null) {
                             val offset = b.width * .2f
                             val src = Rect(
-                                offset.toInt(), offset.toInt(), b.width - offset.toInt(),
+                                offset.toInt(),
+                                offset.toInt(),
+                                b.width - offset.toInt(),
                                 b.height - offset.toInt()
                             )
                             val dst = RectF(0f, 0f, size / 2f, size.toFloat())
@@ -191,7 +197,9 @@ class GenerateAvatarWorker @AssistedInject constructor(
                             b.width * .1f
                         }
                         val src = Rect(
-                            offset.toInt(), offset.toInt(), b.width - offset.toInt(),
+                            offset.toInt(),
+                            offset.toInt(),
+                            b.width - offset.toInt(),
                             b.height - offset.toInt()
                         )
                         val dst = when (i) {
@@ -240,7 +248,9 @@ class GenerateAvatarWorker @AssistedInject constructor(
                         item.width * .1f
                     }
                     val src = Rect(
-                        offset.toInt(), offset.toInt(), item.width - offset.toInt(),
+                        offset.toInt(),
+                        offset.toInt(),
+                        item.width - offset.toInt(),
                         item.height - offset.toInt()
                     )
                     val dst = when (i) {

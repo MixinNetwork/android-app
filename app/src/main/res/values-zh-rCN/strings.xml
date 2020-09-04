@@ -381,6 +381,7 @@
     <string name="pin_check_tip">定期输入密码有助于记住该密码</string>
     <string name="transactions_id">交易编号</string>
     <string name="transactions_type">交易类型</string>
+    <string name="transactions_status">交易状态</string>
     <string name="asset_no_hidden">没有隐藏的资产</string>
     <string name="asset_none">暂无价格</string>
     <string name="wallet_pay_with_biometrics">用生物识别支付</string>

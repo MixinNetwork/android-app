@@ -36,7 +36,8 @@ class AvatarActivity : AppCompatActivity() {
             }
             val options = ActivityOptions.makeSceneTransitionAnimation(
                 activity,
-                view, activity.getString(R.string.avatar_transition_name)
+                view,
+                activity.getString(R.string.avatar_transition_name)
             )
             activity.startActivity(intent, options.toBundle())
         }
@@ -53,31 +54,33 @@ class AvatarActivity : AppCompatActivity() {
         window.statusBarColor = Color.TRANSPARENT
         setContentView(R.layout.activity_avatar)
 
-        Glide.with(this).asBitmap().load(url).listener(object : RequestListener<Bitmap> {
-            override fun onLoadFailed(
-                e: GlideException?,
-                model: Any?,
-                target: Target<Bitmap>?,
-                isFirstResource: Boolean
-            ): Boolean {
-                return false
-            }
-
-            override fun onResourceReady(
-                resource: Bitmap,
-                model: Any?,
-                target: Target<Bitmap>?,
-                dataSource: DataSource?,
-                isFirstResource: Boolean
-            ): Boolean {
-                avatar.doOnPreDraw {
-                    val avatarTransform = AvatarTransform(resource).apply { addTarget(avatar) }
-                    window.sharedElementEnterTransition = avatarTransform
-                    startPostponedEnterTransition()
+        Glide.with(this).asBitmap().load(url).listener(
+            object : RequestListener<Bitmap> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: Target<Bitmap>?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    return false
                 }
-                return false
+
+                override fun onResourceReady(
+                    resource: Bitmap,
+                    model: Any?,
+                    target: Target<Bitmap>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    avatar.doOnPreDraw {
+                        val avatarTransform = AvatarTransform(resource).apply { addTarget(avatar) }
+                        window.sharedElementEnterTransition = avatarTransform
+                        startPostponedEnterTransition()
+                    }
+                    return false
+                }
             }
-        }).into(avatar)
+        ).into(avatar)
 
         root.setOnClickListener { finish() }
     }
