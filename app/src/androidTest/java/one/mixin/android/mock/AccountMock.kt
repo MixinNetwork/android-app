@@ -1,6 +1,5 @@
 package one.mixin.android.mock
 
-import one.mixin.android.crypto.generateRSAKeyPair
 import one.mixin.android.vo.Account
 import java.util.UUID
 
@@ -13,4 +12,3 @@ fun mockAccount(): Account {
         "EVERYBODY", true, "USD"
     )
 }
-

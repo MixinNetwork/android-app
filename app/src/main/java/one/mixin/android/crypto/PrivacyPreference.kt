@@ -19,7 +19,6 @@ object PrivacyPreference {
         context.defaultSharedPreferences.remove(PREF_PIN_INTERVAL)
         getPrivacyPreference(context).remove(PREF_PIN_INTERVAL)
         context.defaultSharedPreferences.remove(IS_LOADED)
-        context.defaultSharedPreferences.remove(IS_LOADED)
         getPrivacyPreference(context).remove(IS_LOADED)
         context.defaultSharedPreferences.remove(IS_SYNC_SESSION)
         getPrivacyPreference(context).remove(IS_SYNC_SESSION)
