@@ -54,8 +54,6 @@ import one.mixin.android.Constants.Account.PREF_SYNC_CIRCLE
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
 import one.mixin.android.Constants.INTERVAL_24_HOURS
-import one.mixin.android.Constants.Load.IS_LOADED
-import one.mixin.android.Constants.Load.IS_SYNC_SESSION
 import one.mixin.android.Constants.SAFETY_NET_INTERVAL_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -64,6 +62,8 @@ import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.Base64
+import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
+import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
@@ -214,8 +214,8 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
-        if (!defaultSharedPreferences.getBoolean(IS_LOADED, false) ||
-            !defaultSharedPreferences.getBoolean(IS_SYNC_SESSION, false)
+        if (!getIsLoaded(this, false) ||
+            !getIsSyncSession(this, false)
         ) {
             InitializeActivity.showLoading(this, false)
             finish()
@@ -338,9 +338,9 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun checkRoot() {
         if (RootUtil.isDeviceRooted && defaultSharedPreferences.getBoolean(
-                Constants.Account.PREF_BIOMETRICS,
-                false
-            )
+            Constants.Account.PREF_BIOMETRICS,
+            false
+        )
         ) {
             BiometricUtil.deleteKey(this)
         }

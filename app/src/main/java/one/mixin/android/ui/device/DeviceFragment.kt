@@ -17,7 +17,6 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
@@ -36,6 +35,8 @@ import one.mixin.android.ui.qr.CaptureActivity.Companion.REQUEST_CODE
 import one.mixin.android.ui.qr.CaptureActivity.Companion.RESULT_CODE
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.util.Session.PREF_EXTENSION_SESSION_ID
+import one.mixin.android.util.Session.PREF_SESSION
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textColor
 
@@ -55,10 +56,10 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
     private var loggedIn = false
 
     private val sessionPref =
-        MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
+        MixinApplication.appContext.sharedPreferences(PREF_SESSION)
 
     private val sessionListener = SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
-        if (key == Constants.Account.PREF_EXTENSION_SESSION_ID) {
+        if (key == PREF_EXTENSION_SESSION_ID) {
             updateUI(sp.getString(key, null) != null)
         }
     }

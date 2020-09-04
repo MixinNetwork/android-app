@@ -24,19 +24,13 @@ object Constants {
     }
 
     object Account {
-        const val PREF_SESSION = "pref_session"
-        const val PREF_PIN_TOKEN = "pref_pin_token"
-        const val PREF_NAME_ACCOUNT = "pref_name_account"
-        const val PREF_NAME_TOKEN = "pref_name_token"
+
         const val PREF_PIN_CHECK = "pref_pin_check"
-        const val PREF_PIN_INTERVAL = "pref_pin_interval"
-        const val PREF_PIN_ITERATOR = "pref_pin_iterator"
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_WRONG_TIME = "pref_wrong_time"
         const val PREF_FTS4_UPGRADE = "pref_fts4_upgrade"
         const val PREF_SYNC_FTS4_OFFSET = "sync_fts4_offset"
         const val PREF_RESTORE = "pref_restore"
-        const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
         const val PREF_RECALL_SHOW = "pref_recall_show"
         const val PREF_HAS_WITHDRAWAL_ADDRESS_SET = "pref_has_withdrawal_address_set"
         const val PREF_RECENT_USED_BOTS = "pref_recent_used_bots"
@@ -115,11 +109,6 @@ object Constants {
         const val THEME_DEFAULT_ID = 0
         const val THEME_NIGHT_ID = 1
         const val THEME_AUTO_ID = 2
-    }
-
-    object Load {
-        const val IS_LOADED = "is_loaded"
-        const val IS_SYNC_SESSION = "is_sync_session"
     }
 
     object ChainId {

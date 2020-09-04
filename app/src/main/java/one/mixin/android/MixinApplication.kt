@@ -16,11 +16,11 @@ import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasAndroidInjector
 import io.reactivex.plugins.RxJavaPlugins
 import one.mixin.android.crypto.MixinSignalProtocolLogger
+import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.AppComponent
 import one.mixin.android.di.AppInjector
-import one.mixin.android.extension.clear
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.BlazeMessageService
@@ -144,6 +144,7 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
     private fun clearData(sessionId: String?) {
         jobManager.cancelAllJob()
         jobManager.clear()
+        clearPrivacyPreferences(this)
         MixinDatabase.getDatabase(this).participantSessionDao().clearKey(sessionId)
         SignalDatabase.getDatabase(this).clearAllTables()
     }

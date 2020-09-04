@@ -1,4 +1,5 @@
 @file:Suppress("NOTHING_TO_INLINE")
+
 package one.mixin.android.extension
 
 import android.content.Context
@@ -8,6 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
+import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
+import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 
 inline val Fragment.defaultSharedPreferences: SharedPreferences
     get() = requireContext().defaultSharedPreferences
@@ -59,12 +62,12 @@ inline fun SharedPreferences.remove(key: String) {
 fun Context.updatePinCheck() {
     val cur = System.currentTimeMillis()
     defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
-    val interval = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_INTERVAL, INTERVAL_10_MINS)
+    val interval = getPrefPinInterval(this, INTERVAL_10_MINS)
     if (interval < Constants.INTERVAL_24_HOURS) {
         var tmp = interval * 2
         if (interval * 2 > Constants.INTERVAL_24_HOURS) {
             tmp = Constants.INTERVAL_24_HOURS
         }
-        defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_INTERVAL, tmp)
+        putPrefPinInterval(this, tmp)
     }
 }

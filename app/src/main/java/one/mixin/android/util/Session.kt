@@ -6,7 +6,6 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import okhttp3.Request
-import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
@@ -26,18 +25,26 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.abs
 
 object Session {
+    const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
+    const val PREF_SESSION = "pref_session"
+
     private var self: Account? = null
+    private const val PREF_PIN_ITERATOR = "pref_pin_iterator"
+    private const val PREF_PIN_TOKEN = "pref_pin_token"
+    private const val PREF_NAME_ACCOUNT = "pref_name_account"
+    private const val PREF_NAME_TOKEN = "pref_name_token"
+
     fun storeAccount(account: Account) {
         self = account
-        val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-        preference.putString(Constants.Account.PREF_NAME_ACCOUNT, Gson().toJson(account))
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+        preference.putString(PREF_NAME_ACCOUNT, Gson().toJson(account))
     }
 
     fun getAccount(): Account? = if (self != null) {
         self
     } else {
-        val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-        val json = preference.getString(Constants.Account.PREF_NAME_ACCOUNT, "")
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+        val json = preference.getString(PREF_NAME_ACCOUNT, "")
         if (!json.isNullOrBlank()) {
             Gson().fromJson<Account>(json, object : TypeToken<Account>() {}.type)
         } else {
@@ -47,53 +54,53 @@ object Session {
 
     fun clearAccount() {
         self = null
-        val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.clear()
     }
 
     fun storeToken(token: String) {
-        val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-        preference.putString(Constants.Account.PREF_NAME_TOKEN, token)
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+        preference.putString(PREF_NAME_TOKEN, token)
     }
 
     private fun getToken(): String? {
-        val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-        return preference.getString(Constants.Account.PREF_NAME_TOKEN, null)
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+        return preference.getString(PREF_NAME_TOKEN, null)
     }
 
     fun storeExtensionSessionId(extensionSession: String) {
-        val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-        preference.putString(Constants.Account.PREF_EXTENSION_SESSION_ID, extensionSession)
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+        preference.putString(PREF_EXTENSION_SESSION_ID, extensionSession)
     }
 
     fun getExtensionSessionId(): String? {
-        val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-        return preference.getString(Constants.Account.PREF_EXTENSION_SESSION_ID, null)
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+        return preference.getString(PREF_EXTENSION_SESSION_ID, null)
     }
 
     fun deleteExtensionSessionId() {
-        val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-        preference.remove(Constants.Account.PREF_EXTENSION_SESSION_ID)
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+        preference.remove(PREF_EXTENSION_SESSION_ID)
     }
 
     fun storePinToken(pinToken: String) {
-        val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-        preference.putString(Constants.Account.PREF_PIN_TOKEN, pinToken)
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+        preference.putString(PREF_PIN_TOKEN, pinToken)
     }
 
     fun getPinToken(): String? {
-        val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-        return preference.getString(Constants.Account.PREF_PIN_TOKEN, null)
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+        return preference.getString(PREF_PIN_TOKEN, null)
     }
 
     fun storePinIterator(pinIterator: Long) {
-        val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-        preference.putLong(Constants.Account.PREF_PIN_ITERATOR, pinIterator)
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+        preference.putLong(PREF_PIN_ITERATOR, pinIterator)
     }
 
     fun getPinIterator(): Long {
-        val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-        return preference.getLong(Constants.Account.PREF_PIN_ITERATOR, 1)
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
+        return preference.getLong(PREF_PIN_ITERATOR, 1)
     }
 
     fun hasEmergencyContact() = getAccount()?.hasEmergencyContact ?: false
