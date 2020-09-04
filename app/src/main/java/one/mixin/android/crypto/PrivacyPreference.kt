@@ -9,9 +9,9 @@ import one.mixin.android.extension.remove
 import one.mixin.android.extension.sharedPreferences
 
 object PrivacyPreference {
-    const val PREF_PIN_INTERVAL = "pref_pin_interval"
-    const val IS_LOADED = "is_loaded"
-    const val IS_SYNC_SESSION = "is_sync_session"
+    private const val PREF_PIN_INTERVAL = "pref_pin_interval"
+    private const val IS_LOADED = "is_loaded"
+    private const val IS_SYNC_SESSION = "is_sync_session"
 
     private fun getPrivacyPreference(context: Context): SharedPreferences = context.sharedPreferences("privacy_preferences")
 
