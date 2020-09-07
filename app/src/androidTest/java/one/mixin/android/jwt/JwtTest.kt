@@ -18,9 +18,9 @@ class JwtTest {
         val token = rsaKey.getPrivateKeyPem()
         val account = mockAccount()
         val signToken = Session.signToken(account, mockRequest(), token)
-        val isDelay = Session.requestDelay(account, signToken, DELAY_SECOND, token)
+        val isDelay = Session.requestDelay(account, signToken, DELAY_SECOND, token).isDelay
         assertFalse(isDelay)
         Thread.sleep(2000)
-        assertTrue(Session.requestDelay(account, signToken, 1, token))
+        assertTrue(Session.requestDelay(account, signToken, 1, token).isDelay)
     }
 }

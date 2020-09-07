@@ -146,17 +146,17 @@ object Session {
             .compact()
     }
 
-    fun requestDelay(acct: Account?, string: String, offset: Int, token: String? = getToken()): Boolean {
+    fun requestDelay(acct: Account?, string: String, offset: Int, token: String? = getToken()): JwtResult {
         if (acct == null || token == null || token.isBlank()) {
-            return false
+            return JwtResult(false)
         }
         val key = getRSAPrivateKeyFromString(token)
         return try {
             val iat = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(string).body[Claims.ISSUED_AT] as Int
-            abs(System.currentTimeMillis() / 1000 - iat) > offset
+            JwtResult(abs(System.currentTimeMillis() / 1000 - iat) > offset, requestTime = iat.toLong())
         } catch (e: Exception) {
             Timber.e(e)
-            false
+            JwtResult(false)
         }
     }
 
