@@ -37,7 +37,14 @@ class BillHolder constructor(containerView: View) : BaseViewHolder(containerView
         chatLayout(isMe, isLast)
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         itemView.bill_iv.loadImage(messageItem.assetIcon, R.drawable.ic_avatar_place_holder)
-        itemView.bill_tv.text = messageItem.snapshotAmount?.numberFormat8()
+        val amount = messageItem.snapshotAmount
+        if (!amount.isNullOrBlank()) {
+            itemView.bill_tv.text = if (amount.startsWith('-')) {
+                "-${amount.substring(1).numberFormat8()}"
+            } else {
+                amount.numberFormat8()
+            }
+        }
         itemView.bill_symbol_tv.text = messageItem.assetSymbol
         itemView.chat_secret.isVisible = messageItem.isSignal()
         itemView.setOnLongClickListener {
