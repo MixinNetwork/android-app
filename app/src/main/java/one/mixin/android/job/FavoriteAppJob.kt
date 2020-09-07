@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.db.insertUpdateList
 
 class FavoriteAppJob(vararg val userIds: String?) : BaseJob(
     Params(PRIORITY_UI_HIGH)
@@ -27,9 +28,7 @@ class FavoriteAppJob(vararg val userIds: String?) : BaseJob(
                             val response = userService.fetchUsers(ids)
                             if (response.isSuccess) {
                                 response.data?.apply {
-                                    userDao.insertList(this)
-                                }?.mapNotNull { user -> user.app }?.let { list ->
-                                    appDao.insertList(list)
+                                    userDao.insertUpdateList(this, appDao)
                                 }
                             }
                         }
