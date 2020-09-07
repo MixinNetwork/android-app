@@ -53,19 +53,12 @@ class VideoHolder(
         }
         itemView.pip_iv.isEnabled = false
         itemView.pip_iv.alpha = 0.5f
-        itemView.close_iv.post {
-            val statusBarHeight = context.statusBarHeight()
-            itemView.bottom_ll.setPadding(0, statusBarHeight, 0, 0)
-            itemView.bottom_ll.translationY = -context.navigationBarHeight().toFloat()
-        }
 
         itemView.player_view.apply {
             currentMessageId = messageItem.messageId
-            setPlaybackPrepare(
-                PlaybackPreparer {
-                    messageItem.loadVideoOrLive { showPb() }
-                }
-            )
+            setPlaybackPrepare {
+                messageItem.loadVideoOrLive { showPb() }
+            }
             if (needPostTransition) {
                 player = VideoPlayer.player().player
             }
