@@ -36,6 +36,7 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.db.insertUpdateList
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
@@ -244,9 +245,7 @@ constructor(
             val response = userService.fetchUsers(ids)
             if (response.isSuccess) {
                 response.data?.apply {
-                    userDao.insertList(this)
-                }?.mapNotNull { user -> user.app }?.let { list ->
-                    appDao.insertList(list)
+                    userDao.insertUpdateList(this, appDao)
                 }
             }
         }
