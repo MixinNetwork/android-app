@@ -145,7 +145,7 @@ internal constructor(
         jobManager.addJobInBackground(RefreshAssetsJob(assetId))
     }
 
-    suspend fun queryAsset(query: String): Pair<List<TopAssetItem>?, ArraySet<String>?> =
+    suspend fun queryAsset(query: String): Pair<List<TopAssetItem>?, ArraySet<AssetItem>?> =
         withContext(Dispatchers.IO) {
             val response = try {
                 assetRepository.queryAssets(query)
@@ -163,11 +163,11 @@ internal constructor(
                     }
                     asset.toTopAssetItem(chainIconUrl)
                 }
-                val existsSet = ArraySet<String>()
+                val existsSet = ArraySet<AssetItem>()
                 topAssetList.forEach {
-                    val exists = assetRepository.checkExists(it.assetId)
+                    val exists = assetRepository.findAssetItemById(it.assetId)
                     if (exists != null) {
-                        existsSet.add(it.assetId)
+                        existsSet.add(exists)
                     }
                 }
                 return@withContext Pair(topAssetList, existsSet)
