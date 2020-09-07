@@ -419,6 +419,7 @@
     <string name="wallet_add_asset_symbol">+ Add assets</string>
     <string name="wallet_already_hidden">%1$s has been hidden</string>
     <string name="wallet_already_shown">%1$s has been shown</string>
+    <string name="wallet_already_shown_see">%1$s has been shown, please check on the wallet homepage.</string>
     <string name="wallet_add_asset_already">Asset already added</string>
     <string name="wallet_biometric_invalid">Invalid biometrics state, please reset in wallet setting.</string>
     <string name="wallet_setting_currency_desc" translatable="false">%1$s (%2$s)</string>
