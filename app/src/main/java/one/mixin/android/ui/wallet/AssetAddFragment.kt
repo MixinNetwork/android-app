@@ -15,6 +15,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
@@ -57,19 +58,25 @@ class AssetAddFragment : BaseFragment() {
         }
 
         override fun onHiddenClick(assetItem: AssetItem) {
-            lifecycleScope.launch {
-                walletViewModel.updateAssetHidden(assetItem.assetId, false)
-                adapter.existsSet?.forEach {
-                    if (it.assetId == assetItem.assetId) {
-                        it.hidden = false
+            alertDialogBuilder()
+                .setMessage(getString(R.string.wallet_add_asset_already_hidden, assetItem.symbol))
+                .setPositiveButton(R.string.wallet_transactions_show) { _, _ ->
+                    lifecycleScope.launch {
+                        walletViewModel.updateAssetHidden(assetItem.assetId, false)
+                        adapter.existsSet?.forEach {
+                            if (it.assetId == assetItem.assetId) {
+                                it.hidden = false
+                            }
+                        }
+
+                        assets_rv?.let {
+                            Snackbar.make(it, getString(R.string.wallet_already_shown, assetItem.symbol), Snackbar.LENGTH_LONG)
+                                .show()
+                        }
                     }
                 }
-
-                assets_rv?.let {
-                    Snackbar.make(it, getString(R.string.wallet_already_shown_see, assetItem.symbol), Snackbar.LENGTH_LONG)
-                        .show()
-                }
-            }
+                .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+                .show()
         }
     }
     private val adapter = AssetAddAdapter()
