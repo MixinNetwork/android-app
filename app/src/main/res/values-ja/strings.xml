@@ -245,7 +245,7 @@
     <string name="mute_until">%1$sまで</string>
     <string name="profile_join_in">%1$sに参加しました</string>
     <!-- chat -->
-    <string name="chat_waiting">%@が参加し暗号化セッションが開始するまで待機しています... %2$s.</string>
+    <string name="chat_waiting">%1$sが参加し暗号化セッションが開始するまで待機しています... %2$s.</string>
     <string name="chat_waiting_desktop">デスクトップ</string>
     <string name="chat_learn">もっとみる</string>
     <string name="week_monday">月曜日</string>
