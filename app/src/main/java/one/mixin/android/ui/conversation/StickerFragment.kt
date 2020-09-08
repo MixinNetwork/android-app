@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.DragReleaseEvent
+import one.mixin.android.extension.clear
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.realSize
 import one.mixin.android.ui.common.BaseFragment
@@ -97,7 +98,7 @@ class StickerFragment : BaseFragment() {
         if (type == TYPE_NORMAL && albumId != null) {
             stickerViewModel.observeStickers(albumId!!).observe(
                 viewLifecycleOwner,
-                Observer { list ->
+                { list ->
                     list?.let { updateStickers(it) }
                 }
             )
@@ -105,7 +106,7 @@ class StickerFragment : BaseFragment() {
             if (type == TYPE_RECENT) {
                 stickerViewModel.recentStickers().observe(
                     viewLifecycleOwner,
-                    Observer { r ->
+                    { r ->
                         r?.let { updateStickers(r) }
                     }
                 )
@@ -118,7 +119,7 @@ class StickerFragment : BaseFragment() {
                         stickerViewModel.observePersonalStickers()
                             .observe(
                                 viewLifecycleOwner,
-                                Observer { list ->
+                                { list ->
                                     list?.let { updateStickers(it) }
                                 }
                             )
@@ -126,7 +127,7 @@ class StickerFragment : BaseFragment() {
                         stickerViewModel.observeStickers(personalAlbumId!!)
                             .observe(
                                 viewLifecycleOwner,
-                                Observer { list ->
+                                { list ->
                                     list?.let { updateStickers(it) }
                                 }
                             )
@@ -201,6 +202,7 @@ class StickerFragment : BaseFragment() {
                     width = size - ctx.dip(50)
                     height = size - ctx.dip(50)
                 }
+                item.clear()
                 item.setImageResource(R.drawable.ic_add_stikcer)
                 item.setOnClickListener { listener?.onAddClick() }
             } else {
