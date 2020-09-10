@@ -401,7 +401,7 @@ class PeerConnectionClient(context: Context, private val events: PeerConnectionE
         mandatory.add(offerReceiveVideoConstraint)
     }
 
-    private inner class PCObserver() : PeerConnection.Observer {
+    private inner class PCObserver : PeerConnection.Observer {
 
         override fun onIceCandidate(candidate: IceCandidate) {
             events.onIceCandidate(candidate)

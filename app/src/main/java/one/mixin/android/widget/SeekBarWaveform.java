@@ -134,7 +134,7 @@ public class SeekBarWaveform {
         if (waveformBytes == null || width == 0) {
             return;
         }
-        float totalBarsCount = width / AndroidUtilities.INSTANCE.dp(3);
+        float totalBarsCount = width / AndroidUtilities.dp(3);
         if (totalBarsCount <= 0.1f) {
             return;
         }
@@ -147,7 +147,7 @@ public class SeekBarWaveform {
         paintInner.setColor(innerColor);
         paintOuter.setColor(outerColor);
 
-        int y = (height - AndroidUtilities.INSTANCE.dp(14)) / 2;
+        int y = (height - AndroidUtilities.dp(14)) / 2;
         int barNum = 0;
         int lastBarNum;
         int drawBarCount;
@@ -176,13 +176,13 @@ public class SeekBarWaveform {
             }
 
             for (int b = 0; b < drawBarCount; b++) {
-                int x = barNum * AndroidUtilities.INSTANCE.dp(3);
-                if (x < thumbX && x + AndroidUtilities.INSTANCE.dp(2) < thumbX) {
-                    canvas.drawRect(x, y + AndroidUtilities.INSTANCE.dp(14 - Math.max(1, 14.0f * value / 31.0f)), x + AndroidUtilities.INSTANCE.dp(2), y + AndroidUtilities.INSTANCE.dp(14), paintOuter);
+                int x = barNum * AndroidUtilities.dp(3);
+                if (x < thumbX && x + AndroidUtilities.dp(2) < thumbX) {
+                    canvas.drawRect(x, y + AndroidUtilities.dp(14 - Math.max(1, 14.0f * value / 31.0f)), x + AndroidUtilities.dp(2), y + AndroidUtilities.dp(14), paintOuter);
                 } else {
-                    canvas.drawRect(x, y + AndroidUtilities.INSTANCE.dp(14 - Math.max(1, 14.0f * value / 31.0f)), x + AndroidUtilities.INSTANCE.dp(2), y + AndroidUtilities.INSTANCE.dp(14), paintInner);
+                    canvas.drawRect(x, y + AndroidUtilities.dp(14 - Math.max(1, 14.0f * value / 31.0f)), x + AndroidUtilities.dp(2), y + AndroidUtilities.dp(14), paintInner);
                     if (x < thumbX) {
-                        canvas.drawRect(x, y + AndroidUtilities.INSTANCE.dp(14 - Math.max(1, 14.0f * value / 31.0f)), thumbX, y + AndroidUtilities.INSTANCE.dp(14), paintOuter);
+                        canvas.drawRect(x, y + AndroidUtilities.dp(14 - Math.max(1, 14.0f * value / 31.0f)), thumbX, y + AndroidUtilities.dp(14), paintOuter);
                     }
                 }
                 barNum++;
