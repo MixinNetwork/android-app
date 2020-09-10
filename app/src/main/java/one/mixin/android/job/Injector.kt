@@ -129,7 +129,7 @@ open class Injector : Injectable {
                 val response = call.body()
                 if (response != null && response.isSuccess && response.data != null) {
                     response.data?.let { u ->
-                        userDao.insert(u)
+                        userDao.insertUpdate(u, appDao)
                         user = u
                     }
                 }

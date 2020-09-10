@@ -3,10 +3,8 @@ package one.mixin.android.ui.landing
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import one.mixin.android.Constants.Load.IS_LOADED
 import one.mixin.android.R
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putBoolean
+import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
 
@@ -65,7 +63,7 @@ class InitializeActivity : BaseActivity() {
 
         fun showLoading(context: Context, load: Boolean = true) {
             if (load) {
-                context.defaultSharedPreferences.putBoolean(IS_LOADED, false)
+                putIsLoaded(context, false)
             }
             context.startActivity(getIntent(context, setName = false, wrongTime = false))
         }

@@ -19,6 +19,7 @@ import one.mixin.android.extension.loadVideo
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.dp
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.ui.media.pager.MediaPagerActivity.Companion.PREFIX
 import one.mixin.android.util.Session
@@ -33,6 +34,12 @@ class VideoHolder(
     itemView: View,
     private val mediaPagerAdapterListener: MediaPagerAdapterListener
 ) : MediaPagerHolder(itemView) {
+
+    init {
+        itemView.post {
+            itemView.bottom_ll.setPadding(12.dp, 24.dp, 12.dp, 12.dp + itemView.context.navigationBarHeight())
+        }
+    }
 
     fun bind(
         messageItem: MessageItem,
@@ -53,19 +60,12 @@ class VideoHolder(
         }
         itemView.pip_iv.isEnabled = false
         itemView.pip_iv.alpha = 0.5f
-        itemView.close_iv.post {
-            val statusBarHeight = context.statusBarHeight()
-            itemView.bottom_ll.setPadding(0, statusBarHeight, 0, 0)
-            itemView.bottom_ll.translationY = -context.navigationBarHeight().toFloat()
-        }
 
         itemView.player_view.apply {
             currentMessageId = messageItem.messageId
-            setPlaybackPrepare(
-                PlaybackPreparer {
-                    messageItem.loadVideoOrLive { showPb() }
-                }
-            )
+            setPlaybackPrepare {
+                messageItem.loadVideoOrLive { showPb() }
+            }
             if (needPostTransition) {
                 player = VideoPlayer.player().player
             }

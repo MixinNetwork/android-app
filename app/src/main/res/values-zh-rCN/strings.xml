@@ -404,6 +404,7 @@
     <string name="wallet_already_hidden">已隐藏 %1$s</string>
     <string name="wallet_already_shown">已显示 %1$s</string>
     <string name="wallet_add_asset_already">已添加过此资产</string>
+    <string name="wallet_add_asset_already_hidden">资产 %1$s 已被你隐藏，要在钱包首页立刻显示？</string>
     <string name="wallet_biometric_invalid">生物识别失效，请重新设置。</string>
     <string name="wallet_setting_currency_desc">%1$s （%2$s）</string>
     <string name="wallet_transactions_asset_key_warning">资产标识不是充值地址！</string>

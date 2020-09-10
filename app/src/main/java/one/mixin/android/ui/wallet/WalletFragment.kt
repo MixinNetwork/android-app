@@ -28,13 +28,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
+import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -241,11 +242,11 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     private fun checkPin() {
         val cur = System.currentTimeMillis()
         val last = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_CHECK, 0)
-        var interval = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_INTERVAL, 0)
+        var interval = getPrefPinInterval(requireContext(), 0)
         val account = Session.getAccount()
         if (account != null && account.hasPin && last == 0L) {
             interval = Constants.INTERVAL_24_HOURS
-            defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_INTERVAL, Constants.INTERVAL_24_HOURS)
+            putPrefPinInterval(requireContext(), Constants.INTERVAL_24_HOURS)
         }
         if (cur - last > interval) {
             val pinCheckDialog = PinCheckDialogFragment.newInstance()
