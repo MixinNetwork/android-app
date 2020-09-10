@@ -15,7 +15,11 @@ fun reportException(e: Throwable) {
 fun reportException(msg: String, e: Throwable) {
     Bugsnag.notify(e)
     FirebaseCrashlytics.getInstance().log(msg + e.getStackTraceString())
-    Crashes.trackError(e, ArrayMap<String, String>().apply {
-        put("log", msg)
-    }, null)
+    Crashes.trackError(
+        e,
+        ArrayMap<String, String>().apply {
+            put("log", msg)
+        },
+        null
+    )
 }

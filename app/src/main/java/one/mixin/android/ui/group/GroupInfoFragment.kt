@@ -127,7 +127,10 @@ class GroupInfoFragment : BaseFragment() {
                                     openChat(user)
                                 }
                                 1 -> {
-                                    UserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                    UserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(
+                                        parentFragmentManager,
+                                        UserBottomSheetDialogFragment.TAG
+                                    )
                                 }
                                 2 -> {
                                     showConfirmDialog(
