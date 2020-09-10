@@ -2,11 +2,11 @@ package one.mixin.android.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.widget.ImageView;
+import androidx.appcompat.widget.AppCompatImageView;
 
 import java.util.HashMap;
 
-public class RLottieImageView extends ImageView {
+public class RLottieImageView extends AppCompatImageView {
 
     private HashMap<String, Integer> layerColors;
     private RLottieDrawable drawable;
