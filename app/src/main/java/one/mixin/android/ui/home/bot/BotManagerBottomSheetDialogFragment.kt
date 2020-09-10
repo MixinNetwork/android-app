@@ -34,8 +34,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.qr.CaptureActivity
-import one.mixin.android.ui.qr.CaptureActivity.Companion.REQUEST_CODE
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
@@ -233,10 +232,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
             .autoDispose(stopScope)
             .subscribe { granted ->
                 if (granted) {
-                    CaptureActivity.show(requireActivity()) { intent ->
-                        intent.putExtra(CaptureActivity.ARGS_SHOW_SCAN, scan)
-                        requireActivity().startActivityForResult(intent, REQUEST_CODE)
-                    }
+                    (requireActivity() as? MainActivity)?.showCapture(scan)
                 } else {
                     context?.openPermissionSetting()
                 }

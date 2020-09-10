@@ -2,11 +2,13 @@ package one.mixin.android.ui.qr
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
+import androidx.activity.result.contract.ActivityResultContract
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import one.mixin.android.R
@@ -52,12 +54,8 @@ class CaptureActivity : BlazeBaseActivity() {
 
     private fun initView() {
         when {
-            intent.hasExtra(ARGS_FOR_ADDRESS) ->
-                replaceFragment(ScanFragment.newInstance(forAddress = true), R.id.container, ScanFragment.TAG)
-            intent.hasExtra(ARGS_FOR_ACCOUNT_NAME) ->
-                replaceFragment(ScanFragment.newInstance(forAccountName = true), R.id.container, ScanFragment.TAG)
-            intent.hasExtra(ARGS_FOR_MEMO) ->
-                replaceFragment(ScanFragment.newInstance(forMemo = true), R.id.container, ScanFragment.TAG)
+            intent.hasExtra(ARGS_FOR_SCAN_RESULT) ->
+                replaceFragment(ScanFragment.newInstance(forScanResult = true), R.id.container, ScanFragment.TAG)
             else ->
                 if (intent.getBooleanExtra(ARGS_SHOW_SCAN, false)) {
                     val fromShortcut = intent.getBooleanExtra(ARGS_SHORTCUT, false)
@@ -82,34 +80,26 @@ class CaptureActivity : BlazeBaseActivity() {
         }
     }
 
+    class CaptureContract : ActivityResultContract<Pair<String, Boolean>, Intent?>() {
+        override fun createIntent(context: Context, input: Pair<String, Boolean>): Intent {
+            return Intent(context, CaptureActivity::class.java).apply {
+                putExtra(input.first, input.second)
+            }
+        }
+
+        override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
+            if (intent == null || resultCode != Activity.RESULT_OK) return null
+            return intent
+        }
+    }
+
     companion object {
         const val SHOW_QR_CODE = "show_qr_code"
 
         const val ARGS_SHOW_SCAN = "args_show_scan"
-        const val ARGS_FOR_ADDRESS = "args_for_address"
-        const val ARGS_ADDRESS_RESULT = "args_address_result"
-        const val ARGS_FOR_ACCOUNT_NAME = "args_for_account_name"
-        const val ARGS_ACCOUNT_NAME_RESULT = "args_account_name_result"
-        const val ARGS_FOR_MEMO = "args_for_memo"
-        const val ARGS_MEMO_RESULT = "args_memo_result"
-
-        const val REQUEST_CODE = 0x0000c0ff
-        const val RESULT_CODE = 0x0000c0df
+        const val ARGS_FOR_SCAN_RESULT = "args_for_scan_result"
 
         const val MAX_DURATION = 15
         const val MIN_DURATION = 1
-
-        fun show(
-            activity: Activity,
-            actionWithIntent: ((intent: Intent) -> Unit)? = null
-        ) {
-            Intent(activity, CaptureActivity::class.java).apply {
-                if (actionWithIntent == null) {
-                    activity.startActivity(this)
-                } else {
-                    actionWithIntent.invoke(this)
-                }
-            }
-        }
     }
 }

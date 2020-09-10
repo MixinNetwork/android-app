@@ -76,9 +76,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
         private const val ZOOM_NOT_SUPPORTED = UNITY_ZOOM_SCALE
     }
 
-    protected var forAddress: Boolean = false
-    protected var forAccountName: Boolean = false
-    protected var forMemo: Boolean = false
+    protected var forScanResult: Boolean = false
 
     protected var videoFile: File? = null
 
@@ -377,18 +375,11 @@ abstract class BaseCameraxFragment : VisionFragment() {
         if (!isAdded) return
 
         requireContext().defaultSharedPreferences.putBoolean(CaptureActivity.SHOW_QR_CODE, false)
-        if (forAddress || forAccountName || forMemo) {
+        if (forScanResult) {
             val result = Intent().apply {
-                putExtra(
-                    when {
-                        forAddress -> CaptureActivity.ARGS_ADDRESS_RESULT
-                        forAccountName -> CaptureActivity.ARGS_ACCOUNT_NAME_RESULT
-                        else -> CaptureActivity.ARGS_MEMO_RESULT
-                    },
-                    analysisResult
-                )
+                putExtra(CaptureActivity.ARGS_FOR_SCAN_RESULT, analysisResult)
             }
-            activity?.setResult(CaptureActivity.RESULT_CODE, result)
+            activity?.setResult(Activity.RESULT_OK, result)
             activity?.finish()
             return
         }
