@@ -55,7 +55,7 @@ class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : Recyc
     val dragInstance: BotManagerDragListener?
         get() = BotManagerDragListener()
 
-    inner class ListViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView!!)
+    class ListViewHolder(itemView: View?) : RecyclerView.ViewHolder(itemView!!)
 
     override fun onLongClick(v: View): Boolean {
         val data = ClipData.newPlainText("", "")
@@ -63,6 +63,7 @@ class BotManagerAdapter(private val botCallBack: (BotInterface) -> Unit) : Recyc
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             v.startDragAndDrop(data, shadowBuilder, v, DRAG_FLAG_OPAQUE)
         } else {
+            @Suppress("DEPRECATION")
             v.startDrag(data, shadowBuilder, v, 0)
         }
         v.alpha = 0.2f

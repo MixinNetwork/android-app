@@ -476,7 +476,6 @@ class GroupCallService : CallService() {
         if (cid == null) {
             Timber.e("$TAG_CALL try send kraken cancel message but conversation id is $cid")
             disconnect()
-            cid?.let { checkConversationUserCount(it) }
             return
         }
 
@@ -846,24 +845,32 @@ class GroupCallService : CallService() {
 
     private tailrec fun deliverNoThrow(blazeMessage: BlazeMessage): MessageResult {
         val bm = chatWebSocket.sendMessage(blazeMessage)
-        if (bm == null) {
-            SystemClock.sleep(SLEEP_MILLIS)
-            return deliverNoThrow(blazeMessage)
-        } else if (bm.error != null) {
-            return if (bm.error.code == ErrorHandler.CONVERSATION_CHECKSUM_INVALID_ERROR) {
-                blazeMessage.params?.conversation_id?.let {
-                    syncConversation(it)
-                }
-                MessageResult(false, retry = true)
-            } else if (bm.error.code == ErrorHandler.FORBIDDEN) {
-                MessageResult(true, retry = false)
-            } else {
+        when {
+            bm == null -> {
                 SystemClock.sleep(SLEEP_MILLIS)
-                // warning: may caused job leak if server return error data and come to this branch
                 return deliverNoThrow(blazeMessage)
             }
-        } else {
-            return MessageResult(true, retry = false)
+            bm.error != null -> {
+                return when (bm.error.code) {
+                    ErrorHandler.CONVERSATION_CHECKSUM_INVALID_ERROR -> {
+                        blazeMessage.params?.conversation_id?.let {
+                            syncConversation(it)
+                        }
+                        MessageResult(false, retry = true)
+                    }
+                    ErrorHandler.FORBIDDEN -> {
+                        MessageResult(true, retry = false)
+                    }
+                    else -> {
+                        SystemClock.sleep(SLEEP_MILLIS)
+                        // warning: may caused job leak if server return error data and come to this branch
+                        return deliverNoThrow(blazeMessage)
+                    }
+                }
+            }
+            else -> {
+                return MessageResult(true, retry = false)
+            }
         }
     }
 

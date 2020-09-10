@@ -96,6 +96,7 @@ class BotDock : ViewGroup, View.OnLongClickListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             v.startDragAndDrop(data, shadowBuilder, v, View.DRAG_FLAG_OPAQUE)
         } else {
+            @Suppress("DEPRECATION")
             v.startDrag(data, shadowBuilder, v, 0)
         }
         v.context.vibrate(longArrayOf(0, 30L))
