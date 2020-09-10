@@ -39,10 +39,8 @@ import androidx.core.view.inputmethod.InputContentInfoCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.observe
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -655,7 +653,7 @@ class ConversationFragment :
 
             override fun onQuoteMessageClick(messageId: String, quoteMessageId: String?) {
                 quoteMessageId?.let { quoteMsg ->
-                    scrollToMessage(quoteMsg) { index ->
+                    scrollToMessage(quoteMsg) {
                         positionBeforeClickQuote = messageId
                     }
                 }
@@ -791,11 +789,11 @@ class ConversationFragment :
     private var botWebBottomSheet: WebBottomSheetDialogFragment? = null
 
     private val sensorManager: SensorManager by lazy {
-        requireContext().getSystemService<SensorManager>()!!
+        requireContext().getSystemService()!!
     }
 
     private val powerManager: PowerManager by lazy {
-        requireContext().getSystemService<PowerManager>()!!
+        requireContext().getSystemService()!!
     }
 
     private val wakeLock by lazy {
@@ -809,7 +807,7 @@ class ConversationFragment :
     }
 
     private val audioManager: AudioManager by lazy {
-        requireContext().getSystemService<AudioManager>()!!
+        requireContext().getSystemService()!!
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -1322,7 +1320,7 @@ class ConversationFragment :
         }
         callState.observe(
             viewLifecycleOwner,
-            Observer { state ->
+            { state ->
                 chat_control.calling = state != CallService.CallState.STATE_IDLE
                 if (isGroup) {
                     tap_join_view.isVisible = callState.isPendingGroupCall(conversationId)
@@ -1477,7 +1475,7 @@ class ConversationFragment :
 
         chatViewModel.getUnreadMentionMessageByConversationId(conversationId).observe(
             viewLifecycleOwner,
-            Observer { mentionMessages ->
+            { mentionMessages ->
                 flag_layout.mentionCount = mentionMessages.size
                 flag_layout.mention_flag_layout.setOnClickListener {
                     lifecycleScope.launch {
@@ -1800,7 +1798,7 @@ class ConversationFragment :
         }
         chatViewModel.getConversationById(conversationId).observe(
             viewLifecycleOwner,
-            Observer {
+            {
                 it?.let {
                     groupName = it.name
                     action_bar.setSubTitle(
@@ -1815,7 +1813,7 @@ class ConversationFragment :
         chatViewModel.getGroupParticipantsLiveData(conversationId)
             .observe(
                 viewLifecycleOwner,
-                Observer { users ->
+                { users ->
                     users?.let { u ->
                         groupNumber = u.size
                         action_bar.setSubTitle(
@@ -1867,7 +1865,7 @@ class ConversationFragment :
         renderUserInfo(user)
         chatViewModel.findUserById(user.userId).observe(
             viewLifecycleOwner,
-            Observer {
+            {
                 it?.let { u ->
                     recipient = u
                     if (u.isBot()) {

@@ -66,11 +66,10 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         content: String,
         animate: Boolean = false,
         tickMillis: Long = 0L,
-        errorAction: BiometricLayout.ErrorAction? = null,
-        clickCallback: (() -> Unit)? = null
+        errorAction: BiometricLayout.ErrorAction? = null
     ) {
         if (!isAdded) return
-        contentView.biometric_layout.showErrorInfo(content, animate, tickMillis, errorAction, clickCallback)
+        contentView.biometric_layout.showErrorInfo(content, animate, tickMillis, errorAction)
     }
 
     protected fun showDone() {

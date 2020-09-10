@@ -196,13 +196,15 @@ class ConversationListFragment : LinkFragment() {
         )
         message_rv.callback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
-                if (top_fl.isGone) {
-                    top_fl.isVisible = true
+                val topFl = top_fl ?: return
+
+                if (topFl.isGone) {
+                    topFl.isVisible = true
                 }
-                val targetH = top_fl.height + (dis / DRAG_FRICTION).toInt()
+                val targetH = topFl.height + (dis / DRAG_FRICTION).toInt()
                 if (targetH <= 0) return
 
-                top_fl.updateLayoutParams<ViewGroup.LayoutParams> {
+                topFl.updateLayoutParams<ViewGroup.LayoutParams> {
                     height = targetH
 
                     if (height >= vibrateDis) {
@@ -225,14 +227,17 @@ class ConversationListFragment : LinkFragment() {
                     requireContext().vibrate(longArrayOf(0, 30))
                     vibrated = true
                 }
-                val open = (fling == FLING_DOWN && shouldVibrate) || top_fl.height >= vibrateDis
+                val topFl = top_fl ?: return
+
+                val open = (fling == FLING_DOWN && shouldVibrate) || topFl.height >= vibrateDis
                 if (open) {
                     (requireActivity() as MainActivity).openSearch()
                 } else {
                     (requireActivity() as MainActivity).closeSearch()
                 }
-                top_fl.animateHeight(
-                    top_fl.height,
+
+                topFl.animateHeight(
+                    topFl.height,
                     0,
                     onEndAction = {
                         vibrated = false

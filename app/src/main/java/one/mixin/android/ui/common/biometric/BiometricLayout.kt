@@ -75,8 +75,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         content: String,
         animate: Boolean = false,
         tickMillis: Long = 0L,
-        errorAction: ErrorAction? = null,
-        clickCallback: (() -> Unit)? = null
+        errorAction: ErrorAction? = null
     ) {
         displayedChild = POS_ERROR
         error_info?.text = content
@@ -92,7 +91,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
         if (tickMillis > 0) {
             startCountDown(tickMillis)
         }
-        errorAction?.let { setErrorButton(it, clickCallback) }
+        errorAction?.let { setErrorButton(it) }
     }
 
     fun showPin(clearPin: Boolean) {
@@ -129,8 +128,7 @@ class BiometricLayout(context: Context, attributeSet: AttributeSet) : ViewAnimat
     }
 
     fun setErrorButton(
-        errorAction: ErrorAction,
-        clickCallback: (() -> Unit)? = null
+        errorAction: ErrorAction
     ) {
         when (errorAction) {
             ErrorAction.RetryPin -> {

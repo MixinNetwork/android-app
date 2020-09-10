@@ -196,6 +196,7 @@ class PipCallView {
                 type = if (Build.VERSION.SDK_INT >= 26) {
                     WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 } else {
+                    @Suppress("DEPRECATION")
                     WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
                 }
                 flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
@@ -279,10 +280,9 @@ class PipCallView {
         val endX = getSideCoordinate(true, 1, 0f, size, realX, realY).toInt()
         val startY = getSideCoordinate(false, 0, 0f, size, realX, realY).toInt()
         val endY = getSideCoordinate(false, 1, 0f, size, realX, realY).toInt()
-        var animatorX: Animator? = null
         var animatorY: Animator? = null
         val editor = appContext.defaultSharedPreferences.edit()
-        animatorX = when {
+        val animatorX = when {
             windowLayoutParams.x < startX || windowLayoutParams.x <= endX / 2 -> {
                 editor.putInt(CALL_SIDE_X, 0)
                 ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, 0)
