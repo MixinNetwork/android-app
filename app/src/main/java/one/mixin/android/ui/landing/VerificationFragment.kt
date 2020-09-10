@@ -196,8 +196,9 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
             invokeNetwork = { viewModel.create(requireArguments().getString(ARGS_ID)!!, accountRequest) },
             switchContext = Dispatchers.IO,
             successBlock = { response ->
-                defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
-                handleAccount(response, sessionKey)
+                handleAccount(response, sessionKey) {
+                    defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
+                }
             },
             doAfterNetworkSuccess = { hideLoading() },
             defaultErrorHandle = {

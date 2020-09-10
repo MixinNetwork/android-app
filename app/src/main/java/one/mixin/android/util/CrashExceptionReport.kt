@@ -1,5 +1,6 @@
 package one.mixin.android.util
 
+import androidx.collection.ArrayMap
 import com.bugsnag.android.Bugsnag
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.crashes.Crashes
@@ -14,5 +15,7 @@ fun reportException(e: Throwable) {
 fun reportException(msg: String, e: Throwable) {
     Bugsnag.notify(e)
     FirebaseCrashlytics.getInstance().log(msg + e.getStackTraceString())
-    Crashes.trackError(e)
+    Crashes.trackError(e, ArrayMap<String, String>().apply {
+        put("log", msg)
+    }, null)
 }

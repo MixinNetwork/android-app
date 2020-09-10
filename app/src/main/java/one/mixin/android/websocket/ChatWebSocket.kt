@@ -200,7 +200,6 @@ class ChatWebSocket(
                             if (response.body()?.errorCode == AUTHENTICATION) {
                                 connected = false
                                 closeInternal(quitCode)
-                                (app as MixinApplication).closeAndClear()
                             } else {
                                 closeInternal(failCode)
                             }

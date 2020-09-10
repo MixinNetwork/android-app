@@ -10,12 +10,12 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.Load.IS_LOADED
-import one.mixin.android.Constants.Load.IS_SYNC_SESSION
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putBoolean
+import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
+import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
+import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
+import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
@@ -45,11 +45,11 @@ class LoadingFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         MixinApplication.get().onlining.set(true)
         lifecycleScope.launch {
-            if (!defaultSharedPreferences.getBoolean(IS_LOADED, false)) {
+            if (!getIsLoaded(requireContext(), false)) {
                 load()
             }
 
-            if (!defaultSharedPreferences.getBoolean(IS_SYNC_SESSION, false)) {
+            if (!getIsSyncSession(requireContext(), false)) {
                 syncSession()
             }
             context?.let {
@@ -63,7 +63,7 @@ class LoadingFragment : BaseFragment() {
         try {
             Session.deleteExtensionSessionId()
             loadingViewModel.updateSignalSession()
-            requireContext().defaultSharedPreferences.putBoolean(IS_SYNC_SESSION, true)
+            putIsSyncSession(requireContext(), true)
         } catch (e: Exception) {
             ErrorHandler.handleError(e)
         }
@@ -76,7 +76,7 @@ class LoadingFragment : BaseFragment() {
                 val response = loadingViewModel.pushAsyncSignalKeys()
                 when {
                     response.isSuccess -> {
-                        requireContext().defaultSharedPreferences.putBoolean(IS_LOADED, true)
+                        putIsLoaded(requireContext(), true)
                     }
                     response.errorCode == ErrorHandler.AUTHENTICATION -> {
                         withContext(Dispatchers.IO) {

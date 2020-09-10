@@ -12,6 +12,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putLong
@@ -230,7 +231,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
                                     val cur = System.currentTimeMillis()
                                     defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
-                                    defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_INTERVAL, INTERVAL_10_MINS)
+                                    putPrefPinInterval(requireContext(), INTERVAL_10_MINS)
 
                                     val openBiometrics = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
                                     if (openBiometrics) {
