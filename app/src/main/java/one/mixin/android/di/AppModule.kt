@@ -58,6 +58,7 @@ import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.JwtResult
 import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.Session
 import one.mixin.android.util.reportException
@@ -160,7 +161,7 @@ internal class AppModule {
                     }
                 }
 
-                var expiredToken = false
+                var jwtResult: JwtResult? = null
                 response.body?.run {
                     val bytes = this.bytes()
                     val contentType = this.contentType()
@@ -177,20 +178,22 @@ internal class AppModule {
                     val authorization = response.request.header("Authorization")
                     if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
                         val jwt = authorization.substring(7)
-                        if (Session.requestDelay(Session.getAccount(), jwt, Constants.DELAY_SECOND)) {
+                        jwtResult = Session.requestDelay(Session.getAccount(), jwt, Constants.DELAY_SECOND)
+                        if (jwtResult?.isExpire == true) {
                             throw ExpiredTokenException()
-                        } else {
-                            expiredToken = true
                         }
                     }
                 }
 
                 if (MixinApplication.get().onlining.get()) {
                     response.header("X-Server-Time")?.toLong()?.let { serverTime ->
+                        val currentTime = System.currentTimeMillis()
                         if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= ALLOW_INTERVAL) {
                             MixinApplication.get().gotoTimeWrong(serverTime)
-                        } else if (expiredToken) {
-                            val ise = IllegalStateException("Force logout, current time: ${System.currentTimeMillis()}. request: ${request.show()}, response: ${response.show()}")
+                        } else if (jwtResult?.isExpire == false) {
+                            jwtResult?.serverTime = serverTime / 1000000000
+                            jwtResult?.currentTime = currentTime / 1000
+                            val ise = IllegalStateException("Force logout. $jwtResult. request: ${request.show()}, response: ${response.show()}")
                             reportException(ise)
                             MixinApplication.get().closeAndClear()
                         }
