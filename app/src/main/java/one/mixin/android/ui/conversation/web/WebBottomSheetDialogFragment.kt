@@ -365,7 +365,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 },
                 conversationId, this.parentFragmentManager, lifecycleScope,
                 { url ->
-                    contentView.fail_load_view.isVisible = false
                     currentUrl = url
                 },
                 { request, error ->
