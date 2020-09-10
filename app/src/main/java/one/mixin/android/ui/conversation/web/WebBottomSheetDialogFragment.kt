@@ -33,6 +33,11 @@ import android.webkit.WebSettings.FORCE_DARK_AUTO
 import android.webkit.WebSettings.FORCE_DARK_ON
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.webkit.WebViewClient.ERROR_CONNECT
+import android.webkit.WebViewClient.ERROR_FAILED_SSL_HANDSHAKE
+import android.webkit.WebViewClient.ERROR_HOST_LOOKUP
+import android.webkit.WebViewClient.ERROR_IO
+import android.webkit.WebViewClient.ERROR_TIMEOUT
 import android.widget.Toast
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
@@ -368,11 +373,18 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     currentUrl = url
                 },
                 { request, error ->
-                    contentView.fail_load_view.web_fail_description.text = getString(R.string.web_cannot_reached_desc, request?.url)
-                    contentView.fail_load_view.isVisible = true
                     currentUrl = request?.url.toString()
-                    error?.let {
-                        reportException(Exception(it.description.toString()))
+                    error?.let { e ->
+                        if (e.errorCode == ERROR_HOST_LOOKUP ||
+                            e.errorCode == ERROR_CONNECT ||
+                            e.errorCode == ERROR_IO ||
+                            e.errorCode == ERROR_TIMEOUT ||
+                            e.errorCode == ERROR_FAILED_SSL_HANDSHAKE
+                        ) {
+                            contentView.fail_load_view.web_fail_description.text = getString(R.string.web_cannot_reached_desc, request?.url)
+                            contentView.fail_load_view.isVisible = true
+                        }
+                        reportException(Exception(e.description.toString()))
                     }
                 })
 
