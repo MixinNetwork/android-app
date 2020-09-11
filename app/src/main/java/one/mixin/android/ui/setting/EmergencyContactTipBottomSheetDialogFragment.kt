@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +21,7 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
         fun newInstance() = EmergencyContactTipBottomSheetDialogFragment()
     }
 
+    @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_emergency_contact_bottom, null)
