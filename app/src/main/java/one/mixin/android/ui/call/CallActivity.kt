@@ -329,9 +329,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         if (powerManager?.isInteractive == false) {
             return
         }
-        if (callState.isRinging()) {
-            hangup()
-        } else if (callState.isNotIdle()) {
+        if (callState.isNotIdle()) {
             if (!checkPipPermission()) {
                 if (!setClicked) {
                     showPipPermissionNotification()
@@ -340,6 +338,13 @@ class CallActivity : BaseActivity(), SensorEventListener {
             }
             switch2Pip()
         }
+    }
+
+    override fun onBackPressed() {
+        if (callState.isBeforeAnswering()) {
+            return
+        }
+        super.onBackPressed()
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
