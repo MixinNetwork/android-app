@@ -34,7 +34,6 @@ import android.webkit.WebSettings.FORCE_DARK_ON
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.webkit.WebViewClient.ERROR_CONNECT
-import android.webkit.WebViewClient.ERROR_FAILED_SSL_HANDSHAKE
 import android.webkit.WebViewClient.ERROR_HOST_LOOKUP
 import android.webkit.WebViewClient.ERROR_IO
 import android.webkit.WebViewClient.ERROR_TIMEOUT
@@ -378,8 +377,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         if (e.errorCode == ERROR_HOST_LOOKUP ||
                             e.errorCode == ERROR_CONNECT ||
                             e.errorCode == ERROR_IO ||
-                            e.errorCode == ERROR_TIMEOUT ||
-                            e.errorCode == ERROR_FAILED_SSL_HANDSHAKE
+                            e.errorCode == ERROR_TIMEOUT
                         ) {
                             contentView.fail_load_view.web_fail_description.text = getString(R.string.web_cannot_reached_desc, request?.url)
                             contentView.fail_load_view.isVisible = true
