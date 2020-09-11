@@ -10,16 +10,16 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.i2p.crypto.eddsa.EdDSAPrivateKey
+import net.i2p.crypto.eddsa.EdDSAPublicKey
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.SessionSecretRequest
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
-import net.i2p.crypto.eddsa.EdDSAPrivateKey
-import net.i2p.crypto.eddsa.EdDSAPublicKey
-import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.api.request.SessionSecretRequest
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.extension.base64Encode
@@ -55,7 +55,7 @@ class LoadingFragment : BaseFragment() {
             if (Session.shouldUpdateKey()) {
                 updateRsa2EdDsa()
             }
-            
+
             if (!getIsLoaded(requireContext(), false)) {
                 load()
             }
@@ -86,11 +86,11 @@ class LoadingFragment : BaseFragment() {
                 it.data?.let { r ->
                     val account = Session.getAccount()
                     account?.let { acc ->
-                        acc.pinToken = r.serverPublicKey
+                        acc.pinToken = r.pinToken
                         Session.storeAccount(acc)
                     }
                     Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
-                    val key = Curve25519.getInstance(Curve25519.BEST).calculateAgreement(r.serverPublicKey.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
+                    val key = Curve25519.getInstance(Curve25519.BEST).calculateAgreement(r.pinToken.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
                     Session.storePinToken(key.base64Encode())
                 }
             }
