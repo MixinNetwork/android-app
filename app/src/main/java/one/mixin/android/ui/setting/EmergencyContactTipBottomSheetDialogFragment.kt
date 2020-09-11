@@ -1,8 +1,7 @@
 package one.mixin.android.ui.setting
 
+import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
@@ -22,7 +21,9 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
         fun newInstance() = EmergencyContactTipBottomSheetDialogFragment()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_emergency_contact_bottom, null)
         (dialog as BottomSheet).setCustomView(contentView)
 
@@ -69,6 +70,5 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                 }
             }
         }
-        return contentView
     }
 }
