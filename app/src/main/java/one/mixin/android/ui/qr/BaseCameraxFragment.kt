@@ -18,6 +18,7 @@ import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.ViewConfiguration
 import androidx.camera.core.Camera
+import androidx.camera.core.CameraControl
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.FocusMeteringResult
@@ -188,7 +189,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
         val cameraSelector = CameraSelector.Builder().requireLensFacing(lensFacing).build()
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener(
-            Runnable {
+            {
                 val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
                 preview = Preview.Builder()
@@ -280,10 +281,14 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
                     override fun onFailure(t: Throwable?) {
                         t?.let { throwable ->
+                            if (throwable is CameraControl.OperationCanceledException) {
+                                Timber.d("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure, ${throwable.getStackTraceString()}")
+                                return
+                            }
                             if (BuildConfig.DEBUG) {
-                                Timber.w("$CRASHLYTICS_CAMERAX-setZoomRatio failure, ${throwable.getStackTraceString()}")
+                                Timber.w("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure, ${throwable.getStackTraceString()}")
                             } else {
-                                reportException("$CRASHLYTICS_CAMERAX-setZoomRatio failure", throwable)
+                                reportException("$CRASHLYTICS_CAMERAX-setZoomRatio onFailure", throwable)
                             }
                         }
                     }
@@ -334,6 +339,10 @@ abstract class BaseCameraxFragment : VisionFragment() {
 
                     override fun onFailure(t: Throwable?) {
                         t?.let { throwable ->
+                            if (throwable is CameraControl.OperationCanceledException) {
+                                Timber.d("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure, ${throwable.getStackTraceString()}")
+                                return
+                            }
                             if (BuildConfig.DEBUG) {
                                 Timber.w("$CRASHLYTICS_CAMERAX-focusAndMeter onFailure, ${throwable.getStackTraceString()}")
                             } else {
@@ -488,7 +497,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
         }
     }
 
-    inner class S : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+    class S : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         lateinit var listener: ScaleGestureDetector.OnScaleGestureListener
 
         override fun onScale(detector: ScaleGestureDetector?): Boolean {
