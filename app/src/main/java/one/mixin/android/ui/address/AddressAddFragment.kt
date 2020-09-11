@@ -1,7 +1,6 @@
 package one.mixin.android.ui.address
 
 import android.Manifest
-import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -26,12 +25,7 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
-import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_ACCOUNT_NAME_RESULT
-import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_ADDRESS_RESULT
-import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ACCOUNT_NAME
-import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ADDRESS
-import one.mixin.android.ui.qr.CaptureActivity.Companion.REQUEST_CODE
-import one.mixin.android.ui.qr.CaptureActivity.Companion.RESULT_CODE
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.ADD
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -171,36 +165,35 @@ class AddressAddFragment : BaseFragment() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_CODE && resultCode == RESULT_CODE) {
-            val addr = data?.getStringExtra(ARGS_ADDRESS_RESULT)
-            if (addr != null) {
-                if (isIcapAddress(addr)) {
-                    addr_et.setText(decodeICAP(addr))
-                } else {
-                    addr_et.setText(addr)
-                }
-                return
-            }
-            val tag = data?.getStringExtra(ARGS_ACCOUNT_NAME_RESULT) ?: return
-            tag_et.setText(tag)
-        }
-    }
-
     private fun handleClick(isAddr: Boolean) {
         RxPermissions(requireActivity())
             .request(Manifest.permission.CAMERA)
             .autoDispose(stopScope)
             .subscribe { granted ->
                 if (granted) {
-                    CaptureActivity.show(requireActivity()) {
-                        it.putExtra(if (isAddr) ARGS_FOR_ADDRESS else ARGS_FOR_ACCOUNT_NAME, true)
-                        startActivityForResult(it, REQUEST_CODE)
-                    }
+                    this.isAddr = isAddr
+                    getScanResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
                 } else {
                     context?.openPermissionSetting()
                 }
             }
+    }
+
+    private var isAddr = false
+
+    private val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
+        val text = data?.getStringExtra(ARGS_FOR_SCAN_RESULT)
+        if (text != null) {
+            if (isAddr) {
+                if (isIcapAddress(text)) {
+                    addr_et.setText(decodeICAP(text))
+                } else {
+                    addr_et.setText(text)
+                }
+            } else {
+                tag_et.setText(text)
+            }
+        }
     }
 
     private val mWatcher: TextWatcher = object : TextWatcher {

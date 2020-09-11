@@ -14,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.conversation.ConversationActivity.Companion.ARGS_SHORTCUT
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
 
@@ -22,23 +23,17 @@ class ScanFragment : BaseCameraxFragment() {
         const val TAG = "ScanFragment"
 
         fun newInstance(
-            forAddress: Boolean = false,
-            forAccountName: Boolean = false,
-            forMemo: Boolean = false,
+            forScanResult: Boolean = false,
             fromShortcut: Boolean = false
         ) = ScanFragment().withArgs {
-            putBoolean(CaptureActivity.ARGS_FOR_ADDRESS, forAddress)
-            putBoolean(CaptureActivity.ARGS_FOR_ACCOUNT_NAME, forAccountName)
-            putBoolean(CaptureActivity.ARGS_FOR_MEMO, forMemo)
+            putBoolean(ARGS_FOR_SCAN_RESULT, forScanResult)
             putBoolean(ARGS_SHORTCUT, fromShortcut)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        forAddress = requireArguments().getBoolean(CaptureActivity.ARGS_FOR_ADDRESS)
-        forAccountName = requireArguments().getBoolean(CaptureActivity.ARGS_FOR_ACCOUNT_NAME)
-        forMemo = requireArguments().getBoolean(CaptureActivity.ARGS_FOR_MEMO)
+        forScanResult = requireArguments().getBoolean(ARGS_FOR_SCAN_RESULT)
         fromShortcut = requireArguments().getBoolean(ARGS_SHORTCUT)
     }
 

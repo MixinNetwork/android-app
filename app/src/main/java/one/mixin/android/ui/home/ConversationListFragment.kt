@@ -82,9 +82,6 @@ import one.mixin.android.ui.home.bot.INTERNAL_SCAN_ID
 import one.mixin.android.ui.home.bot.INTERNAL_WALLET_ID
 import one.mixin.android.ui.home.bot.TOP_BOT
 import one.mixin.android.ui.home.bot.getCategoryIcon
-import one.mixin.android.ui.qr.CaptureActivity
-import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
-import one.mixin.android.ui.qr.CaptureActivity.Companion.REQUEST_CODE
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.util.markdown.MarkwonUtil
@@ -520,10 +517,7 @@ class ConversationListFragment : LinkFragment() {
             .autoDispose(stopScope)
             .subscribe { granted ->
                 if (granted) {
-                    CaptureActivity.show(requireActivity()) { intent ->
-                        intent.putExtra(ARGS_SHOW_SCAN, scan)
-                        requireActivity().startActivityForResult(intent, REQUEST_CODE)
-                    }
+                    (requireActivity() as? MainActivity)?.showCapture(scan)
                 } else {
                     context?.openPermissionSetting()
                 }

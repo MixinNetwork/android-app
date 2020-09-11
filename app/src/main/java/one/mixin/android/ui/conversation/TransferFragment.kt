@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
-import android.content.Intent
 import android.graphics.Typeface
 import android.text.Editable
 import android.text.InputFilter
@@ -71,8 +70,7 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
-import one.mixin.android.ui.qr.CaptureActivity.Companion.REQUEST_CODE
-import one.mixin.android.ui.qr.CaptureActivity.Companion.RESULT_CODE
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferOutViewFragment
 import one.mixin.android.vo.Address
@@ -172,6 +170,11 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         bottomSheet
     }
 
+    private val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
+        val memo = data?.getStringExtra(ARGS_FOR_SCAN_RESULT)
+        contentView.transfer_memo.setText(memo)
+    }
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
@@ -201,10 +204,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 .autoDispose(stopScope)
                 .subscribe { granted ->
                     if (granted) {
-                        CaptureActivity.show(requireActivity()) {
-                            it.putExtra(CaptureActivity.ARGS_FOR_MEMO, true)
-                            startActivityForResult(it, REQUEST_CODE)
-                        }
+                        getScanResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
                     } else {
                         context?.openPermissionSetting()
                     }
@@ -241,12 +241,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_CODE && resultCode == RESULT_CODE) {
-            contentView.transfer_memo.setText(data?.getStringExtra(CaptureActivity.ARGS_MEMO_RESULT))
-        }
-    }
-
     private fun handleAddressTransfer() {
         contentView.avatar.setNet(requireContext().dpToPx(16f))
         contentView.expand_iv.isVisible = false
@@ -259,7 +253,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         chatViewModel.observeAddress(address!!.addressId).observe(
             this,
-            Observer {
+            {
                 address = it
                 contentView.title_view.setSubTitle(getString(R.string.send_to, it.label), it.displayAddress().formatPublicKey())
                 contentView.memo_rl.isVisible = isInnerTransfer()
@@ -319,7 +313,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
         chatViewModel.findUserById(userId!!).observe(
             this,
-            Observer { u ->
+            { u ->
                 if (u == null) {
                     jobManager.addJobInBackground(RefreshUserJob(listOf(userId!!)))
                 } else {

@@ -3,7 +3,6 @@ package one.mixin.android.ui.device
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.Intent
 import android.content.SharedPreferences
 import android.view.View
 import android.view.ViewGroup
@@ -29,10 +28,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.AvatarActivity.Companion.ARGS_URL
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
-import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_ADDRESS_RESULT
-import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ADDRESS
-import one.mixin.android.ui.qr.CaptureActivity.Companion.REQUEST_CODE
-import one.mixin.android.ui.qr.CaptureActivity.Companion.RESULT_CODE
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.Session.PREF_EXTENSION_SESSION_ID
@@ -114,10 +110,7 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
                     .autoDispose(stopScope)
                     .subscribe { granted ->
                         if (granted) {
-                            CaptureActivity.show(requireActivity()) {
-                                it.putExtra(ARGS_FOR_ADDRESS, true)
-                                startActivityForResult(it, REQUEST_CODE)
-                            }
+                            getScanResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
                         } else {
                             context?.openPermissionSetting()
                         }
@@ -126,12 +119,10 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_CODE && resultCode == RESULT_CODE) {
-            val url = data?.getStringExtra(ARGS_ADDRESS_RESULT)
-            url?.let {
-                confirm(it)
-            }
+    private val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
+        val url = data?.getStringExtra(ARGS_FOR_SCAN_RESULT)
+        url?.let {
+            confirm(it)
         }
     }
 

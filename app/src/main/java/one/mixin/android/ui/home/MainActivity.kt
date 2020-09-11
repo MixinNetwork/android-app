@@ -13,7 +13,6 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.KeyEvent
-import android.view.View
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
@@ -113,6 +112,7 @@ import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.ui.qr.CaptureActivity
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
@@ -463,9 +463,12 @@ class MainActivity : BlazeBaseActivity() {
         handlerCode(intent)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == CaptureActivity.REQUEST_CODE && resultCode == CaptureActivity.RESULT_CODE && data != null) {
+    fun showCapture(scan: Boolean) {
+        getScanResult.launch(Pair(ARGS_SHOW_SCAN, scan))
+    }
+
+    private val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
+        if (data != null) {
             intent = data
             handlerCode(intent)
         }
@@ -612,35 +615,25 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun initView() {
-        search_bar.setOnLeftClickListener(
-            View.OnClickListener {
-                openSearch()
-            }
-        )
-        search_bar.setOnGroupClickListener(
-            View.OnClickListener {
-                navigationController.pushContacts()
-            }
-        )
-        search_bar.setOnAddClickListener(
-            View.OnClickListener {
-                addCircle()
-            }
-        )
-        search_bar.setOnConfirmClickListener(
-            View.OnClickListener {
-                val circlesFragment =
-                    supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
-                circlesFragment.cancelSort()
-                search_bar?.action_va?.showPrevious()
-            }
-        )
+        search_bar.setOnLeftClickListener {
+            openSearch()
+        }
+        search_bar.setOnGroupClickListener {
+            navigationController.pushContacts()
+        }
+        search_bar.setOnAddClickListener {
+            addCircle()
+        }
+        search_bar.setOnConfirmClickListener {
+            val circlesFragment =
+                supportFragmentManager.findFragmentByTag(CirclesFragment.TAG) as CirclesFragment
+            circlesFragment.cancelSort()
+            search_bar?.action_va?.showPrevious()
+        }
 
-        search_bar.setOnBackClickListener(
-            View.OnClickListener {
-                search_bar.closeSearch()
-            }
-        )
+        search_bar.setOnBackClickListener {
+            search_bar.closeSearch()
+        }
 
         search_bar.mOnQueryTextListener = object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String): Boolean {

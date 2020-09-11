@@ -1,5 +1,6 @@
 package one.mixin.android.ui.qr
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -72,7 +73,7 @@ abstract class VisionFragment : BaseFragment() {
         if (fromShortcut) {
             MainActivity.showFromShortcut(requireActivity(), result)
         } else {
-            requireActivity().setResult(CaptureActivity.RESULT_CODE, result)
+            requireActivity().setResult(Activity.RESULT_OK, result)
             requireActivity().finish()
         }
     }
