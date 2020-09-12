@@ -148,8 +148,8 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     ) = lifecycleScope.launch {
         if (!isAdded) return@launch
 
-        var participantCount = 0
-        var localMe: Participant? = null
+        var participantCount: Int
+        var localMe: Participant?
         withContext(Dispatchers.IO) {
             localMe = bottomViewModel.findParticipantById(conversationId, Session.getAccountId()!!)
             participantCount = bottomViewModel.getParticipantsCount(conversationId)
