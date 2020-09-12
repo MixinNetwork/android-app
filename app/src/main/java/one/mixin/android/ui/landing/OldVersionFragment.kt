@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.lifecycle.ViewModelProvider
 import kotlinx.android.synthetic.main.fragment_old_version.*
 import one.mixin.android.R
 import one.mixin.android.extension.openMarket

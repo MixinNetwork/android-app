@@ -30,6 +30,7 @@ import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.util.Session
 import one.mixin.android.util.language.Lingver
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
@@ -102,7 +103,7 @@ class MixinApplication : Application(), Configuration.Provider, CameraXConfig.Pr
     fun gotoTimeWrong(serverTime: Long) {
         if (onlining.compareAndSet(true, false)) {
             val ise = IllegalStateException("Time error: Server-Time $serverTime - Local-Time ${System.currentTimeMillis()}")
-            FirebaseCrashlytics.getInstance().recordException(ise)
+            reportException(ise)
             BlazeMessageService.stopService(this)
             if (callState.isGroupCall()) {
                 disconnect<GroupCallService>(this)
@@ -112,6 +113,19 @@ class MixinApplication : Application(), Configuration.Provider, CameraXConfig.Pr
             notificationManager.cancelAll()
             defaultSharedPreferences.putBoolean(Constants.Account.PREF_WRONG_TIME, true)
             InitializeActivity.showWongTimeTop(this)
+        }
+    }
+
+    fun gotoOldVersionAlert() {
+        if (onlining.compareAndSet(true, false)) {
+            BlazeMessageService.stopService(this)
+            if (callState.isGroupCall()) {
+                disconnect<GroupCallService>(this)
+            } else if (callState.isVoiceCall()) {
+                disconnect<VoiceCallService>(this)
+            }
+            notificationManager.cancelAll()
+            InitializeActivity.showOldVersionAlert(this)
         }
     }
 

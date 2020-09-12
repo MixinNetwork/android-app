@@ -26,8 +26,6 @@ import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
-import android.webkit.WebResourceError
-import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebSettings.FORCE_DARK_AUTO
 import android.webkit.WebSettings.FORCE_DARK_ON
@@ -311,11 +309,14 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 controlSuspiciousView(false)
             }
         }
-        app.notNullWithElse({
-            contentView.fail_load_view.contact_tv.visibility = VISIBLE
-        }, {
-            contentView.fail_load_view.contact_tv.visibility = INVISIBLE
-        })
+        app.notNullWithElse(
+            {
+                contentView.fail_load_view.contact_tv.visibility = VISIBLE
+            },
+            {
+                contentView.fail_load_view.contact_tv.visibility = INVISIBLE
+            }
+        )
         contentView.fail_load_view.listener = object : FailLoadView.FailLoadListener {
             override fun onReloadClick() {
                 refresh()
@@ -371,20 +372,19 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 { url ->
                     currentUrl = url
                 },
-                { request, error ->
-                    currentUrl = request?.url.toString()
-                    error?.let { e ->
-                        if (e.errorCode == ERROR_HOST_LOOKUP ||
-                            e.errorCode == ERROR_CONNECT ||
-                            e.errorCode == ERROR_IO ||
-                            e.errorCode == ERROR_TIMEOUT
-                        ) {
-                            contentView.fail_load_view.web_fail_description.text = getString(R.string.web_cannot_reached_desc, request?.url)
-                            contentView.fail_load_view.isVisible = true
-                        }
-                        reportException(Exception(e.description.toString()))
+                { errorCode, description, failingUrl ->
+                    currentUrl = failingUrl
+                    if (errorCode == ERROR_HOST_LOOKUP ||
+                        errorCode == ERROR_CONNECT ||
+                        errorCode == ERROR_IO ||
+                        errorCode == ERROR_TIMEOUT
+                    ) {
+                        contentView.fail_load_view.web_fail_description.text = getString(R.string.web_cannot_reached_desc, failingUrl)
+                        contentView.fail_load_view.isVisible = true
                     }
-                })
+                    description?.let { reportException(Exception(it)) }
+                }
+            )
 
         contentView.chat_web_view.webChromeClient = object : WebChromeClient() {
 
@@ -822,7 +822,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private val fragmentManager: FragmentManager,
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
-        private val onReceivedError: (request: WebResourceRequest?, error: WebResourceError?) -> Unit
+        private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit
     ) : WebViewClient() {
 
         override fun onPageFinished(view: WebView?, url: String?) {
@@ -831,9 +831,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             onFinished(url)
         }
 
-        override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
-            super.onReceivedError(view, request, error)
-            onReceivedError(request, error)
+        override fun onReceivedError(view: WebView?, errorCode: Int, description: String?, failingUrl: String?) {
+            super.onReceivedError(view, errorCode, description, failingUrl)
+            onReceivedError(errorCode, description, failingUrl)
         }
 
         override fun onPageCommitVisible(view: WebView?, url: String?) {

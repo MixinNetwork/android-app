@@ -59,6 +59,8 @@ import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
+import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
+import one.mixin.android.util.ErrorHandler.Companion.OLD_VERSION
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.JwtResult
 import one.mixin.android.util.LiveDataCallAdapterFactory
