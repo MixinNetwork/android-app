@@ -210,8 +210,6 @@
     <string name="landing_verification_cant_receive">接收不到验证码?</string>
     <string name="landing_verification_lost_mobile">手机丢失?</string>
     <string name="landing_check_updates">检查新版本</string>
-    <string name="update_mixin">升级 Mixin</string>
-    <string name="update_mixin_description">当前版本(%1$s)不再可用!\n请点击下面的“更新”按钮从应用商店更新到最新版本。</string>
     <!--contacts-->
     <string name="contact_new_group_chat_title">新群聊</string>
     <string name="contact_new_group_chat_desc">创建一个最多支持 256 人的群</string>
@@ -736,7 +734,6 @@
     <string name="action_refresh">刷新</string>
     <string name="action_update">升级</string>
     <string name="action_reload">重新载入</string>
-    <string name="action_update">升级</string>
     <string name="slide_to_cancel">滑动取消</string>
     <string name="gallery_all">全部</string>
     <string name="gallery_empty_text">还没有图片或视频</string>
