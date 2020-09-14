@@ -51,7 +51,7 @@ buildscript {
         ext.countryPickerVersion = '1.0.12'
         ext.fabprogresscircleVersion = '1.1'
         ext.rxContactsVersion = '1.1'
-        ext.glideTransformationsVersion = '3.2.0'
+        ext.glideTransformationsVersion = '4.2.0'
         ext.jobqueueVersion = '3.1.0'
         ext.stickyheadersrecyclerviewVersion = '0.7'
         ext.threetenabpVersion = '1.2.4'
