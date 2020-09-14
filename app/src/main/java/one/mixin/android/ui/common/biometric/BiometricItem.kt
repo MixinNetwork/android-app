@@ -56,6 +56,7 @@ fun WithdrawBiometricItem.displayAddress(): String {
 open class MultisigsBiometricItem(
     open val senders: Array<String>,
     open val receivers: Array<String>,
+    open val threshold: Int,
     override val asset: AssetItem,
     override val amount: String,
     override var pin: String?,
@@ -70,23 +71,24 @@ class Multi2MultiBiometricItem(
     val action: String,
     override val senders: Array<String>,
     override val receivers: Array<String>,
+    override val threshold: Int,
     override val asset: AssetItem,
     override val amount: String,
     override var pin: String?,
     override val traceId: String?,
     override val memo: String?,
     override val state: String
-) : MultisigsBiometricItem(senders, receivers, asset, amount, pin, traceId, memo, state)
+) : MultisigsBiometricItem(senders, receivers, threshold, asset, amount, pin, traceId, memo, state)
 
 @Parcelize
 class One2MultiBiometricItem(
-    val threshold: Int,
     override val senders: Array<String>,
     override val receivers: Array<String>,
+    override val threshold: Int,
     override val asset: AssetItem,
     override val amount: String,
     override var pin: String?,
     override val traceId: String?,
     override val memo: String?,
     override val state: String
-) : MultisigsBiometricItem(senders, receivers, asset, amount, pin, traceId, memo, state)
+) : MultisigsBiometricItem(senders, receivers, threshold, asset, amount, pin, traceId, memo, state)

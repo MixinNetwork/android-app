@@ -41,7 +41,7 @@ class MultisigsBottomSheetDialogFragment :
     }
 
     private val t: MultisigsBiometricItem by lazy {
-        requireArguments().getParcelable<MultisigsBiometricItem>(ARGS_BIOMETRIC_ITEM)!!
+        requireArguments().getParcelable(ARGS_BIOMETRIC_ITEM)!!
     }
 
     private var success: Boolean = false
@@ -117,8 +117,11 @@ class MultisigsBottomSheetDialogFragment :
     }
 
     private fun showUserList(userList: ArrayList<User>, isSender: Boolean) {
-        val title =
-            getString(if (isSender) R.string.multisig_senders else R.string.multisig_receivers)
+        val title = if (isSender) {
+            getString(R.string.multisig_senders)
+        } else {
+            getString(R.string.multisig_receivers, "${t.threshold}/${t.receivers.size}")
+        }
         UserListBottomSheetDialogFragment.newInstance(userList, title)
             .showNow(parentFragmentManager, UserListBottomSheetDialogFragment.TAG)
     }

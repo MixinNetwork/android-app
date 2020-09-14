@@ -784,7 +784,7 @@
     <string name="multisig_transaction">マルチシグトランザクション</string>
     <string name="multisig_revoke_transaction">マルチシグトランザクションを取り消す</string>
     <string name="multisig_senders">送信者</string>
-    <string name="multisig_receivers">受信者</string>
+    <string name="multisig_receivers">受信者 (%1$s)</string>
     <string name="multisig_state_signed">このマルチシグリンクはすでにあなたが署名しているため、重複した操作を行うことはできません。</string>
     <string name="multisig_state_unlocked">このマルチシグリンクは既に他のユーザーによってロック解除されています。重複した操作を行うことはできません。</string>
 
