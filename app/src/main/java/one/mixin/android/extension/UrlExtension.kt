@@ -5,8 +5,19 @@ import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Category.AUDIO
+import one.mixin.android.Constants.Category.CARD
+import one.mixin.android.Constants.Category.CONTACT
+import one.mixin.android.Constants.Category.DATA
+import one.mixin.android.Constants.Category.IMAGE
+import one.mixin.android.Constants.Category.LIVE
+import one.mixin.android.Constants.Category.LOCATION
+import one.mixin.android.Constants.Category.STICKER
+import one.mixin.android.Constants.Category.TEXT
+import one.mixin.android.Constants.Category.VIDEO
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -99,12 +110,50 @@ fun String.openAsUrl(
             }
         }
     } else if (startsWith(Constants.Scheme.SEND, true)) {
-        Uri.parse(this).getQueryParameter("text")?.let {
+        val uri = Uri.parse(this)
+        val text = uri.getQueryParameter("text")
+        text.notNullWithElse({
             ForwardActivity.show(
                 MixinApplication.appContext,
                 arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it))
             )
-        }
+        }, {
+            val category = uri.getQueryParameter("category")
+            val conversationId = uri.getQueryParameter("conversation_id")
+            val data = uri.getQueryParameter("data")
+            if (category != null && data != null) {
+                try {
+                    val content = String(Base64.decode(data))
+                    // Todo
+                    when (category) {
+                        TEXT -> {
+                        }
+                        IMAGE -> {
+                        }
+                        DATA -> {
+                        }
+                        STICKER -> {
+                        }
+                        CONTACT -> {
+                        }
+                        CARD -> {
+                        }
+                        AUDIO -> {
+                        }
+                        VIDEO -> {
+                        }
+                        LIVE -> {
+                        }
+                        LOCATION -> {
+                        }
+                    }
+                } catch (e: Exception) {
+                    extraAction()
+                }
+            } else {
+                extraAction()
+            }
+        })
     } else if (startsWith(Constants.Scheme.DEVICE, true)) {
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
