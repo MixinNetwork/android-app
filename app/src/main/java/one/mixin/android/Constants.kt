@@ -111,17 +111,14 @@ object Constants {
         const val THEME_AUTO_ID = 2
     }
 
-    object Category {
+    object ShareCategory {
         const val TEXT = "text"
         const val IMAGE = "image"
-        const val DATA = "data"
-        const val STICKER = "sticker"
-        const val CONTACT = "contact"
-        const val CARD = "card"
-        const val AUDIO = "audio"
-        const val VIDEO = "video"
         const val LIVE = "live"
-        const val LOCATION = "location"
+        const val CONTACT = "contact"
+        const val POST = "post"
+        const val APP_CARD = "app_card"
+        const val APP_BUTTON_GROUP = "app_button_group"
     }
 
     object ChainId {

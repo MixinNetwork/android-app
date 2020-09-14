@@ -5,16 +5,13 @@ import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Category.AUDIO
-import one.mixin.android.Constants.Category.CARD
-import one.mixin.android.Constants.Category.CONTACT
-import one.mixin.android.Constants.Category.DATA
-import one.mixin.android.Constants.Category.IMAGE
-import one.mixin.android.Constants.Category.LIVE
-import one.mixin.android.Constants.Category.LOCATION
-import one.mixin.android.Constants.Category.STICKER
-import one.mixin.android.Constants.Category.TEXT
-import one.mixin.android.Constants.Category.VIDEO
+import one.mixin.android.Constants.ShareCategory.APP_BUTTON_GROUP
+import one.mixin.android.Constants.ShareCategory.APP_CARD
+import one.mixin.android.Constants.ShareCategory.CONTACT
+import one.mixin.android.Constants.ShareCategory.IMAGE
+import one.mixin.android.Constants.ShareCategory.LIVE
+import one.mixin.android.Constants.ShareCategory.POST
+import one.mixin.android.Constants.ShareCategory.TEXT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.crypto.Base64
@@ -127,24 +124,19 @@ fun String.openAsUrl(
                     // Todo
                     when (category) {
                         TEXT -> {
+                            
                         }
                         IMAGE -> {
                         }
-                        DATA -> {
-                        }
-                        STICKER -> {
-                        }
                         CONTACT -> {
                         }
-                        CARD -> {
+                        POST -> {
                         }
-                        AUDIO -> {
+                        APP_BUTTON_GROUP -> {
                         }
-                        VIDEO -> {
+                        APP_CARD -> {
                         }
                         LIVE -> {
-                        }
-                        LOCATION -> {
                         }
                     }
                 } catch (e: Exception) {
