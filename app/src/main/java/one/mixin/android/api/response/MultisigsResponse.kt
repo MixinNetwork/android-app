@@ -19,6 +19,7 @@ class MultisigsResponse(
     val amount: String,
     val senders: Array<String>,
     val receivers: Array<String>,
+    val threshold: Int,
     val state: String,
     @SerializedName("transaction_hash")
     val transactionHash: String,

@@ -305,6 +305,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                         action = multisigs.action,
                                         senders = multisigs.senders,
                                         receivers = multisigs.receivers,
+                                        threshold = multisigs.threshold,
                                         asset = asset,
                                         amount = multisigs.amount,
                                         pin = null,

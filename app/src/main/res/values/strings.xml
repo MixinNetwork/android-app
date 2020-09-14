@@ -848,7 +848,7 @@
     <string name="multisig_transaction">Multisig Transactions</string>
     <string name="multisig_revoke_transaction">Revoke Multisig Transaction</string>
     <string name="multisig_senders">Senders</string>
-    <string name="multisig_receivers">Receivers</string>
+    <string name="multisig_receivers">Receivers (%1$s)</string>
     <string name="multisig_state_signed">This multisig link has already been signed by yourself, you can not make a duplicate operation.</string>
     <string name="multisig_state_unlocked">This multisig link has already been unlocked by someone, you can not make a duplicate operation.</string>
 
