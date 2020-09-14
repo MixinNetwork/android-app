@@ -62,7 +62,7 @@ buildscript {
         ext.svgVersion = '1.4'
         ext.reboundVersion = '0.3.8'
         ext.ktlintVersion = '0.38.1'
-        ext.exoplayerVersion = '2.12.0'
+        ext.exoplayerVersion = '2.11.8'
         ext.perfVersion = '19.0.8'
         ext.markwonVersion = '4.5.1'
         ext.prism4jVersion = '2.0.0'
