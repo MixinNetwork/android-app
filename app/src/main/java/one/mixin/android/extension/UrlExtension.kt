@@ -20,15 +20,22 @@ import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.donateSupported
+import one.mixin.android.util.ColorUtil
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
+import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareImageData
+import one.mixin.android.websocket.ContactMessagePayload
+import one.mixin.android.websocket.LiveMessagePayload
 
 fun String.openAsUrlOrWeb(
     conversationId: String?,
@@ -120,23 +127,36 @@ fun String.openAsUrl(
             val data = uri.getQueryParameter("data")
             if (category != null && data != null) {
                 try {
-                    val content = String(Base64.decode(data))
+                    val decoded = String(Base64.decode(data))
                     // Todo
                     when (category) {
                         TEXT -> {
-                            
+
                         }
                         IMAGE -> {
+                            val shareImageData = GsonHelper.customGson.fromJson(decoded, ShareImageData::class.java)
                         }
                         CONTACT -> {
+                            val contactData = GsonHelper.customGson.fromJson(decoded, ContactMessagePayload::class.java)
                         }
                         POST -> {
                         }
                         APP_BUTTON_GROUP -> {
+                            val appButton = GsonHelper.customGson.fromJson(decoded, Array<AppButtonData>::class.java)
+                            for (item in appButton) {
+                                ColorUtil.parseColor(item.color.trim())
+                            }
                         }
                         APP_CARD -> {
+                            val appCardData = GsonHelper.customGson.fromJson(decoded, AppCardData::class.java)
                         }
                         LIVE -> {
+                            val liveData = GsonHelper.customGson.fromJson(decoded, LiveMessagePayload::class.java)
+                            if (liveData.width <= 0 || liveData.height <= 0) {
+                                extraAction()
+                            } else {
+                                ShareMessageBottomSheetDialogFragment.newInstance().showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
+                            }
                         }
                     }
                 } catch (e: Exception) {

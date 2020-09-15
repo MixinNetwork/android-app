@@ -874,4 +874,6 @@
     <string name="bot_internal_camera">相机</string>
     <string name="bot_internal_wallet">钱包</string>
     <string name="bot_empty_tip">可以添加你喜欢的机器人</string>
+    <!-- share -->
+    <string name="share_message_description">你确定要发送来自%$1s的%$2s</string>
 </resources>

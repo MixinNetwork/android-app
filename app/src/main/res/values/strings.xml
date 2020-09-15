@@ -891,6 +891,7 @@
     <string name="bot_internal_camera">Camera</string>
     <string name="bot_internal_wallet">Wallet</string>
     <string name="bot_empty_tip">Please add your favorite bot first.</string>
-
+    <!-- share -->
+    <string name="share_message_description">Are you sure you want to send a %$2s from %$1s</string>
 </resources>
 
