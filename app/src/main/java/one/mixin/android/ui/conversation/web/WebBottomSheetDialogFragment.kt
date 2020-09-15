@@ -490,10 +490,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.chat_web_view.stopLoading()
             contentView.chat_web_view.webViewClient = null
             contentView.chat_web_view.webChromeClient = null
-            if (requireActivity().requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-                requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
-                requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-            }
         }
     }
 
@@ -582,6 +578,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.webChromeClient = null
         unregisterForContextMenu(contentView.chat_web_view)
         processor.close()
+        if (requireActivity().requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+            requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
+            requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
         super.onDestroyView()
     }
 
