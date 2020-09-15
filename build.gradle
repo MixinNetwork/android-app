@@ -89,7 +89,7 @@ buildscript {
         ext.svgVersion = '1.4'
         ext.startupVersion ='1.0.0-alpha03'
         ext.dnsVersion = '2.1.9'
-        ext.appCenterSdkVersion = '3.3.0'
+        ext.appCenterSdkVersion = '3.3.1'
     }
 
     repositories {
