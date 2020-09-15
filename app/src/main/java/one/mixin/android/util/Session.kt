@@ -163,6 +163,7 @@ object Session {
             JwtResult(abs(System.currentTimeMillis() / 1000 - iat) > offset, requestTime = iat.toLong())
         } catch (e: Exception) {
             Timber.e(e)
+            reportException(e)
             JwtResult(false)
         }
     }
