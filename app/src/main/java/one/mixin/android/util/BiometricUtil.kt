@@ -8,7 +8,6 @@ import android.security.keystore.KeyProperties
 import android.security.keystore.UserNotAuthenticatedException
 import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import moe.feng.support.biometricprompt.BiometricPromptCompat
 import one.mixin.android.Constants
 import one.mixin.android.Constants.BIOMETRICS_ALIAS
@@ -18,7 +17,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.toast
-import org.jetbrains.anko.getStackTraceString
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
 import java.security.KeyStore
@@ -73,8 +71,9 @@ object BiometricUtil {
                 is InvalidKeyException -> {
                     deleteKey(ctx)
                     ctx.toast(R.string.wallet_biometric_invalid)
+                    reportException("$CRASHLYTICS_BIOMETRIC-getEncryptCipher", e)
                 }
-                else -> FirebaseCrashlytics.getInstance().log(CRASHLYTICS_BIOMETRIC + "getEncryptCipher. ${e.getStackTraceString()}")
+                else -> reportException("$CRASHLYTICS_BIOMETRIC-getEncryptCipher", e)
             }
             return false
         }
@@ -93,7 +92,7 @@ object BiometricUtil {
             }
             ks.deleteEntry(BIOMETRICS_ALIAS)
         } catch (e: Exception) {
-            reportException(e)
+            reportException("$CRASHLYTICS_BIOMETRIC-deleteKey", e)
         }
 
         ctx.defaultSharedPreferences.apply {
@@ -132,7 +131,7 @@ object BiometricUtil {
         try {
             key = ks.getKey(BIOMETRICS_ALIAS, null) as? SecretKey
         } catch (e: Exception) {
-            reportException(e)
+            reportException("$CRASHLYTICS_BIOMETRIC-getKey", e)
         }
         try {
             if (key == null) {
@@ -161,7 +160,7 @@ object BiometricUtil {
                 key = keyGenerator.generateKey()
             }
         } catch (e: Exception) {
-            reportException(e)
+            reportException("$CRASHLYTICS_BIOMETRIC-generateKey", e)
         }
         return key
     }
