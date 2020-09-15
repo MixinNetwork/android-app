@@ -51,6 +51,9 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_share_message_bottom_sheet, null)
         (dialog as BottomSheet).setCustomView(contentView)
+        contentView.close.setOnClickListener {
+            dismiss()
+        }
         loadData()
     }
 
