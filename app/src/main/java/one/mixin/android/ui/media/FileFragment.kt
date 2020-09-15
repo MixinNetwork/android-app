@@ -8,6 +8,7 @@ import android.widget.ViewAnimator
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.layout_recycler_view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -18,6 +19,7 @@ import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaStatus
 
+@AndroidEntryPoint
 class FileFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     companion object {
         const val TAG = "FileFragment"

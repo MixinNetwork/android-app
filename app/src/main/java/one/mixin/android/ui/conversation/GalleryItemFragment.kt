@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_draggable_recycler_view.*
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -30,6 +31,7 @@ import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.internal.model.AlbumMediaCollection
 import org.jetbrains.anko.dip
 
+@AndroidEntryPoint
 class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks {
     companion object {
         const val TAG = "GalleryItemFragment"

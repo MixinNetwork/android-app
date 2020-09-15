@@ -6,6 +6,7 @@ import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.os.Bundle
 import android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_chat.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
@@ -28,6 +29,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class ConversationActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

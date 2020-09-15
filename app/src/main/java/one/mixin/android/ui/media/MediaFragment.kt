@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ViewAnimator
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.layout_recycler_view.*
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
@@ -18,6 +19,7 @@ import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import org.jetbrains.anko.dip
 
+@AndroidEntryPoint
 class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     companion object {
         const val TAG = "MediaFragment"

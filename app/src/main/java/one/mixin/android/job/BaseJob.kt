@@ -8,6 +8,9 @@ import com.birbit.android.jobqueue.RetryConstraint
 import com.bugsnag.android.Bugsnag
 import com.bugsnag.android.MetaData
 import com.microsoft.appcenter.crashes.Crashes
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ApplicationComponent
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.LocalJobException
@@ -47,7 +50,6 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.di.AppComponent
 import one.mixin.android.di.Injectable
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
@@ -60,6 +62,12 @@ import java.net.SocketTimeoutException
 import javax.inject.Inject
 
 abstract class BaseJob(params: Params) : Job(params), Injectable {
+
+    @InstallIn(ApplicationComponent::class)
+    @EntryPoint
+    interface JobEntryPoint {
+        fun inject(baseJob: BaseJob)
+    }
 
     @Inject
     @Transient
@@ -201,10 +209,6 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
                                 )
                         )
                 )
-    }
-
-    fun inject(appComponent: AppComponent) {
-        appComponent.inject(this)
     }
 
     public override fun shouldReRunOnThrowable(throwable: Throwable, runCount: Int, maxRunCount: Int): RetryConstraint {

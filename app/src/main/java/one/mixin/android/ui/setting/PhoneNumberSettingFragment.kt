@@ -8,6 +8,7 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_appearance.title_view
 import kotlinx.android.synthetic.main.fragment_setting_phone_number.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -20,6 +21,7 @@ import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.SearchSource
 
+@AndroidEntryPoint
 class PhoneNumberSettingFragment : BaseViewModelFragment<SettingConversationViewModel>() {
     companion object {
         const val TAG = "PhoneNumberSettingFragment"

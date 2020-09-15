@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.checkUserOrApp
 import one.mixin.android.extension.toast
@@ -17,6 +18,7 @@ import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class UrlInterpreterActivity : BaseActivity() {
     companion object {
         private const val CODE = "codes"

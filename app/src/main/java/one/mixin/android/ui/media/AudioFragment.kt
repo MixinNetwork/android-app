@@ -8,6 +8,7 @@ import android.widget.ViewAnimator
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.layout_recycler_view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -20,6 +21,7 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.mediaDownloaded
 
+@AndroidEntryPoint
 class AudioFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     companion object {
         const val TAG = "AudioFragment"

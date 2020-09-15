@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_pin_logs.*
 import kotlinx.android.synthetic.main.item_pin_logs.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -18,6 +19,7 @@ import one.mixin.android.extension.localTime
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.vo.LogResponse
 
+@AndroidEntryPoint
 class PinLogsFragment : BaseViewModelFragment<SettingViewModel>() {
     override fun getModelClass() = SettingViewModel::class.java
 

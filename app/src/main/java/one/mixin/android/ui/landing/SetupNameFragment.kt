@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_setup_name.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -28,6 +29,7 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class SetupNameFragment : BaseFragment() {
 
     @Inject

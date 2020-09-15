@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_conversation_circle_edit.*
 import kotlinx.android.synthetic.main.fragment_conversation_circle_edit.search_et
 import kotlinx.android.synthetic.main.fragment_group.select_rv
@@ -38,6 +39,7 @@ import one.mixin.android.vo.generateConversationId
 import org.jetbrains.anko.textColor
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class ConversationCircleEditFragment : BaseFragment() {
     companion object {
         const val TAG = "ConversationCircleEditFragment"

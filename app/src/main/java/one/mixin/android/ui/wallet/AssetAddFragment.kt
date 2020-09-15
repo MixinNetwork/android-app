@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_asset_add.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Job
@@ -26,6 +27,7 @@ import one.mixin.android.widget.SearchView
 import org.jetbrains.anko.textColor
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class AssetAddFragment : BaseFragment() {
     companion object {
         const val POS_RV = 0

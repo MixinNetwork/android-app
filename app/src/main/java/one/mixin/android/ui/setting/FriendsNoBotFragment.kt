@@ -1,6 +1,7 @@
 package one.mixin.android.ui.setting
 
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_friends.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,6 +23,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.User
 
+@AndroidEntryPoint
 class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, EmergencyViewModel>(), FriendsListener {
     init {
         adapter = FriendsNoBotAdapter(userCallback).apply {

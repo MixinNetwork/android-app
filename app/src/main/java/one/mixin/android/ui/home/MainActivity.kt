@@ -34,6 +34,7 @@ import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.AppCenter
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -135,9 +136,9 @@ import one.mixin.android.worker.RefreshFcmWorker
 import timber.log.Timber
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class MainActivity : BlazeBaseActivity() {
 
-    @Inject
     lateinit var navigationController: NavigationController
 
     @Inject
@@ -182,6 +183,7 @@ class MainActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        navigationController = NavigationController(this)
 
         if (!Session.checkToken()) run {
             startActivity(Intent(this, LandingActivity::class.java))

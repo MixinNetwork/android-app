@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_transaction.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -17,6 +18,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.SnapshotItem
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class TransactionFragment : BaseFragment(), TransactionInterface {
     companion object {
         const val TAG = "TransactionFragment"

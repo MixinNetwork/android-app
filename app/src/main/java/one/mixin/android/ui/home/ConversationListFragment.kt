@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_conversation_list.*
 import kotlinx.android.synthetic.main.item_list_conversation.view.*
@@ -102,12 +103,12 @@ import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
 
+@AndroidEntryPoint
 class ConversationListFragment : LinkFragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    @Inject
     lateinit var navigationController: NavigationController
 
     @Inject
@@ -161,6 +162,7 @@ class ConversationListFragment : LinkFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        navigationController = NavigationController(activity as MainActivity)
         messageAdapter.headerView = message_rv.inflate(R.layout.item_list_conversation_header, false).apply {
             header_close.setOnClickListener {
                 messageAdapter.setShowHeader(false, message_rv)

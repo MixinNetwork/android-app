@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_auth.view.*
 import kotlinx.android.synthetic.main.item_third_login_scope.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
@@ -28,6 +29,7 @@ import one.mixin.android.vo.Scope.Companion.SCOPES
 import one.mixin.android.vo.convertName
 import one.mixin.android.widget.BottomSheet
 
+@AndroidEntryPoint
 class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     companion object {

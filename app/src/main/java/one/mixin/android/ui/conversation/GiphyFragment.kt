@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadGif
@@ -32,6 +33,7 @@ import retrofit2.HttpException
 import timber.log.Timber
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class GiphyFragment : BaseFragment() {
     companion object {
         const val TAG = "GiphyFragment"

@@ -1,14 +1,13 @@
 package one.mixin.android.worker
 
 import android.content.Context
+import androidx.hilt.Assisted
+import androidx.hilt.work.WorkerInject
 import androidx.work.WorkerParameters
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AddressDao
-import one.mixin.android.di.worker.ChildWorkerFactory
 
-class RefreshAddressWorker @AssistedInject constructor(
+class RefreshAddressWorker @WorkerInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val assetService: AssetService,
@@ -31,7 +30,4 @@ class RefreshAddressWorker @AssistedInject constructor(
             Result.failure()
         }
     }
-
-    @AssistedInject.Factory
-    interface Factory : ChildWorkerFactory
 }

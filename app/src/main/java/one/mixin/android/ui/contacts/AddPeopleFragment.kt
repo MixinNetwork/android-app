@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_add_people.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -27,6 +28,7 @@ import one.mixin.android.widget.Keyboard
 import java.util.Locale
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class AddPeopleFragment : BaseFragment() {
 
     companion object {

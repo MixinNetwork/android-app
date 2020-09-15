@@ -10,6 +10,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_device.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -36,6 +37,7 @@ import one.mixin.android.util.Session.PREF_SESSION
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textColor
 
+@AndroidEntryPoint
 class DeviceFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "DeviceFragment"

@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_verification_emergency.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,6 +31,7 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import java.security.KeyPair
 
+@AndroidEntryPoint
 class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
     companion object {
         const val TAG = "VerificationEmergencyFragment"

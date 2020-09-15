@@ -14,6 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.collection.ArraySet
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -36,6 +37,7 @@ import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.StorageUsage
 import timber.log.Timber
 
+@AndroidEntryPoint
 class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() {
     companion object {
         const val TAG = "SettingStorageFragment"

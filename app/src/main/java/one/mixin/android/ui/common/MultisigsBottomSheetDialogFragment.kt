@@ -6,6 +6,7 @@ import android.content.DialogInterface
 import android.view.View
 import android.view.View.GONE
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_multisigs_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +30,7 @@ import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogF
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 
+@AndroidEntryPoint
 class MultisigsBottomSheetDialogFragment :
     ValuableBiometricBottomSheetDialogFragment<MultisigsBiometricItem>() {
     companion object {

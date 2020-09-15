@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_shared_media.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
@@ -13,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseViewModelFragment
 
+@AndroidEntryPoint
 class SharedMediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     companion object {
         const val TAG = "SharedMediaFragment"

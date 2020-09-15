@@ -2,6 +2,7 @@ package one.mixin.android.webrtc
 
 import android.content.Context
 import android.content.Intent
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.insertAndNotifyConversation
@@ -24,6 +25,7 @@ import timber.log.Timber
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
+@AndroidEntryPoint
 class VoiceCallService : CallService() {
 
     private var blazeMessageData: BlazeMessageData? = null

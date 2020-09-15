@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_blocked.*
 import kotlinx.android.synthetic.main.item_contact_normal.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -15,6 +16,7 @@ import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.vo.User
 
+@AndroidEntryPoint
 class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() {
     companion object {
         const val TAG = "SettingBlockedFragment"

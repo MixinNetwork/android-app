@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_view_emergency_contact.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
@@ -15,6 +16,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.vo.User
 
+@AndroidEntryPoint
 class ViewEmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
     companion object {
         const val TAG = "ViewEmergencyContactFragment"

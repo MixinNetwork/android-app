@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_currency_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.item_currency.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.close_iv
@@ -31,6 +32,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetRelativeLayout
 import one.mixin.android.widget.SearchView
 
+@AndroidEntryPoint
 class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "CurrencyBottomSheetDialogFragment"

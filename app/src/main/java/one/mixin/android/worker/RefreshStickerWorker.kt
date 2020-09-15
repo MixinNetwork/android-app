@@ -1,17 +1,16 @@
 package one.mixin.android.worker
 
 import android.content.Context
+import androidx.hilt.Assisted
+import androidx.hilt.work.WorkerInject
 import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.insertUpdate
-import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.vo.Sticker
 
-class RefreshStickerWorker @AssistedInject constructor(
+class RefreshStickerWorker @WorkerInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val accountService: AccountService,
@@ -37,7 +36,4 @@ class RefreshStickerWorker @AssistedInject constructor(
             Result.failure()
         }
     }
-
-    @AssistedInject.Factory
-    interface Factory : ChildWorkerFactory
 }

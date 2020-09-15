@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -30,6 +31,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment.Companion.TYPE_ADDRESS
 import one.mixin.android.vo.needShowReserve
 
+@AndroidEntryPoint
 class DepositPublicKeyFragment : DepositFragment() {
 
     companion object {

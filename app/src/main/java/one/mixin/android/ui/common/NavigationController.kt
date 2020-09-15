@@ -12,10 +12,8 @@ import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.Session
-import javax.inject.Inject
 
 class NavigationController
-@Inject
 constructor(mainActivity: MainActivity) {
     private val containerId: Int = R.id.container
     private val fragmentManager: FragmentManager = mainActivity.supportFragmentManager

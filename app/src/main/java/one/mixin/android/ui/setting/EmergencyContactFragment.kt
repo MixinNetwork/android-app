@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_emergency_contact.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +24,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 
+@AndroidEntryPoint
 class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
     companion object {
         const val TAG = "EmergencyContactFragment"

@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_notifications.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,7 @@ import one.mixin.android.util.ChannelManager
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Fiats
 
+@AndroidEntryPoint
 class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
     companion object {
         const val TAG = "NotificationsFragment"

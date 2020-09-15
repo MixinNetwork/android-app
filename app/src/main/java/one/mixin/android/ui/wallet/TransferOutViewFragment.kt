@@ -14,6 +14,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_transfer_out.view.*
 import kotlinx.android.synthetic.main.layout_empty_transaction.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -41,6 +42,7 @@ import one.mixin.android.vo.SnapshotItem.Companion.fromSnapshot
 import one.mixin.android.widget.BottomSheet
 import kotlin.math.abs
 
+@AndroidEntryPoint
 class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotListener {
 
     companion object {

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -22,6 +23,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class LoadingFragment : BaseFragment() {
 
     companion object {

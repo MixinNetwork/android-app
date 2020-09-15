@@ -23,6 +23,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -79,6 +80,7 @@ import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
     companion object {

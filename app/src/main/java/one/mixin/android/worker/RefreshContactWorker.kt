@@ -1,17 +1,16 @@
 package one.mixin.android.worker
 
 import android.content.Context
+import androidx.hilt.Assisted
+import androidx.hilt.work.WorkerInject
 import androidx.work.WorkerParameters
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdateList
-import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.vo.User
 
-class RefreshContactWorker @AssistedInject constructor(
+class RefreshContactWorker @WorkerInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val contactService: ContactService,
@@ -29,7 +28,4 @@ class RefreshContactWorker @AssistedInject constructor(
             Result.failure()
         }
     }
-
-    @AssistedInject.Factory
-    interface Factory : ChildWorkerFactory
 }

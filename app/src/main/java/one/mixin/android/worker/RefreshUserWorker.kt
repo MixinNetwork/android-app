@@ -1,20 +1,19 @@
 package one.mixin.android.worker
 
 import android.content.Context
+import androidx.hilt.Assisted
+import androidx.hilt.work.WorkerInject
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.UserService
-import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.extension.buildNetworkRequest
 import one.mixin.android.extension.buildRequest
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
 
-class RefreshUserWorker @AssistedInject constructor(
+class RefreshUserWorker @WorkerInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val userService: UserService,
@@ -47,7 +46,4 @@ class RefreshUserWorker @AssistedInject constructor(
             Result.failure()
         }
     }
-
-    @AssistedInject.Factory
-    interface Factory : ChildWorkerFactory
 }

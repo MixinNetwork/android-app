@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.View
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_asset_key_bottom.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
@@ -12,6 +13,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
 
+@AndroidEntryPoint
 class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "AssetKeyBottomSheetDialogFragment"

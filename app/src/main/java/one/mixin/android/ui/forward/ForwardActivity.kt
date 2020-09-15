@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Bundle
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.toast
@@ -13,6 +14,7 @@ import one.mixin.android.util.ShareHelper
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 
+@AndroidEntryPoint
 class ForwardActivity : BlazeBaseActivity() {
     companion object {
         const val ARGS_MESSAGES = "args_messages"

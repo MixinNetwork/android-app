@@ -9,6 +9,7 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_verification_emergency_id.*
 import kotlinx.android.synthetic.main.fragment_verification_emergency_id.back_iv
 import kotlinx.android.synthetic.main.fragment_verification_emergency_id.verification_cover
@@ -28,6 +29,7 @@ import one.mixin.android.ui.common.FabLoadingFragment
 import one.mixin.android.ui.setting.VerificationEmergencyFragment.Companion.FROM_SESSION
 import one.mixin.android.widget.Keyboard
 
+@AndroidEntryPoint
 class VerificationEmergencyIdFragment : FabLoadingFragment<EmergencyViewModel>() {
     companion object {
         const val TAG = "VerificationEmergencyIdFragment"

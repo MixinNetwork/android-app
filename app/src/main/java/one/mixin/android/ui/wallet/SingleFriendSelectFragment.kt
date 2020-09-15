@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import androidx.navigation.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.friends.BaseFriendsFragment
@@ -12,6 +13,7 @@ import one.mixin.android.ui.setting.FriendsNoBotViewHolder
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 
+@AndroidEntryPoint
 class SingleFriendSelectFragment : BaseFriendsFragment<FriendsNoBotViewHolder, ConversationViewModel>(), FriendsListener {
     init {
         adapter = FriendsNoBotAdapter(userCallback).apply {

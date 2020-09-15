@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDelegate
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_appearance.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
@@ -21,6 +22,7 @@ import one.mixin.android.util.language.Lingver
 import one.mixin.android.vo.Fiats
 import java.util.Locale
 
+@AndroidEntryPoint
 class AppearanceFragment : BaseViewModelFragment<SettingViewModel>() {
     companion object {
         const val TAG = "AppearanceFragment"

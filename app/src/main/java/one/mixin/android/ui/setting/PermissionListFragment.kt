@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_permission_list.*
 import kotlinx.android.synthetic.main.item_permission_list.view.*
 import kotlinx.android.synthetic.main.layout_permission_list_foot.view.*
@@ -31,6 +32,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.convertName
 
+@AndroidEntryPoint
 class PermissionListFragment : BaseViewModelFragment<SettingViewModel>() {
     companion object {
         const val TAG = "PermissionListFragment"

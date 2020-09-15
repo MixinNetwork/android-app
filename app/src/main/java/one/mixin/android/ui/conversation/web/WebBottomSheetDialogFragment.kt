@@ -43,6 +43,7 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import kotlinx.coroutines.CoroutineScope
@@ -98,6 +99,7 @@ import java.io.FileInputStream
 import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
 
+@AndroidEntryPoint
 class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     companion object {

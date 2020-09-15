@@ -3,11 +3,13 @@ package one.mixin.android.ui.landing
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
 
+@AndroidEntryPoint
 class InitializeActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

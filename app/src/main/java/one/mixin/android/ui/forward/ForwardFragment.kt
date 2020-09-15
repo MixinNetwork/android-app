@@ -16,6 +16,7 @@ import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_forward.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
@@ -37,6 +38,7 @@ import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class ForwardFragment : BaseFragment() {
     companion object {
         const val TAG = "ForwardFragment"

@@ -14,6 +14,7 @@ import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.android.synthetic.main.view_verification_bottom.view.*
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +51,7 @@ import one.mixin.android.widget.RecaptchaView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 
+@AndroidEntryPoint
 class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     companion object {
         const val TAG: String = "VerificationFragment"

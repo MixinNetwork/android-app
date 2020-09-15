@@ -8,6 +8,7 @@ import android.widget.FrameLayout
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_sticker_album.*
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseFragment
@@ -18,6 +19,7 @@ import one.mixin.android.widget.DraggableRecyclerView
 import org.jetbrains.anko.backgroundResource
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class StickerAlbumFragment : BaseFragment() {
 
     companion object {

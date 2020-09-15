@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_privacy.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -12,6 +13,7 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.util.Session
 
+@AndroidEntryPoint
 class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
     companion object {
         const val TAG = "PrivacyFragment"

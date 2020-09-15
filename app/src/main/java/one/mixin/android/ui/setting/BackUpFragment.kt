@@ -15,6 +15,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_backup.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +38,7 @@ import one.mixin.android.util.backup.delete
 import one.mixin.android.util.backup.findBackup
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class BackUpFragment : BaseFragment() {
     companion object {
         const val TAG = "BackUpFragment"

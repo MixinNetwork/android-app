@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_invite.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -21,6 +22,7 @@ import one.mixin.android.ui.group.InviteActivity.Companion.ARGS_ID
 import one.mixin.android.util.ErrorHandler
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class InviteFragment : BaseFragment() {
     companion object {
         const val TAG = "InviteFragment"

@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_circle_manager.*
 import kotlinx.android.synthetic.main.item_circle_manager.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -32,6 +33,7 @@ import one.mixin.android.vo.getCircleColor
 import one.mixin.android.widget.SegmentationItemDecoration
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class CircleManagerFragment : BaseFragment() {
     companion object {
         const val TAG = "CirclesFragment"

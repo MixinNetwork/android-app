@@ -9,6 +9,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
 import kotlinx.android.synthetic.main.fragment_setting_mobile_contact.*
@@ -27,6 +28,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseViewModelFragment
 import org.jetbrains.anko.textColorResource
 
+@AndroidEntryPoint
 class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
     companion object {
         const val TAG = "MobileContactFragment"

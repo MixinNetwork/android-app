@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_hidden_assets.*
 import kotlinx.android.synthetic.main.view_title.*
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +27,7 @@ import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.vo.AssetItem
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     companion object {

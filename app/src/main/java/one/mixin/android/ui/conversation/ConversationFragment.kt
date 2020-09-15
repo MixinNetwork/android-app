@@ -48,6 +48,7 @@ import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.material.snackbar.Snackbar
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
@@ -203,6 +204,7 @@ import java.io.File
 import javax.inject.Inject
 import kotlin.math.abs
 
+@AndroidEntryPoint
 @SuppressLint("InvalidWakeLockTag")
 class ConversationFragment :
     LinkFragment(),

@@ -12,6 +12,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -54,6 +55,7 @@ import one.mixin.android.vo.SearchMessageItem
 import org.threeten.bp.Instant
 import java.io.File
 
+@AndroidEntryPoint
 class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
 
     companion object {

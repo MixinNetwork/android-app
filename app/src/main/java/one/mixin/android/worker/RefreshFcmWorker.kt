@@ -2,16 +2,15 @@ package one.mixin.android.worker
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.hilt.Assisted
+import androidx.hilt.work.WorkerInject
 import androidx.work.WorkerParameters
 import com.google.firebase.iid.FirebaseInstanceId
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
 import io.reactivex.schedulers.Schedulers
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.AccountService
-import one.mixin.android.di.worker.ChildWorkerFactory
 
-class RefreshFcmWorker @AssistedInject constructor(
+class RefreshFcmWorker @WorkerInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     val accountService: AccountService
@@ -36,7 +35,4 @@ class RefreshFcmWorker @AssistedInject constructor(
         }
         return Result.success()
     }
-
-    @AssistedInject.Factory
-    interface Factory : ChildWorkerFactory
 }

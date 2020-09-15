@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_my_shared_apps.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
@@ -20,6 +21,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.widget.SegmentationItemDecoration
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class MySharedAppsFragment : BaseFragment() {
     companion object {
         const val TAG = "MySharedAppsFragment"

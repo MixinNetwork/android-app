@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import dagger.Binds
 import dagger.Module
+import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ApplicationComponent
 import dagger.multibindings.IntoMap
 import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.call.CallViewModel
@@ -29,6 +31,7 @@ import one.mixin.android.ui.wallet.PinCheckViewModel
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.viewmodel.ViewModelFactory
 
+@InstallIn(ApplicationComponent::class)
 @Module
 internal abstract class ViewModelModule {
     @Binds

@@ -14,12 +14,11 @@ import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.text.TextPaint
 import androidx.collection.ArrayMap
+import androidx.hilt.Assisted
+import androidx.hilt.work.WorkerInject
 import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.R
-import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.saveGroupAvatar
@@ -29,7 +28,7 @@ import org.jetbrains.anko.dip
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-class GenerateAvatarWorker @AssistedInject constructor(
+class GenerateAvatarWorker @WorkerInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters
 ) : AvatarWorker(context, parameters) {
@@ -360,7 +359,4 @@ class GenerateAvatarWorker @AssistedInject constructor(
     private val avatarArray by lazy {
         applicationContext.resources.getIntArray(R.array.avatar_colors)
     }
-
-    @AssistedInject.Factory
-    interface Factory : ChildWorkerFactory
 }

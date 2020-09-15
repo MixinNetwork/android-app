@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_sticker_management.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -40,6 +41,7 @@ import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColor
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class StickerManagementFragment : BaseFragment() {
     companion object {
         const val TAG = "StickerManagementFragment"

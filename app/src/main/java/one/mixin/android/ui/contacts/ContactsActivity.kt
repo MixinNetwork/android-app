@@ -3,10 +3,12 @@ package one.mixin.android.ui.contacts
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
 
+@AndroidEntryPoint
 class ContactsActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

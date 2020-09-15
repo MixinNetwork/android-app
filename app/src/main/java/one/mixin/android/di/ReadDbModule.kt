@@ -3,13 +3,16 @@ package one.mixin.android.di
 import android.app.Application
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.components.ApplicationComponent
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import javax.inject.Singleton
 
+@InstallIn(ApplicationComponent::class)
 @Module
-internal class ReadDbModule {
+internal object ReadDbModule {
 
     @Singleton
     @Provides

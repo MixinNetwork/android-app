@@ -7,6 +7,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_setting_conversation.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +19,7 @@ import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageSource
 
+@AndroidEntryPoint
 class SettingConversationFragment : BaseViewModelFragment<SettingConversationViewModel>() {
     companion object {
         const val TAG = "SettingConversationFragment"

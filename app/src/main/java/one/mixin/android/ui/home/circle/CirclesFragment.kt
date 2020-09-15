@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_coversation_circle.*
 import kotlinx.android.synthetic.main.item_conversation_circle.view.*
 import kotlinx.coroutines.launch
@@ -40,6 +41,7 @@ import org.threeten.bp.Instant
 import java.util.Collections
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class CirclesFragment : BaseFragment(), OnStartDragListener {
     companion object {
         const val TAG = "CirclesFragment"

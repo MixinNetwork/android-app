@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -37,6 +38,7 @@ import one.mixin.android.widget.RLottieImageView
 import org.jetbrains.anko.dip
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class StickerFragment : BaseFragment() {
 
     companion object {

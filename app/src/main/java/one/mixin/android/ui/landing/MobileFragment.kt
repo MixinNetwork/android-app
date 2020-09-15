@@ -21,6 +21,7 @@ import com.google.i18n.phonenumbers.Phonenumber
 import com.mukesh.countrypicker.Country
 import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_mobile.*
 import kotlinx.android.synthetic.main.fragment_mobile.keyboard
 import one.mixin.android.Constants.KEYS
@@ -42,6 +43,7 @@ import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.RecaptchaView
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class MobileFragment : BaseFragment() {
 
     companion object {

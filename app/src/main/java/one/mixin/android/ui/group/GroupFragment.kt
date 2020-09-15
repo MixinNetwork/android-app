@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_group.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
@@ -30,6 +31,7 @@ import one.mixin.android.vo.User
 import org.jetbrains.anko.textColor
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class GroupFragment : BaseFragment() {
 
     companion object {

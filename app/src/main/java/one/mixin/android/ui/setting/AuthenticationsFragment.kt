@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_authentications.*
 import kotlinx.android.synthetic.main.item_auth.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -17,6 +18,7 @@ import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.App
 
+@AndroidEntryPoint
 class AuthenticationsFragment : BaseViewModelFragment<SettingViewModel>() {
     companion object {
         const val TAG = "AuthenticationsFragment"

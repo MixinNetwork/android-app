@@ -14,6 +14,7 @@ import androidx.work.WorkManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import ir.mirrajabi.rxcontacts.Contact
@@ -43,6 +44,7 @@ import one.mixin.android.worker.RefreshContactWorker
 import java.util.Collections
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class ContactsFragment : BaseFragment() {
 
     @Inject

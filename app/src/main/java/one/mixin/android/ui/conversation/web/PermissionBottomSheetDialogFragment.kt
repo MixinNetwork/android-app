@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
 import android.view.View
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_permission.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -14,6 +15,7 @@ import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment.Companion.ARGS_SC
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.widget.BottomSheet
 
+@AndroidEntryPoint
 class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     companion object {

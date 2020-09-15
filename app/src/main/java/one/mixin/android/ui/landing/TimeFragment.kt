@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_time.*
 import kotlinx.coroutines.Job
 import one.mixin.android.Constants
@@ -17,6 +18,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class TimeFragment : BaseFragment() {
 
     companion object {

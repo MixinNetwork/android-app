@@ -8,6 +8,7 @@ import android.widget.ViewAnimator
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.layout_recycler_view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -15,6 +16,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 
+@AndroidEntryPoint
 class LinkFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     companion object {
         const val TAG = "LinkFragment"

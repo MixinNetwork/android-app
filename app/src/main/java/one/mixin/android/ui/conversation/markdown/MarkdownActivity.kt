@@ -10,6 +10,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.tbruyelle.rxpermissions2.RxPermissions
+import dagger.hilt.android.AndroidEntryPoint
 import io.noties.markwon.recycler.MarkwonAdapter
 import kotlinx.android.synthetic.main.activity_markdown.*
 import kotlinx.android.synthetic.main.view_markdown.view.*
@@ -37,6 +38,7 @@ import one.mixin.android.widget.WebControlView
 import org.commonmark.ext.gfm.tables.TableBlock
 import org.commonmark.node.FencedCodeBlock
 
+@AndroidEntryPoint
 class MarkdownActivity : BaseActivity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
