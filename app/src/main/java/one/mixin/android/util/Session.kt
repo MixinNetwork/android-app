@@ -154,7 +154,8 @@ object Session {
     }
 
     fun requestDelay(acct: Account?, string: String, offset: Int, token: String? = getToken()): JwtResult {
-        if (acct == null || token == null || token.isBlank()) {
+        if (acct == null || token == null || token.isNullOrBlank()) {
+            reportException(IllegalStateException("Error data: [${acct == null}|${token == null}|${token.isNullOrBlank()}]"))
             return JwtResult(false)
         }
         val key = getRSAPrivateKeyFromString(token)
@@ -163,6 +164,7 @@ object Session {
             JwtResult(abs(System.currentTimeMillis() / 1000 - iat) > offset, requestTime = iat.toLong())
         } catch (e: Exception) {
             Timber.e(e)
+            reportException(e)
             JwtResult(false)
         }
     }
