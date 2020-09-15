@@ -32,7 +32,7 @@ class HostSelectionInterceptor private constructor() : Interceptor {
     override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
         var request = chain.request()
         if (request.header("Upgrade") == "websocket") {
-            chain.proceed(request)
+            return chain.proceed(request)
         }
         this.host?.let {
             val newUrl = request.url.newBuilder()
