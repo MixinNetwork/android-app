@@ -36,7 +36,16 @@
         android:background="@drawable/bg_content"
         app:layout_constraintBottom_toTopOf="@id/send"
         app:layout_constraintDimensionRatio="1"
-        app:layout_constraintTop_toBottomOf="@id/share_title" />
+        app:layout_constraintTop_toBottomOf="@id/share_title">
+
+        <ProgressBar
+            android:id="@+id/content_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:theme="@style/AppTheme.WalletBlue"
+            android:visibility="gone" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/send"
