@@ -7,6 +7,7 @@ import okhttp3.Request
 import one.mixin.android.Constants
 import one.mixin.android.Constants.API.URL
 import java.io.IOException
+import java.net.ConnectException
 import kotlin.jvm.Throws
 
 class HostSelectionInterceptor private constructor() : Interceptor {
@@ -31,7 +32,7 @@ class HostSelectionInterceptor private constructor() : Interceptor {
     override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
         var request = chain.request()
         if (request.header("Upgrade") == "websocket") {
-            return safeProceed(chain, request)
+            chain.proceed(request)
         }
         this.host?.let {
             val newUrl = request.url.newBuilder()
@@ -41,21 +42,8 @@ class HostSelectionInterceptor private constructor() : Interceptor {
                 .url(newUrl)
                 .build()
         }
-        return safeProceed(chain, request)
+        return chain.proceed(request)
     }
-
-    private fun safeProceed(chain: Interceptor.Chain, request: Request) =
-        try {
-            chain.proceed(request)
-        } catch (t: Exception) {
-            if (t is IOException) {
-                throw t
-            } else {
-                val exception = IOException("Exception due to $t")
-                exception.addSuppressed(t)
-                throw exception
-            }
-        }
 
     companion object {
         @Synchronized
