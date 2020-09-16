@@ -8,13 +8,14 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import net.i2p.crypto.eddsa.EdDSAPublicKey
+import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.SessionSecretRequest
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
@@ -24,10 +25,14 @@ import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.Session
+import one.mixin.android.util.reportException
 import org.whispersystems.curve25519.Curve25519
 
 @AndroidEntryPoint
@@ -77,24 +82,43 @@ class LoadingFragment : BaseFragment() {
         val privateKey = sessionKey.private as EdDSAPrivateKey
         val sessionSecret = publicKey.abyte.base64Encode()
 
-        handleMixinResponse(
-            invokeNetwork = {
-                loadingViewModel.modifySessionSecret(SessionSecretRequest(sessionSecret))
-            },
-            switchContext = Dispatchers.IO,
-            successBlock = {
-                it.data?.let { r ->
-                    val account = Session.getAccount()
-                    account?.let { acc ->
-                        acc.pinToken = r.pinToken
-                        Session.storeAccount(acc)
-                    }
-                    Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
-                    val key = Curve25519.getInstance(Curve25519.BEST).calculateAgreement(r.pinToken.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
-                    Session.storePinToken(key.base64Encode())
-                }
+        while (true) {
+           try {
+               val response = withContext(Dispatchers.IO) {
+                   loadingViewModel.modifySessionSecret(SessionSecretRequest(sessionSecret))
+               }
+               if (response.isSuccess) {
+                   response.data?.let { r ->
+                       val account = Session.getAccount()
+                       account?.let { acc ->
+                           acc.pinToken = r.pinToken
+                           val key = try {
+                               Curve25519.getInstance(Curve25519.BEST).calculateAgreement(r.pinToken.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
+                           } catch (t: Throwable) {
+                               reportException("Update EdDSA key calculateAgreement", t)
+                               return
+                           }
+                           Session.storeAccount(acc)
+                           Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
+                           Session.storePinToken(key.base64Encode())
+                       }
+                   }
+               } else {
+                   val code = response.errorCode
+                   if (code == ErrorHandler.AUTHENTICATION || code == FORBIDDEN) {
+                       defaultSharedPreferences.putBoolean(PREF_TRIED_UPDATE_KEY, true)
+                       return
+                   }
+                   reportException("Update EdDSA key", IllegalStateException("errorCode: $code, errorDescription: ${response.errorDescription}"))
+                   ErrorHandler.handleMixinError(code, response.errorDescription)
+               }
+            } catch (t: Throwable) {
+                reportException("Update EdDSA key", t)
+                 ErrorHandler.handleError(t)
             }
-        )
+
+            delay(2000)
+        }
     }
 
     private suspend fun syncSession() {

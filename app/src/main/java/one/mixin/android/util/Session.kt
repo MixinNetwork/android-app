@@ -11,6 +11,7 @@ import net.i2p.crypto.eddsa.spec.EdDSANamedCurveTable
 import net.i2p.crypto.eddsa.spec.EdDSAPrivateKeySpec
 import net.i2p.crypto.eddsa.spec.EdDSAPublicKeySpec
 import okhttp3.Request
+import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
@@ -18,6 +19,7 @@ import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.cutOut
 import one.mixin.android.extension.decodeBase64
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
@@ -67,12 +69,12 @@ object Session {
     }
 
     fun storeEd25519PrivateKey(token: String) {
-        val preference = MixinApplication.appContext.sharedPreferences(PREF_ED25519_PRIVATE_KEY)
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.putString(PREF_ED25519_PRIVATE_KEY, token)
     }
 
     fun getEd25519PrivateKey(): String? {
-        val preference = MixinApplication.appContext.sharedPreferences(PREF_ED25519_PRIVATE_KEY)
+        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         return preference.getString(PREF_ED25519_PRIVATE_KEY, null)
     }
 
@@ -140,15 +142,17 @@ object Session {
 
     fun checkToken() = getAccount() != null && !getPinToken().isNullOrBlank()
 
-    fun shouldUpdateKey() = getEd25519PrivateKey().isNullOrBlank()
+    fun shouldUpdateKey() = getEd25519PrivateKey().isNullOrBlank() &&
+        !MixinApplication.appContext.defaultSharedPreferences
+            .getBoolean(PREF_TRIED_UPDATE_KEY, false)
 
-    private val ed25519 = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519)
+    internal val ed25519 = EdDSANamedCurveTable.getByName(EdDSANamedCurveTable.ED_25519)
 
-    fun signToken(acct: Account?, request: Request): String {
+    fun signToken(acct: Account?, request: Request, key: Key? = getJwtKey(true)): String {
         if (acct == null) {
             return ""
         }
-        val key = getJwtKey() ?: return ""
+        key ?: return ""
 
         val expire = System.currentTimeMillis() / 1000 + 1800
         val iat = System.currentTimeMillis() / 1000
@@ -176,13 +180,12 @@ object Session {
             .compact()
     }
 
-    fun requestDelay(acct: Account?, string: String, offset: Int): JwtResult {
+    fun requestDelay(acct: Account?, string: String, offset: Int, key: Key? = getJwtKey(false)): JwtResult {
         if (acct == null) {
             return JwtResult(false)
         }
-        val privateKeyA = (getJwtKey() as? EdDSAPrivateKey)?.a ?: return JwtResult(false)
+        key ?: return JwtResult(false)
 
-        val key = EdDSAPublicKey(EdDSAPublicKeySpec(privateKeyA, ed25519))
         return try {
             val iat = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(string).body[Claims.ISSUED_AT] as Int
             JwtResult(abs(System.currentTimeMillis() / 1000 - iat) > offset, requestTime = iat.toLong())
@@ -199,7 +202,7 @@ object Session {
 
     fun getFiatCurrency() = getAccount()?.fiatCurrency ?: "USD"
 
-    private fun getJwtKey(): Key? {
+    private fun getJwtKey(isSign: Boolean): Key? {
         val keyBase64 = getEd25519PrivateKey()
         val isRsa = keyBase64.isNullOrBlank()
         return if (isRsa) {
@@ -209,9 +212,12 @@ object Session {
             }
             getRSAPrivateKeyFromString(token)
         } else {
-            EdDSAPrivateKey(
-                EdDSAPrivateKeySpec(keyBase64?.decodeBase64(), ed25519)
-            )
+            val privateSpec = EdDSAPrivateKeySpec(keyBase64?.decodeBase64(), ed25519)
+            if (isSign) {
+                EdDSAPrivateKey(privateSpec)
+            } else {
+                EdDSAPublicKey(EdDSAPublicKeySpec(privateSpec.a, ed25519))
+            }
         }
     }
 }

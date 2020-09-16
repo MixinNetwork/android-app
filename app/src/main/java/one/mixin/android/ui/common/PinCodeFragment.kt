@@ -25,6 +25,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.database.clearDatabase
 import one.mixin.android.util.database.getLastUserId
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
@@ -97,10 +98,15 @@ abstract class PinCodeFragment : FabLoadingFragment() {
             clearDatabase(requireContext())
             defaultSharedPreferences.clear()
         }
-        Session.storeAccount(account)
         val privateKey = sessionKey.private as EdDSAPrivateKey
+        val key = try {
+            Curve25519.getInstance(BEST).calculateAgreement(account.pinToken.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
+        } catch (t: Throwable) {
+            reportException("Login calculateAgreement", t)
+            return@withContext
+        }
+        Session.storeAccount(account)
         Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
-        val key = Curve25519.getInstance(BEST).calculateAgreement(account.pinToken.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
         Session.storePinToken(key.base64Encode())
 
         verification_keyboard.animate().translationY(300f).start()

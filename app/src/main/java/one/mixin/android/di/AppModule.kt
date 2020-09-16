@@ -186,7 +186,8 @@ object AppModule {
 
                     val authorization = response.request.header("Authorization")
                     if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
-                        jwtResult = Session.requestDelay(Session.getAccount(), authorization, Constants.DELAY_SECOND)
+                        val jwt = authorization.substring(7)
+                        jwtResult = Session.requestDelay(Session.getAccount(), jwt, Constants.DELAY_SECOND)
                         if (jwtResult?.isExpire == true) {
                             throw ExpiredTokenException()
                         }
