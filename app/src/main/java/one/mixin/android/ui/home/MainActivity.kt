@@ -237,7 +237,7 @@ class MainActivity : BlazeBaseActivity() {
         Bugsnag.setUser(account?.userId, account?.identityNumber, account?.fullName)
         account?.let {
             FirebaseCrashlytics.getInstance().setUserId(it.userId)
-            AppCenter.setUserId("${it.identityNumber}_${it.userId}")
+            AppCenter.setUserId(it.userId)
         }
 
         if (!defaultSharedPreferences.getBoolean(PREF_SYNC_CIRCLE, false)) {
