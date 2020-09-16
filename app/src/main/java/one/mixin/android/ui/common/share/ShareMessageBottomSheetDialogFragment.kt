@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -100,7 +101,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
     private fun loadText(content: String) {
         val renderer = ShareTextRenderer(requireContext())
         contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
-        renderer.render(content)
+        renderer.render(content, requireContext().isNightMode())
     }
 
     private fun loadImage(content: String) {

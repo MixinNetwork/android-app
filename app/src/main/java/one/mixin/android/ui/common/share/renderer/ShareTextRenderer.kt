@@ -20,7 +20,8 @@ open class ShareTextRenderer(val context: Context) : ShareMessageRenderer {
         contentView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
     }
 
-    fun render(content: String) {
+    fun render(content: String, isNightMode: Boolean) {
+        contentView.chat_name.isVisible = false
         contentView.chat_time.timeAgoClock(nowInUtc())
         setStatusIcon(context, MessageStatus.DELIVERED.name, isSecret = true, isWhite = false) { statusIcon, secretIcon ->
             contentView.chat_flag.isVisible = statusIcon != null
@@ -28,5 +29,12 @@ open class ShareTextRenderer(val context: Context) : ShareMessageRenderer {
             contentView.chat_secret.isVisible = secretIcon != null
         }
         contentView.chat_tv.text = content
+        contentView.chat_layout.setBackgroundResource(
+            if (!isNightMode) {
+                R.drawable.chat_bubble_me_last
+            } else {
+                R.drawable.chat_bubble_me_last_night
+            }
+        )
     }
 }
