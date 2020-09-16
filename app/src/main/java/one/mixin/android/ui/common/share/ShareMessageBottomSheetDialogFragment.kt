@@ -2,11 +2,16 @@ package one.mixin.android.ui.common.share
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_share_message_bottom_sheet.view.*
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
@@ -94,27 +99,36 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
 
     private fun loadText(content: String) {
         val renderer = ShareTextRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
+        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(content)
     }
 
     private fun loadImage(content: String) {
         val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
         val renderer = ShareImageRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
+        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(shareImageData)
     }
 
     private fun loadContact(content: String) {
-        val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
-        val renderer = ShareContactRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
-        renderer.render(contactData)
+        lifecycleScope.launch {
+            val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
+            contentView.progress.isVisible = true
+            val user = viewModel.refreshUser(contactData.userId)
+            if (user == null) {
+                toast(R.string.error_not_found)
+                return@launch
+            }
+            val renderer = ShareContactRenderer(requireContext())
+            contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
+            renderer.render(user)
+            contentView.progress.isVisible = false
+        }
     }
 
     private fun loadPost(content: String) {
         val renderer = SharePostRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
+        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(content)
     }
 
@@ -124,14 +138,14 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
             ColorUtil.parseColor(item.color.trim())
         }
         val renderer = ShareAppButtonGroupRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
+        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(appButton)
     }
 
     private fun loadAppCard(content: String) {
         val appCardData = GsonHelper.customGson.fromJson(content, AppCardData::class.java)
         val renderer = ShareAppCardRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
+        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(appCardData)
     }
 
@@ -142,7 +156,13 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
             dismiss()
         }
         val renderer = ShareLiveRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
+        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(liveData)
+    }
+
+    private fun generateLayoutParams(): FrameLayout.LayoutParams {
+        return FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+            gravity = Gravity.CENTER
+        }
     }
 }
