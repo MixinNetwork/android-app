@@ -35,9 +35,11 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
     companion object {
         const val TAG = "ShareMessageBottomSheetDialogFragment"
         private const val CATEGORY = "category"
+        private const val CONVERSATION_ID = "conversation_id"
         private const val CONTENT = "content"
-        fun newInstance(category: String, content: String) = ShareMessageBottomSheetDialogFragment().withArgs {
+        fun newInstance(category: String, conversationId: String?, content: String) = ShareMessageBottomSheetDialogFragment().withArgs {
             putString(CATEGORY, category)
+            putString(CONVERSATION_ID, conversationId)
             putString(CONTENT, content)
         }
     }

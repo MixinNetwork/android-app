@@ -23,6 +23,8 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import timber.log.Timber
+import java.lang.IllegalStateException
 
 fun String.openAsUrlOrWeb(
     conversationId: String?,
@@ -114,13 +116,13 @@ fun String.openAsUrl(
             val data = uri.getQueryParameter("data")
             if (category != null && data != null) {
                 try {
-                    ShareMessageBottomSheetDialogFragment.newInstance(category, String(Base64.decode(data)))
+                    ShareMessageBottomSheetDialogFragment.newInstance(category, conversationId, String(Base64.decode(data)))
                         .showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
                 } catch (e: Exception) {
-                    extraAction()
+                    Timber.e(IllegalStateException("Error data:${e.message}"))
                 }
             } else {
-                extraAction()
+                Timber.e(IllegalStateException("Error data"))
             }
         })
     } else if (startsWith(Constants.Scheme.DEVICE, true)) {
