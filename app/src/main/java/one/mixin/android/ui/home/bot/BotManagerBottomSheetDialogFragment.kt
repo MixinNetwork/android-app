@@ -10,8 +10,8 @@ import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.manager.SupportRequestManagerFragment
@@ -45,7 +45,6 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.bot.BotDock
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener {
@@ -58,12 +57,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
 
     private val stopScope = scope(Lifecycle.Event.ON_STOP)
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val botManagerViewModel: BotManagerViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(BotManagerViewModel::class.java)
-    }
+    private val botManagerViewModel by viewModels<BotManagerViewModel>()
 
     override fun getTheme() = R.style.MixinBottomSheet
 

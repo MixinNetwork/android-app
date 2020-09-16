@@ -12,10 +12,10 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 
 @AndroidEntryPoint
-class SharedMediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
+class SharedMediaFragment : BaseFragment() {
     companion object {
         const val TAG = "SharedMediaFragment"
 
@@ -32,8 +32,6 @@ class SharedMediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         SharedMediaAdapter(requireActivity(), conversationId)
     }
 
-    override fun getModelClass() = SharedMediaViewModel::class.java
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -46,20 +44,19 @@ class SharedMediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         view_pager.adapter = adapter
         TabLayoutMediator(
             shared_tl,
-            view_pager,
-            TabLayoutMediator.TabConfigurationStrategy { tab, position ->
-                tab.text = getString(
-                    when (position) {
-                        0 -> R.string.media
-                        1 -> R.string.audio
-                        2 -> R.string.post
-                        3 -> R.string.links
-                        else -> R.string.files
-                    }
-                )
-                view_pager.setCurrentItem(tab.position, true)
-            }
-        ).attach()
+            view_pager
+        ) { tab, position ->
+            tab.text = getString(
+                when (position) {
+                    0 -> R.string.media
+                    1 -> R.string.audio
+                    2 -> R.string.post
+                    3 -> R.string.links
+                    else -> R.string.files
+                }
+            )
+            view_pager.setCurrentItem(tab.position, true)
+        }.attach()
         shared_tl.tabMode = TabLayout.MODE_FIXED
         view_pager.currentItem = 0
     }

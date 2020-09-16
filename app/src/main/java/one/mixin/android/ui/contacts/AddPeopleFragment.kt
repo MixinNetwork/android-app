@@ -8,7 +8,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.uber.autodispose.autoDispose
@@ -26,7 +26,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.widget.Keyboard
 import java.util.Locale
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class AddPeopleFragment : BaseFragment() {
@@ -42,11 +41,7 @@ class AddPeopleFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val contactsViewModel: ContactViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ContactViewModel::class.java)
-    }
+    private val contactsViewModel by viewModels<ContactViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_add_people, container, false)

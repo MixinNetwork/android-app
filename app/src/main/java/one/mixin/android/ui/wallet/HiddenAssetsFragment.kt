@@ -7,8 +7,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -25,7 +23,6 @@ import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.vo.AssetItem
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
@@ -38,9 +35,7 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         const val POS_EMPTY = 1
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val walletViewModel: WalletViewModel by viewModels { viewModelFactory }
+    private val walletViewModel by viewModels<WalletViewModel>()
 
     private var assets: List<AssetItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(true) }
@@ -84,7 +79,7 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
         walletViewModel.hiddenAssets().observe(
             viewLifecycleOwner,
-            Observer {
+            {
                 if (it != null && it.isNotEmpty()) {
                     assets_va.displayedChild = POS_ASSET
                     assets = it

@@ -3,7 +3,7 @@ package one.mixin.android.ui.common.biometric
 import android.app.Activity
 import android.content.Intent
 import androidx.core.view.postDelayed
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
@@ -96,7 +96,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
         contentView.biometric_layout.showPin(true)
     }
 
-    private fun onPinComplete(pin: String) = lifecycleScope.launch {
+    private fun onPinComplete(pin: String) = bottomViewModel.viewModelScope.launch {
         if (!isAdded) return@launch
 
         contentView.biometric_layout.showPb()

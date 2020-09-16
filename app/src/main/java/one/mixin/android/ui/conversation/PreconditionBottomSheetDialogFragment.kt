@@ -41,7 +41,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val t: BiometricItem by lazy {
-        requireArguments().getParcelable<BiometricItem>(ValuableBiometricBottomSheetDialogFragment.ARGS_BIOMETRIC_ITEM)!!
+        requireArguments().getParcelable(ValuableBiometricBottomSheetDialogFragment.ARGS_BIOMETRIC_ITEM)!!
     }
 
     private var mCountDownTimer: CountDownTimer? = null

@@ -6,8 +6,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_invite.*
@@ -20,7 +20,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.group.InviteActivity.Companion.ARGS_ID
 import one.mixin.android.util.ErrorHandler
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class InviteFragment : BaseFragment() {
@@ -44,11 +43,7 @@ class InviteFragment : BaseFragment() {
         requireArguments().getString(ARGS_ID)!!
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val inviteViewModel: InviteViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(InviteViewModel::class.java)
-    }
+    private val inviteViewModel by viewModels<InviteViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_invite, container, false)

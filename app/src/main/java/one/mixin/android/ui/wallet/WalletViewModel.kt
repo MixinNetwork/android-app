@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import androidx.collection.ArraySet
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -34,9 +35,8 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toTopAssetItem
-import javax.inject.Inject
 
-class WalletViewModel @Inject
+class WalletViewModel @ViewModelInject
 internal constructor(
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,
@@ -96,7 +96,9 @@ internal constructor(
         return accountRepository.updatePin(PinRequest(fresh, old)).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
     }
 
-    suspend fun verifyPin(code: String) = accountRepository.verifyPin(code)
+    suspend fun verifyPin(code: String) = withContext(Dispatchers.IO) {
+        accountRepository.verifyPin(code)
+    }
 
     fun checkAndRefreshUsers(userIds: List<String>) = viewModelScope.launch {
         val existUsers = userRepository.findUserExist(userIds)
@@ -128,14 +130,17 @@ internal constructor(
                 .setInitialLoadKey(initialLoadKey)
                 .build()
 
-    suspend fun pendingDeposits(asset: String, destination: String, tag: String? = null) =
+    suspend fun pendingDeposits(asset: String, destination: String, tag: String? = null) = withContext(Dispatchers.IO) {
         assetRepository.pendingDeposits(asset, destination, tag)
+    }
 
     fun insertPendingDeposit(snapshot: List<Snapshot>) = assetRepository.insertPendingDeposit(snapshot)
 
     suspend fun clearPendingDepositsByAssetId(assetId: String) = assetRepository.clearPendingDepositsByAssetId(assetId)
 
-    suspend fun getAsset(assetId: String) = assetRepository.asset(assetId)
+    suspend fun getAsset(assetId: String) = withContext(Dispatchers.IO) {
+        assetRepository.asset(assetId)
+    }
 
     fun refreshHotAssets() {
         jobManager.addJobInBackground(RefreshTopAssetsJob())

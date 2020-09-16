@@ -1,6 +1,7 @@
 package one.mixin.android.ui.conversation
 
 import androidx.core.os.bundleOf
+import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.job.MixinJobManager
@@ -15,7 +16,7 @@ import one.mixin.android.vo.User
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class FriendsFragment : BaseFriendsFragment<FriendsViewHolder, ConversationViewModel>(), FriendsListener {
+class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListener {
     init {
         adapter = FriendsAdapter(userCallback).apply {
             listener = this@FriendsFragment
@@ -32,7 +33,7 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder, ConversationViewM
         }
     }
 
-    override fun getModelClass() = ConversationViewModel::class.java
+    private val viewModel by viewModels<ConversationViewModel>()
 
     @Inject
     lateinit var jobManager: MixinJobManager

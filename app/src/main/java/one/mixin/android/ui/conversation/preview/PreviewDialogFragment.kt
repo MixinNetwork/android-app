@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.preview
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
@@ -78,6 +79,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
 
     private var mediaDialogView: View? = null
 
+    @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         dialog.window?.apply {

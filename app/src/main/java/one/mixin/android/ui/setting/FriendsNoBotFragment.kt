@@ -1,9 +1,9 @@
 package one.mixin.android.ui.setting
 
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_friends.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -24,7 +24,7 @@ import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.User
 
 @AndroidEntryPoint
-class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, EmergencyViewModel>(), FriendsListener {
+class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder>(), FriendsListener {
     init {
         adapter = FriendsNoBotAdapter(userCallback).apply {
             listener = this@FriendsNoBotFragment
@@ -41,7 +41,7 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, Emergen
 
     private val pin: String by lazy { requireArguments().getString(LandingActivity.ARGS_PIN)!! }
 
-    override fun getModelClass() = EmergencyViewModel::class.java
+    private val viewModel by viewModels<EmergencyViewModel>()
 
     override fun getTitleResId() = R.string.setting_emergency_select_contact
 
@@ -71,7 +71,6 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, Emergen
         dialog.show()
         handleMixinResponse(
             invokeNetwork = { viewModel.createEmergency(buildEmergencyRequest(user)) },
-            switchContext = Dispatchers.IO,
             successBlock = { response ->
                 navTo(
                     VerificationEmergencyFragment.newInstance(

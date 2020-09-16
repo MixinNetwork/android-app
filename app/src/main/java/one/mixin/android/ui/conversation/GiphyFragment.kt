@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.view.updateLayoutParams
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -31,7 +31,6 @@ import one.mixin.android.widget.DraggableRecyclerView
 import org.jetbrains.anko.dip
 import retrofit2.HttpException
 import timber.log.Timber
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class GiphyFragment : BaseFragment() {
@@ -44,11 +43,9 @@ class GiphyFragment : BaseFragment() {
         requireContext().dip(StickerFragment.PADDING)
     }
     private val giphyAdapter: GiphyAdapter by lazy { GiphyAdapter() }
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val stickerViewModel: ConversationViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ConversationViewModel::class.java)
-    }
+
+    private val stickerViewModel by viewModels<ConversationViewModel>()
+
     var callback: StickerAlbumAdapter.Callback? = null
     var rvCallback: DraggableRecyclerView.Callback? = null
 

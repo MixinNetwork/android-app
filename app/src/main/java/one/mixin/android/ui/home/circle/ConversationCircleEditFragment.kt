@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.core.os.bundleOf
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
@@ -18,7 +18,6 @@ import kotlinx.android.synthetic.main.fragment_conversation_circle_edit.search_e
 import kotlinx.android.synthetic.main.fragment_group.select_rv
 import kotlinx.android.synthetic.main.fragment_group.title_view
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -37,7 +36,6 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import org.jetbrains.anko.textColor
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class ConversationCircleEditFragment : BaseFragment() {
@@ -57,11 +55,7 @@ class ConversationCircleEditFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val chatViewModel: ConversationListViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ConversationListViewModel::class.java)
-    }
+    private val chatViewModel by viewModels<ConversationListViewModel>()
 
     private val circle: ConversationCircleItem by lazy {
         requireArguments().getParcelable<ConversationCircleItem>(ARGS_CIRCLE)!!
@@ -269,7 +263,6 @@ class ConversationCircleEditFragment : BaseFragment() {
         }
 
         handleMixinResponse(
-            switchContext = Dispatchers.IO,
             invokeNetwork = {
                 chatViewModel.updateCircleConversations(circle.circleId, request)
             },

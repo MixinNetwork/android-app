@@ -16,7 +16,6 @@ import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -24,9 +23,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import io.reactivex.Flowable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,7 +41,6 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isUUID
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.getIconUrlName
@@ -77,7 +72,6 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import timber.log.Timber
 import java.util.UUID
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
@@ -97,9 +91,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val linkViewModel: BottomSheetViewModel by viewModels { viewModelFactory }
+    private val linkViewModel by viewModels<BottomSheetViewModel>()
 
     private lateinit var code: String
     private lateinit var contentView: View
@@ -153,48 +145,45 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 context?.toast(getUserOrAppNotFoundTip(isAppScheme))
                 dismiss()
             } else {
-                Flowable.just(userId).subscribeOn(Schedulers.io()).map {
-                    var user = linkViewModel.getUserById(it)
+                lifecycleScope.launch {
+                    var user = linkViewModel.suspendFindUserById(userId)
                     if (user == null) {
-                        val response = linkViewModel.getUser(it).execute()
+                        val response = try {
+                            withContext(Dispatchers.IO) {
+                                linkViewModel.getUser(userId).execute()
+                            }
+                        } catch (t: Throwable) {
+                            context?.toast(getUserOrAppNotFoundTip(isAppScheme))
+                            dismiss()
+                            return@launch
+                        }
                         if (response.isSuccessful) {
-                            user = response.body()!!.data!!
+                            user = response.body()?.data
+                        }
+                        if (user == null) {
+                            context?.toast(getUserOrAppNotFoundTip(isAppScheme))
+                            dismiss()
+                            return@launch
                         }
                     }
-                    user
-                }.observeOn(AndroidSchedulers.mainThread()).autoDispose(scopeProvider).subscribe(
-                    {
-                        it.notNullWithElse(
-                            { u ->
-                                val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
-                                if (isOpenApp && u.appId != null) {
-                                    lifecycleScope.launch {
-                                        val app = linkViewModel.findAppById(u.appId!!)
-                                        if (app != null) {
-                                            WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app)
-                                                .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
-                                        } else {
-                                            UserBottomSheetDialogFragment.newInstance(u)
-                                                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
-                                        }
-                                    }
-                                } else {
-                                    UserBottomSheetDialogFragment.newInstance(u)
-                                        .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
-                                }
-                                dismiss()
-                            },
-                            {
-                                context?.toast(getUserOrAppNotFoundTip(isAppScheme))
-                                dismiss()
+                    val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
+                    if (isOpenApp && user.appId != null) {
+                        lifecycleScope.launch {
+                            val app = linkViewModel.findAppById(user.appId!!)
+                            if (app != null) {
+                                WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app)
+                                    .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                            } else {
+                                UserBottomSheetDialogFragment.newInstance(user)
+                                    .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                             }
-                        )
-                    },
-                    {
-                        context?.toast(getUserOrAppNotFoundTip(isAppScheme))
-                        dismiss()
+                        }
+                    } else {
+                        UserBottomSheetDialogFragment.newInstance(user)
+                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                     }
-                )
+                    dismiss()
+                }
             }
         } else if (url.startsWith(Scheme.HTTPS_PAY, true) ||
             url.startsWith(Scheme.PAY, true)
@@ -281,9 +270,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         QrCodeType.authorization.name -> {
                             val authorization = result.second as AuthorizationResponse
                             lifecycleScope.launch {
-                                val assets = withContext(Dispatchers.IO) {
-                                    linkViewModel.simpleAssetsWithBalance()
-                                }
+                                val assets = linkViewModel.simpleAssetsWithBalance()
                                 activity?.let {
                                     val scopes = authorization.getScopes(it, assets)
                                     AuthBottomSheetDialogFragment.newInstance(scopes, authorization)
@@ -516,7 +503,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                                     invokeNetwork = {
                                         linkViewModel.paySuspend(transferRequest)
                                     },
-                                    switchContext = Dispatchers.IO,
                                     successBlock = { r ->
                                         val response = r.data ?: return@handleMixinResponse false
 
@@ -616,7 +602,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             invokeNetwork = {
                 linkViewModel.paySuspend(transferRequest)
             },
-            switchContext = Dispatchers.IO,
             successBlock = { r ->
                 val response = r.data ?: return@handleMixinResponse false
 

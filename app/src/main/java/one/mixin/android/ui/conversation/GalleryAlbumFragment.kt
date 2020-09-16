@@ -11,7 +11,6 @@ import androidx.viewpager.widget.ViewPager
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_gallery_album.*
 import one.mixin.android.R
 import one.mixin.android.ui.conversation.adapter.GalleryAlbumAdapter
@@ -20,7 +19,6 @@ import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.model.AlbumCollection
 
-@AndroidEntryPoint
 class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
 
     companion object {
@@ -49,12 +47,11 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
         view_pager.adapter = albumAdapter
         TabLayoutMediator(
             album_tl,
-            view_pager,
-            TabLayoutMediator.TabConfigurationStrategy { tab, position ->
-                tab.text = albumAdapter.albums?.get(position)?.getDisplayName(requireContext())
-                view_pager.setCurrentItem(tab.position, true)
-            }
-        ).attach()
+            view_pager
+        ) { tab, position ->
+            tab.text = albumAdapter.albums?.get(position)?.getDisplayName(requireContext())
+            view_pager.setCurrentItem(tab.position, true)
+        }.attach()
         album_tl.tabMode = TabLayout.MODE_SCROLLABLE
         view_pager.currentItem = 0
         va.displayedChild = POS_LOADING

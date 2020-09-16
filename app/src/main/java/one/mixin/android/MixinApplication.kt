@@ -147,7 +147,6 @@ class MixinApplication : Application(), Configuration.Provider, CameraXConfig.Pr
                 clearData(sessionId)
 
                 uiThread {
-                    // TODO test
                     val entryPoint = EntryPointAccessors.fromApplication(this@MixinApplication, AppEntryPoint::class.java)
                     entryPoint.inject(this@MixinApplication)
                     LandingActivity.show(this@MixinApplication)

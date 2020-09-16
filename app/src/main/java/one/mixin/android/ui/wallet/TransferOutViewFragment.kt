@@ -71,7 +71,7 @@ class TransferOutViewFragment : MixinBottomSheetDialogFragment(), OnSnapshotList
     private val address: Address? by lazy { requireArguments().getParcelable<Address>(AddressAddFragment.ARGS_ADDRESS) }
     private val adapter = SnapshotPagedAdapter()
 
-    private val walletViewModel: WalletViewModel by viewModels { viewModelFactory }
+    private val walletViewModel by viewModels<WalletViewModel>()
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {

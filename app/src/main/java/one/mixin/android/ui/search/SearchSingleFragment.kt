@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
@@ -29,7 +29,6 @@ import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SearchSingleFragment : BaseFragment() {
@@ -47,11 +46,7 @@ class SearchSingleFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val searchViewModel: SearchViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(SearchViewModel::class.java)
-    }
+    private val searchViewModel by viewModels<SearchViewModel>()
 
     private val data by lazy {
         requireArguments().getParcelableArrayList<Parcelable>(ARGS_LIST)

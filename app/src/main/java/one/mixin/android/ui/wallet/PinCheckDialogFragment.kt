@@ -7,12 +7,11 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_pin_check.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
@@ -23,7 +22,6 @@ import one.mixin.android.extension.vibrate
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class PinCheckDialogFragment : DialogFragment() {
@@ -39,11 +37,7 @@ class PinCheckDialogFragment : DialogFragment() {
 
     private lateinit var contentView: View
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val pinCheckViewModel: PinCheckViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(PinCheckViewModel::class.java)
-    }
+    private val pinCheckViewModel by viewModels<PinCheckViewModel>()
 
     private val disposable = CompositeDisposable()
 
@@ -72,7 +66,6 @@ class PinCheckDialogFragment : DialogFragment() {
         contentView.pin_va?.displayedChild = POS_PB
         handleMixinResponse(
             invokeNetwork = { pinCheckViewModel.verifyPin(pinCode) },
-            switchContext = Dispatchers.IO,
             successBlock = {
                 contentView.pin?.clear()
                 contentView.pin_va?.displayedChild = POS_PIN

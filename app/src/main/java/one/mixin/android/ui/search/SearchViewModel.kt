@@ -1,6 +1,7 @@
 package one.mixin.android.ui.search
 
 import android.os.Parcelable
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,10 +10,7 @@ import androidx.paging.PagedList
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.repository.AccountRepository
@@ -26,9 +24,8 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
-import javax.inject.Inject
 
-class SearchViewModel @Inject
+class SearchViewModel @ViewModelInject
 internal constructor(
     val userRepository: UserRepository,
     val conversationRepository: ConversationRepository,
@@ -59,21 +56,20 @@ internal constructor(
 
     fun findAppsByIds(appIds: List<String>) = userRepository.findAppsByIds(appIds)
 
-    fun fuzzySearchMessageDetailAsync(
+    suspend fun fuzzySearchMessageDetailAsync(
         query: String,
         conversationId: String
-    ): Deferred<LiveData<PagedList<SearchMessageDetailItem>>> =
-        viewModelScope.async(Dispatchers.IO) {
-            val escapedQuery = query.trim().escapeSql()
-            LivePagedListBuilder(
-                conversationRepository.fuzzySearchMessageDetail(escapedQuery, conversationId),
-                PagedList.Config.Builder()
-                    .setPageSize(30)
-                    .setEnablePlaceholders(true)
-                    .build()
-            )
+    ): LiveData<PagedList<SearchMessageDetailItem>> = withContext(Dispatchers.IO) {
+        val escapedQuery = query.trim().escapeSql()
+        return@withContext LivePagedListBuilder(
+            conversationRepository.fuzzySearchMessageDetail(escapedQuery, conversationId),
+            PagedList.Config.Builder()
+                .setPageSize(30)
+                .setEnablePlaceholders(true)
                 .build()
-        }
+        )
+            .build()
+    }
 
     fun search(query: String): Observable<MixinResponse<User>> =
         accountRepository.search(query).subscribeOn(Schedulers.io())

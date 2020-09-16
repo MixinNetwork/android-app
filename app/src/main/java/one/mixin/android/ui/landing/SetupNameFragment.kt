@@ -11,7 +11,6 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_setup_name.*
@@ -27,14 +26,11 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SetupNameFragment : BaseFragment() {
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val mobileViewModel: MobileViewModel by viewModels { viewModelFactory }
+    private val mobileViewModel by viewModels<MobileViewModel>()
 
     companion object {
         fun newInstance() = SetupNameFragment()

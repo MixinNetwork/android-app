@@ -8,8 +8,7 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,16 +31,11 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.SearchView
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class AddressManagementFragment : BaseFragment() {
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val addressViewModel: AddressViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(AddressViewModel::class.java)
-    }
+    private val addressViewModel by viewModels<AddressViewModel>()
 
     private var deleteSuccess = false
     private val asset: AssetItem by lazy {
@@ -75,7 +69,7 @@ class AddressManagementFragment : BaseFragment() {
         }
         addressViewModel.addresses(asset.assetId).observe(
             viewLifecycleOwner,
-            Observer {
+            {
                 val list = it?.toMutableList()
                 if (list.isNullOrEmpty()) {
                     empty_tv.isVisible = true

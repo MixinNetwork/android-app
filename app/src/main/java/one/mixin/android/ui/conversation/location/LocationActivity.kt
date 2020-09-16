@@ -89,7 +89,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     private var forceUpdate: CameraUpdate? = null
 
     private val location: LocationPayload? by lazy {
-        intent.getParcelableExtra<LocationPayload>(LOCATION)
+        intent.getParcelableExtra(LOCATION)
     }
 
     private val locationAdapter by lazy {

@@ -13,11 +13,11 @@ import one.mixin.android.R
 import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.vo.User
 
 @AndroidEntryPoint
-class ViewEmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
+class ViewEmergencyContactFragment : BaseFragment() {
     companion object {
         const val TAG = "ViewEmergencyContactFragment"
 
@@ -26,9 +26,7 @@ class ViewEmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>()
         }
     }
 
-    override fun getModelClass(): Class<EmergencyViewModel> = EmergencyViewModel::class.java
-
-    private val user: User by lazy { requireArguments().getParcelable<User>(ARGS_USER)!! }
+    private val user: User by lazy { requireArguments().getParcelable(ARGS_USER)!! }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_view_emergency_contact, container, false)

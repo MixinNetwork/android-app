@@ -4,20 +4,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.Observer
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_blocked.*
 import kotlinx.android.synthetic.main.item_contact_normal.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.vo.User
 
 @AndroidEntryPoint
-class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() {
+class SettingBlockedFragment : BaseFragment() {
     companion object {
         const val TAG = "SettingBlockedFragment"
         const val POS_LIST = 0
@@ -28,7 +27,7 @@ class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() 
         }
     }
 
-    override fun getModelClass() = SettingBlockedViewModel::class.java
+    private val viewModel by viewModels<SettingBlockedViewModel>()
 
     private val adapter = BlockedAdapter()
 
@@ -37,11 +36,18 @@ class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        adapter.callback = object : Callback {
+            override fun onClick(user: User) {
+                UserBottomSheetDialogFragment.newInstance(user)
+                    .show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+            }
+
+        }
         blocked_rv.adapter = adapter
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         viewModel.blockingUsers(stopScope).observe(
             viewLifecycleOwner,
-            Observer {
+            {
                 if (it != null && it.isNotEmpty()) {
                     block_va.displayedChild = POS_LIST
                     adapter.setUsers(it)
@@ -59,6 +65,8 @@ class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() 
         }
 
         private var users: List<User>? = null
+
+        var callback: Callback? = null
 
         fun setUsers(users: List<User>) {
             this.users = users
@@ -86,7 +94,7 @@ class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() 
                 return
             }
             if (holder is ItemHolder) {
-                holder.bind(users!![position])
+                holder.bind(users!![position], callback)
             }
         }
 
@@ -94,17 +102,18 @@ class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() 
     }
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(user: User) {
+        fun bind(user: User, callback: Callback?) {
             itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             itemView.normal.text = user.fullName
             itemView.setOnClickListener {
-                UserBottomSheetDialogFragment.newInstance(user).show(
-                    (it.context as FragmentActivity).supportFragmentManager,
-                    UserBottomSheetDialogFragment.TAG
-                )
+                callback?.onClick(user)
             }
         }
     }
 
     class FooterHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
+    interface Callback {
+        fun onClick(user: User)
+    }
 }

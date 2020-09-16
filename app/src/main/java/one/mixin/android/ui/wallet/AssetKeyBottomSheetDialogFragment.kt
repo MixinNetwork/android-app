@@ -24,7 +24,7 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val asset: AssetItem by lazy {
-        requireArguments().getParcelable<AssetItem>(ARGS_ASSET)!!
+        requireArguments().getParcelable(ARGS_ASSET)!!
     }
 
     @SuppressLint("RestrictedApi")

@@ -7,7 +7,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.uber.autodispose.android.lifecycle.scope
 import one.mixin.android.R
@@ -15,16 +14,13 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 import java.lang.Exception
-import javax.inject.Inject
 
 abstract class MixinBottomSheetDialogFragment : DialogFragment() {
 
     protected lateinit var contentView: View
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    protected val bottomViewModel: BottomSheetViewModel by viewModels { viewModelFactory }
+    protected val bottomViewModel by viewModels<BottomSheetViewModel>()
 
     override fun getTheme() = R.style.AppTheme_Dialog
 

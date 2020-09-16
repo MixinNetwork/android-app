@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -36,7 +36,6 @@ import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_
 import one.mixin.android.widget.RLottieDrawable
 import one.mixin.android.widget.RLottieImageView
 import org.jetbrains.anko.dip
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class StickerFragment : BaseFragment() {
@@ -58,12 +57,7 @@ class StickerFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val stickerViewModel: ConversationViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ConversationViewModel::class.java)
-    }
+    private val stickerViewModel by viewModels<ConversationViewModel>()
 
     private val albumId: String? by lazy {
         requireArguments().getString(ARGS_ALBUM_ID)

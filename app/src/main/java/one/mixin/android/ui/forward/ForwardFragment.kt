@@ -10,7 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.core.os.bundleOf
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -36,7 +36,6 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class ForwardFragment : BaseFragment() {
@@ -59,19 +58,14 @@ class ForwardFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val chatViewModel: ConversationViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ConversationViewModel::class.java)
-    }
+    private val chatViewModel by viewModels<ConversationViewModel>()
 
     private val adapter by lazy {
         ForwardAdapter()
     }
 
     private val messages: ArrayList<ForwardMessage>? by lazy {
-        requireArguments().getParcelableArrayList<ForwardMessage>(ARGS_MESSAGES)
+        requireArguments().getParcelableArrayList(ARGS_MESSAGES)
     }
     private val isShare: Boolean by lazy {
         requireArguments().getBoolean(ARGS_SHARE)

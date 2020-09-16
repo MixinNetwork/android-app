@@ -40,10 +40,10 @@ class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), T
         }
     }
 
-    private val walletViewModel: WalletViewModel by viewModels { viewModelFactory }
+    private val walletViewModel by viewModels<WalletViewModel>()
 
-    private val snapshot: SnapshotItem? by lazy { requireArguments().getParcelable<SnapshotItem>(ARGS_SNAPSHOT) }
-    private val asset: AssetItem? by lazy { requireArguments().getParcelable<AssetItem>(ARGS_ASSET) }
+    private val snapshot: SnapshotItem? by lazy { requireArguments().getParcelable(ARGS_SNAPSHOT) }
+    private val asset: AssetItem? by lazy { requireArguments().getParcelable(ARGS_ASSET) }
     private val assetId: String? by lazy { requireArguments().getString(ARGS_ASSET_ID) }
     private val snapshotId: String? by lazy { requireArguments().getString(ARGS_SNAPSHOT_ID) }
 

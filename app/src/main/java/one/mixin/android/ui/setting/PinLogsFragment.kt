@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
@@ -16,12 +17,12 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.localTime
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.vo.LogResponse
 
 @AndroidEntryPoint
-class PinLogsFragment : BaseViewModelFragment<SettingViewModel>() {
-    override fun getModelClass() = SettingViewModel::class.java
+class PinLogsFragment : BaseFragment() {
+    private val viewModel by viewModels<SettingViewModel>()
 
     companion object {
         const val TAG = "PinLogsFragment"

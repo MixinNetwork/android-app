@@ -14,9 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_device.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
@@ -85,9 +83,7 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
                         return@launch
                     }
                     val response = try {
-                        withContext(Dispatchers.IO) {
-                            bottomViewModel.logoutAsync(sessionId).await()
-                        }
+                        bottomViewModel.logout(sessionId)
                     } catch (t: Throwable) {
                         loadOuting.dismiss()
                         toast(R.string.setting_desktop_logout_failed)

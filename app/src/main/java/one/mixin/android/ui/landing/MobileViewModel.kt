@@ -1,5 +1,6 @@
 package one.mixin.android.ui.landing
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.reactivex.Observable
@@ -7,6 +8,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -21,9 +23,8 @@ import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
-import javax.inject.Inject
 
-class MobileViewModel @Inject internal
+class MobileViewModel @ViewModelInject internal
 constructor(
     private val accountRepository: AccountRepository,
     private val userRepository: UserRepository,
@@ -36,7 +37,9 @@ constructor(
     fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
         accountRepository.verification(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    suspend fun create(id: String, request: AccountRequest): MixinResponse<Account> = accountRepository.create(id, request)
+    suspend fun create(id: String, request: AccountRequest): MixinResponse<Account> = withContext(Dispatchers.IO) {
+        accountRepository.create(id, request)
+    }
 
     fun changePhone(id: String, verificationCode: String, pin: String): Observable<MixinResponse<Account>> =
         accountRepository.changePhone(

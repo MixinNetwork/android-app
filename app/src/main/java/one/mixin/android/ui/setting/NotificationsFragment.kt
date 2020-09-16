@@ -7,11 +7,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_notifications.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -20,14 +20,14 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.util.ChannelManager
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Fiats
 
 @AndroidEntryPoint
-class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
+class NotificationsFragment : BaseFragment() {
     companion object {
         const val TAG = "NotificationsFragment"
         fun newInstance(): NotificationsFragment {
@@ -37,7 +37,7 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
 
     private val accountSymbol = Fiats.getSymbol()
 
-    override fun getModelClass() = SettingViewModel::class.java
+    private val viewModel by viewModels<SettingViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_notifications, container, false)
@@ -121,7 +121,6 @@ class NotificationsFragment : BaseViewModelFragment<SettingViewModel>() {
                     }
                 )
             },
-            switchContext = Dispatchers.IO,
             successBlock = {
                 it.data?.let { account ->
                     Session.storeAccount(account)

@@ -82,7 +82,7 @@ import javax.inject.Singleton
 import kotlin.math.abs
 
 @InstallIn(ApplicationComponent::class)
-@Module(includes = [(ViewModelModule::class), (BaseDbModule::class), (ReadDbModule::class)])
+@Module(includes = [(BaseDbModule::class), (ReadDbModule::class)])
 object AppModule {
 
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country

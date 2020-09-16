@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ViewAnimator
-import androidx.lifecycle.Observer
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.layout_recycler_view.*
@@ -13,14 +13,14 @@ import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.StickyRecyclerHeadersDecorationForGrid
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import org.jetbrains.anko.dip
 
 @AndroidEntryPoint
-class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
+class MediaFragment : BaseFragment() {
     companion object {
         const val TAG = "MediaFragment"
         const val PADDING = 1
@@ -45,7 +45,7 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         }
     )
 
-    override fun getModelClass() = SharedMediaViewModel::class.java
+    private val viewModel by viewModels<SharedMediaViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -79,7 +79,7 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         empty_tv.setText(R.string.no_media)
         viewModel.getMediaMessagesExcludeLive(conversationId).observe(
             viewLifecycleOwner,
-            Observer {
+            {
                 if (it.size <= 0) {
                     (view as ViewAnimator).displayedChild = 1
                 } else {

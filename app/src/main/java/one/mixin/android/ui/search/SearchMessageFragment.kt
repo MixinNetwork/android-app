@@ -6,9 +6,9 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,9 +18,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_search_message.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
@@ -33,7 +31,6 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SearchMessageFragment : BaseFragment() {
@@ -50,14 +47,10 @@ class SearchMessageFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val searchViewModel: SearchViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(SearchViewModel::class.java)
-    }
+    private val searchViewModel by viewModels<SearchViewModel>()
 
     private val searchMessageItem: SearchMessageItem by lazy {
-        requireArguments().getParcelable<SearchMessageItem>(ARGS_SEARCH_MESSAGE)!!
+        requireArguments().getParcelable(ARGS_SEARCH_MESSAGE)!!
     }
     private val query by lazy { requireArguments().getString(ARGS_QUERY)!! }
 
@@ -160,9 +153,7 @@ class SearchMessageFragment : BaseFragment() {
             observer?.let {
                 curLiveData?.removeObserver(it)
             }
-            withContext(Dispatchers.IO) {
-                curLiveData = searchViewModel.fuzzySearchMessageDetailAsync(s, searchMessageItem.conversationId).await()
-            }
+            curLiveData = searchViewModel.fuzzySearchMessageDetailAsync(s, searchMessageItem.conversationId)
             observer = Observer {
                 adapter.submitList(it)
             }

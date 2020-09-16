@@ -20,21 +20,19 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.BiometricTimeFragment.Companion.X_HOUR
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 
 @AndroidEntryPoint
-class PinSettingFragment : BaseViewModelFragment<SettingViewModel>() {
+class PinSettingFragment : BaseFragment() {
     companion object {
         const val TAG = "PinSettingFragment"
 
         fun newInstance() = PinSettingFragment()
     }
-
-    override fun getModelClass() = SettingViewModel::class.java
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_pin_setting, container, false)

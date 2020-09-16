@@ -5,22 +5,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_setting_conversation.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageSource
 
 @AndroidEntryPoint
-class SettingConversationFragment : BaseViewModelFragment<SettingConversationViewModel>() {
+class SettingConversationFragment : BaseFragment() {
     companion object {
         const val TAG = "SettingConversationFragment"
         const val CONVERSATION_KEY = "conversation_key"
@@ -28,7 +27,7 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
         fun newInstance() = SettingConversationFragment()
     }
 
-    override fun getModelClass() = SettingConversationViewModel::class.java
+    private val viewModel by viewModels<SettingConversationViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,7 +42,7 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
         viewModel.initPreferences(requireContext())
             .observe(
                 viewLifecycleOwner,
-                Observer {
+                {
                     it?.let {
                         render(it)
                     }
@@ -52,7 +51,7 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
         viewModel.initGroupPreferences(requireContext())
             .observe(
                 viewLifecycleOwner,
-                Observer {
+                {
                     it?.let {
                         renderGroup(it)
                     }
@@ -76,7 +75,6 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
                         invokeNetwork = {
                             viewModel.savePreferences(AccountUpdateRequest(receiveMessageSource = MessageSource.CONTACTS.name))
                         },
-                        switchContext = Dispatchers.IO,
                         successBlock = {
                             it.data?.let { account ->
                                 Session.storeAccount(account)
@@ -113,7 +111,6 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
                         invokeNetwork = {
                             viewModel.savePreferences(AccountUpdateRequest(receiveMessageSource = MessageSource.EVERYBODY.name))
                         },
-                        switchContext = Dispatchers.IO,
                         successBlock = {
                             it.data?.let { account ->
                                 Session.storeAccount(account)
@@ -154,7 +151,6 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
                         invokeNetwork = {
                             viewModel.savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.CONTACTS.name))
                         },
-                        switchContext = Dispatchers.IO,
                         successBlock = {
                             it.data?.let { account ->
                                 Session.storeAccount(account)
@@ -191,7 +187,6 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
                         invokeNetwork = {
                             viewModel.savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.EVERYBODY.name))
                         },
-                        switchContext = Dispatchers.IO,
                         successBlock = {
                             it.data?.let { account ->
                                 Session.storeAccount(account)

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -16,9 +17,8 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.LogResponse
 import one.mixin.android.vo.UserRelationship
-import javax.inject.Inject
 
-class SettingViewModel @Inject
+class SettingViewModel @ViewModelInject
 internal constructor(
     private val accountRepository: AccountRepository,
     private val authorizationService: AuthorizationService,
@@ -40,10 +40,13 @@ internal constructor(
 
     suspend fun getContacts() = contactService.contacts()
 
-    suspend fun deleteContacts() = contactService.syncContacts(emptyList())
+    suspend fun deleteContacts() = withContext(Dispatchers.IO) {
+        contactService.syncContacts(emptyList())
+    }
 
-    suspend fun syncContacts(contactRequests: List<ContactRequest>) =
+    suspend fun syncContacts(contactRequests: List<ContactRequest>) = withContext(Dispatchers.IO) {
         contactService.syncContacts(contactRequests)
+    }
 
     suspend fun getPinLogs(offset: String? = null): MixinResponse<List<LogResponse>> {
         return withContext(Dispatchers.IO) {
@@ -51,7 +54,9 @@ internal constructor(
         }
     }
 
-    suspend fun preferences(request: AccountUpdateRequest) = accountRepository.preferences(request)
+    suspend fun preferences(request: AccountUpdateRequest) = withContext(Dispatchers.IO) {
+        accountRepository.preferences(request)
+    }
 
     suspend fun simpleAssetsWithBalance() = assetRepository.simpleAssetsWithBalance()
 }

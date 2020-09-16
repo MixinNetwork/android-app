@@ -29,6 +29,7 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
@@ -37,7 +38,6 @@ import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.transition.AutoTransition
@@ -90,11 +90,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class CallActivity : BaseActivity(), SensorEventListener {
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val viewModel: CallViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(CallViewModel::class.java)
-    }
+    private val viewModel by viewModels<CallViewModel>()
 
     @Inject
     lateinit var callState: CallStateLiveData

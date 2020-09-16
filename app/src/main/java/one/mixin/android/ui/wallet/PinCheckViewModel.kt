@@ -1,10 +1,10 @@
 package one.mixin.android.ui.wallet
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import one.mixin.android.repository.AccountRepository
-import javax.inject.Inject
 
-class PinCheckViewModel @Inject
+class PinCheckViewModel @ViewModelInject
 internal constructor(private val accountRepository: AccountRepository) : ViewModel() {
 
     suspend fun verifyPin(code: String) = accountRepository.verifyPin(code)

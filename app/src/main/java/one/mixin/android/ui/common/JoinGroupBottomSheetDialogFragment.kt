@@ -56,7 +56,7 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
     }
 
     private val c: JoinGroupConversation by lazy {
-        requireArguments().getParcelable<JoinGroupConversation>(ARGS_JOIN_GROUP_CONVERSATION)!!
+        requireArguments().getParcelable(ARGS_JOIN_GROUP_CONVERSATION)!!
     }
     private val code: String by lazy { requireArguments().getString(CODE)!! }
 

@@ -199,7 +199,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     invokeNetwork = {
                         walletViewModel.pendingDeposits(asset.assetId, asset.destination, asset.tag)
                     },
-                    switchContext = Dispatchers.IO,
                     successBlock = { list ->
                         walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
                         updateData(list.data?.map { it.toSnapshot(asset.assetId) })
@@ -212,7 +211,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     invokeNetwork = {
                         walletViewModel.getAsset(asset.assetId)
                     },
-                    switchContext = Dispatchers.IO,
                     successBlock = { response ->
                         headerView.receive_tv.visibility = VISIBLE
                         headerView.receive_progress.visibility = GONE

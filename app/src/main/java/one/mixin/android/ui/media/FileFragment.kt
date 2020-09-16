@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ViewAnimator
-import androidx.lifecycle.Observer
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
@@ -15,12 +15,12 @@ import one.mixin.android.R
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaStatus
 
 @AndroidEntryPoint
-class FileFragment : BaseViewModelFragment<SharedMediaViewModel>() {
+class FileFragment : BaseFragment() {
     companion object {
         const val TAG = "FileFragment"
 
@@ -52,7 +52,7 @@ class FileFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         }
     }
 
-    override fun getModelClass() = SharedMediaViewModel::class.java
+    private val viewModel by viewModels<SharedMediaViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -69,7 +69,7 @@ class FileFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         recycler_view.adapter = adapter
         viewModel.getFileMessages(conversationId).observe(
             viewLifecycleOwner,
-            Observer {
+            {
                 if (it.size <= 0) {
                     (view as ViewAnimator).displayedChild = 1
                 } else {

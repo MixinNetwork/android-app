@@ -49,11 +49,11 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val scopes: List<Scope> by lazy {
-        requireArguments().getParcelableArrayList<Scope>(ARGS_SCOPES)!!
+        requireArguments().getParcelableArrayList(ARGS_SCOPES)!!
     }
 
     private val auth: AuthorizationResponse by lazy {
-        requireArguments().getParcelable<AuthorizationResponse>(ARGS_AUTHORIZATION)!!
+        requireArguments().getParcelable(ARGS_AUTHORIZATION)!!
     }
 
     private val scopeAdapter: ScopeAdapter by lazy {

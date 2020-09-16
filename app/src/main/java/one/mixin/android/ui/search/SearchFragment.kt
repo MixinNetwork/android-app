@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -46,14 +45,11 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class SearchFragment : BaseFragment() {
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val searchViewModel: SearchViewModel by viewModels { viewModelFactory }
+    private val searchViewModel by viewModels<SearchViewModel>()
 
     private val searchAdapter: SearchAdapter by lazy {
         SearchAdapter()

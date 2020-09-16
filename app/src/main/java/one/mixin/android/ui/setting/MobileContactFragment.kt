@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
@@ -14,7 +15,6 @@ import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
 import kotlinx.android.synthetic.main.fragment_setting_mobile_contact.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
@@ -25,17 +25,17 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import org.jetbrains.anko.textColorResource
 
 @AndroidEntryPoint
-class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
+class MobileContactFragment : BaseFragment() {
     companion object {
         const val TAG = "MobileContactFragment"
         fun newInstance() = MobileContactFragment()
     }
 
-    override fun getModelClass() = SettingViewModel::class.java
+    private val viewModel by viewModels<SettingViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_setting_mobile_contact, container, false)
@@ -118,7 +118,6 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
         op_pb.isVisible = true
         handleMixinResponse(
             invokeNetwork = { viewModel.deleteContacts() },
-            switchContext = Dispatchers.IO,
             successBlock = {
                 defaultSharedPreferences.putBoolean(PREF_DELETE_MOBILE_CONTACTS, true)
                 setUpdate()
@@ -144,7 +143,6 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
         }
         handleMixinResponse(
             invokeNetwork = { viewModel.syncContacts(mutableList) },
-            switchContext = Dispatchers.IO,
             successBlock = {
                 defaultSharedPreferences.putBoolean(PREF_DELETE_MOBILE_CONTACTS, false)
                 setDelete()

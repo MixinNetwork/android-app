@@ -17,7 +17,6 @@ import kotlinx.android.synthetic.main.fragment_currency_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.item_currency.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.close_iv
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.search_et
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -89,7 +88,6 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     AccountUpdateRequest(fiatCurrency = currency.name)
                 )
             },
-            switchContext = Dispatchers.IO,
             successBlock = {
                 it.data?.let { account ->
                     Session.storeAccount(account)

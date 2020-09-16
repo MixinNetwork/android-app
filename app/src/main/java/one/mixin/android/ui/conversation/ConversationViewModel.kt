@@ -10,6 +10,7 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresPermission
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
@@ -129,11 +130,10 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.util.UUID
-import javax.inject.Inject
 
 @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class ConversationViewModel
-@Inject
+@ViewModelInject
 internal constructor(
     private val conversationRepository: ConversationRepository,
     private val userRepository: UserRepository,

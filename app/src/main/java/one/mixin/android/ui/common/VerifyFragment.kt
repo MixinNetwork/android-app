@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_verify_pin.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
@@ -83,7 +82,6 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
         showLoading()
         handleMixinResponse(
             invokeNetwork = { accountRepository.verifyPin(pinCode) },
-            switchContext = Dispatchers.IO,
             successBlock = {
                 hideLoading()
                 pin?.clear()

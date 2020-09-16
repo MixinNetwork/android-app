@@ -4,12 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_old_password.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
@@ -24,7 +23,6 @@ import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
@@ -36,11 +34,7 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
             OldPasswordFragment()
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val walletViewModel: WalletViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(WalletViewModel::class.java)
-    }
+    private val walletViewModel by viewModels<WalletViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_old_password, container, false)
@@ -80,7 +74,6 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
         dialog.show()
         handleMixinResponse(
             invokeNetwork = { walletViewModel.verifyPin(pinCode) },
-            switchContext = Dispatchers.IO,
             successBlock = { response ->
                 dialog.dismiss()
                 context?.updatePinCheck()

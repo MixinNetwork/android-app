@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,7 +17,6 @@ import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
 import org.jetbrains.anko.backgroundResource
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class StickerAlbumFragment : BaseFragment() {
@@ -28,12 +27,7 @@ class StickerAlbumFragment : BaseFragment() {
         fun newInstance() = StickerAlbumFragment()
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val stickerViewModel: ConversationViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ConversationViewModel::class.java)
-    }
+    private val stickerViewModel by viewModels<ConversationViewModel>()
 
     private val albums = mutableListOf<StickerAlbum>()
 
@@ -87,17 +81,16 @@ class StickerAlbumFragment : BaseFragment() {
         view_pager.adapter = albumAdapter
         TabLayoutMediator(
             album_tl,
-            view_pager,
-            TabLayoutMediator.TabConfigurationStrategy { tab, _ ->
-                view_pager.setCurrentItem(tab.position, true)
-            }
-        ).attach()
+            view_pager
+        ) { tab, _ ->
+            view_pager.setCurrentItem(tab.position, true)
+        }.attach()
         album_tl.tabMode = TabLayout.MODE_SCROLLABLE
         view_pager.currentItem = 0
         album_tl.addOnTabSelectedListener(
             object : TabLayout.OnTabSelectedListener {
                 override fun onTabReselected(tab: TabLayout.Tab?) {
-// Left empty
+                    // Left empty
                 }
 
                 override fun onTabUnselected(tab: TabLayout.Tab) {

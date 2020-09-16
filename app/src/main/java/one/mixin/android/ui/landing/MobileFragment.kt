@@ -14,7 +14,6 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
@@ -41,7 +40,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.RecaptchaView
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MobileFragment : BaseFragment() {
@@ -60,9 +58,7 @@ class MobileFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val mobileViewModel: MobileViewModel by viewModels { viewModelFactory }
+    private val mobileViewModel by viewModels<MobileViewModel>()
 
     private lateinit var countryPicker: CountryPicker
     private lateinit var mCountry: Country

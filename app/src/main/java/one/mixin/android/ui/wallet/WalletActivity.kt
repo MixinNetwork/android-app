@@ -52,7 +52,7 @@ class WalletActivity : BlazeBaseActivity() {
     }
 
     private val asset: AssetItem? by lazy {
-        intent.extras?.getParcelable<AssetItem>(ASSET)
+        intent.extras?.getParcelable(ASSET)
     }
 
     override fun finish() {

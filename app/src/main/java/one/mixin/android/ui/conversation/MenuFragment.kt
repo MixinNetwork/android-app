@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.GridLayoutManager
-import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_recycler_view.*
 import one.mixin.android.R
 import one.mixin.android.extension.withArgs
@@ -14,7 +13,6 @@ import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuAdapter
 import one.mixin.android.vo.AppItem
 
-@AndroidEntryPoint
 class MenuFragment : BaseFragment() {
     companion object {
         const val TAG = "MenuFragment"

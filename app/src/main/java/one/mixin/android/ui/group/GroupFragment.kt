@@ -7,8 +7,8 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
@@ -29,7 +29,6 @@ import one.mixin.android.ui.group.adapter.GroupFriendAdapter
 import one.mixin.android.ui.group.adapter.GroupSelectAdapter
 import one.mixin.android.vo.User
 import org.jetbrains.anko.textColor
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class GroupFragment : BaseFragment() {
@@ -63,11 +62,7 @@ class GroupFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val groupViewModel: GroupViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(GroupViewModel::class.java)
-    }
+    private val groupViewModel by viewModels<GroupViewModel>()
 
     private val from: Int by lazy {
         requireArguments().getInt(ARGS_FROM)

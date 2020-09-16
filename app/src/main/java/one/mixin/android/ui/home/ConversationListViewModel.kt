@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -32,9 +33,8 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
-import javax.inject.Inject
 
-class ConversationListViewModel @Inject
+class ConversationListViewModel @ViewModelInject
 internal constructor(
     private val messageRepository: ConversationRepository,
     private val userRepository: UserRepository,
@@ -158,8 +158,9 @@ internal constructor(
     suspend fun findConversationItemByCircleId(circleId: String) =
         userRepository.findConversationItemByCircleId(circleId)
 
-    suspend fun updateCircleConversations(id: String, circleConversationRequests: List<CircleConversationRequest>) =
+    suspend fun updateCircleConversations(id: String, circleConversationRequests: List<CircleConversationRequest>) = withContext(Dispatchers.IO) {
         userRepository.updateCircleConversations(id, circleConversationRequests)
+    }
 
     fun sortCircleConversations(list: List<CircleOrder>?) = viewModelScope.launch { userRepository.sortCircleConversations(list) }
 

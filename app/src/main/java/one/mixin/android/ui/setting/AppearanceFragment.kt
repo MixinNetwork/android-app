@@ -15,7 +15,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.singleChoice
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.Session
 import one.mixin.android.util.TimeCache
 import one.mixin.android.util.language.Lingver
@@ -23,14 +23,12 @@ import one.mixin.android.vo.Fiats
 import java.util.Locale
 
 @AndroidEntryPoint
-class AppearanceFragment : BaseViewModelFragment<SettingViewModel>() {
+class AppearanceFragment : BaseFragment() {
     companion object {
         const val TAG = "AppearanceFragment"
 
         fun newInstance() = AppearanceFragment()
     }
-
-    override fun getModelClass() = SettingViewModel::class.java
 
     override fun onCreateView(
         inflater: LayoutInflater,

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,9 +13,8 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
-import javax.inject.Inject
 
-class SettingBlockedViewModel @Inject
+class SettingBlockedViewModel @ViewModelInject
 internal constructor(
     private val userService: UserService,
     private val accountRepository: AccountRepository,

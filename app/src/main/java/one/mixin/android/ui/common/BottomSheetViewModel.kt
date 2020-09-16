@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -52,9 +53,8 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
-import javax.inject.Inject
 
-class BottomSheetViewModel @Inject internal constructor(
+class BottomSheetViewModel @ViewModelInject internal constructor(
     private val accountRepository: AccountRepository,
     private val jobManager: MixinJobManager,
     private val userRepository: UserRepository,
@@ -72,7 +72,9 @@ class BottomSheetViewModel @Inject internal constructor(
         jobManager.addJobInBackground(RefreshConversationJob(conversationId))
     }
 
-    suspend fun simpleAssetsWithBalance() = assetRepository.simpleAssetsWithBalance()
+    suspend fun simpleAssetsWithBalance() = withContext(Dispatchers.IO) {
+        assetRepository.simpleAssetsWithBalance()
+    }
 
     suspend fun transfer(
         assetId: String,
@@ -98,7 +100,9 @@ class BottomSheetViewModel @Inject internal constructor(
             AndroidSchedulers.mainThread()
         )
 
-    suspend fun paySuspend(request: TransferRequest) = assetRepository.paySuspend(request)
+    suspend fun paySuspend(request: TransferRequest) = withContext(Dispatchers.IO) {
+        assetRepository.paySuspend(request)
+    }
 
     suspend fun withdrawal(
         addressId: String,
@@ -158,7 +162,9 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun getConversationById(id: String) = conversationRepo.getConversationById(id)
 
-    fun getConversation(id: String) = conversationRepo.getConversation(id)
+    suspend fun getConversation(id: String) = withContext(Dispatchers.IO) {
+        conversationRepo.getConversation(id)
+    }
 
     fun findParticipantById(conversationId: String, userId: String) =
         conversationRepo.findParticipantById(conversationId, userId)
@@ -207,8 +213,6 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun getAppAndCheckUser(userId: String, updatedAt: String?) =
         userRepository.getAppAndCheckUser(userId, updatedAt)
-
-    fun getUserById(id: String) = userRepository.getUserById(id)
 
     fun getUser(id: String) = userRepository.getUser(id)
 
@@ -278,7 +282,9 @@ class BottomSheetViewModel @Inject internal constructor(
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
 
-    fun logoutAsync(sessionId: String) = accountRepository.logoutAsync(sessionId)
+    suspend fun logout(sessionId: String) = withContext(Dispatchers.IO) {
+        accountRepository.logout(sessionId)
+    }
 
     suspend fun findAddressById(addressId: String, assetId: String) =
         viewModelScope.async(Dispatchers.IO) {
@@ -400,7 +406,9 @@ class BottomSheetViewModel @Inject internal constructor(
         }
     }
 
-    suspend fun preferences(request: AccountUpdateRequest) = accountRepository.preferences(request)
+    suspend fun preferences(request: AccountUpdateRequest) = withContext(Dispatchers.IO) {
+        accountRepository.preferences(request)
+    }
 
     suspend fun searchAppByHost(query: String): List<App> {
         val escapedQuery = query.trim().escapeSql()
@@ -410,7 +418,7 @@ class BottomSheetViewModel @Inject internal constructor(
     suspend fun findMultiUsers(
         senders: Array<String>,
         receivers: Array<String>
-    ): List<User> {
+    ): List<User> = withContext(Dispatchers.IO) {
         val userIds = mutableSetOf<String>().apply {
             addAll(senders)
             addAll(receivers)
@@ -420,7 +428,7 @@ class BottomSheetViewModel @Inject internal constructor(
             !existUserIds.contains(it)
         }
         if (queryUsers.isNotEmpty()) {
-            return handleMixinResponse(
+            return@withContext handleMixinResponse(
                 invokeNetwork = {
                     userRepository.fetchUser(queryUsers)
                 },
@@ -433,7 +441,7 @@ class BottomSheetViewModel @Inject internal constructor(
                 }
             ) ?: emptyList()
         } else {
-            return userRepository.findMultiUsersByIds(userIds)
+            return@withContext userRepository.findMultiUsersByIds(userIds)
         }
     }
 
@@ -449,8 +457,9 @@ class BottomSheetViewModel @Inject internal constructor(
             PinRequest(encryptPin(Session.getPinToken()!!, pin)!!)
         )
 
-    suspend fun cancelMultisigs(requestId: String) =
+    suspend fun cancelMultisigs(requestId: String) = withContext(Dispatchers.IO) {
         accountRepository.cancelMultisigs(requestId)
+    }
 
     suspend fun transactions(
         rawTransactionsRequest: RawTransactionsRequest,
@@ -513,8 +522,9 @@ class BottomSheetViewModel @Inject internal constructor(
 
     suspend fun getOtherCircleItem(conversationId: String): List<ConversationCircleManagerItem> = userRepository.getOtherCircleItem(conversationId)
 
-    suspend fun updateCircles(conversationId: String?, userId: String?, requests: List<ConversationCircleRequest>) =
+    suspend fun updateCircles(conversationId: String?, userId: String?, requests: List<ConversationCircleRequest>) = withContext(Dispatchers.IO) {
         conversationRepo.updateCircles(conversationId, userId, requests)
+    }
 
     suspend fun deleteCircleConversation(conversationId: String, circleId: String) = userRepository.deleteCircleConversation(conversationId, circleId)
 

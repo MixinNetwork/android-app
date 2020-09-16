@@ -12,8 +12,8 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.collection.ArrayMap
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_group_info.*
@@ -61,13 +61,10 @@ class GroupInfoFragment : BaseFragment() {
     }
 
     @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    @Inject
     lateinit var jobManager: MixinJobManager
 
-    private val groupViewModel: GroupViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(GroupViewModel::class.java)
-    }
+    private val groupViewModel by viewModels<GroupViewModel>()
+
     private val adapter by lazy {
         GroupInfoAdapter()
     }

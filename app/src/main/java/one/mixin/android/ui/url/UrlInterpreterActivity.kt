@@ -2,7 +2,6 @@ package one.mixin.android.ui.url
 
 import android.net.Uri
 import android.os.Bundle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
@@ -16,7 +15,6 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class UrlInterpreterActivity : BaseActivity() {
@@ -32,9 +30,6 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val APPS = "apps"
         private const val SNAPSHOTS = "snapshots"
     }
-
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
 
     override fun getDefaultThemeId(): Int {
         return R.style.AppTheme_Transparent

@@ -39,7 +39,6 @@ import androidx.core.view.inputmethod.InputContentInfoCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -259,9 +258,7 @@ class ConversationFragment :
     @Inject
     lateinit var callState: CallStateLiveData
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val chatViewModel: ConversationViewModel by viewModels { viewModelFactory }
+    private val chatViewModel by viewModels<ConversationViewModel>()
 
     private var unreadTipCount: Int = 0
     private val chatAdapter: ConversationAdapter by lazy {

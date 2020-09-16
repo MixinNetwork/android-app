@@ -43,7 +43,7 @@ class AddressAddFragment : BaseFragment() {
     }
 
     private val asset: AssetItem by lazy {
-        requireArguments().getParcelable<AssetItem>(ARGS_ASSET)!!
+        requireArguments().getParcelable(ARGS_ASSET)!!
     }
     private var memoEnabled = true
 

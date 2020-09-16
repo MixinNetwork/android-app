@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_upgrade.*
@@ -19,7 +18,6 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.MessageFts4Helper
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class UpgradeFragment : BaseFragment() {
@@ -30,9 +28,7 @@ class UpgradeFragment : BaseFragment() {
         fun newInstance() = UpgradeFragment()
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val viewModel: MobileViewModel by viewModels { viewModelFactory }
+    private val viewModel by viewModels<MobileViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,

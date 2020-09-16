@@ -7,8 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.WorkManager
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -48,11 +46,9 @@ import javax.inject.Inject
 class ContactsFragment : BaseFragment() {
 
     @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    @Inject
     lateinit var jobManager: MixinJobManager
 
-    private val contactsViewModel: ContactViewModel by viewModels { viewModelFactory }
+    private val contactsViewModel: ContactViewModel by viewModels()
 
     private val contactAdapter: ContactsAdapter by lazy {
         ContactsAdapter(requireContext(), Collections.emptyList(), 0)
@@ -99,7 +95,7 @@ class ContactsFragment : BaseFragment() {
 
         contactsViewModel.findContacts().observe(
             viewLifecycleOwner,
-            Observer { users ->
+            { users ->
                 if (users != null && users.isNotEmpty()) {
                     if (!hasContactPermission()) {
                         contactAdapter.friendSize = users.size
@@ -122,7 +118,7 @@ class ContactsFragment : BaseFragment() {
         )
         contactsViewModel.findSelf().observe(
             viewLifecycleOwner,
-            Observer { self ->
+            { self ->
                 if (self != null) {
                     contactAdapter.me = self
                     contactAdapter.notifyDataSetChanged()
