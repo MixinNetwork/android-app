@@ -34,7 +34,6 @@ import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_FROM_CONVERSA
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_SHARE
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -48,7 +47,7 @@ class ForwardFragment : BaseFragment() {
         const val TAG = "ForwardFragment"
 
         fun newInstance(
-            messages: ArrayList<ForwardMessage>? =null,
+            messages: ArrayList<ForwardMessage>? = null,
             isShare: Boolean = false,
             fromConversation: Boolean = false
         ): ForwardFragment {

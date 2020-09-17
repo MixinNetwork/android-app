@@ -42,7 +42,6 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.User
-import one.mixin.android.vo.createAppButtonGroupMessage
 import one.mixin.android.vo.createAppCardMessage
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
@@ -138,18 +137,6 @@ class Messenger @Inject internal constructor(private val jobManager: MixinJobMan
 
     fun sendAppCardMessage(conversationId: String, sender: User, content: String) {
         val message = createAppCardMessage(
-            UUID.randomUUID().toString(),
-            conversationId,
-            sender.userId,
-            content,
-            nowInUtc(),
-            MessageStatus.SENDING.name
-        )
-        jobManager.addJobInBackground(SendMessageJob(message))
-    }
-
-    fun sendAppButtonGroupMessage(conversationId: String, sender: User, content: String) {
-        val message = createAppButtonGroupMessage(
             UUID.randomUUID().toString(),
             conversationId,
             sender.userId,

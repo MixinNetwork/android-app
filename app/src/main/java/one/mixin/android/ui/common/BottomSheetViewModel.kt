@@ -592,7 +592,8 @@ class BottomSheetViewModel @ViewModelInject internal constructor(
                                 ConversationCategory.CONTACT.name,
                                 user.userId,
                                 ConversationStatus.START.ordinal
-                            ), participants
+                            ),
+                            participants
                         )
                         withContext(Dispatchers.Main) {
                             callback(conversationId, user.isBot())
@@ -617,10 +618,6 @@ class BottomSheetViewModel @ViewModelInject internal constructor(
 
     fun sendAppCardMessage(conversationId: String, sender: User, content: String) {
         messenger.sendAppCardMessage(conversationId, sender, content)
-    }
-
-    fun sendAppButtonGroupMessage(conversationId: String, sender: User, content: String) {
-        messenger.sendAppButtonGroupMessage(conversationId, sender, content)
     }
 
     fun sendLiveMessage(conversationId: String, sender: User, transferLiveData: LiveMessagePayload, isPlain: Boolean) {

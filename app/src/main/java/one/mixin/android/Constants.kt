@@ -118,7 +118,6 @@ object Constants {
         const val CONTACT = "contact"
         const val POST = "post"
         const val APP_CARD = "app_card"
-        const val APP_BUTTON_GROUP = "app_button_group"
     }
 
     object ChainId {

@@ -21,7 +21,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.common.share.renderer.ShareAppButtonGroupRenderer
 import one.mixin.android.ui.common.share.renderer.ShareAppCardRenderer
 import one.mixin.android.ui.common.share.renderer.ShareContactRenderer
 import one.mixin.android.ui.common.share.renderer.ShareImageRenderer
@@ -30,11 +29,9 @@ import one.mixin.android.ui.common.share.renderer.SharePostRenderer
 import one.mixin.android.ui.common.share.renderer.ShareTextRenderer
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
-import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
-import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.toUser
@@ -125,47 +122,45 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
         lifecycleScope.launch {
             val sender = Session.getAccount()?.toUser() ?: return@launch
             viewModel.checkData(selectItem) { conversationId: String, isPlain: Boolean ->
-                    when (category) {
-                        Constants.ShareCategory.TEXT -> {
-                            viewModel.sendTextMessage(conversationId, sender, content, isPlain)
-                        }
-                        Constants.ShareCategory.IMAGE -> {
-                            // Todo
-                        }
-                        Constants.ShareCategory.CONTACT -> {
-                            val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
-                            viewModel.sendContactMessage(conversationId, sender, contactData.userId, isPlain)
-                            dismiss()
-                        }
-                        Constants.ShareCategory.POST -> {
-                            viewModel.sendPostMessage(conversationId, sender, content, isPlain)
-                            dismiss()
-                        }
-                        Constants.ShareCategory.APP_BUTTON_GROUP -> {
-                            viewModel.sendAppButtonGroupMessage(conversationId, sender, content)
-                            dismiss()
-                        }
-                        Constants.ShareCategory.APP_CARD -> {
-                            viewModel.sendAppCardMessage(conversationId, sender, content)
-                            dismiss()
-                        }
-                        Constants.ShareCategory.LIVE -> {
-                            val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java)
-                            viewModel.sendLiveMessage(conversationId, sender, liveData, isPlain)
-                            dismiss()
-                        }
+                when (category) {
+                    Constants.ShareCategory.TEXT -> {
+                        viewModel.sendTextMessage(conversationId, sender, content, isPlain)
                     }
-
+                    Constants.ShareCategory.IMAGE -> {
+                        // Todo
+                    }
+                    Constants.ShareCategory.CONTACT -> {
+                        val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
+                        viewModel.sendContactMessage(conversationId, sender, contactData.userId, isPlain)
+                        dismiss()
+                    }
+                    Constants.ShareCategory.POST -> {
+                        viewModel.sendPostMessage(conversationId, sender, content, isPlain)
+                        dismiss()
+                    }
+                    Constants.ShareCategory.APP_CARD -> {
+                        viewModel.sendAppCardMessage(conversationId, sender, content)
+                        dismiss()
+                    }
+                    Constants.ShareCategory.LIVE -> {
+                        val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java)
+                        viewModel.sendLiveMessage(conversationId, sender, liveData, isPlain)
+                        dismiss()
+                    }
+                }
             }
         }
     }
 
     private fun sendMessage() {
-        conversationId.notNullWithElse({
-            sendMessage(SelectItem(it, null))
-        }, {
-            getScanResult.launch(null)
-        })
+        conversationId.notNullWithElse(
+            {
+                sendMessage(SelectItem(it, null))
+            },
+            {
+                getScanResult.launch(null)
+            }
+        )
     }
 
     private fun loadData() {
@@ -181,9 +176,6 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
             }
             Constants.ShareCategory.POST -> {
                 loadPost(content)
-            }
-            Constants.ShareCategory.APP_BUTTON_GROUP -> {
-                loadAppButtonGroup(content)
             }
             Constants.ShareCategory.APP_CARD -> {
                 loadAppCard(content)
@@ -227,16 +219,6 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
         val renderer = SharePostRenderer(requireContext())
         contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(content)
-    }
-
-    private fun loadAppButtonGroup(content: String) {
-        val appButton = GsonHelper.customGson.fromJson(content, Array<AppButtonData>::class.java)
-        for (item in appButton) {
-            ColorUtil.parseColor(item.color.trim())
-        }
-        val renderer = ShareAppButtonGroupRenderer(requireContext())
-        contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
-        renderer.render(appButton)
     }
 
     private fun loadAppCard(content: String) {

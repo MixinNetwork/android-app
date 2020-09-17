@@ -94,4 +94,3 @@ class ForwardActivity : BlazeBaseActivity() {
         }
     }
 }
-
