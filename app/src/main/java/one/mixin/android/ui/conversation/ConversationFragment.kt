@@ -1771,7 +1771,7 @@ class ConversationFragment :
         if (message.isNotBlank() && reply_view.messageItem != null) {
             chat_control.chat_et.setText("")
             createConversation {
-                chatViewModel.sendReplyMessage(
+                chatViewModel.sendReplyTextMessage(
                     conversationId,
                     sender,
                     message,

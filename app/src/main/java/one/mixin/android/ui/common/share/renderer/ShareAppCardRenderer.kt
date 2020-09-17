@@ -5,9 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import kotlinx.android.synthetic.main.item_chat_action_card.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadRoundImage
 import one.mixin.android.vo.AppCardData
-import one.mixin.android.extension.dp
 
 open class ShareAppCardRenderer(context: Context) : ShareMessageRenderer {
 

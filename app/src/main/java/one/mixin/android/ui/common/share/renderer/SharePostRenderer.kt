@@ -10,6 +10,5 @@ open class SharePostRenderer(context: Context) : ShareMessageRenderer {
     val contentView: View = LayoutInflater.from(context).inflate(R.layout.item_chat_post, null)
 
     fun render(data: String) {
-
     }
 }

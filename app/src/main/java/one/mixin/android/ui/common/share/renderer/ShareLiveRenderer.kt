@@ -16,13 +16,13 @@ import kotlinx.android.synthetic.main.item_chat_video.view.chat_time
 import kotlinx.android.synthetic.main.item_chat_video.view.chat_warning
 import kotlinx.android.synthetic.main.item_chat_video.view.progress
 import one.mixin.android.R
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImageMark
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.LiveMessagePayload
-import one.mixin.android.extension.dp
-import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.timeAgoClock
 
 class ShareLiveRenderer(val context: Context) : ShareMessageRenderer {
     val contentView: View = LayoutInflater.from(context).inflate(R.layout.item_chat_video, null)
@@ -57,6 +57,5 @@ class ShareLiveRenderer(val context: Context) : ShareMessageRenderer {
         contentView.chat_image.layoutParams.height = mediaWidth * data.height / data.width
         contentView.chat_image.loadImageMark(data.thumbUrl, R.drawable.image_holder, R.drawable.chat_mark_image_me)
         contentView.chat_time.timeAgoClock(nowInUtc())
-
     }
 }

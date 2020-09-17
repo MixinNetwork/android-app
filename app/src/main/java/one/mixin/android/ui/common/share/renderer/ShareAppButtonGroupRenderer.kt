@@ -11,15 +11,14 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.item_chat_action.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.util.ColorUtil
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.widget.ActionButton
 import org.jetbrains.anko.bottomPadding
 import org.jetbrains.anko.leftPadding
 import org.jetbrains.anko.rightPadding
 import org.jetbrains.anko.topPadding
-import one.mixin.android.extension.dp
 
 open class ShareAppButtonGroupRenderer(val context: Context) : ShareMessageRenderer {
 

@@ -11,9 +11,9 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
@@ -105,26 +105,29 @@ fun String.openAsUrl(
     } else if (startsWith(Constants.Scheme.SEND, true)) {
         val uri = Uri.parse(this)
         val text = uri.getQueryParameter("text")
-        text.notNullWithElse({
-            ForwardActivity.show(
-                MixinApplication.appContext,
-                arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it))
-            )
-        }, {
-            val category = uri.getQueryParameter("category")
-            val conversationId = uri.getQueryParameter("conversation_id")
-            val data = uri.getQueryParameter("data")
-            if (category != null && data != null) {
-                try {
-                    ShareMessageBottomSheetDialogFragment.newInstance(category, conversationId, String(Base64.decode(data)))
-                        .showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
-                } catch (e: Exception) {
-                    Timber.e(IllegalStateException("Error data:${e.message}"))
+        text.notNullWithElse(
+            {
+                ForwardActivity.show(
+                    MixinApplication.appContext,
+                    arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it))
+                )
+            },
+            {
+                val category = uri.getQueryParameter("category")
+                val conversationId = uri.getQueryParameter("conversation_id")
+                val data = uri.getQueryParameter("data")
+                if (category != null && data != null) {
+                    try {
+                        ShareMessageBottomSheetDialogFragment.newInstance(category, conversationId, String(Base64.decode(data)))
+                            .showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
+                    } catch (e: Exception) {
+                        Timber.e(IllegalStateException("Error data:${e.message}"))
+                    }
+                } else {
+                    Timber.e(IllegalStateException("Error data"))
                 }
-            } else {
-                Timber.e(IllegalStateException("Error data"))
             }
-        })
+        )
     } else if (startsWith(Constants.Scheme.DEVICE, true)) {
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {

@@ -63,6 +63,8 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
             dismiss()
         }
         loadData()
+        contentView.send.setOnClickListener {
+        }
     }
 
     private fun loadData() {
