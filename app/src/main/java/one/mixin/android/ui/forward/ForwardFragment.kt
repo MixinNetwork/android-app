@@ -2,6 +2,8 @@ package one.mixin.android.ui.forward
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -32,10 +34,13 @@ import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_FROM_CONVERSA
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_SHARE
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
+import one.mixin.android.webrtc.SelectItem
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class ForwardFragment : BaseFragment() {
@@ -43,7 +48,7 @@ class ForwardFragment : BaseFragment() {
         const val TAG = "ForwardFragment"
 
         fun newInstance(
-            messages: ArrayList<ForwardMessage>,
+            messages: ArrayList<ForwardMessage>? =null,
             isShare: Boolean = false,
             fromConversation: Boolean = false
         ): ForwardFragment {
@@ -119,7 +124,28 @@ class ForwardFragment : BaseFragment() {
         forward_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         forward_bn.setOnClickListener {
             search_et?.hideKeyboard()
-            sendMessages(adapter.selectItem.size == 1)
+            if (messages == null) {
+                val resultData = adapter.selectItem.mapNotNull {
+                    when (it) {
+                        is ConversationItem -> {
+                            SelectItem(it.conversationId, null)
+                        }
+                        is User -> {
+                            SelectItem(null, it.userId)
+                        }
+                        else -> {
+                            null
+                        }
+                    }
+                }
+                val result = Intent().apply {
+                    putParcelableArrayListExtra(ForwardActivity.ARGS_RESULT, ArrayList(resultData))
+                }
+                requireActivity().setResult(Activity.RESULT_OK, result)
+                requireActivity().finish()
+            } else {
+                sendMessages(adapter.selectItem.size == 1)
+            }
         }
         adapter.setForwardListener(
             object : ForwardAdapter.ForwardListener {

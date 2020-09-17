@@ -782,7 +782,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 return super.shouldOverrideUrlLoading(view, url)
             }
             if (url.isMixinUrl()) {
-                url.openAsUrl(fragmentManager, scope) {}
+                val host = view.url?.let { Uri.parse(url).host }
+                url.openAsUrl(fragmentManager, scope, host = host) {}
                 return true
             }
             val extraHeaders = HashMap<String, String>()

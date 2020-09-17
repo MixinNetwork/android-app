@@ -41,7 +41,6 @@ class ShareLiveRenderer(val context: Context) : ShareMessageRenderer {
         (contentView.live_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 10.dp
         (contentView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.CENTER
         (contentView.duration_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
-        (contentView.live_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
         (contentView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
         contentView.chat_image.chat_image.setShape(R.drawable.chat_mark_image_me)
         (contentView.chat_time.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 10.dp

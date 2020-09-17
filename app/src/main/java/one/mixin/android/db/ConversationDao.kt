@@ -204,6 +204,9 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     fun hasUnreadMessage(circleId: String): LiveData<Int?>
 
+    @Query("SELECT * FROM conversations WHERE owner_id =:ownerId AND category = 'CONTACT'")
+    fun findContactConversationByOwnerId(ownerId: String): Conversation?
+
     // DELETE
     @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
     suspend fun deleteConversationById(conversationId: String)

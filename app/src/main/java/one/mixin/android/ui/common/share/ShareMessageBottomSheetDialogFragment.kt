@@ -16,6 +16,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -27,11 +28,17 @@ import one.mixin.android.ui.common.share.renderer.ShareImageRenderer
 import one.mixin.android.ui.common.share.renderer.ShareLiveRenderer
 import one.mixin.android.ui.common.share.renderer.SharePostRenderer
 import one.mixin.android.ui.common.share.renderer.ShareTextRenderer
+import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.Session
+import one.mixin.android.vo.App
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ShareImageData
+import one.mixin.android.vo.toUser
+import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.widget.BottomSheet
@@ -43,18 +50,47 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
         private const val CATEGORY = "category"
         private const val CONVERSATION_ID = "conversation_id"
         private const val CONTENT = "content"
-        fun newInstance(category: String, conversationId: String?, content: String) = ShareMessageBottomSheetDialogFragment().withArgs {
-            putString(CATEGORY, category)
-            putString(CONVERSATION_ID, conversationId)
-            putString(CONTENT, content)
-        }
+        private const val APP = "app"
+        private const val HOST = "host"
+        fun newInstance(category: String, content: String, conversationId: String?, app: App? = null, host: String? = null) =
+            ShareMessageBottomSheetDialogFragment().withArgs {
+                putString(CATEGORY, category)
+                putString(CONVERSATION_ID, conversationId)
+                putString(CONTENT, content)
+                putParcelable(APP, app)
+                putString(HOST, host)
+            }
     }
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
     private val viewModel: BottomSheetViewModel by viewModels { viewModelFactory }
 
-    @SuppressLint("RestrictedApi")
+    private val app by lazy {
+        arguments?.getParcelable<App>(APP)
+    }
+
+    private val host by lazy {
+        arguments?.getString(HOST)
+    }
+
+    private val conversationId by lazy {
+        arguments?.getString(CONVERSATION_ID)
+    }
+
+    private val content by lazy {
+        requireNotNull(arguments?.getString(CONTENT)) {
+            "error data"
+        }
+    }
+
+    private val category by lazy {
+        requireNotNull(arguments?.getString(CATEGORY)) {
+            "error data"
+        }
+    }
+
+    @SuppressLint("RestrictedApi", "StringFormatInvalid")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_share_message_bottom_sheet, null)
@@ -63,18 +99,76 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
             dismiss()
         }
         loadData()
+        when {
+            app != null -> {
+                contentView.share_title.text = getString(R.string.share_message_description, "${app?.name}(${app?.appNumber})", getString(R.string.message))
+            }
+            host != null -> {
+                contentView.share_title.text = getString(R.string.share_message_description, host, getString(R.string.message))
+            }
+            else -> {
+                contentView.share_title.setText(R.string.share_message_description_empty)
+            }
+        }
         contentView.send.setOnClickListener {
+            sendMessage()
         }
     }
 
-    private fun loadData() {
-        val content = arguments?.getString(CONTENT)
-        val category = arguments?.getString(CATEGORY)
-        if (content == null || category == null) {
-            toast(R.string.error_data)
-            dismiss()
-            return
+    private val getScanResult = registerForActivityResult(ForwardActivity.ForwardContract()) { data ->
+        data?.getParcelableArrayListExtra<SelectItem>(ARGS_RESULT)?.forEach { item ->
+            sendMessage(item)
         }
+    }
+
+    private fun sendMessage(selectItem: SelectItem) {
+        lifecycleScope.launch {
+            val sender = Session.getAccount()?.toUser() ?: return@launch
+            viewModel.checkData(selectItem) { conversationId: String, isPlain: Boolean ->
+                    when (category) {
+                        Constants.ShareCategory.TEXT -> {
+                            viewModel.sendTextMessage(conversationId, sender, content, isPlain)
+                        }
+                        Constants.ShareCategory.IMAGE -> {
+                            // Todo
+                        }
+                        Constants.ShareCategory.CONTACT -> {
+                            val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
+                            viewModel.sendContactMessage(conversationId, sender, contactData.userId, isPlain)
+                            dismiss()
+                        }
+                        Constants.ShareCategory.POST -> {
+                            viewModel.sendPostMessage(conversationId, sender, content, isPlain)
+                            dismiss()
+                        }
+                        Constants.ShareCategory.APP_BUTTON_GROUP -> {
+                            viewModel.sendAppButtonGroupMessage(conversationId, sender, content)
+                            dismiss()
+                        }
+                        Constants.ShareCategory.APP_CARD -> {
+                            viewModel.sendAppCardMessage(conversationId, sender, content)
+                            dismiss()
+                        }
+                        Constants.ShareCategory.LIVE -> {
+                            val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java)
+                            viewModel.sendLiveMessage(conversationId, sender, liveData, isPlain)
+                            dismiss()
+                        }
+                    }
+
+            }
+        }
+    }
+
+    private fun sendMessage() {
+        conversationId.notNullWithElse({
+            sendMessage(SelectItem(it, null))
+        }, {
+            getScanResult.launch(null)
+        })
+    }
+
+    private fun loadData() {
         when (category) {
             Constants.ShareCategory.TEXT -> {
                 loadText(content)

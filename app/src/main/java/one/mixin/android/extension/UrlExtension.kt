@@ -32,7 +32,7 @@ fun String.openAsUrlOrWeb(
     scope: CoroutineScope,
     app: App? = null,
     appCard: AppCardData? = null
-) = openAsUrl(supportFragmentManager, scope) {
+) = openAsUrl(supportFragmentManager, scope, currentConversation = conversationId, app = app) {
     WebBottomSheetDialogFragment.newInstance(this, conversationId, app, appCard)
         .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
 }
@@ -83,7 +83,10 @@ fun String.isMixinUrl(): Boolean {
 fun String.openAsUrl(
     supportFragmentManager: FragmentManager,
     scope: CoroutineScope,
-    extraAction: () -> Unit
+    currentConversation: String? = null,
+    app: App? = null,
+    host: String? = null,
+    extraAction: () -> Unit,
 ) {
     if (startsWith(Constants.Scheme.TRANSFER, true) ||
         startsWith(Constants.Scheme.HTTPS_TRANSFER, true)
@@ -114,11 +117,17 @@ fun String.openAsUrl(
             },
             {
                 val category = uri.getQueryParameter("category")
-                val conversationId = uri.getQueryParameter("conversation_id")
+                val conversationId = uri.getQueryParameter("conversation_id").let {
+                    if (it == currentConversation) {
+                        it
+                    } else {
+                        null
+                    }
+                }
                 val data = uri.getQueryParameter("data")
                 if (category != null && data != null) {
                     try {
-                        ShareMessageBottomSheetDialogFragment.newInstance(category, conversationId, String(Base64.decode(data)))
+                        ShareMessageBottomSheetDialogFragment.newInstance(category, String(Base64.decode(data)), conversationId)
                             .showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
                     } catch (e: Exception) {
                         Timber.e(IllegalStateException("Error data:${e.message}"))

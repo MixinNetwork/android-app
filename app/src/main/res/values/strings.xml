@@ -703,6 +703,7 @@
     <string name="live">Live</string>
     <string name="post">Post</string>
     <string name="post_tag">POST</string>
+    <string name="message">message</string>
     <!--pay-->
     <string name="pay_paid">This payment link has already been paid by someone, you can not make a duplicate payment.</string>
 
@@ -892,6 +893,7 @@
     <string name="bot_internal_wallet">Wallet</string>
     <string name="bot_empty_tip">Please add your favorite bot first.</string>
     <!-- share -->
-    <string name="share_message_description">Are you sure you want to send a %$2s from %$1s</string>
+    <string name="share_message_description">Are you sure you want to send a %$2s from %$1s ?</string>
+    <string name="share_message_description_empty">Are you sure you want to send the message ?</string>
 </resources>
 

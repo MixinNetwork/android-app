@@ -254,6 +254,10 @@ internal constructor(
         messageDao.batchMarkReadAndTake(conversationId, userId, createdAt)
     }
 
+    fun findContactConversationByOwnerId(ownerId:String): Conversation? {
+        return readConversationDao.findContactConversationByOwnerId(ownerId)
+    }
+
     fun insertList(it: List<Job>) {
         jobDao.insertList(it)
     }
