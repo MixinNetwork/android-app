@@ -12,7 +12,11 @@ import com.facebook.stetho.Stetho
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.android.components.ApplicationComponent
 import io.reactivex.plugins.RxJavaPlugins
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
@@ -49,6 +53,12 @@ class MixinApplication : Application(), Configuration.Provider, CameraXConfig.Pr
 
     @Inject
     lateinit var callState: CallStateLiveData
+
+    @InstallIn(ApplicationComponent::class)
+    @EntryPoint
+    interface AppEntryPoint {
+        fun inject(app: MixinApplication)
+    }
 
     companion object {
         lateinit var appContext: Context
@@ -137,7 +147,9 @@ class MixinApplication : Application(), Configuration.Provider, CameraXConfig.Pr
                 clearData(sessionId)
 
                 uiThread {
-                    // inject()
+                    // TODO test
+                    val entryPoint = EntryPointAccessors.fromApplication(this@MixinApplication, AppEntryPoint::class.java)
+                    entryPoint.inject(this@MixinApplication)
                     LandingActivity.show(this@MixinApplication)
                 }
             }

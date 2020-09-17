@@ -50,7 +50,6 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.di.Injectable
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.repository.AssetRepository
@@ -61,7 +60,7 @@ import java.io.IOException
 import java.net.SocketTimeoutException
 import javax.inject.Inject
 
-abstract class BaseJob(params: Params) : Job(params), Injectable {
+abstract class BaseJob(params: Params) : Job(params) {
 
     @InstallIn(ApplicationComponent::class)
     @EntryPoint

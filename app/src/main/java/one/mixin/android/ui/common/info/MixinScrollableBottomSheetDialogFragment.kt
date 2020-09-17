@@ -18,7 +18,6 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.scope
 import one.mixin.android.R
-import one.mixin.android.di.Injectable
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -31,7 +30,7 @@ import one.mixin.android.widget.linktext.AutoLinkTextView
 import timber.log.Timber
 import javax.inject.Inject
 
-abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
+abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     protected lateinit var contentView: View
 

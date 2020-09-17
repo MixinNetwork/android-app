@@ -40,7 +40,6 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.getScopes
-import one.mixin.android.di.Injectable
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
@@ -81,7 +80,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
+class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "LinkBottomSheetDialogFragment"

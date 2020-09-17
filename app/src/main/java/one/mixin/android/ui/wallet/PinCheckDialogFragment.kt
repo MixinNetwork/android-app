@@ -17,7 +17,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
-import one.mixin.android.di.Injectable
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
@@ -27,7 +26,7 @@ import one.mixin.android.widget.PinView
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class PinCheckDialogFragment : DialogFragment(), Injectable {
+class PinCheckDialogFragment : DialogFragment() {
 
     companion object {
         const val TAG = "PinCheckDialogFragment"

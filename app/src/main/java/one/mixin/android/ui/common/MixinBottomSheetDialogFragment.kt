@@ -11,14 +11,13 @@ import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.uber.autodispose.android.lifecycle.scope
 import one.mixin.android.R
-import one.mixin.android.di.Injectable
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 import java.lang.Exception
 import javax.inject.Inject
 
-abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
+abstract class MixinBottomSheetDialogFragment : DialogFragment() {
 
     protected lateinit var contentView: View
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)

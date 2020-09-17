@@ -7,7 +7,6 @@ import okhttp3.Request
 import one.mixin.android.Constants
 import one.mixin.android.Constants.API.URL
 import java.io.IOException
-import java.net.ConnectException
 import kotlin.jvm.Throws
 
 class HostSelectionInterceptor private constructor() : Interceptor {
