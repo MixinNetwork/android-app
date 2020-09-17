@@ -5,6 +5,12 @@ import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ShareCategory.APP_CARD
+import one.mixin.android.Constants.ShareCategory.CONTACT
+import one.mixin.android.Constants.ShareCategory.IMAGE
+import one.mixin.android.Constants.ShareCategory.LIVE
+import one.mixin.android.Constants.ShareCategory.POST
+import one.mixin.android.Constants.ShareCategory.TEXT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.crypto.Base64
@@ -125,7 +131,7 @@ fun String.openAsUrl(
                     }
                 }
                 val data = uri.getQueryParameter("data")
-                if (category != null && data != null) {
+                if (category != null && category in arrayOf(TEXT, IMAGE, LIVE, CONTACT, POST, APP_CARD) && data != null) {
                     try {
                         ShareMessageBottomSheetDialogFragment.newInstance(category, String(Base64.decode(data)), conversationId)
                             .showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)

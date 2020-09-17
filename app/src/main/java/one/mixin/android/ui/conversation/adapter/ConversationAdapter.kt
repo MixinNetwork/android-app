@@ -86,7 +86,7 @@ class ConversationAdapter(
             }
         }
     var recipient: User? = null
-    val miniMarkwon by lazy {
+    private val miniMarkwon by lazy {
         MarkwonUtil.getMiniMarkwon(context)
     }
     var hasBottomView = false
