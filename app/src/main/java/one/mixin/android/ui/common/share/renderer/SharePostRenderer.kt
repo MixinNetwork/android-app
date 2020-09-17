@@ -15,6 +15,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
+import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.MessageStatus
 
@@ -40,13 +41,16 @@ open class SharePostRenderer(val context: Context) : ShareMessageRenderer {
         MarkwonUtil.getMiniMarkwon(context)
     }
 
-    fun render(data: String, isNightMode: Boolean) {
-        miniMarkwon.setMarkdown(contentView.chat_tv, data.postOptimize())
+    fun render(content: String, isNightMode: Boolean) {
+        miniMarkwon.setMarkdown(contentView.chat_tv, content.postOptimize())
         contentView.chat_time.timeAgoClock(nowInUtc())
         setStatusIcon(context, MessageStatus.DELIVERED.name, isSecret = true, isWhite = true) { statusIcon, secretIcon ->
             statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
             secretIcon?.setBounds(0, 0, 8.dp, 8.dp)
             TextViewCompat.setCompoundDrawablesRelative(contentView.chat_time, secretIcon, null, statusIcon, null)
+        }
+        contentView.chat_tv.setOnClickListener {
+            MarkdownActivity.show(context, content)
         }
         contentView.chat_layout.setBackgroundResource(
             if (!isNightMode) {
