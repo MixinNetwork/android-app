@@ -56,7 +56,7 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    fun provideAssetDisplyDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.assetsExtraDao()
+    fun provideAssetExtraDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.assetsExtraDao()
 
     @Singleton
     @Provides
