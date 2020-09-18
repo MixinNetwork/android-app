@@ -1,8 +1,10 @@
 package one.mixin.android.ui.common.share.renderer
 
 import android.content.Context
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.FrameLayout
 import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.date_wrapper.view.chat_time
@@ -19,6 +21,10 @@ import one.mixin.android.vo.showVerifiedOrBot
 open class ShareContactRenderer(val context: Context) : ShareMessageRenderer {
 
     val contentView: View = LayoutInflater.from(context).inflate(R.layout.item_chat_contact_card, null)
+
+    init {
+        (contentView.out_ll.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.CENTER
+    }
 
     fun render(user: User) {
         contentView.avatar_iv.setInfo(

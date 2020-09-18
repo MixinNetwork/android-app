@@ -1,12 +1,15 @@
 package one.mixin.android.ui.common
 
 import androidx.hilt.lifecycle.ViewModelInject
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -559,7 +562,7 @@ class BottomSheetViewModel @ViewModelInject internal constructor(
 
     suspend fun suspendDeleteTraceById(traceId: String) = assetRepository.suspendDeleteTraceById(traceId)
 
-    suspend fun checkData(selectItem: SelectItem, callback: (String, Boolean) -> Unit) {
+    suspend fun checkData(selectItem: SelectItem, callback: suspend (String, Boolean) -> Unit) {
         withContext(Dispatchers.IO) {
             if (selectItem.conversationId != null) {
                 val conversation = conversationRepo.getConversation(selectItem.conversationId)
@@ -606,6 +609,10 @@ class BottomSheetViewModel @ViewModelInject internal constructor(
 
     fun sendTextMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
         messenger.sendTextMessage(viewModelScope, conversationId, sender, content, isPlain)
+    }
+
+    fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean): Flowable<Int>? {
+        return messenger.sendImageMessage(viewModelScope, conversationId, sender, uri, isPlain)
     }
 
     fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, isPlain: Boolean) {

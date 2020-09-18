@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common.share
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.Gravity
@@ -7,16 +8,23 @@ import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
+import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_share_message_bottom_sheet.view.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -39,6 +47,8 @@ import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
+import java.io.File
 
 class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectable {
 
@@ -98,17 +108,57 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
         loadData()
         when {
             app != null -> {
-                contentView.share_title.text = getString(R.string.share_message_description, "${app?.name}(${app?.appNumber})", getString(R.string.message))
+                contentView.share_title.text = getString(R.string.share_message_description, "${app?.name}(${app?.appNumber})", getMessageCategory())
             }
             host != null -> {
-                contentView.share_title.text = getString(R.string.share_message_description, host, getString(R.string.message))
+                contentView.share_title.text = getString(R.string.share_message_description, host, getMessageCategory())
             }
             else -> {
-                contentView.share_title.setText(R.string.share_message_description_empty)
+                contentView.share_title.text = getString(R.string.share_message_description_empty, getMessageCategory())
             }
         }
         contentView.send.setOnClickListener {
-            sendMessage()
+            if (category == Constants.ShareCategory.IMAGE) {
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                sendMessage()
+                            } else {
+                                context?.openPermissionSetting()
+                            }
+                        },
+                        {
+                        }
+                    )
+            } else {
+                sendMessage()
+            }
+        }
+    }
+
+    private fun getMessageCategory(): String {
+        return when (category) {
+            Constants.ShareCategory.TEXT -> {
+                getString(R.string.message)
+            }
+            Constants.ShareCategory.IMAGE -> {
+                getString(R.string.photo)
+            }
+            Constants.ShareCategory.CONTACT -> {
+                getString(R.string.contact)
+            }
+            Constants.ShareCategory.POST -> {
+                getString(R.string.post)
+            }
+            Constants.ShareCategory.APP_CARD -> {
+                getString(R.string.card)
+            }
+            else -> {
+                getString(R.string.live)
+            }
         }
     }
 
@@ -125,9 +175,29 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
                 when (category) {
                     Constants.ShareCategory.TEXT -> {
                         viewModel.sendTextMessage(conversationId, sender, content, isPlain)
+                        dismiss()
                     }
                     Constants.ShareCategory.IMAGE -> {
-                        // Todo
+                        withContext(Dispatchers.IO) {
+                            val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
+                            val file: File = Glide.with(requireContext()).asFile().load(shareImageData.url).submit().get()
+                            val path: String = file.path
+                            Timber.d(path)
+                            viewModel.sendImageMessage(conversationId, sender, file.toUri(), isPlain)
+                        }?.autoDispose(stopScope)?.subscribe(
+                            {
+                                when (it) {
+                                    0 -> {
+                                        dismiss()
+                                    }
+                                    -1 -> context?.toast(R.string.error_image)
+                                    -2 -> context?.toast(R.string.error_format)
+                                }
+                            },
+                            {
+                                context?.toast(R.string.error_image)
+                            }
+                        )
                     }
                     Constants.ShareCategory.CONTACT -> {
                         val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)

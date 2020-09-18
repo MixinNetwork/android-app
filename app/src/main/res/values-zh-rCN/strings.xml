@@ -690,6 +690,7 @@
     <string name="post">文章</string>
     <string name="post_tag">文章</string>
     <string name="message">消息</string>
+    <string name="card">卡片</string>
     <!--pay-->
     <string name="pay_paid">此付款链接已由某人支付，您无法进行重复付款。</string>
 
@@ -876,6 +877,6 @@
     <string name="bot_internal_wallet">钱包</string>
     <string name="bot_empty_tip">可以添加你喜欢的机器人</string>
     <!-- share -->
-    <string name="share_message_description">你确定要发送来自%$1s的%$2s？</string>
-    <string name="share_message_description_empty">你确定要发送该消息？</string>
+    <string name="share_message_description">你确定要发送来自%1$s的%2$s？</string>
+    <string name="share_message_description_empty">你确定要发送该%1$s？</string>
 </resources>
