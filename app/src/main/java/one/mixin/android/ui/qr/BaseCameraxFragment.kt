@@ -215,7 +215,7 @@ abstract class BaseCameraxFragment : VisionFragment() {
                         imageAnalysis,
                         *otherUseCases
                     )
-                    preview?.setSurfaceProvider(view_finder.createSurfaceProvider())
+                    preview?.setSurfaceProvider(view_finder.surfaceProvider)
                 } catch (e: Exception) {
                     reportException("$CRASHLYTICS_CAMERAX-camera bindToLifecycle failure", e)
                 }
