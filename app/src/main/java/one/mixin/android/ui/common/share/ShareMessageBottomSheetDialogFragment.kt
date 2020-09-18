@@ -13,6 +13,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_share_message_bottom_sheet.view.*
@@ -37,6 +38,7 @@ import one.mixin.android.ui.common.share.renderer.SharePostRenderer
 import one.mixin.android.ui.common.share.renderer.ShareTextRenderer
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
@@ -54,9 +56,10 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
 
     companion object {
         const val TAG = "ShareMessageBottomSheetDialogFragment"
-        private const val CATEGORY = "category"
+        const val CATEGORY = "category"
+        const val CONTENT = "content"
+
         private const val CONVERSATION_ID = "conversation_id"
-        private const val CONTENT = "content"
         private const val APP = "app"
         private const val HOST = "host"
         fun newInstance(category: String, content: String, conversationId: String?, app: App? = null, host: String? = null) =
@@ -181,8 +184,6 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
                         withContext(Dispatchers.IO) {
                             val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
                             val file: File = Glide.with(requireContext()).asFile().load(shareImageData.url).submit().get()
-                            val path: String = file.path
-                            Timber.d(path)
                             viewModel.sendImageMessage(conversationId, sender, file.toUri(), isPlain)
                         }?.autoDispose(stopScope)?.subscribe(
                             {
@@ -228,7 +229,12 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
                 sendMessage(SelectItem(it, null))
             },
             {
-                getScanResult.launch(null)
+                if (requireActivity() is UrlInterpreterActivity) {
+                    ForwardActivity.send(requireContext(), category, content)
+                    dismiss()
+                } else {
+                    getScanResult.launch(null)
+                }
             }
         )
     }
@@ -280,7 +286,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
             }
             val renderer = ShareContactRenderer(requireContext())
             contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
-            renderer.render(user)
+            renderer.render(user, requireContext().isNightMode())
             contentView.progress.isVisible = false
         }
     }
@@ -295,7 +301,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
         val appCardData = GsonHelper.customGson.fromJson(content, AppCardData::class.java)
         val renderer = ShareAppCardRenderer(requireContext())
         contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
-        renderer.render(appCardData)
+        renderer.render(appCardData, requireContext().isNightMode())
     }
 
     private fun loadLive(content: String) {
@@ -312,6 +318,21 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
     private fun generateLayoutParams(): FrameLayout.LayoutParams {
         return FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
             gravity = Gravity.CENTER
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        if (activity is UrlInterpreterActivity) {
+            var realFragmentCount = 0
+            parentFragmentManager.fragments.forEach { f ->
+                if (f !is SupportRequestManagerFragment) {
+                    realFragmentCount++
+                }
+            }
+            if (realFragmentCount <= 0) {
+                activity?.finish()
+            }
         }
     }
 }

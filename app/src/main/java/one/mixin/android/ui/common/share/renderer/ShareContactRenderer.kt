@@ -5,13 +5,10 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.FrameLayout
-import androidx.core.widget.TextViewCompat
+import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.date_wrapper.view.*
-import kotlinx.android.synthetic.main.date_wrapper.view.chat_time
 import kotlinx.android.synthetic.main.item_chat_contact_card.view.*
-import kotlinx.android.synthetic.main.item_chat_video.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.vo.MessageStatus
@@ -24,9 +21,10 @@ open class ShareContactRenderer(val context: Context) : ShareMessageRenderer {
 
     init {
         (contentView.out_ll.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.CENTER
+        contentView.chat_name.isVisible = false
     }
 
-    fun render(user: User) {
+    fun render(user: User, isNightMode: Boolean) {
         contentView.avatar_iv.setInfo(
             user.fullName,
             user.avatarUrl,
@@ -36,10 +34,19 @@ open class ShareContactRenderer(val context: Context) : ShareMessageRenderer {
         contentView.id_tv.text = user.identityNumber
         contentView.chat_time.timeAgoClock(nowInUtc())
         user.showVerifiedOrBot(contentView.verified_iv, contentView.bot_iv)
+
         setStatusIcon(context, MessageStatus.DELIVERED.name, isSecret = true, isWhite = true) { statusIcon, secretIcon ->
-            statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
-            secretIcon?.setBounds(0, 0, 8.dp, 8.dp)
-            TextViewCompat.setCompoundDrawablesRelative(contentView.chat_time, secretIcon, null, statusIcon, null)
+            contentView.chat_flag.isVisible = statusIcon != null
+            contentView.chat_flag.setImageDrawable(statusIcon)
+            contentView.chat_secret.isVisible = secretIcon != null
         }
+
+        contentView.chat_layout.setBackgroundResource(
+            if (!isNightMode) {
+                R.drawable.bill_bubble_me_last
+            } else {
+                R.drawable.bill_bubble_me_last_night
+            }
+        )
     }
 }

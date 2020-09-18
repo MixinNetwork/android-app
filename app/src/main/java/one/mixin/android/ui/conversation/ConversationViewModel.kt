@@ -79,9 +79,11 @@ import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
+import one.mixin.android.vo.isGroup
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.toUser
+import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
@@ -147,7 +149,7 @@ internal constructor(
         messenger.sendPostMessage(conversationId, sender, content, isPlain)
     }
 
-    private fun sendAppCardMessage(conversationId: String, sender: User, content: String) {
+    fun sendAppCardMessage(conversationId: String, sender: User, content: String) {
         messenger.sendAppCardMessage(conversationId, sender, content)
     }
 
@@ -207,7 +209,7 @@ internal constructor(
         messenger.sendRecallMessage(conversationId, sender, list)
     }
 
-    private fun sendLiveMessage(
+    fun sendLiveMessage(
         conversationId: String,
         sender: User,
         transferLiveData: LiveMessagePayload,
@@ -919,4 +921,49 @@ internal constructor(
 
     suspend fun findLatestTrace(opponentId: String?, destination: String?, tag: String?, amount: String, assetId: String) =
         assetRepository.findLatestTrace(opponentId, destination, tag, amount, assetId)
+
+    suspend fun checkData(selectItem: SelectItem, callback: suspend (String, Boolean) -> Unit) {
+        withContext(Dispatchers.IO) {
+            if (selectItem.conversationId != null) {
+                val conversation = conversationRepository.getConversation(selectItem.conversationId)
+                if (conversation != null) {
+                    if (conversation.isGroup()) {
+                        withContext(Dispatchers.Main) {
+                            callback(conversation.conversationId, false)
+                        }
+                    } else {
+                        userRepository.findContactByConversationId(selectItem.conversationId)?.let { user ->
+                            withContext(Dispatchers.Main) {
+                                callback(conversation.conversationId, user.isBot())
+                            }
+                        }
+                    }
+                }
+            } else if (selectItem.userId != null) {
+                userRepository.getUserById(selectItem.userId)?.let { user ->
+                    val conversation = conversationRepository.findContactConversationByOwnerId(user.userId)
+                    if (conversation == null) {
+                        val createdAt = nowInUtc()
+                        val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
+                        val participants = arrayListOf(
+                            Participant(conversationId, Session.getAccountId()!!, "", createdAt),
+                            Participant(conversationId, user.userId, "", createdAt)
+                        )
+                        conversationRepository.syncInsertConversation(
+                            createConversation(
+                                conversationId,
+                                ConversationCategory.CONTACT.name,
+                                user.userId,
+                                ConversationStatus.START.ordinal
+                            ),
+                            participants
+                        )
+                        withContext(Dispatchers.Main) {
+                            callback(conversationId, user.isBot())
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

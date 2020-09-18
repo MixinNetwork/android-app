@@ -11,6 +11,8 @@ import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment.Companion.CATEGORY
+import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment.Companion.CONTENT
 import one.mixin.android.util.Session
 import one.mixin.android.util.ShareHelper
 import one.mixin.android.vo.ForwardCategory
@@ -49,6 +51,15 @@ class ForwardActivity : BlazeBaseActivity() {
             }
             context.startActivity(intent)
         }
+
+        fun send(context: Context, category: String, content: String) {
+            val intent = Intent(context, ForwardActivity::class.java).apply {
+                putExtra(ARGS_SELECT, true)
+                putExtra(CATEGORY, category)
+                putExtra(CONTENT, content)
+            }
+            context.startActivity(intent)
+        }
     }
 
     class ForwardContract : ActivityResultContract<Intent?, Intent?>() {
@@ -69,7 +80,10 @@ class ForwardActivity : BlazeBaseActivity() {
         setContentView(R.layout.activity_contact)
         val list = intent.getParcelableArrayListExtra<ForwardMessage>(ARGS_MESSAGES)
         if (intent.getBooleanExtra(ARGS_SELECT, false)) {
-            val f = ForwardFragment.newInstance()
+            val f = ForwardFragment.newInstance(
+                content = intent.getStringExtra(CONTENT),
+                category = intent.getStringExtra(CATEGORY)
+            )
             replaceFragment(f, R.id.container, ForwardFragment.TAG)
         } else if (list != null && list.isNotEmpty()) {
             val f = ForwardFragment.newInstance(
