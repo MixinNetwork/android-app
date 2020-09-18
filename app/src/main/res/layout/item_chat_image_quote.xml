@@ -43,12 +43,12 @@
             <FrameLayout
                 android:id="@+id/chat_image_layout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content">
 
                 <ImageView
                     android:id="@+id/chat_image"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:contentDescription="@null" />
 
                 <one.mixin.android.widget.CircleProgress

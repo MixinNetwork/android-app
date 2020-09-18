@@ -251,13 +251,13 @@ fun ImageView.loadLongImageMark(uri: String?, holder: String?, mark: Int) {
             .dontAnimate()
             .signature(StringSignature("$uri$mark")).apply {
                 if (holder != null) {
-                    this.placeholder(holder.toDrawable(width, height))
+                    this.placeholder(holder.toDrawable(width, layoutParams.height))
                 }
             }
     ).into(this)
 }
 
-fun ImageView.loadLongImageMark(uri: String?, mark: Int) {
+fun ImageView.loadLongImageMark(uri: String?, mark: Int?) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply(
         RequestOptions.bitmapTransform(
@@ -267,8 +267,12 @@ fun ImageView.loadLongImageMark(uri: String?, mark: Int) {
                 CropTransformation.CropType.TOP
             )
         )
-            .dontAnimate()
-            .signature(StringSignature("$uri$mark"))
+            .dontAnimate().apply {
+                mark?.let {
+                    signature(StringSignature("$uri$mark"))
+                }
+            }
+
     ).listener(
         object : RequestListener<Drawable> {
             override fun onLoadFailed(

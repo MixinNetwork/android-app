@@ -4,10 +4,19 @@ import android.graphics.Color
 import android.view.Gravity
 import android.view.View
 import androidx.core.widget.TextViewCompat
+import kotlinx.android.synthetic.main.item_chat_image.view.*
 import kotlinx.android.synthetic.main.item_chat_image_quote.view.*
+import kotlinx.android.synthetic.main.item_chat_image_quote.view.chat_image
+import kotlinx.android.synthetic.main.item_chat_image_quote.view.chat_image_layout
+import kotlinx.android.synthetic.main.item_chat_image_quote.view.chat_layout
+import kotlinx.android.synthetic.main.item_chat_image_quote.view.chat_name
+import kotlinx.android.synthetic.main.item_chat_image_quote.view.chat_time
+import kotlinx.android.synthetic.main.item_chat_image_quote.view.chat_warning
+import kotlinx.android.synthetic.main.item_chat_image_quote.view.progress
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
@@ -18,8 +27,9 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.isSignal
 import org.jetbrains.anko.dip
+import kotlin.math.min
 
-class ImageQuoteHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class ImageQuoteHolder constructor(containerView: View) : MediaHolder(containerView) {
     private val dp16 = itemView.context.dpToPx(16f)
 
     init {
@@ -216,7 +226,19 @@ class ImageQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
                 }
             }
         }
-        itemView.chat_image.loadImage(messageItem.mediaUrl)
+
+        val dataWidth = messageItem.mediaWidth
+        val dataHeight = messageItem.mediaHeight
+        val width = mediaWidth - dp6
+        if (dataWidth <= 0 || dataHeight <= 0) {
+            itemView.chat_image.layoutParams.width = width
+            itemView.chat_image.layoutParams.height = width
+        } else {
+            itemView.chat_image.layoutParams.width = width
+            itemView.chat_image.layoutParams.height =
+                min(width * dataHeight / dataWidth, mediaHeight)
+        }
+        itemView.chat_image.loadLongImageMark(messageItem.mediaUrl, null)
 
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
@@ -254,6 +276,7 @@ class ImageQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
         }
+
         chatLayout(isMe, isLast)
     }
 }
