@@ -15,7 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.room.InvalidationTracker
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
-import dagger.android.AndroidInjection
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -48,6 +48,7 @@ import org.jetbrains.anko.notificationManager
 import timber.log.Timber
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
 
     companion object {
@@ -100,7 +101,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     override fun onCreate() {
-        AndroidInjection.inject(this)
         super.onCreate()
         webSocket.setWebSocketObserver(this)
         webSocket.connect()

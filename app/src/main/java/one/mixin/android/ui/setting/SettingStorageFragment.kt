@@ -12,8 +12,10 @@ import android.view.WindowManager
 import android.widget.CompoundButton
 import androidx.appcompat.app.AlertDialog
 import androidx.collection.ArraySet
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -30,13 +32,14 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.StorageUsage
 import timber.log.Timber
 
-class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() {
+@AndroidEntryPoint
+class SettingStorageFragment : BaseFragment() {
     companion object {
         const val TAG = "SettingStorageFragment"
 
@@ -45,7 +48,7 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
         }
     }
 
-    override fun getModelClass() = SettingStorageViewModel::class.java
+    private val viewModel by viewModels<SettingStorageViewModel>()
 
     private val adapter = StorageAdapter {
         showMenu(it)

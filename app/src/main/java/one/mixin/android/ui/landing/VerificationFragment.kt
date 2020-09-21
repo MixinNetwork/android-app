@@ -12,11 +12,12 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.android.synthetic.main.view_verification_bottom.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -50,7 +51,8 @@ import one.mixin.android.widget.RecaptchaView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 
-class VerificationFragment : PinCodeFragment<MobileViewModel>() {
+@AndroidEntryPoint
+class VerificationFragment : PinCodeFragment() {
     companion object {
         const val TAG: String = "VerificationFragment"
         private const val ARGS_ID = "args_id"
@@ -71,7 +73,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
         }
     }
 
-    override fun getModelClass() = MobileViewModel::class.java
+    private val viewModel by viewModels<MobileViewModel>()
 
     private var mCountDownTimer: CountDownTimer? = null
 
@@ -194,7 +196,6 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
 
         handleMixinResponse(
             invokeNetwork = { viewModel.create(requireArguments().getString(ARGS_ID)!!, accountRequest) },
-            switchContext = Dispatchers.IO,
             successBlock = { response ->
                 handleAccount(response, sessionKey) {
                     defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)

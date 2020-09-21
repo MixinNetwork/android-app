@@ -6,21 +6,22 @@ import android.webkit.CookieManager
 import android.webkit.WebStorage
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
+import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.facebook.stetho.Stetho
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
-import dagger.android.DispatchingAndroidInjector
-import dagger.android.HasAndroidInjector
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.android.components.ApplicationComponent
 import io.reactivex.plugins.RxJavaPlugins
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.di.AppComponent
-import one.mixin.android.di.AppInjector
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.BlazeMessageService
@@ -42,12 +43,10 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
-class MixinApplication : Application(), HasAndroidInjector, Configuration.Provider, CameraXConfig.Provider {
-    @Inject
-    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
+@HiltAndroidApp
+class MixinApplication : Application(), Configuration.Provider, CameraXConfig.Provider {
 
-    @Inject
-    lateinit var workConfiguration: Configuration
+    @Inject @JvmField var workerFactory: HiltWorkerFactory? = null
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -55,7 +54,11 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
     @Inject
     lateinit var callState: CallStateLiveData
 
-    lateinit var appComponent: AppComponent
+    @InstallIn(ApplicationComponent::class)
+    @EntryPoint
+    interface AppEntryPoint {
+        fun inject(app: MixinApplication)
+    }
 
     companion object {
         lateinit var appContext: Context
@@ -71,7 +74,6 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         appContext = applicationContext
         Lingver.init(this)
-        appComponent = AppInjector.init(this)
         RxJavaPlugins.setErrorHandler {}
         AppCenter.start(
             this,
@@ -82,20 +84,17 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
     }
 
     private fun init() {
-
         if (BuildConfig.DEBUG) {
             Stetho.initializeWithDefaults(this)
             Timber.plant(Timber.DebugTree())
         }
     }
 
-    fun inject() {
-        appComponent = AppInjector.inject(this)
+    override fun getWorkManagerConfiguration(): Configuration {
+        return Configuration.Builder()
+            .setWorkerFactory(workerFactory!!)
+            .build()
     }
-
-    override fun androidInjector() = dispatchingAndroidInjector
-
-    override fun getWorkManagerConfiguration() = workConfiguration
 
     override fun getCameraXConfig() = Camera2Config.defaultConfig()
 
@@ -148,7 +147,8 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
                 clearData(sessionId)
 
                 uiThread {
-                    inject()
+                    val entryPoint = EntryPointAccessors.fromApplication(this@MixinApplication, AppEntryPoint::class.java)
+                    entryPoint.inject(this@MixinApplication)
                     LandingActivity.show(this@MixinApplication)
                 }
             }

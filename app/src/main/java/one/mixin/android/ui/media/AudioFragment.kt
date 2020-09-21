@@ -5,22 +5,24 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ViewAnimator
-import androidx.lifecycle.Observer
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.layout_recycler_view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.mediaDownloaded
 
-class AudioFragment : BaseViewModelFragment<SharedMediaViewModel>() {
+@AndroidEntryPoint
+class AudioFragment : BaseFragment() {
     companion object {
         const val TAG = "AudioFragment"
 
@@ -29,7 +31,7 @@ class AudioFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         }
     }
 
-    override fun getModelClass() = SharedMediaViewModel::class.java
+    private val viewModel by viewModels<SharedMediaViewModel>()
 
     private val conversationId: String by lazy {
         requireArguments().getString(Constants.ARGS_CONVERSATION_ID)!!
@@ -75,7 +77,7 @@ class AudioFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         empty_tv.setText(R.string.no_audio)
         viewModel.getAudioMessages(conversationId).observe(
             viewLifecycleOwner,
-            Observer {
+            {
                 if (it.size <= 0) {
                     (view as ViewAnimator).displayedChild = 1
                 } else {

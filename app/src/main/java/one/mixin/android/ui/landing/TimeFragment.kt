@@ -4,7 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_time.*
 import kotlinx.coroutines.Job
 import one.mixin.android.Constants
@@ -15,8 +16,8 @@ import one.mixin.android.extension.shaking
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
-import javax.inject.Inject
 
+@AndroidEntryPoint
 class TimeFragment : BaseFragment() {
 
     companion object {
@@ -27,12 +28,7 @@ class TimeFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_time, container, false)
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val loadingViewModel: LoadingViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(LoadingViewModel::class.java)
-    }
+    private val loadingViewModel by viewModels<LoadingViewModel>()
 
     override fun onResume() {
         super.onResume()

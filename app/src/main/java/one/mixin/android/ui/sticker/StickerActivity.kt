@@ -3,10 +3,12 @@ package one.mixin.android.ui.sticker
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
 
+@AndroidEntryPoint
 class StickerActivity : BaseActivity() {
 
     companion object {

@@ -20,6 +20,7 @@ import androidx.camera.core.UseCase
 import androidx.core.view.isVisible
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_capture.*
 import one.mixin.android.R
 import one.mixin.android.extension.bounce
@@ -39,6 +40,7 @@ import one.mixin.android.util.reportException
 import one.mixin.android.widget.CameraOpView
 import java.io.File
 
+@AndroidEntryPoint
 class CaptureFragment : BaseCameraxFragment() {
     companion object {
         const val TAG = "CaptureFragment"

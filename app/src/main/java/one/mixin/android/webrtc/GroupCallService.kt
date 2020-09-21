@@ -7,6 +7,7 @@ import android.os.SystemClock
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import com.google.gson.JsonElement
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.R
@@ -68,6 +69,7 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class GroupCallService : CallService() {
 
     private val scheduledExecutors = Executors.newScheduledThreadPool(1)

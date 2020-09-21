@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.os.CountDownTimer
 import android.view.View
 import androidx.core.content.ContextCompat
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_precondition_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.fragment_precondition_bottom_sheet.view.asset_balance
 import one.mixin.android.Constants
@@ -28,6 +29,7 @@ import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textColor
 import java.math.BigDecimal
 
+@AndroidEntryPoint
 class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PreconditionBottomSheetDialogFragment"
@@ -39,7 +41,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val t: BiometricItem by lazy {
-        requireArguments().getParcelable<BiometricItem>(ValuableBiometricBottomSheetDialogFragment.ARGS_BIOMETRIC_ITEM)!!
+        requireArguments().getParcelable(ValuableBiometricBottomSheetDialogFragment.ARGS_BIOMETRIC_ITEM)!!
     }
 
     private var mCountDownTimer: CountDownTimer? = null

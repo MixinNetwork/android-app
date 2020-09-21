@@ -7,10 +7,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_permission_list.*
 import kotlinx.android.synthetic.main.item_permission_list.view.*
 import kotlinx.android.synthetic.main.layout_permission_list_foot.view.*
@@ -23,7 +25,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment.Companion.ARGS_AUTHORIZATION
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterListAdapter
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.util.ErrorHandler
@@ -31,7 +33,8 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.Scope
 import one.mixin.android.vo.convertName
 
-class PermissionListFragment : BaseViewModelFragment<SettingViewModel>() {
+@AndroidEntryPoint
+class PermissionListFragment : BaseFragment() {
     companion object {
         const val TAG = "PermissionListFragment"
         const val ARGS_APP = "args_app"
@@ -46,13 +49,13 @@ class PermissionListFragment : BaseViewModelFragment<SettingViewModel>() {
     }
 
     private val app: App by lazy {
-        requireArguments().getParcelable<App>(ARGS_APP)!!
+        requireArguments().getParcelable(ARGS_APP)!!
     }
     private val auth: AuthorizationResponse by lazy {
-        requireArguments().getParcelable<AuthorizationResponse>(ARGS_AUTHORIZATION)!!
+        requireArguments().getParcelable(ARGS_AUTHORIZATION)!!
     }
 
-    override fun getModelClass() = SettingViewModel::class.java
+    private val viewModel by viewModels<SettingViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,

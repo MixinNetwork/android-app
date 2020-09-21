@@ -13,13 +13,14 @@ import android.widget.ImageView
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_add_sticker.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -49,8 +50,8 @@ import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.textColor
 import java.io.File
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
+@AndroidEntryPoint
 class StickerAddFragment : BaseFragment() {
     companion object {
         const val TAG = "StickerAddFragment"
@@ -77,12 +78,7 @@ class StickerAddFragment : BaseFragment() {
         requireContext().dpToPx(100f)
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val stickerViewModel: ConversationViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ConversationViewModel::class.java)
-    }
+    private val stickerViewModel by viewModels<ConversationViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_add_sticker, container, false)

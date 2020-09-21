@@ -128,14 +128,15 @@ constructor(
 
     fun search(query: String): Observable<MixinResponse<User>> = userService.search(query)
 
-    fun logoutAsync(sessionId: String) = accountService.logoutAsync(LogoutRequest(sessionId))
+    suspend fun logout(sessionId: String) = accountService.logout(LogoutRequest(sessionId))
 
     fun findUsersByType(relationship: String) = userDao.findUsersByType(relationship)
 
     fun updatePin(request: PinRequest) = accountService.updatePin(request)
 
-    suspend fun verifyPin(code: String): MixinResponse<Account> =
+    suspend fun verifyPin(code: String): MixinResponse<Account> = withContext(Dispatchers.IO) {
         accountService.verifyPin(PinRequest(encryptPin(Session.getPinToken()!!, code)!!))
+    }
 
     fun authorize(request: AuthorizeRequest) = authService.authorize(request)
 

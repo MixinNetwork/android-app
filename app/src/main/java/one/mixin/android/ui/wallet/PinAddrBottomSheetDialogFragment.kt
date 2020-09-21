@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.view.View
 import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet_address.view.*
 import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
@@ -18,6 +19,7 @@ import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.vo.Address
 import one.mixin.android.widget.BottomSheet
 
+@AndroidEntryPoint
 class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
 
     companion object {

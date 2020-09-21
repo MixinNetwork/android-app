@@ -2,6 +2,10 @@ package one.mixin.android.job
 
 import android.os.SystemClock
 import com.google.gson.JsonElement
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.components.ApplicationComponent
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.CircleService
@@ -28,7 +32,6 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
-import one.mixin.android.di.Injectable
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.util.ErrorHandler
@@ -46,7 +49,7 @@ import one.mixin.android.websocket.ChatWebSocket
 import java.io.IOException
 import javax.inject.Inject
 
-open class Injector : Injectable {
+open class Injector {
     @Inject
     lateinit var jobManager: MixinJobManager
     @Inject
@@ -101,8 +104,15 @@ open class Injector : Injectable {
     @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var database: MixinDatabase
 
+    @InstallIn(ApplicationComponent::class)
+    @EntryPoint
+    interface InjectorEntryPoint {
+        fun inject(injector: Injector)
+    }
+
     init {
-        MixinApplication.get().appComponent.inject(this)
+        val entryPoint = EntryPointAccessors.fromApplication(MixinApplication.get().applicationContext, InjectorEntryPoint::class.java)
+        entryPoint.inject(this)
     }
 
     protected tailrec fun signalKeysChannel(blazeMessage: BlazeMessage): JsonElement? {

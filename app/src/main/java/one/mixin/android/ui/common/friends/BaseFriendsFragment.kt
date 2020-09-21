@@ -6,17 +6,16 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_friends.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.vo.User
 
-abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder, VM : ViewModel> : BaseViewModelFragment<VM>() {
+abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder> : BaseFragment() {
 
     protected lateinit var adapter: AbsFriendsAdapter<VH>
 

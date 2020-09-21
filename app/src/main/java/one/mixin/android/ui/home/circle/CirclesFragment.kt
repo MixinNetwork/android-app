@@ -8,11 +8,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isVisible
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_coversation_circle.*
 import kotlinx.android.synthetic.main.item_conversation_circle.view.*
 import kotlinx.coroutines.launch
@@ -38,8 +39,8 @@ import one.mixin.android.widget.recyclerview.OnStartDragListener
 import one.mixin.android.widget.recyclerview.SimpleItemTouchHelperCallback
 import org.threeten.bp.Instant
 import java.util.Collections
-import javax.inject.Inject
 
+@AndroidEntryPoint
 class CirclesFragment : BaseFragment(), OnStartDragListener {
     companion object {
         const val TAG = "CirclesFragment"
@@ -49,11 +50,7 @@ class CirclesFragment : BaseFragment(), OnStartDragListener {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val conversationViewModel: ConversationListViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ConversationListViewModel::class.java)
-    }
+    private val conversationViewModel by viewModels<ConversationListViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_coversation_circle, container, false)

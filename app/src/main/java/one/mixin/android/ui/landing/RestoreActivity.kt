@@ -10,6 +10,7 @@ import androidx.annotation.RequiresPermission
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_restore.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,6 +31,7 @@ import one.mixin.android.util.backup.restore
 import java.io.File
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class RestoreActivity : BaseActivity() {
 
     @Inject

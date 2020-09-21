@@ -1,5 +1,6 @@
 package one.mixin.android.ui.group
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -22,9 +23,8 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
 import java.util.UUID
-import javax.inject.Inject
 
-class GroupViewModel @Inject
+class GroupViewModel @ViewModelInject
 internal constructor(
     private val userRepository: UserRepository,
     private val conversationRepository: ConversationRepository,

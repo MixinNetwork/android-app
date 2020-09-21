@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_emergency_contact_bottom.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -14,6 +15,7 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.util.Session
 import one.mixin.android.widget.BottomSheet
 
+@AndroidEntryPoint
 class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "EmergencyContactTipBottomSheetDialogFragment"

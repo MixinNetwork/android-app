@@ -10,8 +10,8 @@ import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.manager.SupportRequestManagerFragment
@@ -20,12 +20,12 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_bot_manager.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.di.Injectable
 import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.booleanFromAttribute
@@ -45,9 +45,9 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.bot.BotDock
-import javax.inject.Inject
 
-class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener, Injectable {
+@AndroidEntryPoint
+class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock.OnDockListener {
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
     companion object {
         const val TAG = "BorManagerBottomSheetDialogFragment"
@@ -57,12 +57,7 @@ class BotManagerBottomSheetDialogFragment : BottomSheetDialogFragment(), BotDock
 
     private val stopScope = scope(Lifecycle.Event.ON_STOP)
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val botManagerViewModel: BotManagerViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(BotManagerViewModel::class.java)
-    }
+    private val botManagerViewModel by viewModels<BotManagerViewModel>()
 
     override fun getTheme() = R.style.MixinBottomSheet
 

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_about.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
@@ -12,6 +13,7 @@ import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.common.BaseFragment
 
+@AndroidEntryPoint
 class AboutFragment : BaseFragment() {
     companion object {
         const val TAG = "AboutFragment"

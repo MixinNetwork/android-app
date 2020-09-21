@@ -18,6 +18,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_profile_bottom_sheet_dialog.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.launch
@@ -53,6 +54,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.linktext.AutoLinkMode
 
+@AndroidEntryPoint
 class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
     companion object {
         const val TAG = "ProfileBottomSheetDialogFragment"

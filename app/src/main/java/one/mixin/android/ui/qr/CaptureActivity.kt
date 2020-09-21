@@ -11,6 +11,7 @@ import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContract
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.replaceFragment
@@ -19,6 +20,7 @@ import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.conversation.ConversationActivity.Companion.ARGS_SHORTCUT
 import one.mixin.android.util.isCameraCanUse
 
+@AndroidEntryPoint
 class CaptureActivity : BlazeBaseActivity() {
 
     override fun getDefaultThemeId(): Int {

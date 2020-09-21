@@ -5,8 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,8 +20,8 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
-import javax.inject.Inject
 
+@AndroidEntryPoint
 class LoadingFragment : BaseFragment() {
 
     companion object {
@@ -37,9 +37,7 @@ class LoadingFragment : BaseFragment() {
     ): View? =
         inflater.inflate(R.layout.fragment_loading, container, false)
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val loadingViewModel: LoadingViewModel by viewModels { viewModelFactory }
+    private val loadingViewModel by viewModels<LoadingViewModel>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

@@ -5,10 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_emergency_contact.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -17,13 +18,14 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 
-class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
+@AndroidEntryPoint
+class EmergencyContactFragment : BaseFragment() {
     companion object {
         const val TAG = "EmergencyContactFragment"
 
@@ -32,7 +34,7 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
 
     private var showEmergency = true
 
-    override fun getModelClass(): Class<EmergencyViewModel> = EmergencyViewModel::class.java
+    private val viewModel by viewModels<EmergencyViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_emergency_contact, container, false)
@@ -101,7 +103,6 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
         view_pb.isVisible = true
         handleMixinResponse(
             invokeNetwork = { viewModel.showEmergency(pinCode) },
-            switchContext = Dispatchers.IO,
             successBlock = { response ->
                 val user = response.data as User
                 navTo(ViewEmergencyContactFragment.newInstance(user), ViewEmergencyContactFragment.TAG)
@@ -122,7 +123,6 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
         delete_pb.isVisible = true
         handleMixinResponse(
             invokeNetwork = { viewModel.deleteEmergency(pinCode) },
-            switchContext = Dispatchers.IO,
             successBlock = { response ->
                 val a = response.data as Account
                 Session.storeAccount(a)

@@ -6,10 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_circle_manager.*
 import kotlinx.android.synthetic.main.item_circle_manager.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -30,8 +31,8 @@ import one.mixin.android.vo.ConversationCircleManagerItem
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getCircleColor
 import one.mixin.android.widget.SegmentationItemDecoration
-import javax.inject.Inject
 
+@AndroidEntryPoint
 class CircleManagerFragment : BaseFragment() {
     companion object {
         const val TAG = "CirclesFragment"
@@ -63,11 +64,7 @@ class CircleManagerFragment : BaseFragment() {
         requireArguments().getString(USER_ID)
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val bottomViewModel: BottomSheetViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(BottomSheetViewModel::class.java)
-    }
+    private val bottomViewModel by viewModels<BottomSheetViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_circle_manager, container, false)
@@ -111,7 +108,6 @@ class CircleManagerFragment : BaseFragment() {
             }
             val requests = listOf(ConversationCircleRequest(item.circleId, CircleConversationAction.ADD.name))
             handleMixinResponse(
-                switchContext = Dispatchers.IO,
                 invokeNetwork = {
                     bottomViewModel.updateCircles(conversationId, userId, requests)
                 },

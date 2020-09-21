@@ -9,6 +9,7 @@ import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_join_group_bottom_sheet.view.*
@@ -37,6 +38,7 @@ data class JoinGroupConversation(
     val iconUrl: String?
 ) : Parcelable
 
+@AndroidEntryPoint
 class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
     companion object {
         const val TAG = "JoinGroupBottomSheetDialogFragment"
@@ -54,7 +56,7 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
     }
 
     private val c: JoinGroupConversation by lazy {
-        requireArguments().getParcelable<JoinGroupConversation>(ARGS_JOIN_GROUP_CONVERSATION)!!
+        requireArguments().getParcelable(ARGS_JOIN_GROUP_CONVERSATION)!!
     }
     private val code: String by lazy { requireArguments().getString(CODE)!! }
 

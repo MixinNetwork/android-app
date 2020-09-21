@@ -6,28 +6,20 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import com.uber.autodispose.android.lifecycle.scope
-import dagger.android.DispatchingAndroidInjector
-import dagger.android.HasAndroidInjector
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultThemeId
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
-import javax.inject.Inject
 
 @SuppressLint("Registered")
-open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
+open class BaseActivity : AppCompatActivity() {
 
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
 
     lateinit var lastLang: String
     var lastThemeId: Int = defaultThemeId
-
-    @Inject
-    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
-
-    override fun androidInjector() = dispatchingAndroidInjector
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

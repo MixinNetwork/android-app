@@ -22,6 +22,7 @@ import com.bumptech.glide.request.target.Target
 import com.google.mlkit.vision.common.InputImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_edit.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -46,6 +47,7 @@ import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import java.io.File
 
+@AndroidEntryPoint
 class EditFragment : VisionFragment() {
 
     companion object {

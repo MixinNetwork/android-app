@@ -6,10 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_asset_add.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Job
@@ -24,8 +25,8 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.widget.SearchView
 import org.jetbrains.anko.textColor
-import javax.inject.Inject
 
+@AndroidEntryPoint
 class AssetAddFragment : BaseFragment() {
     companion object {
         const val POS_RV = 0
@@ -33,11 +34,7 @@ class AssetAddFragment : BaseFragment() {
         const val POS_EMPTY = 2
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val walletViewModel: WalletViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(WalletViewModel::class.java)
-    }
+    private val walletViewModel by viewModels<WalletViewModel>()
 
     private val onTopAssetListener = object : AssetAddAdapter.OnTopAssetListener {
         override fun onItemClick(topAsset: TopAssetItem, isChecked: Boolean) {

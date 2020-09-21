@@ -34,6 +34,7 @@ import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_location.*
 import kotlinx.android.synthetic.main.mention_location.*
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -62,6 +63,7 @@ import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.min
 
+@AndroidEntryPoint
 class LocationActivity : BaseActivity(), OnMapReadyCallback {
 
     @Inject
@@ -87,7 +89,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
     private var forceUpdate: CameraUpdate? = null
 
     private val location: LocationPayload? by lazy {
-        intent.getParcelableExtra<LocationPayload>(LOCATION)
+        intent.getParcelableExtra(LOCATION)
     }
 
     private val locationAdapter by lazy {

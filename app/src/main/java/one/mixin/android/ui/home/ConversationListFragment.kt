@@ -19,9 +19,9 @@ import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_conversation_list.*
 import kotlinx.android.synthetic.main.item_list_conversation.view.*
@@ -102,20 +103,15 @@ import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
 
+@AndroidEntryPoint
 class ConversationListFragment : LinkFragment() {
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    @Inject
     lateinit var navigationController: NavigationController
 
     @Inject
     lateinit var jobManager: MixinJobManager
 
-    private val messagesViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ConversationListViewModel::class.java)
-    }
+    private val messagesViewModel by viewModels<ConversationListViewModel>()
 
     private val messageAdapter by lazy {
         MessageAdapter().apply {
@@ -161,6 +157,7 @@ class ConversationListFragment : LinkFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        navigationController = NavigationController(activity as MainActivity)
         messageAdapter.headerView = message_rv.inflate(R.layout.item_list_conversation_header, false).apply {
             header_close.setOnClickListener {
                 messageAdapter.setShowHeader(false, message_rv)

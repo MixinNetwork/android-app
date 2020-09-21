@@ -13,12 +13,12 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_wallet.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_bottom.view.*
@@ -49,8 +49,8 @@ import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import java.math.BigDecimal
 import java.math.RoundingMode
-import javax.inject.Inject
 
+@AndroidEntryPoint
 class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     companion object {
@@ -58,9 +58,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         fun newInstance(): WalletFragment = WalletFragment()
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val walletViewModel: WalletViewModel by viewModels { viewModelFactory }
+    private val walletViewModel by viewModels<WalletViewModel>()
 
     private var assets: List<AssetItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }

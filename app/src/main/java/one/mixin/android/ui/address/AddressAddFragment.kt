@@ -11,6 +11,7 @@ import androidx.core.view.isVisible
 import com.sandro.bitcoinpaymenturi.BitcoinPaymentURI
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_address_add.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -35,13 +36,14 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import org.jetbrains.anko.textColor
 
+@AndroidEntryPoint
 class AddressAddFragment : BaseFragment() {
     companion object {
         const val ARGS_ADDRESS = "args_address"
     }
 
     private val asset: AssetItem by lazy {
-        requireArguments().getParcelable<AssetItem>(ARGS_ASSET)!!
+        requireArguments().getParcelable(ARGS_ASSET)!!
     }
     private var memoEnabled = true
 

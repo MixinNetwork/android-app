@@ -14,13 +14,13 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
 import com.mukesh.countrypicker.Country
 import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_mobile.*
 import kotlinx.android.synthetic.main.fragment_mobile.keyboard
 import one.mixin.android.Constants.KEYS
@@ -40,8 +40,8 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.RecaptchaView
-import javax.inject.Inject
 
+@AndroidEntryPoint
 class MobileFragment : BaseFragment() {
 
     companion object {
@@ -58,9 +58,7 @@ class MobileFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val mobileViewModel: MobileViewModel by viewModels { viewModelFactory }
+    private val mobileViewModel by viewModels<MobileViewModel>()
 
     private lateinit var countryPicker: CountryPicker
     private lateinit var mCountry: Country

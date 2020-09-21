@@ -6,12 +6,11 @@ import android.content.DialogInterface
 import android.view.View
 import android.view.View.GONE
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_multisigs_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.OpponentMultisig
@@ -29,6 +28,7 @@ import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogF
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 
+@AndroidEntryPoint
 class MultisigsBottomSheetDialogFragment :
     ValuableBiometricBottomSheetDialogFragment<MultisigsBiometricItem>() {
     companion object {
@@ -72,9 +72,7 @@ class MultisigsBottomSheetDialogFragment :
         contentView.biometric_tv.setText(R.string.multisig_pay_biometric)
 
         lifecycleScope.launch {
-            val users = withContext(Dispatchers.IO) {
-                bottomViewModel.findMultiUsers(t.senders, t.receivers)
-            }
+            val users = bottomViewModel.findMultiUsers(t.senders, t.receivers)
             if (users.isNotEmpty()) {
                 val senders = arrayListOf<User>()
                 val receivers = arrayListOf<User>()
@@ -194,7 +192,7 @@ class MultisigsBottomSheetDialogFragment :
             t.state != MultisigsState.signed.name &&
             t.state != MultisigsState.unlocked.name
         ) {
-            GlobalScope.launch(Dispatchers.IO) {
+            GlobalScope.launch {
                 bottomViewModel.cancelMultisigs(t.requestId)
             }
         }

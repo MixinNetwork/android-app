@@ -2,12 +2,11 @@ package one.mixin.android.ui.common
 
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.ViewModel
 import kotlinx.android.synthetic.main.fragment_verification.*
 import one.mixin.android.Constants
 import one.mixin.android.util.ErrorHandler
 
-abstract class FabLoadingFragment<VH : ViewModel> : BaseViewModelFragment<VH>() {
+abstract class FabLoadingFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

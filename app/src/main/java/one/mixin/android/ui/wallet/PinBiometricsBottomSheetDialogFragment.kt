@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.View
 import androidx.core.os.bundleOf
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import one.mixin.android.R
@@ -13,6 +14,7 @@ import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.widget.BottomSheet
 
+@AndroidEntryPoint
 class PinBiometricsBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PinBiometricsBottomSheetDialogFragment"

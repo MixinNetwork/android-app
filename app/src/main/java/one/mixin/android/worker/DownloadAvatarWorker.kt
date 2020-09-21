@@ -1,15 +1,14 @@
 package one.mixin.android.worker
 
 import android.content.Context
+import androidx.hilt.Assisted
+import androidx.hilt.work.WorkerInject
 import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
-import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.vo.User
 import java.util.concurrent.TimeUnit
 
-class DownloadAvatarWorker @AssistedInject constructor(
+class DownloadAvatarWorker @WorkerInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters
 ) : AvatarWorker(context, parameters) {
@@ -40,7 +39,4 @@ class DownloadAvatarWorker @AssistedInject constructor(
             }
         }
     }
-
-    @AssistedInject.Factory
-    interface Factory : ChildWorkerFactory
 }

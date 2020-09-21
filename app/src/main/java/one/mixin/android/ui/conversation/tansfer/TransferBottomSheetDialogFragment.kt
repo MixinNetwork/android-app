@@ -7,6 +7,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import kotlinx.coroutines.launch
@@ -35,6 +36,7 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Trace
 import one.mixin.android.widget.BottomSheet
 
+@AndroidEntryPoint
 class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragment<BiometricItem>() {
     companion object {
         const val TAG = "TransferBottomSheetDialogFragment"
@@ -46,7 +48,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
     }
 
     private val t: BiometricItem by lazy {
-        requireArguments().getParcelable<BiometricItem>(ARGS_BIOMETRIC_ITEM)!!
+        requireArguments().getParcelable(ARGS_BIOMETRIC_ITEM)!!
     }
 
     var onDestroyListener: OnDestroyListener? = null

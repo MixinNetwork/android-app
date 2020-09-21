@@ -28,6 +28,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.arch.core.executor.ArchTaskExecutor
@@ -35,13 +36,13 @@ import androidx.core.net.toUri
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.exoplayer2.Player
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_media_pager.*
 import kotlinx.android.synthetic.main.item_pager_video_layout.view.*
 import kotlinx.android.synthetic.main.layout_player_view.view.*
@@ -96,9 +97,9 @@ import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
-import javax.inject.Inject
 import kotlin.math.min
 
+@AndroidEntryPoint
 class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener, SensorOrientationChangeNotifier.Listener {
     private lateinit var colorDrawable: ColorDrawable
 
@@ -124,11 +125,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     private val processor = QRCodeProcessor()
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val viewModel: SharedMediaViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(SharedMediaViewModel::class.java)
-    }
+    private val viewModel by viewModels<SharedMediaViewModel>()
 
     private val adapter: MediaPagerAdapter by lazy {
         MediaPagerAdapter(this, this@MediaPagerActivity, mediaPagerAdapterListener)

@@ -10,6 +10,7 @@ import android.view.View.VISIBLE
 import androidx.lifecycle.lifecycleScope
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.bottom_qr_scan.view.*
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
@@ -24,6 +25,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import java.util.concurrent.TimeUnit
 
+@AndroidEntryPoint
 class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "QrScanBottomSheetDialogFragment"

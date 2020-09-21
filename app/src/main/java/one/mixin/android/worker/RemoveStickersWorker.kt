@@ -1,14 +1,13 @@
 package one.mixin.android.worker
 
 import android.content.Context
+import androidx.hilt.Assisted
+import androidx.hilt.work.WorkerInject
 import androidx.work.WorkerParameters
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.db.StickerRelationshipDao
-import one.mixin.android.di.worker.ChildWorkerFactory
 
-class RemoveStickersWorker @AssistedInject constructor(
+class RemoveStickersWorker @WorkerInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val accountService: AccountService,
@@ -30,7 +29,4 @@ class RemoveStickersWorker @AssistedInject constructor(
         accountService.removeSticker(stickerIds).execute()
         return Result.success()
     }
-
-    @AssistedInject.Factory
-    interface Factory : ChildWorkerFactory
 }

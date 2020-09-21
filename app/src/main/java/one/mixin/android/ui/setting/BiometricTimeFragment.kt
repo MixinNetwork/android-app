@@ -8,6 +8,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_biometric_time.*
 import kotlinx.android.synthetic.main.item_biometric_time.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -20,6 +21,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 
+@AndroidEntryPoint
 class BiometricTimeFragment : BaseFragment() {
     companion object {
         const val TAG = "BiometricTimeFragment"

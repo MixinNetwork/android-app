@@ -1,5 +1,6 @@
 package one.mixin.android.ui.contacts
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -21,10 +22,9 @@ import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
-import javax.inject.Inject
 
 class ContactViewModel
-@Inject
+@ViewModelInject
 internal constructor(
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,

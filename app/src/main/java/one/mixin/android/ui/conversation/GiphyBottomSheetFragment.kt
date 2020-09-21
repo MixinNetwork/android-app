@@ -13,6 +13,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_giphy_search_bottom_sheet.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
@@ -32,6 +33,7 @@ import org.jetbrains.anko.dip
 import retrofit2.HttpException
 import timber.log.Timber
 
+@AndroidEntryPoint
 class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "GiphyBottomSheetFragment"

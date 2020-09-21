@@ -4,22 +4,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
+import androidx.fragment.app.viewModels
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_privacy.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.navTo
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.Session
 
-class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
+@AndroidEntryPoint
+class PrivacyFragment : BaseFragment() {
     companion object {
         const val TAG = "PrivacyFragment"
 
         fun newInstance() = PrivacyFragment()
     }
 
-    override fun getModelClass() = SettingViewModel::class.java
+    private val viewModel by viewModels<SettingViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_privacy, container, false)
@@ -31,7 +33,7 @@ class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
         }
         viewModel.countBlockingUsers().observe(
             viewLifecycleOwner,
-            Observer {
+            {
                 it?.let { users ->
                     blocking_tv.text = "${users.size}"
                 }

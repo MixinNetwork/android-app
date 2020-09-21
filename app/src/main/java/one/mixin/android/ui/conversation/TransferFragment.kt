@@ -22,14 +22,15 @@ import android.widget.ArrayAdapter
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
@@ -89,6 +90,7 @@ import java.math.RoundingMode
 import java.util.UUID
 import javax.inject.Inject
 
+@AndroidEntryPoint
 @SuppressLint("InflateParams")
 class TransferFragment : MixinBottomSheetDialogFragment() {
     companion object {
@@ -122,9 +124,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     @Inject
     lateinit var jobManager: MixinJobManager
 
-    private val chatViewModel: ConversationViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ConversationViewModel::class.java)
-    }
+    private val chatViewModel by viewModels<ConversationViewModel>()
 
     private var assets = listOf<AssetItem>()
     private var currentAsset: AssetItem? = null

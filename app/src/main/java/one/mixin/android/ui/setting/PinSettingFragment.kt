@@ -9,6 +9,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_pin_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
@@ -19,20 +20,19 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.BiometricTimeFragment.Companion.X_HOUR
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 
-class PinSettingFragment : BaseViewModelFragment<SettingViewModel>() {
+@AndroidEntryPoint
+class PinSettingFragment : BaseFragment() {
     companion object {
         const val TAG = "PinSettingFragment"
 
         fun newInstance() = PinSettingFragment()
     }
-
-    override fun getModelClass() = SettingViewModel::class.java
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_pin_setting, container, false)

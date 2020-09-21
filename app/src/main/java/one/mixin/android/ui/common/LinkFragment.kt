@@ -8,14 +8,13 @@ import androidx.lifecycle.Observer
 import kotlinx.android.synthetic.main.view_link_state.*
 import one.mixin.android.R
 import one.mixin.android.db.FloodMessageDao
-import one.mixin.android.di.Injectable
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.LinkState
 import javax.inject.Inject
 
-open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
+open class LinkFragment : BaseFragment(), Observer<Int> {
 
     @Inject
     lateinit var linkState: LinkState

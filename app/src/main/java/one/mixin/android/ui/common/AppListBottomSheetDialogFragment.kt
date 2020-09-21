@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_app_list_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.item_app_list.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
@@ -19,6 +20,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.vo.App
 import one.mixin.android.widget.BottomSheet
 
+@AndroidEntryPoint
 class AppListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "AppListBottomSheetDialogFragment"

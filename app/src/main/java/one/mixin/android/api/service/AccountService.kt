@@ -51,7 +51,7 @@ interface AccountService {
     fun getMe(): Call<MixinResponse<Account>>
 
     @POST("logout")
-    fun logoutAsync(@Body request: LogoutRequest): Deferred<MixinResponse<Unit>>
+    suspend fun logout(@Body request: LogoutRequest): MixinResponse<Unit>
 
     @GET("codes/{id}")
     fun code(@Path("id") id: String): Observable<MixinResponse<JsonObject>>

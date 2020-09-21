@@ -4,12 +4,14 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.util.AudioPlayer
 
+@AndroidEntryPoint
 class SharedMediaActivity : BaseActivity() {
     companion object {
         fun show(context: Context, conversationId: String) {

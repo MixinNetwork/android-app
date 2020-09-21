@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -32,6 +33,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment.Companion.TYPE_TAG
 import one.mixin.android.vo.needShowReserve
 
+@AndroidEntryPoint
 class DepositAccountFragment : DepositFragment() {
 
     companion object {

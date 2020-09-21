@@ -4,27 +4,30 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_authentications.*
 import kotlinx.android.synthetic.main.item_auth.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.extension.navTo
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.App
 
-class AuthenticationsFragment : BaseViewModelFragment<SettingViewModel>() {
+@AndroidEntryPoint
+class AuthenticationsFragment : BaseFragment() {
     companion object {
         const val TAG = "AuthenticationsFragment"
 
         fun newInstance() = AuthenticationsFragment()
     }
 
-    override fun getModelClass() = SettingViewModel::class.java
+    private val viewModel by viewModels<SettingViewModel>()
 
     private var list: MutableList<App>? = null
     private var authResponseList: MutableList<AuthorizationResponse>? = null

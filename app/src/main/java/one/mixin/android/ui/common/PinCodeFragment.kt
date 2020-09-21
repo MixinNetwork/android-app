@@ -3,7 +3,6 @@ package one.mixin.android.ui.common
 import android.graphics.Point
 import android.os.Bundle
 import android.view.View
-import androidx.lifecycle.ViewModel
 import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -32,7 +31,7 @@ import one.mixin.android.widget.VerificationCodeView
 import org.jetbrains.anko.windowManager
 import java.security.KeyPair
 
-abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
+abstract class PinCodeFragment : FabLoadingFragment() {
     companion object {
         const val PREF_LOGIN_FROM = "pref_login_from"
 

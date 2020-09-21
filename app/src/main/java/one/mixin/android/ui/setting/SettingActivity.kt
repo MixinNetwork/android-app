@@ -3,11 +3,13 @@ package one.mixin.android.ui.setting
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
 
+@AndroidEntryPoint
 class SettingActivity : BlazeBaseActivity() {
     companion object {
         const val FROM_NOTIFICATION = "notification"

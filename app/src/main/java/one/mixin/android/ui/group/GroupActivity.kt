@@ -3,11 +3,13 @@ package one.mixin.android.ui.group
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
 
+@AndroidEntryPoint
 class GroupActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

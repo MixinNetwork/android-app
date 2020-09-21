@@ -11,11 +11,12 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_new_group.*
 import kotlinx.android.synthetic.main.item_contact_normal.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -40,8 +41,8 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import org.jetbrains.anko.textColor
-import javax.inject.Inject
 
+@AndroidEntryPoint
 class NewGroupFragment : BaseFragment() {
     companion object {
         const val TAG = "NewGroupFragment"
@@ -56,11 +57,7 @@ class NewGroupFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val groupViewModel: GroupViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(GroupViewModel::class.java)
-    }
+    private val groupViewModel by viewModels<GroupViewModel>()
     private val sender: User by lazy { Session.getAccount()!!.toUser() }
     private val imageUri: Uri by lazy {
         Uri.fromFile(context?.getOtherPath()?.createImageTemp())

@@ -1,10 +1,10 @@
 package one.mixin.android.ui.home.bot
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.ViewModel
 import one.mixin.android.repository.UserRepository
-import javax.inject.Inject
 
-class BotManagerViewModel @Inject internal constructor(val userRepository: UserRepository) : ViewModel() {
+class BotManagerViewModel @ViewModelInject internal constructor(val userRepository: UserRepository) : ViewModel() {
 
     suspend fun getNotTopApps(appIds: List<String>) = userRepository.getNotTopApps(appIds)
 

@@ -47,12 +47,11 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
         view_pager.adapter = albumAdapter
         TabLayoutMediator(
             album_tl,
-            view_pager,
-            TabLayoutMediator.TabConfigurationStrategy { tab, position ->
-                tab.text = albumAdapter.albums?.get(position)?.getDisplayName(requireContext())
-                view_pager.setCurrentItem(tab.position, true)
-            }
-        ).attach()
+            view_pager
+        ) { tab, position ->
+            tab.text = albumAdapter.albums?.get(position)?.getDisplayName(requireContext())
+            view_pager.setCurrentItem(tab.position, true)
+        }.attach()
         album_tl.tabMode = TabLayout.MODE_SCROLLABLE
         view_pager.currentItem = 0
         va.displayedChild = POS_LOADING

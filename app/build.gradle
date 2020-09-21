@@ -9,6 +9,8 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'com.google.firebase.crashlytics'
+apply plugin: 'dagger.hilt.android.plugin'
+
 
 android {
     compileSdkVersion 29
@@ -24,7 +26,7 @@ android {
 
         javaCompileOptions {
             annotationProcessorOptions {
-                arguments = [
+                arguments += [
                         "room.schemaLocation": "$projectDir/schemas".toString()
                 ]
             }
@@ -162,14 +164,13 @@ dependencies {
     implementation "androidx.room:room-rxjava2:${roomVersion}"
     implementation "androidx.room:room-ktx:${roomVersion}"
     androidTestImplementation "android.arch.persistence.room:testing:${roomVersion}"
+
     // DI
-    implementation "com.google.dagger:dagger:${daggerVersion}"
-    implementation "com.google.dagger:dagger-android:${daggerVersion}"
-    implementation "com.google.dagger:dagger-android-support:${daggerVersion}"
-    kapt "com.google.dagger:dagger-compiler:${daggerVersion}"
-    kapt "com.google.dagger:dagger-android-processor:${daggerVersion}"
-    kapt "com.squareup.inject:assisted-inject-processor-dagger2:${assistedinjectVersion}"
-    compileOnly "com.squareup.inject:assisted-inject-annotations-dagger2:${assistedinjectVersion}"
+    implementation "com.google.dagger:hilt-android:${hiltVersion}"
+    kapt "com.google.dagger:hilt-android-compiler:${hiltVersion}"
+    implementation "androidx.hilt:hilt-work:${hiltAndroidxVersion}"
+    implementation "androidx.hilt:hilt-lifecycle-viewmodel:${hiltAndroidxVersion}"
+    kapt "androidx.hilt:hilt-compiler:${hiltAndroidxVersion}"
 
     // RxJava
     implementation "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"

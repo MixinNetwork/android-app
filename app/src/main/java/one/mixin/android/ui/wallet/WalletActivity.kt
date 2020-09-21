@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.navigation.NavArgument
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.job.MixinJobManager
@@ -16,6 +17,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class WalletActivity : BlazeBaseActivity() {
 
     @Inject
@@ -50,7 +52,7 @@ class WalletActivity : BlazeBaseActivity() {
     }
 
     private val asset: AssetItem? by lazy {
-        intent.extras?.getParcelable<AssetItem>(ASSET)
+        intent.extras?.getParcelable(ASSET)
     }
 
     override fun finish() {

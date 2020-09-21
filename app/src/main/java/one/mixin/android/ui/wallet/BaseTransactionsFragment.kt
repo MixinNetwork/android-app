@@ -6,7 +6,6 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
@@ -26,9 +25,8 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
 
     @Inject
     lateinit var jobManager: MixinJobManager
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    protected val walletViewModel: WalletViewModel by viewModels { viewModelFactory }
+
+    protected val walletViewModel by viewModels<WalletViewModel>()
 
     protected var refreshPosition = 0
     protected var refreshOffset: String? = null

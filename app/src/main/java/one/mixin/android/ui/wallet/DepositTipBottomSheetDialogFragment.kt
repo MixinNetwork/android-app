@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.CountDownTimer
 import android.view.View
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_deposit_tip_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID
@@ -18,6 +19,7 @@ import one.mixin.android.vo.needShowReserve
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textColor
 
+@AndroidEntryPoint
 class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "DepositTipBottomSheetDialogFragment"
@@ -28,7 +30,7 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val asset: AssetItem by lazy {
-        requireArguments().getParcelable<AssetItem>(ARGS_ASSET)!!
+        requireArguments().getParcelable(ARGS_ASSET)!!
     }
 
     @SuppressLint("RestrictedApi", "SetTextI18n")

@@ -4,9 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_verification_emergency.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
@@ -30,7 +31,8 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import java.security.KeyPair
 
-class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
+@AndroidEntryPoint
+class VerificationEmergencyFragment : PinCodeFragment() {
     companion object {
         const val TAG = "VerificationEmergencyFragment"
         const val ARGS_VERIFICATION_ID = "args_verification_id"
@@ -61,7 +63,7 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
     private val from by lazy { requireArguments().getInt(ARGS_FROM) }
     private val userIdentityNumber: String? by lazy { requireArguments().getString(ARGS_IDENTITY_NUMBER) }
 
-    override fun getModelClass() = EmergencyViewModel::class.java
+    private val viewModel by viewModels<EmergencyViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_verification_emergency, container, false)
@@ -99,7 +101,6 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
                     )
                 )
             },
-            switchContext = Dispatchers.IO,
             successBlock = { response ->
                 val a = response.data as Account
                 Session.storeAccount(a)
@@ -140,7 +141,6 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
         val sessionKey = generateRSAKeyPair()
         handleMixinResponse(
             invokeNetwork = { viewModel.loginVerifyEmergency(verificationId, buildLoginEmergencyRequest(sessionKey)) },
-            switchContext = Dispatchers.IO,
             successBlock = { response ->
                 handleAccount(response, sessionKey) {
                     defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_EMERGENCY)

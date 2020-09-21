@@ -1,20 +1,19 @@
 package one.mixin.android.worker
 
 import android.content.Context
+import androidx.hilt.Assisted
+import androidx.hilt.work.WorkerInject
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.SnapshotDao
-import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.vo.Snapshot
 
-class RefreshUserSnapshotsWorker @AssistedInject constructor(
+class RefreshUserSnapshotsWorker @WorkerInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val assetService: AssetService,
@@ -44,7 +43,4 @@ class RefreshUserSnapshotsWorker @AssistedInject constructor(
             Result.failure()
         }
     }
-
-    @AssistedInject.Factory
-    interface Factory : ChildWorkerFactory
 }

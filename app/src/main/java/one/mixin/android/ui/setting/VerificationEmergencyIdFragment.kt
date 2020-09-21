@@ -8,13 +8,14 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_verification_emergency_id.*
 import kotlinx.android.synthetic.main.fragment_verification_emergency_id.back_iv
 import kotlinx.android.synthetic.main.fragment_verification_emergency_id.verification_cover
 import kotlinx.android.synthetic.main.fragment_verification_emergency_id.verification_keyboard
 import kotlinx.android.synthetic.main.fragment_verification_emergency_id.verification_next_fab
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -28,7 +29,8 @@ import one.mixin.android.ui.common.FabLoadingFragment
 import one.mixin.android.ui.setting.VerificationEmergencyFragment.Companion.FROM_SESSION
 import one.mixin.android.widget.Keyboard
 
-class VerificationEmergencyIdFragment : FabLoadingFragment<EmergencyViewModel>() {
+@AndroidEntryPoint
+class VerificationEmergencyIdFragment : FabLoadingFragment() {
     companion object {
         const val TAG = "VerificationEmergencyIdFragment"
         const val ARGS_PHONE = "args_phone"
@@ -42,7 +44,7 @@ class VerificationEmergencyIdFragment : FabLoadingFragment<EmergencyViewModel>()
 
     private val phone by lazy { requireArguments().getString(ARGS_PHONE) }
 
-    override fun getModelClass() = EmergencyViewModel::class.java
+    private val viewModel by viewModels<EmergencyViewModel>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_verification_emergency_id, container, false)
@@ -64,7 +66,6 @@ class VerificationEmergencyIdFragment : FabLoadingFragment<EmergencyViewModel>()
         showLoading()
         handleMixinResponse(
             invokeNetwork = { viewModel.createEmergency(buildEmergencyRequest(mixinID)) },
-            switchContext = Dispatchers.IO,
             successBlock = { response ->
                 navTo(
                     VerificationEmergencyFragment.newInstance(

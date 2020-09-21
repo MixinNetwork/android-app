@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.LifecycleService
 import com.google.gson.Gson
-import dagger.android.AndroidInjection
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.AccountService
@@ -75,7 +74,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     }
 
     override fun onCreate() {
-        AndroidInjection.inject(this)
         super.onCreate()
         callExecutor.execute {
             peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())

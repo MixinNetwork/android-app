@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_storage.title_view
 import kotlinx.android.synthetic.main.fragment_storage_data.*
 import kotlinx.android.synthetic.main.view_stotage_data.view.*
@@ -30,6 +31,7 @@ import one.mixin.android.extension.getAutoDownloadWifiValue
 import one.mixin.android.extension.putInt
 import one.mixin.android.ui.common.BaseFragment
 
+@AndroidEntryPoint
 class SettingDataStorageFragment : BaseFragment() {
     companion object {
         const val TAG = "SettingDataStorageFragment"

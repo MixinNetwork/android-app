@@ -9,6 +9,7 @@ import androidx.camera.core.TorchState
 import androidx.camera.core.UseCase
 import androidx.camera.core.impl.utils.futures.FutureCallback
 import androidx.camera.core.impl.utils.futures.Futures
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_scan.*
 import one.mixin.android.R
 import one.mixin.android.extension.toast
@@ -18,6 +19,7 @@ import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
 
+@AndroidEntryPoint
 class ScanFragment : BaseCameraxFragment() {
     companion object {
         const val TAG = "ScanFragment"

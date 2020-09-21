@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_transaction.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -18,6 +19,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.widget.BottomSheet
 
+@AndroidEntryPoint
 class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), TransactionInterface {
     companion object {
         const val TAG = "TransactionFragment"
@@ -38,10 +40,10 @@ class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), T
         }
     }
 
-    private val walletViewModel: WalletViewModel by viewModels { viewModelFactory }
+    private val walletViewModel by viewModels<WalletViewModel>()
 
-    private val snapshot: SnapshotItem? by lazy { requireArguments().getParcelable<SnapshotItem>(ARGS_SNAPSHOT) }
-    private val asset: AssetItem? by lazy { requireArguments().getParcelable<AssetItem>(ARGS_ASSET) }
+    private val snapshot: SnapshotItem? by lazy { requireArguments().getParcelable(ARGS_SNAPSHOT) }
+    private val asset: AssetItem? by lazy { requireArguments().getParcelable(ARGS_ASSET) }
     private val assetId: String? by lazy { requireArguments().getString(ARGS_ASSET_ID) }
     private val snapshotId: String? by lazy { requireArguments().getString(ARGS_SNAPSHOT_ID) }
 

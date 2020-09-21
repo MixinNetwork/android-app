@@ -13,13 +13,14 @@ import android.widget.CheckBox
 import android.widget.ImageView
 import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_sticker_management.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -38,8 +39,8 @@ import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.vo.Sticker
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColor
-import javax.inject.Inject
 
+@AndroidEntryPoint
 class StickerManagementFragment : BaseFragment() {
     companion object {
         const val TAG = "StickerManagementFragment"
@@ -50,12 +51,7 @@ class StickerManagementFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val stickerViewModel: ConversationViewModel by lazy {
-        ViewModelProvider(this, viewModelFactory).get(ConversationViewModel::class.java)
-    }
+    private val stickerViewModel by viewModels<ConversationViewModel>()
 
     private val padding: Int by lazy { requireContext().dip(PADDING) }
 

@@ -6,21 +6,22 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
-import androidx.lifecycle.Observer
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_appearance.title_view
 import kotlinx.android.synthetic.main.fragment_setting_phone_number.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.SearchSource
 
-class PhoneNumberSettingFragment : BaseViewModelFragment<SettingConversationViewModel>() {
+@AndroidEntryPoint
+class PhoneNumberSettingFragment : BaseFragment() {
     companion object {
         const val TAG = "PhoneNumberSettingFragment"
         const val ACCEPT_SEARCH_KEY = "accept_search_key"
@@ -28,7 +29,7 @@ class PhoneNumberSettingFragment : BaseViewModelFragment<SettingConversationView
         fun newInstance() = PhoneNumberSettingFragment()
     }
 
-    override fun getModelClass() = SettingConversationViewModel::class.java
+    private val viewModel by viewModels<SettingConversationViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,7 +46,7 @@ class PhoneNumberSettingFragment : BaseViewModelFragment<SettingConversationView
         viewModel.initSearchPreference(requireContext())
             .observe(
                 viewLifecycleOwner,
-                Observer {
+                {
                     it?.let {
                         render(it)
                     }
@@ -88,7 +89,6 @@ class PhoneNumberSettingFragment : BaseViewModelFragment<SettingConversationView
                 invokeNetwork = {
                     viewModel.savePreferences(AccountUpdateRequest(acceptSearchSource = targetPref))
                 },
-                switchContext = Dispatchers.IO,
                 successBlock = {
                     it.data?.let { account ->
                         Session.storeAccount(account)

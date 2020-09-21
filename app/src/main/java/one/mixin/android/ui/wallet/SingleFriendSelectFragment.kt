@@ -1,6 +1,8 @@
 package one.mixin.android.ui.wallet
 
+import androidx.fragment.app.viewModels
 import androidx.navigation.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.friends.BaseFriendsFragment
@@ -12,7 +14,8 @@ import one.mixin.android.ui.setting.FriendsNoBotViewHolder
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 
-class SingleFriendSelectFragment : BaseFriendsFragment<FriendsNoBotViewHolder, ConversationViewModel>(), FriendsListener {
+@AndroidEntryPoint
+class SingleFriendSelectFragment : BaseFriendsFragment<FriendsNoBotViewHolder>(), FriendsListener {
     init {
         adapter = FriendsNoBotAdapter(userCallback).apply {
             listener = this@SingleFriendSelectFragment
@@ -23,7 +26,8 @@ class SingleFriendSelectFragment : BaseFriendsFragment<FriendsNoBotViewHolder, C
 
     override suspend fun getFriends() = viewModel.findFriendsNotBot()
 
-    override fun getModelClass() = ConversationViewModel::class.java
+    private val viewModel by viewModels<ConversationViewModel>()
+
     override fun onItemClick(user: User) {
         if (Session.getAccount()?.hasPin == true) {
             TransferFragment.newInstance(user.userId)

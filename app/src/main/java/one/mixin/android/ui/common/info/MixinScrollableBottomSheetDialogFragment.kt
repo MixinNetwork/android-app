@@ -9,16 +9,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.widget.NestedScrollView
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.uber.autodispose.android.lifecycle.scope
 import one.mixin.android.R
-import one.mixin.android.di.Injectable
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -29,17 +27,14 @@ import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.linktext.AutoLinkMode
 import one.mixin.android.widget.linktext.AutoLinkTextView
 import timber.log.Timber
-import javax.inject.Inject
 
-abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
+abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     protected lateinit var contentView: View
 
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    protected val bottomViewModel: BottomSheetViewModel by activityViewModels { viewModelFactory }
+    protected val bottomViewModel by viewModels<BottomSheetViewModel>()
 
     override fun getTheme() = R.style.MixinBottomSheet
 

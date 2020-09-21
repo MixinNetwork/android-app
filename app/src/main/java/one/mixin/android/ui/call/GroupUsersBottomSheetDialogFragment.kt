@@ -8,6 +8,7 @@ import android.view.View
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_group_users_bottom_sheet.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
@@ -32,6 +33,7 @@ import one.mixin.android.widget.SearchView
 import java.util.UUID
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class GroupUsersBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "GroupUsersBottomSheetDialogFragment"

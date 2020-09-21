@@ -11,6 +11,9 @@ import com.google.gson.JsonSyntaxException
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import dagger.Module
 import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.components.ApplicationComponent
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
@@ -48,7 +51,6 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
-import one.mixin.android.di.worker.MixinWorkerFactory
 import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.show
@@ -79,8 +81,9 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 import kotlin.math.abs
 
-@Module(includes = [(ViewModelModule::class), (BaseDbModule::class), (ReadDbModule::class)])
-internal class AppModule {
+@InstallIn(ApplicationComponent::class)
+@Module(includes = [(BaseDbModule::class), (ReadDbModule::class)])
+object AppModule {
 
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
     private val API_UA = (
@@ -176,11 +179,10 @@ internal class AppModule {
                         HostSelectionInterceptor.get().switch(request)
                         throw ServerErrorException(response.code)
                     }
-                    if (mixinResponse.errorCode == OLD_VERSION){
+                    if (mixinResponse.errorCode == OLD_VERSION) {
                         MixinApplication.get().gotoOldVersionAlert()
                         return@run
-                    }
-                    else if (mixinResponse.errorCode != AUTHENTICATION) return@run
+                    } else if (mixinResponse.errorCode != AUTHENTICATION) return@run
 
                     val authorization = response.request.header("Authorization")
                     if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
@@ -290,7 +292,7 @@ internal class AppModule {
     @Suppress("INACCESSIBLE_TYPE")
     @Provides
     @Singleton
-    fun jobManager(app: Application, appComponent: AppComponent, jobNetworkUtil: JobNetworkUtil): MixinJobManager {
+    fun jobManager(app: Application, jobNetworkUtil: JobNetworkUtil): MixinJobManager {
         val builder = Configuration.Builder(app)
             .consumerKeepAlive(20)
             .resetDelaysOnRestart()
@@ -298,7 +300,8 @@ internal class AppModule {
             .minConsumerCount(2)
             .injector { job ->
                 if (job is BaseJob) {
-                    job.inject(appComponent)
+                    val entryPoint = EntryPointAccessors.fromApplication(app.applicationContext, BaseJob.JobEntryPoint::class.java)
+                    entryPoint.inject(job)
                 }
             }
             .customLogger(JobLogger())
@@ -308,13 +311,6 @@ internal class AppModule {
                 .createSchedulerFor(app.applicationContext, MyJobService::class.java)
         )
         return MixinJobManager(builder.build())
-    }
-
-    @Provides
-    fun provideWorkConfiguration(workerFactory: MixinWorkerFactory): androidx.work.Configuration {
-        return androidx.work.Configuration.Builder()
-            .setWorkerFactory(workerFactory)
-            .build()
     }
 
     @Provides

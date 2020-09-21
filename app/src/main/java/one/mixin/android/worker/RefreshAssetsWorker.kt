@@ -1,15 +1,14 @@
 package one.mixin.android.worker
 
 import android.content.Context
+import androidx.hilt.Assisted
+import androidx.hilt.work.WorkerInject
 import androidx.work.WorkerParameters
-import com.squareup.inject.assisted.Assisted
-import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.api.service.AssetService
-import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.vo.Asset
 
-class RefreshAssetsWorker @AssistedInject constructor(
+class RefreshAssetsWorker @WorkerInject constructor(
     @Assisted context: Context,
     @Assisted parameters: WorkerParameters,
     private val assetService: AssetService,
@@ -42,7 +41,4 @@ class RefreshAssetsWorker @AssistedInject constructor(
             }
         }
     }
-
-    @AssistedInject.Factory
-    interface Factory : ChildWorkerFactory
 }

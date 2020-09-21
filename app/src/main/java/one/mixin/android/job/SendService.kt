@@ -5,7 +5,7 @@ import android.app.NotificationManager
 import android.content.Intent
 import androidx.core.app.RemoteInput
 import androidx.core.content.getSystemService
-import dagger.android.AndroidInjection
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
@@ -26,6 +26,7 @@ import one.mixin.android.websocket.CREATE_MESSAGE
 import java.util.UUID
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class SendService : IntentService("SendService") {
 
     @Inject
@@ -37,11 +38,6 @@ class SendService : IntentService("SendService") {
     lateinit var messageMentionDao: MessageMentionDao
     @Inject
     lateinit var jobDao: JobDao
-
-    override fun onCreate() {
-        super.onCreate()
-        AndroidInjection.inject(this)
-    }
 
     override fun onHandleIntent(intent: Intent?) {
         if (intent == null) return

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_user_list_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.item_user_list.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
@@ -16,6 +17,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 
+@AndroidEntryPoint
 class UserListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "UserListBottomSheetDialogFragment"

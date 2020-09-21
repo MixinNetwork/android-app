@@ -10,12 +10,11 @@ import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_device.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
@@ -36,6 +35,7 @@ import one.mixin.android.util.Session.PREF_SESSION
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textColor
 
+@AndroidEntryPoint
 class DeviceFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "DeviceFragment"
@@ -83,9 +83,7 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
                         return@launch
                     }
                     val response = try {
-                        withContext(Dispatchers.IO) {
-                            bottomViewModel.logoutAsync(sessionId).await()
-                        }
+                        bottomViewModel.logout(sessionId)
                     } catch (t: Throwable) {
                         loadOuting.dismiss()
                         toast(R.string.setting_desktop_logout_failed)
