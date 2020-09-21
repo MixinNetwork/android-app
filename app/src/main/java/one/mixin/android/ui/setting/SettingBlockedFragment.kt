@@ -41,7 +41,6 @@ class SettingBlockedFragment : BaseFragment() {
                 UserBottomSheetDialogFragment.newInstance(user)
                     .show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
             }
-
         }
         blocked_rv.adapter = adapter
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
