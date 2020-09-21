@@ -53,9 +53,7 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
-import timber.log.Timber
 import java.io.File
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class ForwardFragment : BaseFragment() {
@@ -245,7 +243,6 @@ class ForwardFragment : BaseFragment() {
                                 {
                                     when (it) {
                                         0 -> {
-
                                         }
                                         -1 -> context?.toast(R.string.error_image)
                                         -2 -> context?.toast(R.string.error_format)

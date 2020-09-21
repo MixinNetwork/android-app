@@ -1,7 +1,7 @@
 package one.mixin.android.ui.common
 
-import androidx.hilt.lifecycle.ViewModelInject
 import android.net.Uri
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -63,7 +63,6 @@ import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.isGroup
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.LiveMessagePayload
-import javax.inject.Inject
 
 class BottomSheetViewModel @ViewModelInject internal constructor(
     private val accountRepository: AccountRepository,

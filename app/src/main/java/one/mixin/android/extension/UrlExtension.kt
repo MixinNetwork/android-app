@@ -123,7 +123,7 @@ fun String.openAsUrl(
             },
             {
                 val category = uri.getQueryParameter("category")
-                val conversationId = uri.getQueryParameter("conversation_id").let {
+                val conversationId = uri.getQueryParameter("conversation").let {
                     if (it == currentConversation) {
                         it
                     } else {
@@ -133,7 +133,7 @@ fun String.openAsUrl(
                 val data = uri.getQueryParameter("data")
                 if (category != null && category in arrayOf(TEXT, IMAGE, LIVE, CONTACT, POST, APP_CARD) && data != null) {
                     try {
-                        ShareMessageBottomSheetDialogFragment.newInstance(category, String(Base64.decode(data)), conversationId)
+                        ShareMessageBottomSheetDialogFragment.newInstance(category, String(Base64.decode(data)), conversationId, app, host)
                             .showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
                     } catch (e: Exception) {
                         Timber.e(IllegalStateException("Error data:${e.message}"))

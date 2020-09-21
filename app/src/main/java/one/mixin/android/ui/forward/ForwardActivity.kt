@@ -5,8 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Bundle
-import dagger.hilt.android.AndroidEntryPoint
 import androidx.activity.result.contract.ActivityResultContract
+import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.toast

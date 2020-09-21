@@ -16,13 +16,13 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_share_message_bottom_sheet.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.di.Injectable
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
@@ -49,10 +49,10 @@ import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 import java.io.File
 
-class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectable {
+@AndroidEntryPoint
+class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "ShareMessageBottomSheetDialogFragment"
@@ -74,7 +74,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), 
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    private val viewModel: BottomSheetViewModel by viewModels { viewModelFactory }
+    private val viewModel by viewModels<BottomSheetViewModel>()
 
     private val app by lazy {
         arguments?.getParcelable<App>(APP)
