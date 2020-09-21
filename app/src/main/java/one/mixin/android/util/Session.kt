@@ -3,6 +3,7 @@ package one.mixin.android.util
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.jsonwebtoken.Claims
+import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import okhttp3.Request
@@ -162,6 +163,10 @@ object Session {
         return try {
             val iat = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(string).body[Claims.ISSUED_AT] as Int
             JwtResult(abs(System.currentTimeMillis() / 1000 - iat) > offset, requestTime = iat.toLong())
+        } catch (e: ExpiredJwtException) {
+            Timber.w(e)
+            reportException(e)
+            JwtResult(true)
         } catch (e: Exception) {
             Timber.e(e)
             reportException(e)
