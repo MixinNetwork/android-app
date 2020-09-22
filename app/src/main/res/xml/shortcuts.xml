@@ -1,33 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
-    <shortcut
-        android:shortcutId="wallet"
-        android:enabled="true"
-        android:icon="@mipmap/ic_adaptive_shortcut_wallet"
-        android:shortcutShortLabel="@string/shortcut_wallet_label">
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:targetPackage="one.mixin.messenger"
-            android:targetClass="one.mixin.android.ui.wallet.WalletActivity" />
-        <categories android:name="android.shortcut.conversation" />
-    </shortcut>
-
-    <shortcut
-        android:shortcutId="scan"
-        android:enabled="true"
-        android:icon="@mipmap/ic_adaptive_shortcut_scan"
-        android:shortcutShortLabel="@string/shortcut_scan_label">
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:targetPackage="one.mixin.messenger"
-            android:targetClass="one.mixin.android.ui.qr.CaptureActivity" >
-
-            <extra android:name="args_show_scan" android:value="true" />
-            <extra android:name="args_shortcut" android:value="true" />
-        </intent>
-        <categories android:name="android.shortcut.conversation" />
-    </shortcut>
-
     <share-target android:targetClass="one.mixin.messenger.ShareActivity">
         <data android:mimeType="text/plain" />
         <category android:name="one.mixin.android.directshare.category.TEXT_SHARE_TARGET" />

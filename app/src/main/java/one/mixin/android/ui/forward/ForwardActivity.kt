@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContract
 import dagger.hilt.android.AndroidEntryPoint
@@ -99,8 +100,11 @@ class ForwardActivity : BlazeBaseActivity() {
                 return
             }
             val forwardMessageList = ShareHelper.get().generateForwardMessageList(intent)
+            val conversationId = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && intent.hasExtra(Intent.EXTRA_SHORTCUT_ID)) {
+                intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
+            } else null
             if (forwardMessageList != null && forwardMessageList.isNotEmpty()) {
-                replaceFragment(ForwardFragment.newInstance(forwardMessageList, true), R.id.container, ForwardFragment.TAG)
+                replaceFragment(ForwardFragment.newInstance(forwardMessageList, true, conversationId = conversationId), R.id.container, ForwardFragment.TAG)
             } else {
                 toast(R.string.error_share)
                 finish()
