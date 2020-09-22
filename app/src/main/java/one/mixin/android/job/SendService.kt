@@ -6,6 +6,9 @@ import android.content.Intent
 import androidx.core.app.RemoteInput
 import androidx.core.content.getSystemService
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
@@ -69,7 +72,9 @@ class SendService : IntentService("SendService") {
         val accountId = Session.getAccountId() ?: return
         messageDao.findUnreadMessagesSync(conversationId, accountId)?.let { list ->
             if (list.isNotEmpty()) {
-                messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().createdAt)
+                GlobalScope.launch(Dispatchers.IO) {
+                    messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().createdAt)
+                }
                 list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->
                     val chunkList = messages.chunked(100)
                     for (item in chunkList) {

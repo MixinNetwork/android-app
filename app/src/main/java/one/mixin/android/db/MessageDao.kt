@@ -394,7 +394,13 @@ interface MessageDao : BaseDao<Message> {
         "UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId " +
             "AND status IN ('SENT', 'DELIVERED') AND created_at <= :createdAt"
     )
-    fun batchMarkRead(conversationId: String, userId: String, createdAt: String)
+    suspend fun batchMarkRead(conversationId: String, userId: String, createdAt: String)
+
+    @Query(
+        "UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId " +
+            "AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId "
+    )
+    suspend fun updateConversationUnseen(userId: String, conversationId: String)
 
     @Query(
         "UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId " +
