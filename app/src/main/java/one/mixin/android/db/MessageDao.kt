@@ -285,9 +285,10 @@ interface MessageDao : BaseDao<Message> {
             AND status IN ('SENT', 'DELIVERED') 
             AND user_id != :userId 
             ORDER BY created_at ASC
+            LIMIT :limit
             """
     )
-    fun getUnreadMessage(conversationId: String, userId: String): List<MessageMinimal>
+    fun getUnreadMessage(conversationId: String, userId: String, limit: Int): List<MessageMinimal>
 
     @Query(
         "UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, " +
@@ -356,9 +357,6 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages WHERE id = :messageId")
     fun findMessageIdById(messageId: String): String?
 
-    @Query("SELECT id, conversation_id, user_id, status, created_at FROM messages WHERE id = :messageId")
-    fun findSimpleMessageById(messageId: String): MessageMinimal?
-
     @Query("SELECT DISTINCT conversation_id FROM messages WHERE id IN (:messages)")
     fun findConversationsByMessages(messages: List<String>): List<String>
 
@@ -393,7 +391,13 @@ interface MessageDao : BaseDao<Message> {
         "UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId " +
             "AND status IN ('SENT', 'DELIVERED') AND created_at <= :createdAt"
     )
-    fun batchMarkRead(conversationId: String, userId: String, createdAt: String)
+    suspend fun batchMarkRead(conversationId: String, userId: String, createdAt: String)
+
+    @Query(
+        "UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId " +
+            "AND m.status IN ('SENT', 'DELIVERED')) WHERE conversation_id = :conversationId "
+    )
+    suspend fun updateConversationUnseen(userId: String, conversationId: String)
 
     @Query(
         "UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.conversation_id = :conversationId AND m.user_id != :userId " +

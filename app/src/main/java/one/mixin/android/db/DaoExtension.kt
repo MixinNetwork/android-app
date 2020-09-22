@@ -140,14 +140,14 @@ fun MixinDatabase.clearParticipant(
     }
 }
 
-fun MessageDao.batchMarkReadAndTake(
+suspend fun MessageDao.batchMarkReadAndTake(
     conversationId: String,
     userId: String,
     createdAt: String
 ) {
-    runInTransaction {
+    withTransaction {
         batchMarkRead(conversationId, userId, createdAt)
-        takeUnseen(userId, conversationId)
+        updateConversationUnseen(userId, conversationId)
     }
 }
 

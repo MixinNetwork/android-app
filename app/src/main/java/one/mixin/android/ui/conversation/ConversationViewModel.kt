@@ -765,23 +765,27 @@ internal constructor(
 
     fun markMessageRead(conversationId: String, accountId: String) {
         viewModelScope.launch(SINGLE_DB_THREAD) {
-            conversationRepository.getUnreadMessage(conversationId, accountId).also { list ->
-                if (list.isNotEmpty()) {
-                    notificationManager.cancel(conversationId.hashCode())
-                    conversationRepository.batchMarkReadAndTake(
-                        conversationId,
-                        Session.getAccountId()!!,
-                        list.last().createdAt
+            notificationManager.cancel(conversationId.hashCode())
+            while (true) {
+                val list = conversationRepository.getUnreadMessage(conversationId, accountId, 100)
+                if (list.isEmpty()) return@launch
+                conversationRepository.batchMarkReadAndTake(
+                    conversationId,
+                    accountId,
+                    list.last().createdAt
+                )
+
+                list.map {
+                    createAckJob(
+                        ACKNOWLEDGE_MESSAGE_RECEIPTS,
+                        BlazeAckMessage(it.id, MessageStatus.READ.name)
                     )
-                    list.map {
-                        createAckJob(
-                            ACKNOWLEDGE_MESSAGE_RECEIPTS,
-                            BlazeAckMessage(it.id, MessageStatus.READ.name)
-                        )
-                    }.let {
-                        conversationRepository.insertList(it)
-                    }
-                    createReadSessionMessage(list, conversationId)
+                }.let {
+                    conversationRepository.insertList(it)
+                }
+                createReadSessionMessage(list, conversationId)
+                if (list.size < 100) {
+                    return@launch
                 }
             }
         }
