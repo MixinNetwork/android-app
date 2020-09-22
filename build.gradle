@@ -65,7 +65,7 @@ buildscript {
         ext.ktlintVersion = '0.39.0'
         ext.exoplayerVersion = '2.11.8'
         ext.perfVersion = '19.0.8'
-        ext.markwonVersion = '4.5.1'
+        ext.markwonVersion = '4.6.0'
         ext.prism4jVersion = '2.0.0'
 
         ext.junitVersion = '4.13'
