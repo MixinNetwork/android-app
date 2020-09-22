@@ -186,8 +186,8 @@ internal constructor(
     suspend fun getConversationIdIfExistsSync(recipientId: String) =
         readConversationDao.getConversationIdIfExistsSync(recipientId)
 
-    fun getUnreadMessage(conversationId: String, accountId: String): List<MessageMinimal> {
-        return readMessageDao.getUnreadMessage(conversationId, accountId)
+    fun getUnreadMessage(conversationId: String, accountId: String, limit: Int): List<MessageMinimal> {
+        return readMessageDao.getUnreadMessage(conversationId, accountId, limit)
     }
 
     suspend fun updateCodeUrl(conversationId: String, codeUrl: String) =

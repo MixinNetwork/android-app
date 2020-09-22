@@ -285,9 +285,10 @@ interface MessageDao : BaseDao<Message> {
             AND status IN ('SENT', 'DELIVERED') 
             AND user_id != :userId 
             ORDER BY created_at ASC
+            LIMIT :limit
             """
     )
-    fun getUnreadMessage(conversationId: String, userId: String): List<MessageMinimal>
+    fun getUnreadMessage(conversationId: String, userId: String, limit: Int): List<MessageMinimal>
 
     @Query(
         "UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, " +
