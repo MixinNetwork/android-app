@@ -39,7 +39,7 @@ internal constructor(
         icon: String?,
         users: List<User>,
         sender: User
-    ): Conversation {
+    ): Conversation = withContext(Dispatchers.IO) {
         val conversationId = UUID.randomUUID().toString()
         val createdAt = nowInUtc()
         val conversation = ConversationBuilder(conversationId, createdAt, 0)
@@ -65,7 +65,7 @@ internal constructor(
         )
         jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))
 
-        return conversation
+        conversation
     }
 
     fun getConversationStatusById(id: String) = conversationRepository.getConversationById(id)
