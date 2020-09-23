@@ -135,8 +135,8 @@ public class MediaController {
                     MediaHeaderBox mediaHeaderBox = mediaBox.getMediaHeaderBox();
                     SampleSizeBox sampleSizeBox = mediaBox.getMediaInformationBox().getSampleTableBox().getSampleSizeBox();
                     long[] sizes = sampleSizeBox.getSampleSizes();
-                    for (int a = 0; a < sizes.length; a++) {
-                        sampleSizes += sizes[a];
+                    for (long size : sizes) {
+                        sampleSizes += size;
                     }
                     videoDuration = (float) mediaHeaderBox.getDuration() / (float) mediaHeaderBox.getTimescale();
                     trackBitrate = (int) (sampleSizes * 8 / videoDuration);
@@ -145,14 +145,51 @@ public class MediaController {
                 }
                 TrackHeaderBox headerBox = trackBox.getTrackHeaderBox();
                 if (headerBox.getWidth() != 0 && headerBox.getHeight() != 0) {
-                    originalBitrate = (int) (trackBitrate / 100000 * 100000);
-                    return Math.min(1100000, (int) (originalBitrate / scale));
+                    int originalHeight = (int) headerBox.getHeight();
+                    int originalWidth = (int) headerBox.getWidth();
+                    int height = (int) (originalHeight * scale);
+                    int width = (int) (originalWidth * scale);
+                    originalBitrate = makeVideoBitrate(originalHeight, originalWidth, (int) trackBitrate, height, width);
+                    return originalBitrate;
                 }
             }
 
         } catch (Exception e) {
         }
         return 0;
+    }
+
+    public static int makeVideoBitrate(int originalHeight, int originalWidth, int originalBitrate, int height, int width) {
+        float compressFactor;
+        float minCompressFactor;
+        int maxBitrate;
+        if (Math.min(height, width) >= 1080) {
+            maxBitrate = 6800_000;
+            compressFactor = 1f;
+            minCompressFactor = 1f;
+        } else if (Math.min(height, width) >= 720) {
+            maxBitrate = 2621_440;
+            compressFactor = 1f;
+            minCompressFactor = 1f;
+        } else if (Math.min(height, width) >= 480) {
+            maxBitrate = 1000_000;
+            compressFactor = 0.8f;
+            minCompressFactor = 0.9f;
+        } else {
+            maxBitrate = 750_000;
+            compressFactor = 0.6f;
+            minCompressFactor = 0.7f;
+        }
+        int remeasuredBitrate = (int) (originalBitrate / (Math.min(originalHeight / (float) (height), originalWidth / (float) (width))));
+        remeasuredBitrate *= compressFactor;
+        int minBitrate = (int) (getVideoBitrateWithFactor(minCompressFactor) / (1280f * 720f / (width * height)));
+        if (originalBitrate < minBitrate) return remeasuredBitrate;
+        if (remeasuredBitrate > maxBitrate) return maxBitrate;
+        return Math.max(remeasuredBitrate, minBitrate);
+    }
+
+    private static int getVideoBitrateWithFactor(float f) {
+        return (int) (f * 2000f * 1000f * 1.13f);
     }
 
     public interface VideoConvertorListener {
