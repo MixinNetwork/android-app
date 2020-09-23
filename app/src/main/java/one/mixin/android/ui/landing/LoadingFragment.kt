@@ -83,36 +83,37 @@ class LoadingFragment : BaseFragment() {
         val sessionSecret = publicKey.abyte.base64Encode()
 
         while (true) {
-           try {
-               val response = loadingViewModel.modifySessionSecret(SessionSecretRequest(sessionSecret))
-               if (response.isSuccess) {
-                   response.data?.let { r ->
-                       val account = Session.getAccount()
-                       account?.let { acc ->
-                           acc.pinToken = r.pinToken
-                           val key = try {
-                               Curve25519.getInstance(Curve25519.BEST).calculateAgreement(r.pinToken.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
-                           } catch (t: Throwable) {
-                               reportException("Update EdDSA key calculateAgreement", t)
-                               return
-                           }
-                           Session.storeAccount(acc)
-                           Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
-                           Session.storePinToken(key.base64Encode())
-                       }
-                   }
-               } else {
-                   val code = response.errorCode
-                   if (code == ErrorHandler.AUTHENTICATION || code == FORBIDDEN) {
-                       defaultSharedPreferences.putBoolean(PREF_TRIED_UPDATE_KEY, true)
-                       return
-                   }
-                   reportException("Update EdDSA key", IllegalStateException("errorCode: $code, errorDescription: ${response.errorDescription}"))
-                   ErrorHandler.handleMixinError(code, response.errorDescription)
-               }
+            try {
+                val response = loadingViewModel.modifySessionSecret(SessionSecretRequest(sessionSecret))
+                if (response.isSuccess) {
+                    response.data?.let { r ->
+                        val account = Session.getAccount()
+                        account?.let { acc ->
+                            acc.pinToken = r.pinToken
+                            val key = try {
+                                Curve25519.getInstance(Curve25519.BEST).calculateAgreement(r.pinToken.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
+                            } catch (t: Throwable) {
+                                reportException("Update EdDSA key calculateAgreement", t)
+                                return
+                            }
+                            Session.storeAccount(acc)
+                            Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
+                            Session.storePinToken(key.base64Encode())
+                        }
+                    }
+                } else {
+                    val code = response.errorCode
+                    reportException("Update EdDSA key", IllegalStateException("errorCode: $code, errorDescription: ${response.errorDescription}"))
+                    ErrorHandler.handleMixinError(code, response.errorDescription)
+
+                    if (code == ErrorHandler.AUTHENTICATION || code == FORBIDDEN) {
+                        defaultSharedPreferences.putBoolean(PREF_TRIED_UPDATE_KEY, true)
+                        return
+                    }
+                }
             } catch (t: Throwable) {
                 reportException("Update EdDSA key", t)
-                 ErrorHandler.handleError(t)
+                ErrorHandler.handleError(t)
             }
 
             delay(2000)
