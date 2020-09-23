@@ -2,6 +2,7 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.ClipData
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
@@ -18,6 +19,7 @@ import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.Constants.Mute.MUTE_1_HOUR
 import one.mixin.android.Constants.Mute.MUTE_1_WEEK
@@ -30,6 +32,7 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.screenHeight
@@ -122,6 +125,12 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 conversation = c
                 val icon = c.iconUrl
                 contentView.avatar.setGroup(icon)
+                if (BuildConfig.DEBUG) {
+                    contentView.avatar.setOnLongClickListener {
+                        context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, conversationId))
+                        true
+                    }
+                }
                 if (icon == null || !File(icon).exists()) {
                     bottomViewModel.startGenerateAvatar(c.conversationId)
                 }
