@@ -32,6 +32,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.launch
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.Constants.Mute.MUTE_1_HOUR
@@ -226,6 +227,12 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             apps,
                             getString(R.string.contact_share_apps_title, user.fullName)
                         ).showNow(parentFragmentManager, AppListBottomSheetDialogFragment.TAG)
+                    }
+                }
+                if (BuildConfig.DEBUG) {
+                    contentView.avatar.setOnLongClickListener {
+                        context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, "mixin://users/${user.userId}"))
+                        true
                     }
                 }
                 apps?.let {
