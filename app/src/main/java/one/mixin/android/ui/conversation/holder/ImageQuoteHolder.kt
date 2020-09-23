@@ -15,7 +15,6 @@ import kotlinx.android.synthetic.main.item_chat_image_quote.view.chat_warning
 import kotlinx.android.synthetic.main.item_chat_image_quote.view.progress
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock

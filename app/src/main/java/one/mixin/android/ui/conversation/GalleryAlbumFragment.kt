@@ -1,8 +1,10 @@
 package one.mixin.android.ui.conversation
 
+import android.database.ContentObserver
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -78,6 +80,13 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
         albumCollection.onCreate(this, this)
         albumCollection.onRestoreInstanceState(savedInstanceState)
         albumCollection.loadAlbums()
+
+        requireContext().contentResolver.registerContentObserver(
+            android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI, true, internalObserver
+        )
+        requireContext().contentResolver.registerContentObserver(
+            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, externalObserver
+        )
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -87,27 +96,31 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
 
     override fun onDestroyView() {
         view_pager?.unregisterOnPageChangeCallback(onPageChangeCallback)
+        va?.removeCallbacks(restartLoadRunnable)
         super.onDestroyView()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        requireContext().contentResolver.unregisterContentObserver(internalObserver)
+        requireContext().contentResolver.unregisterContentObserver(externalObserver)
         albumCollection.onDestroy()
     }
 
-    private var first = true
-
     override fun onAlbumLoad(cursor: Cursor) {
-        if (!first) return
-
-        first = false
         va?.post {
             val albums = arrayListOf<Album>()
             va.displayedChild = POS_CONTENT
             while (cursor.moveToNext()) {
                 val album = Album.valueOf(cursor)
                 albums.add(album)
-                album_tl.addTab(album_tl.newTab().setText(album.getDisplayName(requireContext())))
+            }
+            if (albums.isNullOrEmpty()) return@post
+
+            if (album_tl.tabCount == 0) {
+                albums.forEach { album ->
+                    album_tl.addTab(album_tl.newTab().setText(album.getDisplayName(requireContext())))
+                }
             }
             albumAdapter.albums = albums
         }
@@ -121,5 +134,21 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
                 albumAdapter.getFragment(view_pager.currentItem)?.hideBlur()
             }
         }
+    }
+
+    private val internalObserver = object : ContentObserver(Handler()) {
+        override fun onChange(selfChange: Boolean) {
+            va?.postDelayed(restartLoadRunnable, 2000)
+        }
+    }
+
+    private val externalObserver = object : ContentObserver(Handler()) {
+        override fun onChange(selfChange: Boolean) {
+            va?.postDelayed(restartLoadRunnable, 2000)
+        }
+    }
+
+    private val restartLoadRunnable = Runnable {
+        albumCollection.restartLoader()
     }
 }

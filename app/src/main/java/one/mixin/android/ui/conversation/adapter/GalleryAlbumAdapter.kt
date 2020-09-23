@@ -5,12 +5,13 @@ import androidx.collection.ArrayMap
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.adapter.FragmentViewHolder
 import one.mixin.android.ui.conversation.GalleryItemFragment
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.gallery.internal.entity.Album
 
 class GalleryAlbumAdapter(
-    context: FragmentActivity
+    private val context: FragmentActivity
 ) : FragmentStateAdapter(context) {
 
     var callback: GalleryCallback? = null
@@ -48,6 +49,12 @@ class GalleryAlbumAdapter(
         }
         pageMap[position] = fragment
         return fragment
+    }
+
+    override fun onBindViewHolder(holder: FragmentViewHolder, position: Int, payloads: MutableList<Any>) {
+        super.onBindViewHolder(holder, position, payloads)
+        val fragment: GalleryItemFragment? = context.supportFragmentManager.findFragmentByTag("f$position") as? GalleryItemFragment?
+        fragment?.reloadAlbum()
     }
 
     fun getFragment(index: Int) = pageMap[index]
