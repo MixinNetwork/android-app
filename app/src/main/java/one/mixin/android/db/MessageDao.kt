@@ -280,7 +280,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-            SELECT id, conversation_id, user_id, status, created_at FROM messages 
+            SELECT id, created_at FROM messages
             WHERE conversation_id = :conversationId 
             AND status IN ('SENT', 'DELIVERED') 
             AND user_id != :userId 
