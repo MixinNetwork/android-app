@@ -84,9 +84,7 @@ class LoadingFragment : BaseFragment() {
 
         while (true) {
            try {
-               val response = withContext(Dispatchers.IO) {
-                   loadingViewModel.modifySessionSecret(SessionSecretRequest(sessionSecret))
-               }
+               val response = loadingViewModel.modifySessionSecret(SessionSecretRequest(sessionSecret))
                if (response.isSuccess) {
                    response.data?.let { r ->
                        val account = Session.getAccount()

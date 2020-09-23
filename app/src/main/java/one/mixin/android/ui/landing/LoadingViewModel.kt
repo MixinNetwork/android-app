@@ -119,5 +119,7 @@ constructor(
         }
     }
 
-    suspend fun modifySessionSecret(request: SessionSecretRequest) = accountService.modifySessionSecret(request)
+    suspend fun modifySessionSecret(request: SessionSecretRequest) = withContext(Dispatchers.IO) {
+        accountService.modifySessionSecret(request)
+    }
 }
