@@ -5,7 +5,6 @@ import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
-import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getMimeType
@@ -20,6 +19,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.toQuoteMessageItem
+import one.mixin.android.widget.ConvertEvent
 import java.io.File
 
 class ConvertVideoJob(
@@ -80,11 +80,10 @@ class ConvertVideoJob(
             video.resultHeight,
             videoFile,
             video.needChange,
-            video.duration, object : MediaController.VideoConvertorListener {
+            video.duration,
+            object : MediaController.VideoConvertorListener {
                 override fun didWriteData(availableSize: Long, progress: Float) {
-                    val pg = progress / 200f
-                    MixinJobManager.attachmentProcess[messageId] = (pg * 100).toInt()
-                    RxBus.publish(ProgressEvent.loadingEvent(messageId, pg))
+                    RxBus.publish(ConvertEvent(messageId, progress / 10f))
                 }
 
                 override fun checkConversionCanceled(): Boolean {
