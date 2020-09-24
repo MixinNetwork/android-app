@@ -24,7 +24,7 @@ buildscript {
         ext.viewpagerVersion = '1.1.0-alpha01'
         ext.espressoVersion = '3.3.0'
         ext.cameraxVersion = '1.0.0-beta10'
-        ext.cameraxviewVersion = '1.0.0-alpha16'
+        ext.cameraxviewVersion = '1.0.0-alpha17'
         ext.glideVersion = '4.11.0'
         ext.webpdecoderVesion = '2.0.4.11.0'
         ext.timberVersion = '4.7.1'
