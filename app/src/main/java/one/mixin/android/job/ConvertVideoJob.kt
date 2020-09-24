@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.MixinApplication
+import one.mixin.android.RxBus
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getMimeType
@@ -18,6 +19,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.toQuoteMessageItem
+import one.mixin.android.widget.ConvertEvent
 import java.io.File
 
 class ConvertVideoJob(
@@ -78,7 +80,16 @@ class ConvertVideoJob(
             video.resultHeight,
             videoFile,
             video.needChange,
-            video.duration
+            video.duration,
+            object : MediaController.VideoConvertorListener {
+                override fun didWriteData(availableSize: Long, progress: Float) {
+                    RxBus.publish(ConvertEvent(messageId, progress / 10f))
+                }
+
+                override fun checkConversionCanceled(): Boolean {
+                    return isCancelled
+                }
+            }
         )
         if (isCancelled) {
             removeJob()

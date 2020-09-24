@@ -5,15 +5,12 @@ import android.media.MediaCodecInfo;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.os.Build;
-import com.coremedia.iso.IsoFile;
-import com.coremedia.iso.boxes.*;
-import com.googlecode.mp4parser.util.Path;
 import timber.log.Timber;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.List;
+
+import static one.mixin.android.util.CrashExceptionReportKt.reportException;
 
 public class MediaCodecVideoConvertor {
 
@@ -103,35 +100,8 @@ public class MediaCodecVideoConvertor {
                         int colorFormat;
                         int processorType = PROCESSOR_TYPE_OTHER;
                         String manufacturer = Build.MANUFACTURER.toLowerCase();
-                        if (Build.VERSION.SDK_INT < 18) {
-                            MediaCodecInfo codecInfo = MediaController.selectCodec(MediaController.VIDEO_MIME_TYPE);
-                            colorFormat = MediaController.selectColorFormat(codecInfo, MediaController.VIDEO_MIME_TYPE);
-                            if (colorFormat == 0) {
-                                throw new RuntimeException("no supported color format");
-                            }
-                            String codecName = codecInfo.getName();
-                            if (codecName.contains("OMX.qcom.")) {
-                                processorType = PROCESSOR_TYPE_QCOM;
-                                if (Build.VERSION.SDK_INT == 16) {
-                                    if (manufacturer.equals("lge") || manufacturer.equals("nokia")) {
-                                        swapUV = 1;
-                                    }
-                                }
-                            } else if (codecName.contains("OMX.Intel.")) {
-                                processorType = PROCESSOR_TYPE_INTEL;
-                            } else if (codecName.equals("OMX.MTK.VIDEO.ENCODER.AVC")) {
-                                processorType = PROCESSOR_TYPE_MTK;
-                            } else if (codecName.equals("OMX.SEC.AVC.Encoder")) {
-                                processorType = PROCESSOR_TYPE_SEC;
-                                swapUV = 1;
-                            } else if (codecName.equals("OMX.TI.DUCATI1.VIDEO.H264E")) {
-                                processorType = PROCESSOR_TYPE_TI;
-                            }
-                            Timber.d("codec = " + codecInfo.getName() + " manufacturer = " + manufacturer + "device = " + Build.MODEL);
-                        } else {
-                            colorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface;
-                        }
-                        Timber.d("colorFormat = " + colorFormat);
+                        colorFormat = MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface;
+                        Timber.d("colorFormat = %s", colorFormat);
 
                         int resultHeightAligned = resultHeight;
                         int padding = 0;
@@ -179,43 +149,20 @@ public class MediaCodecVideoConvertor {
                         outputFormat.setInteger(MediaFormat.KEY_FRAME_RATE, framerate);
                         outputFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 2);
 
-                        if (Build.VERSION.SDK_INT < 23 && Math.min(resultHeight, resultWidth) <= 480) {
-                            if (bitrate > 921600) bitrate = 921600;
-                            outputFormat.setInteger(MediaFormat.KEY_BIT_RATE, bitrate);
-                        }
-
-                        if (Build.VERSION.SDK_INT < 18) {
-                            outputFormat.setInteger("stride", resultWidth + 32);
-                            outputFormat.setInteger("slice-height", resultHeight);
-                        }
-
                         encoder = MediaCodec.createEncoderByType(MediaController.VIDEO_MIME_TYPE);
                         encoder.configure(outputFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
-                        if (Build.VERSION.SDK_INT >= 18) {
-                            inputSurface = new InputSurface(encoder.createInputSurface());
-                            inputSurface.makeCurrent();
-                        }
+                        inputSurface = new InputSurface(encoder.createInputSurface());
+                        inputSurface.makeCurrent();
                         encoder.start();
 
                         decoder = MediaCodec.createDecoderByType(videoFormat.getString(MediaFormat.KEY_MIME));
-                        if (Build.VERSION.SDK_INT >= 18) {
-                            outputSurface = new OutputSurface();
-                        } else {
-                            outputSurface = new OutputSurface(resultWidth, resultHeight, rotationValue);
-                        }
+                        outputSurface = new OutputSurface();
                         decoder.configure(videoFormat, outputSurface.getSurface(), null, 0);
                         decoder.start();
 
                         ByteBuffer[] decoderInputBuffers = null;
                         ByteBuffer[] encoderOutputBuffers = null;
                         ByteBuffer[] encoderInputBuffers = null;
-                        if (Build.VERSION.SDK_INT < 21) {
-                            decoderInputBuffers = decoder.getInputBuffers();
-                            encoderOutputBuffers = encoder.getOutputBuffers();
-                            if (Build.VERSION.SDK_INT < 18) {
-                                encoderInputBuffers = encoder.getInputBuffers();
-                            }
-                        }
 
                         if (audioIndex >= 0) {
                             MediaFormat audioFormat = extractor.getTrackFormat(audioIndex);
@@ -277,11 +224,7 @@ public class MediaCodecVideoConvertor {
                                     int inputBufIndex = decoder.dequeueInputBuffer(MEDIACODEC_TIMEOUT_DEFAULT);
                                     if (inputBufIndex >= 0) {
                                         ByteBuffer inputBuf;
-                                        if (Build.VERSION.SDK_INT < 21) {
-                                            inputBuf = decoderInputBuffers[inputBufIndex];
-                                        } else {
-                                            inputBuf = decoder.getInputBuffer(inputBufIndex);
-                                        }
+                                        inputBuf = decoder.getInputBuffer(inputBufIndex);
                                         int chunkSize = extractor.readSampleData(inputBuf, 0);
                                         if (chunkSize < 0) {
                                             decoder.queueInputBuffer(inputBufIndex, 0, 0, 0L, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
@@ -293,10 +236,6 @@ public class MediaCodecVideoConvertor {
                                     }
                                 } else if (copyAudioBuffer && audioIndex != -1 && index == audioIndex) {
                                     info.size = extractor.readSampleData(audioBuffer, 0);
-                                    if (Build.VERSION.SDK_INT < 21) {
-                                        audioBuffer.position(0);
-                                        audioBuffer.limit(info.size);
-                                    }
                                     if (info.size >= 0) {
                                         info.presentationTimeUs = extractor.getSampleTime();
                                         extractor.advance();
@@ -337,9 +276,6 @@ public class MediaCodecVideoConvertor {
                                 if (encoderStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
                                     encoderOutputAvailable = false;
                                 } else if (encoderStatus == MediaCodec.INFO_OUTPUT_BUFFERS_CHANGED) {
-                                    if (Build.VERSION.SDK_INT < 21) {
-                                        encoderOutputBuffers = encoder.getOutputBuffers();
-                                    }
                                 } else if (encoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                                     MediaFormat newFormat = encoder.getOutputFormat();
                                     if (videoTrackIndex == -5 && newFormat != null) {
@@ -354,11 +290,7 @@ public class MediaCodecVideoConvertor {
                                     throw new RuntimeException("unexpected result from encoder.dequeueOutputBuffer: " + encoderStatus);
                                 } else {
                                     ByteBuffer encodedData;
-                                    if (Build.VERSION.SDK_INT < 21) {
-                                        encodedData = encoderOutputBuffers[encoderStatus];
-                                    } else {
-                                        encodedData = encoder.getOutputBuffer(encoderStatus);
-                                    }
+                                    encodedData = encoder.getOutputBuffer(encoderStatus);
                                     if (encodedData == null) {
                                         throw new RuntimeException("encoderOutputBuffer " + encoderStatus + " was null");
                                     }
@@ -440,7 +372,7 @@ public class MediaCodecVideoConvertor {
 
                                     } else if (decoderStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                                         MediaFormat newFormat = decoder.getOutputFormat();
-                                        Timber.d("newFormat = " + newFormat);
+                                        Timber.d("newFormat = %s", newFormat);
                                     } else if (decoderStatus < 0) {
                                         throw new RuntimeException("unexpected result from decoder.dequeueOutputBuffer: " + decoderStatus);
                                     } else {
@@ -468,6 +400,7 @@ public class MediaCodecVideoConvertor {
                                             } catch (Exception e) {
                                                 errorWait = true;
                                                 Timber.e(e);
+                                                reportException(e);
                                             }
                                             if (!errorWait) {
                                                 outputSurface.drawImage(false);
@@ -478,14 +411,7 @@ public class MediaCodecVideoConvertor {
                                         if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                                             decoderOutputAvailable = false;
                                             Timber.d("decoder stream end");
-                                            if (Build.VERSION.SDK_INT >= 18) {
-                                                encoder.signalEndOfInputStream();
-                                            } else {
-                                                int inputBufIndex = encoder.dequeueInputBuffer(MEDIACODEC_TIMEOUT_DEFAULT);
-                                                if (inputBufIndex >= 0) {
-                                                    encoder.queueInputBuffer(inputBufIndex, 0, 1, info.presentationTimeUs, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
-                                                }
-                                            }
+                                            encoder.signalEndOfInputStream();
                                         }
                                     }
                                 }
@@ -500,6 +426,7 @@ public class MediaCodecVideoConvertor {
                         }
                         Timber.e("bitrate: " + bitrate + " framerate: " + framerate + " size: " + resultHeight + "x" + resultWidth);
                         Timber.e(e);
+                        reportException(e);
                         error = true;
                     }
 
@@ -530,6 +457,7 @@ public class MediaCodecVideoConvertor {
             error = true;
             Timber.e("bitrate: " + bitrate + " framerate: " + framerate + " size: " + resultHeight + "x" + resultWidth);
             Timber.e(e);
+            reportException(e);
         } finally {
             if (extractor != null) {
                 extractor.release();
@@ -539,6 +467,7 @@ public class MediaCodecVideoConvertor {
                     mediaMuxer.finishMovie();
                 } catch (Exception e) {
                     Timber.e(e);
+                    reportException(e);
                 }
             }
         }
@@ -608,28 +537,22 @@ public class MediaCodecVideoConvertor {
                     muxerTrackIndex = -1;
                 }
                 if (muxerTrackIndex != -1) {
-                    if (Build.VERSION.SDK_INT < 21) {
-                        buffer.position(0);
-                        buffer.limit(info.size);
-                    }
                     if (index != audioTrackIndex) {
                         byte[] array = buffer.array();
-                        if (array != null) {
-                            int offset = buffer.arrayOffset();
-                            int len = offset + buffer.limit();
-                            int writeStart = -1;
-                            for (int a = offset; a <= len - 4; a++) {
-                                if (array[a] == 0 && array[a + 1] == 0 && array[a + 2] == 0 && array[a + 3] == 1 || a == len - 4) {
-                                    if (writeStart != -1) {
-                                        int l = a - writeStart - (a != len - 4 ? 4 : 0);
-                                        array[writeStart] = (byte) (l >> 24);
-                                        array[writeStart + 1] = (byte) (l >> 16);
-                                        array[writeStart + 2] = (byte) (l >> 8);
-                                        array[writeStart + 3] = (byte) l;
-                                        writeStart = a;
-                                    } else {
-                                        writeStart = a;
-                                    }
+                        int offset = buffer.arrayOffset();
+                        int len = offset + buffer.limit();
+                        int writeStart = -1;
+                        for (int a = offset; a <= len - 4; a++) {
+                            if (array[a] == 0 && array[a + 1] == 0 && array[a + 2] == 0 && array[a + 3] == 1 || a == len - 4) {
+                                if (writeStart != -1) {
+                                    int l = a - writeStart - (a != len - 4 ? 4 : 0);
+                                    array[writeStart] = (byte) (l >> 24);
+                                    array[writeStart + 1] = (byte) (l >> 16);
+                                    array[writeStart + 2] = (byte) (l >> 8);
+                                    array[writeStart + 3] = (byte) l;
+                                    writeStart = a;
+                                } else {
+                                    writeStart = a;
                                 }
                             }
                         }

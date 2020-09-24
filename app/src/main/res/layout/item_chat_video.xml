@@ -63,7 +63,7 @@
                 tools:text="7:48AM" />
         </one.mixin.android.widget.ShadowLayout>
 
-        <TextView
+        <one.mixin.android.widget.ProgressTextView
             android:id="@+id/duration_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -78,7 +78,8 @@
             android:textSize="10sp"
             app:layout_constraintStart_toStartOf="@id/chat_layout"
             app:layout_constraintTop_toBottomOf="@id/chat_name"
-            app:layout_goneMarginTop="4dp" />
+            app:layout_goneMarginTop="4dp"
+            tools:ignore="SmallSp" />
 
         <TextView
             android:id="@+id/live_tv"
@@ -109,8 +110,8 @@
             app:layout_constraintEnd_toEndOf="@id/chat_image_layout"
             app:layout_constraintStart_toStartOf="@id/chat_image_layout"
             app:layout_constraintTop_toTopOf="@id/chat_image_layout"
-            app:progressColor="@color/white"
             app:playColor="@color/white"
+            app:progressColor="@color/white"
             app:progressWidth="1.5dp"
             app:shadowColor="@color/black_70"
             app:size="40dp" />
