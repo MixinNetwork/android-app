@@ -40,6 +40,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         isLast: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
+        isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         if (hasSelect && isSelect) {
@@ -105,10 +106,11 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                 itemView.file_size_tv.text = "${messageItem.mediaSize?.fileSize()}"
             }
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
             itemView.chat_flag.isVisible = statusIcon != null
             itemView.chat_flag.setImageDrawable(statusIcon)
             itemView.chat_secret.isVisible = secretIcon != null
+            itemView.chat_representative.isVisible = representativeIcon != null
         }
         itemView.seek_bar.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {

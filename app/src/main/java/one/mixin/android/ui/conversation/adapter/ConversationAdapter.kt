@@ -179,6 +179,7 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -190,6 +191,7 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -200,6 +202,7 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener,
                         miniMarkwon
                     )
@@ -211,6 +214,7 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -221,6 +225,7 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -231,6 +236,7 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -241,6 +247,7 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -251,6 +258,7 @@ class ConversationAdapter(
                         isLast(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -261,6 +269,7 @@ class ConversationAdapter(
                         isLast(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -292,6 +301,7 @@ class ConversationAdapter(
                         isLast(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -303,6 +313,7 @@ class ConversationAdapter(
                         isLast(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -333,6 +344,7 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -344,6 +356,7 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -373,6 +386,7 @@ class ConversationAdapter(
                         isLast(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -383,6 +397,7 @@ class ConversationAdapter(
                         isLast(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -415,6 +430,7 @@ class ConversationAdapter(
                         isFirst(position),
                         selectSet.size > 0,
                         isSelect(position),
+                        isRepresentative(it),
                         onItemListener
                     )
                 }
@@ -462,6 +478,10 @@ class ConversationAdapter(
                 true
             else -> false
         }
+    }
+
+    private fun isRepresentative(messageItem: MessageItem): Boolean {
+        return isBot && recipient?.userId != messageItem.userId
     }
 
     private fun isFirst(position: Int): Boolean {

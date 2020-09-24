@@ -83,6 +83,7 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
         isFirst: Boolean = false,
         hasSelect: Boolean,
         isSelect: Boolean,
+        isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         this.onItemListener = onItemListener
@@ -196,10 +197,11 @@ class TextQuoteHolder constructor(containerView: View) : BaseMentionHolder(conta
         } else {
             itemView.chat_name.setCompoundDrawables(null, null, null, null)
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
             itemView.chat_flag.isVisible = statusIcon != null
             itemView.chat_flag.setImageDrawable(statusIcon)
             itemView.chat_secret.isVisible = secretIcon != null
+            itemView.chat_representative.isVisible = representativeIcon != null
         }
         itemView.chat_secret.isVisible = messageItem.isSignal()
         itemView.chat_layout.setOnClickListener {
