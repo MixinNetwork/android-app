@@ -16,9 +16,9 @@ interface ShareMessageRenderer {
     ) {
         val secretIcon = if (isSecret) {
             if (isWhite) {
-                AppCompatResources.getDrawable(context, R.drawable.ic_secret_white)
+                AppCompatResources.getDrawable(context, R.drawable.ic_chat_secret_white)
             } else {
-                AppCompatResources.getDrawable(context, R.drawable.ic_secret)
+                AppCompatResources.getDrawable(context, R.drawable.ic_chat_secret)
             }
         } else {
             null
