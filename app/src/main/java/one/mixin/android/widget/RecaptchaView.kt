@@ -38,7 +38,7 @@ class RecaptchaView(private val context: Context, private val callback: Callback
     private val stopWebViewRunnable = Runnable {
         webView.loadUrl("about:blank")
         hide()
-        webView.webViewClient = null
+        webView.webViewClient = object : WebViewClient() {}
         context.toast(R.string.error_recaptcha_timeout)
         callback.onStop()
     }
@@ -84,7 +84,7 @@ class RecaptchaView(private val context: Context, private val callback: Callback
         webView.post {
             hide()
             webView.loadUrl("about:blank")
-            webView.webViewClient = null
+            webView.webViewClient = object : WebViewClient() {}
             callback.onPostToken(value)
         }
     }

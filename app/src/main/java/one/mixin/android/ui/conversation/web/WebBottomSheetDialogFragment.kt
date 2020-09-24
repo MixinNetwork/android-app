@@ -546,7 +546,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         dialog?.setOnDismissListener {
             contentView.hideKeyboard()
             contentView.chat_web_view.stopLoading()
-            contentView.chat_web_view.webViewClient = null
+            contentView.chat_web_view.webViewClient = object : WebViewClient() {}
             contentView.chat_web_view.webChromeClient = null
         }
     }
@@ -632,7 +632,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onDestroyView() {
         contentView.chat_web_view.stopLoading()
         contentView.chat_web_view.destroy()
-        contentView.chat_web_view.webViewClient = null
+        contentView.chat_web_view.webViewClient = object : WebViewClient() {}
         contentView.chat_web_view.webChromeClient = null
         unregisterForContextMenu(contentView.chat_web_view)
         processor.close()
@@ -692,7 +692,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             title = getString(R.string.forward)
             icon = R.drawable.ic_web_forward
             action = {
-                val currentUrl = contentView.chat_web_view.url
+                val currentUrl = contentView.chat_web_view.url ?: url
                 if (isBot()) {
                     app?.appId?.let { id ->
                         lifecycleScope.launch {

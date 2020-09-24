@@ -455,11 +455,11 @@ fun getVideoModel(uri: Uri): VideoEditedInfo? {
             setDataSource(path)
         }
         val fileName = File(path).name
-        val rotation = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
-        val image = m.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST)
+        val rotation = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION) ?: "0"
+        val image = m.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST) ?: return null
         val mediaWith = image.width
         val mediaHeight = image.height
-        val duration = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()
+        val duration = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0
         val thumbnail = image.zoomOut()?.fastBlur(1f, 10)?.bitmap2String()
         val scale = if (mediaWith > mediaHeight) maxVideoSize / mediaWith else maxVideoSize / mediaHeight
         val resultWidth = ((mediaWith * scale / 2).toDouble().roundToInt() * 2)

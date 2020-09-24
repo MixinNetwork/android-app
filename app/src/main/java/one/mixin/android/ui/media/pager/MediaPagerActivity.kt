@@ -105,10 +105,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     private lateinit var colorDrawable: ColorDrawable
 
     private val conversationId by lazy {
-        intent.getStringExtra(CONVERSATION_ID)
+        intent.getStringExtra(CONVERSATION_ID) as String
     }
     private val messageId by lazy {
-        intent.getStringExtra(MESSAGE_ID)
+        intent.getStringExtra(MESSAGE_ID) as String
     }
     private val excludeLive by lazy {
         intent.getBooleanExtra(EXCLUDE_LIVE, false)

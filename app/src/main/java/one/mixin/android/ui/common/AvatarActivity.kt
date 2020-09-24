@@ -43,7 +43,7 @@ class AvatarActivity : AppCompatActivity() {
         }
     }
 
-    private val url: String by lazy { intent.getStringExtra(ARGS_URL) }
+    private val url: String by lazy { intent.getStringExtra(ARGS_URL) as String }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
