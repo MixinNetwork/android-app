@@ -139,6 +139,7 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         isFirst: Boolean = false,
         hasSelect: Boolean,
         isSelect: Boolean,
+        isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         this.onItemListener = onItemListener
@@ -225,10 +226,10 @@ class LocationHolder constructor(containerView: View) : BaseViewHolder(container
         val isMe = meId == messageItem.userId
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), location?.name == null && location?.address == null) { statusIcon, secretIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative, location?.name == null && location?.address == null) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon ?: representativeIcon, null, statusIcon, null)
         }
 
         if (isFirst && !isMe) {

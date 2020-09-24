@@ -78,6 +78,7 @@ class TextHolder constructor(containerView: View) : BaseMentionHolder(containerV
         isFirst: Boolean = false,
         hasSelect: Boolean,
         isSelect: Boolean,
+        isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         this.onItemListener = onItemListener
@@ -182,10 +183,11 @@ class TextHolder constructor(containerView: View) : BaseMentionHolder(containerV
             itemView.chat_name.setCompoundDrawables(null, null, null, null)
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
             itemView.chat_flag.isVisible = statusIcon != null
             itemView.chat_flag.setImageDrawable(statusIcon)
             itemView.chat_secret.isVisible = secretIcon != null
+            itemView.chat_representative.isVisible = representativeIcon != null
         }
         chatLayout(isMe, isLast)
 

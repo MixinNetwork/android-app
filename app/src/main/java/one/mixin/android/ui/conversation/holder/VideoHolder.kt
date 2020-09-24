@@ -48,6 +48,7 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         isFirst: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
+        isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         if (hasSelect && isSelect) {
@@ -237,10 +238,10 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
 
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), true) { statusIcon, secretIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon ?: representativeIcon, null, statusIcon, null)
         }
 
         dataWidth = messageItem.mediaWidth

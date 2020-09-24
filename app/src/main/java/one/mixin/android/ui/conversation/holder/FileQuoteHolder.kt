@@ -70,6 +70,7 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
         isLast: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
+        isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         if (hasSelect && isSelect) {
@@ -95,10 +96,10 @@ class FileQuoteHolder constructor(containerView: View) : MediaHolder(containerVi
             itemView.chat_name.visibility = View.GONE
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon ?: representativeIcon, null, statusIcon, null)
         }
         keyword.notNullWithElse(
             { k ->

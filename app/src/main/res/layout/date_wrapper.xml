@@ -12,6 +12,17 @@
               tools:ignore="UseCompoundDrawables">
 
     <ImageView
+        android:id="@+id/chat_representative"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="2dp"
+        android:layout_marginEnd="3dp"
+        android:visibility="gone"
+        android:src="@drawable/ic_chat_representative"
+        tools:ignore="ContentDescription"/>
+
+    <ImageView
         android:id="@+id/chat_secret"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -19,7 +30,7 @@
         android:layout_marginBottom="2dp"
         android:layout_marginEnd="3dp"
         android:visibility="gone"
-        android:src="@drawable/ic_secret"
+        android:src="@drawable/ic_chat_secret"
         tools:ignore="ContentDescription"/>
 
     <TextView

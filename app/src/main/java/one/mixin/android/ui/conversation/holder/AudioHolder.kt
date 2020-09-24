@@ -45,6 +45,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
         isLast: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
+        isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         if (hasSelect && isSelect) {
@@ -86,10 +87,11 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
             itemView.chat_layout.layoutParams.width =
                 min((minWidth + (duration / 1000f) * dp15).toInt(), maxWidth)
         }
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal()) { statusIcon, secretIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative) { statusIcon, secretIcon, representativeIcon ->
             itemView.chat_flag.isVisible = statusIcon != null
             itemView.chat_flag.setImageDrawable(statusIcon)
             itemView.chat_secret.isVisible = secretIcon != null
+            itemView.chat_representative.isVisible = representativeIcon != null
         }
 
         messageItem.mediaWaveform?.let {

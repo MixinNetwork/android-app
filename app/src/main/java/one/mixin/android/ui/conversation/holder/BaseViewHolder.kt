@@ -132,23 +132,34 @@ abstract class BaseViewHolder constructor(containerView: View) :
         isMe: Boolean,
         status: String,
         isSecret: Boolean,
-        handleAction: (Drawable?, Drawable?) -> Unit
+        isRepresentative: Boolean,
+        handleAction: (Drawable?, Drawable?, Drawable?) -> Unit
     ) {
-        setStatusIcon(isMe, status, isSecret, false, handleAction)
+        setStatusIcon(isMe, status, isSecret, isRepresentative, false, handleAction)
     }
 
     protected fun setStatusIcon(
         isMe: Boolean,
         status: String,
         isSecret: Boolean,
+        isRepresentative: Boolean,
         isWhite: Boolean,
-        handleAction: (Drawable?, Drawable?) -> Unit
+        handleAction: (Drawable?, Drawable?, Drawable?) -> Unit
     ) {
         val secretIcon = if (isSecret) {
             if (isWhite) {
-                AppCompatResources.getDrawable(itemView.context, R.drawable.ic_secret_white)
+                AppCompatResources.getDrawable(itemView.context, R.drawable.ic_chat_secret_white)
             } else {
-                AppCompatResources.getDrawable(itemView.context, R.drawable.ic_secret)
+                AppCompatResources.getDrawable(itemView.context, R.drawable.ic_chat_secret)
+            }
+        } else {
+            null
+        }
+        val representativeIcon = if (isRepresentative) {
+            if (isWhite) {
+                AppCompatResources.getDrawable(itemView.context, R.drawable.ic_chat_representative_white)
+            } else {
+                AppCompatResources.getDrawable(itemView.context, R.drawable.ic_chat_representative)
             }
         } else {
             null
@@ -187,9 +198,9 @@ abstract class BaseViewHolder constructor(containerView: View) :
                         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_read)
                     else -> null
                 }
-            handleAction(statusIcon, secretIcon)
+            handleAction(statusIcon, secretIcon, representativeIcon)
         } else {
-            handleAction(null, secretIcon)
+            handleAction(null, secretIcon, representativeIcon)
         }
     }
 }

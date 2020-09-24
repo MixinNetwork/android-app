@@ -86,6 +86,7 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
         isFirst: Boolean = false,
         hasSelect: Boolean,
         isSelect: Boolean,
+        isRepresentative: Boolean,
         onItemListener: ConversationAdapter.OnItemListener,
         miniMarkwon: Markwon
     ) {
@@ -168,10 +169,10 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
             itemView.chat_name.setCompoundDrawables(null, null, null, null)
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), true) { statusIcon, secretIcon ->
+        setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
             secretIcon?.setBounds(0, 0, 8.dp, 8.dp)
-            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon, null, statusIcon, null)
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon ?: representativeIcon, null, statusIcon, null)
         }
         chatLayout(isMe, isLast)
     }
