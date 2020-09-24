@@ -6,9 +6,9 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.getFileNameNoEx
+import one.mixin.android.extension.getLegacyVideoPath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getVideoModel
-import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
@@ -74,8 +74,7 @@ class ConvertVideoJob(
             return
         }
         jobManager.saveJob(this)
-
-        val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp(conversationId, messageId, "mp4")
+        val videoFile: File = MixinApplication.get().getLegacyVideoPath().createVideoTemp(conversationId, messageId, "mp4")
         val error = MediaController.getInstance().convertVideo(
             video.originalPath,
             video.bitrate,

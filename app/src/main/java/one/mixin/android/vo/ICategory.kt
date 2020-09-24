@@ -4,12 +4,12 @@ import android.content.Context
 import androidx.core.net.toUri
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.generateConversationPath
-import one.mixin.android.extension.getAudioPath
-import one.mixin.android.extension.getDocumentPath
-import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getMediaPath
+import one.mixin.android.extension.getLegacyAudioPath
+import one.mixin.android.extension.getLegacyDocumentPath
+import one.mixin.android.extension.getLegacyImagePath
+import one.mixin.android.extension.getLegacyMediaPath
+import one.mixin.android.extension.getLegacyVideoPath
 import one.mixin.android.extension.getTranscriptDirPath
-import one.mixin.android.extension.getVideoPath
 import java.io.File
 
 interface ICategory {
@@ -113,7 +113,7 @@ fun ICategory.canRecall(): Boolean {
 }
 
 private val mediaPath by lazy {
-    MixinApplication.appContext.getMediaPath()?.toUri()?.toString()
+    MixinApplication.appContext.getLegacyMediaPath()?.toUri()?.toString()
 }
 
 fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: String?): String? {
@@ -121,10 +121,10 @@ fun ICategory.absolutePath(context: Context, conversationId: String, mediaUrl: S
     return when {
         mediaUrl == null -> null
         mediaUrl.startsWith(dirPath) -> mediaUrl
-        isImage() -> File(context.getImagePath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-        isVideo() -> File(context.getVideoPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-        isAudio() -> File(context.getAudioPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
-        isData() -> File(context.getDocumentPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
+        isImage() -> File(context.getLegacyImagePath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
+        isVideo() -> File(context.getLegacyVideoPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
+        isAudio() -> File(context.getLegacyAudioPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
+        isData() -> File(context.getLegacyDocumentPath().generateConversationPath(conversationId), mediaUrl).toUri().toString()
         isTranscript() -> File(context.getTranscriptDirPath(), mediaUrl).toUri().toString()
         isLive() -> mediaUrl
         else -> null

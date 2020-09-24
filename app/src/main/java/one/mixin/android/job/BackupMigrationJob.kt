@@ -5,7 +5,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getBackupPath
+import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.util.backup.findOldBackupSync
@@ -24,7 +24,7 @@ class BackupMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).pers
         if (!preferences.getBoolean(PREF_BACKUP, false)) {
             val oldBackup = findOldBackupSync(MixinApplication.appContext)
             if (oldBackup != null && oldBackup.exists()) {
-                MixinApplication.get().getBackupPath(true)?.let { backupDir ->
+                MixinApplication.get().getLegacyBackupPath(true)?.let { backupDir ->
                     oldBackup.renameTo(File("$backupDir${File.separator}${Constants.DataBase.DB_NAME}"))
                 }
             }

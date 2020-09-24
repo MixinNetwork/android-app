@@ -74,7 +74,7 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getLegacyOtherPath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isMixinUrl
@@ -742,7 +742,7 @@ class WebFragment : BaseFragment() {
     private var imageUri: Uri? = null
     private fun getImageUri(): Uri {
         if (imageUri == null) {
-            imageUri = Uri.fromFile(requireContext().getOtherPath().createImageTemp())
+            imageUri = Uri.fromFile(requireContext().getLegacyOtherPath().createImageTemp())
         }
         return imageUri!!
     }

@@ -31,6 +31,7 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.microsoft.appcenter.AppCenter
+import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -42,7 +43,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_ATTACHMENT
+import one.mixin.android.Constants.Account.MediaStore.PREF_MEDIA_STORE
 import one.mixin.android.Constants.Account.PREF_BACKUP
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.Account.PREF_CHECK_STORAGE
@@ -81,9 +82,9 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
-import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.BackupMigrationJob
+import one.mixin.android.job.MediaStoreMigrationJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshCircleJob
@@ -123,6 +124,7 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.RootUtil
+import one.mixin.android.util.hasRWMediaStorePermission
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
@@ -271,8 +273,25 @@ class MainActivity : BlazeBaseActivity() {
         }
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
         jobManager.addJobInBackground(BackupJob())
-        if (!defaultSharedPreferences.getBoolean(PREF_ATTACHMENT, false)) {
-            jobManager.addJobInBackground(AttachmentMigrationJob())
+        if (!defaultSharedPreferences.getBoolean(PREF_MEDIA_STORE, false)) {
+            if (hasRWMediaStorePermission()) {
+                jobManager.addJobInBackground(MediaStoreMigrationJob())
+            } else {
+                RxPermissions(this)
+                    .request(
+                        android.Manifest.permission.CAMERA,
+                        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+                    .autoDispose(stopScope)
+                    .subscribe(
+                        { granted ->
+                            if (granted) {
+                                jobManager.addJobInBackground(MediaStoreMigrationJob())
+                            }
+                        }, {}
+                    )
+            }
         }
 
         if (!defaultSharedPreferences.getBoolean(PREF_BACKUP, false)) {

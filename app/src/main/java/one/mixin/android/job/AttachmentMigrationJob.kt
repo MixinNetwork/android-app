@@ -14,13 +14,13 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.createWebpTemp
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getAudioPath
-import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getLegacyAudioPath
+import one.mixin.android.extension.getLegacyDocumentPath
+import one.mixin.android.extension.getLegacyImagePath
+import one.mixin.android.extension.getLegacyVideoPath
 import one.mixin.android.extension.getOldMediaPath
-import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.putBoolean
@@ -55,36 +55,36 @@ class AttachmentMigrationJob : BaseJob(Params(PRIORITY_LOWER).groupBy(GROUP_ID).
                 MessageCategory.PLAIN_IMAGE.name, MessageCategory.SIGNAL_IMAGE.name -> {
                     when {
                         attachment.mediaMimeType?.isImageSupport() == false -> {
-                            MixinApplication.get().getImagePath().createEmptyTemp(attachment.conversationId, attachment.messageId)
+                            MixinApplication.get().getLegacyImagePath().createEmptyTemp(attachment.conversationId, attachment.messageId)
                         }
                         attachment.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
-                            MixinApplication.get().getImagePath().createImageTemp(attachment.conversationId, attachment.messageId, ".png")
+                            MixinApplication.get().getLegacyImagePath().createImageTemp(attachment.conversationId, attachment.messageId, ".png")
                         }
                         attachment.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
-                            MixinApplication.get().getImagePath().createGifTemp(attachment.conversationId, attachment.messageId)
+                            MixinApplication.get().getLegacyImagePath().createGifTemp(attachment.conversationId, attachment.messageId)
                         }
                         attachment.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
-                            MixinApplication.get().getImagePath().createWebpTemp(attachment.conversationId, attachment.messageId)
+                            MixinApplication.get().getLegacyImagePath().createWebpTemp(attachment.conversationId, attachment.messageId)
                         }
                         else -> {
-                            MixinApplication.get().getImagePath().createImageTemp(attachment.conversationId, attachment.messageId, ".jpg")
+                            MixinApplication.get().getLegacyImagePath().createImageTemp(attachment.conversationId, attachment.messageId, ".jpg")
                         }
                     }
                 }
                 MessageCategory.PLAIN_DATA.name, MessageCategory.SIGNAL_DATA.name -> {
                     val extensionName = attachment.name?.getExtensionName()
-                    MixinApplication.get().getDocumentPath()
+                    MixinApplication.get().getLegacyDocumentPath()
                         .createDocumentTemp(attachment.conversationId, attachment.messageId, extensionName)
                 }
                 MessageCategory.PLAIN_VIDEO.name, MessageCategory.SIGNAL_VIDEO.name -> {
                     val extensionName = attachment.name?.getExtensionName().let {
                         it ?: "mp4"
                     }
-                    MixinApplication.get().getVideoPath()
+                    MixinApplication.get().getLegacyVideoPath()
                         .createVideoTemp(attachment.conversationId, attachment.messageId, extensionName)
                 }
                 MessageCategory.PLAIN_AUDIO.name, MessageCategory.SIGNAL_AUDIO.name -> {
-                    MixinApplication.get().getAudioPath()
+                    MixinApplication.get().getLegacyAudioPath()
                         .createAudioTemp(attachment.conversationId, attachment.messageId, "ogg")
                 }
                 else -> null

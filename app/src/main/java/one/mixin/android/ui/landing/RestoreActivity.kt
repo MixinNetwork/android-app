@@ -20,7 +20,7 @@ import one.mixin.android.databinding.ActivityRestoreBinding
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
-import one.mixin.android.extension.getBackupPath
+import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
@@ -97,7 +97,7 @@ class RestoreActivity : BaseActivity() {
                         )
                     }
                     Result.NOT_FOUND -> {
-                        setMessage(context.getString(R.string.restore_not_found, context.getBackupPath()?.parentFile?.absoluteFile.toString()))
+                        setMessage(context.getString(R.string.restore_not_found, context.getLegacyBackupPath()?.parentFile?.absoluteFile.toString()))
                     }
                     else -> {
                         setMessage(

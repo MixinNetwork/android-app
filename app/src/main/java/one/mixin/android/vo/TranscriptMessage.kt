@@ -8,7 +8,7 @@ import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 import one.mixin.android.MixinApplication
-import one.mixin.android.extension.getMediaPath
+import one.mixin.android.extension.getLegacyMediaPath
 import one.mixin.android.extension.getTranscriptDirPath
 import one.mixin.android.util.JsonSkip
 import java.io.File
@@ -136,7 +136,7 @@ fun TranscriptMessage.copy(tid: String): TranscriptMessage {
 }
 
 fun TranscriptMessage.absolutePath(context: Context = MixinApplication.appContext): String? {
-    val mediaPath = MixinApplication.appContext.getMediaPath()?.toUri()?.toString() ?: return null
+    val mediaPath = MixinApplication.appContext.getLegacyMediaPath()?.toUri()?.toString() ?: return null
     val url = mediaUrl
     return when {
         url == null -> null

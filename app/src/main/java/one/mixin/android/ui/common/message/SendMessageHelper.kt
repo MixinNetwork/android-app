@@ -18,8 +18,8 @@ import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
+import one.mixin.android.extension.getLegacyImagePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.nowInUtc
@@ -462,7 +462,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
         }
         val messageId = UUID.randomUUID().toString()
         if (mimeType == MimeType.GIF.toString()) {
-            val gifFile = MixinApplication.get().getImagePath().createGifTemp(conversationId, messageId)
+            val gifFile = MixinApplication.get().getLegacyImagePath().createGifTemp(conversationId, messageId)
             val path = uri.getFilePath(MixinApplication.get()) ?: return -1
             gifFile.copyFromInputStream(FileInputStream(path))
             val size = getImageSize(gifFile)
@@ -492,7 +492,7 @@ class SendMessageHelper @Inject internal constructor(private val jobManager: Mix
             return 0
         }
 
-        val temp = MixinApplication.get().getImagePath().createImageTemp(conversationId, messageId, type = ".jpg")
+        val temp = MixinApplication.get().getLegacyImagePath().createImageTemp(conversationId, messageId, type = ".jpg")
         val path = uri.getFilePath(MixinApplication.get()) ?: return -1
         val imageFile: File = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && mimeType == MimeType.HEIC.toString()) {
             val source = ImageDecoder.createSource(File(path))

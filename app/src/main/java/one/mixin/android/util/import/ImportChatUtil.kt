@@ -8,7 +8,7 @@ import androidx.collection.arrayMapOf
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getFileName
-import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getLegacyOtherPath
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageCategory
@@ -114,7 +114,7 @@ class ImportChatUtil {
 
     fun copyFileToCache(uri: Uri, context: Context = MixinApplication.appContext) {
         val name = fixFileName(uri.getFileName())
-        val backupFile = File("${context.getOtherPath().absolutePath}${File.separator}$name")
+        val backupFile = File("${context.getLegacyOtherPath().absolutePath}${File.separator}$name")
         Timber.d(backupFile.absolutePath)
         context.contentResolver.openInputStream(uri)?.let { backupFile.copyFromInputStream(it) }
     }
