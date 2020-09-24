@@ -1,9 +1,11 @@
 package one.mixin.android.ui.common
 
+import android.net.Uri
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -27,6 +29,7 @@ import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.escapeSql
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
@@ -37,6 +40,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.ui.common.messenger.Messenger
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
@@ -47,19 +51,26 @@ import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationCircleManagerItem
+import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.Participant
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
+import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
+import one.mixin.android.vo.isGroup
+import one.mixin.android.webrtc.SelectItem
+import one.mixin.android.websocket.LiveMessagePayload
 
 class BottomSheetViewModel @ViewModelInject internal constructor(
     private val accountRepository: AccountRepository,
     private val jobManager: MixinJobManager,
     private val userRepository: UserRepository,
     private val assetRepository: AssetRepository,
-    private val conversationRepo: ConversationRepository
+    private val conversationRepo: ConversationRepository,
+    private val messenger: Messenger
 ) : ViewModel() {
     fun searchCode(code: String): Observable<Pair<String, Any>> {
         return accountRepository.searchCode(code).observeOn(AndroidSchedulers.mainThread())
@@ -548,4 +559,73 @@ class BottomSheetViewModel @ViewModelInject internal constructor(
     suspend fun deletePreviousTraces() = assetRepository.deletePreviousTraces()
 
     suspend fun suspendDeleteTraceById(traceId: String) = assetRepository.suspendDeleteTraceById(traceId)
+
+    suspend fun checkData(selectItem: SelectItem, callback: suspend (String, Boolean) -> Unit) {
+        withContext(Dispatchers.IO) {
+            if (selectItem.conversationId != null) {
+                val conversation = conversationRepo.getConversation(selectItem.conversationId)
+                if (conversation != null) {
+                    if (conversation.isGroup()) {
+                        withContext(Dispatchers.Main) {
+                            callback(conversation.conversationId, false)
+                        }
+                    } else {
+                        userRepository.findContactByConversationId(selectItem.conversationId)?.let { user ->
+                            withContext(Dispatchers.Main) {
+                                callback(conversation.conversationId, user.isBot())
+                            }
+                        }
+                    }
+                }
+            } else if (selectItem.userId != null) {
+                userRepository.getUserById(selectItem.userId)?.let { user ->
+                    val conversation = conversationRepo.findContactConversationByOwnerId(user.userId)
+                    if (conversation == null) {
+                        val createdAt = nowInUtc()
+                        val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
+                        val participants = arrayListOf(
+                            Participant(conversationId, Session.getAccountId()!!, "", createdAt),
+                            Participant(conversationId, user.userId, "", createdAt)
+                        )
+                        conversationRepo.syncInsertConversation(
+                            createConversation(
+                                conversationId,
+                                ConversationCategory.CONTACT.name,
+                                user.userId,
+                                ConversationStatus.START.ordinal
+                            ),
+                            participants
+                        )
+                        withContext(Dispatchers.Main) {
+                            callback(conversationId, user.isBot())
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun sendTextMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
+        messenger.sendTextMessage(viewModelScope, conversationId, sender, content, isPlain)
+    }
+
+    fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean): Flowable<Int>? {
+        return messenger.sendImageMessage(viewModelScope, conversationId, sender, uri, isPlain)
+    }
+
+    fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, isPlain: Boolean) {
+        messenger.sendContactMessage(conversationId, sender, shareUserId, isPlain)
+    }
+
+    fun sendPostMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
+        messenger.sendPostMessage(conversationId, sender, content, isPlain)
+    }
+
+    fun sendAppCardMessage(conversationId: String, sender: User, content: String) {
+        messenger.sendAppCardMessage(conversationId, sender, content)
+    }
+
+    fun sendLiveMessage(conversationId: String, sender: User, transferLiveData: LiveMessagePayload, isPlain: Boolean) {
+        messenger.sendLiveMessage(conversationId, sender, transferLiveData, isPlain)
+    }
 }

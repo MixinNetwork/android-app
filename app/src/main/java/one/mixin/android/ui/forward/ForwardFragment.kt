@@ -2,6 +2,8 @@ package one.mixin.android.ui.forward
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -9,33 +11,49 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
+import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.bugsnag.android.Bugsnag
+import com.bumptech.glide.Glide
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_forward.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ForwardEvent
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment.Companion.CATEGORY
+import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment.Companion.CONTENT
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_FROM_CONVERSATION
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_SHARE
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.Session
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.User
+import one.mixin.android.vo.toUser
+import one.mixin.android.webrtc.SelectItem
+import one.mixin.android.websocket.ContactMessagePayload
+import one.mixin.android.websocket.LiveMessagePayload
+import java.io.File
 
 @AndroidEntryPoint
 class ForwardFragment : BaseFragment() {
@@ -43,15 +61,19 @@ class ForwardFragment : BaseFragment() {
         const val TAG = "ForwardFragment"
 
         fun newInstance(
-            messages: ArrayList<ForwardMessage>,
+            messages: ArrayList<ForwardMessage>? = null,
             isShare: Boolean = false,
-            fromConversation: Boolean = false
+            fromConversation: Boolean = false,
+            category: String? = null,
+            content: String? = null
         ): ForwardFragment {
             val fragment = ForwardFragment()
             val b = bundleOf(
                 ARGS_MESSAGES to messages,
                 ARGS_SHARE to isShare,
-                ARGS_FROM_CONVERSATION to fromConversation
+                ARGS_FROM_CONVERSATION to fromConversation,
+                CATEGORY to category,
+                CONTENT to content
             )
             fragment.arguments = b
             return fragment
@@ -110,6 +132,8 @@ class ForwardFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         if (isShare) {
             title_view.title_tv.text = getString(R.string.share)
+        } else if (messages == null) {
+            title_view.title_tv.text = getString(R.string.send)
         }
         title_view.setOnClickListener {
             search_et?.hideKeyboard()
@@ -119,7 +143,32 @@ class ForwardFragment : BaseFragment() {
         forward_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         forward_bn.setOnClickListener {
             search_et?.hideKeyboard()
-            sendMessages(adapter.selectItem.size == 1)
+            if (messages == null) {
+                val resultData = adapter.selectItem.mapNotNull {
+                    when (it) {
+                        is ConversationItem -> {
+                            SelectItem(it.conversationId, null)
+                        }
+                        is User -> {
+                            SelectItem(null, it.userId)
+                        }
+                        else -> {
+                            null
+                        }
+                    }
+                }
+                if (arguments?.getString(CONTENT) != null) {
+                    sendMessage(resultData)
+                    return@setOnClickListener
+                }
+                val result = Intent().apply {
+                    putParcelableArrayListExtra(ForwardActivity.ARGS_RESULT, ArrayList(resultData))
+                }
+                requireActivity().setResult(Activity.RESULT_OK, result)
+                requireActivity().finish()
+            } else {
+                sendMessages(adapter.selectItem.size == 1)
+            }
         }
         adapter.setForwardListener(
             object : ForwardAdapter.ForwardListener {
@@ -172,6 +221,57 @@ class ForwardFragment : BaseFragment() {
         adapter.sourceBots = bots
 
         adapter.changeData()
+    }
+
+    private fun sendMessage(selectItem: List<SelectItem>) {
+        lifecycleScope.launch {
+            val sender = Session.getAccount()?.toUser() ?: return@launch
+            val content = requireNotNull(arguments?.getString(CONTENT)) { "Error data" }
+            val category = requireNotNull(arguments?.getString(CATEGORY)) { "Error data" }
+            selectItem.forEach { item ->
+                chatViewModel.checkData(item) { conversationId: String, isPlain: Boolean ->
+                    when (category) {
+                        Constants.ShareCategory.TEXT -> {
+                            chatViewModel.sendTextMessage(conversationId, sender, content, isPlain)
+                        }
+                        Constants.ShareCategory.IMAGE -> {
+                            withContext(Dispatchers.IO) {
+                                val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
+                                val file: File = Glide.with(requireContext()).asFile().load(shareImageData.url).submit().get()
+                                chatViewModel.sendImageMessage(conversationId, sender, file.toUri(), isPlain)
+                            }?.autoDispose(stopScope)?.subscribe(
+                                {
+                                    when (it) {
+                                        0 -> {
+                                        }
+                                        -1 -> context?.toast(R.string.error_image)
+                                        -2 -> context?.toast(R.string.error_format)
+                                    }
+                                },
+                                {
+                                    context?.toast(R.string.error_image)
+                                }
+                            )
+                        }
+                        Constants.ShareCategory.CONTACT -> {
+                            val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
+                            chatViewModel.sendContactMessage(conversationId, sender, contactData.userId, isPlain)
+                        }
+                        Constants.ShareCategory.POST -> {
+                            chatViewModel.sendPostMessage(conversationId, sender, content, isPlain)
+                        }
+                        Constants.ShareCategory.APP_CARD -> {
+                            chatViewModel.sendAppCardMessage(conversationId, sender, content)
+                        }
+                        Constants.ShareCategory.LIVE -> {
+                            val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java)
+                            chatViewModel.sendLiveMessage(conversationId, sender, liveData, isPlain)
+                        }
+                    }
+                }
+            }
+            requireActivity().finish()
+        }
     }
 
     private fun sendMessages(single: Boolean) {

@@ -308,6 +308,17 @@ fun createAppCardMessage(
     .setContent(content)
     .build()
 
+fun createAppButtonGroupMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    content: String,
+    createdAt: String,
+    status: String
+) = MessageBuilder(messageId, conversationId, userId, MessageCategory.APP_BUTTON_GROUP.name, status, createdAt)
+    .setContent(content)
+    .build()
+
 fun createCallMessage(
     messageId: String,
     conversationId: String,

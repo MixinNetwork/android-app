@@ -5,11 +5,19 @@ import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ShareCategory.APP_CARD
+import one.mixin.android.Constants.ShareCategory.CONTACT
+import one.mixin.android.Constants.ShareCategory.IMAGE
+import one.mixin.android.Constants.ShareCategory.LIVE
+import one.mixin.android.Constants.ShareCategory.POST
+import one.mixin.android.Constants.ShareCategory.TEXT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
@@ -21,6 +29,8 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import timber.log.Timber
+import java.lang.IllegalStateException
 
 fun String.openAsUrlOrWeb(
     conversationId: String?,
@@ -28,7 +38,7 @@ fun String.openAsUrlOrWeb(
     scope: CoroutineScope,
     app: App? = null,
     appCard: AppCardData? = null
-) = openAsUrl(supportFragmentManager, scope) {
+) = openAsUrl(supportFragmentManager, scope, currentConversation = conversationId, app = app) {
     WebBottomSheetDialogFragment.newInstance(this, conversationId, app, appCard)
         .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
 }
@@ -79,7 +89,10 @@ fun String.isMixinUrl(): Boolean {
 fun String.openAsUrl(
     supportFragmentManager: FragmentManager,
     scope: CoroutineScope,
-    extraAction: () -> Unit
+    currentConversation: String? = null,
+    app: App? = null,
+    host: String? = null,
+    extraAction: () -> Unit,
 ) {
     if (startsWith(Constants.Scheme.TRANSFER, true) ||
         startsWith(Constants.Scheme.HTTPS_TRANSFER, true)
@@ -99,12 +112,37 @@ fun String.openAsUrl(
             }
         }
     } else if (startsWith(Constants.Scheme.SEND, true)) {
-        Uri.parse(this).getQueryParameter("text")?.let {
-            ForwardActivity.show(
-                MixinApplication.appContext,
-                arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it))
-            )
-        }
+        val uri = Uri.parse(this)
+        val text = uri.getQueryParameter("text")
+        text.notNullWithElse(
+            {
+                ForwardActivity.show(
+                    MixinApplication.appContext,
+                    arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it))
+                )
+            },
+            {
+                val category = uri.getQueryParameter("category")
+                val conversationId = uri.getQueryParameter("conversation").let {
+                    if (it == currentConversation) {
+                        it
+                    } else {
+                        null
+                    }
+                }
+                val data = uri.getQueryParameter("data")
+                if (category != null && category in arrayOf(TEXT, IMAGE, LIVE, CONTACT, POST, APP_CARD) && data != null) {
+                    try {
+                        ShareMessageBottomSheetDialogFragment.newInstance(category, String(Base64.decode(data)), conversationId, app, host)
+                            .showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
+                    } catch (e: Exception) {
+                        Timber.e(IllegalStateException("Error data:${e.message}"))
+                    }
+                } else {
+                    Timber.e(IllegalStateException("Error data"))
+                }
+            }
+        )
     } else if (startsWith(Constants.Scheme.DEVICE, true)) {
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
