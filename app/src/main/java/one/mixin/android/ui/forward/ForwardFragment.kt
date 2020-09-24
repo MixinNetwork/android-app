@@ -251,17 +251,17 @@ class ForwardFragment : BaseFragment() {
                                 val file: File = Glide.with(requireContext()).asFile().load(shareImageData.url).submit().get()
                                 chatViewModel.sendImageMessage(conversationId, sender, file.toUri(), isPlain)
                             }?.autoDispose(stopScope)?.subscribe(
-                                    {
-                                        when (it) {
-                                            0 -> {
-                                            }
-                                            -1 -> context?.toast(R.string.error_image)
-                                            -2 -> context?.toast(R.string.error_format)
+                                {
+                                    when (it) {
+                                        0 -> {
                                         }
-                                    },
-                                    {
-                                        context?.toast(R.string.error_image)
+                                        -1 -> context?.toast(R.string.error_image)
+                                        -2 -> context?.toast(R.string.error_format)
                                     }
+                                },
+                                {
+                                    context?.toast(R.string.error_image)
+                                }
                             )
                         }
                         Constants.ShareCategory.CONTACT -> {

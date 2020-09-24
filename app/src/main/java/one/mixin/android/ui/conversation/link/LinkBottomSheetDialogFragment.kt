@@ -45,7 +45,6 @@ import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.openAsUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.getIconUrlName
@@ -558,7 +557,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                             arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it))
                         )
                         dismiss()
-
                     },
                     {
                         val category = uri.getQueryParameter("category")
@@ -582,8 +580,8 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         } else {
                             showError(R.string.error_data)
                         }
-
-                    })
+                    }
+                )
             }
         } else {
             showError()
