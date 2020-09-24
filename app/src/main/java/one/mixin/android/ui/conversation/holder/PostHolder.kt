@@ -171,7 +171,8 @@ class PostHolder constructor(containerView: View) : BaseViewHolder(containerView
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, 12.dp, 12.dp)
-            secretIcon?.setBounds(0, 0, 8.dp, 8.dp)
+            secretIcon?.setBounds(0, 0, dp8, dp8)
+            representativeIcon?.setBounds(0, 0, dp8, dp8)
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon ?: representativeIcon, null, statusIcon, null)
         }
         chatLayout(isMe, isLast)

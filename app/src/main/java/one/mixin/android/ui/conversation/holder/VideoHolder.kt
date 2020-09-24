@@ -241,6 +241,7 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         setStatusIcon(isMe, messageItem.status, messageItem.isSignal(), isRepresentative, true) { statusIcon, secretIcon, representativeIcon ->
             statusIcon?.setBounds(0, 0, dp12, dp12)
             secretIcon?.setBounds(0, 0, dp8, dp8)
+            representativeIcon?.setBounds(0, 0, dp8, dp8)
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, secretIcon ?: representativeIcon, null, statusIcon, null)
         }
 
