@@ -114,18 +114,16 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
         albumMediaCollection.onDestroy()
     }
 
-    private var first = true
-
     override fun onAlbumMediaLoad(cursor: Cursor) {
-        if (!first || cursor.isClosed) return
+        if (cursor.isClosed) return
 
-        first = false
-        rv.post {
+        rv?.post {
             val itemList = arrayListOf<Item>()
             while (cursor.moveToNext()) {
                 val item = Item.valueOf(cursor)
                 itemList.add(item)
             }
+            if (itemList.isNullOrEmpty()) return@post
 
             adapter.items = itemList
         }
@@ -135,5 +133,9 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
 
     fun hideBlur() {
         adapter.hideBLur()
+    }
+
+    fun reloadAlbum() {
+        albumMediaCollection.restartLoader(album)
     }
 }

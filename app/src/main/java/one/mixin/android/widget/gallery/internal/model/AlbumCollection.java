@@ -80,6 +80,10 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
         mCallbacks = null;
     }
 
+    public void restartLoader() {
+        mLoaderManager.restartLoader(LOADER_ID, null, this);
+    }
+
     public void loadAlbums() {
         mLoaderManager.initLoader(LOADER_ID, null, this);
     }
