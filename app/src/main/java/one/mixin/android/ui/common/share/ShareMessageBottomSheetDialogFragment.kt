@@ -178,6 +178,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 when (category) {
                     Constants.ShareCategory.TEXT -> {
                         viewModel.sendTextMessage(conversationId, sender, content, isPlain)
+                        toast(R.string.send_success)
                         dismiss()
                     }
                     Constants.ShareCategory.IMAGE -> {
@@ -189,6 +190,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             {
                                 when (it) {
                                     0 -> {
+                                        toast(R.string.send_success)
                                         dismiss()
                                     }
                                     -1 -> context?.toast(R.string.error_image)
@@ -203,19 +205,23 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     Constants.ShareCategory.CONTACT -> {
                         val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
                         viewModel.sendContactMessage(conversationId, sender, contactData.userId, isPlain)
+                        toast(R.string.send_success)
                         dismiss()
                     }
                     Constants.ShareCategory.POST -> {
                         viewModel.sendPostMessage(conversationId, sender, content, isPlain)
+                        toast(R.string.send_success)
                         dismiss()
                     }
                     Constants.ShareCategory.APP_CARD -> {
                         viewModel.sendAppCardMessage(conversationId, sender, content)
+                        toast(R.string.send_success)
                         dismiss()
                     }
                     Constants.ShareCategory.LIVE -> {
                         val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java)
                         viewModel.sendLiveMessage(conversationId, sender, liveData, isPlain)
+                        toast(R.string.send_success)
                         dismiss()
                     }
                 }
