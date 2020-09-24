@@ -12,6 +12,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
@@ -431,9 +432,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
     }
 
     private fun shareMedia(isVideo: Boolean, url: String) {
+        var uri: Uri
         val sendIntent = Intent().apply {
             action = Intent.ACTION_SEND
-            var uri = Uri.parse(url)
+            uri = Uri.parse(url)
             if (ContentResolver.SCHEME_FILE == uri.scheme) {
                 val path = uri.getFilePath(this@MediaPagerActivity)
                 if (path == null) {
@@ -442,15 +444,22 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 }
                 uri = getUriForFile(File(path))
                 putExtra(Intent.EXTRA_STREAM, uri)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             } else {
                 putExtra(Intent.EXTRA_STREAM, uri)
             }
             type = if (isVideo) "video/*" else "image/*"
         }
-        val name =
-            getString(if (isVideo) R.string.common_video else R.string.common_pic)
-        startActivity(Intent.createChooser(sendIntent, getString(R.string.share_to, name)))
+        val name = getString(if (isVideo) R.string.common_video else R.string.common_pic)
+        val chooser = Intent.createChooser(sendIntent, getString(R.string.share_to, name))
+        val resInfoList = packageManager.queryIntentActivities(chooser, PackageManager.MATCH_DEFAULT_ONLY)
+        resInfoList.forEach {
+            val packageName = it.activityInfo.packageName
+            grantUriPermission(
+                packageName, uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+        }
+        startActivity(chooser)
     }
 
     private var pipAnimationInProgress = false

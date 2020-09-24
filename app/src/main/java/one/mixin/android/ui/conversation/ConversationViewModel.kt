@@ -595,7 +595,7 @@ internal constructor(
         return conversationRepository.findUnreadMessagesSync(conversationId, accountId)
     }
 
-    private fun sendForwardMessages(
+    fun sendForwardMessages(
         conversationId: String,
         messages: List<ForwardMessage>?,
         isPlainMessage: Boolean,

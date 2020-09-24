@@ -27,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ForwardEvent
@@ -65,7 +66,8 @@ class ForwardFragment : BaseFragment() {
             isShare: Boolean = false,
             fromConversation: Boolean = false,
             category: String? = null,
-            content: String? = null
+            content: String? = null,
+            conversationId: String? = null
         ): ForwardFragment {
             val fragment = ForwardFragment()
             val b = bundleOf(
@@ -73,7 +75,8 @@ class ForwardFragment : BaseFragment() {
                 ARGS_SHARE to isShare,
                 ARGS_FROM_CONVERSATION to fromConversation,
                 CATEGORY to category,
-                CONTENT to content
+                CONTENT to content,
+                ARGS_CONVERSATION_ID to conversationId
             )
             fragment.arguments = b
             return fragment
@@ -94,6 +97,9 @@ class ForwardFragment : BaseFragment() {
     }
     private val fromConversation: Boolean by lazy {
         requireArguments().getBoolean(ARGS_FROM_CONVERSATION)
+    }
+    private val conversationId: String? by lazy {
+        requireArguments().getString(ARGS_CONVERSATION_ID)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -130,6 +136,10 @@ class ForwardFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        if (conversationId != null) {
+            sendDirectMessages(conversationId!!)
+            return
+        }
         if (isShare) {
             title_view.title_tv.text = getString(R.string.share)
         } else if (messages == null) {
@@ -241,17 +251,17 @@ class ForwardFragment : BaseFragment() {
                                 val file: File = Glide.with(requireContext()).asFile().load(shareImageData.url).submit().get()
                                 chatViewModel.sendImageMessage(conversationId, sender, file.toUri(), isPlain)
                             }?.autoDispose(stopScope)?.subscribe(
-                                {
-                                    when (it) {
-                                        0 -> {
+                                    {
+                                        when (it) {
+                                            0 -> {
+                                            }
+                                            -1 -> context?.toast(R.string.error_image)
+                                            -2 -> context?.toast(R.string.error_format)
                                         }
-                                        -1 -> context?.toast(R.string.error_image)
-                                        -2 -> context?.toast(R.string.error_format)
+                                    },
+                                    {
+                                        context?.toast(R.string.error_image)
                                     }
-                                },
-                                {
-                                    context?.toast(R.string.error_image)
-                                }
                             )
                         }
                         Constants.ShareCategory.CONTACT -> {
@@ -273,6 +283,13 @@ class ForwardFragment : BaseFragment() {
             }
             requireActivity().finish()
         }
+    }
+
+    private fun sendDirectMessages(cid: String) {
+        chatViewModel.sendForwardMessages(cid, messages, isPlainMessage = false, showSuccess = false)
+        MainActivity.reopen(requireContext())
+        activity?.finish()
+        ConversationActivity.show(requireContext(), conversationId)
     }
 
     private fun sendMessages(single: Boolean) {

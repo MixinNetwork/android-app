@@ -3,6 +3,7 @@ package one.mixin.android.ui.home
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +16,7 @@ import android.widget.ImageView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -26,6 +28,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
@@ -85,20 +92,17 @@ import one.mixin.android.ui.home.bot.TOP_BOT
 import one.mixin.android.ui.home.bot.getCategoryIcon
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
+import one.mixin.android.util.addDynamicShortcut
 import one.mixin.android.util.markdown.MarkwonUtil
+import one.mixin.android.util.maxDynamicShortcutCount
 import one.mixin.android.util.mention.MentionRenderCache
-import one.mixin.android.vo.AppButtonData
-import one.mixin.android.vo.AppCardData
-import one.mixin.android.vo.ConversationItem
-import one.mixin.android.vo.ConversationStatus
-import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.showVerifiedOrBot
+import one.mixin.android.vo.*
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -279,6 +283,10 @@ class ConversationListFragment : LinkFragment() {
                             unreadCount = item.unseenMessageCount ?: 0
                         )
                     }
+
+                    doAsync {
+                        updateDynamicShortcut(item)
+                    }
                 }
             }
         }
@@ -447,6 +455,58 @@ class ConversationListFragment : LinkFragment() {
         } else {
             messageAdapter.setShowHeader(false, message_rv)
         }
+    }
+
+    private fun updateDynamicShortcut(item: ConversationItem) {
+        val dynamicShortcuts = ShortcutManagerCompat.getDynamicShortcuts(requireContext())
+        val exist = dynamicShortcuts.find { it.id == item.conversationId }
+        if (exist != null) {
+            dynamicShortcuts.remove(exist)
+            dynamicShortcuts.add(exist)
+            val result = ShortcutManagerCompat.updateShortcuts(requireContext(), dynamicShortcuts)
+            Timber.d("$TAG updateShortcuts result: $result")
+            return
+        }
+        Glide.with(requireContext())
+            .asBitmap()
+            .load(item.iconUrl())
+            .listener(
+                object : RequestListener<Bitmap> {
+                    override fun onResourceReady(
+                        resource: Bitmap?,
+                        model: Any?,
+                        target: Target<Bitmap>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        if (dynamicShortcuts.size >= maxDynamicShortcutCount) {
+                            val last = dynamicShortcuts[dynamicShortcuts.size - 1]
+                            ShortcutManagerCompat.removeDynamicShortcuts(requireContext(), listOf(last.id))
+                        }
+                        val result = addDynamicShortcut(
+                            requireContext(),
+                            item.conversationId,
+                            item.getConversationName(), resource!!,
+                            ConversationActivity.getShortcutIntent(
+                                requireContext(),
+                                item.conversationId,
+                                item.ownerId
+                            )
+                        )
+                        Timber.d("$TAG addDynamicShortcut result: $result")
+                        return false
+                    }
+
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Bitmap>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
+                }
+            ).submit()
     }
 
     private fun refreshBot() {
