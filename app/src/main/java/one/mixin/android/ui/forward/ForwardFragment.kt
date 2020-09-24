@@ -168,6 +168,7 @@ class ForwardFragment : BaseFragment() {
                 requireActivity().finish()
             } else {
                 sendMessages(adapter.selectItem.size == 1)
+                toast(R.string.send_success)
             }
         }
         adapter.setForwardListener(
