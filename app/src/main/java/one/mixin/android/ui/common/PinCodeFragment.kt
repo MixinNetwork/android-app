@@ -11,12 +11,8 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.crypto.ecdhAndSave
-import one.mixin.android.extension.clear
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.saveQRCode
-import one.mixin.android.extension.vibrate
+import one.mixin.android.crypto.ecdh
+import one.mixin.android.extension.*
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
@@ -94,7 +90,10 @@ abstract class PinCodeFragment : FabLoadingFragment() {
             defaultSharedPreferences.clear()
         }
         val privateKey = sessionKey.private as EdDSAPrivateKey
-        ecdhAndSave(account.pinToken, privateKey)
+        val key = ecdh(account.pinToken, privateKey) ?: return@withContext
+
+        Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
+        Session.storePinToken(key.base64Encode())
         Session.storeAccount(account)
 
         verification_keyboard.animate().translationY(300f).start()

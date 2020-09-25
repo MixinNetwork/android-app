@@ -7,7 +7,6 @@ import okhttp3.tls.HeldCertificate
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.toLeByteArray
-import one.mixin.android.util.Session
 import one.mixin.android.util.reportException
 import org.whispersystems.curve25519.Curve25519
 import org.whispersystems.curve25519.Curve25519.BEST
@@ -37,16 +36,13 @@ fun generateEd25519KeyPair(): KeyPair {
     return net.i2p.crypto.eddsa.KeyPairGenerator().generateKeyPair()
 }
 
-fun ecdhAndSave(pinToken: String, privateKey: EdDSAPrivateKey) {
-    val key = try {
+fun ecdh(pinToken: String, privateKey: EdDSAPrivateKey): ByteArray? =
+    try {
         Curve25519.getInstance(BEST).calculateAgreement(pinToken.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
     } catch (t: Throwable) {
         reportException("ECDH pinToken with private key ", t)
-        return
+        null
     }
-    Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
-    Session.storePinToken(key.base64Encode())
-}
 
 fun privateKeyToCurve25519(edSeed: ByteArray): ByteArray {
     val md = MessageDigest.getInstance("SHA-512")

@@ -21,7 +21,7 @@ import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
-import one.mixin.android.crypto.ecdhAndSave
+import one.mixin.android.crypto.ecdh
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
@@ -88,7 +88,10 @@ class LoadingFragment : BaseFragment() {
                         val account = Session.getAccount()
                         account?.let { acc ->
                             acc.pinToken = r.pinToken
-                            ecdhAndSave(r.pinToken, privateKey)
+                            val key = ecdh(r.pinToken, privateKey) ?: return
+
+                            Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
+                            Session.storePinToken(key.base64Encode())
                             Session.storeAccount(acc)
                         }
                         return
