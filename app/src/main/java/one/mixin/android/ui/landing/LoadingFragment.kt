@@ -21,10 +21,9 @@ import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
+import one.mixin.android.crypto.ecdhAndSave
 import one.mixin.android.crypto.generateEd25519KeyPair
-import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.common.BaseFragment
@@ -33,7 +32,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.Session
 import one.mixin.android.util.reportException
-import org.whispersystems.curve25519.Curve25519
 
 @AndroidEntryPoint
 class LoadingFragment : BaseFragment() {
@@ -90,16 +88,10 @@ class LoadingFragment : BaseFragment() {
                         val account = Session.getAccount()
                         account?.let { acc ->
                             acc.pinToken = r.pinToken
-                            val key = try {
-                                Curve25519.getInstance(Curve25519.BEST).calculateAgreement(r.pinToken.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
-                            } catch (t: Throwable) {
-                                reportException("Update EdDSA key calculateAgreement", t)
-                                return
-                            }
+                            ecdhAndSave(r.pinToken, privateKey)
                             Session.storeAccount(acc)
-                            Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
-                            Session.storePinToken(key.base64Encode())
                         }
+                        return
                     }
                 } else {
                     val code = response.errorCode

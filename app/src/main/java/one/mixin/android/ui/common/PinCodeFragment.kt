@@ -11,10 +11,8 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.crypto.privateKeyToCurve25519
-import one.mixin.android.extension.base64Encode
+import one.mixin.android.crypto.ecdhAndSave
 import one.mixin.android.extension.clear
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.saveQRCode
@@ -25,15 +23,12 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.database.clearDatabase
 import one.mixin.android.util.database.getLastUserId
-import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
 import org.jetbrains.anko.windowManager
-import org.whispersystems.curve25519.Curve25519
-import org.whispersystems.curve25519.Curve25519.BEST
 import java.security.KeyPair
 
 abstract class PinCodeFragment : FabLoadingFragment() {
@@ -99,15 +94,8 @@ abstract class PinCodeFragment : FabLoadingFragment() {
             defaultSharedPreferences.clear()
         }
         val privateKey = sessionKey.private as EdDSAPrivateKey
-        val key = try {
-            Curve25519.getInstance(BEST).calculateAgreement(account.pinToken.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
-        } catch (t: Throwable) {
-            reportException("Login calculateAgreement", t)
-            return@withContext
-        }
+        ecdhAndSave(account.pinToken, privateKey)
         Session.storeAccount(account)
-        Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
-        Session.storePinToken(key.base64Encode())
 
         verification_keyboard.animate().translationY(300f).start()
         MixinApplication.get().onlining.set(true)
