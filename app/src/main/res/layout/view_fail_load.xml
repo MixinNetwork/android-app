@@ -8,25 +8,25 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/title_tv"
-        android:layout_marginBottom="@dimen/margin20"
+        android:layout_above="@id/web_fail_title"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/logo" />
+        android:layout_marginBottom="@dimen/margin20"
+        android:src="@drawable/ic_web_load_fail" />
 
     <TextView
-        android:id="@+id/title_tv"
+        android:id="@+id/web_fail_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/des_tv"
+        android:layout_above="@id/web_fail_description"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="@dimen/margin12"
-        android:text="@string/update_mixin"
-        android:textStyle="bold"
+        android:text="@string/web_cannot_reached_title"
         android:textColor="?text_primary"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/des_tv"
+        android:id="@+id/web_fail_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
@@ -34,23 +34,39 @@
         android:layout_marginTop="@dimen/margin12"
         android:layout_marginEnd="40dp"
         android:gravity="center"
-        android:text="@string/update_mixin_description"
+        android:text="@string/web_cannot_reached_desc"
         android:textColor="?text_minor" />
 
     <TextView
-        android:id="@+id/update_tv"
+        android:id="@+id/reload_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_above="@id/contact_tv"
         android:layout_centerHorizontal="true"
+        android:layout_marginBottom="40dp"
         android:background="@drawable/bg_round_blue_btn_solid"
-        android:layout_marginBottom="90dp"
         android:gravity="center"
         android:minWidth="146dp"
         android:minHeight="40dp"
         android:paddingStart="@dimen/margin12"
         android:paddingEnd="@dimen/margin12"
-        android:text="@string/action_update"
+        android:text="@string/action_reload"
         android:textColor="@color/white"
-        android:textSize="16sp"/>
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/contact_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/bottom_bottom_margin"
+        android:gravity="center"
+        android:minWidth="146dp"
+        android:minHeight="40dp"
+        android:paddingStart="@dimen/margin12"
+        android:paddingEnd="@dimen/margin12"
+        android:text="@string/web_contact_developer"
+        android:textColor="?text_blue"
+        android:textSize="16sp" />
 </RelativeLayout>

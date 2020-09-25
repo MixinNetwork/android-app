@@ -183,7 +183,6 @@ object AppModule {
                         MixinApplication.get().gotoOldVersionAlert()
                         return@run
                     } else if (mixinResponse.errorCode != AUTHENTICATION) return@run
-
                     val authorization = response.request.header("Authorization")
                     if (!authorization.isNullOrBlank() && authorization.startsWith("Bearer ")) {
                         val jwt = authorization.substring(7)

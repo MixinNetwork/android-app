@@ -68,6 +68,13 @@
         android:visibility="gone"
         android:layout_below="@id/ph"/>
 
+    <one.mixin.android.widget.FailLoadView
+        android:id="@+id/fail_load_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:layout_below="@id/ph"/>
+
     <ProgressBar
         android:id="@+id/pb"
         style="?android:attr/progressBarStyleLarge"

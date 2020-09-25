@@ -225,7 +225,7 @@
     <string name="landing_verification_tip_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
     <string name="landing_check_updates">Check for Updates</string>
     <string name="update_mixin">Update Mixin</string>
-    <string name="update_mixin_description">The current version (%1$s) is no longer avaliable!\nPlease click "Update" below to update to the latest version from the App Store.</string>
+    <string name="update_mixin_description">The current version (%1$s) is no longer avaliable!\nPlease click "Update" below to update to the latest version from the Google Play.</string>
     <!--contacts-->
     <string name="contact_new_group_chat_title">New Group Chat</string>
     <string name="contact_new_group_chat_desc">Create a group chat with up to  friends</string>
@@ -750,6 +750,7 @@
     <string name="action_open">Open in browser</string>
     <string name="action_refresh">Refresh</string>
     <string name="action_update">Update</string>
+    <string name="action_reload">Reload</string>
     <string name="slide_to_cancel">Slide to Cancel</string>
     <string name="gallery_all">All Media</string>
     <string name="gallery_empty_text">No media yet</string>
@@ -897,5 +898,9 @@
     <!-- share -->
     <string name="share_message_description">Are you sure you want to send a %2$s from %1$s ?</string>
     <string name="share_message_description_empty">Are you sure you want to send the %1$s ?</string>
+    <!-- web -->
+    <string name="web_cannot_reached_title">This webpage can\'t be reached</string>
+    <string name="web_cannot_reached_desc">%1$s took too long to respond. Please check your network and try to switch 4G, Wi-Fi or VPN to reload the page.</string>
+    <string name="web_contact_developer">Contact Developer</string>
 </resources>
 
