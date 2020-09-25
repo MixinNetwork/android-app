@@ -70,7 +70,7 @@
                     android:src="@drawable/ic_play_arrow"
                     android:visibility="gone" />
 
-                <TextView
+                <one.mixin.android.widget.ProgressTextView
                     android:id="@+id/duration_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

@@ -115,30 +115,52 @@ class VideoQuoteHolder constructor(containerView: View) : BaseViewHolder(contain
         }
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        if (messageItem.mediaStatus == MediaStatus.DONE.name) {
-            messageItem.mediaDuration.notNullWithElse(
-                {
-                    itemView.duration_tv.visibility = View.VISIBLE
-                    itemView.duration_tv.text = it.toLongOrNull()?.formatMillis() ?: ""
-                },
-                {
-                    itemView.duration_tv.visibility = View.GONE
-                }
-            )
-        } else {
-            messageItem.mediaSize.notNullWithElse(
-                {
-                    if (it == 0L) {
-                        itemView.duration_tv.visibility = View.GONE
-                    } else {
+        when (messageItem.mediaStatus) {
+            MediaStatus.DONE.name -> {
+                itemView.duration_tv.bindId(null)
+                messageItem.mediaDuration.notNullWithElse(
+                    {
                         itemView.duration_tv.visibility = View.VISIBLE
-                        itemView.duration_tv.text = it.fileSize()
+                        itemView.duration_tv.text = it.toLongOrNull()?.formatMillis() ?: ""
+                    },
+                    {
+                        itemView.duration_tv.visibility = View.GONE
                     }
-                },
-                {
-                    itemView.duration_tv.visibility = View.GONE
-                }
-            )
+                )
+            }
+            MediaStatus.PENDING.name -> {
+                messageItem.mediaSize.notNullWithElse(
+                    {
+                        itemView.duration_tv.visibility = View.VISIBLE
+                        if (it == 0L) {
+                            itemView.duration_tv.bindId(messageItem.messageId)
+                        } else {
+                            itemView.duration_tv.text = it.fileSize()
+                            itemView.duration_tv.bindId(null)
+                        }
+                    },
+                    {
+                        itemView.duration_tv.bindId(null)
+                        itemView.duration_tv.visibility = View.GONE
+                    }
+                )
+            }
+            else -> {
+                messageItem.mediaSize.notNullWithElse(
+                    {
+                        if (it == 0L) {
+                            itemView.duration_tv.visibility = View.GONE
+                        } else {
+                            itemView.duration_tv.visibility = View.VISIBLE
+                            itemView.duration_tv.text = it.fileSize()
+                        }
+                    },
+                    {
+                        itemView.duration_tv.visibility = View.GONE
+                    }
+                )
+                itemView.duration_tv.bindId(null)
+            }
         }
         messageItem.mediaStatus?.let {
             when (it) {
