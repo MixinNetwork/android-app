@@ -133,8 +133,8 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
                                 itemView.duration_tv.bindId(messageItem.messageId)
                             } else {
                                 itemView.duration_tv.text = it.fileSize()
+                                itemView.duration_tv.bindId(null)
                             }
-                            itemView.duration_tv.bindId(messageItem.messageId)
                         },
                         {
                             itemView.duration_tv.bindId(null)
