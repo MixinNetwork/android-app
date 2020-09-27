@@ -46,6 +46,7 @@ class BiometricDialog(
                 is InvalidKeyException, is NullPointerException -> {
                     BiometricUtil.deleteKey(context)
                     context.toast(R.string.wallet_biometric_invalid)
+                    reportException("$CRASHLYTICS_BIOMETRIC-getDecryptCipher", e)
                     callback?.onCancel()
                 }
                 else ->
@@ -83,7 +84,7 @@ class BiometricDialog(
                     val pin = decryptByteArray.toString(Charset.defaultCharset())
                     callback?.onPinComplete(pin)
                 } catch (e: Exception) {
-                    reportException(e)
+                    reportException("$CRASHLYTICS_BIOMETRIC-onAuthenticationSucceeded", e)
                 }
             }
         }
