@@ -6,17 +6,13 @@ import android.view.View
 import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.crypto.getPrivateKeyPem
-import one.mixin.android.crypto.rsaDecrypt
-import one.mixin.android.extension.clear
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.saveQRCode
-import one.mixin.android.extension.vibrate
+import one.mixin.android.crypto.calculateAgreement
+import one.mixin.android.extension.*
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
@@ -93,10 +89,13 @@ abstract class PinCodeFragment : FabLoadingFragment() {
             clearDatabase(requireContext())
             defaultSharedPreferences.clear()
         }
+        val privateKey = sessionKey.private as EdDSAPrivateKey
+        val key = calculateAgreement(account.pinToken.decodeBase64(), privateKey) ?: return@withContext
+
+        Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
+        Session.storePinToken(key.base64Encode())
         Session.storeAccount(account)
-        Session.storeToken(sessionKey.getPrivateKeyPem())
-        val key = rsaDecrypt(sessionKey.private, account.sessionId, account.pinToken)
-        Session.storePinToken(key)
+
         verification_keyboard.animate().translationY(300f).start()
         MixinApplication.get().onlining.set(true)
 

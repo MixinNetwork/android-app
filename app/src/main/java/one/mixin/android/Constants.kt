@@ -24,7 +24,6 @@ object Constants {
     }
 
     object Account {
-
         const val PREF_PIN_CHECK = "pref_pin_check"
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_WRONG_TIME = "pref_wrong_time"
@@ -44,6 +43,7 @@ object Constants {
         const val PREF_ATTACHMENT_OFFSET = "pref_attachment_row_offset"
         const val PREF_BACKUP = "pref_attachment_backup"
         const val PREF_CHECK_STORAGE = "pref_check_storage"
+        const val PREF_TRIED_UPDATE_KEY = "pref_tried_update_key"
     }
 
     object Scheme {

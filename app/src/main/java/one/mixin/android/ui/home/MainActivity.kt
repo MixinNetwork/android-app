@@ -224,6 +224,12 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
+        if (Session.shouldUpdateKey()) {
+            InitializeActivity.showLoading(this, false)
+            finish()
+            return
+        }
+
         if (defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
             defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
             delayShowModifyMobile()

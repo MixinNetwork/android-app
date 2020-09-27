@@ -9,15 +9,13 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_verification_emergency.*
 import kotlinx.coroutines.launch
+import net.i2p.crypto.eddsa.EdDSAPublicKey
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
-import one.mixin.android.crypto.CryptoPreference
-import one.mixin.android.crypto.SignalProtocol
-import one.mixin.android.crypto.generateRSAKeyPair
-import one.mixin.android.crypto.getPublicKey
+import one.mixin.android.crypto.*
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.defaultSharedPreferences
@@ -138,7 +136,7 @@ class VerificationEmergencyFragment : PinCodeFragment() {
     private fun loginVerify() = lifecycleScope.launch {
         showLoading()
         SignalProtocol.initSignal(requireContext().applicationContext)
-        val sessionKey = generateRSAKeyPair()
+        val sessionKey = generateEd25519KeyPair()
         handleMixinResponse(
             invokeNetwork = { viewModel.loginVerifyEmergency(verificationId, buildLoginEmergencyRequest(sessionKey)) },
             successBlock = { response ->
@@ -158,7 +156,8 @@ class VerificationEmergencyFragment : PinCodeFragment() {
 
     private fun buildLoginEmergencyRequest(sessionKey: KeyPair): EmergencyRequest {
         val registrationId = CryptoPreference.getLocalRegistrationId(requireContext())
-        val sessionSecret = sessionKey.getPublicKey().base64Encode()
+        val publicKey = sessionKey.public as EdDSAPublicKey
+        val sessionSecret = publicKey.abyte.base64Encode()
         return EmergencyRequest(
             user?.phone,
             user?.identityNumber ?: userIdentityNumber,
