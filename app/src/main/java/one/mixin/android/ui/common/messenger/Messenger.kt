@@ -203,13 +203,20 @@ class Messenger @Inject internal constructor(private val jobManager: MixinJobMan
         }
     }
 
-    fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, isPlain: Boolean, replyMessage: MessageItem? = null) {
+    fun sendContactMessage(
+        conversationId: String,
+        sender: User,
+        shareUserId: String,
+        shareUserFullName: String? = null,
+        isPlain: Boolean,
+        replyMessage: MessageItem? = null
+    ) {
         val category = if (isPlain) MessageCategory.PLAIN_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
         val transferContactData = ContactMessagePayload(shareUserId)
         val encoded = GsonHelper.customGson.toJson(transferContactData).base64Encode()
         val message = createContactMessage(
             UUID.randomUUID().toString(), conversationId, sender.userId, category, encoded, shareUserId,
-                MessageStatus.SENDING.name, nowInUtc(), sender.fullName, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+            MessageStatus.SENDING.name, nowInUtc(), shareUserFullName, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
         )
         jobManager.addJobInBackground(SendMessageJob(message))
     }

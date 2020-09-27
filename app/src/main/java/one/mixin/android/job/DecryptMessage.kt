@@ -592,7 +592,7 @@ class DecryptMessage : Injector() {
                 database.insertAndNotifyConversation(message)
                 val fullName = user?.fullName
                 if (!fullName.isNullOrBlank()) {
-                    MessageFts4Helper.insertOrReplaceMessageFts4(message.id, fullName)
+                    MessageFts4Helper.insertOrReplaceMessageFts4(message, fullName)
                 }
                 sendNotificationJob(message, data.source)
             }
