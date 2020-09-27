@@ -66,7 +66,6 @@ import org.jetbrains.anko.displayMetrics
 import org.jetbrains.anko.textColorResource
 import timber.log.Timber
 import java.io.File
-import java.time.Duration
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future

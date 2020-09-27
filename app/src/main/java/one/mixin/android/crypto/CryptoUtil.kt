@@ -5,7 +5,6 @@ import android.os.Build
 import net.i2p.crypto.eddsa.EdDSAPrivateKey
 import okhttp3.tls.HeldCertificate
 import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.toLeByteArray
 import one.mixin.android.util.reportException
 import org.whispersystems.curve25519.Curve25519
