@@ -25,8 +25,8 @@ import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetRelativeLayout
 import one.mixin.android.widget.SearchView

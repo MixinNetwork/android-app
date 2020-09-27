@@ -20,10 +20,10 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openNotificationSetting
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.toast
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.util.ChannelManager
-import one.mixin.android.session.Session
 import one.mixin.android.vo.Fiats
 
 @AndroidEntryPoint

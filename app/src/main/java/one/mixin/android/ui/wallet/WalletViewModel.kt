@@ -24,9 +24,9 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem

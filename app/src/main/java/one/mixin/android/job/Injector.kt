@@ -34,8 +34,8 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.session.Session
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant

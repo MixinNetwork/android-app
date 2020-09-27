@@ -40,9 +40,9 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
-import one.mixin.android.ui.common.messenger.Messenger
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
+import one.mixin.android.ui.common.messenger.Messenger
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App

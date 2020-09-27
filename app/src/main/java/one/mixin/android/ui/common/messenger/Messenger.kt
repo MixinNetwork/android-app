@@ -26,7 +26,7 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
-import one.mixin.android.job.ConvertDataJobJob
+import one.mixin.android.job.ConvertDataJob
 import one.mixin.android.job.ConvertVideoJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendAttachmentMessageJob
@@ -155,7 +155,7 @@ class Messenger @Inject internal constructor(private val jobManager: MixinJobMan
             attachment.mimeType, attachment.fileSize, nowInUtc(), null,
             null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
         )
-        jobManager.addJobInBackground(ConvertDataJobJob(message))
+        jobManager.addJobInBackground(ConvertDataJob(message))
     }
 
     fun sendAudioMessage(

@@ -11,10 +11,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.toast
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment.Companion.CATEGORY
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment.Companion.CONTENT
-import one.mixin.android.session.Session
 import one.mixin.android.util.ShareHelper
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage

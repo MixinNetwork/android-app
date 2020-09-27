@@ -64,9 +64,9 @@ import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.supportsOreo
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
-import one.mixin.android.session.Session
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.toUser

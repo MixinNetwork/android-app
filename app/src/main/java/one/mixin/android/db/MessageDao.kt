@@ -363,7 +363,7 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
-            SELECT id, conversation_id, user_id, status, created_at FROM messages WHERE conversation_id = :conversationId 
+            SELECT id, created_at FROM messages WHERE conversation_id = :conversationId
             AND user_id != :userId AND status IN ('SENT', 'DELIVERED') ORDER BY created_at ASC
         """
     )

@@ -16,8 +16,8 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
-import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.vo.SearchSource
 
 @AndroidEntryPoint

@@ -31,9 +31,9 @@ import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MessageResult
+import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.session.Session
 import one.mixin.android.vo.CallType
 import one.mixin.android.vo.KrakenData
 import one.mixin.android.vo.MessageCategory

@@ -24,9 +24,9 @@ import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.sharedPreferences
+import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler.Companion.CONVERSATION_CHECKSUM_INVALID_ERROR
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
-import one.mixin.android.session.Session
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory

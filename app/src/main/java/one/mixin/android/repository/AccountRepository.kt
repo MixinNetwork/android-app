@@ -39,9 +39,9 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
 import one.mixin.android.extension.within24Hours
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.session.Session
 import one.mixin.android.session.encryptPin
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.FavoriteApp
 import one.mixin.android.vo.Sticker

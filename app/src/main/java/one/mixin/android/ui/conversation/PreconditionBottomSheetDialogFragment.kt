@@ -17,13 +17,13 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getRelativeTimeSpan
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.ValuableBiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
-import one.mixin.android.session.Session
 import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textColor

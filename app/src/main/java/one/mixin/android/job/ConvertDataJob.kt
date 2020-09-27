@@ -13,7 +13,7 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAttachmentMessage
 
-class ConvertDataJobJob(
+class ConvertDataJob(
     private val message: Message
 ) : MixinJob(Params(PRIORITY_BACKGROUND).groupBy(GROUP_ID), message.id) {
 

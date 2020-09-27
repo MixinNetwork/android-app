@@ -10,9 +10,9 @@ import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.round
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.util.AudioPlayer
-import one.mixin.android.session.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 

@@ -77,6 +77,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.vibrate
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.recyclerview.NormalHolder
@@ -91,7 +92,6 @@ import one.mixin.android.ui.home.bot.INTERNAL_WALLET_ID
 import one.mixin.android.ui.home.bot.TOP_BOT
 import one.mixin.android.ui.home.bot.getCategoryIcon
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.session.Session
 import one.mixin.android.util.addDynamicShortcut
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.maxDynamicShortcutCount

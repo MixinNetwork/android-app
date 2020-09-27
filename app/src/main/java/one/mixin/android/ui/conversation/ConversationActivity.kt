@@ -15,6 +15,7 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSATION_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.INITIAL_POSITION_MESSAGE_ID
@@ -23,7 +24,6 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIEN
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.UNREAD_COUNT
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.session.Session
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId

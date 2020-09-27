@@ -5,13 +5,13 @@ import android.animation.AnimatorListenerAdapter
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import one.mixin.android.R
+import one.mixin.android.session.Session
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.wallet.WalletActivity
-import one.mixin.android.session.Session
 
 class NavigationController
 constructor(mainActivity: MainActivity) {

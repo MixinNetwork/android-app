@@ -23,8 +23,8 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.withArgs
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.session.Session
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.CircleConversation
 import one.mixin.android.vo.CircleConversationAction
 import one.mixin.android.vo.ConversationCircleManagerItem
@@ -93,10 +93,16 @@ class CircleManagerFragment : BaseFragment() {
 
     private fun loadData() {
         bottomViewModel.viewModelScope.launch {
-            val includeCircleItem = bottomViewModel.getIncludeCircleItem(conversationId ?: generateConversationId(
-                Session.getAccountId()!!, userId!!))
-            val otherCircleItem = bottomViewModel.getOtherCircleItem(conversationId ?: generateConversationId(
-                Session.getAccountId()!!, userId!!))
+            val includeCircleItem = bottomViewModel.getIncludeCircleItem(
+                conversationId ?: generateConversationId(
+                    Session.getAccountId()!!, userId!!
+                )
+            )
+            val otherCircleItem = bottomViewModel.getOtherCircleItem(
+                conversationId ?: generateConversationId(
+                    Session.getAccountId()!!, userId!!
+                )
+            )
             circle_manager_rv.isVisible = includeCircleItem.isNotEmpty() || otherCircleItem.isNotEmpty()
             empty.isVisible = includeCircleItem.isEmpty() && otherCircleItem.isEmpty()
             circleAdapter.setData(includeCircleItem, otherCircleItem)
@@ -152,8 +158,12 @@ class CircleManagerFragment : BaseFragment() {
                     bottomViewModel.updateCircles(conversationId, userId, requests)
                 },
                 successBlock = {
-                    bottomViewModel.deleteCircleConversation(conversationId ?: generateConversationId(
-                        Session.getAccountId()!!, userId!!), item.circleId)
+                    bottomViewModel.deleteCircleConversation(
+                        conversationId ?: generateConversationId(
+                            Session.getAccountId()!!, userId!!
+                        ),
+                        item.circleId
+                    )
                     loadData()
                     dialog.dismiss()
                 },

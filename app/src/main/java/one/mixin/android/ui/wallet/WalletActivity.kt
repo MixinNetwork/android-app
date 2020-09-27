@@ -11,9 +11,9 @@ import one.mixin.android.R
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
-import one.mixin.android.session.Session
 import one.mixin.android.vo.AssetItem
 import javax.inject.Inject
 

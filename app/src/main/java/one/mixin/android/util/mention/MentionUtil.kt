@@ -8,8 +8,8 @@ import android.widget.EditText
 import androidx.collection.arraySetOf
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.session.Session
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mention.syntax.node.Node
 import one.mixin.android.util.mention.syntax.parser.Parser
 import one.mixin.android.vo.MentionUser

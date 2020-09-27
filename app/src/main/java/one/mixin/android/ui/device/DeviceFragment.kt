@@ -24,14 +24,14 @@ import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
+import one.mixin.android.session.Session.PREF_EXTENSION_SESSION_ID
+import one.mixin.android.session.Session.PREF_SESSION
 import one.mixin.android.ui.common.AvatarActivity.Companion.ARGS_URL
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.session.Session
-import one.mixin.android.session.Session.PREF_EXTENSION_SESSION_ID
-import one.mixin.android.session.Session.PREF_SESSION
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textColor
 

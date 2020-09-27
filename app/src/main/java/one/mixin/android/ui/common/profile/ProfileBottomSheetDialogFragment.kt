@@ -39,6 +39,7 @@ import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.editDialog
@@ -48,7 +49,6 @@ import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.session.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.App
 import one.mixin.android.vo.toUser
