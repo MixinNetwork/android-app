@@ -27,6 +27,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.toastShort
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -178,8 +179,6 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 when (category) {
                     Constants.ShareCategory.TEXT -> {
                         viewModel.sendTextMessage(conversationId, sender, content, isPlain)
-                        toast(R.string.send_success)
-                        dismiss()
                     }
                     Constants.ShareCategory.IMAGE -> {
                         withContext(Dispatchers.IO) {
@@ -190,41 +189,38 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             {
                                 when (it) {
                                     0 -> {
-                                        toast(R.string.send_success)
+                                        toastShort(R.string.message_sent)
                                         dismiss()
                                     }
                                     -1 -> context?.toast(R.string.error_image)
                                     -2 -> context?.toast(R.string.error_format)
                                 }
+                                return@subscribe
                             },
                             {
                                 context?.toast(R.string.error_image)
+                                return@subscribe
                             }
                         )
+                        return@checkData
                     }
                     Constants.ShareCategory.CONTACT -> {
                         val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
                         viewModel.sendContactMessage(conversationId, sender, contactData.userId, isPlain)
-                        toast(R.string.send_success)
-                        dismiss()
                     }
                     Constants.ShareCategory.POST -> {
                         viewModel.sendPostMessage(conversationId, sender, content, isPlain)
-                        toast(R.string.send_success)
-                        dismiss()
                     }
                     Constants.ShareCategory.APP_CARD -> {
                         viewModel.sendAppCardMessage(conversationId, sender, content)
-                        toast(R.string.send_success)
-                        dismiss()
                     }
                     Constants.ShareCategory.LIVE -> {
                         val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java)
                         viewModel.sendLiveMessage(conversationId, sender, liveData, isPlain)
-                        toast(R.string.send_success)
-                        dismiss()
                     }
                 }
+                toastShort(R.string.message_sent)
+                dismiss()
             }
         }
     }

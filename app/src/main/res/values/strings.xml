@@ -27,7 +27,7 @@
     <string name="done">Done</string>
     <string name="forward">Forward</string>
     <string name="forward_success">Forward success</string>
-    <string name="send_success">Send success</string>
+    <string name="message_sent">Message sent</string>
     <string name="save">Save</string>
     <string name="saving">Saving…</string>
     <string name="pb_dialog_message">Please wait a bit…</string>
