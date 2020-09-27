@@ -4,7 +4,7 @@ import android.content.Context
 import android.telephony.TelephonyManager
 import androidx.core.content.getSystemService
 import androidx.lifecycle.LiveData
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.cancelCall
 import one.mixin.android.webrtc.declineCall

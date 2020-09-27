@@ -48,7 +48,7 @@ import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.App
 import one.mixin.android.vo.toUser

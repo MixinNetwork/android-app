@@ -11,7 +11,7 @@ import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.setting.FriendsNoBotAdapter
 import one.mixin.android.ui.setting.FriendsNoBotViewHolder
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.User
 
 @AndroidEntryPoint

@@ -17,7 +17,7 @@ import one.mixin.android.extension.vibrate
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.ui.call.CallNotificationBuilder
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.TurnServer

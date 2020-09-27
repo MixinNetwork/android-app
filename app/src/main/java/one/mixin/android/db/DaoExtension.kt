@@ -1,6 +1,6 @@
 package one.mixin.android.db
 
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleConversation

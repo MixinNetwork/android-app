@@ -15,7 +15,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.toast
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem

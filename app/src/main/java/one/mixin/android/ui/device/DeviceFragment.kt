@@ -29,9 +29,9 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.Session
-import one.mixin.android.util.Session.PREF_EXTENSION_SESSION_ID
-import one.mixin.android.util.Session.PREF_SESSION
+import one.mixin.android.session.Session
+import one.mixin.android.session.Session.PREF_EXTENSION_SESSION_ID
+import one.mixin.android.session.Session.PREF_SESSION
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textColor
 

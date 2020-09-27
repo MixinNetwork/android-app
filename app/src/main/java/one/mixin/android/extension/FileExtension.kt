@@ -25,7 +25,7 @@ import one.mixin.android.Constants.Storage.DATA
 import one.mixin.android.Constants.Storage.IMAGE
 import one.mixin.android.Constants.Storage.VIDEO
 import one.mixin.android.MixinApplication
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.util.blurhash.Base83
 import one.mixin.android.util.blurhash.BlurHashDecoder
 import one.mixin.android.util.blurhash.BlurHashEncoder

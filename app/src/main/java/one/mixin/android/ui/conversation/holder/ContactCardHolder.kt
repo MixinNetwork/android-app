@@ -10,7 +10,7 @@ import kotlinx.android.synthetic.main.item_chat_contact_card.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.showVerifiedOrBot

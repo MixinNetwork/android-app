@@ -23,7 +23,7 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIEN
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.UNREAD_COUNT
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId

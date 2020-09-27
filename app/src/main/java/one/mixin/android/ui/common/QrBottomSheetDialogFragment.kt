@@ -34,7 +34,7 @@ import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.toast
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BadgeCircleImageView.Companion.END_BOTTOM
 import one.mixin.android.widget.BottomSheet

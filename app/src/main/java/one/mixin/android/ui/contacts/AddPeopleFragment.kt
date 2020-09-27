@@ -23,7 +23,7 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.widget.Keyboard
 import java.util.Locale
 

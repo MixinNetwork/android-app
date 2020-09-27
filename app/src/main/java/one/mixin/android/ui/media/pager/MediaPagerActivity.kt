@@ -76,7 +76,7 @@ import one.mixin.android.ui.media.SharedMediaViewModel
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.SensorOrientationChangeNotifier
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.vo.FixedMessageDataSource

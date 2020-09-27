@@ -23,7 +23,7 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
 

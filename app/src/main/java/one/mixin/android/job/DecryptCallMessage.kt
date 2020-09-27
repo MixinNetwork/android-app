@@ -12,7 +12,7 @@ import one.mixin.android.db.insertAndNotifyConversation
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageHistory

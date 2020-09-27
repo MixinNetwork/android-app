@@ -9,7 +9,7 @@ import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.ui.setting.SettingConversationFragment
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.MessageSource
 import one.mixin.android.vo.toUser
 import org.jetbrains.anko.windowManager

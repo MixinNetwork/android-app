@@ -13,7 +13,7 @@ import kotlinx.android.synthetic.main.view_contact_header.view.*
 import kotlinx.android.synthetic.main.view_contact_list_empty.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.inflate
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 

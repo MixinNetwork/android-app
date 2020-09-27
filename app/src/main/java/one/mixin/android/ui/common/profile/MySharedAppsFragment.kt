@@ -15,7 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.widget.SegmentationItemDecoration
 

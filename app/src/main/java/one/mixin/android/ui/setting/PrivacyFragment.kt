@@ -11,7 +11,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 
 @AndroidEntryPoint
 class PrivacyFragment : BaseFragment() {

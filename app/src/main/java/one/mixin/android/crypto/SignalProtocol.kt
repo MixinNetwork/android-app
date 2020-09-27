@@ -9,7 +9,7 @@ import one.mixin.android.crypto.storage.MixinSenderKeyStore
 import one.mixin.android.crypto.storage.SignalProtocolStoreImpl
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.getDeviceId
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.websocket.BlazeMessage

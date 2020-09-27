@@ -23,8 +23,8 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
-import one.mixin.android.util.Session
-import one.mixin.android.util.encryptPin
+import one.mixin.android.session.Session
+import one.mixin.android.session.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import java.security.KeyPair

@@ -72,7 +72,7 @@ import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ForwardCategory

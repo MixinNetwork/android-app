@@ -19,7 +19,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.NotificationJob.Companion.CONVERSATION_ID
 import one.mixin.android.job.NotificationJob.Companion.IS_PLAIN
 import one.mixin.android.job.NotificationJob.Companion.KEY_REPLY
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAckJob

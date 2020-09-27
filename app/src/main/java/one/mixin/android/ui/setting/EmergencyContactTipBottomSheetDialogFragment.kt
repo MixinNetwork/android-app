@@ -12,7 +12,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint

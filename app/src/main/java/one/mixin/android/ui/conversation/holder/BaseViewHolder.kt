@@ -18,7 +18,7 @@ import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getColorCode
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.MessageStatus
 
 abstract class BaseViewHolder constructor(containerView: View) :

@@ -42,8 +42,8 @@ import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
 import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
-import one.mixin.android.util.Session
-import one.mixin.android.util.encryptPin
+import one.mixin.android.session.Session
+import one.mixin.android.session.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet

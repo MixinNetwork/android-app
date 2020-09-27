@@ -1,4 +1,4 @@
-package one.mixin.android.util
+package one.mixin.android.session
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -26,6 +26,7 @@ import one.mixin.android.extension.remove
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import timber.log.Timber
 import java.security.Key

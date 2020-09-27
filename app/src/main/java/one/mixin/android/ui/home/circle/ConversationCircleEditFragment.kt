@@ -29,7 +29,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardAdapter
 import one.mixin.android.ui.home.ConversationListViewModel
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.CircleConversationAction
 import one.mixin.android.vo.ConversationCircleItem
 import one.mixin.android.vo.ConversationItem
@@ -99,7 +99,8 @@ class ConversationCircleEditFragment : BaseFragment() {
                             adapter.selectItem.remove(user)
                             selectAdapter.checkedItems.remove(user)
                         } else {
-                            val count = chatViewModel.getCircleConversationCount(generateConversationId(Session.getAccountId()!!, user.userId))
+                            val count = chatViewModel.getCircleConversationCount(generateConversationId(
+                                Session.getAccountId()!!, user.userId))
                             if (count >= CIRCLE_CONVERSATION_LIMIT) {
                                 toast(R.string.circle_limit)
                                 return@launch

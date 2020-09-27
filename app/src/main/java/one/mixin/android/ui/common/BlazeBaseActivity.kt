@@ -4,7 +4,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.job.BlazeMessageService.Companion.ACTION_ACTIVITY_PAUSE
 import one.mixin.android.job.BlazeMessageService.Companion.ACTION_ACTIVITY_RESUME
 import one.mixin.android.job.BlazeMessageService.Companion.startService
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 
 abstract class BlazeBaseActivity : BaseActivity() {
 

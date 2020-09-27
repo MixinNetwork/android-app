@@ -39,7 +39,7 @@ import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.App
 import one.mixin.android.vo.BotInterface

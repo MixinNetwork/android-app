@@ -7,7 +7,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import java.util.concurrent.ConcurrentHashMap
 
 data class Fiat(val code: String, val rate: Double)

@@ -71,7 +71,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem

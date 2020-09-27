@@ -11,7 +11,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.wallet.WalletActivity
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 
 class NavigationController
 constructor(mainActivity: MainActivity) {

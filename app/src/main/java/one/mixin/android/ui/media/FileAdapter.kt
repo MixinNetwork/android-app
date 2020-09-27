@@ -9,7 +9,7 @@ import kotlinx.android.synthetic.main.item_file.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.fileSize
 import one.mixin.android.ui.common.recyclerview.NormalHolder
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import java.util.Locale

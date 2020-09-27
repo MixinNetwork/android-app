@@ -4,7 +4,7 @@ import com.birbit.android.jobqueue.Params
 import one.mixin.android.RxBus
 import one.mixin.android.db.clearParticipant
 import one.mixin.android.event.SenderKeyChange
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.websocket.BlazeMessageData
 import java.util.UUID

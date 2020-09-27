@@ -12,7 +12,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.CircleProgress

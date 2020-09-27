@@ -6,7 +6,7 @@ import one.mixin.android.crypto.SessionUtil
 import one.mixin.android.crypto.db.IdentityDao
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.vo.Identity
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import org.whispersystems.libsignal.IdentityKey
 import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.SignalProtocolAddress

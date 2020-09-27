@@ -52,7 +52,7 @@ import one.mixin.android.ui.common.messenger.Messenger
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.SINGLE_DB_THREAD
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem

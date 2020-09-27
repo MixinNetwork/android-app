@@ -19,8 +19,8 @@ import one.mixin.android.ui.common.friends.BaseFriendsFragment
 import one.mixin.android.ui.common.friends.FriendsListener
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.setting.VerificationEmergencyFragment.Companion.FROM_CONTACT
-import one.mixin.android.util.Session
-import one.mixin.android.util.encryptPin
+import one.mixin.android.session.Session
+import one.mixin.android.session.encryptPin
 import one.mixin.android.vo.User
 
 @AndroidEntryPoint

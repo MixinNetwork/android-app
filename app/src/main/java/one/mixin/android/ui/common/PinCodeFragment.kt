@@ -16,7 +16,7 @@ import one.mixin.android.extension.*
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import one.mixin.android.util.database.clearDatabase
 import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.vo.Account
