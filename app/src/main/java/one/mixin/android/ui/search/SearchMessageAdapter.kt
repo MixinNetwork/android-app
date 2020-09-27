@@ -51,6 +51,9 @@ class SearchMessageHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         if (message.type == MessageCategory.SIGNAL_DATA.name || message.type == MessageCategory.PLAIN_DATA.name) {
             TextViewCompat.setCompoundDrawablesRelative(itemView.search_msg_tv, icon, null, null, null)
             itemView.search_msg_tv.text = message.mediaName
+        } else if (message.type == MessageCategory.SIGNAL_CONTACT.name || message.type == MessageCategory.PLAIN_CONTACT.name) {
+            TextViewCompat.setCompoundDrawablesRelative(itemView.search_msg_tv, null, null, null, null)
+            itemView.search_msg_tv.text = message.mediaName
         } else {
             TextViewCompat.setCompoundDrawablesRelative(itemView.search_msg_tv, null, null, null, null)
             itemView.search_msg_tv.text = message.content

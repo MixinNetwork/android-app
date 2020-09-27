@@ -522,10 +522,12 @@ fun createContactMessage(
     sharedUserId: String,
     status: String,
     createdAt: String,
+    name: String? = null,
     quoteMessageId: String? = null,
     quoteContent: String? = null
 ) = MessageBuilder(messageId, conversationId, userId, category, status, createdAt)
     .setContent(content)
+    .setName(name)
     .setSharedUserId(sharedUserId)
     .setQuoteMessageId(quoteMessageId)
     .setQuoteContent(quoteContent)
