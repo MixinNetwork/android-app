@@ -36,11 +36,11 @@ fun generateEd25519KeyPair(): KeyPair {
     return net.i2p.crypto.eddsa.KeyPairGenerator().generateKeyPair()
 }
 
-fun ecdh(pinToken: String, privateKey: EdDSAPrivateKey): ByteArray? =
+fun calculateAgreement(publicKey: ByteArray, privateKey: EdDSAPrivateKey): ByteArray? =
     try {
-        Curve25519.getInstance(BEST).calculateAgreement(pinToken.decodeBase64(), privateKeyToCurve25519(privateKey.seed))
+        Curve25519.getInstance(BEST).calculateAgreement(publicKey, privateKeyToCurve25519(privateKey.seed))
     } catch (t: Throwable) {
-        reportException("ECDH pinToken with private key ", t)
+        reportException("Calculates an ECDH agreement exception", t)
         null
     }
 

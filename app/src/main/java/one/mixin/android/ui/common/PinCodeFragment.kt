@@ -11,7 +11,7 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.crypto.ecdh
+import one.mixin.android.crypto.calculateAgreement
 import one.mixin.android.extension.*
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
@@ -90,7 +90,7 @@ abstract class PinCodeFragment : FabLoadingFragment() {
             defaultSharedPreferences.clear()
         }
         val privateKey = sessionKey.private as EdDSAPrivateKey
-        val key = ecdh(account.pinToken, privateKey) ?: return@withContext
+        val key = calculateAgreement(account.pinToken.decodeBase64(), privateKey) ?: return@withContext
 
         Session.storeEd25519PrivateKey(privateKey.seed.base64Encode())
         Session.storePinToken(key.base64Encode())
