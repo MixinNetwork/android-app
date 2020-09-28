@@ -178,13 +178,7 @@ class MarkwonUtil {
                 }
 
                 override fun load(drawable: AsyncDrawable): RequestBuilder<Drawable> {
-                    return Glide.with(context).load(
-                        if (context.isActivityNotDestroyed()) {
-                            drawable.destination
-                        } else {
-                            null
-                        }
-                    )
+                    return Glide.with(context).load(drawable.destination)
                 }
             }
         )
