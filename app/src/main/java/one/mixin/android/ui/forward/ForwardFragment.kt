@@ -4,6 +4,7 @@ import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -11,6 +12,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
+import androidx.core.content.pm.ShortcutInfoCompat
+import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
@@ -45,16 +48,21 @@ import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_SHARE
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.ShortcutInfo
+import one.mixin.android.util.generateDynamicShortcut
+import one.mixin.android.util.maxDynamicShortcutCount
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.User
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class ForwardFragment : BaseFragment() {
@@ -153,6 +161,7 @@ class ForwardFragment : BaseFragment() {
         forward_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         forward_bn.setOnClickListener {
             search_et?.hideKeyboard()
+            updateDynamicShortcuts(adapter.selectItem)
             if (messages == null) {
                 val resultData = adapter.selectItem.mapNotNull {
                     when (it) {
@@ -167,6 +176,7 @@ class ForwardFragment : BaseFragment() {
                         }
                     }
                 }
+
                 if (arguments?.getString(CONTENT) != null) {
                     sendMessage(resultData)
                     return@setOnClickListener
@@ -336,6 +346,57 @@ class ForwardFragment : BaseFragment() {
             if (fromConversation && single) {
                 RxBus.publish(forwardEvent)
             }
+        }
+    }
+
+    private fun updateDynamicShortcuts(selectItems: ArrayList<Any>) = lifecycleScope.launch {
+        val shortcuts = mutableListOf<ShortcutInfoCompat>()
+        for (i in 0 until selectItems.size) {
+            val s = selectItems[i]
+            if (shortcuts.size >= maxDynamicShortcutCount) {
+                break
+            }
+
+            val shortcutInfo = if (s is ConversationItem) {
+                val bitmap = loadBitmap(s.iconUrl()) ?: continue
+                val intent = ConversationActivity.getShortcutIntent(
+                    requireContext(),
+                    s.conversationId,
+                    null
+                )
+                ShortcutInfo(s.conversationId, s.getConversationName(), bitmap, intent)
+            } else {
+                s as User
+                val bitmap = loadBitmap(s.avatarUrl) ?: continue
+                val cid = generateConversationId(
+                    Session.getAccountId()!!,
+                    s.userId
+                )
+                val intent = ConversationActivity.getShortcutIntent(
+                    requireContext(),
+                    cid,
+                    s.userId
+                )
+                ShortcutInfo(cid, s.fullName ?: "", bitmap, intent)
+            }
+            shortcuts.add(generateDynamicShortcut(requireContext(), shortcutInfo))
+        }
+        ShortcutManagerCompat.addDynamicShortcuts(requireContext(), shortcuts)
+    }
+
+    private suspend fun loadBitmap(url: String?): Bitmap? {
+        if (url.isNullOrBlank()) return null
+
+        return try {
+            withContext(Dispatchers.IO) {
+                Glide.with(requireContext())
+                    .asBitmap()
+                    .load(url)
+                    .submit()
+                    .get(2, TimeUnit.SECONDS)
+            }
+        } catch (t: Throwable) {
+            null
         }
     }
 

@@ -15,7 +15,7 @@ private const val categoryImageShareTarget = "one.mixin.android.directshare.cate
 private const val categoryVideoShareTarget = "one.mixin.android.directshare.category.VIDEO_SHARE_TARGET"
 private const val categoryAudioShareTarget = "one.mixin.android.directshare.category.AUDIO_SHARE_TARGET"
 private const val categoryApplicationShareTarget = "one.mixin.android.directshare.category.APPLICATION_SHARE_TARGET"
-private const val dynamicShortcutCount = 2
+private const val dynamicShortcutCount = 4
 
 val shareCategories = setOf(
     categoryTextShareTarget, categoryImageShareTarget,
@@ -37,12 +37,17 @@ fun addPinShortcut(context: Context, conversationId: String, name: String, icon:
     ShortcutManagerCompat.requestPinShortcut(context, shortcut, successCallback.intentSender)
 }
 
-fun addDynamicShortcut(context: Context, conversationId: String, name: String, icon: Bitmap, launcher: Intent): Boolean {
-    val shortcut = ShortcutInfoCompat.Builder(context, conversationId)
-        .setShortLabel(name)
-        .setIcon(IconCompat.createWithBitmap(icon))
-        .setIntent(launcher)
+fun generateDynamicShortcut(context: Context, shortcutInfo: ShortcutInfo) =
+    ShortcutInfoCompat.Builder(context, shortcutInfo.conversationId)
+        .setShortLabel(shortcutInfo.name)
+        .setIntent(shortcutInfo.intent)
+        .setIcon(IconCompat.createWithBitmap(shortcutInfo.icon))
         .setCategories(shareCategories)
         .build()
-    return ShortcutManagerCompat.addDynamicShortcuts(context, listOf(shortcut))
-}
+
+data class ShortcutInfo(
+    var conversationId: String,
+    var name: String,
+    var icon: Bitmap,
+    var intent: Intent
+)
