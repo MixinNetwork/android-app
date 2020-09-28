@@ -11,6 +11,7 @@ import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.putInt
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageFts4
+import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isFtsMessage
 import org.threeten.bp.Instant
 import org.threeten.bp.temporal.ChronoUnit
@@ -80,12 +81,24 @@ object MessageFts4Helper {
     }
 
     @WorkerThread
-    fun insertOrReplaceMessageFts4(message: Message) {
-        if (!message.isFtsMessage()) return
+    fun insertOrReplaceMessageFts4(message: Message, extraContent: String? = null) {
+        if (!message.isFtsMessage()) {
+            if (message.isContact() && !extraContent.isNullOrBlank()) {
+                insertContact(message.id, extraContent)
+            }
+            return
+        }
 
         val messageFts4Dao = MixinDatabase.getDatabase(MixinApplication.appContext).messageFts4Dao()
         val name = message.name.joinWhiteSpace()
         val content = message.content.joinWhiteSpace()
         messageFts4Dao.insert(MessageFts4(message.id, name + content))
+    }
+
+    @WorkerThread
+    private fun insertContact(messageId: String, text: String) {
+        val messageFts4Dao = MixinDatabase.getDatabase(MixinApplication.appContext).messageFts4Dao()
+        val content = text.joinWhiteSpace()
+        messageFts4Dao.insert(MessageFts4(messageId, content))
     }
 }

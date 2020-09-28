@@ -614,7 +614,10 @@ class BottomSheetViewModel @ViewModelInject internal constructor(
     }
 
     fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, isPlain: Boolean) {
-        messenger.sendContactMessage(conversationId, sender, shareUserId, isPlain)
+        viewModelScope.launch {
+            val user = userRepository.suspendFindUserById(shareUserId)
+            messenger.sendContactMessage(conversationId, sender, shareUserId, user?.fullName, isPlain)
+        }
     }
 
     fun sendPostMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {

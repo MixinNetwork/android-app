@@ -191,7 +191,10 @@ internal constructor(
     }
 
     fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, isPlain: Boolean, replyMessage: MessageItem? = null) {
-        messenger.sendContactMessage(conversationId, sender, shareUserId, isPlain, replyMessage)
+        viewModelScope.launch {
+            val user = userRepository.suspendFindUserById(shareUserId)
+            messenger.sendContactMessage(conversationId, sender, shareUserId, user?.fullName, isPlain, replyMessage)
+        }
     }
 
     fun sendVideoMessage(

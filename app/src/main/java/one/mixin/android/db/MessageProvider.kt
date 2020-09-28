@@ -460,7 +460,7 @@ class MessageProvider {
                             m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
                             FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
                             WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
-                            AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST') 
+                            AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST', 'SIGNAL_CONTACT', 'PLAIN_CONTACT') 
                             AND m.conversation_id = ?
                             AND m.status != 'FAILED'
                             ORDER BY m.created_at DESC
@@ -470,7 +470,7 @@ class MessageProvider {
                             SELECT count(*) FROM messages m 
                             INNER JOIN users u ON m.user_id = u.user_id 
                             WHERE m.id in (SELECT message_id FROM messages_fts4 WHERE messages_fts4 MATCH ?) 
-                            AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST') 
+                            AND m.category IN ('SIGNAL_TEXT', 'PLAIN_TEXT', 'SIGNAL_DATA', 'PLAIN_DATA', 'SIGNAL_POST', 'PLAIN_POST', 'SIGNAL_CONTACT', 'PLAIN_CONTACT') 
                             AND m.conversation_id = ?
                         """
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 2)
