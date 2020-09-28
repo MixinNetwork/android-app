@@ -2090,7 +2090,9 @@ class ConversationFragment :
                     MenuType.Voice -> {
                         chat_control.reset()
                         if (callState.isNotIdle()) {
-                            if (recipient != null && callState.user?.userId == recipient?.userId) {
+                            if ((recipient != null && callState.user?.userId == recipient?.userId) ||
+                                (recipient == null && callState.conversationId == conversationId)
+                            ) {
                                 CallActivity.show(requireContext())
                             } else {
                                 alertDialogBuilder()
