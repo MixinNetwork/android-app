@@ -11,7 +11,7 @@ import one.mixin.android.crypto.getPrivateKeyPem
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.mock.mockAccount
 import one.mixin.android.mock.mockRequest
-import one.mixin.android.util.Session
+import one.mixin.android.session.Session
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
