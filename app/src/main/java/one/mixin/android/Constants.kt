@@ -136,6 +136,13 @@ object Constants {
         const val MUTE_1_YEAR = 365 * 24 * 60 * 60
     }
 
+    object Locale {
+        object Indonesian {
+            const val Language = "id"
+            const val Country = "ID"
+        }
+    }
+
     const val SLEEP_MILLIS: Long = 1000
     const val INTERVAL_24_HOURS: Long = 1000 * 60 * 60 * 24
     const val INTERVAL_48_HOURS: Long = 1000 * 60 * 60 * 48

@@ -96,9 +96,6 @@
     <string name="call_who">%1$sに電話をかける</string>
     <string name="click_lock">クリックしてロック</string>
     <string name="click_unlock">クリックしてアンロック</string>
-    <string name="simplified_chinese">簡体中国語</string>
-    <string name="english">英語</string>
-    <string name="japanese">日本語</string>
     <string name="follow_system">システム設定に従う</string>
     <string name="nobody">なし</string>
     <string name="common_pic">画像</string>
