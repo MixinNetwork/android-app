@@ -16,6 +16,7 @@ private const val categoryVideoShareTarget = "one.mixin.android.directshare.cate
 private const val categoryAudioShareTarget = "one.mixin.android.directshare.category.AUDIO_SHARE_TARGET"
 private const val categoryApplicationShareTarget = "one.mixin.android.directshare.category.APPLICATION_SHARE_TARGET"
 private const val dynamicShortcutCount = 4
+private const val staticShortcutCount = 2 // wallet and scan
 
 val shareCategories = setOf(
     categoryTextShareTarget, categoryImageShareTarget,
@@ -24,7 +25,7 @@ val shareCategories = setOf(
 
 val maxDynamicShortcutCount by lazy {
     val systemMaxCount = ShortcutManagerCompat.getMaxShortcutCountPerActivity(MixinApplication.appContext)
-    min(dynamicShortcutCount, systemMaxCount)
+    min(dynamicShortcutCount, systemMaxCount - staticShortcutCount)
 }
 
 fun addPinShortcut(context: Context, conversationId: String, name: String, icon: Bitmap, launcher: Intent) {
