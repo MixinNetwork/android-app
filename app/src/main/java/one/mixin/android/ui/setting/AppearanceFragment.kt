@@ -90,6 +90,9 @@ class AppearanceFragment : BaseFragment() {
                     Locale.JAPANESE.language -> {
                         R.string.japanese
                     }
+                    Constants.Locale.Indonesian.Language -> {
+                        R.string.indonesian
+                    }
                     else -> {
                         R.string.english
                     }
@@ -121,7 +124,7 @@ class AppearanceFragment : BaseFragment() {
                 Locale.JAPANESE.language -> {
                     3
                 }
-                Locale("id", "").language -> {
+                Constants.Locale.Indonesian.Language -> {
                     4
                 }
                 else -> {
@@ -143,13 +146,13 @@ class AppearanceFragment : BaseFragment() {
                         val selectedLang = when (newSelectItem) {
                             2 -> Locale.SIMPLIFIED_CHINESE.language
                             3 -> Locale.JAPANESE.language
-                            4 -> Locale("id", "").language
+                            4 -> Constants.Locale.Indonesian.Language
                             else -> Locale.US.language
                         }
                         val selectedCountry = when (newSelectItem) {
                             2 -> Locale.SIMPLIFIED_CHINESE.country
                             3 -> Locale.JAPANESE.country
-                            4 -> Locale("id", "").country
+                            4 -> Constants.Locale.Indonesian.Country
                             else -> Locale.US.country
                         }
                         val newLocale = Locale(selectedLang, selectedCountry)
