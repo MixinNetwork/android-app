@@ -114,6 +114,7 @@ class AppearanceFragment : BaseFragment() {
 
     private fun showLanguageAlert() {
         val choice = resources.getStringArray(R.array.language_names)
+        choice[0] = getString(R.string.follow_system)
         val selectItem = if (Lingver.getInstance().isFollowingSystemLocale()) {
             0
         } else {
