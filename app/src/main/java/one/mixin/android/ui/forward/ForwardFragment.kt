@@ -380,6 +380,14 @@ class ForwardFragment : BaseFragment() {
             }
             shortcuts.add(generateDynamicShortcut(requireContext(), shortcutInfo))
         }
+        val exists = ShortcutManagerCompat.getDynamicShortcuts(requireContext())
+        val keepSize = maxDynamicShortcutCount - shortcuts.size
+        if (keepSize >= 0 && exists.size > keepSize) {
+            val removeIds = mutableListOf<String>()
+            exists.take(exists.size - keepSize)
+                .mapTo(removeIds) { it.id }
+            ShortcutManagerCompat.removeDynamicShortcuts(requireContext(), removeIds)
+        }
         ShortcutManagerCompat.addDynamicShortcuts(requireContext(), shortcuts)
     }
 
