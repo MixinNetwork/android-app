@@ -16,7 +16,6 @@
         android:id="@+id/avatar2"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_marginStart="16dp"
         android:src="@drawable/ic_avatar_place_holder"
         app:border_color="?attr/bg_gray_light"
         app:border_width="1dp" />
@@ -25,7 +24,6 @@
         android:id="@+id/avatar3"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_marginStart="32dp"
         android:src="@drawable/ic_avatar_place_holder"
         app:border_color="?attr/bg_gray_light"
         app:border_width="1dp" />

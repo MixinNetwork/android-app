@@ -122,6 +122,7 @@
     <string name="website" translatable="false">https://mixin.one/messenger</string>
     <string name="upload_timeout">Upload timeout</string>
     <string name="copy_link">Copy Link</string>
+    <string name="open_floating">Open floating</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

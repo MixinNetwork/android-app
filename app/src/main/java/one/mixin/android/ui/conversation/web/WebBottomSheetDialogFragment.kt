@@ -11,6 +11,7 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -94,6 +95,8 @@ import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.QRCodeProcessor
+import one.mixin.android.ui.web.WebClip
+import one.mixin.android.ui.web.holdClip
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.App
@@ -176,7 +179,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         menuInfo: ContextMenu.ContextMenuInfo?
     ) {
         super.onCreateContextMenu(menu, v, menuInfo)
-        contentView.chat_web_view.hitTestResult?.let {
+        contentView.chat_web_view.hitTestResult.let {
             when (it.type) {
                 WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
                     menu.add(0, CONTEXT_MENU_ID_SCAN_IMAGE, 0, R.string.contact_sq_scan_title)
@@ -204,7 +207,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        contentView.chat_web_view.hitTestResult?.let {
+        contentView.chat_web_view.hitTestResult.let {
             val url = it.extra
             if (item.itemId == CONTEXT_MENU_ID_SCAN_IMAGE) {
                 lifecycleScope.launch {
@@ -741,6 +744,21 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 requireContext().toast(R.string.copy_success)
             }
         }
+        val floatingMenu = menu {
+            title = getString(R.string.open_floating)
+            icon = R.drawable.ic_content_copy
+            action = {
+                val currentUrl = contentView.chat_web_view.url ?: url
+                val v = contentView.chat_web_view
+                val screenshot = Bitmap.createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
+                val c = Canvas(screenshot)
+                c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
+                v.draw(c)
+                holdClip(requireActivity(), WebClip(currentUrl, screenshot, app, contentView.title_tv.text.toString()))
+                bottomSheet.dismiss()
+                this@WebBottomSheetDialogFragment.dismiss()
+             }
+        }
 
         val list = if (isBot()) {
             menuList {
@@ -749,6 +767,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
                 menuGroup {
                     menu(shareMenu)
+                    menu(floatingMenu)
                     menu(refreshMenu)
                 }
             }
@@ -759,6 +778,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
                 menuGroup {
                     menu(shareMenu)
+                    menu(floatingMenu)
                     menu(copyMenu)
                     menu(refreshMenu)
                     menu(openMenu)
