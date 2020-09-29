@@ -1,5 +1,6 @@
 package one.mixin.android.ui.media
 
+import android.app.Activity
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +15,7 @@ import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.vo.MessageItem
 
 class PostAdapter(
-    private val context: Context,
+    private val context: Activity,
     private val onClickListener: (messageItem: MessageItem) -> Unit
 ) : SharedMediaHeaderAdapter<PostHolder>() {
     private val miniMarkwon by lazy {

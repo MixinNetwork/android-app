@@ -294,7 +294,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun loadPost(content: String) {
-        val renderer = SharePostRenderer(requireContext())
+        val renderer = SharePostRenderer(requireActivity())
         contentView.content_layout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(content, requireContext().isNightMode())
     }

@@ -33,7 +33,7 @@ class PostFragment : BaseFragment() {
 
     private val adapter by lazy {
         PostAdapter(
-            requireContext(),
+            requireActivity(),
             fun(messageItem: MessageItem) {
                 MarkdownActivity.show(requireActivity(), messageItem.content!!, conversationId)
             }

@@ -1,5 +1,6 @@
 package one.mixin.android.util.markdown
 
+import android.app.Activity
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.view.View
@@ -40,7 +41,7 @@ class MarkwonUtil {
     companion object {
 
         fun getMarkwon(
-            context: Context,
+            context: Activity,
             mixinLinkResolver: (String) -> Unit,
             linkResolver: (String) -> Unit
         ): Markwon {
@@ -105,7 +106,7 @@ class MarkwonUtil {
                 ).build()
         }
 
-        fun getMiniMarkwon(context: Context): Markwon {
+        fun getMiniMarkwon(context: Activity): Markwon {
             val isNightMode = context.isNightMode()
             val prism4j = Prism4j(LanguageGrammerLocator())
             val prism4jTheme = if (isNightMode) {

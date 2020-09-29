@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.adapter
 
+import android.app.Activity
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -69,7 +70,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 class ConversationAdapter(
-    private val context: Context,
+    private val context: Activity,
     private val keyword: String?,
     private val onItemListener: OnItemListener,
     private val isGroup: Boolean,
