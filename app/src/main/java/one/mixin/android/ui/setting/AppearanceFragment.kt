@@ -27,6 +27,12 @@ class AppearanceFragment : BaseFragment() {
     companion object {
         const val TAG = "AppearanceFragment"
 
+        const val POS_FOLLOW_SYSTEM = 0
+        const val POS_ENGLISH = 1
+        const val POS_SIMPLIFY_CHINESE = 2
+        const val POS_JAPANESE = 3
+        const val POS_INDONESIA = 4
+
         fun newInstance() = AppearanceFragment()
     }
 
@@ -79,26 +85,25 @@ class AppearanceFragment : BaseFragment() {
             }
         }
         val language = Lingver.getInstance().getLanguage()
-        language_desc_tv.text = getString(
-            if (Lingver.getInstance().isFollowingSystemLocale()) {
-                R.string.follow_system
-            } else {
-                when (language) {
-                    Locale.SIMPLIFIED_CHINESE.language -> {
-                        R.string.simplified_chinese
-                    }
-                    Locale.JAPANESE.language -> {
-                        R.string.japanese
-                    }
-                    Constants.Locale.Indonesian.Language -> {
-                        R.string.indonesian
-                    }
-                    else -> {
-                        R.string.english
-                    }
+        val languageNames = resources.getStringArray(R.array.language_names)
+        language_desc_tv.text = if (Lingver.getInstance().isFollowingSystemLocale()) {
+            getString(R.string.follow_system)
+        } else {
+            when (language) {
+                Locale.SIMPLIFIED_CHINESE.language -> {
+                    languageNames[POS_SIMPLIFY_CHINESE]
+                }
+                Locale.JAPANESE.language -> {
+                    languageNames[POS_JAPANESE]
+                }
+                Constants.Locale.Indonesian.Language -> {
+                    languageNames[POS_INDONESIA]
+                }
+                else -> {
+                    languageNames[POS_ENGLISH]
                 }
             }
-        )
+        }
         language_rl.setOnClickListener { showLanguageAlert() }
         current_tv.text = getString(R.string.wallet_setting_currency_desc, Session.getFiatCurrency(), Fiats.getSymbol())
         currency_rl.setOnClickListener {
@@ -116,20 +121,20 @@ class AppearanceFragment : BaseFragment() {
         val choice = resources.getStringArray(R.array.language_names)
         choice[0] = getString(R.string.follow_system)
         val selectItem = if (Lingver.getInstance().isFollowingSystemLocale()) {
-            0
+            POS_FOLLOW_SYSTEM
         } else {
             when (Lingver.getInstance().getLanguage()) {
                 Locale.SIMPLIFIED_CHINESE.language -> {
-                    2
+                    POS_SIMPLIFY_CHINESE
                 }
                 Locale.JAPANESE.language -> {
-                    3
+                    POS_JAPANESE
                 }
                 Constants.Locale.Indonesian.Language -> {
-                    4
+                    POS_INDONESIA
                 }
                 else -> {
-                    1
+                    POS_ENGLISH
                 }
             }
         }
@@ -141,19 +146,19 @@ class AppearanceFragment : BaseFragment() {
             }
             .setPositiveButton(R.string.group_ok) { dialog, _ ->
                 if (newSelectItem != selectItem) {
-                    if (newSelectItem == 0) {
+                    if (newSelectItem == POS_FOLLOW_SYSTEM) {
                         Lingver.getInstance().setFollowSystemLocale(requireContext())
                     } else {
                         val selectedLang = when (newSelectItem) {
-                            2 -> Locale.SIMPLIFIED_CHINESE.language
-                            3 -> Locale.JAPANESE.language
-                            4 -> Constants.Locale.Indonesian.Language
+                            POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
+                            POS_JAPANESE -> Locale.JAPANESE.language
+                            POS_INDONESIA -> Constants.Locale.Indonesian.Language
                             else -> Locale.US.language
                         }
                         val selectedCountry = when (newSelectItem) {
-                            2 -> Locale.SIMPLIFIED_CHINESE.country
-                            3 -> Locale.JAPANESE.country
-                            4 -> Constants.Locale.Indonesian.Country
+                            POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
+                            POS_JAPANESE -> Locale.JAPANESE.country
+                            POS_INDONESIA -> Constants.Locale.Indonesian.Country
                             else -> Locale.US.country
                         }
                         val newLocale = Locale(selectedLang, selectedCountry)

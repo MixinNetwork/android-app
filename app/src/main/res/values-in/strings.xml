@@ -102,10 +102,6 @@
     <string name="click_lock">Klik untuk mengunci</string>
     <string name="click_unlock">Klik untuk membuka</string>
     <string name="pin" translatable="false">PIN</string>
-    <string name="indonesian">Bahasa Indonesia</string>
-    <string name="simplified_chinese">Cina Sederhana</string>
-    <string name="english">Inggris</string>
-    <string name="japanese">Jepang</string>
     <string name="follow_system">Otomatis</string>
     <string name="nobody">Tak seorangpun</string>
     <string name="analyzing">Menganalisis…</string>
