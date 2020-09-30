@@ -20,7 +20,7 @@ import java.nio.charset.Charset
 @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
 class CaptchaView(private val context: Context, private val callback: Callback) {
     companion object {
-        private const val WEB_VIEW_TIME_OUT = 30000L
+        private const val WEB_VIEW_TIME_OUT = 15000L
     }
 
     val webView: WebView by lazy {
@@ -36,15 +36,21 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     }
 
     private val stopWebViewRunnable = Runnable {
-        webView.loadUrl("about:blank")
-        hide()
-        webView.webViewClient = object : WebViewClient() {}
-        context.toast(R.string.error_recaptcha_timeout)
-        callback.onStop()
+        if (captchaType.isG()) {
+            loadCaptcha(CaptchaType.HCaptcha)
+        } else {
+            webView.loadUrl("about:blank")
+            hide()
+            webView.webViewClient = object : WebViewClient() {}
+            context.toast(R.string.error_recaptcha_timeout)
+            callback.onStop()
+        }
     }
 
-    // TODO pass explicit CaptchaType from API
-    fun loadCaptcha(captchaType: CaptchaType = CaptchaType.GCaptcha) {
+    private var captchaType = CaptchaType.GCaptcha
+
+    fun loadCaptcha(captchaType: CaptchaType) {
+        this.captchaType = captchaType
         val isG = captchaType.isG()
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
@@ -93,7 +99,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
             hide()
             webView.loadUrl("about:blank")
             webView.webViewClient = object : WebViewClient() {}
-            callback.onPostToken(value)
+            callback.onPostToken(Pair(captchaType, value))
         }
     }
 
@@ -105,6 +111,6 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
 
     interface Callback {
         fun onStop()
-        fun onPostToken(value: String)
+        fun onPostToken(value: Pair<CaptchaType, String>)
     }
 }

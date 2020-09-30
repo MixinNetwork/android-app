@@ -38,8 +38,8 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
-import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.CaptchaView
+import one.mixin.android.widget.Keyboard
 
 @AndroidEntryPoint
 class MobileFragment : BaseFragment() {
@@ -139,7 +139,7 @@ class MobileFragment : BaseFragment() {
             .show()
     }
 
-    private fun requestSend(captchaResponse: String? = null) {
+    private fun requestSend(captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null) {
         if (!isAdded) return
 
         mobile_fab.show()
@@ -147,9 +147,15 @@ class MobileFragment : BaseFragment() {
         val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
         val verificationRequest = VerificationRequest(
             phoneNum,
-            if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name,
-            captchaResponse
+            if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name
         )
+        if (captchaResponse != null) {
+            if (captchaResponse.first.isG()) {
+                verificationRequest.gRecaptchaResponse = captchaResponse.second
+            } else {
+                verificationRequest.hCaptchaResponse = captchaResponse.second
+            }
+        }
         mobileViewModel.loginVerification(verificationRequest)
             .autoDispose(stopScope).subscribe(
                 { r: MixinResponse<VerificationResponse> ->
@@ -192,14 +198,14 @@ class MobileFragment : BaseFragment() {
                         mobile_cover?.visibility = GONE
                     }
 
-                    override fun onPostToken(value: String) {
+                    override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
                         requestSend(value)
                     }
                 }
             )
             (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
         }
-        captchaView?.loadCaptcha()
+        captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
     }
 
     private fun hideLoading() {

@@ -218,13 +218,19 @@ class VerificationFragment : PinCodeFragment() {
         captchaView?.webView?.visibility = GONE
     }
 
-    private fun sendVerification(captchaResponse: String? = null) {
+    private fun sendVerification(captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null) {
         showLoading()
         val verificationRequest = VerificationRequest(
             requireArguments().getString(ARGS_PHONE_NUM),
-            if (isPhoneModification()) VerificationPurpose.PHONE.name else VerificationPurpose.SESSION.name,
-            captchaResponse
+            if (isPhoneModification()) VerificationPurpose.PHONE.name else VerificationPurpose.SESSION.name
         )
+        if (captchaResponse != null) {
+            if (captchaResponse.first.isG()) {
+                verificationRequest.gRecaptchaResponse = captchaResponse.second
+            } else {
+                verificationRequest.hCaptchaResponse = captchaResponse.second
+            }
+        }
         viewModel.verification(verificationRequest)
             .autoDispose(stopScope).subscribe(
                 { r: MixinResponse<VerificationResponse> ->
@@ -259,14 +265,14 @@ class VerificationFragment : PinCodeFragment() {
                         hideLoading()
                     }
 
-                    override fun onPostToken(value: String) {
+                    override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
                         sendVerification(value)
                     }
                 }
             )
             (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
         }
-        captchaView?.loadCaptcha()
+        captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
     }
 
     private fun startCountDown() {
