@@ -693,7 +693,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             bottomSheet.dismiss()
         }
         view.open.setOnClickListener {
-            contentView.chat_web_view.url ?: currentUrl?.let {
+            (contentView.chat_web_view.url ?: currentUrl)?.let {
                 context?.openUrl(it)
             }
             bottomSheet.dismiss()
