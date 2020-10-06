@@ -16,8 +16,10 @@ import kotlinx.android.synthetic.main.item_pin_logs.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.localTime
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.LogResponse
 
 @AndroidEntryPoint
@@ -49,20 +51,28 @@ class PinLogsFragment : BaseFragment() {
         }
         viewModel.viewModelScope.launch {
             isLoading = true
-            val result = viewModel.getPinLogs()
-            if (result.isSuccess && result.data?.isNotEmpty() == true) {
-                hasMore = result.data?.isNotEmpty() == true
-                empty.isVisible = false
-                list.isVisible = true
-                adapter.data.addAll(result.data!!)
-                adapter.notifyDataSetChanged()
-            } else {
-                hasMore = false
-                empty.isVisible = true
-                list.isVisible = false
-            }
-            isLoading = false
-            progress.isVisible = false
+            handleMixinResponse(
+                invokeNetwork = {
+                    viewModel.getPinLogs()
+                },
+                successBlock = { result ->
+                    hasMore = result.data?.isNotEmpty() == true
+                    empty.isVisible = false
+                    list.isVisible = true
+                    adapter.data.addAll(result.data!!)
+                    adapter.notifyDataSetChanged()
+                    isLoading = false
+                    progress.isVisible = false
+                },
+                defaultExceptionHandle = {
+                    hasMore = false
+                    empty.isVisible = true
+                    list.isVisible = false
+                    isLoading = false
+                    progress.isVisible = false
+                    ErrorHandler.handleError(it)
+                }
+            )
         }
     }
 
@@ -74,14 +84,22 @@ class PinLogsFragment : BaseFragment() {
         }
         isLoading = true
         viewModel.viewModelScope.launch {
-            val result = viewModel.getPinLogs(adapter.data.last().createdAt)
-            if (result.isSuccess && result.data?.isNotEmpty() == true) {
-                adapter.data.addAll(result.data!!)
-                adapter.notifyDataSetChanged()
-            } else {
-                hasMore = false
-            }
-            isLoading = false
+            handleMixinResponse(
+                invokeNetwork = {
+                    viewModel.getPinLogs(adapter.data.last().createdAt)
+                },
+                successBlock = { result ->
+                    adapter.data.addAll(result.data!!)
+                    adapter.notifyDataSetChanged()
+                    isLoading = false
+
+                },
+                defaultExceptionHandle = {
+                    hasMore = false
+                    isLoading = false
+                    ErrorHandler.handleError(it)
+                }
+            )
         }
     }
 
