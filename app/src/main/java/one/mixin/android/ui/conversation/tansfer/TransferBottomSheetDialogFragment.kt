@@ -167,7 +167,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
         return false
     }
 
-    override fun doWithMixinErrorCode(errorCode: Int) {
+    override fun doWithMixinErrorCode(errorCode: Int): String? {
         if (errorCode in arrayOf(
                 INSUFFICIENT_BALANCE,
                 INVALID_PIN_FORMAT,
@@ -183,6 +183,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
                 }
             }
         }
+        return null
     }
 
     override fun onDestroy() {

@@ -11,11 +11,13 @@ import kotlinx.android.synthetic.main.layout_pin_biometric.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
+import one.mixin.android.util.ErrorHandler.Companion.INVALID_ADDRESS
 import one.mixin.android.vo.Address
 import one.mixin.android.widget.BottomSheet
 
@@ -32,6 +34,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         const val ARGS_ASSET_ID = "args_asset_id"
         const val ARGS_ASSET_NAME = "args_asset_name"
         const val ARGS_ASSET_URL = "args_asset_url"
+        const val ARGS_CHAIN_ID = "args_chain_id"
         const val ARGS_CHAIN_URL = "args_chain_url"
         const val ARGS_LABEL = "args_label"
         const val ARGS_DESTINATION = "args_destination"
@@ -43,6 +46,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             assetId: String? = null,
             assetName: String? = null,
             assetUrl: String? = null,
+            chainId: String? = null,
             chainIconUrl: String? = null,
             label: String,
             destination: String,
@@ -54,6 +58,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
                 ARGS_ASSET_ID to assetId,
                 ARGS_ASSET_NAME to assetName,
                 ARGS_ASSET_URL to assetUrl,
+                ARGS_CHAIN_ID to chainId,
                 ARGS_CHAIN_URL to chainIconUrl,
                 ARGS_LABEL to label,
                 ARGS_DESTINATION to destination,
@@ -68,6 +73,7 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     private val assetId: String? by lazy { requireArguments().getString(ARGS_ASSET_ID) }
     private val assetName: String? by lazy { requireArguments().getString(ARGS_ASSET_NAME) }
     private val assetUrl: String? by lazy { requireArguments().getString(ARGS_ASSET_URL) }
+    private val chainId: String? by lazy { requireArguments().getString(ARGS_CHAIN_ID) }
     private val chainIconUrl: String? by lazy { requireArguments().getString(ARGS_CHAIN_URL) }
     private val label: String? by lazy { requireArguments().getString(ARGS_LABEL) }
     private val destination: String? by lazy { requireArguments().getString(ARGS_DESTINATION) }
@@ -119,6 +125,17 @@ class PinAddrBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
             contentView.biometric_layout.showPin(false)
         }
         return true
+    }
+
+    override fun doWithMixinErrorCode(errorCode: Int): String? {
+        return if (errorCode == INVALID_ADDRESS) {
+            getString(
+                if (chainId == EOS_CHAIN_ID) {
+                    R.string.error_invalid_address_eos
+                } else R.string.error_invalid_address,
+                INVALID_ADDRESS
+            )
+        } else null
     }
 
     private fun getTitle() = getString(
