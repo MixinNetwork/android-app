@@ -581,6 +581,7 @@
     <string name="setting_phone_number">Phone Number</string>
     <string name="setting_phone_number_privacy">Who can find me by my number</string>
     <string name="setting_transfer_large_summary">Show confirmation dialog when transfer greater than or equal to %1$s</string>
+    <string name="setting_duplicate_transfer_desc">Display confirmation dialog when you transfer the same amount to the same person within 6 hours</string>
     <string-array name="setting_night_array">
         <item>Light</item>
         <item>Dark</item>

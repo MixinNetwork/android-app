@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="?attr/bg_window"
     android:orientation="vertical">
 
@@ -85,6 +86,43 @@
             android:text="@string/setting_transfer_large_summary"
             android:textColor="?attr/text_minor"
             android:textSize="12sp"/>
+
+    <RelativeLayout
+        android:id="@+id/duplicate_transfer_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="?attr/bg_white"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/transfer_duplicate_title" />
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/duplicate_transfer_sc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            tools:ignore="RelativeOverlap"/>
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/duplicate_transfer_desc_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:text="@string/setting_duplicate_transfer_desc"
+        android:textColor="?attr/text_minor"
+        android:textSize="12sp"/>
 
 
     <RelativeLayout

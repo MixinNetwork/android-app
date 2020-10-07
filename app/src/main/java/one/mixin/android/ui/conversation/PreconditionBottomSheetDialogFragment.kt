@@ -9,6 +9,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_precondition_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.fragment_precondition_bottom_sheet.view.asset_balance
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_DUPLICATE_TRANSFER
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.colorFromAttribute
@@ -80,7 +81,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun checkTransferTrace(t: TransferBiometricItem) {
         val trace = t.trace
-        if (trace == null) {
+        if (trace == null || isDuplicateTransferDisable()) {
             if (shouldShowTransferTip(t)) {
                 showLargeAmountTip(t)
             } else {
@@ -107,7 +108,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun checkWithdrawTrace(t: WithdrawBiometricItem) {
         val trace = t.trace
-        if (trace == null) {
+        if (trace == null || isDuplicateTransferDisable()) {
             if (shouldShowWithdrawalTip(t)) {
                 showFirstWithdrawalTip(t)
             } else {
@@ -179,6 +180,8 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val amount = BigDecimal(t.amount).toDouble() * price
         return amount >= (Session.getAccount()!!.transferConfirmationThreshold)
     }
+
+    private fun isDuplicateTransferDisable() = !defaultSharedPreferences.getBoolean(PREF_DUPLICATE_TRANSFER, true)
 
     private fun startCountDown() {
         contentView.continue_tv.isEnabled = false

@@ -13,11 +13,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_notifications.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Account.PREF_DUPLICATE_TRANSFER
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openNotificationSetting
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -57,6 +60,12 @@ class NotificationsFragment : BaseFragment() {
             showDialog(Session.getAccount()!!.transferConfirmationThreshold.toString(), false)
         }
         refreshLargeAmount(Session.getAccount()!!.transferConfirmationThreshold)
+
+        duplicate_transfer_sc.isChecked = defaultSharedPreferences.getBoolean(PREF_DUPLICATE_TRANSFER, true)
+        duplicate_transfer_sc.setOnCheckedChangeListener { _, isChecked ->
+            defaultSharedPreferences.putBoolean(PREF_DUPLICATE_TRANSFER, isChecked)
+        }
+
         supportsOreo {
             notification_reset.isVisible = true
             notification_reset.setOnClickListener {
