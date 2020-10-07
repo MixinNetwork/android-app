@@ -44,6 +44,7 @@ object Constants {
         const val PREF_BACKUP = "pref_attachment_backup"
         const val PREF_CHECK_STORAGE = "pref_check_storage"
         const val PREF_TRIED_UPDATE_KEY = "pref_tried_update_key"
+        const val PREF_DUPLICATE_TRANSFER = "pref_duplicate_transfer"
     }
 
     object Scheme {

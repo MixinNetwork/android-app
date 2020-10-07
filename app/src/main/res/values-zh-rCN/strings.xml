@@ -566,6 +566,7 @@
     <string name="setting_phone_number">手机号码</string>
     <string name="setting_phone_number_privacy">谁可以通过手机号找到你</string>
     <string name="setting_transfer_large_summary">当转账金额大于或等于 %1$s 时显示确认弹窗</string>
+    <string name="setting_duplicate_transfer_desc">当你在 6 个小时内给相同的人转相同的金额时显示确认弹窗</string>
     <string-array name="setting_night_array">
         <item>浅色</item>
         <item>暗黑</item>
