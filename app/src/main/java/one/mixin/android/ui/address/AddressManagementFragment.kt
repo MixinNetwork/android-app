@@ -147,6 +147,7 @@ class AddressManagementFragment : BaseFragment() {
         val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(
             addressId = addr.addressId,
             assetUrl = asset.iconUrl,
+            chainId = asset.chainId,
             chainIconUrl = asset.chainIconUrl,
             destination = addr.destination,
             label = addr.label,

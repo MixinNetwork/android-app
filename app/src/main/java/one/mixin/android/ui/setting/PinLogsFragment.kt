@@ -92,7 +92,6 @@ class PinLogsFragment : BaseFragment() {
                     adapter.data.addAll(result.data!!)
                     adapter.notifyDataSetChanged()
                     isLoading = false
-
                 },
                 defaultExceptionHandle = {
                     hasMore = false

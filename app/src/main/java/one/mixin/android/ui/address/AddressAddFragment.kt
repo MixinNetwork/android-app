@@ -81,6 +81,7 @@ class AddressAddFragment : BaseFragment() {
                     asset.assetId,
                     asset.name,
                     assetUrl = asset.iconUrl,
+                    chainId = asset.chainId,
                     chainIconUrl = asset.chainIconUrl,
                     label = label_et.text.toString(),
                     destination = destination,

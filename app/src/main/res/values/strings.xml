@@ -156,6 +156,7 @@
     <string name="error_insufficient_transaction_fee">ERROR %1$d: Insufficient transaction fee.</string>
     <string name="error_blockchain">ERROR %1$d: Blockchain not in sync, please try again later.</string>
     <string name="error_invalid_address">ERROR %1$d: Invalid address format.</string>
+    <string name="error_invalid_address_eos">ERROR %1$d: Invalid address format. Mixin does not support withdrawal to the EOS contract address!</string>
     <string name="error_phone_verification_code_expired">ERROR %1$d: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR %1$d: Invalid phone verification code</string>
     <string name="error_phone_invalid_format">ERROR %1$d: Invalid phone number</string>

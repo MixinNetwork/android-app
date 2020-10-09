@@ -50,7 +50,8 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
      */
     abstract fun doWhenInvokeNetworkSuccess(response: MixinResponse<*>, pin: String): Boolean
 
-    open fun doWithMixinErrorCode(errorCode: Int) {
+    open fun doWithMixinErrorCode(errorCode: Int): String? {
+        return null
     }
 
     protected fun setBiometricLayout() {
@@ -122,7 +123,7 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 callback?.onSuccess() ?: toast(R.string.successful)
             }
         } else {
-            doWithMixinErrorCode(response.errorCode)
+            val errorString = doWithMixinErrorCode(response.errorCode)
 
             contentView.biometric_layout?.let { layout ->
                 layout.setErrorButton(layout.getErrorActionByErrorCode(response.errorCode))
@@ -131,6 +132,8 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             val errorInfo = if (response.errorCode == ErrorHandler.PIN_INCORRECT || response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
                 val errorCount = bottomViewModel.errorCount()
                 getString(R.string.error_pin_incorrect_with_times, ErrorHandler.PIN_INCORRECT, errorCount)
+            } else if (!errorString.isNullOrBlank()) {
+                errorString
             } else {
                 requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription)
             }
