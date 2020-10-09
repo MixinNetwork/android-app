@@ -105,7 +105,7 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
         RxBus.listen(DragReleaseEvent::class.java)
             .autoDispose(stopScope)
             .subscribe {
-                rv.direction = if (it.isExpand) DIRECTION_TOP_2_BOTTOM else DIRECTION_NONE
+                rv?.direction = if (it.isExpand) DIRECTION_TOP_2_BOTTOM else DIRECTION_NONE
             }
     }
 

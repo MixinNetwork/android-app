@@ -110,16 +110,16 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
     override fun onAlbumLoad(cursor: Cursor) {
         va?.post {
             val albums = arrayListOf<Album>()
-            va.displayedChild = POS_CONTENT
+            va?.displayedChild = POS_CONTENT
             while (cursor.moveToNext()) {
                 val album = Album.valueOf(cursor)
                 albums.add(album)
             }
             if (albums.isNullOrEmpty()) return@post
 
-            if (album_tl.tabCount == 0) {
+            if (album_tl != null && album_tl?.tabCount == 0) {
                 albums.forEach { album ->
-                    album_tl.addTab(album_tl.newTab().setText(album.getDisplayName(requireContext())))
+                    album_tl?.addTab(album_tl.newTab().setText(album.getDisplayName(requireContext())))
                 }
             }
             albumAdapter.albums = albums
