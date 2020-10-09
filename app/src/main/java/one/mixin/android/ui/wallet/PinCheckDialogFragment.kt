@@ -20,6 +20,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 
@@ -89,6 +90,9 @@ class PinCheckDialogFragment : DialogFragment() {
                     val transY = contentView.height / 2 - contentView.top_ll.translationY * 2
                     contentView.top_ll?.animate()?.translationY(transY)?.start()
                     contentView.keyboard?.animate()?.translationY(contentView.keyboard.height.toFloat())?.start()
+                } else {
+                    contentView.pin_va?.displayedChild = POS_PIN
+                    contentView.pin?.error(requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription))
                 }
                 return@handleMixinResponse false
             }
