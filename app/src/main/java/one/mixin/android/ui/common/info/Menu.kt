@@ -58,10 +58,11 @@ class MenuBuilder {
     var subtitle: String? = null
     var style: MenuStyle = MenuStyle.Normal
     var action: (() -> Unit)? = null
+    var icon: Int? = null
     var apps: List<App>? = null
     var circleNames: List<String>? = null
 
-    fun build() = Menu(title, subtitle, style, action, apps, circleNames)
+    fun build() = Menu(title, subtitle, style, action, icon, apps, circleNames)
 }
 
 data class MenuList(
@@ -77,6 +78,7 @@ data class Menu(
     val subtitle: String? = null,
     val style: MenuStyle = MenuStyle.Normal,
     val action: (() -> Unit)? = null,
+    val icon: Int? = null,
     val apps: List<App>? = null,
     val circleNames: List<String>? = null
 )
@@ -109,6 +111,15 @@ fun MenuList.createMenuLayout(
                     context.colorFromAttribute(R.attr.text_primary)
                 } else {
                     context.resources.getColor(R.color.colorRed, context.theme)
+                }
+            )
+            menu.icon.notNullWithElse(
+                {
+                    menuLayout.icon.isVisible = true
+                    menuLayout.icon.setImageResource(it)
+                },
+                {
+                    menuLayout.icon.isVisible = false
                 }
             )
             menu.apps.notNullWithElse(

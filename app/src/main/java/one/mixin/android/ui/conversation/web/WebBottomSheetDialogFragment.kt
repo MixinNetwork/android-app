@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
 import android.content.ActivityNotFoundException
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -52,7 +53,7 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_fail_load.view.*
-import kotlinx.android.synthetic.main.view_web_bottom.view.*
+import kotlinx.android.synthetic.main.view_web_bottom_menu.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -66,6 +67,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hideKeyboard
@@ -86,6 +88,9 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.info.createMenuLayout
+import one.mixin.android.ui.common.info.menu
+import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.QRCodeProcessor
@@ -644,65 +649,128 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val builder = BottomSheet.Builder(requireActivity())
         val view = View.inflate(
             ContextThemeWrapper(requireActivity(), R.style.Custom),
-            R.layout.view_web_bottom,
+            R.layout.view_web_bottom_menu,
             null
         )
+        if (isBot()) {
+            app?.let {
+                view.avatar.loadImage(it.iconUrl)
+                view.name_tv.text = it.name
+                view.desc_tv.text = it.appNumber
+            }
+            view.avatar.isVisible = true
+        } else {
+            view.name_tv.text = contentView.title_tv.text
+            view.desc_tv.text = contentView.chat_web_view.url
+            view.avatar.isVisible = false
+        }
         builder.setCustomView(view)
         val bottomSheet = builder.create()
-        view.forward.setOnClickListener {
-            val currentUrl = contentView.chat_web_view.url
-            if (isBot()) {
-                if (app?.appId == null) return@setOnClickListener
+        view.close_iv.setOnClickListener { bottomSheet.dismiss() }
 
-                lifecycleScope.launch {
-                    val app = bottomViewModel.getAppAndCheckUser(app?.appId!!, app?.updatedAt)
-                    if (app.matchResourcePattern(currentUrl)) {
-                        val webTitle = contentView.chat_web_view.title ?: app.name
-                        val appCardData = AppCardData(app.appId, app.iconUrl, webTitle, app.name, currentUrl, app.updatedAt)
-                        ForwardActivity.show(
-                            requireContext(),
-                            arrayListOf(ForwardMessage(ForwardCategory.APP_CARD.name, content = Gson().toJson(appCardData)))
-                        )
-                    } else {
-                        ForwardActivity.show(requireContext(), currentUrl)
+        val shareMenu = menu {
+            title = getString(if (isBot()) R.string.about else R.string.share)
+            icon = if (isBot()) R.drawable.ic_setting_about else R.drawable.ic_web_share
+            action = {
+                if (isBot()) {
+                    openBot()
+                } else {
+                    activity?.let {
+                        ShareCompat.IntentBuilder
+                            .from(it)
+                            .setType("text/plain")
+                            .setChooserTitle(contentView.chat_web_view.title)
+                            .setText(contentView.chat_web_view.url)
+                            .startChooser()
+                        bottomSheet.dismiss()
                     }
                 }
-            } else {
-                ForwardActivity.show(requireContext(), currentUrl)
+                bottomSheet.dismiss()
             }
-            bottomSheet.dismiss()
         }
-        view.share.setOnClickListener {
-            if (isBot()) {
-                openBot()
-            } else {
-                activity?.let {
-                    ShareCompat.IntentBuilder
-                        .from(it)
-                        .setType("text/plain")
-                        .setChooserTitle(contentView.chat_web_view.title)
-                        .setText(contentView.chat_web_view.url)
-                        .startChooser()
-                    bottomSheet.dismiss()
+        val forwardMenu = menu {
+            title = getString(R.string.forward)
+            icon = R.drawable.ic_web_forward
+            action = {
+                val currentUrl = contentView.chat_web_view.url
+                if (isBot()) {
+                    app?.appId?.let { id ->
+                        lifecycleScope.launch {
+                            val app = bottomViewModel.getAppAndCheckUser(id, app?.updatedAt)
+                            if (app.matchResourcePattern(currentUrl)) {
+                                val webTitle = contentView.chat_web_view.title ?: app.name
+                                val appCardData = AppCardData(app.appId, app.iconUrl, webTitle, app.name, currentUrl, app.updatedAt)
+                                ForwardActivity.show(
+                                    requireContext(),
+                                    arrayListOf(ForwardMessage(ForwardCategory.APP_CARD.name, content = Gson().toJson(appCardData)))
+                                )
+                            } else {
+                                ForwardActivity.show(requireContext(), currentUrl)
+                            }
+                        }
+                    }
+                } else {
+                    ForwardActivity.show(requireContext(), currentUrl)
                 }
+                bottomSheet.dismiss()
             }
-            bottomSheet.dismiss()
         }
-        view.refresh.setOnClickListener {
-            refresh()
-            bottomSheet.dismiss()
-        }
-        view.open.setOnClickListener {
-            (contentView.chat_web_view.url ?: currentUrl)?.let {
-                context?.openUrl(it)
+        val refreshMenu = menu {
+            title = getString(R.string.action_refresh)
+            icon = R.drawable.ic_web_refresh
+            action = {
+                refresh()
+                bottomSheet.dismiss()
             }
-            bottomSheet.dismiss()
         }
-        if (isBot()) {
-            view.open.isVisible = false
-            view.share.text = getString(R.string.about)
+        val openMenu = menu {
+            title = getString(R.string.action_open)
+            icon = R.drawable.ic_web_browser
+            action = {
+                (contentView.chat_web_view.url ?: currentUrl)?.let {
+                    context?.openUrl(it)
+                }
+                bottomSheet.dismiss()
+            }
+        }
+        val copyMenu = menu {
+            title = getString(R.string.copy_link)
+            icon = R.drawable.ic_content_copy
+            action = {
+                requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, url))
+                requireContext().toast(R.string.copy_success)
+            }
         }
 
+        val list = if (isBot()) {
+            menuList {
+                menuGroup {
+                    menu(forwardMenu)
+                }
+                menuGroup {
+                    menu(shareMenu)
+                    menu(refreshMenu)
+                }
+            }
+        } else {
+            menuList {
+                menuGroup {
+                    menu(forwardMenu)
+                }
+                menuGroup {
+                    menu(shareMenu)
+                    menu(copyMenu)
+                    menu(refreshMenu)
+                    menu(openMenu)
+                }
+            }
+        }
+        list.createMenuLayout(requireContext()).let { layout ->
+            view.root.addView(layout)
+            layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = requireContext().dpToPx(30f)
+            }
+        }
         bottomSheet.show()
     }
 

@@ -114,6 +114,7 @@
     <string name="storage_low_title">手机储存空间即将用尽</string>
     <string name="storage_low_message">手机存储空间严重不足，建议清理不重要的视频和文件、卸载不常用的软件，以免影响 Mixin 的使用体验，甚至可能造成聊天丢失或数据损坏</string>
     <string name="upload_timeout">上传超时</string>
+    <string name="copy_link">复制链接</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
