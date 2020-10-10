@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<one.mixin.android.widget.BottomSheetLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:id="@+id/root"
+    android:background="@drawable/bg_upper_round"
+    android:paddingBottom="16dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:paddingTop="@dimen/margin16"
+        android:paddingBottom="@dimen/margin16">
+
+        <one.mixin.android.widget.CircleImageView
+            android:id="@+id/avatar"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_marginEnd="@dimen/margin20"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/name_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="?attr/text_primary"
+            android:textSize="16sp"
+            android:layout_marginStart="@dimen/margin16"
+            android:layout_marginEnd="@dimen/margin16"
+            app:layout_constraintBottom_toTopOf="@id/desc_tv"
+            app:layout_constraintEnd_toStartOf="@id/close_iv"
+            app:layout_constraintVertical_bias="0"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toEndOf="@id/avatar"
+            app:layout_constraintTop_toTopOf="@id/avatar" />
+
+        <TextView
+            android:id="@+id/desc_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin16"
+            android:layout_marginEnd="@dimen/margin16"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="?attr/text_minor"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="@id/avatar"
+            app:layout_constraintEnd_toStartOf="@id/close_iv"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toEndOf="@id/avatar"
+            app:layout_constraintTop_toBottomOf="@id/name_tv"
+            app:layout_constraintVertical_bias="1" />
+
+        <ImageView
+            android:id="@+id/close_iv"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:foreground="@drawable/mixin_ripple"
+            android:src="@drawable/ic_close_black"
+            android:padding="10dp"
+            android:layout_marginEnd="@dimen/margin10"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:contentDescription="@string/cancel" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</one.mixin.android.widget.BottomSheetLinearLayout>
