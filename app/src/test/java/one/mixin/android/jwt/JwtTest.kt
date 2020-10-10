@@ -12,11 +12,19 @@ import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.mock.mockAccount
 import one.mixin.android.mock.mockRequest
 import one.mixin.android.session.Session
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
+import java.security.Security
 
 class JwtTest {
+
+    @Before
+    fun addBCProvider() {
+        Security.addProvider(BouncyCastleProvider())
+    }
 
     @Test
     fun testJwtRSA() {

@@ -237,15 +237,6 @@ dependencies {
     implementation "com.github.tougee:rxpermissions:${rxpermissionsVersion}"
     implementation("com.github.yalantis:ucrop:${ucropVersion}")
     implementation "com.facebook.rebound:rebound:${reboundVersion}"
-    ktlint "com.pinterest:ktlint:${ktlintVersion}"
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "androidx.test:core:${testCoreVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
-    androidTestImplementation "junit:junit:${junitVersion}"
-    androidTestImplementation("androidx.test.espresso:espresso-core:${espressoVersion}", {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    androidTestImplementation "androidx.test.ext:junit:${androidxJunitVersion}"
 
     implementation "com.uber.autodispose:autodispose:${autodisposeVersion}"
     implementation "com.uber.autodispose:autodispose-android:${autodisposeVersion}"
@@ -273,6 +264,22 @@ dependencies {
     implementation "dnsjava:dnsjava:${dnsVersion}"
     implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
     implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
+
+    ktlint "com.pinterest:ktlint:${ktlintVersion}"
+
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation "androidx.test:core:${testCoreVersion}"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+
+    // for jwt unit test
+    testImplementation "org.bouncycastle:bcprov-jdk16:${bcVersion}"
+    testImplementation "org.json:json:${jsonVersion}"
+    
+    androidTestImplementation "junit:junit:${junitVersion}"
+    androidTestImplementation("androidx.test.espresso:espresso-core:${espressoVersion}", {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    androidTestImplementation "androidx.test.ext:junit:${androidxJunitVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {
