@@ -91,6 +91,9 @@ buildscript {
         ext.startupVersion ='1.0.0-beta01'
         ext.dnsVersion = '2.1.9'
         ext.appCenterSdkVersion = '3.3.1'
+
+        ext.bcVersion = '1.45'
+        ext.jsonVersion = '20200518'
     }
 
     repositories {

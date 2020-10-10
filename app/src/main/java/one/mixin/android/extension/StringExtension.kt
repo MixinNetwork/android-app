@@ -195,6 +195,17 @@ fun String.numberFormat2(): String {
     }
 }
 
+fun String.priceFormat2(): String {
+    return try {
+        val big = BigDecimal(this)
+        DecimalFormat(",##0.00").format(big)
+    } catch (e: NumberFormatException) {
+        this
+    } catch (e: IllegalArgumentException) {
+        this
+    }
+}
+
 fun BigDecimal.priceFormat(): String {
     return if (this.compareTo(BigDecimal.ONE) == 1 || this.compareTo(BigDecimal.ONE) == 0) {
         priceFormat2()
