@@ -94,13 +94,15 @@ import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.QRCodeProcessor
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
-import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.matchResourcePattern
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
@@ -702,7 +704,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 val appCardData = AppCardData(app.appId, app.iconUrl, webTitle, app.name, currentUrl, app.updatedAt)
                                 ForwardActivity.show(
                                     requireContext(),
-                                    arrayListOf(ForwardMessage(ForwardCategory.APP_CARD.name, content = Gson().toJson(appCardData)))
+                                    arrayListOf(ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCardData))),
+                                    ForwardAction.App.Resultless()
                                 )
                             } else {
                                 ForwardActivity.show(requireContext(), currentUrl)

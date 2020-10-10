@@ -5,12 +5,6 @@ import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.ShareCategory.APP_CARD
-import one.mixin.android.Constants.ShareCategory.CONTACT
-import one.mixin.android.Constants.ShareCategory.IMAGE
-import one.mixin.android.Constants.ShareCategory.LIVE
-import one.mixin.android.Constants.ShareCategory.POST
-import one.mixin.android.Constants.ShareCategory.TEXT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.crypto.Base64
@@ -27,8 +21,11 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.donateSupported
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
+import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareCategory
+import one.mixin.android.vo.getShareCategory
 import timber.log.Timber
 import java.lang.IllegalStateException
 
@@ -113,34 +110,10 @@ fun String.openAsUrl(
         }
     } else if (startsWith(Constants.Scheme.SEND, true)) {
         val uri = Uri.parse(this)
-        val text = uri.getQueryParameter("text")
-        text.notNullWithElse(
-            {
-                ForwardActivity.show(
-                    MixinApplication.appContext,
-                    arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it))
-                )
-            },
-            {
-                val category = uri.getQueryParameter("category")
-                val conversationId = uri.getQueryParameter("conversation").let {
-                    if (it == currentConversation) {
-                        it
-                    } else {
-                        null
-                    }
-                }
-                val data = uri.getQueryParameter("data")
-                if (category != null && category in arrayOf(TEXT, IMAGE, LIVE, CONTACT, POST, APP_CARD) && data != null) {
-                    try {
-                        ShareMessageBottomSheetDialogFragment.newInstance(category, String(Base64.decode(data)), conversationId, app, host)
-                            .showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
-                    } catch (e: Exception) {
-                        Timber.e(IllegalStateException("Error data:${e.message}"))
-                    }
-                } else {
-                    Timber.e(IllegalStateException("Error data"))
-                }
+        uri.handleSchemeSend(
+            supportFragmentManager, currentConversation, app, host,
+            onError = { err ->
+                Timber.e(IllegalStateException(err))
             }
         )
     } else if (startsWith(Constants.Scheme.DEVICE, true)) {
@@ -214,3 +187,56 @@ private fun String.isAppScheme() = startsWith(Constants.Scheme.APPS, true) ||
 
 private fun getUserOrAppNotFoundTip(isApp: Boolean) =
     if (isApp) R.string.error_app_not_found else R.string.error_user_not_found
+
+fun Uri.handleSchemeSend(
+    supportFragmentManager: FragmentManager,
+    currentConversation: String? = null,
+    app: App? = null,
+    host: String? = null,
+    showNow: Boolean = true,
+    afterShareText: (() -> Unit)? = null,
+    afterShareData: (() -> Unit)? = null,
+    onError: ((String) -> Unit)? = null,
+) {
+    val text = this.getQueryParameter("text")
+    text.notNullWithElse(
+        {
+            ForwardActivity.show(
+                MixinApplication.appContext,
+                arrayListOf(ForwardMessage<ForwardCategory>(ShareCategory.Text, it)),
+                ForwardAction.App.Resultless()
+            )
+            afterShareText?.invoke()
+        },
+        {
+            val category = this.getQueryParameter("category")
+            val conversationId = this.getQueryParameter("conversation").let {
+                if (it == currentConversation) {
+                    it
+                } else {
+                    null
+                }
+            }
+            val data = this.getQueryParameter("data")
+            val shareCategory = category?.getShareCategory()
+            if (shareCategory != null && data != null) {
+                try {
+                    afterShareData?.invoke()
+                    val fragment = ShareMessageBottomSheetDialogFragment.newInstance(
+                        ForwardMessage(shareCategory, String(Base64.decode(data))),
+                        conversationId, app, host
+                    )
+                    if (showNow) {
+                        fragment.showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
+                    } else {
+                        fragment.show(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
+                    }
+                } catch (e: Exception) {
+                    onError?.invoke("Error data:${e.message}")
+                }
+            } else {
+                onError?.invoke("Error data")
+            }
+        }
+    )
+}

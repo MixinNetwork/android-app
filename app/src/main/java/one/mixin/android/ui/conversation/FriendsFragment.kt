@@ -10,9 +10,13 @@ import one.mixin.android.ui.common.friends.FriendsListener
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSATION_ID
 import one.mixin.android.ui.conversation.adapter.FriendsAdapter
 import one.mixin.android.ui.conversation.adapter.FriendsViewHolder
-import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.User
+import one.mixin.android.websocket.ContactMessagePayload
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -55,8 +59,8 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsListene
             friendClick!!(user)
             parentFragmentManager.beginTransaction().remove(this).commit()
         } else {
-            val fw = ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)
-            ConversationActivity.show(requireContext(), conversationId, null, messages = arrayListOf(fw))
+            val fw = ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(ContactMessagePayload(user.userId), ContactMessagePayload::class.java))
+            ForwardActivity.show(requireContext(), arrayListOf(fw), ForwardAction.App.Resultless(conversationId))
         }
     }
 }

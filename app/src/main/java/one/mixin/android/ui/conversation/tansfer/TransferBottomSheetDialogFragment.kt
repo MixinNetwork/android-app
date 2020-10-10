@@ -48,7 +48,7 @@ class TransferBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFrag
     }
 
     private val t: BiometricItem by lazy {
-        requireArguments().getParcelable(ARGS_BIOMETRIC_ITEM)!!
+        requireArguments().getParcelable<BiometricItem>(ARGS_BIOMETRIC_ITEM)!!
     }
 
     var onDestroyListener: OnDestroyListener? = null

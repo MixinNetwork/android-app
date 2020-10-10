@@ -31,8 +31,9 @@ import one.mixin.android.util.markdown.DefaultEntry
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.markdown.SimpleEntry
 import one.mixin.android.util.markdown.table.TableEntry
-import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareCategory
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.WebControlView
 import org.commonmark.ext.gfm.tables.TableBlock
@@ -100,7 +101,7 @@ class MarkdownActivity : BaseActivity() {
         val bottomSheet = builder.create()
         view.forward.setOnClickListener {
             val markdown = intent.getStringExtra(CONTENT) ?: return@setOnClickListener
-            ForwardActivity.show(this, arrayListOf(ForwardMessage(ForwardCategory.POST.name, content = markdown)))
+            ForwardActivity.show(this, arrayListOf(ForwardMessage(ShareCategory.Post, markdown)), ForwardAction.App.Resultless())
             bottomSheet.dismiss()
         }
         view.save.setOnClickListener {

@@ -42,9 +42,14 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.video.MixinPlayer
+import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareCategory
+import one.mixin.android.vo.ShareImageData
+import one.mixin.android.websocket.VideoMessagePayload
 import java.io.File
 
 @AndroidEntryPoint
@@ -142,22 +147,22 @@ class EditFragment : VisionFragment() {
                     requireContext(),
                     arrayListOf(
                         ForwardMessage(
-                            ForwardCategory.VIDEO.name,
-                            mediaUrl = path
+                            ForwardCategory.Video,
+                            GsonHelper.customGson.toJson(VideoMessagePayload(path))
                         )
                     ),
-                    isShare = true
+                    ForwardAction.System(name = getString(R.string.send))
                 )
             } else {
                 ForwardActivity.show(
                     requireContext(),
                     arrayListOf(
                         ForwardMessage(
-                            ForwardCategory.IMAGE.name,
-                            mediaUrl = path
+                            ShareCategory.Image,
+                            GsonHelper.customGson.toJson(ShareImageData(path))
                         )
                     ),
-                    isShare = true
+                    ForwardAction.System(name = getString(R.string.send))
                 )
             }
         }

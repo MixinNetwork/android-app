@@ -73,17 +73,20 @@ import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.ConversationCategory
-import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.SearchMessageItem
+import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.webrtc.outgoingCall
+import one.mixin.android.websocket.ContactMessagePayload
 import org.threeten.bp.Instant
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
@@ -348,10 +351,11 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             requireContext(),
                             arrayListOf(
                                 ForwardMessage(
-                                    ForwardCategory.CONTACT.name,
-                                    sharedUserId = u.userId
+                                    ShareCategory.Contact,
+                                    GsonHelper.customGson.toJson(ContactMessagePayload(u.userId))
                                 )
-                            )
+                            ),
+                            ForwardAction.App.Resultless()
                         )
                         RxBus.publish(BotCloseEvent())
                         dismiss()

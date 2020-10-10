@@ -27,9 +27,7 @@ import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.TransferRequest
@@ -38,13 +36,12 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.MultisigsResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.getScopes
-import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
+import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.isDonateUrl
 import one.mixin.android.extension.isUUID
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.getIconUrlName
@@ -62,12 +59,10 @@ import one.mixin.android.ui.common.biometric.Multi2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.One2MultiBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
-import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
-import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
@@ -75,8 +70,6 @@ import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.ForwardCategory
-import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
 import timber.log.Timber
 import java.util.UUID
@@ -550,41 +543,15 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
         } else if (url.startsWith(Scheme.SEND, true)) {
             val uri = Uri.parse(url)
-            val text = uri.getQueryParameter("text")
-            lifecycleScope.launch {
-                text.notNullWithElse(
-                    {
-                        ForwardActivity.show(
-                            MixinApplication.appContext,
-                            arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it))
-                        )
-                        dismiss()
-                    },
-                    {
-                        val category = uri.getQueryParameter("category")
-                        val data = uri.getQueryParameter("data")
-                        if (category != null && category in arrayOf(
-                                Constants.ShareCategory.TEXT,
-                                Constants.ShareCategory.IMAGE,
-                                Constants.ShareCategory.LIVE,
-                                Constants.ShareCategory.CONTACT,
-                                Constants.ShareCategory.POST,
-                                Constants.ShareCategory.APP_CARD
-                            ) && data != null
-                        ) {
-                            try {
-                                dismiss()
-                                ShareMessageBottomSheetDialogFragment.newInstance(category, String(Base64.decode(data)), null)
-                                    .show(parentFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
-                            } catch (e: Exception) {
-                                showError(R.string.error_data)
-                            }
-                        } else {
-                            showError(R.string.error_data)
-                        }
-                    }
-                )
-            }
+            uri.handleSchemeSend(
+                parentFragmentManager,
+                showNow = false,
+                afterShareText = { dismiss() },
+                afterShareData = { dismiss() },
+                onError = { err ->
+                    showError(err)
+                }
+            )
         } else {
             showError()
         }
