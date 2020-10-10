@@ -20,15 +20,13 @@ import java.security.Security
 
 class JwtTest {
 
-    companion object {
-        init {
-            Security.addProvider(BouncyCastleProvider())
-        }
+    init {
+        Security.addProvider(BouncyCastleProvider())
     }
 
     @Test
     fun testJwtRSA() {
-        val rsaKey = generateRSAKeyPair()
+        val rsaKey = generateRSAKeyPair(1024)
         val token = rsaKey.getPrivateKeyPem()
         val key = getRSAPrivateKeyFromString(token)
         val account = mockAccount()
@@ -39,6 +37,18 @@ class JwtTest {
         assertTrue(Session.requestDelay(account, signToken, 1, key).isExpire)
     }
 
+    @Test
+    fun testJwtRSADefault() {
+        val rsaKey = generateRSAKeyPair()
+        val token = rsaKey.getPrivateKeyPem()
+        val key = getRSAPrivateKeyFromString(token)
+        val account = mockAccount()
+        val signToken = Session.signToken(account, mockRequest(), key)
+        val isExpire = Session.requestDelay(account, signToken, DELAY_SECOND, key).isExpire
+        assertFalse(isExpire)
+        Thread.sleep(2000)
+        assertTrue(Session.requestDelay(account, signToken, 1, key).isExpire)
+    }
     @Test
     fun testJwtEdDSA() {
         val keyPair = generateEd25519KeyPair()
