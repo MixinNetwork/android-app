@@ -109,7 +109,13 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.close.setOnClickListener {
             dismiss()
         }
-        loadData()
+        try {
+            loadData()
+        } catch (e: Exception) {
+            toast(R.string.error_data)
+            dismiss()
+            return
+        }
         when {
             app != null -> {
                 contentView.share_title.text = getString(R.string.share_message_description, "${app?.name}(${app?.appNumber})", getMessageCategory())
