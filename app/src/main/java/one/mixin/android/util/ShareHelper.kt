@@ -7,10 +7,8 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
-import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.addTo
 import one.mixin.android.vo.systemMediaToMessage
-import one.mixin.android.websocket.VideoMessagePayload
 
 class ShareHelper {
 
@@ -69,25 +67,5 @@ class ShareHelper {
             }
         }
         return result
-    }
-
-    private fun generateShareMessage(
-        mediaUri: Uri?,
-        category: ForwardCategory = ShareCategory.Image
-    ): ForwardMessage<ForwardCategory>? {
-        if (mediaUri == null) {
-            return null
-        }
-        val mediaUrl = mediaUri.getFilePath(MixinApplication.appContext) ?: return null
-        return ForwardMessage(
-            category,
-            GsonHelper.customGson.toJson(
-                if (category is ForwardCategory.Video) {
-                    VideoMessagePayload(mediaUrl)
-                } else {
-                    ShareImageData(mediaUrl)
-                }
-            )
-        )
     }
 }

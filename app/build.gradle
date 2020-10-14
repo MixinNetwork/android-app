@@ -281,12 +281,19 @@ dependencies {
     // for jwt unit test
     testImplementation "org.bouncycastle:bcprov-jdk16:${bcVersion}"
     testImplementation "org.json:json:${jsonVersion}"
-    
+
     androidTestImplementation "junit:junit:${junitVersion}"
     androidTestImplementation("androidx.test.espresso:espresso-core:${espressoVersion}", {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     androidTestImplementation "androidx.test.ext:junit:${androidxJunitVersion}"
+    // Once https://issuetracker.google.com/127986458 is fixed this can be testImplementation
+    debugImplementation "androidx.fragment:fragment-testing:${fragmentVersion}"
+
+    // Hilt testing
+    androidTestImplementation "com.google.dagger:hilt-android-testing:$hiltVersion"
+    kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
+    kaptAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

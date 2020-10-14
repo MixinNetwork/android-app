@@ -30,6 +30,7 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.result.ActivityResultRegistry
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
@@ -204,7 +205,9 @@ import kotlin.math.abs
 
 @AndroidEntryPoint
 @SuppressLint("InvalidWakeLockTag")
-class ConversationFragment :
+class ConversationFragment(
+    registry: ActivityResultRegistry
+) :
     LinkFragment(),
     OnKeyboardShownListener,
     OnKeyboardHiddenListener,
@@ -245,7 +248,7 @@ class ConversationFragment :
                 }
             }
 
-        fun newInstance(bundle: Bundle) = ConversationFragment().apply { arguments = bundle }
+        fun newInstance(bundle: Bundle, registry: ActivityResultRegistry) = ConversationFragment(registry).apply { arguments = bundle }
     }
 
     @Inject
@@ -563,7 +566,7 @@ class ConversationFragment :
             }
 
             override fun onUrlClick(url: String) {
-                url.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope)
+                url.openAsUrlOrWeb(conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
             }
 
             override fun onMentionClick(identityNumber: String) {
@@ -604,7 +607,7 @@ class ConversationFragment :
 
                 lifecycleScope.launch {
                     val app = chatViewModel.findAppById(userId)
-                    action.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope, app)
+                    action.openAsUrlOrWeb(conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope, app)
                 }
             }
 
@@ -805,11 +808,14 @@ class ConversationFragment :
         requireContext().getSystemService()!!
     }
 
-    private val getForwardResult = registerForActivityResult(ForwardActivity.ForwardContract<ForwardCategory>()) { data ->
+    var selectItem: SelectItem? = null
+
+    val getForwardResult = registerForActivityResult(ForwardActivity.ForwardContract<ForwardCategory>(), registry) { data ->
         val selectItems = data?.getParcelableArrayListExtra<SelectItem>(ARGS_RESULT)
         if (selectItems.isNullOrEmpty()) return@registerForActivityResult
 
         val selectItem = selectItems[0]
+        this.selectItem = selectItem
         Snackbar.make(chat_rv, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
             .setAction(R.string.chat_go_check) {
                 ConversationActivity.show(requireContext(), selectItem.conversationId, selectItem.userId)
@@ -1279,7 +1285,7 @@ class ConversationFragment :
         group_desc.addAutoLinkMode(AutoLinkMode.MODE_URL)
         group_desc.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         group_desc.setAutoLinkOnClickListener { _, url ->
-            url.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope)
+            url.openAsUrlOrWeb(conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
         }
         group_flag.setOnClickListener {
             group_desc.expand()
@@ -1861,7 +1867,7 @@ class ConversationFragment :
 
     private fun open(url: String, app: App?, appCard: AppCardData? = null) {
         chat_control.chat_et.hideKeyboard()
-        url.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope, app, appCard)
+        url.openAsUrlOrWeb(conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope, app, appCard)
     }
 
     private fun openInputAction(action: String): Boolean {
@@ -1965,7 +1971,7 @@ class ConversationFragment :
                         chat_control.reset()
                         if (Session.getAccount()?.hasPin == true) {
                             recipient?.let {
-                                TransferFragment.newInstance(it.userId, supportSwitchAsset = true)
+                                TransferFragment.newInstance(requireActivity().activityResultRegistry, it.userId, supportSwitchAsset = true)
                                     .showNow(parentFragmentManager, TransferFragment.TAG)
                             }
                         } else {

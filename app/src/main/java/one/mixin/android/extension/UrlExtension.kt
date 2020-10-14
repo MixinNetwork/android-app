@@ -1,6 +1,7 @@
 package one.mixin.android.extension
 
 import android.net.Uri
+import androidx.activity.result.ActivityResultRegistry
 import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -32,18 +33,20 @@ import java.lang.IllegalStateException
 fun String.openAsUrlOrWeb(
     conversationId: String?,
     supportFragmentManager: FragmentManager,
+    registry: ActivityResultRegistry,
     scope: CoroutineScope,
     app: App? = null,
     appCard: AppCardData? = null
-) = openAsUrl(supportFragmentManager, scope, currentConversation = conversationId, app = app) {
+) = openAsUrl(supportFragmentManager, registry, scope, currentConversation = conversationId, app = app) {
     WebBottomSheetDialogFragment.newInstance(this, conversationId, app, appCard)
         .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
 }
 
 fun String.openAsUrlOrQrScan(
     supportFragmentManager: FragmentManager,
+    registry: ActivityResultRegistry,
     scope: CoroutineScope
-) = openAsUrl(supportFragmentManager, scope) {
+) = openAsUrl(supportFragmentManager, registry, scope) {
     QrScanBottomSheetDialogFragment.newInstance(this)
         .showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
 }
@@ -85,6 +88,7 @@ fun String.isMixinUrl(): Boolean {
 
 fun String.openAsUrl(
     supportFragmentManager: FragmentManager,
+    registry: ActivityResultRegistry,
     scope: CoroutineScope,
     currentConversation: String? = null,
     app: App? = null,
@@ -102,7 +106,7 @@ fun String.openAsUrl(
         }
         if (data.isUUID()) {
             if (Session.getAccount()?.hasPin == true) {
-                TransferFragment.newInstance(data, supportSwitchAsset = true)
+                TransferFragment.newInstance(registry, data, supportSwitchAsset = true)
                     .showNow(supportFragmentManager, TransferFragment.TAG)
             } else {
                 MixinApplication.appContext.toast(R.string.transfer_without_pin)

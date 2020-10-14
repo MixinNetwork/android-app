@@ -113,7 +113,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
             detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
             detail_tv.setAutoLinkOnClickListener { _, url ->
-                url.openAsUrlOrWeb(null, parentFragmentManager, lifecycleScope)
+                url.openAsUrlOrWeb(null, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
                 dismiss()
             }
             created_tv.text = getString(R.string.profile_join_in, account.createdAt.dayTime())

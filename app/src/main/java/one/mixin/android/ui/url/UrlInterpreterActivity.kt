@@ -69,7 +69,7 @@ class UrlInterpreterActivity : BaseActivity() {
             TRANSFER -> {
                 uri.lastPathSegment?.let { lastPathSegment ->
                     if (Session.getAccount()?.hasPin == true) {
-                        TransferFragment.newInstance(lastPathSegment, supportSwitchAsset = true)
+                        TransferFragment.newInstance(activityResultRegistry, lastPathSegment, supportSwitchAsset = true)
                             .showNow(supportFragmentManager, TransferFragment.TAG)
                     } else {
                         toast(R.string.transfer_without_pin)

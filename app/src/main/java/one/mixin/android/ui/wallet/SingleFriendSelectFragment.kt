@@ -30,7 +30,7 @@ class SingleFriendSelectFragment : BaseFriendsFragment<FriendsNoBotViewHolder>()
 
     override fun onItemClick(user: User) {
         if (Session.getAccount()?.hasPin == true) {
-            TransferFragment.newInstance(user.userId)
+            TransferFragment.newInstance(requireActivity().activityResultRegistry, user.userId)
                 .showNow(parentFragmentManager, TransferFragment.TAG)
             view?.findNavController()?.navigateUp()
         } else {

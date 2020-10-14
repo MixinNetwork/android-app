@@ -98,7 +98,7 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.detail_tv.setAutoLinkOnClickListener { _, url ->
-            url.openAsUrlOrWeb(c.conversationId, parentFragmentManager, lifecycleScope)
+            url.openAsUrlOrWeb(c.conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
             dismiss()
         }
         contentView.post {
