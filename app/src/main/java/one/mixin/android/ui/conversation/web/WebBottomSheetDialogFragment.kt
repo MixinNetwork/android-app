@@ -739,6 +739,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             action = {
                 requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, url))
                 requireContext().toast(R.string.copy_success)
+                bottomSheet.dismiss()
             }
         }
 
