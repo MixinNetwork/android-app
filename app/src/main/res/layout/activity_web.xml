@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/container"
+    android:background="?attr/bg_translucence"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <one.mixin.android.widget.SixLayout
+        android:id="@+id/six"
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <FrameLayout
+            android:visibility="invisible"
+            android:id="@+id/thumbnail_layout_1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/thumbnail_iv_1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@null" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:visibility="invisible"
+            android:id="@+id/thumbnail_layout_2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/thumbnail_iv_2"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@null" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:visibility="invisible"
+            android:id="@+id/thumbnail_layout_3"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/thumbnail_iv_3"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@null" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:visibility="invisible"
+            android:id="@+id/thumbnail_layout_4"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/thumbnail_iv_4"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@null" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:visibility="invisible"
+            android:id="@+id/thumbnail_layout_5"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/thumbnail_iv_5"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@null" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            android:visibility="invisible"
+            android:id="@+id/thumbnail_layout_6"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/thumbnail_iv_6"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@null" />
+
+        </FrameLayout>
+
+    </one.mixin.android.widget.SixLayout>
+
+</FrameLayout>

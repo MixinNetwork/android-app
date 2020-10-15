@@ -157,7 +157,7 @@ class FloatingWebClip {
                     startY = y
                 } else if (event.action == MotionEvent.ACTION_UP) {
                     if (abs(event.rawX - downX) < 8.dp && abs(event.rawY - downY) < 8.dp) {
-                        expand(activity)
+                        expand(appContext)
                     } else {
                         animateToBoundsMaybe()
                     }

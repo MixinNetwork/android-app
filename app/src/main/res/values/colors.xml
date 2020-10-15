@@ -34,6 +34,7 @@
     <color name="bgMenuBorder">#E5E7EC</color>
     <color name="bgGrayLight">#F5F7FA</color>
     <color name="bgBubble">#FFFFFF</color>
+    <color name="bgTranslucence">#AAFFFFFF</color>
     <color name="bgConfirmation">@color/wallet_blue_light</color>
 
     <color name="bgBlock">#F6F7FA</color>

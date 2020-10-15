@@ -53,6 +53,7 @@
         <item name="bg_bubble">@color/bgBubble</item>
         <item name="bg_bot">@color/bgBot</item>
         <item name="bg_divider">@color/divider</item>
+        <item name="bg_translucence">@color/bgTranslucence</item>
 
         <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>

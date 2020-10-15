@@ -1,18 +1,18 @@
 package one.mixin.android.ui.web
 
 import android.app.Activity
+import android.content.Context
 import android.graphics.Bitmap
 import androidx.collection.arrayMapOf
 import one.mixin.android.vo.App
 
-fun expand(activity: Activity) {
-    FloatingWebGroup.getInstance().show(activity)
+fun expand(context: Context) {
+    WebActivity.show(context)
     FloatingWebClip.getInstance().hide()
 }
 
 fun collapse() {
     FloatingWebClip.getInstance().show()
-    FloatingWebGroup.getInstance().hide()
 }
 
 var clips = arrayMapOf<String, WebClip>()
@@ -35,7 +35,7 @@ fun holdClip(activity: Activity, webClip: WebClip) {
 fun releaseClip(webClip: WebClip) {
     if (clips.contains(webClip.url)) {
         clips[webClip.url] = null
-        FloatingWebGroup.getInstance().deleteItem(clips.indexOfKey(webClip.url))
+        //
     } else {
         // Todo
     }
