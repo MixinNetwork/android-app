@@ -118,6 +118,7 @@ import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
@@ -287,6 +288,9 @@ class MainActivity : BlazeBaseActivity() {
         sendSafetyNetRequest()
         checkBatteryOptimization()
         refreshStickerAlbum()
+        open.setOnClickListener {
+            startActivity(Intent(this, WebActivity::class.java))
+        }
     }
 
     override fun onStart() {
