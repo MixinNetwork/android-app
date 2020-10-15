@@ -6,9 +6,9 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.PixelFormat
-import android.opengl.ETC1
 import android.os.Build
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -68,7 +68,15 @@ class FloatingWebGroup {
     }
 
     private fun initWindowView(activity: Activity) {
-        windowView = FrameLayout(activity)
+        windowView = object : FrameLayout(activity) {
+            override fun dispatchKeyEvent(event: KeyEvent?): Boolean {
+                if (event?.keyCode == KeyEvent.KEYCODE_BACK) {
+                    collapse()
+                    return true
+                }
+                return super.dispatchKeyEvent(event)
+            }
+        }
         container = SixLayout(activity)
         container.setPadding(24.dp, 24.dp, 24.dp, 24.dp)
         windowView.addView(container, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
@@ -96,8 +104,7 @@ class FloatingWebGroup {
         } else {
             windowLayoutParams.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
         }
-        windowLayoutParams.flags =
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        windowLayoutParams.flags = WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
     }
 
     fun hide() {
