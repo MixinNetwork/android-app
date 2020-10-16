@@ -97,4 +97,9 @@ open class BaseMigrationTest {
         val db = migrationTestHelper.createDatabase(Constants.DataBase.DB_NAME, 28)
         db.close()
     }
+
+    fun create29() {
+        val db = migrationTestHelper.createDatabase(Constants.DataBase.DB_NAME, 29)
+        db.close()
+    }
 }

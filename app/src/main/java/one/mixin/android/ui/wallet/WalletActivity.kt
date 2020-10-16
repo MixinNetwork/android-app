@@ -17,7 +17,7 @@ import one.mixin.android.vo.AssetItem
 @AndroidEntryPoint
 class WalletActivity : BlazeBaseActivity() {
 
-    private lateinit var navController: NavController
+    lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

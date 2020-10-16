@@ -16,7 +16,6 @@ import com.microsoft.appcenter.crashes.Crashes
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
-import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.android.components.ApplicationComponent
 import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.Dispatchers
@@ -52,30 +51,42 @@ import org.jetbrains.anko.uiThread
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
 
-@HiltAndroidApp
 class MixinApplication :
     Application(),
     Application.ActivityLifecycleCallbacks,
     Configuration.Provider,
     CameraXConfig.Provider {
 
-    @Inject
-    @JvmField
-    var workerFactory: HiltWorkerFactory? = null
+    @EntryPoint
+    @InstallIn(ApplicationComponent::class)
+    interface MixinJobManagerEntryPoint {
+        fun getMixinJobManager(): MixinJobManager
+    }
 
-    @Inject
-    lateinit var jobManager: MixinJobManager
+    @EntryPoint
+    @InstallIn(ApplicationComponent::class)
+    interface CallStateLiveDataEntryPoint {
+        fun getCallStateLiveData(): CallStateLiveData
+    }
 
-    @Inject
-    lateinit var callState: CallStateLiveData
+    @EntryPoint
+    @InstallIn(ApplicationComponent::class)
+    interface HiltWorkerFactoryEntryPoint {
+        fun getHiltWorkerFactory(): HiltWorkerFactory
+    }
 
     @InstallIn(ApplicationComponent::class)
     @EntryPoint
     interface AppEntryPoint {
         fun inject(app: MixinApplication)
     }
+
+    private fun getWorkerFactory() = EntryPointAccessors.fromApplication(this, HiltWorkerFactoryEntryPoint::class.java).getHiltWorkerFactory()
+
+    private fun getJobManager() = EntryPointAccessors.fromApplication(this, MixinJobManagerEntryPoint::class.java).getMixinJobManager()
+
+    private fun getCallState() = EntryPointAccessors.fromApplication(this, CallStateLiveDataEntryPoint::class.java).getCallStateLiveData()
 
     companion object {
         lateinit var appContext: Context
@@ -110,7 +121,7 @@ class MixinApplication :
 
     override fun getWorkManagerConfiguration(): Configuration {
         return Configuration.Builder()
-            .setWorkerFactory(workerFactory!!)
+            .setWorkerFactory(getWorkerFactory())
             .build()
     }
 
@@ -124,6 +135,7 @@ class MixinApplication :
                 IllegalStateException("Time error: Server-Time $serverTime - Local-Time ${System.currentTimeMillis()}")
             reportException(ise)
             BlazeMessageService.stopService(this)
+            val callState = getCallState()
             if (callState.isGroupCall()) {
                 disconnect<GroupCallService>(this)
             } else if (callState.isVoiceCall()) {
@@ -138,6 +150,7 @@ class MixinApplication :
     fun gotoOldVersionAlert() {
         if (onlining.compareAndSet(true, false)) {
             BlazeMessageService.stopService(this)
+            val callState = getCallState()
             if (callState.isGroupCall()) {
                 disconnect<GroupCallService>(this)
             } else if (callState.isVoiceCall()) {
@@ -152,6 +165,7 @@ class MixinApplication :
         if (onlining.compareAndSet(true, false)) {
             val sessionId = Session.getSessionId()
             BlazeMessageService.stopService(this)
+            val callState = getCallState()
             if (callState.isGroupCall()) {
                 disconnect<GroupCallService>(this)
             } else if (callState.isVoiceCall()) {
@@ -178,6 +192,7 @@ class MixinApplication :
     }
 
     private fun clearData(sessionId: String?) {
+        val jobManager = getJobManager()
         jobManager.cancelAllJob()
         jobManager.clear()
         clearPrivacyPreferences(this)
