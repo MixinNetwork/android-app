@@ -1,5 +1,6 @@
 package one.mixin.android.extension
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.result.ActivityResultRegistry
 import androidx.fragment.app.FragmentManager
@@ -31,22 +32,24 @@ import timber.log.Timber
 import java.lang.IllegalStateException
 
 fun String.openAsUrlOrWeb(
+    context: Context,
     conversationId: String?,
     supportFragmentManager: FragmentManager,
     registry: ActivityResultRegistry,
     scope: CoroutineScope,
     app: App? = null,
     appCard: AppCardData? = null
-) = openAsUrl(supportFragmentManager, registry, scope, currentConversation = conversationId, app = app) {
+) = openAsUrl(context, supportFragmentManager, registry, scope, currentConversation = conversationId, app = app) {
     WebBottomSheetDialogFragment.newInstance(this, conversationId, app, appCard)
         .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
 }
 
 fun String.openAsUrlOrQrScan(
+    context: Context,
     supportFragmentManager: FragmentManager,
     registry: ActivityResultRegistry,
     scope: CoroutineScope
-) = openAsUrl(supportFragmentManager, registry, scope) {
+) = openAsUrl(context, supportFragmentManager, registry, scope) {
     QrScanBottomSheetDialogFragment.newInstance(this)
         .showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
 }
@@ -87,6 +90,7 @@ fun String.isMixinUrl(): Boolean {
 }
 
 fun String.openAsUrl(
+    context: Context,
     supportFragmentManager: FragmentManager,
     registry: ActivityResultRegistry,
     scope: CoroutineScope,
@@ -115,7 +119,7 @@ fun String.openAsUrl(
     } else if (startsWith(Constants.Scheme.SEND, true)) {
         val uri = Uri.parse(this)
         uri.handleSchemeSend(
-            supportFragmentManager, currentConversation, app, host,
+            context, supportFragmentManager, currentConversation, app, host,
             onError = { err ->
                 Timber.e(IllegalStateException(err))
             }
@@ -193,6 +197,7 @@ private fun getUserOrAppNotFoundTip(isApp: Boolean) =
     if (isApp) R.string.error_app_not_found else R.string.error_user_not_found
 
 fun Uri.handleSchemeSend(
+    context: Context,
     supportFragmentManager: FragmentManager,
     currentConversation: String? = null,
     app: App? = null,
@@ -206,7 +211,7 @@ fun Uri.handleSchemeSend(
     text.notNullWithElse(
         {
             ForwardActivity.show(
-                MixinApplication.appContext,
+                context,
                 arrayListOf(ForwardMessage<ForwardCategory>(ShareCategory.Text, it)),
                 ForwardAction.App.Resultless()
             )

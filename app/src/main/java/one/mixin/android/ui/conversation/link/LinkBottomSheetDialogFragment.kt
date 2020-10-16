@@ -544,6 +544,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
         } else if (url.startsWith(Scheme.SEND, true)) {
             val uri = Uri.parse(url)
             uri.handleSchemeSend(
+                requireContext(),
                 parentFragmentManager,
                 showNow = false,
                 afterShareText = { dismiss() },

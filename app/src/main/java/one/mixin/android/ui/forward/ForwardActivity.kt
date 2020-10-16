@@ -35,6 +35,9 @@ class ForwardActivity : BlazeBaseActivity() {
                 putParcelableArrayListExtra(ARGS_MESSAGES, messages)
                 putExtra(ARGS_ACTION, action)
             }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
             context.startActivity(intent)
         }
 

@@ -225,7 +225,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             lifecycleScope,
                             bitmap,
                             onSuccess = { result ->
-                                result.openAsUrlOrQrScan(parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
+                                result.openAsUrlOrQrScan(requireContext(), parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
                             },
                             onFailure = {
                                 if (isAdded) toast(R.string.can_not_recognize)
@@ -376,7 +376,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         reloadTheme()
                     }
                 },
-                conversationId, this.parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope,
+                conversationId, requireContext(), this.parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope,
                 { url ->
                     currentUrl = url
                 },
@@ -891,6 +891,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     class WebViewClientImpl(
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
+        private val context: Context,
         private val fragmentManager: FragmentManager,
         private val registry: ActivityResultRegistry,
         private val scope: CoroutineScope,
@@ -920,7 +921,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             if (url.isMixinUrl()) {
                 val host = view.url?.run { Uri.parse(this).host }
-                url.openAsUrl(fragmentManager, registry, scope, host = host, currentConversation = conversationId) {}
+                url.openAsUrl(context, fragmentManager, registry, scope, host = host, currentConversation = conversationId) {}
                 return true
             }
             val extraHeaders = HashMap<String, String>()

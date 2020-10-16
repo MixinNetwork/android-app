@@ -81,6 +81,7 @@ class UrlInterpreterActivity : BaseActivity() {
             }
             SEND -> {
                 uri.handleSchemeSend(
+                    this,
                     supportFragmentManager,
                     afterShareText = { finish() },
                     onError = { err ->

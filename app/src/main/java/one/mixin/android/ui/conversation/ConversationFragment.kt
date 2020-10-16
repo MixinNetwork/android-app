@@ -566,7 +566,7 @@ class ConversationFragment(
             }
 
             override fun onUrlClick(url: String) {
-                url.openAsUrlOrWeb(conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
+                url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
             }
 
             override fun onMentionClick(identityNumber: String) {
@@ -607,7 +607,7 @@ class ConversationFragment(
 
                 lifecycleScope.launch {
                     val app = chatViewModel.findAppById(userId)
-                    action.openAsUrlOrWeb(conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope, app)
+                    action.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope, app)
                 }
             }
 
@@ -1285,7 +1285,7 @@ class ConversationFragment(
         group_desc.addAutoLinkMode(AutoLinkMode.MODE_URL)
         group_desc.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         group_desc.setAutoLinkOnClickListener { _, url ->
-            url.openAsUrlOrWeb(conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
+            url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
         }
         group_flag.setOnClickListener {
             group_desc.expand()
@@ -1867,7 +1867,7 @@ class ConversationFragment(
 
     private fun open(url: String, app: App?, appCard: AppCardData? = null) {
         chat_control.chat_et.hideKeyboard()
-        url.openAsUrlOrWeb(conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope, app, appCard)
+        url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope, app, appCard)
     }
 
     private fun openInputAction(action: String): Boolean {
