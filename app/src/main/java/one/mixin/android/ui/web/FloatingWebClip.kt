@@ -11,7 +11,6 @@ import android.os.Build
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.ViewGroup
-import one.mixin.android.extension.dp
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
@@ -19,6 +18,7 @@ import android.widget.FrameLayout
 import androidx.annotation.Keep
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getPixelsInCM
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
@@ -67,17 +67,20 @@ class FloatingWebClip {
     }
 
     fun show(activity: Activity? = null) {
-        if (isShown) return
-        if (activity != null) init(activity)
-        isShown = true
-        windowManager.addView(windowView, windowLayoutParams)
+        if (!isShown) {
+            if (activity != null) init(activity)
+            isShown = true
+            windowManager.addView(windowView, windowLayoutParams)
+        }
         reload()
     }
 
     private fun reload() {
-        avatarGroup.setUrls(clips.values.map {
-            it.app?.iconUrl
-        })
+        avatarGroup.setUrls(
+            clips.values.map {
+                it.app?.iconUrl
+            }
+        )
         updateSize(clips.size)
     }
 
@@ -140,7 +143,8 @@ class FloatingWebClip {
                     if (windowLayoutParams.x < 0) {
                         alpha = 1.0f + windowLayoutParams.x / maxDiff.toFloat() * 0.5f
                     } else if (windowLayoutParams.x > realX - windowLayoutParams.width) {
-                        alpha = 1.0f - (windowLayoutParams.x - realX + windowLayoutParams.width) / maxDiff.toFloat() * 0.5f
+                        alpha =
+                            1.0f - (windowLayoutParams.x - realX + windowLayoutParams.width) / maxDiff.toFloat() * 0.5f
                     }
                     if (windowView.alpha != alpha) {
                         windowView.alpha = alpha
@@ -170,11 +174,14 @@ class FloatingWebClip {
             setSize(32.dp, 24.dp)
         }
 
-        windowView.addView(FrameLayout(activity).apply {
-            setBackgroundResource(R.drawable.bg_floating_group)
-            z = 1.dp.toFloat()
-            addView(avatarGroup, ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
-        }, ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
+        windowView.addView(
+            FrameLayout(activity).apply {
+                setBackgroundResource(R.drawable.bg_floating_group)
+                z = 1.dp.toFloat()
+                addView(avatarGroup, ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
+            },
+            ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+        )
     }
 
     fun hide() {

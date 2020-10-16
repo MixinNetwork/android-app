@@ -761,7 +761,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 holdClip(requireActivity(), WebClip(currentUrl, screenshot, app, contentView.title_tv.text.toString()))
                 bottomSheet.dismiss()
                 this@WebBottomSheetDialogFragment.dismiss()
-             }
+            }
         }
 
         val list = if (isBot()) {

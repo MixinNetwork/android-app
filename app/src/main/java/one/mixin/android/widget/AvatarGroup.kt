@@ -9,9 +9,9 @@ import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.view_avatar_group.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.App
-import one.mixin.android.extension.dp
 
 @SuppressLint("CustomViewStyleable")
 class AvatarGroup @JvmOverloads constructor(
@@ -89,8 +89,10 @@ class AvatarGroup @JvmOverloads constructor(
     }
 
     fun setApps(apps: List<App>) {
-        setUrls(apps.map {
-            it.iconUrl
-        })
+        setUrls(
+            apps.map {
+                it.iconUrl
+            }
+        )
     }
 }

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/thumbnail_layout_3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/thumbnail_layout_2"
+        android:id="@+id/thumbnail_layout_1"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:translationZ="1dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp">
+
+        <one.mixin.android.widget.CropTopImageView
+            android:id="@+id/thumbnail_iv_1"
+            android:scaleType="matrix"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/thumbnail_layout_4"
+        app:layout_constraintStart_toEndOf="@id/thumbnail_layout_1"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/thumbnail_layout_2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:translationZ="1dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp">
+
+        <one.mixin.android.widget.CropTopImageView
+            android:id="@+id/thumbnail_iv_2"
+            android:scaleType="matrix"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        app:layout_constraintTop_toBottomOf="@id/thumbnail_layout_1"
+        app:layout_constraintBottom_toTopOf="@id/thumbnail_layout_5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/thumbnail_layout_4"
+        android:id="@+id/thumbnail_layout_3"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:translationZ="1dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp">
+
+        <one.mixin.android.widget.CropTopImageView
+            android:id="@+id/thumbnail_iv_3"
+            android:scaleType="matrix"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        app:layout_constraintTop_toBottomOf="@id/thumbnail_layout_2"
+        app:layout_constraintBottom_toTopOf="@id/thumbnail_layout_6"
+        app:layout_constraintStart_toEndOf="@id/thumbnail_layout_3"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/thumbnail_layout_4"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:translationZ="1dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp">
+
+        <one.mixin.android.widget.CropTopImageView
+            android:id="@+id/thumbnail_iv_4"
+            android:scaleType="matrix"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        app:layout_constraintTop_toBottomOf="@id/thumbnail_layout_3"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/thumbnail_layout_6"
+        android:id="@+id/thumbnail_layout_5"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:translationZ="1dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp">
+
+        <one.mixin.android.widget.CropTopImageView
+            android:id="@+id/thumbnail_iv_5"
+            android:scaleType="matrix"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        app:layout_constraintTop_toBottomOf="@id/thumbnail_layout_4"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/thumbnail_layout_5"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/thumbnail_layout_6"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:translationZ="1dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp">
+
+        <one.mixin.android.widget.CropTopImageView
+            android:id="@+id/thumbnail_iv_6"
+            android:scaleType="matrix"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null" />
+
+    </FrameLayout>
+
+</merge>
