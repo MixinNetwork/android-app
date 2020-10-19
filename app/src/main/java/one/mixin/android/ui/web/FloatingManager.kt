@@ -53,3 +53,9 @@ fun releaseClip(index: Int) {
         // Todo
     }
 }
+
+fun releaseAll(){
+    clips.clear()
+    holdWebViews.clear()
+    FloatingWebClip.getInstance().hide()
+}

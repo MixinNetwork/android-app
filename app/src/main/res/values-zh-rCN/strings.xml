@@ -892,4 +892,5 @@
     <string name="web_cannot_reached_title">无法访问此网页</string>
     <string name="web_cannot_reached_desc">无法访问 %1$s，请检查你的网络并尝试切换 4G、Wi-Fi 或 VPN 后重新载入页面。</string>
     <string name="web_contact_developer">联系开发者</string>
+    <string name="web_clear">全部删除</string>
 </resources>

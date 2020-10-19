@@ -13,8 +13,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_web.*
 import kotlinx.android.synthetic.main.view_six.*
 import one.mixin.android.R
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
@@ -63,7 +63,11 @@ class WebActivity : AppCompatActivity() {
     private lateinit var layouts: List<FrameLayout>
     private lateinit var thumbs: List<ImageView>
     override fun onCreate(savedInstanceState: Bundle?) {
-        overridePendingTransition(R.anim.slide_in_bottom, 0)
+        if (intent.extras != null) {
+            overridePendingTransition(R.anim.slide_in_bottom, 0)
+        } else {
+            overridePendingTransition(R.anim.fade_in, 0)
+        }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web)
         container.setOnClickListener {
@@ -109,6 +113,18 @@ class WebActivity : AppCompatActivity() {
             releaseClip(5)
             loadData()
         }
+        clear.setOnClickListener {
+            alertDialogBuilder()
+                .setMessage(getString(R.string.conversation_delete_tip))
+                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .setPositiveButton(R.string.confirm) { _, _ ->
+                    releaseAll()
+                    finish()
+                }
+                .show()
+        }
         thumbnail_layout_1.round(8.dp)
         thumbnail_layout_2.round(8.dp)
         thumbnail_layout_3.round(8.dp)
@@ -117,6 +133,7 @@ class WebActivity : AppCompatActivity() {
         thumbnail_layout_6.round(8.dp)
 
         intent.extras?.let { extras ->
+            isExpand = true
             supportFragmentManager.beginTransaction().add(
                 R.id.container,
                 WebFragment.newInstance(extras),
@@ -137,6 +154,7 @@ class WebActivity : AppCompatActivity() {
                     extras.putString(WebFragment.URL, clip.url)
                     extras.putParcelable(WebFragment.ARGS_APP, clip.app)
                     extras.putInt(WebFragment.ARGS_INDEX, index)
+                    isExpand = true
                     supportFragmentManager.beginTransaction().add(
                         R.id.container,
                         WebFragment.newInstance(extras),
@@ -149,10 +167,16 @@ class WebActivity : AppCompatActivity() {
         }
     }
 
+    private var isExpand = false
+
     override fun finish() {
         // Todo
         collapse()
         super.finish()
-        overridePendingTransition(0, R.anim.slide_out_bottom)
+        if (isExpand) {
+            overridePendingTransition(0, R.anim.slide_out_bottom)
+        } else {
+            overridePendingTransition(0, R.anim.fade_out)
+        }
     }
 }
