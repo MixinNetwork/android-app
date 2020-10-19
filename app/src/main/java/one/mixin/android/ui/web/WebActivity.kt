@@ -14,6 +14,7 @@ import kotlinx.android.synthetic.main.activity_web.*
 import kotlinx.android.synthetic.main.view_six.*
 import one.mixin.android.R
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
@@ -115,14 +116,13 @@ class WebActivity : AppCompatActivity() {
         thumbnail_layout_5.round(8.dp)
         thumbnail_layout_6.round(8.dp)
 
-        if (intent.extras != null) {
+        intent.extras?.let { extras ->
             supportFragmentManager.beginTransaction().add(
                 R.id.container,
-                WebFragment.newInstance(intent.extras!!),
+                WebFragment.newInstance(extras),
                 WebFragment.TAG
             ).commit()
         }
-
         loadData()
     }
 
@@ -131,6 +131,18 @@ class WebActivity : AppCompatActivity() {
             if (index < clips.size) {
                 layouts[index].visibility = View.VISIBLE
                 thumbs[index].setImageBitmap(clips.valueAt(index)?.thumb)
+                layouts[index].setOnClickListener {
+                    val extras = Bundle()
+                    val clip = clips.valueAt(index)
+                    extras.putString(WebFragment.URL, clip.url)
+                    extras.putParcelable(WebFragment.ARGS_APP, clip.app)
+                    extras.putInt(WebFragment.ARGS_INDEX, index)
+                    supportFragmentManager.beginTransaction().add(
+                        R.id.container,
+                        WebFragment.newInstance(extras),
+                        WebFragment.TAG
+                    ).commit()
+                }
             } else {
                 layouts[index].visibility = View.INVISIBLE
             }

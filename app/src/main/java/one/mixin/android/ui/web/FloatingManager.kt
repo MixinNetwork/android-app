@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.webkit.WebView
 import androidx.collection.arrayMapOf
 import one.mixin.android.vo.App
+import one.mixin.android.widget.MixinWebView
 
 fun expand(context: Context) {
     WebActivity.show(context)
@@ -19,11 +20,11 @@ fun collapse() {
 }
 
 var clips = arrayMapOf<String, WebClip>()
-var holdWebViews = mutableListOf<WebView>()
+var holdWebViews = mutableListOf<MixinWebView>()
 
 class WebClip(val url: String, val thumb: Bitmap, val app: App?, val name: String?)
 
-fun holdClip(activity: Activity, webView: WebView, webClip: WebClip) {
+fun holdClip(activity: Activity, webView: MixinWebView, webClip: WebClip) {
     if (!clips.contains(webClip.url)) {
         if (clips.size >= 6) {
             // Todo

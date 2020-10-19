@@ -136,6 +136,7 @@ class WebFragment : BaseFragment() {
         const val CONVERSATION_ID = "conversation_id"
         const val ARGS_APP = "args_app"
         const val ARGS_APP_CARD = "args_app_card"
+        const val ARGS_INDEX = "args_index"
 
         const val themeColorScript =
             """
@@ -167,7 +168,10 @@ class WebFragment : BaseFragment() {
     }
     private var app: App? = null
     private val appCard: AppCardData? by lazy {
-        requireArguments().getParcelable<AppCardData>(ARGS_APP_CARD)
+        requireArguments().getParcelable(ARGS_APP_CARD)
+    }
+    private val index: Int by lazy {
+        requireArguments().getInt(ARGS_INDEX, -1)
     }
     private var currentUrl: String? = null
 
@@ -262,7 +266,11 @@ class WebFragment : BaseFragment() {
     private lateinit var webView: MixinWebView
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         contentView = view.container
-        webView = MixinWebView(requireContext())
+        webView = if (index >= 0) {
+            holdWebViews[index]
+        } else {
+            MixinWebView(requireContext())
+        }
         contentView.web_ll.addView(webView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         val statusBarHeight = requireContext().statusBarHeight()
         contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -660,9 +668,11 @@ class WebFragment : BaseFragment() {
     override fun onDestroyView() {
         // Todo
         webView.stopLoading()
-        webView.destroy()
-        webView.webViewClient = object : WebViewClient() {}
-        webView.webChromeClient = null
+        if (!holdWebViews.contains(webView)) {
+            webView.destroy()
+            webView.webViewClient = object : WebViewClient() {}
+            webView.webChromeClient = null
+        }
         unregisterForContextMenu(webView)
         contentView.web_ll.removeView(webView)
         processor.close()
@@ -802,7 +812,7 @@ class WebFragment : BaseFragment() {
                     WebClip(currentUrl, screenshot, app, contentView.title_tv.text.toString())
                 )
                 bottomSheet.dismiss()
-                // requireActivity().finish()
+                requireActivity().finish()
             }
         }
 
