@@ -14,6 +14,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.text.style.MetricAffectingSpan
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -176,12 +177,14 @@ class ChatControlView : FrameLayout {
     fun hideBot() {
         botHide = true
         chat_bot_iv.visibility = View.GONE
+        chat_et.hint = context.getString(R.string.end_to_end_encryption)
         initTransitions()
     }
 
     fun showBot() {
         botHide = false
         chat_bot_iv.visibility = View.VISIBLE
+        chat_et.hint = context.getString(R.string.type_a_message)
         initTransitions()
     }
 
@@ -591,6 +594,8 @@ class ChatControlView : FrameLayout {
                     chat_et.setSelection(curString.length)
                 }
             }
+
+            chat_et.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (s.isNullOrBlank()) 12f else 14f)
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
