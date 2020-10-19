@@ -127,7 +127,8 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
             contentView.detail_tv.isVisible = true
             contentView.detail_tv.text = c.announcement
         }
-        contentView.count_tv.text = getString(R.string.group_participants_count, c.participantsCount)
+        contentView.count_tv.text =
+            getString(R.string.group_participants_count, c.participantsCount)
         c.iconUrl?.let { contentView.avatar.setGroup(it) }
         contentView.join_tv.isVisible = true
 

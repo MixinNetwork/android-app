@@ -12,7 +12,9 @@ fun expand(context: Context) {
 }
 
 fun collapse() {
-    FloatingWebClip.getInstance().show()
+    if (clips.size > 0) {
+        FloatingWebClip.getInstance().show()
+    }
 }
 
 var clips = arrayMapOf<String, WebClip>()

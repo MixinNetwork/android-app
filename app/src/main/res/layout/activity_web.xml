@@ -1,26 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/container"
     android:background="?attr/bg_translucence"
     android:layout_width="match_parent"
     android:orientation="vertical"
     android:layout_height="match_parent">
 
-    <TextView
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="8dp"
-        android:layout_gravity="end"
-        android:textColor="?attr/text_primary"
-        android:text="clear all"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <one.mixin.android.widget.SixLayout
-        android:id="@+id/six"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="64dp"
-        android:padding="16dp"
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-</androidx.appcompat.widget.LinearLayoutCompat>
+        <TextView
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="8dp"
+            android:layout_gravity="end"
+            android:textColor="?attr/text_primary"
+            android:text="clear all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <one.mixin.android.widget.SixLayout
+            android:id="@+id/six"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="64dp"
+            android:padding="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</FrameLayout>

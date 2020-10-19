@@ -25,8 +25,8 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.markdown.DefaultEntry
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.markdown.SimpleEntry
@@ -80,8 +80,7 @@ class MarkdownActivity : BaseActivity() {
                     .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             },
             { link ->
-                WebBottomSheetDialogFragment.newInstance(link, intent.getStringExtra(CONVERSATION_ID))
-                    .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+                WebActivity.show(this, link, intent.getStringExtra(CONVERSATION_ID))
             }
         )
         val markdown = intent.getStringExtra(CONTENT) ?: return

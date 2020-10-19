@@ -20,7 +20,7 @@ import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import java.util.concurrent.TimeUnit
@@ -31,12 +31,13 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "QrScanBottomSheetDialogFragment"
         const val ARGS_TEXT = "args_text"
 
-        fun newInstance(text: String, conversationId: String? = null) = QrScanBottomSheetDialogFragment().apply {
-            arguments = Bundle().apply {
-                putString(ARGS_TEXT, text)
-                putString(ARGS_CONVERSATION_ID, conversationId)
+        fun newInstance(text: String, conversationId: String? = null) =
+            QrScanBottomSheetDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARGS_TEXT, text)
+                    putString(ARGS_CONVERSATION_ID, conversationId)
+                }
             }
-        }
     }
 
     private val text: String by lazy { requireArguments().getString(ARGS_TEXT)!! }
@@ -51,7 +52,7 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.qr_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.qr_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.qr_tv.setAutoLinkOnClickListener { _, url ->
-            url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
+            url.openAsUrlOrWeb(requireActivity(), conversationId, parentFragmentManager, lifecycleScope)
             dismiss()
         }
         contentView.qr_tv.text = text
@@ -66,8 +67,7 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 .observeOn(AndroidSchedulers.mainThread())
                 .throttleFirst(1, TimeUnit.SECONDS)
                 .autoDispose(stopScope).subscribe {
-                    WebBottomSheetDialogFragment.newInstance(text, conversationId)
-                        .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                    WebActivity.show(requireActivity(), text, conversationId)
                     dismiss()
                 }
         } else {

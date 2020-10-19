@@ -14,7 +14,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.web.WebActivity
 
 @AndroidEntryPoint
 class LinkFragment : BaseFragment() {
@@ -31,8 +31,7 @@ class LinkFragment : BaseFragment() {
     }
 
     private val adapter = LinkAdapter {
-        WebBottomSheetDialogFragment.newInstance(it, conversationId)
-            .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+        WebActivity.show(requireActivity(), it, conversationId)
     }
 
     private val viewModel by viewModels<SharedMediaViewModel>()

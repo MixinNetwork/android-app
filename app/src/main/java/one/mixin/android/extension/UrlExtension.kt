@@ -16,10 +16,10 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.donateSupported
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
@@ -38,8 +38,7 @@ fun String.openAsUrlOrWeb(
     app: App? = null,
     appCard: AppCardData? = null
 ) = openAsUrl(context, supportFragmentManager, scope, currentConversation = conversationId, app = app) {
-    WebBottomSheetDialogFragment.newInstance(this, conversationId, app, appCard)
-        .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+    WebActivity.show(context, this, conversationId, app, appCard)
 }
 
 fun String.openAsUrlOrQrScan(
@@ -123,7 +122,7 @@ fun String.openAsUrl(
     } else if (startsWith(Constants.Scheme.DEVICE, true)) {
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
-        checkUserOrApp(supportFragmentManager, scope)
+        checkUserOrApp(context, supportFragmentManager, scope)
     } else {
         if (isMixinUrl() || isDonateUrl()) {
             LinkBottomSheetDialogFragment.newInstance(this)
@@ -135,11 +134,13 @@ fun String.openAsUrl(
 }
 
 fun Uri.checkUserOrApp(
+    context: Context,
     supportFragmentManager: FragmentManager,
     scope: CoroutineScope
-) = this.toString().checkUserOrApp(supportFragmentManager, scope)
+) = this.toString().checkUserOrApp(context, supportFragmentManager, scope)
 
 fun String.checkUserOrApp(
+    context: Context,
     supportFragmentManager: FragmentManager,
     scope: CoroutineScope
 ) {
@@ -170,8 +171,7 @@ fun String.checkUserOrApp(
             if (isOpenApp && user.appId != null) {
                 val app = appDao.findAppById(user.appId!!)
                 if (app != null) {
-                    WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app)
-                        .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+                    WebActivity.show(context, app.homeUri, null, app)
                     return@launch
                 }
             }

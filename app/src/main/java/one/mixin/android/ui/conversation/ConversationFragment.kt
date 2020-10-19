@@ -151,6 +151,7 @@ import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.wallet.TransactionFragment
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
@@ -1044,7 +1045,8 @@ class ConversationFragment() :
     }
 
     override fun onDestroyView() {
-        botWebBottomSheet?.dismiss()
+        // Todo
+        // botWebBottomSheet?.dismiss()
         chat_rv?.let { rv ->
             rv.children.forEach {
                 val vh = rv.getChildViewHolder(it)
@@ -2108,11 +2110,12 @@ class ConversationFragment() :
                     MenuType.App -> {
                         menu.app?.let { app ->
                             chat_control.chat_et.hideKeyboard()
-                            WebBottomSheetDialogFragment.newInstance(
+                            WebActivity.show(
+                                requireActivity(),
                                 app.homeUri,
                                 conversationId,
                                 app.toApp()
-                            ).showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                            )
                         }
                     }
                 }
