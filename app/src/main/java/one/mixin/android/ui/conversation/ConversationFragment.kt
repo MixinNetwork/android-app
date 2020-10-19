@@ -144,7 +144,7 @@ import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.media.pager.MediaPagerActivity
@@ -824,7 +824,7 @@ class ConversationFragment() :
         }
     private var positionBeforeClickQuote: String? = null
 
-    private var botWebBottomSheet: WebBottomSheetDialogFragment? = null
+    private var botWebBottomSheet: WebFragment? = null
 
     private val sensorManager: SensorManager by lazy {
         requireContext().getSystemService()!!

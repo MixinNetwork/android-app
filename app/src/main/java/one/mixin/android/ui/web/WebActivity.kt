@@ -15,7 +15,6 @@ import kotlinx.android.synthetic.main.view_six.*
 import one.mixin.android.R
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.round
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 
@@ -47,10 +46,10 @@ class WebActivity : AppCompatActivity() {
                     }
                     putExtras(
                         Bundle().apply {
-                            putString(WebBottomSheetDialogFragment.URL, url)
-                            putString(WebBottomSheetDialogFragment.CONVERSATION_ID, conversationId)
-                            putParcelable(WebBottomSheetDialogFragment.ARGS_APP, app)
-                            putParcelable(WebBottomSheetDialogFragment.ARGS_APP_CARD, appCard)
+                            putString(WebFragment.URL, url)
+                            putString(WebFragment.CONVERSATION_ID, conversationId)
+                            putParcelable(WebFragment.ARGS_APP, app)
+                            putParcelable(WebFragment.ARGS_APP_CARD, appCard)
                         }
                     )
                 }
@@ -95,8 +94,8 @@ class WebActivity : AppCompatActivity() {
         if (intent.extras != null) {
             supportFragmentManager.beginTransaction().add(
                 R.id.container,
-                WebBottomSheetDialogFragment.newInstance(intent.extras!!),
-                WebBottomSheetDialogFragment.TAG
+                WebFragment.newInstance(intent.extras!!),
+                WebFragment.TAG
             ).commit()
         }
 
