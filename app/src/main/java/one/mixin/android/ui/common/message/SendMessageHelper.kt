@@ -1,4 +1,4 @@
-package one.mixin.android.ui.common.messenger
+package one.mixin.android.ui.common.message
 
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
@@ -63,7 +63,7 @@ import java.io.FileInputStream
 import java.util.UUID
 import javax.inject.Inject
 
-class Messenger @Inject internal constructor(private val jobManager: MixinJobManager, private val userRepository: UserRepository) {
+class SendMessageHelper @Inject internal constructor(private val jobManager: MixinJobManager, private val userRepository: UserRepository) {
 
     fun sendTextMessage(scope: CoroutineScope, conversationId: String, sender: User, content: String, isPlain: Boolean) {
         val category =

@@ -47,7 +47,7 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.messenger.Messenger
+import one.mixin.android.ui.common.message.SendMessageHelper
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
@@ -103,7 +103,7 @@ internal constructor(
     private val jobManager: MixinJobManager,
     private val assetRepository: AssetRepository,
     private val accountRepository: AccountRepository,
-    private val messenger: Messenger
+    private val messenger: SendMessageHelper
 ) : ViewModel() {
 
     fun getMessages(id: String, initialLoadKey: Int = 0): LiveData<PagedList<MessageItem>> {
