@@ -7,6 +7,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultRegistry
 import androidx.core.view.isVisible
 import com.sandro.bitcoinpaymenturi.BitcoinPaymentURI
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -37,7 +38,7 @@ import one.mixin.android.vo.AssetItem
 import org.jetbrains.anko.textColor
 
 @AndroidEntryPoint
-class AddressAddFragment : BaseFragment() {
+class AddressAddFragment(registry: ActivityResultRegistry) : BaseFragment() {
     companion object {
         const val ARGS_ADDRESS = "args_address"
     }
@@ -182,9 +183,10 @@ class AddressAddFragment : BaseFragment() {
             }
     }
 
-    private var isAddr = false
+    var isAddr = false
+        private set
 
-    private val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
+    val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), registry) { data ->
         val text = data?.getStringExtra(ARGS_FOR_SCAN_RESULT)
         if (text != null) {
             if (isAddr) {

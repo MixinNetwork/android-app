@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_invite.*
@@ -65,15 +64,13 @@ class InviteFragment : BaseFragment() {
 
         inviteViewModel.getConversation(conversationId).observe(
             viewLifecycleOwner,
-            Observer {
+            {
                 it.notNullWithElse(
-                    {
-                        val url = it.codeUrl
+                    { c ->
+                        val url = c.codeUrl
                         invite_link.text = url
                         invite_forward.setOnClickListener {
-                            context?.let {
-                                ForwardActivity.show(it, url)
-                            }
+                            url?.let { ForwardActivity.show(requireContext(), url) }
                         }
                         invite_copy.setOnClickListener {
                             context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, url))

@@ -5,13 +5,9 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import com.google.gson.Gson
-import io.reactivex.Flowable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
-import one.mixin.android.R
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
@@ -62,10 +58,8 @@ import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.RecallMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.widget.gallery.MimeType
-import org.jetbrains.anko.toast
 import java.io.File
 import java.io.FileInputStream
-import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
 
@@ -316,100 +310,47 @@ class Messenger @Inject internal constructor(private val jobManager: MixinJobMan
         )
     }
 
+    /**
+     * Send image message
+     *
+     * @return 0  send successful
+     * @return -1 target image has some bad data
+     * @return -2 target image format not supported
+     */
     fun sendImageMessage(
-        scope: CoroutineScope,
         conversationId: String,
         sender: User,
         uri: Uri,
         isPlain: Boolean,
         mime: String? = null,
         replyMessage: MessageItem? = null
-    ): Flowable<Int>? {
+    ): Int {
         val category =
             if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
         var mimeType = mime
         if (mimeType == null) {
             mimeType = getMimeType(uri, true)
             if (mimeType?.isImageSupport() != true) {
-                scope.launch {
-                    MixinApplication.get().toast(R.string.error_format)
-                }
-                return null
+                return -2
             }
         }
         val messageId = UUID.randomUUID().toString()
         if (mimeType == MimeType.GIF.toString()) {
-            return Flowable.just(uri).map {
-                val gifFile = MixinApplication.get().getImagePath().createGifTemp(conversationId, messageId)
-                val path = uri.getFilePath(MixinApplication.get()) ?: return@map -1
-                gifFile.copyFromInputStream(FileInputStream(path))
-                val size = getImageSize(gifFile)
-                val thumbnail = gifFile.blurThumbnail(size)?.bitmap2String(mimeType)
+            val gifFile = MixinApplication.get().getImagePath().createGifTemp(conversationId, messageId)
+            val path = uri.getFilePath(MixinApplication.get()) ?: return -1
+            gifFile.copyFromInputStream(FileInputStream(path))
+            val size = getImageSize(gifFile)
+            val thumbnail = gifFile.blurThumbnail(size)?.bitmap2String(mimeType)
 
-                val message = createMediaMessage(
-                    messageId,
-                    conversationId,
-                    sender.userId,
-                    category,
-                    null,
-                    Uri.fromFile(gifFile).toString(),
-                    mimeType,
-                    gifFile.length(),
-                    size.width,
-                    size.height,
-                    thumbnail,
-                    null,
-                    null,
-                    nowInUtc(),
-                    MediaStatus.PENDING,
-                    MessageStatus.SENDING.name,
-                    replyMessage?.messageId,
-                    replyMessage?.toQuoteMessageItem()
-                )
-                jobManager.addJobInBackground(SendAttachmentMessageJob(message))
-                return@map 0
-            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-        }
-
-        val temp = MixinApplication.get().getImagePath().createImageTemp(conversationId, messageId, type = ".jpg")
-
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && mimeType == MimeType.HEIC.toString()) {
-            val source = ImageDecoder.createSource(File(uri.getFilePath(MixinApplication.get())))
-            val bitmap = ImageDecoder.decodeBitmap(source)
-            temp.outputStream().use {
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
-            }
-            Flowable.defer {
-                try {
-                    Flowable.just<File>(temp)
-                } catch (e: IOException) {
-                    Flowable.error<File>(e)
-                }
-            }
-        } else {
-            Compressor()
-                .setCompressFormat(Bitmap.CompressFormat.JPEG)
-                .compressToFileAsFlowable(
-                    File(uri.getFilePath(MixinApplication.get())),
-                    temp.absolutePath
-                )
-        }.map { imageFile ->
-            val imageUrl = Uri.fromFile(temp).toString()
-            val length = imageFile.length()
-            if (length <= 0) {
-                return@map -1
-            }
-            val size = getImageSize(imageFile)
-            val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mimeType)
             val message = createMediaMessage(
                 messageId,
                 conversationId,
                 sender.userId,
                 category,
                 null,
-                imageUrl,
-                MimeType.JPEG.toString(),
-                length,
+                Uri.fromFile(gifFile).toString(),
+                mimeType,
+                gifFile.length(),
                 size.width,
                 size.height,
                 thumbnail,
@@ -422,9 +363,54 @@ class Messenger @Inject internal constructor(private val jobManager: MixinJobMan
                 replyMessage?.toQuoteMessageItem()
             )
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
-            return@map 0
+            return 0
         }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+
+        val temp = MixinApplication.get().getImagePath().createImageTemp(conversationId, messageId, type = ".jpg")
+        val path = uri.getFilePath(MixinApplication.get()) ?: return -1
+        val imageFile: File = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && mimeType == MimeType.HEIC.toString()) {
+            val source = ImageDecoder.createSource(File(path))
+            val bitmap = ImageDecoder.decodeBitmap(source)
+            temp.outputStream().use {
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+            }
+            temp
+        } else {
+            Compressor()
+                .setCompressFormat(Bitmap.CompressFormat.JPEG)
+                .compressToFile(
+                    File(path),
+                    temp.absolutePath
+                )
+        }
+        val imageUrl = Uri.fromFile(temp).toString()
+        val length = imageFile.length()
+        if (length <= 0) {
+            return -1
+        }
+        val size = getImageSize(imageFile)
+        val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mimeType)
+        val message = createMediaMessage(
+            messageId,
+            conversationId,
+            sender.userId,
+            category,
+            null,
+            imageUrl,
+            MimeType.JPEG.toString(),
+            length,
+            size.width,
+            size.height,
+            thumbnail,
+            null,
+            null,
+            nowInUtc(),
+            MediaStatus.PENDING,
+            MessageStatus.SENDING.name,
+            replyMessage?.messageId,
+            replyMessage?.toQuoteMessageItem()
+        )
+        jobManager.addJobInBackground(SendAttachmentMessageJob(message))
+        return 0
     }
 }

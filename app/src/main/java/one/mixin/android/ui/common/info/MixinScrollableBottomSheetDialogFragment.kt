@@ -121,7 +121,7 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         detailsTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         detailsTv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         detailsTv.setAutoLinkOnClickListener { _, url ->
-            url.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope)
+            url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
             dismiss()
         }
         detailsTv.setOnTouchListener { _, _ ->

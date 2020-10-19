@@ -19,6 +19,7 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import androidx.activity.result.ActivityResultRegistry
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -92,7 +93,9 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 @SuppressLint("InflateParams")
-class TransferFragment : MixinBottomSheetDialogFragment() {
+class TransferFragment(
+    registry: ActivityResultRegistry
+) : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "TransferFragment"
         const val ASSET_PREFERENCE = "TRANSFER_ASSET"
@@ -102,11 +105,12 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         const val POST_PB = 1
 
         fun newInstance(
+            registry: ActivityResultRegistry,
             userId: String? = null,
             asset: AssetItem? = null,
             address: Address? = null,
             supportSwitchAsset: Boolean = false
-        ) = TransferFragment().withArgs {
+        ) = TransferFragment(registry).withArgs {
             userId?.let { putString(ARGS_USER_ID, it) }
             asset?.let { putParcelable(ARGS_ASSET, it) }
             address?.let { putParcelable(ARGS_ADDRESS, it) }
@@ -170,7 +174,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         bottomSheet
     }
 
-    private val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract()) { data ->
+    val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), registry) { data ->
         val memo = data?.getStringExtra(ARGS_FOR_SCAN_RESULT)
         contentView.transfer_memo.setText(memo)
     }

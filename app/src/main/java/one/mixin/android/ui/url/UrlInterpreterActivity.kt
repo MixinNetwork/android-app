@@ -4,23 +4,17 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.checkUserOrApp
-import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.handleSchemeSend
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
-import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.vo.ForwardCategory
-import one.mixin.android.vo.ForwardMessage
 import timber.log.Timber
-import java.lang.IllegalStateException
+import kotlin.IllegalStateException
 
 @AndroidEntryPoint
 class UrlInterpreterActivity : BaseActivity() {
@@ -75,7 +69,7 @@ class UrlInterpreterActivity : BaseActivity() {
             TRANSFER -> {
                 uri.lastPathSegment?.let { lastPathSegment ->
                     if (Session.getAccount()?.hasPin == true) {
-                        TransferFragment.newInstance(lastPathSegment, supportSwitchAsset = true)
+                        TransferFragment.newInstance(activityResultRegistry, lastPathSegment, supportSwitchAsset = true)
                             .showNow(supportFragmentManager, TransferFragment.TAG)
                     } else {
                         toast(R.string.transfer_without_pin)
@@ -86,35 +80,12 @@ class UrlInterpreterActivity : BaseActivity() {
                 ConfirmBottomFragment.show(this, supportFragmentManager, uri.toString())
             }
             SEND -> {
-                uri.getQueryParameter("text").notNullWithElse(
-                    {
-                        ForwardActivity.show(
-                            this@UrlInterpreterActivity,
-                            arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it))
-                        )
-                        finish()
-                    },
-                    {
-                        val category = uri.getQueryParameter("category")
-                        val data = uri.getQueryParameter("data")
-                        if (category != null && category in arrayOf(
-                                Constants.ShareCategory.TEXT,
-                                Constants.ShareCategory.IMAGE,
-                                Constants.ShareCategory.LIVE,
-                                Constants.ShareCategory.CONTACT,
-                                Constants.ShareCategory.POST,
-                                Constants.ShareCategory.APP_CARD
-                            ) && data != null
-                        ) {
-                            try {
-                                ShareMessageBottomSheetDialogFragment.newInstance(category, String(Base64.decode(data)), null)
-                                    .showNow(supportFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
-                            } catch (e: Exception) {
-                                Timber.e(IllegalStateException("Error data:${e.message}"))
-                            }
-                        } else {
-                            Timber.e(IllegalStateException("Error data"))
-                        }
+                uri.handleSchemeSend(
+                    this,
+                    supportFragmentManager,
+                    afterShareText = { finish() },
+                    onError = { err ->
+                        Timber.e(IllegalStateException(err))
                     }
                 )
             }

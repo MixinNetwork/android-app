@@ -97,7 +97,7 @@ class AddressManagementFragment : BaseFragment() {
 
             override fun onAddrClick(addr: Address) {
                 if (Session.getAccount()?.hasPin == true) {
-                    val transferFragment = TransferFragment.newInstance(asset = asset, address = addr)
+                    val transferFragment = TransferFragment.newInstance(requireActivity().activityResultRegistry, asset = asset, address = addr)
                     transferFragment.showNow(parentFragmentManager, TransferFragment.TAG)
                     transferFragment.callback = object : TransferFragment.Callback {
                         override fun onSuccess() {

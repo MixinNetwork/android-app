@@ -112,15 +112,6 @@ object Constants {
         const val THEME_AUTO_ID = 2
     }
 
-    object ShareCategory {
-        const val TEXT = "text"
-        const val IMAGE = "image"
-        const val LIVE = "live"
-        const val CONTACT = "contact"
-        const val POST = "post"
-        const val APP_CARD = "app_card"
-    }
-
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
 

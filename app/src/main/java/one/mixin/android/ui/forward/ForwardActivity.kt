@@ -3,7 +3,6 @@ package one.mixin.android.ui.forward
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContract
@@ -13,65 +12,53 @@ import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
-import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment.Companion.CATEGORY
-import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment.Companion.CONTENT
 import one.mixin.android.util.ShareHelper
+import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareCategory
 
 @AndroidEntryPoint
 class ForwardActivity : BlazeBaseActivity() {
     companion object {
         const val ARGS_MESSAGES = "args_messages"
-        const val ARGS_SHARE = "args_share"
-        const val ARGS_SELECT = "args_select"
-        const val ARGS_FROM_CONVERSATION = "args_from_conversation"
+        const val ARGS_ACTION = "args_action"
+
         const val ARGS_RESULT = "args_result"
 
-        fun show(
+        inline fun <reified T : ForwardCategory> show(
             context: Context,
-            messages: ArrayList<ForwardMessage>,
-            isShare: Boolean = false,
-            fromConversation: Boolean = false
+            messages: ArrayList<ForwardMessage<T>>,
+            action: ForwardAction
         ) {
             val intent = Intent(context, ForwardActivity::class.java).apply {
                 putParcelableArrayListExtra(ARGS_MESSAGES, messages)
-                putExtra(ARGS_SHARE, isShare)
-                putExtra(ARGS_FROM_CONVERSATION, fromConversation)
+                putExtra(ARGS_ACTION, action)
             }
-            intent.flags = FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
-        }
-
-        fun show(context: Context, link: String?) {
-            val intent = Intent(context, ForwardActivity::class.java).apply {
-                val list = ArrayList<ForwardMessage>().apply {
-                    add(ForwardMessage(ForwardCategory.TEXT.name, content = link))
-                }
-                putParcelableArrayListExtra(ARGS_MESSAGES, list)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
             context.startActivity(intent)
         }
 
-        fun send(context: Context, category: String, content: String) {
-            val intent = Intent(context, ForwardActivity::class.java).apply {
-                putExtra(ARGS_SELECT, true)
-                putExtra(CATEGORY, category)
-                putExtra(CONTENT, content)
+        fun show(context: Context, link: String) {
+            val list = ArrayList<ForwardMessage<ForwardCategory>>().apply {
+                add(ForwardMessage(ShareCategory.Text, content = link))
             }
-            context.startActivity(intent)
+            show(context, list, ForwardAction.App.Resultless())
         }
     }
 
-    class ForwardContract : ActivityResultContract<Intent?, Intent?>() {
+    class ForwardContract <T : ForwardCategory> : ActivityResultContract<Pair<ArrayList<ForwardMessage<T>>, String?>, Intent?>() {
         override fun parseResult(resultCode: Int, intent: Intent?): Intent? {
             if (intent == null || resultCode != Activity.RESULT_OK) return null
             return intent
         }
 
-        override fun createIntent(context: Context, input: Intent?): Intent {
+        override fun createIntent(context: Context, input: Pair<ArrayList<ForwardMessage<T>>, String?>): Intent {
             return Intent(context, ForwardActivity::class.java).apply {
-                putExtra(ARGS_SELECT, true)
+                putParcelableArrayListExtra(ARGS_MESSAGES, input.first)
+                putExtra(ARGS_ACTION, ForwardAction.App.Resultful(input.second))
             }
         }
     }
@@ -79,19 +66,10 @@ class ForwardActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
-        val list = intent.getParcelableArrayListExtra<ForwardMessage>(ARGS_MESSAGES)
-        if (intent.getBooleanExtra(ARGS_SELECT, false)) {
-            val f = ForwardFragment.newInstance(
-                content = intent.getStringExtra(CONTENT),
-                category = intent.getStringExtra(CATEGORY)
-            )
-            replaceFragment(f, R.id.container, ForwardFragment.TAG)
-        } else if (list != null && list.isNotEmpty()) {
-            val f = ForwardFragment.newInstance(
-                list,
-                intent.getBooleanExtra(ARGS_SHARE, false),
-                intent.getBooleanExtra(ARGS_FROM_CONVERSATION, false)
-            )
+        val list = intent.getParcelableArrayListExtra<ForwardMessage<ForwardCategory>>(ARGS_MESSAGES)
+        val action = intent.getParcelableExtra<ForwardAction>(ARGS_ACTION)
+        if (action != null && list != null && list.isNotEmpty()) {
+            val f = ForwardFragment.newInstance(list, action)
             replaceFragment(f, R.id.container, ForwardFragment.TAG)
         } else {
             if (Session.getAccount() == null) {
@@ -104,7 +82,13 @@ class ForwardActivity : BlazeBaseActivity() {
                 intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
             } else null
             if (forwardMessageList != null && forwardMessageList.isNotEmpty()) {
-                replaceFragment(ForwardFragment.newInstance(forwardMessageList, true, conversationId = conversationId), R.id.container, ForwardFragment.TAG)
+                replaceFragment(
+                    ForwardFragment.newInstance(
+                        forwardMessageList,
+                        ForwardAction.System(conversationId, getString(R.string.share))
+                    ),
+                    R.id.container, ForwardFragment.TAG
+                )
             } else {
                 toast(R.string.error_share)
                 finish()

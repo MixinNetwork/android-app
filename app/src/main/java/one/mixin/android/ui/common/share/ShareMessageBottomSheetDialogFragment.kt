@@ -8,28 +8,20 @@ import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
-import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.bumptech.glide.Glide
 import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_share_message_bottom_sheet.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.toastShort
 import one.mixin.android.extension.withArgs
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.share.renderer.ShareAppCardRenderer
@@ -39,35 +31,32 @@ import one.mixin.android.ui.common.share.renderer.ShareLiveRenderer
 import one.mixin.android.ui.common.share.renderer.SharePostRenderer
 import one.mixin.android.ui.common.share.renderer.ShareTextRenderer
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
+import one.mixin.android.vo.ForwardAction
+import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
-import one.mixin.android.vo.toUser
-import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.widget.BottomSheet
-import java.io.File
 
 @AndroidEntryPoint
 class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "ShareMessageBottomSheetDialogFragment"
-        const val CATEGORY = "category"
-        const val CONTENT = "content"
+        const val SHARE_MESSAGE = "share_message"
 
         private const val CONVERSATION_ID = "conversation_id"
         private const val APP = "app"
         private const val HOST = "host"
-        fun newInstance(category: String, content: String, conversationId: String?, app: App? = null, host: String? = null) =
+        fun newInstance(shareMessage: ForwardMessage<ShareCategory>, conversationId: String?, app: App? = null, host: String? = null) =
             ShareMessageBottomSheetDialogFragment().withArgs {
-                putString(CATEGORY, category)
                 putString(CONVERSATION_ID, conversationId)
-                putString(CONTENT, content)
+                putParcelable(SHARE_MESSAGE, shareMessage)
                 putParcelable(APP, app)
                 putString(HOST, host)
             }
@@ -89,14 +78,8 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         arguments?.getString(CONVERSATION_ID)
     }
 
-    private val content by lazy {
-        requireNotNull(arguments?.getString(CONTENT)) {
-            "error data"
-        }
-    }
-
-    private val category by lazy {
-        requireNotNull(arguments?.getString(CATEGORY)) {
+    private val shareMessage: ForwardMessage<ShareCategory> by lazy {
+        requireNotNull(arguments?.getParcelable(SHARE_MESSAGE)) {
             "error data"
         }
     }
@@ -128,7 +111,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
         contentView.send.setOnClickListener {
-            if (category == Constants.ShareCategory.IMAGE) {
+            if (shareMessage.category == ShareCategory.Image) {
                 RxPermissions(requireActivity())
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     .autoDispose(stopScope)
@@ -150,121 +133,52 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun getMessageCategory(): String {
-        return when (category) {
-            Constants.ShareCategory.TEXT -> {
+        return when (shareMessage.category) {
+            ShareCategory.Text -> {
                 getString(R.string.message)
             }
-            Constants.ShareCategory.IMAGE -> {
+            ShareCategory.Image -> {
                 getString(R.string.photo)
             }
-            Constants.ShareCategory.CONTACT -> {
+            ShareCategory.Contact -> {
                 getString(R.string.contact)
             }
-            Constants.ShareCategory.POST -> {
+            ShareCategory.Post -> {
                 getString(R.string.post)
             }
-            Constants.ShareCategory.APP_CARD -> {
+            ShareCategory.AppCard -> {
                 getString(R.string.card)
             }
-            else -> {
+            ShareCategory.Live -> {
                 getString(R.string.live)
             }
         }
     }
 
-    private val getScanResult = registerForActivityResult(ForwardActivity.ForwardContract()) { data ->
-        data?.getParcelableArrayListExtra<SelectItem>(ARGS_RESULT)?.forEach { item ->
-            sendMessage(item)
-        }
-    }
-
-    private fun sendMessage(selectItem: SelectItem) {
-        lifecycleScope.launch {
-            val sender = Session.getAccount()?.toUser() ?: return@launch
-            viewModel.checkData(selectItem) { conversationId: String, isPlain: Boolean ->
-                when (category) {
-                    Constants.ShareCategory.TEXT -> {
-                        viewModel.sendTextMessage(conversationId, sender, content, isPlain)
-                    }
-                    Constants.ShareCategory.IMAGE -> {
-                        withContext(Dispatchers.IO) {
-                            val shareImageData = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
-                            val file: File = Glide.with(requireContext()).asFile().load(shareImageData.url).submit().get()
-                            viewModel.sendImageMessage(conversationId, sender, file.toUri(), isPlain)
-                        }?.autoDispose(stopScope)?.subscribe(
-                            {
-                                when (it) {
-                                    0 -> {
-                                        toastShort(R.string.message_sent)
-                                        dismiss()
-                                    }
-                                    -1 -> context?.toast(R.string.error_image)
-                                    -2 -> context?.toast(R.string.error_format)
-                                }
-                                return@subscribe
-                            },
-                            {
-                                context?.toast(R.string.error_image)
-                                return@subscribe
-                            }
-                        )
-                        return@checkData
-                    }
-                    Constants.ShareCategory.CONTACT -> {
-                        val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java)
-                        viewModel.sendContactMessage(conversationId, sender, contactData.userId, isPlain)
-                    }
-                    Constants.ShareCategory.POST -> {
-                        viewModel.sendPostMessage(conversationId, sender, content, isPlain)
-                    }
-                    Constants.ShareCategory.APP_CARD -> {
-                        viewModel.sendAppCardMessage(conversationId, sender, content)
-                    }
-                    Constants.ShareCategory.LIVE -> {
-                        val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java)
-                        viewModel.sendLiveMessage(conversationId, sender, liveData, isPlain)
-                    }
-                }
-                toastShort(R.string.message_sent)
-                dismiss()
-            }
-        }
-    }
-
     private fun sendMessage() {
-        conversationId.notNullWithElse(
-            {
-                sendMessage(SelectItem(it, null))
-            },
-            {
-                if (requireActivity() is UrlInterpreterActivity) {
-                    ForwardActivity.send(requireContext(), category, content)
-                    dismiss()
-                } else {
-                    getScanResult.launch(null)
-                }
-            }
-        )
+        ForwardActivity.show(requireContext(), arrayListOf(shareMessage), ForwardAction.App.Resultful(conversationId, getString(R.string.send)))
+        dismiss()
     }
 
     private fun loadData() {
-        when (category) {
-            Constants.ShareCategory.TEXT -> {
+        val content = shareMessage.content
+        when (shareMessage.category) {
+            ShareCategory.Text -> {
                 loadText(content)
             }
-            Constants.ShareCategory.IMAGE -> {
+            ShareCategory.Image -> {
                 loadImage(content)
             }
-            Constants.ShareCategory.CONTACT -> {
+            ShareCategory.Contact -> {
                 loadContact(content)
             }
-            Constants.ShareCategory.POST -> {
+            ShareCategory.Post -> {
                 loadPost(content)
             }
-            Constants.ShareCategory.APP_CARD -> {
+            ShareCategory.AppCard -> {
                 loadAppCard(content)
             }
-            Constants.ShareCategory.LIVE -> {
+            ShareCategory.Live -> {
                 loadLive(content)
             }
         }

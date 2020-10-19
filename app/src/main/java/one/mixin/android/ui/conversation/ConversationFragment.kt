@@ -30,6 +30,7 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.result.ActivityResultRegistry
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
@@ -73,7 +74,6 @@ import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.CallEvent
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.event.ExitEvent
-import one.mixin.android.event.ForwardEvent
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.event.RecallEvent
@@ -141,6 +141,7 @@ import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.sticker.StickerActivity
@@ -157,7 +158,6 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.ForwardCategory
-import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -176,12 +176,12 @@ import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.webrtc.checkPeers
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.webrtc.receiveInvite
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.StickerMessagePayload
-import one.mixin.android.websocket.toLocationData
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.ChatControlView
@@ -205,7 +205,9 @@ import kotlin.math.abs
 
 @AndroidEntryPoint
 @SuppressLint("InvalidWakeLockTag")
-class ConversationFragment :
+class ConversationFragment(
+    registry: ActivityResultRegistry
+) :
     LinkFragment(),
     OnKeyboardShownListener,
     OnKeyboardHiddenListener,
@@ -223,14 +225,12 @@ class ConversationFragment :
         const val INITIAL_POSITION_MESSAGE_ID = "initial_position_message_id"
         const val UNREAD_COUNT = "unread_count"
         private const val KEY_WORD = "key_word"
-        private const val MESSAGES = "messages"
 
         fun putBundle(
             conversationId: String?,
             recipientId: String?,
             messageId: String?,
             keyword: String?,
-            messages: ArrayList<ForwardMessage>?,
             unreadCount: Int? = null
         ): Bundle =
             Bundle().apply {
@@ -243,13 +243,12 @@ class ConversationFragment :
                 }
                 putString(CONVERSATION_ID, conversationId)
                 putString(RECIPIENT_ID, recipientId)
-                putParcelableArrayList(MESSAGES, messages)
                 unreadCount?.let {
                     putInt(UNREAD_COUNT, unreadCount)
                 }
             }
 
-        fun newInstance(bundle: Bundle) = ConversationFragment().apply { arguments = bundle }
+        fun newInstance(bundle: Bundle, registry: ActivityResultRegistry) = ConversationFragment(registry).apply { arguments = bundle }
     }
 
     @Inject
@@ -567,7 +566,7 @@ class ConversationFragment :
             }
 
             override fun onUrlClick(url: String) {
-                url.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope)
+                url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
             }
 
             override fun onMentionClick(identityNumber: String) {
@@ -608,7 +607,7 @@ class ConversationFragment :
 
                 lifecycleScope.launch {
                     val app = chatViewModel.findAppById(userId)
-                    action.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope, app)
+                    action.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope, app)
                 }
             }
 
@@ -809,10 +808,28 @@ class ConversationFragment :
         requireContext().getSystemService()!!
     }
 
+    var selectItem: SelectItem? = null
+
+    val getForwardResult = registerForActivityResult(ForwardActivity.ForwardContract<ForwardCategory>(), registry) { data ->
+        val selectItems = data?.getParcelableArrayListExtra<SelectItem>(ARGS_RESULT)
+        if (selectItems.isNullOrEmpty()) return@registerForActivityResult
+
+        val selectItem = selectItems[0]
+        this.selectItem = selectItem
+        Snackbar.make(chat_rv, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
+            .setAction(R.string.chat_go_check) {
+                ConversationActivity.show(requireContext(), selectItem.conversationId, selectItem.userId)
+            }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                this.view.setBackgroundResource(R.color.call_btn_icon_checked)
+                (this.view.findViewById(R.id.snackbar_text) as TextView)
+                    .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+            }.show()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         registerHeadsetPlugReceiver()
-        recipient = requireArguments().getParcelable<User?>(RECIPIENT)
+        recipient = requireArguments().getParcelable(RECIPIENT)
     }
 
     override fun onCreateView(
@@ -825,12 +842,7 @@ class ConversationFragment :
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val messages = requireArguments().getParcelableArrayList<ForwardMessage>(MESSAGES)
-        if (messages != null) {
-            sendForwardMessages(messages)
-        } else {
-            initView()
-        }
+        initView()
         AudioPlayer.setStatusListener(this)
         RxBus.listen(ExitEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
@@ -840,20 +852,6 @@ class ConversationFragment :
                     activity?.finish()
                 }
             }
-        RxBus.listen(ForwardEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
-            .subscribe { event ->
-                Snackbar.make(chat_rv, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
-                    .setAction(R.string.chat_go_check) {
-                        ConversationActivity.show(requireContext(), event.conversationId, event.userId)
-                    }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                        this.view.setBackgroundResource(R.color.call_btn_icon_checked)
-                        (this.view.findViewById(R.id.snackbar_text) as TextView)
-                            .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-                    }.show()
-            }
-
         RxBus.listen(MentionReadEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(destroyScope)
@@ -1235,7 +1233,7 @@ class ConversationFragment :
         tool_view.forward_iv.setOnClickListener {
             lifecycleScope.launch {
                 val list = chatViewModel.getSortMessagesByIds(chatAdapter.selectSet)
-                ForwardActivity.show(requireContext(), list, fromConversation = true)
+                getForwardResult.launch(Pair(list, null))
                 closeTool()
             }
         }
@@ -1287,7 +1285,7 @@ class ConversationFragment :
         group_desc.addAutoLinkMode(AutoLinkMode.MODE_URL)
         group_desc.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         group_desc.setAutoLinkOnClickListener { _, url ->
-            url.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope)
+            url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
         }
         group_flag.setOnClickListener {
             group_desc.expand()
@@ -1423,48 +1421,51 @@ class ConversationFragment :
     private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
         var oldCount: Int = -1
         chatViewModel.getMessages(conversationId, unreadCount)
-            .observe(viewLifecycleOwner) { list ->
-                if (oldCount == -1) {
-                    oldCount = list.size
-                } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
-                    unreadTipCount += (list.size - oldCount)
-                    oldCount = list.size
-                } else if (isBottom) {
-                    unreadTipCount = 0
-                    oldCount = list.size
-                }
-                chatViewModel.viewModelScope.launch {
-                    chatAdapter.hasBottomView = (
-                        (isBot && list.isEmpty()) ||
-                            (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(conversationId, sender.userId))
-                        ) &&
-                        recipient?.relationship == UserRelationship.STRANGER.name
-                }
-                if (isFirstLoad && messageId == null && unreadCount > 0) {
-                    chatAdapter.unreadMsgId = unreadMessageId
-                } else if (lastReadMessage != null) {
+            .observe(
+                viewLifecycleOwner,
+                { list ->
+                    if (oldCount == -1) {
+                        oldCount = list.size
+                    } else if (!isFirstLoad && !isBottom && list.size > oldCount) {
+                        unreadTipCount += (list.size - oldCount)
+                        oldCount = list.size
+                    } else if (isBottom) {
+                        unreadTipCount = 0
+                        oldCount = list.size
+                    }
                     chatViewModel.viewModelScope.launch {
-                        lastReadMessage?.let { id ->
-                            val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
-                                conversationId,
-                                sender.userId,
-                                id
-                            )
-                            if (unreadMsgId != null) {
-                                chatAdapter.unreadMsgId = unreadMsgId
-                                lastReadMessage = null
+                        chatAdapter.hasBottomView = (
+                            (isBot && list.isEmpty()) ||
+                                (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(conversationId, sender.userId))
+                            ) &&
+                            recipient?.relationship == UserRelationship.STRANGER.name
+                    }
+                    if (isFirstLoad && messageId == null && unreadCount > 0) {
+                        chatAdapter.unreadMsgId = unreadMessageId
+                    } else if (lastReadMessage != null) {
+                        chatViewModel.viewModelScope.launch {
+                            lastReadMessage?.let { id ->
+                                val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(
+                                    conversationId,
+                                    sender.userId,
+                                    id
+                                )
+                                if (unreadMsgId != null) {
+                                    chatAdapter.unreadMsgId = unreadMsgId
+                                    lastReadMessage = null
+                                }
                             }
                         }
                     }
-                }
-                if (list.size > 0) {
-                    if (isFirstMessage) {
-                        isFirstMessage = false
+                    if (list.size > 0) {
+                        if (isFirstMessage) {
+                            isFirstMessage = false
+                        }
+                        chatViewModel.markMessageRead(conversationId, sender.userId)
                     }
-                    chatViewModel.markMessageRead(conversationId, sender.userId)
+                    chatAdapter.submitList(list)
                 }
-                chatAdapter.submitList(list)
-            }
+            )
     }
 
     private var unreadCount = 0
@@ -1502,62 +1503,18 @@ class ConversationFragment :
     }
 
     private fun liveDataAppList() {
-        chatViewModel.getBottomApps(conversationId, recipient?.userId)?.observe(viewLifecycleOwner) { list ->
-            appList = list
-            appList?.let {
-                (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
+        chatViewModel.getBottomApps(conversationId, recipient?.userId)?.observe(
+            viewLifecycleOwner,
+            { list ->
+                appList = list
+                appList?.let {
+                    (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
+                }
             }
-        }
+        )
     }
 
     private var appList: List<AppItem>? = null
-
-    private fun sendForwardMessages(messages: List<ForwardMessage>) {
-        createConversation {
-            initView()
-            messages.let {
-                for (item in it) {
-                    if (item.id != null) {
-                        sendForwardMessage(item.id)
-                    } else {
-                        when (item.type) {
-                            ForwardCategory.CONTACT.name -> {
-                                sendContactMessage(item.sharedUserId!!)
-                            }
-                            ForwardCategory.IMAGE.name -> {
-                                sendImageMessage(Uri.parse(item.mediaUrl), item.mimeType)
-                            }
-                            ForwardCategory.DATA.name -> {
-                                val attachment = context?.getAttachment(Uri.parse(item.mediaUrl))
-                                if (attachment != null) {
-                                    sendAttachmentMessage(attachment)
-                                } else {
-                                    toast(R.string.error_file_exists)
-                                }
-                            }
-                            ForwardCategory.VIDEO.name -> {
-                                sendVideoMessage(Uri.parse(item.mediaUrl))
-                            }
-                            ForwardCategory.TEXT.name -> {
-                                item.content?.let { content -> sendMessage(content) }
-                            }
-                            ForwardCategory.POST.name -> {
-                                item.content?.let { content -> sendPost(content) }
-                            }
-                            ForwardCategory.LOCATION.name -> {
-                                item.content?.let { content ->
-                                    toLocationData(content)?.let { location ->
-                                        sendLocation(location)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                scrollToDown()
-            }
-        }
-    }
 
     private inline fun createConversation(crossinline action: () -> Unit) {
         if (isFirstMessage) {
@@ -1586,29 +1543,26 @@ class ConversationFragment :
 
     private fun sendImageMessage(uri: Uri, mimeType: String? = null) {
         createConversation {
-            chatViewModel.sendImageMessage(
-                conversationId,
-                sender,
-                uri,
-                isPlainMessage(),
-                mimeType,
-                getRelyMessage()
-            )
-                ?.autoDispose(stopScope)?.subscribe(
-                    {
-                        when (it) {
-                            0 -> {
-                                scrollToDown()
-                                markRead()
-                            }
-                            -1 -> context?.toast(R.string.error_image)
-                            -2 -> context?.toast(R.string.error_format)
-                        }
-                    },
-                    {
-                        context?.toast(R.string.error_image)
+            lifecycleScope.launch {
+                val code = withContext(Dispatchers.IO) {
+                    chatViewModel.sendImageMessage(
+                        conversationId,
+                        sender,
+                        uri,
+                        isPlainMessage(),
+                        mimeType,
+                        getRelyMessage()
+                    )
+                }
+                when (code) {
+                    0 -> {
+                        scrollToDown()
+                        markRead()
                     }
-                )
+                    -1 -> context?.toast(R.string.error_image)
+                    -2 -> context?.toast(R.string.error_format)
+                }
+            }
         }
     }
 
@@ -1672,24 +1626,6 @@ class ConversationFragment :
         }
     }
 
-    private fun sendForwardMessage(id: String?) {
-        id?.let {
-            createConversation {
-                chatViewModel.sendFordMessage(conversationId, sender, it, isPlainMessage())
-                    .autoDispose(stopScope).subscribe(
-                        {
-                            if (it == -1) {
-                                toast(R.string.error_file_exists)
-                            }
-                        },
-                        {
-                            Timber.e(id)
-                        }
-                    )
-            }
-        }
-    }
-
     private fun sendAttachmentMessage(attachment: Attachment) {
         createConversation {
             chatViewModel.sendAttachmentMessage(
@@ -1743,16 +1679,6 @@ class ConversationFragment :
             chat_control.chat_et.setText("")
             createConversation {
                 chatViewModel.sendTextMessage(conversationId, sender, message, isPlainMessage())
-                scrollToDown()
-                markRead()
-            }
-        }
-    }
-
-    private fun sendPost(message: String) {
-        if (message.isNotBlank()) {
-            createConversation {
-                chatViewModel.sendPostMessage(conversationId, sender, message, isPlainMessage())
                 scrollToDown()
                 markRead()
             }
@@ -1941,7 +1867,7 @@ class ConversationFragment :
 
     private fun open(url: String, app: App?, appCard: AppCardData? = null) {
         chat_control.chat_et.hideKeyboard()
-        url.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope, app, appCard)
+        url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope, app, appCard)
     }
 
     private fun openInputAction(action: String): Boolean {
@@ -2045,7 +1971,7 @@ class ConversationFragment :
                         chat_control.reset()
                         if (Session.getAccount()?.hasPin == true) {
                             recipient?.let {
-                                TransferFragment.newInstance(it.userId, supportSwitchAsset = true)
+                                TransferFragment.newInstance(requireActivity().activityResultRegistry, it.userId, supportSwitchAsset = true)
                                     .showNow(parentFragmentManager, TransferFragment.TAG)
                             }
                         } else {

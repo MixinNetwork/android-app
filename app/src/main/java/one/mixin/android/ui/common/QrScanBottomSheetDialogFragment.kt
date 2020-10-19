@@ -51,7 +51,7 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.qr_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.qr_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.qr_tv.setAutoLinkOnClickListener { _, url ->
-            url.openAsUrlOrWeb(conversationId, parentFragmentManager, lifecycleScope)
+            url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
             dismiss()
         }
         contentView.qr_tv.text = text

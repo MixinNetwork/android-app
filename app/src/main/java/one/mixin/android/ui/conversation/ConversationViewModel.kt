@@ -3,10 +3,10 @@ package one.mixin.android.ui.conversation
 import android.Manifest
 import android.app.Activity
 import android.app.NotificationManager
-import android.content.ContentResolver.SCHEME_CONTENT
 import android.content.SharedPreferences
 import android.net.Uri
 import androidx.annotation.RequiresPermission
+import androidx.core.net.toUri
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
@@ -14,7 +14,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -25,14 +24,13 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
-import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.fileExists
-import one.mixin.android.extension.getAttachment
-import one.mixin.android.extension.getUriForFile
+import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
@@ -41,7 +39,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RemoveStickersJob
-import one.mixin.android.job.SendAckMessageJob
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.UpdateRelationshipJob
@@ -53,12 +50,12 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.messenger.Messenger
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
-import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -69,32 +66,31 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ShareCategory
+import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createAckJob
-import one.mixin.android.vo.createAttachmentMessage
-import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createConversation
-import one.mixin.android.vo.createMediaMessage
-import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isGroup
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
-import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
+import one.mixin.android.websocket.AudioMessagePayload
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
+import one.mixin.android.websocket.ContactMessagePayload
+import one.mixin.android.websocket.DataMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.LocationPayload
 import one.mixin.android.websocket.StickerMessagePayload
+import one.mixin.android.websocket.VideoMessagePayload
 import one.mixin.android.websocket.toLocationData
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.toast
-import timber.log.Timber
 import java.io.File
 import java.util.UUID
 
@@ -181,6 +177,20 @@ internal constructor(
         messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, isPlain, replyMessage)
     }
 
+    fun sendAudioMessage(
+        conversationId: String,
+        sender: User,
+        audioMessagePayload: AudioMessagePayload,
+        isPlain: Boolean,
+        replyMessage: MessageItem? = null
+    ) {
+        val messageId = audioMessagePayload.messageId
+        val file = File(audioMessagePayload.url)
+        val duration = audioMessagePayload.duration
+        val waveForm = audioMessagePayload.waveForm
+        messenger.sendAudioMessage(conversationId, messageId, sender, file, duration, waveForm, isPlain, replyMessage)
+    }
+
     fun sendStickerMessage(
         conversationId: String,
         sender: User,
@@ -206,6 +216,19 @@ internal constructor(
         createdAt: String? = null,
         replyMessage: MessageItem? = null
     ) {
+        messenger.sendVideoMessage(conversationId, senderId, uri, isPlain, messageId, createdAt, replyMessage)
+    }
+
+    fun sendVideoMessage(
+        conversationId: String,
+        senderId: String,
+        videoMessagePayload: VideoMessagePayload,
+        isPlain: Boolean,
+        replyMessage: MessageItem? = null
+    ) {
+        val uri = videoMessagePayload.url.toUri()
+        val messageId = videoMessagePayload.messageId
+        val createdAt = videoMessagePayload.createdAt
         messenger.sendVideoMessage(conversationId, senderId, uri, isPlain, messageId, createdAt, replyMessage)
     }
 
@@ -243,162 +266,9 @@ internal constructor(
         isPlain: Boolean,
         mime: String? = null,
         replyMessage: MessageItem? = null
-    ): Flowable<Int>? {
-        return messenger.sendImageMessage(viewModelScope, conversationId, sender, uri, isPlain, mime, replyMessage)
+    ): Int {
+        return messenger.sendImageMessage(conversationId, sender, uri, isPlain, mime, replyMessage)
     }
-
-    fun sendFordMessage(conversationId: String, sender: User, id: String, isPlain: Boolean): Flowable<Int> =
-        Flowable.just(id).observeOn(Schedulers.io()).map {
-            val message = conversationRepository.findMessageById(id)
-            if (message != null) {
-                when {
-                    message.category.endsWith("_IMAGE") -> {
-                        val category =
-                            if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
-                        if (message.mediaUrl?.fileExists() != true) {
-                            return@map -1
-                        }
-                        jobManager.addJobInBackground(
-                            SendAttachmentMessageJob(
-                                createMediaMessage(
-                                    UUID.randomUUID().toString(),
-                                    conversationId,
-                                    sender.userId,
-                                    category,
-                                    null,
-                                    message.mediaUrl,
-                                    message.mediaMimeType!!,
-                                    message.mediaSize!!,
-                                    message.mediaWidth,
-                                    message.mediaHeight,
-                                    message.thumbImage,
-                                    null,
-                                    null,
-                                    nowInUtc(),
-                                    MediaStatus.PENDING,
-                                    MessageStatus.SENDING.name
-                                )
-                            )
-                        )
-                    }
-                    message.category.endsWith("_LIVE") -> {
-                        if (message.mediaWidth == null ||
-                            message.mediaWidth == 0 ||
-                            message.mediaHeight == null ||
-                            message.mediaHeight == 0 ||
-                            message.mediaUrl.isNullOrBlank()
-                        ) {
-                            return@map -1
-                        }
-                        sendLiveMessage(
-                            conversationId,
-                            sender,
-                            LiveMessagePayload(
-                                message.mediaWidth,
-                                message.mediaHeight,
-                                message.thumbUrl ?: "",
-                                message.mediaUrl
-                            ),
-                            isPlain
-                        )
-                    }
-                    message.category.endsWith("_VIDEO") -> {
-                        val category =
-                            if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
-                        if (message.mediaUrl?.fileExists() != true) {
-                            return@map -1
-                        }
-                        val mediaDuration = message.mediaDuration?.toLongOrNull() ?: 0L
-                        jobManager.addJobInBackground(
-                            SendAttachmentMessageJob(
-                                createVideoMessage(
-                                    UUID.randomUUID().toString(),
-                                    conversationId,
-                                    sender.userId,
-                                    category,
-                                    null,
-                                    message.name,
-                                    message.mediaUrl,
-                                    mediaDuration,
-                                    message.mediaWidth,
-                                    message.mediaHeight,
-                                    message.thumbImage,
-                                    message.mediaMimeType!!,
-                                    message.mediaSize!!,
-                                    nowInUtc(),
-                                    null,
-                                    null,
-                                    MediaStatus.PENDING,
-                                    MessageStatus.SENDING.name
-                                )
-                            )
-                        )
-                    }
-                    message.category.endsWith("_DATA") -> {
-                        val category =
-                            if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
-                        val uri = (
-                            if (Uri.parse(message.mediaUrl).scheme == SCHEME_CONTENT) {
-                                message.mediaUrl
-                            } else {
-                                MixinApplication.get().getUriForFile(File(message.mediaUrl))
-                                    .toString()
-                            }
-                            ) ?: return@map -1
-                        jobManager.addJobInBackground(
-                            SendAttachmentMessageJob(
-                                createAttachmentMessage(
-                                    UUID.randomUUID().toString(), conversationId, sender.userId, category, null,
-                                    message.name, uri, message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null, null,
-                                    MediaStatus.PENDING, MessageStatus.SENDING.name
-                                )
-                            )
-                        )
-                    }
-                    message.category.endsWith("_STICKER") -> {
-                        sendStickerMessage(
-                            conversationId,
-                            sender,
-                            StickerMessagePayload(
-                                name = message.name,
-                                stickerId = message.stickerId!!
-                            ),
-                            isPlain
-                        )
-                    }
-                    message.category.endsWith("_AUDIO") -> {
-                        val category =
-                            if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
-                        if (message.mediaUrl?.fileExists() != true) {
-                            return@map -1
-                        }
-                        jobManager.addJobInBackground(
-                            SendAttachmentMessageJob(
-                                createAudioMessage(
-                                    UUID.randomUUID().toString(),
-                                    conversationId,
-                                    sender.userId,
-                                    null,
-                                    category,
-                                    message.mediaSize!!,
-                                    message.mediaUrl,
-                                    message.mediaDuration!!,
-                                    nowInUtc(),
-                                    message.mediaWaveform!!,
-                                    null,
-                                    null,
-                                    MediaStatus.PENDING,
-                                    MessageStatus.SENDING.name
-                                )
-                            )
-                        )
-                    }
-                }
-                return@map 0
-            } else {
-                return@map -1
-            }
-        }.observeOn(AndroidSchedulers.mainThread())!!
 
     fun updateRelationship(request: RelationshipRequest) {
         jobManager.addJobInBackground(UpdateRelationshipJob(request))
@@ -594,156 +464,6 @@ internal constructor(
     suspend fun findMessageIndex(conversationId: String, messageId: String) =
         conversationRepository.findMessageIndex(conversationId, messageId)
 
-    private fun findUnreadMessagesSync(conversationId: String): List<MessageMinimal>? {
-        val accountId = Session.getAccountId() ?: return null
-        return conversationRepository.findUnreadMessagesSync(conversationId, accountId)
-    }
-
-    fun sendForwardMessages(
-        conversationId: String,
-        messages: List<ForwardMessage>?,
-        isPlainMessage: Boolean,
-        showSuccess: Boolean
-    ) {
-        messages?.let { forwardMessages ->
-            val sender = Session.getAccount()!!.toUser()
-            for (item in forwardMessages) {
-                if (item.id != null) {
-                    sendFordMessage(conversationId, sender, item.id, isPlainMessage).subscribe(
-                        {
-                            if (it == 0) {
-                                showForwardSuccessToast(showSuccess)
-                            }
-                        },
-                        {
-                            Timber.e(it)
-                        }
-                    )
-                } else {
-                    when (item.type) {
-                        ForwardCategory.CONTACT.name -> {
-                            sendContactMessage(
-                                conversationId,
-                                sender,
-                                item.sharedUserId!!,
-                                isPlainMessage
-                            )
-                            showForwardSuccessToast(showSuccess)
-                        }
-                        ForwardCategory.IMAGE.name -> {
-                            sendImageMessage(
-                                conversationId,
-                                sender,
-                                Uri.parse(item.mediaUrl),
-                                isPlainMessage
-                            )?.subscribe(
-                                {
-                                    if (it == 0) {
-                                        showForwardSuccessToast(showSuccess)
-                                    }
-                                },
-                                {
-                                    Timber.e(it)
-                                }
-                            )
-                        }
-                        ForwardCategory.DATA.name -> {
-                            MixinApplication.get().getAttachment(Uri.parse(item.mediaUrl))?.let {
-                                sendAttachmentMessage(conversationId, sender, it, isPlainMessage)
-                                showForwardSuccessToast(showSuccess)
-                            }
-                        }
-                        ForwardCategory.VIDEO.name -> {
-                            sendVideoMessage(
-                                conversationId,
-                                sender.userId,
-                                Uri.parse(item.mediaUrl),
-                                isPlainMessage
-                            )
-                            showForwardSuccessToast(showSuccess)
-                        }
-                        ForwardCategory.TEXT.name -> {
-                            item.content?.let {
-                                sendTextMessage(conversationId, sender, it, isPlainMessage)
-                                showForwardSuccessToast(showSuccess)
-                            }
-                        }
-                        ForwardCategory.POST.name -> {
-                            item.content?.let {
-                                sendPostMessage(conversationId, sender, it, isPlainMessage)
-                                showForwardSuccessToast(showSuccess)
-                            }
-                        }
-                        ForwardCategory.LOCATION.name -> {
-                            item.content?.let {
-                                toLocationData(it)?.let {
-                                    sendLocationMessage(conversationId, sender.userId, it, isPlainMessage)
-                                    showForwardSuccessToast(showSuccess)
-                                }
-                            }
-                        }
-                        ForwardCategory.APP_CARD.name -> {
-                            item.content?.let {
-                                sendAppCardMessage(conversationId, sender, it)
-                                showForwardSuccessToast(showSuccess)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun showForwardSuccessToast(showSuccess: Boolean) {
-        if (showSuccess) {
-            viewModelScope.launch {
-                MixinApplication.get().toast(R.string.forward_success)
-            }
-        }
-    }
-
-    fun sendForwardMessages(
-        selectItem: List<Any>,
-        messages: List<ForwardMessage>?,
-        showSuccess: Boolean
-    ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            var conversationId: String? = null
-            for (item in selectItem) {
-                if (item is User) {
-                    conversationId =
-                        conversationRepository.getConversationIdIfExistsSync(item.userId)
-                    if (conversationId == null) {
-                        conversationId =
-                            generateConversationId(Session.getAccountId()!!, item.userId)
-                        initConversation(conversationId, item, Session.getAccount()!!.toUser())
-                    }
-                    sendForwardMessages(conversationId, messages, item.isBot(), showSuccess)
-                } else if (item is ConversationItem) {
-                    conversationId = item.conversationId
-                    sendForwardMessages(item.conversationId, messages, item.isBot(), showSuccess)
-                }
-
-                findUnreadMessagesSync(conversationId!!)?.let { list ->
-                    if (list.isNotEmpty()) {
-                        conversationRepository.batchMarkReadAndTake(
-                            conversationId,
-                            Session.getAccountId()!!,
-                            list.last().createdAt
-                        )
-                        list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }
-                            .let { messages ->
-                                messages.chunked(100).forEach { list ->
-                                    jobManager.addJobInBackground(SendAckMessageJob(list))
-                                }
-                            }
-                        createReadSessionMessage(list, conversationId)
-                    }
-                }
-            }
-        }
-    }
-
     private fun createReadSessionMessage(list: List<MessageMinimal>, conversationId: String) {
         Session.getExtensionSessionId()?.let {
             list.map {
@@ -838,61 +558,125 @@ internal constructor(
         userRepository.suspendFindUserById(userId)
     }
 
-    suspend fun getSortMessagesByIds(messages: Set<MessageItem>): ArrayList<ForwardMessage> {
+    suspend fun getSortMessagesByIds(messages: Set<MessageItem>): ArrayList<ForwardMessage<ForwardCategory>> {
         return withContext(Dispatchers.IO) {
-            val list = ArrayList<ForwardMessage>()
-            list.addAll(
-                conversationRepository.getSortMessagesByIds(messages.map { it.messageId }).map {
-                    when {
-                        it.category.endsWith("_TEXT") -> ForwardMessage(
-                            ForwardCategory.TEXT.name,
-                            content = it.content
+            val list = ArrayList<ForwardMessage<ForwardCategory>>()
+            val sortMessages = conversationRepository.getSortMessagesByIds(messages.map { it.messageId })
+            for (m in sortMessages) {
+                val forwardMessage: ForwardMessage<ForwardCategory>? = when {
+                    m.category.endsWith("_TEXT") ->
+                        m.content.notNullWithElse<String, ForwardMessage<ForwardCategory>?>(
+                            { c ->
+                                ForwardMessage(ShareCategory.Text, c)
+                            },
+                            { null }
                         )
-                        it.category.endsWith("_IMAGE") -> ForwardMessage(
-                            ForwardCategory.IMAGE.name,
-                            id = it.id
+                    m.category.endsWith("_IMAGE") ->
+                        m.mediaUrl.notNullWithElse<String, ForwardMessage<ForwardCategory>?>(
+                            { url ->
+                                ForwardMessage(
+                                    ShareCategory.Image,
+                                    GsonHelper.customGson.toJson(ShareImageData(url))
+                                )
+                            },
+                            { null }
                         )
-                        it.category.endsWith("_DATA") -> ForwardMessage(
-                            ForwardCategory.DATA.name,
-                            id = it.id
+                    m.category.endsWith("_DATA") -> {
+                        if (m.mediaUrl == null || !m.mediaUrl.fileExists()) {
+                            continue
+                        }
+                        m.name ?: continue
+                        m.mediaMimeType ?: continue
+                        m.mediaSize ?: continue
+                        val dataMessagePayload = DataMessagePayload(
+                            m.mediaUrl,
+                            m.name,
+                            m.mediaMimeType,
+                            m.mediaSize
                         )
-                        it.category.endsWith("_VIDEO") -> ForwardMessage(
-                            ForwardCategory.VIDEO.name,
-                            id = it.id
-                        )
-                        it.category.endsWith("_CONTACT") -> ForwardMessage(
-                            ForwardCategory.CONTACT.name,
-                            sharedUserId = it.sharedUserId
-                        )
-                        it.category.endsWith("_STICKER") -> ForwardMessage(
-                            ForwardCategory.STICKER.name,
-                            id = it.id
-                        )
-                        it.category.endsWith("_AUDIO") -> ForwardMessage(
-                            ForwardCategory.AUDIO.name,
-                            id = it.id
-                        )
-                        it.category.endsWith("_LIVE") -> ForwardMessage(
-                            ForwardCategory.LIVE.name,
-                            id = it.id
-                        )
-                        it.category.endsWith("_POST") -> ForwardMessage(
-                            ForwardCategory.POST.name,
-                            content = it.content
-                        )
-                        it.category.endsWith("_LOCATION") -> ForwardMessage(
-                            ForwardCategory.LOCATION.name,
-                            content = it.content
-                        )
-                        it.category == MessageCategory.APP_CARD.name -> ForwardMessage(
-                            ForwardCategory.APP_CARD.name,
-                            content = it.content
-                        )
-                        else -> ForwardMessage(ForwardCategory.TEXT.name)
+                        ForwardMessage(ForwardCategory.Data, GsonHelper.customGson.toJson(dataMessagePayload))
                     }
+                    m.category.endsWith("_VIDEO") -> {
+                        if (m.mediaUrl == null || !m.mediaUrl.fileExists()) {
+                            continue
+                        }
+                        val videoData = VideoMessagePayload(
+                            m.mediaUrl,
+                            UUID.randomUUID().toString(),
+                            nowInUtc()
+                        )
+                        ForwardMessage(ForwardCategory.Video, GsonHelper.customGson.toJson(videoData))
+                    }
+                    m.category.endsWith("_CONTACT") -> {
+                        val shareUserId = m.sharedUserId ?: continue
+                        val contactData = ContactMessagePayload(shareUserId)
+                        ForwardMessage(ShareCategory.Contact, GsonHelper.customGson.toJson(contactData))
+                    }
+                    m.category.endsWith("_STICKER") -> {
+                        val stickerData = StickerMessagePayload(
+                            name = m.name,
+                            stickerId = m.stickerId
+                        )
+                        ForwardMessage(ForwardCategory.Sticker, GsonHelper.customGson.toJson(stickerData))
+                    }
+                    m.category.endsWith("_AUDIO") -> {
+                        val url = m.mediaUrl?.getFilePath() ?: continue
+                        if (!File(url).exists()) continue
+
+                        val duration = m.mediaDuration?.toLongOrNull() ?: continue
+                        val waveForm = m.mediaWaveform ?: continue
+
+                        val audioData = AudioMessagePayload(
+                            UUID.randomUUID().toString(),
+                            url,
+                            duration,
+                            waveForm
+                        )
+                        ForwardMessage(ForwardCategory.Audio, GsonHelper.customGson.toJson(audioData))
+                    }
+                    m.category.endsWith("_LIVE") -> {
+                        if (m.mediaWidth == null ||
+                            m.mediaWidth == 0 ||
+                            m.mediaHeight == null ||
+                            m.mediaHeight == 0 ||
+                            m.mediaUrl.isNullOrBlank()
+                        ) {
+                            continue
+                        }
+                        val liveData = LiveMessagePayload(
+                            m.mediaWidth,
+                            m.mediaHeight,
+                            m.thumbUrl ?: "",
+                            m.mediaUrl
+                        )
+                        ForwardMessage(ShareCategory.Live, GsonHelper.customGson.toJson(liveData))
+                    }
+                    m.category.endsWith("_POST") ->
+                        m.content.notNullWithElse<String, ForwardMessage<ForwardCategory>?>(
+                            { c ->
+                                ForwardMessage(ShareCategory.Post, c)
+                            },
+                            { null }
+                        )
+                    m.category.endsWith("_LOCATION") ->
+                        m.content.notNullWithElse<String, ForwardMessage<ForwardCategory>?>(
+                            { c ->
+                                ForwardMessage(ForwardCategory.Location, GsonHelper.customGson.toJson(toLocationData(c)))
+                            },
+                            { null }
+                        )
+                    m.category == MessageCategory.APP_CARD.name ->
+                        m.content.notNullWithElse<String, ForwardMessage<ForwardCategory>?>(
+                            { c ->
+                                ForwardMessage(ShareCategory.AppCard, c)
+                            },
+                            { null }
+                        )
+                    else -> null
                 }
-            )
-            list
+                forwardMessage?.let { fm -> list.add(fm) }
+            }
+            return@withContext list
         }
     }
 

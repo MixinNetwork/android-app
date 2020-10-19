@@ -24,7 +24,6 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIEN
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.UNREAD_COUNT
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import javax.inject.Inject
@@ -45,7 +44,7 @@ class ConversationActivity : BlazeBaseActivity() {
 
         if (intent.getBooleanExtra(ARGS_FAST_SHOW, false)) {
             replaceFragment(
-                ConversationFragment.newInstance(intent.extras!!),
+                ConversationFragment.newInstance(intent.extras!!, activityResultRegistry),
                 R.id.container,
                 ConversationFragment.TAG
             )
@@ -78,7 +77,7 @@ class ConversationActivity : BlazeBaseActivity() {
         lifecycleScope.launch(
             CoroutineExceptionHandler { _, _ ->
                 replaceFragment(
-                    ConversationFragment.newInstance(intent.extras!!),
+                    ConversationFragment.newInstance(intent.extras!!, activityResultRegistry),
                     R.id.container,
                     ConversationFragment.TAG
                 )
@@ -120,7 +119,7 @@ class ConversationActivity : BlazeBaseActivity() {
             }
             bundle.putString(INITIAL_POSITION_MESSAGE_ID, msgId)
             replaceFragment(
-                ConversationFragment.newInstance(bundle),
+                ConversationFragment.newInstance(bundle, activityResultRegistry),
                 R.id.container,
                 ConversationFragment.TAG
             )
@@ -168,7 +167,6 @@ class ConversationActivity : BlazeBaseActivity() {
             recipientId: String? = null,
             messageId: String? = null,
             keyword: String? = null,
-            messages: ArrayList<ForwardMessage>? = null,
             unreadCount: Int? = null
         ) {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
@@ -180,7 +178,6 @@ class ConversationActivity : BlazeBaseActivity() {
                         recipientId,
                         messageId,
                         keyword,
-                        messages,
                         unreadCount
                     )
                 )
@@ -194,8 +191,7 @@ class ConversationActivity : BlazeBaseActivity() {
             conversationId: String? = null,
             recipientId: String? = null,
             messageId: String? = null,
-            keyword: String? = null,
-            messages: ArrayList<ForwardMessage>? = null
+            keyword: String? = null
         ): Intent {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }
@@ -206,7 +202,6 @@ class ConversationActivity : BlazeBaseActivity() {
                         recipientId,
                         messageId,
                         keyword,
-                        messages
                     )
                 )
             }
@@ -217,12 +212,11 @@ class ConversationActivity : BlazeBaseActivity() {
             conversationId: String? = null,
             recipientId: String? = null,
             messageId: String? = null,
-            keyword: String? = null,
-            messages: ArrayList<ForwardMessage>? = null
+            keyword: String? = null
         ) {
             val mainIntent = Intent(context, ConversationActivity::class.java)
             mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            val conversationIntent = putIntent(context, conversationId, recipientId, messageId, keyword, messages)
+            val conversationIntent = putIntent(context, conversationId, recipientId, messageId, keyword)
             context.startActivities(arrayOf(mainIntent, conversationIntent))
         }
     }

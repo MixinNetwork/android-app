@@ -37,6 +37,7 @@ import android.webkit.WebViewClient.ERROR_HOST_LOOKUP
 import android.webkit.WebViewClient.ERROR_IO
 import android.webkit.WebViewClient.ERROR_TIMEOUT
 import android.widget.Toast
+import androidx.activity.result.ActivityResultRegistry
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
 import androidx.core.graphics.ColorUtils
@@ -94,13 +95,15 @@ import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.QRCodeProcessor
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
-import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.matchResourcePattern
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
@@ -222,7 +225,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             lifecycleScope,
                             bitmap,
                             onSuccess = { result ->
-                                result.openAsUrlOrQrScan(parentFragmentManager, lifecycleScope)
+                                result.openAsUrlOrQrScan(requireContext(), parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
                             },
                             onFailure = {
                                 if (isAdded) toast(R.string.can_not_recognize)
@@ -373,7 +376,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         reloadTheme()
                     }
                 },
-                conversationId, this.parentFragmentManager, lifecycleScope,
+                conversationId, requireContext(), this.parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope,
                 { url ->
                     currentUrl = url
                 },
@@ -702,7 +705,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 val appCardData = AppCardData(app.appId, app.iconUrl, webTitle, app.name, currentUrl, app.updatedAt)
                                 ForwardActivity.show(
                                     requireContext(),
-                                    arrayListOf(ForwardMessage(ForwardCategory.APP_CARD.name, content = Gson().toJson(appCardData)))
+                                    arrayListOf(ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCardData))),
+                                    ForwardAction.App.Resultless()
                                 )
                             } else {
                                 ForwardActivity.show(requireContext(), currentUrl)
@@ -888,7 +892,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     class WebViewClientImpl(
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
+        private val context: Context,
         private val fragmentManager: FragmentManager,
+        private val registry: ActivityResultRegistry,
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
         private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit
@@ -916,7 +922,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             if (url.isMixinUrl()) {
                 val host = view.url?.run { Uri.parse(this).host }
-                url.openAsUrl(fragmentManager, scope, host = host, currentConversation = conversationId) {}
+                url.openAsUrl(context, fragmentManager, registry, scope, host = host, currentConversation = conversationId) {}
                 return true
             }
             val extraHeaders = HashMap<String, String>()
