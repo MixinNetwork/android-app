@@ -3,12 +3,12 @@
 
     <solid android:color="?attr/bg_window" />
 
-    <corners android:radius="24dp" />
+    <corners android:radius="48dp" />
+
+    <size android:height="48dp" />
 
     <padding
-        android:bottom="8dp"
         android:left="8dp"
-        android:right="8dp"
-        android:top="8dp" />
+        android:right="8dp" />
 
 </shape>

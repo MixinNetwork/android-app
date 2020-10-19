@@ -16,13 +16,14 @@ import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.annotation.Keep
+import androidx.core.view.marginTop
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getPixelsInCM
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
-import one.mixin.android.widget.AvatarGroup
+import one.mixin.android.widget.AvatarsView
 import kotlin.math.abs
 
 class FloatingWebClip {
@@ -54,7 +55,7 @@ class FloatingWebClip {
     }
 
     private lateinit var windowView: ViewGroup
-    private lateinit var avatarGroup: AvatarGroup
+    private lateinit var avatarsView: AvatarsView
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
     private var isShown = false
     fun init(activity: Activity) {
@@ -76,9 +77,9 @@ class FloatingWebClip {
     }
 
     private fun reload() {
-        avatarGroup.setUrls(
+        avatarsView.addList(
             clips.values.map {
-                it.app?.iconUrl
+                it.app?.iconUrl ?: ""
             }
         )
         updateSize(clips.size)
@@ -170,15 +171,18 @@ class FloatingWebClip {
             }
         }
 
-        avatarGroup = AvatarGroup(activity).apply {
-            setSize(32.dp, 24.dp)
+        avatarsView = AvatarsView(activity).apply {
+            initParams(1, 32)
         }
 
         windowView.addView(
             FrameLayout(activity).apply {
                 setBackgroundResource(R.drawable.bg_floating_group)
                 z = 1.dp.toFloat()
-                addView(avatarGroup, ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
+                addView(avatarsView, ViewGroup.MarginLayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                    topMargin = 8.dp
+                    bottomMargin = 8.dp
+                })
             },
             ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
         )

@@ -7,8 +7,12 @@ import android.util.AttributeSet
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.view.marginBottom
+import androidx.core.view.marginTop
 import kotlinx.android.synthetic.main.view_avatar.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.User
 import org.jetbrains.anko.collections.forEachReversedWithIndex
 
@@ -18,10 +22,10 @@ class AvatarsView : ViewGroup {
         const val DEFAULT_BORDER_COLOR = Color.WHITE
         const val DEFAULT_AVATAR_SIZE = 32
 
-        private const val MAX_VISIBLE_USER_COUNT = 3
+        private const val MAX_VISIBLE_COUNT = 3
     }
 
-    private var userList = arrayListOf<User>()
+    private var data = arrayListOf<Any>()
 
     private var borderWidth: Int
     private var borderColor: Int
@@ -40,10 +44,15 @@ class AvatarsView : ViewGroup {
         ta.recycle()
     }
 
-    fun addUserList(list: List<User>) {
-        userList.clear()
-        userList.addAll(list)
-        initWithUserList()
+    fun addList(list: List<Any>) {
+        data.clear()
+        data.addAll(list)
+        initWithList()
+    }
+
+    fun initParams(borderWith: Int, avatarSize: Int) {
+        this.borderWidth = borderWith .dp
+        this.avatarSize = avatarSize.dp
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -67,28 +76,37 @@ class AvatarsView : ViewGroup {
             val c = getChildAt(i)
             val offsetLeft = (childCount - i - 1) * avatarSize * ratio
             val offsetRight = i * avatarSize * ratio
-            c.layout(offsetLeft.toInt(), t, (r - offsetRight - l).toInt(), b)
+            c.layout(offsetLeft.toInt(), t - marginTop, (r - offsetRight - l).toInt(), b - marginBottom)
         }
     }
 
-    private fun initWithUserList() {
+    private fun initWithList() {
         removeAllViews()
-        val overSize = userList.size > MAX_VISIBLE_USER_COUNT
+        val overSize = data.size > MAX_VISIBLE_COUNT
         if (overSize) {
-            val textView = getTextView(userList.size - MAX_VISIBLE_USER_COUNT + 1)
+            val textView = getTextView(data.size - MAX_VISIBLE_COUNT + 1)
             addView(textView)
         }
-        val takeCount = if (overSize) MAX_VISIBLE_USER_COUNT - 1 else userList.size
-        userList.toMutableList()
+        val takeCount = if (overSize) MAX_VISIBLE_COUNT - 1 else data.size
+        data.toMutableList()
             .take(takeCount)
-            .forEachReversedWithIndex { _, user ->
-                val avatarView = AvatarView(context).apply {
-                    setBorderWidth(borderWidth)
-                    setBorderColor(borderColor)
+            .forEachReversedWithIndex { _, t ->
+                if (t is User) {
+                    val avatarView = AvatarView(context).apply {
+                        setBorderWidth(borderWidth)
+                        setBorderColor(borderColor)
+                    }
+                    avatarView.avatar_simple.setCircleBackgroundColorResource(R.color.white)
+                    addView(avatarView)
+                    avatarView.setInfo(t.fullName, t.avatarUrl, t.userId)
+                } else if(t is String) {
+                    val circleView = CircleImageView(context).apply {
+                        borderWidth = this@AvatarsView.borderWidth
+                        borderColor = this@AvatarsView.borderColor
+                    }
+                    addView(circleView)
+                    circleView.loadImage(t, R.drawable.ic_avatar_place_holder, true)
                 }
-                avatarView.avatar_simple.setCircleBackgroundColorResource(R.color.white)
-                addView(avatarView)
-                avatarView.setInfo(user.fullName, user.avatarUrl, user.userId)
             }
     }
 

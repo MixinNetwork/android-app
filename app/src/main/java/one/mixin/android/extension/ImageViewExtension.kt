@@ -15,6 +15,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import jp.wasabeef.glide.transformations.CropTransformation
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
+import one.mixin.android.MixinApplication
 import one.mixin.android.util.StringSignature
 import org.jetbrains.anko.runOnUiThread
 
@@ -28,9 +29,13 @@ fun ImageView.loadImage(uri: Uri?) {
     Glide.with(this).load(uri).into(this)
 }
 
-fun ImageView.loadImage(uri: String?, @DrawableRes holder: Int) {
-    if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri).apply(RequestOptions.placeholderOf(holder)).into(this)
+fun ImageView.loadImage(uri: String?, @DrawableRes holder: Int, useAppContext: Boolean = false) {
+    if (useAppContext) {
+        Glide.with(MixinApplication.appContext).load(uri).apply(RequestOptions.placeholderOf(holder)).into(this)
+    } else {
+        if (!isActivityNotDestroyed()) return
+        Glide.with(this).load(uri).apply(RequestOptions.placeholderOf(holder)).into(this)
+    }
 }
 
 fun ImageView.clear() {

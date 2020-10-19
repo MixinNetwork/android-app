@@ -84,8 +84,8 @@ class MultisigsBottomSheetDialogFragment :
                         receivers.add(u)
                     }
                 }
-                contentView.senders_view.addUserList(senders)
-                contentView.receivers_view.addUserList(receivers)
+                contentView.senders_view.addList(senders)
+                contentView.receivers_view.addList(receivers)
 
                 contentView.senders_view.setOnClickListener {
                     showUserList(senders, true)
