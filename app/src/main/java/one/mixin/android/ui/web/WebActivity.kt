@@ -170,7 +170,6 @@ class WebActivity : AppCompatActivity() {
     private var isExpand = false
 
     override fun finish() {
-        // Todo
         collapse()
         super.finish()
         if (isExpand) {

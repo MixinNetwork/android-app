@@ -22,6 +22,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.View.INVISIBLE
+import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -329,8 +330,7 @@ class WebFragment : BaseFragment() {
     private fun initView() {
         contentView.suspicious_link_view.listener = object : SuspiciousLinkView.SuspiciousListener {
             override fun onBackClick() {
-                // Todo
-                // dismiss()
+                requireActivity().finish()
             }
 
             override fun onContinueClick() {
@@ -967,17 +967,16 @@ class WebFragment : BaseFragment() {
         dark: Boolean,
         color: Int
     ) {
-        // Todo
-        // dialog.window.decorView.let {
-        //     if (dark) {
-        //         contentView.title_tv.setTextColor(Color.WHITE)
-        //         it.systemUiVisibility =
-        //             it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-        //     } else {
-        //         contentView.title_tv.setTextColor(Color.BLACK)
-        //         it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        //     }
-        // }
+        requireActivity().window.decorView.let {
+            if (dark) {
+                contentView.title_tv.setTextColor(Color.WHITE)
+                it.systemUiVisibility =
+                    it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+            } else {
+                contentView.title_tv.setTextColor(Color.BLACK)
+                it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            }
+        }
         contentView.title_ll.setBackgroundColor(color)
         contentView.ph.setBackgroundColor(color)
         contentView.web_control.mode = dark

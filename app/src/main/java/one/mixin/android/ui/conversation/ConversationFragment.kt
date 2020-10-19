@@ -1045,8 +1045,6 @@ class ConversationFragment() :
     }
 
     override fun onDestroyView() {
-        // Todo
-        // botWebBottomSheet?.dismiss()
         chat_rv?.let { rv ->
             rv.children.forEach {
                 val vh = rv.getChildViewHolder(it)
