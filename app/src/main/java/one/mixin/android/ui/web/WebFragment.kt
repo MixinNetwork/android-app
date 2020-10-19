@@ -796,23 +796,37 @@ class WebFragment : BaseFragment() {
                 bottomSheet.dismiss()
             }
         }
+        val isHold = isHold()
         val floatingMenu = menu {
-            title = getString(R.string.open_floating)
-            icon = R.drawable.ic_content_copy
+            title = if (isHold) {
+                getString(R.string.cancel_floating)
+            } else {
+                getString(R.string.open_floating)
+            }
+            icon = if (isHold) {
+                R.drawable.ic_web_floating_cancel
+            } else {
+                R.drawable.ic_web_floating
+            }
             action = {
-                val currentUrl = webView.url ?: url
-                val v = webView
-                val screenshot = Bitmap.createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
-                val c = Canvas(screenshot)
-                c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
-                v.draw(c)
-                holdClip(
-                    requireActivity(),
-                    webView,
-                    WebClip(currentUrl, screenshot, app, contentView.title_tv.text.toString())
-                )
-                bottomSheet.dismiss()
-                requireActivity().finish()
+                if (isHold) {
+                    releaseClip(index)
+                    bottomSheet.dismiss()
+                } else {
+                    val currentUrl = webView.url ?: url
+                    val v = webView
+                    val screenshot = Bitmap.createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
+                    val c = Canvas(screenshot)
+                    c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
+                    v.draw(c)
+                    holdClip(
+                        requireActivity(),
+                        webView,
+                        WebClip(currentUrl, screenshot, app, contentView.title_tv.text.toString())
+                    )
+                    bottomSheet.dismiss()
+                    requireActivity().finish()
+                }
             }
         }
 
@@ -849,6 +863,8 @@ class WebFragment : BaseFragment() {
         }
         bottomSheet.show()
     }
+
+    private fun isHold() = holdWebViews.contains(webView)
 
     private fun refresh() {
         webView.clearCache(true)

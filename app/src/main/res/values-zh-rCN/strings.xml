@@ -116,6 +116,8 @@
     <string name="upload_timeout">上传超时</string>
     <string name="copy_link">复制链接</string>
     <string name="type_a_message">输入消息</string>
+    <string name="open_floating">浮窗</string>
+    <string name="cancel_floating">取消浮窗</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>

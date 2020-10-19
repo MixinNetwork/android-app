@@ -63,8 +63,8 @@ class WebActivity : AppCompatActivity() {
     private lateinit var layouts: List<FrameLayout>
     private lateinit var thumbs: List<ImageView>
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         overridePendingTransition(R.anim.slide_in_bottom, 0)
+        super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web)
         container.setOnClickListener {
             finish()
@@ -150,9 +150,9 @@ class WebActivity : AppCompatActivity() {
     }
 
     override fun finish() {
-        overridePendingTransition(0, R.anim.slide_out_bottom)
         // Todo
         collapse()
         super.finish()
+        overridePendingTransition(0, R.anim.slide_out_bottom)
     }
 }
