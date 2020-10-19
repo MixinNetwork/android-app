@@ -25,6 +25,15 @@
             android:layout_height="match_parent"
             android:contentDescription="@null" />
 
+        <ImageView
+            android:id="@+id/close_1"
+            android:padding="4dp"
+            android:layout_gravity="end|top"
+            android:src="@drawable/ic_close_grey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@null" />
+
     </FrameLayout>
 
     <FrameLayout
@@ -47,6 +56,15 @@
             android:layout_height="match_parent"
             android:contentDescription="@null" />
 
+        <ImageView
+            android:id="@+id/close_2"
+            android:padding="4dp"
+            android:layout_gravity="end|top"
+            android:src="@drawable/ic_close_grey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@null" />
+
     </FrameLayout>
 
     <FrameLayout
@@ -66,6 +84,15 @@
             android:scaleType="matrix"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:contentDescription="@null" />
+
+        <ImageView
+            android:id="@+id/close_3"
+            android:padding="4dp"
+            android:layout_gravity="end|top"
+            android:src="@drawable/ic_close_grey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:contentDescription="@null" />
 
     </FrameLayout>
@@ -90,6 +117,15 @@
             android:layout_height="match_parent"
             android:contentDescription="@null" />
 
+        <ImageView
+            android:id="@+id/close_4"
+            android:padding="4dp"
+            android:layout_gravity="end|top"
+            android:src="@drawable/ic_close_grey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@null" />
+
     </FrameLayout>
 
     <FrameLayout
@@ -110,6 +146,15 @@
             android:scaleType="matrix"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:contentDescription="@null" />
+
+        <ImageView
+            android:id="@+id/close_5"
+            android:padding="4dp"
+            android:layout_gravity="end|top"
+            android:src="@drawable/ic_close_grey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:contentDescription="@null" />
 
     </FrameLayout>
@@ -133,6 +178,15 @@
             android:scaleType="matrix"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:contentDescription="@null" />
+
+        <ImageView
+            android:id="@+id/close_6"
+            android:padding="4dp"
+            android:layout_gravity="end|top"
+            android:src="@drawable/ic_close_grey"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:contentDescription="@null" />
 
     </FrameLayout>

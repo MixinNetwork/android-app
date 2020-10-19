@@ -84,6 +84,30 @@ class WebActivity : AppCompatActivity() {
             thumbnail_iv_5,
             thumbnail_iv_6
         )
+        close_1.setOnClickListener {
+            releaseClip(0)
+            loadData()
+        }
+        close_2.setOnClickListener {
+            releaseClip(1)
+            loadData()
+        }
+        close_3.setOnClickListener {
+            releaseClip(2)
+            loadData()
+        }
+        close_4.setOnClickListener {
+            releaseClip(3)
+            loadData()
+        }
+        close_5.setOnClickListener {
+            releaseClip(4)
+            loadData()
+        }
+        close_6.setOnClickListener {
+            releaseClip(5)
+            loadData()
+        }
         thumbnail_layout_1.round(8.dp)
         thumbnail_layout_2.round(8.dp)
         thumbnail_layout_3.round(8.dp)
@@ -99,6 +123,10 @@ class WebActivity : AppCompatActivity() {
             ).commit()
         }
 
+        loadData()
+    }
+
+    private fun loadData() {
         repeat(6) { index ->
             if (index < clips.size) {
                 layouts[index].visibility = View.VISIBLE

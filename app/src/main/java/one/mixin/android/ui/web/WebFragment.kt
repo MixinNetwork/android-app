@@ -658,11 +658,13 @@ class WebFragment : BaseFragment() {
     private fun isBot() = app != null
 
     override fun onDestroyView() {
+        // Todo
         webView.stopLoading()
         webView.destroy()
         webView.webViewClient = object : WebViewClient() {}
         webView.webChromeClient = null
         unregisterForContextMenu(webView)
+        contentView.web_ll.removeView(webView)
         processor.close()
         if (requireActivity().requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
             requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
@@ -796,11 +798,11 @@ class WebFragment : BaseFragment() {
                 v.draw(c)
                 holdClip(
                     requireActivity(),
+                    webView,
                     WebClip(currentUrl, screenshot, app, contentView.title_tv.text.toString())
                 )
                 bottomSheet.dismiss()
-                // Todo
-                // this@WebBottomSheetDialogFragment.dismiss()
+                // requireActivity().finish()
             }
         }
 

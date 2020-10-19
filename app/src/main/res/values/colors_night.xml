@@ -29,7 +29,7 @@
     <color name="bgGrayNight">#3B3F44</color>
     <color name="bgBotNight">#4C5053</color>
     <color name="bgBubbleNight">#3B3F44</color>
-    <color name="bgTranslucenceNight">#AA2c3136</color>
+    <color name="bgTranslucenceNight">#CC2c3136</color>
 
     <color name="bgMenuNight">#23272B</color>
     <color name="bgMenuBorderNight">#3E5264</color>
