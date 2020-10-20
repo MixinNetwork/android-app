@@ -1,13 +1,17 @@
 package one.mixin.android.ui.address
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.annotation.VisibleForTesting
 import androidx.core.view.isVisible
 import com.sandro.bitcoinpaymenturi.BitcoinPaymentURI
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -38,7 +42,7 @@ import one.mixin.android.vo.AssetItem
 import org.jetbrains.anko.textColor
 
 @AndroidEntryPoint
-class AddressAddFragment(registry: ActivityResultRegistry) : BaseFragment() {
+class AddressAddFragment() : BaseFragment() {
     companion object {
         const val ARGS_ADDRESS = "args_address"
     }
@@ -47,6 +51,26 @@ class AddressAddFragment(registry: ActivityResultRegistry) : BaseFragment() {
         requireArguments().getParcelable(ARGS_ASSET)!!
     }
     private var memoEnabled = true
+
+    // for testing
+    private lateinit var resultRegistry: ActivityResultRegistry
+
+    // testing constructor
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    constructor(
+        testRegistry: ActivityResultRegistry,
+    ) : this() {
+        resultRegistry = testRegistry
+    }
+
+    lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
+
+        getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), resultRegistry, ::callbackScan)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -186,7 +210,7 @@ class AddressAddFragment(registry: ActivityResultRegistry) : BaseFragment() {
     var isAddr = false
         private set
 
-    val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), registry) { data ->
+    private fun callbackScan(data: Intent?) {
         val text = data?.getStringExtra(ARGS_FOR_SCAN_RESULT)
         if (text != null) {
             if (isAddr) {
