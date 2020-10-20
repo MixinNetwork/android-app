@@ -3,7 +3,6 @@ package one.mixin.android.ui.web
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
-import com.google.gson.annotations.Expose
 import com.google.gson.reflect.TypeToken
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
@@ -27,7 +26,7 @@ var holdWebViews = mutableListOf<MixinWebView>()
 
 data class WebClip(
     val url: String,
-    @Expose(serialize = false, deserialize = false) val thumb: Bitmap?,
+    val thumb: Bitmap?,
     val app: App?,
     val name: String?
 )
@@ -41,9 +40,8 @@ fun holdClip(activity: Activity, webView: MixinWebView, webClip: WebClip) {
             holdWebViews.add(webView)
             FloatingWebClip.getInstance().show(activity)
             activity.defaultSharedPreferences.putString(
-                "floating", GsonHelper.customGson.toJson(
-                    clips
-                )
+                "floating",
+                GsonHelper.customGson.toJson(clips)
             )
         }
     } else {
@@ -63,6 +61,7 @@ fun initClips(activity: Activity) {
 fun releaseClip(index: Int) {
     if (index < clips.size) {
         clips.removeAt(index)
+        // Todo save json
         holdWebViews.removeAt(index)
     }
 }
@@ -70,5 +69,6 @@ fun releaseClip(index: Int) {
 fun releaseAll() {
     clips.clear()
     holdWebViews.clear()
+    // Todo save json
     FloatingWebClip.getInstance().hide()
 }

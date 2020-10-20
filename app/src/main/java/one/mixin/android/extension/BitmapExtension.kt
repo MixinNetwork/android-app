@@ -2,6 +2,7 @@ package one.mixin.android.extension
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.DecodeHintType
@@ -12,13 +13,14 @@ import com.google.zxing.Result
 import com.google.zxing.common.GlobalHistogramBinarizer
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
+import one.mixin.android.crypto.Base64
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.EnumMap
 import java.util.EnumSet
-import kotlin.jvm.Throws
 
 fun Bitmap.toBytes(): ByteArray {
     ByteArrayOutputStream().use { stream ->
@@ -137,4 +139,34 @@ fun Bitmap.maxSizeScale(maxWidth: Int, maxHeight: Int): Bitmap {
     } else {
         return this
     }
+}
+
+fun Bitmap.base64Encode(): String? {
+    var result: String? = null
+    var baos: ByteArrayOutputStream? = null
+    try {
+        baos = ByteArrayOutputStream()
+        compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        baos.flush()
+        baos.close()
+        val bitmapBytes = baos.toByteArray()
+        result = Base64.encodeBytes(bitmapBytes)
+    } catch (e: IOException) {
+        Timber.e(e)
+    } finally {
+        try {
+            if (baos != null) {
+                baos.flush()
+                baos.close()
+            }
+        } catch (e: IOException) {
+            Timber.e(e)
+        }
+    }
+    return result
+}
+
+fun decodeBitmapFromBase64(base64Data: String): Bitmap {
+    val bytes = Base64.decode(base64Data)
+    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 }

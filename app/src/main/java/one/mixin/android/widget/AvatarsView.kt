@@ -51,7 +51,7 @@ class AvatarsView : ViewGroup {
     }
 
     fun initParams(borderWith: Int, avatarSize: Int) {
-        this.borderWidth = borderWith .dp
+        this.borderWidth = borderWith.dp
         this.avatarSize = avatarSize.dp
     }
 
@@ -99,7 +99,7 @@ class AvatarsView : ViewGroup {
                     avatarView.avatar_simple.setCircleBackgroundColorResource(R.color.white)
                     addView(avatarView)
                     avatarView.setInfo(t.fullName, t.avatarUrl, t.userId)
-                } else if(t is String) {
+                } else if (t is String) {
                     val circleView = CircleImageView(context).apply {
                         borderWidth = this@AvatarsView.borderWidth
                         borderColor = this@AvatarsView.borderColor

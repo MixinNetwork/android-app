@@ -16,7 +16,6 @@ import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.annotation.Keep
-import androidx.core.view.marginTop
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -25,7 +24,6 @@ import one.mixin.android.extension.getPixelsInCM
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.realSize
-import one.mixin.android.ui.PipVideoView
 import one.mixin.android.widget.AvatarsView
 import kotlin.math.abs
 
@@ -95,6 +93,7 @@ class FloatingWebClip {
     }
 
     private fun updateSize(count: Int) {
+        // Todo change position
         windowLayoutParams.width = (48 + 16 * (count - 1) + 16 + 1).dp
         windowLayoutParams.height = (48 + 1).dp
         windowManager.updateViewLayout(windowView, windowLayoutParams)
@@ -193,7 +192,8 @@ class FloatingWebClip {
                     ViewGroup.MarginLayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                         topMargin = 8.dp
                         bottomMargin = 8.dp
-                    })
+                    }
+                )
             },
             ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
         )
