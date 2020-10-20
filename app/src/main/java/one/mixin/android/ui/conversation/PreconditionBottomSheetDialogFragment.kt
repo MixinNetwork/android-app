@@ -154,11 +154,20 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun showFirstWithdrawalTip(t: WithdrawBiometricItem) {
         contentView.title_tv.text = getString(R.string.bottom_withdrawal_title, t.asset.symbol)
         contentView.warning_tv.text = getString(R.string.bottom_withdrawal_address_tips)
+        contentView.continue_tv.text = getString(R.string.bottom_withdrawal_change_amount)
+        contentView.continue_tv.textColor = ContextCompat.getColor(requireContext(), R.color.white)
         contentView.continue_tv.setOnClickListener {
+            callback?.onCancel()
+            dismiss()
+        }
+        contentView.cancel_tv.text = getString(R.string.bottom_withdrawal_address_continue)
+        contentView.cancel_tv.setTextColor(resources.getColor(R.color.colorDarkBlue, null))
+        contentView.cancel_tv.setOnClickListener {
             callback?.onSuccess()
             dismiss()
         }
-        startCountDown()
+        contentView.continue_tv.isEnabled = true
+        contentView.cancel_tv.isEnabled = true
     }
 
     private fun shouldShowWithdrawalTip(t: WithdrawBiometricItem): Boolean {
