@@ -752,7 +752,8 @@
     <string name="bottom_withdrawal_title">%1$s 提现</string>
     <string name="bottom_withdrawal_change_amount">修改金额</string>
     <string name="bottom_withdrawal_change_amount_count">修改金额 （%1$d）</string>
-    <string name="bottom_withdrawal_address_tips">首次提现到新地址，请小额尝试！</string>
+    <string name="bottom_withdrawal_address_tips">首次提现到新地址，请小额尝试！如果您提现到错误的地址资产将无法找回！</string>
+    <string name="bottom_withdrawal_address_continue">继续提现</string>
     <string name="bottom_withdrawal_least_tip">提现金额最小 %1$s</string>
     <string name="bottom_deposit_title">%1$s 充值</string>
     <string name="bottom_deposit_tip_eos">该充值地址支持所有基于 EOS 发行的代币，例如 EOS、IQ、BLACK、OCT、KARMA 等。</string>

@@ -696,7 +696,8 @@
     <string name="bottom_withdrawal_title">%1$s 出金</string>
     <string name="bottom_withdrawal_change_amount">数量を変更</string>
     <string name="bottom_withdrawal_change_amount_count">数量を変更 (%1$d)</string>
-    <string name="bottom_withdrawal_address_tips">最初の出金は少額で行ってください</string>
+    <string name="bottom_withdrawal_address_tips">最初の出金は少額で行ってください。アドレスが間違っていると資産は失われます。</string>
+    <string name="bottom_withdrawal_address_continue">進む</string>
     <string name="bottom_deposit_title">%1$s 入金</string>
     <string name="bottom_deposit_tip_eos">このアドレスはEOSトークンをすべてサポートしています(EOS, IQ, BLACK, OCT, KARMA...)</string>
     <string name="bottom_deposit_tip_eth">このアドレスはERC20トークンをすべてサポートしています(ETH, XIN, TUSD, HT, LOOM, LEO...)</string>
