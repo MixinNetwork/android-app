@@ -167,7 +167,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
     private var app: App? = null
     private val appCard: AppCardData? by lazy {
-        requireArguments().getParcelable<AppCardData>(ARGS_APP_CARD)
+        requireArguments().getParcelable(ARGS_APP_CARD)
     }
     private var currentUrl: String? = null
 
@@ -266,14 +266,13 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         app = requireArguments().getParcelable(ARGS_APP)
 
-        initView()
-
         appCard.notNullWithElse(
             {
                 checkAppCard(it)
             },
             {
                 loadWebView()
+                initView()
             }
         )
     }
@@ -292,6 +291,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         } else {
             loadWebView()
         }
+        initView()
     }
 
     private fun controlSuspiciousView(show: Boolean) {
@@ -376,7 +376,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         reloadTheme()
                     }
                 },
-                conversationId, requireContext(), this.parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope,
+                conversationId, app, requireContext(), this.parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope,
                 { url ->
                     currentUrl = url
                 },
@@ -892,6 +892,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     class WebViewClientImpl(
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
+        private val app: App?,
         private val context: Context,
         private val fragmentManager: FragmentManager,
         private val registry: ActivityResultRegistry,
@@ -922,7 +923,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             if (url.isMixinUrl()) {
                 val host = view.url?.run { Uri.parse(this).host }
-                url.openAsUrl(context, fragmentManager, registry, scope, host = host, currentConversation = conversationId) {}
+                url.openAsUrl(context, fragmentManager, registry, scope, host = host, app = app, currentConversation = conversationId) {}
                 return true
             }
             val extraHeaders = HashMap<String, String>()
