@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
@@ -56,8 +55,6 @@ class WebActivity : AppCompatActivity() {
                 }
             )
         }
-
-        val webViews = mutableListOf<WebView>()
     }
 
     private lateinit var layouts: List<FrameLayout>
@@ -147,10 +144,10 @@ class WebActivity : AppCompatActivity() {
         repeat(6) { index ->
             if (index < clips.size) {
                 layouts[index].visibility = View.VISIBLE
-                thumbs[index].setImageBitmap(clips.valueAt(index)?.thumb)
+                thumbs[index].setImageBitmap(clips[index].thumb)
                 layouts[index].setOnClickListener {
                     val extras = Bundle()
-                    val clip = clips.valueAt(index)
+                    val clip = clips[index]
                     extras.putString(WebFragment.URL, clip.url)
                     extras.putParcelable(WebFragment.ARGS_APP, clip.app)
                     extras.putInt(WebFragment.ARGS_INDEX, index)

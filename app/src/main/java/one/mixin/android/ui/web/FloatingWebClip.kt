@@ -19,10 +19,13 @@ import androidx.annotation.Keep
 import androidx.core.view.marginTop
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getPixelsInCM
 import one.mixin.android.extension.navigationBarHeight
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.realSize
+import one.mixin.android.ui.PipVideoView
 import one.mixin.android.widget.AvatarsView
 import kotlin.math.abs
 
@@ -48,6 +51,9 @@ class FloatingWebClip {
             }
             return requireNotNull(localInstance)
         }
+
+        private const val FX = "floating_x"
+        private const val FY = "floating_y"
     }
 
     private val windowManager: WindowManager by lazy {
@@ -57,6 +63,9 @@ class FloatingWebClip {
     private lateinit var windowView: ViewGroup
     private lateinit var avatarsView: AvatarsView
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
+    private val prefreences by lazy {
+        appContext.defaultSharedPreferences
+    }
     private var isShown = false
     fun init(activity: Activity) {
         if (!::windowView.isInitialized) {
@@ -78,7 +87,7 @@ class FloatingWebClip {
 
     private fun reload() {
         avatarsView.addList(
-            clips.values.map {
+            clips.map {
                 it.app?.iconUrl ?: ""
             }
         )
@@ -179,10 +188,12 @@ class FloatingWebClip {
             FrameLayout(activity).apply {
                 setBackgroundResource(R.drawable.bg_floating_group)
                 z = 1.dp.toFloat()
-                addView(avatarsView, ViewGroup.MarginLayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                    topMargin = 8.dp
-                    bottomMargin = 8.dp
-                })
+                addView(
+                    avatarsView,
+                    ViewGroup.MarginLayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                        topMargin = 8.dp
+                        bottomMargin = 8.dp
+                    })
             },
             ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
         )
@@ -196,8 +207,8 @@ class FloatingWebClip {
 
     private fun initWindowLayoutParams() {
         windowLayoutParams = WindowManager.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-        windowLayoutParams.x = 0
-        windowLayoutParams.y = 0
+        windowLayoutParams.x = prefreences.getInt(FX, 0)
+        windowLayoutParams.y = prefreences.getInt(FY, 0)
         windowLayoutParams.format = PixelFormat.TRANSLUCENT
         windowLayoutParams.gravity = Gravity.TOP or Gravity.START
         if (Build.VERSION.SDK_INT >= 26) {
@@ -219,6 +230,8 @@ class FloatingWebClip {
         } else {
             0
         }
+        prefreences.putInt(FX, endX)
+        prefreences.putInt(FY, windowLayoutParams.y)
         var animators: ArrayList<Animator>? = null
         if (animators == null) {
             animators = ArrayList()

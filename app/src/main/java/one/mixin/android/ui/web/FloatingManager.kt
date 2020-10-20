@@ -3,8 +3,11 @@ package one.mixin.android.ui.web
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
-import android.webkit.WebView
-import androidx.collection.arrayMapOf
+import com.google.gson.annotations.Expose
+import com.google.gson.reflect.TypeToken
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putString
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
 
@@ -19,42 +22,52 @@ fun collapse() {
     }
 }
 
-var clips = arrayMapOf<String, WebClip>()
+var clips = mutableListOf<WebClip>()
 var holdWebViews = mutableListOf<MixinWebView>()
 
-class WebClip(val url: String, val thumb: Bitmap, val app: App?, val name: String?)
+data class WebClip(
+    val url: String,
+    @Expose(serialize = false, deserialize = false) val thumb: Bitmap?,
+    val app: App?,
+    val name: String?
+)
 
 fun holdClip(activity: Activity, webView: MixinWebView, webClip: WebClip) {
-    if (!clips.contains(webClip.url)) {
+    if (!clips.contains(webClip)) {
         if (clips.size >= 6) {
             // Todo
         } else {
-            clips[webClip.url] = webClip
+            clips.add(webClip)
             holdWebViews.add(webView)
             FloatingWebClip.getInstance().show(activity)
+            activity.defaultSharedPreferences.putString(
+                "floating", GsonHelper.customGson.toJson(
+                    clips
+                )
+            )
         }
     } else {
         // Todo
     }
 }
 
-fun releaseClip(webClip: WebClip) {
-    if (clips.contains(webClip.url)) {
-        clips[webClip.url] = null
-        //
-    } else {
-        // Todo
-    }
+fun initClips(activity: Activity) {
+    val content = activity.defaultSharedPreferences.getString("floating", null) ?: return
+    val type = object : TypeToken<List<WebClip>>() {}.type
+    val list = GsonHelper.customGson.fromJson<List<WebClip>>(content, type)
+    clips.clear()
+    clips.addAll(list)
+    FloatingWebClip.getInstance().show(activity)
 }
 
 fun releaseClip(index: Int) {
     if (index < clips.size) {
         clips.removeAt(index)
-        // Todo
+        holdWebViews.removeAt(index)
     }
 }
 
-fun releaseAll(){
+fun releaseAll() {
     clips.clear()
     holdWebViews.clear()
     FloatingWebClip.getInstance().hide()

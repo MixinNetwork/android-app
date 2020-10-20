@@ -268,7 +268,13 @@ class WebFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         contentView = view.container
         webView = if (index >= 0) {
-            holdWebViews[index]
+            if (index >= holdWebViews.size) {
+                MixinWebView(requireContext()).apply {
+                    holdWebViews.add(index, this)
+                }
+            } else {
+                holdWebViews[index]
+            }
         } else {
             MixinWebView(requireContext())
         }
