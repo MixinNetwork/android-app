@@ -5,16 +5,13 @@ import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
 import android.content.ActivityNotFoundException
-import android.content.BroadcastReceiver
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -49,6 +46,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.material.snackbar.Snackbar
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.twilio.audioswitch.AudioDevice
+import com.twilio.audioswitch.AudioSwitch
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -98,7 +97,6 @@ import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isGooglePlayServicesAvailable
-import one.mixin.android.extension.isHeadsetOn
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
@@ -260,6 +258,9 @@ class ConversationFragment() :
 
     @Inject
     lateinit var callState: CallStateLiveData
+
+    @Inject
+    lateinit var audioSwitch: AudioSwitch
 
     private val chatViewModel by viewModels<ConversationViewModel>()
 
@@ -808,10 +809,6 @@ class ConversationFragment() :
         )
     }
 
-    private val audioManager: AudioManager by lazy {
-        requireContext().getSystemService()!!
-    }
-
     // for testing
     private lateinit var resultRegistry: ActivityResultRegistry
 
@@ -837,7 +834,9 @@ class ConversationFragment() :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        registerHeadsetPlugReceiver()
+        audioSwitch.start { audioDevices, selectedAudioDevice ->
+            Timber.d("@@@ audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
+        }
         recipient = requireArguments().getParcelable(RECIPIENT)
     }
 
@@ -933,7 +932,6 @@ class ConversationFragment() :
                     }
                 }
             }
-        resetAudioMode()
     }
 
     private var lastReadMessage: String? = null
@@ -975,9 +973,9 @@ class ConversationFragment() :
         val values = event?.values ?: return
         if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
             isNearToSensor = values[0] < 5.0f && values[0] != sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY).maximumRange
-            if (AudioPlayer.isEnd() || AudioPlayer.audioFilePlaying() || audioManager.isHeadsetOn()) {
+            if (AudioPlayer.isEnd() || AudioPlayer.audioFilePlaying() || audioSwitch.isBluetoothHeadsetOrWiredHeadset()) {
                 leaveDevice()
-            } else if (!audioManager.isHeadsetOn()) {
+            } else if (!audioSwitch.isBluetoothHeadsetOrWiredHeadset()) {
                 if (isNearToSensor) {
                     nearDevice()
                 } else {
@@ -1039,7 +1037,7 @@ class ConversationFragment() :
             }
         }
         AudioPlayer.release()
-        unRegisterHeadsetPlugReceiver()
+        audioSwitch.stop()
     }
 
     override fun onBackPressed(): Boolean {
@@ -2386,31 +2384,6 @@ class ConversationFragment() :
         RxBus.publish(DragReleaseEvent(targetH == max))
     }
 
-    private var headsetPlugReceiver: HeadsetPlugReceiver? = null
-    private fun registerHeadsetPlugReceiver() {
-        headsetPlugReceiver = HeadsetPlugReceiver()
-        val intentFilter = IntentFilter()
-        intentFilter.addAction(Intent.ACTION_HEADSET_PLUG)
-        context?.registerReceiver(headsetPlugReceiver, intentFilter)
-    }
-
-    private fun unRegisterHeadsetPlugReceiver() {
-        headsetPlugReceiver?.let { context?.unregisterReceiver(it) }
-    }
-
-    inner class HeadsetPlugReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == Intent.ACTION_HEADSET_PLUG) {
-                val state = intent.getIntExtra("state", 0)
-                if (state == 0) {
-                    resetAudioMode()
-                } else if (state == 1) {
-                    changeToHeadset()
-                }
-            }
-        }
-    }
-
     private fun showBottomSheet(messageItem: MessageItem) {
         var bottomSheet: BottomSheet? = null
         val builder = BottomSheet.Builder(requireActivity())
@@ -2493,68 +2466,25 @@ class ConversationFragment() :
         if (!wakeLock.isHeld) {
             wakeLock.acquire(10 * 60 * 1000L)
         }
-        changeToReceiver()
+        if (audioSwitch.selectedAudioDevice is AudioDevice.Earpiece) return
+
+        AudioPlayer.switchAudioStreamType(false)
+        audioSwitch.availableAudioDevices.find { it is AudioDevice.Earpiece }?.let {
+            audioSwitch.selectDevice(it)
+            audioSwitch.activate()
+        }
     }
 
     private fun leaveDevice() {
         if (wakeLock.isHeld) {
             wakeLock.release()
         }
-        changeToSpeaker()
-    }
+        if (audioSwitch.selectedAudioDevice is AudioDevice.Speakerphone) return
 
-    private fun changeToSpeaker() {
+        audioSwitch.deactivate()
         AudioPlayer.switchAudioStreamType(true)
-        audioManager.isSpeakerphoneOn = true
-        if (audioManager.mode != AudioManager.MODE_NORMAL) {
-            audioManager.mode = AudioManager.MODE_NORMAL
-            audioManager.setStreamVolume(
-                AudioManager.STREAM_MUSIC,
-                audioManager.getStreamVolume(AudioManager.STREAM_MUSIC),
-                0
-            )
-        }
-    }
-
-    private fun changeToHeadset() {
-        AudioPlayer.switchAudioStreamType(true)
-        audioManager.isSpeakerphoneOn = false
-        audioManager.isBluetoothScoOn = false
-        if (audioManager.mode != AudioManager.MODE_NORMAL) {
-            audioManager.mode = AudioManager.MODE_NORMAL
-            audioManager.setStreamVolume(
-                AudioManager.STREAM_MUSIC,
-                audioManager.getStreamVolume(AudioManager.STREAM_MUSIC),
-                0
-            )
-        }
-    }
-
-    private fun changeToReceiver() {
-        AudioPlayer.switchAudioStreamType(false)
-        audioManager.isSpeakerphoneOn = false
-        audioManager.isBluetoothScoOn = false
-        if (audioManager.mode != AudioManager.MODE_IN_COMMUNICATION) {
-            audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
-            audioManager.setStreamVolume(
-                AudioManager.STREAM_VOICE_CALL,
-                audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL),
-                0
-            )
-        }
-    }
-
-    private fun resetAudioMode() {
-        if (callState.isNotIdle()) return
-
-        if (!audioManager.isHeadsetOn()) {
-            if (isNearToSensor) {
-                changeToReceiver()
-            } else {
-                changeToSpeaker()
-            }
-        } else {
-            changeToHeadset()
+        audioSwitch.availableAudioDevices.find { it is AudioDevice.Speakerphone }?.let {
+            audioSwitch.selectDevice(it)
         }
     }
 
@@ -2664,6 +2594,10 @@ class ConversationFragment() :
             }
         }
     }
+
+    private fun AudioSwitch.isBluetoothHeadsetOrWiredHeadset() =
+        selectedAudioDevice is AudioDevice.BluetoothHeadset ||
+            selectedAudioDevice is AudioDevice.WiredHeadset
 
     private fun checkPeerIfNeeded() = lifecycleScope.launch {
         if (!isGroup) return@launch
