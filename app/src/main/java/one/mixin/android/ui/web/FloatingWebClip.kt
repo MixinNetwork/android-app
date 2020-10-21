@@ -26,6 +26,7 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.realSize
 import one.mixin.android.widget.AvatarsView
 import kotlin.math.abs
+import kotlin.math.min
 
 class FloatingWebClip {
     companion object {
@@ -61,7 +62,7 @@ class FloatingWebClip {
     private lateinit var windowView: ViewGroup
     private lateinit var avatarsView: AvatarsView
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
-    private val prefreences by lazy {
+    private val preferences by lazy {
         appContext.defaultSharedPreferences
     }
     private var isShown = false
@@ -90,11 +91,11 @@ class FloatingWebClip {
             }
         )
         updateSize(clips.size)
+        animateToBoundsMaybe()
     }
 
     private fun updateSize(count: Int) {
-        // Todo change position
-        windowLayoutParams.width = (48 + 16 * (count - 1) + 16 + 1).dp
+        windowLayoutParams.width = (48 + 24 * min((count - 1), 2) + 1).dp
         windowLayoutParams.height = (48 + 1).dp
         windowManager.updateViewLayout(windowView, windowLayoutParams)
     }
@@ -207,8 +208,8 @@ class FloatingWebClip {
 
     private fun initWindowLayoutParams() {
         windowLayoutParams = WindowManager.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-        windowLayoutParams.x = prefreences.getInt(FX, 0)
-        windowLayoutParams.y = prefreences.getInt(FY, 0)
+        windowLayoutParams.x = preferences.getInt(FX, 0)
+        windowLayoutParams.y = preferences.getInt(FY, 0)
         windowLayoutParams.format = PixelFormat.TRANSLUCENT
         windowLayoutParams.gravity = Gravity.TOP or Gravity.START
         if (Build.VERSION.SDK_INT >= 26) {
@@ -226,12 +227,12 @@ class FloatingWebClip {
         val realX = realSize.x
         val startX = windowLayoutParams.x
         val endX = if (startX >= realX / 2) {
-            realSize.x - windowView.getChildAt(0).width
+            realSize.x - windowLayoutParams.width
         } else {
             0
         }
-        prefreences.putInt(FX, endX)
-        prefreences.putInt(FY, windowLayoutParams.y)
+        preferences.putInt(FX, endX)
+        preferences.putInt(FY, windowLayoutParams.y)
         var animators: ArrayList<Animator>? = null
         if (animators == null) {
             animators = ArrayList()
