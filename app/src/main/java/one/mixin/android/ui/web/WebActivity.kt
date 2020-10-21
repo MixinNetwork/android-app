@@ -15,11 +15,12 @@ import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.round
+import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 
 @AndroidEntryPoint
-class WebActivity : AppCompatActivity() {
+class WebActivity : BaseActivity() {
 
     companion object {
         fun show(context: Context) {
@@ -56,6 +57,10 @@ class WebActivity : AppCompatActivity() {
             )
         }
     }
+
+    override fun getNightThemeId(): Int = R.style.AppTheme_Night_Transparent
+
+    override fun getDefaultThemeId(): Int = R.style.AppTheme_Transparent
 
     private lateinit var layouts: List<FrameLayout>
     private lateinit var thumbs: List<ImageView>
