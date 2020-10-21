@@ -65,6 +65,12 @@ fun releaseClip(index: Int) {
     }
 }
 
+fun refreshClip() {
+    if (MixinApplication.get().activitiesCount <= 0) {
+        FloatingWebClip.getInstance().hide()
+    }
+}
+
 private fun saveClips(context: Context) {
     context.defaultSharedPreferences.putString("floating", GsonHelper.customGson.toJson(clips))
 }

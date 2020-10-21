@@ -99,6 +99,7 @@ class MixinApplication : Application(), Configuration.Provider, CameraXConfig.Pr
     override fun getCameraXConfig() = Camera2Config.defaultConfig()
 
     var onlining = AtomicBoolean(false)
+    var activitiesCount = 0
 
     fun gotoTimeWrong(serverTime: Long) {
         if (onlining.compareAndSet(true, false)) {

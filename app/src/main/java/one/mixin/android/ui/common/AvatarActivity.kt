@@ -2,6 +2,7 @@ package one.mixin.android.ui.common
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityOptions
 import android.content.Intent
@@ -24,7 +25,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.belowOreo
 import one.mixin.android.widget.AvatarTransform
 
-class AvatarActivity : AppCompatActivity() {
+class AvatarActivity : BaseActivity() {
 
     companion object {
         const val TAG = "AvatarFragment"
@@ -45,6 +46,7 @@ class AvatarActivity : AppCompatActivity() {
 
     private val url: String by lazy { intent.getStringExtra(ARGS_URL) as String }
 
+    @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         belowOreo {
