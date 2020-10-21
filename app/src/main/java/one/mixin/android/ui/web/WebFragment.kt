@@ -203,14 +203,13 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    //
-    // fun onBackPressed(): Boolean {
-    //     if (webView.canGoBack()) {
-    //         webView.goBack()
-    //         return true
-    //     }
-    //     return false
-    // }
+    override fun onBackPressed(): Boolean {
+        if (webView.canGoBack()) {
+            webView.goBack()
+            return true
+        }
+        return false
+    }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
         webView.hitTestResult.let {
@@ -268,9 +267,7 @@ class WebFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         contentView = view.container
         webView = if (index >= 0) {
-            holdWebViews[index] ?: MixinWebView(requireContext()).apply {
-                holdWebViews[index] = this
-            }
+            clips[index].webView ?: MixinWebView(requireContext())
         } else {
             MixinWebView(requireContext())
         }
@@ -644,6 +641,7 @@ class WebFragment : BaseFragment() {
         conversationId?.let {
             extraHeaders[Mixin_Conversation_ID_HEADER] = it
         }
+        Timber.d("load url")
         webView.loadUrl(url, extraHeaders)
     }
 
@@ -666,14 +664,34 @@ class WebFragment : BaseFragment() {
     }
 
     private fun isBot() = app != null
+    private var hold = false
 
+    private fun generateWebClip(): WebClip {
+        val currentUrl = webView.url ?: url
+        val v = webView
+        val screenshot = Bitmap.createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
+        val c = Canvas(screenshot)
+        c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
+        v.draw(c)
+        return WebClip(currentUrl, screenshot, app, contentView.title_tv.text.toString(), webView)
+    }
+
+    @SuppressLint("SourceLockedOrientationActivity")
     override fun onDestroyView() {
-        // Todo
         webView.stopLoading()
-        if (!holdWebViews.contains(webView)) {
-            webView.destroy()
-            webView.webViewClient = object : WebViewClient() {}
-            webView.webChromeClient = null
+        val index = clips.asSequence().map { it.webView }.indexOf(webView)
+        when {
+            hold -> {
+                holdClip(requireActivity(), generateWebClip())
+            }
+            index < 0 -> {
+                webView.destroy()
+                webView.webViewClient = object : WebViewClient() {}
+                webView.webChromeClient = null
+            }
+            else -> {
+                updateClip(requireActivity(), index, generateWebClip())
+            }
         }
         unregisterForContextMenu(webView)
         contentView.web_ll.removeView(webView)
@@ -815,17 +833,7 @@ class WebFragment : BaseFragment() {
                     releaseClip(index)
                     bottomSheet.dismiss()
                 } else {
-                    val currentUrl = webView.url ?: url
-                    val v = webView
-                    val screenshot = Bitmap.createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
-                    val c = Canvas(screenshot)
-                    c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
-                    v.draw(c)
-                    holdClip(
-                        requireActivity(),
-                        webView,
-                        WebClip(currentUrl, screenshot, app, contentView.title_tv.text.toString())
-                    )
+                    hold = true
                     bottomSheet.dismiss()
                     requireActivity().finish()
                 }
@@ -866,7 +874,10 @@ class WebFragment : BaseFragment() {
         bottomSheet.show()
     }
 
-    private fun isHold() = holdWebViews.contains(webView)
+    private fun isHold(): Boolean {
+        val clip = clips.elementAtOrNull(index)
+        return clip?.webView == webView
+    }
 
     private fun refresh() {
         webView.clearCache(true)

@@ -3,7 +3,6 @@ package one.mixin.android.ui.web
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
-import androidx.collection.arrayMapOf
 import com.google.gson.reflect.TypeToken
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
@@ -24,22 +23,27 @@ fun collapse() {
 }
 
 var clips = mutableListOf<WebClip>()
-var holdWebViews = arrayMapOf<Int, MixinWebView?>()
 
 data class WebClip(
     val url: String,
     val thumb: Bitmap?,
     val app: App?,
-    val name: String?
+    val name: String?,
+    @Transient val webView: MixinWebView?
 )
 
-fun holdClip(activity: Activity, webView: MixinWebView, webClip: WebClip) {
+fun updateClip(activity: Activity, index: Int, webClip: WebClip) {
+    clips.removeAt(index)
+    clips.add(index, webClip)
+    saveClips(activity)
+}
+
+fun holdClip(activity: Activity, webClip: WebClip) {
     if (!clips.contains(webClip)) {
         if (clips.size >= 6) {
             // Todo
         } else {
             clips.add(webClip)
-            holdWebViews[clips.size - 1] = webView
             FloatingWebClip.getInstance().show(activity)
             saveClips(activity)
         }
@@ -53,6 +57,7 @@ fun initClips(activity: Activity) {
     val type = object : TypeToken<List<WebClip>>() {}.type
     val list = GsonHelper.customGson.fromJson<List<WebClip>>(content, type)
     clips.clear()
+    if (list.isEmpty()) return
     clips.addAll(list)
     FloatingWebClip.getInstance().show(activity)
 }
@@ -61,7 +66,6 @@ fun releaseClip(index: Int) {
     if (index < clips.size) {
         clips.removeAt(index)
         saveClips(MixinApplication.appContext)
-        holdWebViews[index] = null
     }
 }
 
@@ -77,7 +81,6 @@ private fun saveClips(context: Context) {
 
 fun releaseAll() {
     clips.clear()
-    holdWebViews.clear()
     saveClips(MixinApplication.appContext)
     FloatingWebClip.getInstance().hide()
 }
