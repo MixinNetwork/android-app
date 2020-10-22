@@ -2,7 +2,6 @@ package one.mixin.android.extension
 
 import android.content.Context
 import android.net.Uri
-import androidx.activity.result.ActivityResultRegistry
 import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -35,11 +34,10 @@ fun String.openAsUrlOrWeb(
     context: Context,
     conversationId: String?,
     supportFragmentManager: FragmentManager,
-    registry: ActivityResultRegistry,
     scope: CoroutineScope,
     app: App? = null,
     appCard: AppCardData? = null
-) = openAsUrl(context, supportFragmentManager, registry, scope, currentConversation = conversationId, app = app) {
+) = openAsUrl(context, supportFragmentManager, scope, currentConversation = conversationId, app = app) {
     WebBottomSheetDialogFragment.newInstance(this, conversationId, app, appCard)
         .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
 }
@@ -47,9 +45,8 @@ fun String.openAsUrlOrWeb(
 fun String.openAsUrlOrQrScan(
     context: Context,
     supportFragmentManager: FragmentManager,
-    registry: ActivityResultRegistry,
     scope: CoroutineScope
-) = openAsUrl(context, supportFragmentManager, registry, scope) {
+) = openAsUrl(context, supportFragmentManager, scope) {
     QrScanBottomSheetDialogFragment.newInstance(this)
         .showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
 }
@@ -92,7 +89,6 @@ fun String.isMixinUrl(): Boolean {
 fun String.openAsUrl(
     context: Context,
     supportFragmentManager: FragmentManager,
-    registry: ActivityResultRegistry,
     scope: CoroutineScope,
     currentConversation: String? = null,
     app: App? = null,
@@ -110,7 +106,7 @@ fun String.openAsUrl(
         }
         if (data.isUUID()) {
             if (Session.getAccount()?.hasPin == true) {
-                TransferFragment.newInstance(registry, data, supportSwitchAsset = true)
+                TransferFragment.newInstance(data, supportSwitchAsset = true)
                     .showNow(supportFragmentManager, TransferFragment.TAG)
             } else {
                 MixinApplication.appContext.toast(R.string.transfer_without_pin)

@@ -34,7 +34,7 @@ class SettingFragment : Fragment() {
             navTo(AboutFragment.newInstance(), AboutFragment.TAG)
         }
         desktop_rl.setOnClickListener {
-            DeviceFragment.newInstance(requireActivity().activityResultRegistry).showNow(parentFragmentManager, DeviceFragment.TAG)
+            DeviceFragment.newInstance().showNow(parentFragmentManager, DeviceFragment.TAG)
         }
         storage_rl.setOnClickListener {
             navTo(SettingDataStorageFragment.newInstance(), SettingDataStorageFragment.TAG)

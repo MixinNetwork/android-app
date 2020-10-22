@@ -3,7 +3,9 @@ package one.mixin.android.ui.conversation
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
 import android.graphics.Typeface
 import android.text.Editable
 import android.text.InputFilter
@@ -19,7 +21,9 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.annotation.VisibleForTesting
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -93,9 +97,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 @SuppressLint("InflateParams")
-class TransferFragment(
-    registry: ActivityResultRegistry
-) : MixinBottomSheetDialogFragment() {
+class TransferFragment() : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "TransferFragment"
         const val ASSET_PREFERENCE = "TRANSFER_ASSET"
@@ -105,17 +107,19 @@ class TransferFragment(
         const val POST_PB = 1
 
         fun newInstance(
-            registry: ActivityResultRegistry,
             userId: String? = null,
             asset: AssetItem? = null,
             address: Address? = null,
             supportSwitchAsset: Boolean = false
-        ) = TransferFragment(registry).withArgs {
+        ) = TransferFragment().withArgs {
             userId?.let { putString(ARGS_USER_ID, it) }
             asset?.let { putParcelable(ARGS_ASSET, it) }
             address?.let { putParcelable(ARGS_ADDRESS, it) }
             putBoolean(ARGS_SWITCH_ASSET, supportSwitchAsset)
         }
+
+        @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+        fun newInstance(testRegistry: ActivityResultRegistry) = TransferFragment(testRegistry)
     }
 
     override fun onDismiss(dialog: DialogInterface) {
@@ -174,7 +178,27 @@ class TransferFragment(
         bottomSheet
     }
 
-    val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), registry) { data ->
+    // for testing
+    private lateinit var resultRegistry: ActivityResultRegistry
+
+    // testing constructor
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    constructor(
+        testRegistry: ActivityResultRegistry,
+    ) : this() {
+        resultRegistry = testRegistry
+    }
+
+    lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
+
+        getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), resultRegistry, ::callbackScan)
+    }
+
+    private fun callbackScan(data: Intent?) {
         val memo = data?.getStringExtra(ARGS_FOR_SCAN_RESULT)
         contentView.transfer_memo.setText(memo)
     }

@@ -44,7 +44,7 @@ class ConversationActivity : BlazeBaseActivity() {
 
         if (intent.getBooleanExtra(ARGS_FAST_SHOW, false)) {
             replaceFragment(
-                ConversationFragment.newInstance(intent.extras!!, activityResultRegistry),
+                ConversationFragment.newInstance(intent.extras!!),
                 R.id.container,
                 ConversationFragment.TAG
             )
@@ -77,7 +77,7 @@ class ConversationActivity : BlazeBaseActivity() {
         lifecycleScope.launch(
             CoroutineExceptionHandler { _, _ ->
                 replaceFragment(
-                    ConversationFragment.newInstance(intent.extras!!, activityResultRegistry),
+                    ConversationFragment.newInstance(intent.extras!!),
                     R.id.container,
                     ConversationFragment.TAG
                 )
@@ -119,7 +119,7 @@ class ConversationActivity : BlazeBaseActivity() {
             }
             bundle.putString(INITIAL_POSITION_MESSAGE_ID, msgId)
             replaceFragment(
-                ConversationFragment.newInstance(bundle, activityResultRegistry),
+                ConversationFragment.newInstance(bundle),
                 R.id.container,
                 ConversationFragment.TAG
             )

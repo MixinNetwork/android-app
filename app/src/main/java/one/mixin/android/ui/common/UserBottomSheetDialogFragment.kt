@@ -195,7 +195,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         )
         contentView.transfer_fl.setOnClickListener {
             if (Session.getAccount()?.hasPin == true) {
-                TransferFragment.newInstance(requireActivity().activityResultRegistry, user.userId, supportSwitchAsset = true)
+                TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
                     .showNow(parentFragmentManager, TransferFragment.TAG)
                 RxBus.publish(BotCloseEvent())
                 dismiss()

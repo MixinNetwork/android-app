@@ -37,7 +37,6 @@ import android.webkit.WebViewClient.ERROR_HOST_LOOKUP
 import android.webkit.WebViewClient.ERROR_IO
 import android.webkit.WebViewClient.ERROR_TIMEOUT
 import android.widget.Toast
-import androidx.activity.result.ActivityResultRegistry
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
 import androidx.core.graphics.ColorUtils
@@ -225,7 +224,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             lifecycleScope,
                             bitmap,
                             onSuccess = { result ->
-                                result.openAsUrlOrQrScan(requireContext(), parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
+                                result.openAsUrlOrQrScan(requireContext(), parentFragmentManager, lifecycleScope)
                             },
                             onFailure = {
                                 if (isAdded) toast(R.string.can_not_recognize)
@@ -376,7 +375,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         reloadTheme()
                     }
                 },
-                conversationId, app, requireContext(), this.parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope,
+                conversationId, app, requireContext(), this.parentFragmentManager, lifecycleScope,
                 { url ->
                     currentUrl = url
                 },
@@ -895,7 +894,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private val app: App?,
         private val context: Context,
         private val fragmentManager: FragmentManager,
-        private val registry: ActivityResultRegistry,
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
         private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit
@@ -923,7 +921,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             if (url.isMixinUrl()) {
                 val host = view.url?.run { Uri.parse(this).host }
-                url.openAsUrl(context, fragmentManager, registry, scope, host = host, app = app, currentConversation = conversationId) {}
+                url.openAsUrl(context, fragmentManager, scope, host = host, app = app, currentConversation = conversationId) {}
                 return true
             }
             val extraHeaders = HashMap<String, String>()

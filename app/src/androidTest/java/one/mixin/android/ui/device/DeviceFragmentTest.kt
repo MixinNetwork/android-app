@@ -15,7 +15,7 @@ class DeviceFragmentTest {
             putExtra(ARGS_FOR_SCAN_RESULT, "abc")
         }
         val testRegistry = TestRegistry(expectedResult)
-        launchFragmentInHiltContainer(DeviceFragment.newInstance(testRegistry), R.style.AppTheme_NoActionBar) {
+        launchFragmentInHiltContainer(DeviceFragment(testRegistry), R.style.AppTheme_NoActionBar) {
             this.getScanResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
 
             assert(this.scanResult == expectedResult.getStringExtra(ARGS_FOR_SCAN_RESULT))

@@ -30,7 +30,9 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
@@ -158,6 +160,7 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -205,9 +208,7 @@ import kotlin.math.abs
 
 @AndroidEntryPoint
 @SuppressLint("InvalidWakeLockTag")
-class ConversationFragment(
-    registry: ActivityResultRegistry
-) :
+class ConversationFragment() :
     LinkFragment(),
     OnKeyboardShownListener,
     OnKeyboardHiddenListener,
@@ -248,7 +249,10 @@ class ConversationFragment(
                 }
             }
 
-        fun newInstance(bundle: Bundle, registry: ActivityResultRegistry) = ConversationFragment(registry).apply { arguments = bundle }
+        fun newInstance(bundle: Bundle) = ConversationFragment().apply { arguments = bundle }
+
+        @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+        fun newInstance(bundle: Bundle, testRegistry: ActivityResultRegistry) = ConversationFragment(testRegistry).apply { arguments = bundle }
     }
 
     @Inject
@@ -566,7 +570,7 @@ class ConversationFragment(
             }
 
             override fun onUrlClick(url: String) {
-                url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
+                url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
             }
 
             override fun onMentionClick(identityNumber: String) {
@@ -607,7 +611,7 @@ class ConversationFragment(
 
                 lifecycleScope.launch {
                     val app = chatViewModel.findAppById(userId)
-                    action.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope, app)
+                    action.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope, app)
                 }
             }
 
@@ -808,22 +812,27 @@ class ConversationFragment(
         requireContext().getSystemService()!!
     }
 
+    // for testing
+    private lateinit var resultRegistry: ActivityResultRegistry
+
+    // testing constructor
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    constructor(
+        testRegistry: ActivityResultRegistry,
+    ) : this() {
+        resultRegistry = testRegistry
+    }
+
+    // for testing
     var selectItem: SelectItem? = null
 
-    val getForwardResult = registerForActivityResult(ForwardActivity.ForwardContract<ForwardCategory>(), registry) { data ->
-        val selectItems = data?.getParcelableArrayListExtra<SelectItem>(ARGS_RESULT)
-        if (selectItems.isNullOrEmpty()) return@registerForActivityResult
+    lateinit var getForwardResult: ActivityResultLauncher<Pair<ArrayList<ForwardMessage<ForwardCategory>>, String?>>
 
-        val selectItem = selectItems[0]
-        this.selectItem = selectItem
-        Snackbar.make(chat_rv, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
-            .setAction(R.string.chat_go_check) {
-                ConversationActivity.show(requireContext(), selectItem.conversationId, selectItem.userId)
-            }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
-                this.view.setBackgroundResource(R.color.call_btn_icon_checked)
-                (this.view.findViewById(R.id.snackbar_text) as TextView)
-                    .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
-            }.show()
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
+
+        getForwardResult = registerForActivityResult(ForwardActivity.ForwardContract(), resultRegistry, ::callbackForward)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -1285,7 +1294,7 @@ class ConversationFragment(
         group_desc.addAutoLinkMode(AutoLinkMode.MODE_URL)
         group_desc.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         group_desc.setAutoLinkOnClickListener { _, url ->
-            url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope)
+            url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
         }
         group_flag.setOnClickListener {
             group_desc.expand()
@@ -1867,7 +1876,7 @@ class ConversationFragment(
 
     private fun open(url: String, app: App?, appCard: AppCardData? = null) {
         chat_control.chat_et.hideKeyboard()
-        url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, requireActivity().activityResultRegistry, lifecycleScope, app, appCard)
+        url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope, app, appCard)
     }
 
     private fun openInputAction(action: String): Boolean {
@@ -1971,7 +1980,7 @@ class ConversationFragment(
                         chat_control.reset()
                         if (Session.getAccount()?.hasPin == true) {
                             recipient?.let {
-                                TransferFragment.newInstance(requireActivity().activityResultRegistry, it.userId, supportSwitchAsset = true)
+                                TransferFragment.newInstance(it.userId, supportSwitchAsset = true)
                                     .showNow(parentFragmentManager, TransferFragment.TAG)
                             }
                         } else {
@@ -2663,5 +2672,21 @@ class ConversationFragment(
         if (callState.getGroupCallStateOrNull(conversationId) != null) return@launch
 
         checkPeers(requireContext(), conversationId)
+    }
+
+    private fun callbackForward(data: Intent?) {
+        val selectItems = data?.getParcelableArrayListExtra<SelectItem>(ARGS_RESULT)
+        if (selectItems.isNullOrEmpty()) return
+
+        val selectItem = selectItems[0]
+        this.selectItem = selectItem
+        Snackbar.make(chat_rv, getString(R.string.forward_success), Snackbar.LENGTH_LONG)
+            .setAction(R.string.chat_go_check) {
+                ConversationActivity.show(requireContext(), selectItem.conversationId, selectItem.userId)
+            }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
+                this.view.setBackgroundResource(R.color.call_btn_icon_checked)
+                (this.view.findViewById(R.id.snackbar_text) as TextView)
+                    .setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
+            }.show()
     }
 }
