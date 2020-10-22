@@ -46,7 +46,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.util.MimeTypes
 import com.google.android.material.snackbar.Snackbar
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.twilio.audioswitch.AudioDevice
 import com.twilio.audioswitch.AudioSwitch
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
@@ -96,6 +95,7 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
@@ -109,9 +109,12 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.replaceFragment
+import one.mixin.android.extension.safeActivate
 import one.mixin.android.extension.scamPreferences
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.selectDocument
+import one.mixin.android.extension.selectEarpiece
+import one.mixin.android.extension.selectSpeakerphone
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
@@ -178,6 +181,7 @@ import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.SelectItem
+import one.mixin.android.webrtc.TAG_AUDIO
 import one.mixin.android.webrtc.checkPeers
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.webrtc.receiveInvite
@@ -834,8 +838,10 @@ class ConversationFragment() :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        audioSwitch.start { audioDevices, selectedAudioDevice ->
-            Timber.d("@@@ audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
+        if (callState.isIdle()) {
+            audioSwitch.start { audioDevices, selectedAudioDevice ->
+                Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
+            }
         }
         recipient = requireArguments().getParcelable(RECIPIENT)
     }
@@ -2463,29 +2469,25 @@ class ConversationFragment() :
     }
 
     private fun nearDevice() {
+        if (callState.isNotIdle() || audioSwitch.isBluetoothHeadsetOrWiredHeadset()) return
+
         if (!wakeLock.isHeld) {
             wakeLock.acquire(10 * 60 * 1000L)
         }
-        if (audioSwitch.selectedAudioDevice is AudioDevice.Earpiece) return
-
-        AudioPlayer.switchAudioStreamType(false)
-        audioSwitch.availableAudioDevices.find { it is AudioDevice.Earpiece }?.let {
-            audioSwitch.selectDevice(it)
-            audioSwitch.activate()
-        }
+        Timber.d("$TAG_AUDIO${audioSwitch.selectedAudioDevice}")
+        audioSwitch.selectEarpiece()
+        audioSwitch.safeActivate()
     }
 
     private fun leaveDevice() {
+        if (callState.isNotIdle() || audioSwitch.isBluetoothHeadsetOrWiredHeadset()) return
+
         if (wakeLock.isHeld) {
             wakeLock.release()
         }
-        if (audioSwitch.selectedAudioDevice is AudioDevice.Speakerphone) return
-
+        Timber.d("$TAG_AUDIO leaveDevice ${audioSwitch.selectedAudioDevice}")
         audioSwitch.deactivate()
-        AudioPlayer.switchAudioStreamType(true)
-        audioSwitch.availableAudioDevices.find { it is AudioDevice.Speakerphone }?.let {
-            audioSwitch.selectDevice(it)
-        }
+        audioSwitch.selectSpeakerphone()
     }
 
     private fun openBotHome() {
@@ -2594,10 +2596,6 @@ class ConversationFragment() :
             }
         }
     }
-
-    private fun AudioSwitch.isBluetoothHeadsetOrWiredHeadset() =
-        selectedAudioDevice is AudioDevice.BluetoothHeadset ||
-            selectedAudioDevice is AudioDevice.WiredHeadset
 
     private fun checkPeerIfNeeded() = lifecycleScope.launch {
         if (!isGroup) return@launch
