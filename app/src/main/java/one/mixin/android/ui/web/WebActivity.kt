@@ -55,6 +55,7 @@ class WebActivity : BaseActivity() {
                     )
                 }
             )
+            FloatingWebClip.getInstance().hide()
         }
     }
 
