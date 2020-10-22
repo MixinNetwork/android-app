@@ -5,8 +5,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import com.google.gson.reflect.TypeToken
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.toast
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
@@ -41,14 +43,12 @@ fun updateClip(activity: Activity, index: Int, webClip: WebClip) {
 fun holdClip(activity: Activity, webClip: WebClip) {
     if (!clips.contains(webClip)) {
         if (clips.size >= 6) {
-            // Todo
+            activity.toast(R.string.web_full)
         } else {
             clips.add(webClip)
             FloatingWebClip.getInstance().show(activity)
             saveClips(activity)
         }
-    } else {
-        // Todo
     }
 }
 

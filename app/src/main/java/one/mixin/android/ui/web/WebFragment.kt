@@ -370,8 +370,7 @@ class WebFragment : BaseFragment() {
             }
 
             override fun onCloseClick() {
-                // todo
-                // dismiss()
+                requireActivity().finish()
             }
         }
         webView.settings.javaScriptEnabled = true
