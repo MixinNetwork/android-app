@@ -37,9 +37,13 @@ class AvatarsView : ViewGroup {
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.AvatarsView)
 
-        borderWidth = ta.getDimensionPixelSize(R.styleable.AvatarsView_avatar_border_width, DEFAULT_BORDER_WIDTH)
+        borderWidth = ta.getDimensionPixelSize(
+            R.styleable.AvatarsView_avatar_border_width,
+            DEFAULT_BORDER_WIDTH
+        )
         borderColor = ta.getColor(R.styleable.AvatarsView_avatar_border_color, DEFAULT_BORDER_COLOR)
-        avatarSize = ta.getDimensionPixelSize(R.styleable.AvatarsView_avatar_size, DEFAULT_AVATAR_SIZE)
+        avatarSize =
+            ta.getDimensionPixelSize(R.styleable.AvatarsView_avatar_size, DEFAULT_AVATAR_SIZE)
 
         ta.recycle()
     }
@@ -76,7 +80,12 @@ class AvatarsView : ViewGroup {
             val c = getChildAt(i)
             val offsetLeft = (childCount - i - 1) * avatarSize * ratio
             val offsetRight = i * avatarSize * ratio
-            c.layout(offsetLeft.toInt(), t - marginTop, (r - offsetRight - l).toInt(), b - marginBottom)
+            c.layout(
+                offsetLeft.toInt(),
+                t - marginTop,
+                (r - offsetRight - l).toInt(),
+                b - marginBottom
+            )
         }
     }
 
@@ -105,7 +114,7 @@ class AvatarsView : ViewGroup {
                         borderColor = this@AvatarsView.borderColor
                     }
                     addView(circleView)
-                    circleView.loadImage(t, R.drawable.ic_avatar_place_holder, true)
+                    circleView.loadImage(t, R.drawable.ic_link_place_holder, true)
                 }
             }
     }
