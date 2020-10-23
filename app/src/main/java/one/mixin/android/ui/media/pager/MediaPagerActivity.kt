@@ -414,7 +414,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 lifecycleScope,
                 bitmap,
                 onSuccess = { result ->
-                    result.openAsUrlOrQrScan(this, supportFragmentManager, activityResultRegistry, lifecycleScope)
+                    result.openAsUrlOrQrScan(this, supportFragmentManager, lifecycleScope)
                 },
                 onFailure = { toast(R.string.can_not_recognize) },
                 onComplete = {

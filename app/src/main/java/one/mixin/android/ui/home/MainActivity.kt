@@ -500,7 +500,7 @@ class MainActivity : BlazeBaseActivity() {
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER)
             if (Session.getAccount()?.hasPin == true) {
-                TransferFragment.newInstance(activityResultRegistry, userId, supportSwitchAsset = true)
+                TransferFragment.newInstance(userId, supportSwitchAsset = true)
                     .showNow(supportFragmentManager, TransferFragment.TAG)
             } else {
                 toast(R.string.transfer_without_pin)

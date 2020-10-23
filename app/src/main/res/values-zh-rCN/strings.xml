@@ -745,14 +745,14 @@
     <string name="withdrawal_label">地址名称，例如 OceanOne</string>
     <string name="withdrawal_address">提现地址</string>
     <string name="withdrawal_no_tag">没有标签（Memo）</string>
-    <string name="deposit_account_attention">注意：首次充值请小额尝试！地址 和 Memo（标签）同时使用才能充值 %1$s 到 Mixin Messenger。</string>
-    <string name="deposit_attention">首次充值请小额尝试！</string>
+    <string name="deposit_account_attention">注意：首次充值建议小额尝试！地址 和 Memo（标签）同时使用才能充值 %1$s 到 Mixin Messenger。</string>
+    <string name="deposit_attention">首次充值建议小额尝试！</string>
     <string name="deposit_confirmation">充值到账至少需要 %1$d 个区块确认。</string>
     <string name="deposit_reserve">首次充值至少 %1$s %2$s！</string>
     <string name="bottom_withdrawal_title">%1$s 提现</string>
     <string name="bottom_withdrawal_change_amount">修改金额</string>
     <string name="bottom_withdrawal_change_amount_count">修改金额 （%1$d）</string>
-    <string name="bottom_withdrawal_address_tips">首次提现到新地址，请小额尝试！如果您提现到错误的地址资产将无法找回！</string>
+    <string name="bottom_withdrawal_address_tips">首次提现到新地址，建议小额尝试！如果您提现到错误的地址资产将无法找回！</string>
     <string name="bottom_withdrawal_address_continue">继续提现</string>
     <string name="bottom_withdrawal_least_tip">提现金额最小 %1$s</string>
     <string name="bottom_deposit_title">%1$s 充值</string>

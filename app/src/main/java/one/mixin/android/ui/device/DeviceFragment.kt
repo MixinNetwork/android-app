@@ -3,10 +3,14 @@ package one.mixin.android.ui.device
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
+import androidx.annotation.VisibleForTesting
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -14,6 +18,8 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_device.view.*
+import kotlinx.android.synthetic.main.fragment_device.view.ph
+import kotlinx.android.synthetic.main.fragment_device.view.title_view
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
@@ -37,13 +43,11 @@ import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textColor
 
 @AndroidEntryPoint
-class DeviceFragment(
-    registry: ActivityResultRegistry
-) : MixinBottomSheetDialogFragment() {
+class DeviceFragment() : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "DeviceFragment"
 
-        fun newInstance(registry: ActivityResultRegistry, url: String? = null) = DeviceFragment(registry).withArgs {
+        fun newInstance(url: String? = null) = DeviceFragment().withArgs {
             if (url != null) {
                 putString(ARGS_URL, url)
             }
@@ -61,6 +65,29 @@ class DeviceFragment(
         if (key == PREF_EXTENSION_SESSION_ID) {
             updateUI(sp.getString(key, null) != null)
         }
+    }
+
+    // for testing
+    private lateinit var resultRegistry: ActivityResultRegistry
+
+    // testing constructor
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    constructor(
+        testRegistry: ActivityResultRegistry,
+    ) : this() {
+        resultRegistry = testRegistry
+    }
+
+    // for testing
+    var scanResult: String? = null
+
+    lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
+
+        getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), resultRegistry, ::callbackScan)
     }
 
     @SuppressLint("RestrictedApi")
@@ -120,9 +147,7 @@ class DeviceFragment(
         }
     }
 
-    var scanResult: String? = null
-
-    val getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), registry) { data ->
+    private fun callbackScan(data: Intent?) {
         val url = data?.getStringExtra(ARGS_FOR_SCAN_RESULT)
         scanResult = url
         url?.let {
