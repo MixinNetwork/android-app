@@ -4,8 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import androidx.core.graphics.ColorUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_web.*
 import one.mixin.android.R
@@ -112,19 +110,22 @@ class WebActivity : BaseActivity() {
 
     private fun handleExtras(intent: Intent) {
         six.loadData(clips, loadViewAction)
-        intent.extras.notNullWithElse({ extras ->
-            isExpand = true
-            supportFragmentManager.beginTransaction().add(
-                R.id.container,
-                WebFragment.newInstance(extras),
-                WebFragment.TAG
-            ).commit()
-        }, {
-            FloatingWebClip.getInstance().hide()
-            supportFragmentManager.findFragmentByTag(WebFragment.TAG)?.let {
-                supportFragmentManager.beginTransaction().remove(it).commit()
+        intent.extras.notNullWithElse(
+            { extras ->
+                isExpand = true
+                supportFragmentManager.beginTransaction().add(
+                    R.id.container,
+                    WebFragment.newInstance(extras),
+                    WebFragment.TAG
+                ).commit()
+            },
+            {
+                FloatingWebClip.getInstance().hide()
+                supportFragmentManager.findFragmentByTag(WebFragment.TAG)?.let {
+                    supportFragmentManager.beginTransaction().remove(it).commit()
+                }
             }
-        })
+        )
     }
 
     override fun onNewIntent(intent: Intent) {

@@ -66,6 +66,9 @@ fun initClips(activity: Activity) {
 fun releaseClip(index: Int) {
     if (index < clips.size) {
         clips.removeAt(index)
+        if (clips.isEmpty()) {
+            FloatingWebClip.getInstance().hide()
+        }
         saveClips(MixinApplication.appContext)
     }
 }

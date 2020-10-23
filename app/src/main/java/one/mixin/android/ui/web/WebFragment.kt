@@ -578,7 +578,6 @@ class WebFragment : BaseFragment() {
                 return true
             }
         }
-
     }
 
     @Override
@@ -636,7 +635,7 @@ class WebFragment : BaseFragment() {
         conversationId?.let {
             extraHeaders[Mixin_Conversation_ID_HEADER] = it
         }
-        if (webView.url != null && webView.progress ==100) {
+        if (webView.url != null && webView.progress == 100) {
             return
         }
         webView.loadUrl(url, extraHeaders)
