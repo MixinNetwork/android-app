@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import androidx.core.graphics.ColorUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_web.*
 import one.mixin.android.R
@@ -74,19 +76,7 @@ class WebActivity : BaseActivity() {
         six.setOnCloseListener(object : SixLayout.OnCloseListener {
             override fun onClose(index: Int) {
                 releaseClip(index)
-                six.loadData(clips) { i ->
-                    val extras = Bundle()
-                    val clip = clips[i]
-                    extras.putString(WebFragment.URL, clip.url)
-                    extras.putParcelable(WebFragment.ARGS_APP, clip.app)
-                    extras.putInt(WebFragment.ARGS_INDEX, i)
-                    isExpand = true
-                    supportFragmentManager.beginTransaction().add(
-                        R.id.container,
-                        WebFragment.newInstance(extras),
-                        WebFragment.TAG
-                    ).commit()
-                }
+                six.loadData(clips, loadViewAction)
             }
         })
 
@@ -103,23 +93,25 @@ class WebActivity : BaseActivity() {
                 .show()
         }
 
-        six.loadData(clips) { i ->
-            val extras = Bundle()
-            val clip = clips[i]
-            extras.putString(WebFragment.URL, clip.url)
-            extras.putParcelable(WebFragment.ARGS_APP, clip.app)
-            extras.putInt(WebFragment.ARGS_INDEX, i)
-            isExpand = true
-            supportFragmentManager.beginTransaction().add(
-                R.id.container,
-                WebFragment.newInstance(extras),
-                WebFragment.TAG
-            ).commit()
-        }
         handleExtras(intent)
     }
 
+    private var loadViewAction = fun(index: Int) {
+        val extras = Bundle()
+        val clip = clips[index]
+        extras.putString(WebFragment.URL, clip.url)
+        extras.putParcelable(WebFragment.ARGS_APP, clip.app)
+        extras.putInt(WebFragment.ARGS_INDEX, index)
+        isExpand = true
+        supportFragmentManager.beginTransaction().add(
+            R.id.container,
+            WebFragment.newInstance(extras),
+            WebFragment.TAG
+        ).commit()
+    }
+
     private fun handleExtras(intent: Intent) {
+        six.loadData(clips, loadViewAction)
         intent.extras.notNullWithElse({ extras ->
             isExpand = true
             supportFragmentManager.beginTransaction().add(
