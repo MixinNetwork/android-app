@@ -90,7 +90,7 @@ class WebActivity : BaseActivity() {
 
         clear.setOnClickListener {
             alertDialogBuilder()
-                .setMessage(getString(R.string.conversation_delete_tip))
+                .setMessage(getString(R.string.web_delete_tip))
                 .setNegativeButton(R.string.cancel) { dialog, _ ->
                     dialog.dismiss()
                 }

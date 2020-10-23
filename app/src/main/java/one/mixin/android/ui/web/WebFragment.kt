@@ -233,7 +233,6 @@ class WebFragment : BaseFragment() {
                                 result.openAsUrlOrQrScan(
                                     requireActivity(),
                                     parentFragmentManager,
-                                    requireActivity().activityResultRegistry,
                                     lifecycleScope
                                 )
                             },
@@ -1041,7 +1040,6 @@ class WebFragment : BaseFragment() {
                 url.openAsUrl(
                     context,
                     fragmentManager,
-                    registry,
                     scope,
                     host = host,
                     currentConversation = conversationId

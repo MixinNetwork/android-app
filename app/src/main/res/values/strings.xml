@@ -909,7 +909,8 @@
     <string name="web_cannot_reached_title">This webpage can\'t be reached</string>
     <string name="web_cannot_reached_desc">%1$s took too long to respond. Please check your network and try to switch 4G, Wi-Fi or VPN to reload the page.</string>
     <string name="web_contact_developer">Contact Developer</string>
-    <string name="web_clear">Clear</string>
+    <string name="web_clear">Remove All</string>
     <string name="web_full">Floating limit reached. Close some before adding new ones.</string>
+    <string name="web_delete_tip">Remove all floats?</string>
 </resources>
 
