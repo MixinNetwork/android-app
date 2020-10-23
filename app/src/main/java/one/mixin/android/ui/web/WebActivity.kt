@@ -4,20 +4,14 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.widget.FrameLayout
-import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_web.*
-import kotlinx.android.synthetic.main.view_six.*
 import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
-import one.mixin.android.extension.dp
-import one.mixin.android.extension.round
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
+import one.mixin.android.widget.SixLayout
 
 @AndroidEntryPoint
 class WebActivity : BaseActivity() {
@@ -63,8 +57,6 @@ class WebActivity : BaseActivity() {
 
     override fun getDefaultThemeId(): Int = R.style.AppTheme_Transparent
 
-    private lateinit var layouts: List<FrameLayout>
-    private lateinit var thumbs: List<ImageView>
     override fun onCreate(savedInstanceState: Bundle?) {
         if (intent.extras != null) {
             overridePendingTransition(R.anim.slide_in_bottom, 0)
@@ -76,46 +68,26 @@ class WebActivity : BaseActivity() {
         container.setOnClickListener {
             finish()
         }
-        layouts = listOf(
-            thumbnail_layout_1,
-            thumbnail_layout_2,
-            thumbnail_layout_3,
-            thumbnail_layout_4,
-            thumbnail_layout_5,
-            thumbnail_layout_6
-        )
-        thumbs = listOf(
-            thumbnail_iv_1,
-            thumbnail_iv_2,
-            thumbnail_iv_3,
-            thumbnail_iv_4,
-            thumbnail_iv_5,
-            thumbnail_iv_6
-        )
-        close_1.setOnClickListener {
-            releaseClip(0)
-            loadData()
-        }
-        close_2.setOnClickListener {
-            releaseClip(1)
-            loadData()
-        }
-        close_3.setOnClickListener {
-            releaseClip(2)
-            loadData()
-        }
-        close_4.setOnClickListener {
-            releaseClip(3)
-            loadData()
-        }
-        close_5.setOnClickListener {
-            releaseClip(4)
-            loadData()
-        }
-        close_6.setOnClickListener {
-            releaseClip(5)
-            loadData()
-        }
+
+        six.setOnCloseListener(object : SixLayout.OnCloseListener {
+            override fun onClose(index: Int) {
+                releaseClip(index)
+                six.loadData(clips) { i ->
+                    val extras = Bundle()
+                    val clip = clips[i]
+                    extras.putString(WebFragment.URL, clip.url)
+                    extras.putParcelable(WebFragment.ARGS_APP, clip.app)
+                    extras.putInt(WebFragment.ARGS_INDEX, i)
+                    isExpand = true
+                    supportFragmentManager.beginTransaction().add(
+                        R.id.container,
+                        WebFragment.newInstance(extras),
+                        WebFragment.TAG
+                    ).commit()
+                }
+            }
+        })
+
         clear.setOnClickListener {
             alertDialogBuilder()
                 .setMessage(getString(R.string.conversation_delete_tip))
@@ -128,12 +100,6 @@ class WebActivity : BaseActivity() {
                 }
                 .show()
         }
-        thumbnail_layout_1.round(8.dp)
-        thumbnail_layout_2.round(8.dp)
-        thumbnail_layout_3.round(8.dp)
-        thumbnail_layout_4.round(8.dp)
-        thumbnail_layout_5.round(8.dp)
-        thumbnail_layout_6.round(8.dp)
 
         intent.extras?.let { extras ->
             isExpand = true
@@ -143,30 +109,18 @@ class WebActivity : BaseActivity() {
                 WebFragment.TAG
             ).commit()
         }
-        loadData()
-    }
-
-    private fun loadData() {
-        repeat(6) { index ->
-            if (index < clips.size) {
-                layouts[index].visibility = View.VISIBLE
-                thumbs[index].setImageBitmap(clips[index].thumb)
-                layouts[index].setOnClickListener {
-                    val extras = Bundle()
-                    val clip = clips[index]
-                    extras.putString(WebFragment.URL, clip.url)
-                    extras.putParcelable(WebFragment.ARGS_APP, clip.app)
-                    extras.putInt(WebFragment.ARGS_INDEX, index)
-                    isExpand = true
-                    supportFragmentManager.beginTransaction().add(
-                        R.id.container,
-                        WebFragment.newInstance(extras),
-                        WebFragment.TAG
-                    ).commit()
-                }
-            } else {
-                layouts[index].visibility = View.INVISIBLE
-            }
+        six.loadData(clips) { i ->
+            val extras = Bundle()
+            val clip = clips[i]
+            extras.putString(WebFragment.URL, clip.url)
+            extras.putParcelable(WebFragment.ARGS_APP, clip.app)
+            extras.putInt(WebFragment.ARGS_INDEX, i)
+            isExpand = true
+            supportFragmentManager.beginTransaction().add(
+                R.id.container,
+                WebFragment.newInstance(extras),
+                WebFragment.TAG
+            ).commit()
         }
     }
 

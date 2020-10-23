@@ -33,24 +33,24 @@ class AvatarGroup @JvmOverloads constructor(
             val margin = ta.getDimensionPixelSize(R.styleable.AvatarsGroup_avatar_group_margin, 16.dp)
             setSize(size, margin)
             val color = ta.getColor(R.styleable.AvatarsGroup_avatar_group_border_color, context.colorFromAttribute(R.attr.bg_gray_light))
-            avatar1.borderColor = color
-            avatar2.borderColor = color
-            avatar3.borderColor = color
+            avatar_1.borderColor = color
+            avatar_2.borderColor = color
+            avatar_3.borderColor = color
             ta.recycle()
         }
     }
 
     fun setSize(size: Int, margin: Int) {
-        avatar1.layoutParams = (avatar1.layoutParams as MarginLayoutParams).apply {
+        avatar_1.layoutParams = (avatar_1.layoutParams as MarginLayoutParams).apply {
             width = size
             height = size
         }
-        avatar2.layoutParams = (avatar2.layoutParams as MarginLayoutParams).apply {
+        avatar_2.layoutParams = (avatar_2.layoutParams as MarginLayoutParams).apply {
             marginStart = margin
             width = size
             height = size
         }
-        avatar3.layoutParams = (avatar3.layoutParams as MarginLayoutParams).apply {
+        avatar_3.layoutParams = (avatar_3.layoutParams as MarginLayoutParams).apply {
             marginStart = margin * 2
             width = size
             height = size
@@ -60,30 +60,30 @@ class AvatarGroup @JvmOverloads constructor(
     fun setUrls(urls: List<String?>) {
         when {
             urls.size >= 3 -> {
-                avatar1.isVisible = true
-                avatar2.isVisible = true
-                avatar3.isVisible = true
-                avatar1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
-                avatar2.loadImage(urls[1], R.drawable.ic_avatar_place_holder)
-                avatar3.loadImage(urls[2], R.drawable.ic_avatar_place_holder)
+                avatar_1.isVisible = true
+                avatar_2.isVisible = true
+                avatar_3.isVisible = true
+                avatar_1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
+                avatar_2.loadImage(urls[1], R.drawable.ic_avatar_place_holder)
+                avatar_3.loadImage(urls[2], R.drawable.ic_avatar_place_holder)
             }
             urls.size == 2 -> {
-                avatar1.isVisible = true
-                avatar2.isVisible = true
-                avatar3.isVisible = false
-                avatar1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
-                avatar2.loadImage(urls[1], R.drawable.ic_avatar_place_holder)
+                avatar_1.isVisible = true
+                avatar_2.isVisible = true
+                avatar_3.isVisible = false
+                avatar_1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
+                avatar_2.loadImage(urls[1], R.drawable.ic_avatar_place_holder)
             }
             urls.size == 1 -> {
-                avatar1.isVisible = true
-                avatar2.isVisible = false
-                avatar3.isVisible = false
-                avatar1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
+                avatar_1.isVisible = true
+                avatar_2.isVisible = false
+                avatar_3.isVisible = false
+                avatar_1.loadImage(urls[0], R.drawable.ic_avatar_place_holder)
             }
             else -> {
-                avatar1.isVisible = false
-                avatar2.isVisible = false
-                avatar3.isVisible = false
+                avatar_1.isVisible = false
+                avatar_2.isVisible = false
+                avatar_3.isVisible = false
             }
         }
     }

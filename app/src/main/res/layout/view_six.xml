@@ -6,7 +6,8 @@
     tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout"
     android:layout_height="match_parent">
 
-    <FrameLayout
+    <LinearLayout
+        android:orientation="vertical"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/thumbnail_layout_3"
         app:layout_constraintStart_toStartOf="parent"
@@ -19,6 +20,44 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp">
 
+        <RelativeLayout
+            android:padding="4dp"
+            android:id="@+id/title_layout_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/avatar_1"
+                android:layout_alignParentStart="true"
+                android:layout_width="20dp"
+                android:layout_centerVertical="true"
+                android:layout_height="20dp" />
+
+            <TextView
+                android:id="@+id/title_1"
+                android:layout_centerVertical="true"
+                tools:text="title"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_toStartOf="@id/close_1"
+                android:layout_toEndOf="@id/avatar_1"
+                android:textColor="?attr/text_primary"
+                android:layout_width="wrap_content"
+                android:singleLine="true"
+                android:textSize="12sp"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                android:layout_alignParentEnd="true"
+                android:id="@+id/close_1"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_close_grey"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@null" />
+
+        </RelativeLayout>
+
         <one.mixin.android.widget.CropTopImageView
             android:id="@+id/thumbnail_iv_1"
             android:scaleType="matrix"
@@ -26,18 +65,10 @@
             android:layout_height="match_parent"
             android:contentDescription="@null" />
 
-        <ImageView
-            android:id="@+id/close_1"
-            android:padding="4dp"
-            android:layout_gravity="end|top"
-            android:src="@drawable/ic_close_grey"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@null" />
+    </LinearLayout>
 
-    </FrameLayout>
-
-    <FrameLayout
+    <LinearLayout
+        android:orientation="vertical"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/thumbnail_layout_4"
         app:layout_constraintStart_toEndOf="@id/thumbnail_layout_1"
@@ -51,6 +82,44 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp">
 
+        <RelativeLayout
+            android:padding="4dp"
+            android:id="@+id/title_layout_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/avatar_2"
+                android:layout_alignParentStart="true"
+                android:layout_width="20dp"
+                android:layout_centerVertical="true"
+                android:layout_height="20dp" />
+
+            <TextView
+                android:id="@+id/title_2"
+                android:layout_centerVertical="true"
+                tools:text="title"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_toStartOf="@id/close_2"
+                android:layout_toEndOf="@id/avatar_2"
+                android:textColor="?attr/text_primary"
+                android:singleLine="true"
+                android:textSize="12sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                android:layout_alignParentEnd="true"
+                android:id="@+id/close_2"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_close_grey"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@null" />
+
+        </RelativeLayout>
+
         <one.mixin.android.widget.CropTopImageView
             android:id="@+id/thumbnail_iv_2"
             android:scaleType="matrix"
@@ -58,18 +127,11 @@
             android:layout_height="match_parent"
             android:contentDescription="@null" />
 
-        <ImageView
-            android:id="@+id/close_2"
-            android:padding="4dp"
-            android:layout_gravity="end|top"
-            android:src="@drawable/ic_close_grey"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@null" />
 
-    </FrameLayout>
+    </LinearLayout>
 
-    <FrameLayout
+    <LinearLayout
+        android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@id/thumbnail_layout_1"
         app:layout_constraintBottom_toTopOf="@id/thumbnail_layout_5"
         app:layout_constraintStart_toStartOf="parent"
@@ -82,6 +144,44 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp">
 
+        <RelativeLayout
+            android:padding="4dp"
+            android:id="@+id/title_layout_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/avatar_3"
+                android:layout_alignParentStart="true"
+                android:layout_width="20dp"
+                android:layout_centerVertical="true"
+                android:layout_height="20dp" />
+
+            <TextView
+                android:id="@+id/title_3"
+                android:layout_centerVertical="true"
+                tools:text="title"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_toStartOf="@id/close_3"
+                android:layout_toEndOf="@id/avatar_3"
+                android:layout_width="wrap_content"
+                android:textColor="?attr/text_primary"
+                android:singleLine="true"
+                android:textSize="12sp"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                android:layout_alignParentEnd="true"
+                android:id="@+id/close_3"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_close_grey"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@null" />
+
+        </RelativeLayout>
+
         <one.mixin.android.widget.CropTopImageView
             android:id="@+id/thumbnail_iv_3"
             android:scaleType="matrix"
@@ -89,18 +189,11 @@
             android:layout_height="match_parent"
             android:contentDescription="@null" />
 
-        <ImageView
-            android:id="@+id/close_3"
-            android:padding="4dp"
-            android:layout_gravity="end|top"
-            android:src="@drawable/ic_close_grey"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@null" />
 
-    </FrameLayout>
+    </LinearLayout>
 
-    <FrameLayout
+    <LinearLayout
+        android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@id/thumbnail_layout_2"
         app:layout_constraintBottom_toTopOf="@id/thumbnail_layout_6"
         app:layout_constraintStart_toEndOf="@id/thumbnail_layout_3"
@@ -114,6 +207,44 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp">
 
+        <RelativeLayout
+            android:padding="4dp"
+            android:id="@+id/title_layout_4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/avatar_4"
+                android:layout_alignParentStart="true"
+                android:layout_width="20dp"
+                android:layout_centerVertical="true"
+                android:layout_height="20dp" />
+
+            <TextView
+                android:id="@+id/title_4"
+                android:layout_centerVertical="true"
+                tools:text="title"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_toStartOf="@id/close_4"
+                android:textColor="?attr/text_primary"
+                android:singleLine="true"
+                android:textSize="12sp"
+                android:layout_toEndOf="@id/avatar_4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                android:layout_alignParentEnd="true"
+                android:id="@+id/close_4"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_close_grey"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@null" />
+
+        </RelativeLayout>
+
         <one.mixin.android.widget.CropTopImageView
             android:id="@+id/thumbnail_iv_4"
             android:scaleType="matrix"
@@ -121,18 +252,11 @@
             android:layout_height="match_parent"
             android:contentDescription="@null" />
 
-        <ImageView
-            android:id="@+id/close_4"
-            android:padding="4dp"
-            android:layout_gravity="end|top"
-            android:src="@drawable/ic_close_grey"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@null" />
 
-    </FrameLayout>
+    </LinearLayout>
 
-    <FrameLayout
+    <LinearLayout
+        android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@id/thumbnail_layout_3"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -146,6 +270,44 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp">
 
+        <RelativeLayout
+            android:padding="4dp"
+            android:id="@+id/title_layout_5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/avatar_5"
+                android:layout_alignParentStart="true"
+                android:layout_width="20dp"
+                android:layout_centerVertical="true"
+                android:layout_height="20dp" />
+
+            <TextView
+                android:id="@+id/title_5"
+                android:layout_centerVertical="true"
+                tools:text="title"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_toStartOf="@id/close_5"
+                android:layout_toEndOf="@id/avatar_5"
+                android:textColor="?attr/text_primary"
+                android:singleLine="true"
+                android:textSize="12sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                android:layout_alignParentEnd="true"
+                android:id="@+id/close_5"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_close_grey"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@null" />
+
+        </RelativeLayout>
+
         <one.mixin.android.widget.CropTopImageView
             android:id="@+id/thumbnail_iv_5"
             android:scaleType="matrix"
@@ -153,18 +315,10 @@
             android:layout_height="match_parent"
             android:contentDescription="@null" />
 
-        <ImageView
-            android:id="@+id/close_5"
-            android:padding="4dp"
-            android:layout_gravity="end|top"
-            android:src="@drawable/ic_close_grey"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@null" />
+    </LinearLayout>
 
-    </FrameLayout>
-
-    <FrameLayout
+    <LinearLayout
+        android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@id/thumbnail_layout_4"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/thumbnail_layout_5"
@@ -179,6 +333,44 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp">
 
+        <RelativeLayout
+            android:padding="4dp"
+            android:id="@+id/title_layout_6"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <one.mixin.android.widget.CircleImageView
+                android:id="@+id/avatar_6"
+                android:layout_alignParentStart="true"
+                android:layout_width="20dp"
+                android:layout_centerVertical="true"
+                android:layout_height="20dp" />
+
+            <TextView
+                android:id="@+id/title_6"
+                android:layout_centerVertical="true"
+                tools:text="title"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_toStartOf="@id/close_6"
+                android:layout_toEndOf="@id/avatar_6"
+                android:layout_width="wrap_content"
+                android:singleLine="true"
+                android:textSize="12sp"
+                android:textColor="?attr/text_primary"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                android:layout_alignParentEnd="true"
+                android:id="@+id/close_6"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_close_grey"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:contentDescription="@null" />
+
+        </RelativeLayout>
+
         <one.mixin.android.widget.CropTopImageView
             android:id="@+id/thumbnail_iv_6"
             android:scaleType="matrix"
@@ -186,15 +378,6 @@
             android:layout_height="match_parent"
             android:contentDescription="@null" />
 
-        <ImageView
-            android:id="@+id/close_6"
-            android:padding="4dp"
-            android:layout_gravity="end|top"
-            android:src="@drawable/ic_close_grey"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@null" />
-
-    </FrameLayout>
+    </LinearLayout>
 
 </merge>

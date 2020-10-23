@@ -672,9 +672,13 @@ class WebFragment : BaseFragment() {
         val c = Canvas(screenshot)
         c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
         v.draw(c)
-        return WebClip(currentUrl, screenshot, app, contentView.title_tv.text.toString(), webView)
+        return WebClip(
+            currentUrl, screenshot, app, titleColor,
+            app?.name ?: contentView.title_tv.text.toString(), webView
+        )
     }
 
+    private var titleColor:Int = 0xFFFFFF
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onDestroyView() {
         webView.stopLoading()
@@ -989,6 +993,7 @@ class WebFragment : BaseFragment() {
                 it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
         }
+        titleColor = color
         contentView.title_ll.setBackgroundColor(color)
         contentView.ph.setBackgroundColor(color)
         contentView.web_control.mode = dark

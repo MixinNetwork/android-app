@@ -30,6 +30,7 @@ data class WebClip(
     val url: String,
     val thumb: Bitmap?,
     val app: App?,
+    val titleColor: Int,
     val name: String?,
     @Transient val webView: MixinWebView?
 )
