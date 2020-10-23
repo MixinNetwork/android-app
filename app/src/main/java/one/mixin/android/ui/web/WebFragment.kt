@@ -681,7 +681,6 @@ class WebFragment : BaseFragment() {
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onDestroyView() {
         webView.stopLoading()
-        val index = clips.asSequence().map { it.webView }.indexOf(webView)
         when {
             hold -> {
                 holdClip(requireActivity(), generateWebClip())
