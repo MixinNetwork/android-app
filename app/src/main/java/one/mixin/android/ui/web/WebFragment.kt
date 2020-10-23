@@ -636,7 +636,9 @@ class WebFragment : BaseFragment() {
         conversationId?.let {
             extraHeaders[Mixin_Conversation_ID_HEADER] = it
         }
-        Timber.d("load url")
+        if (webView.url != null && webView.progress ==100) {
+            return
+        }
         webView.loadUrl(url, extraHeaders)
     }
 
