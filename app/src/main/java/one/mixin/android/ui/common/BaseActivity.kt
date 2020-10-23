@@ -25,7 +25,6 @@ open class BaseActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        MixinApplication.get().activitiesCount ++
         if (isNightMode()) {
             setTheme(getNightThemeId())
             SystemUIManager.lightUI(window, false)
@@ -36,12 +35,6 @@ open class BaseActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             window.navigationBarColor = colorFromAttribute(R.attr.bg_white)
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        MixinApplication.get().activitiesCount --
-        refreshClip()
     }
 
     open fun getNightThemeId(): Int {
