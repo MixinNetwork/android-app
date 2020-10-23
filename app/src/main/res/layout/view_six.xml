@@ -21,7 +21,7 @@
         android:layout_marginTop="8dp">
 
         <RelativeLayout
-            android:padding="4dp"
+            android:padding="6dp"
             android:id="@+id/title_layout_1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -83,7 +83,7 @@
         android:layout_marginTop="8dp">
 
         <RelativeLayout
-            android:padding="4dp"
+            android:padding="6dp"
             android:id="@+id/title_layout_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -145,7 +145,7 @@
         android:layout_marginTop="8dp">
 
         <RelativeLayout
-            android:padding="4dp"
+            android:padding="6dp"
             android:id="@+id/title_layout_3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -208,7 +208,7 @@
         android:layout_marginTop="8dp">
 
         <RelativeLayout
-            android:padding="4dp"
+            android:padding="6dp"
             android:id="@+id/title_layout_4"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -271,7 +271,7 @@
         android:layout_marginBottom="8dp">
 
         <RelativeLayout
-            android:padding="4dp"
+            android:padding="6dp"
             android:id="@+id/title_layout_5"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -334,7 +334,7 @@
         android:layout_marginBottom="8dp">
 
         <RelativeLayout
-            android:padding="4dp"
+            android:padding="6dp"
             android:id="@+id/title_layout_6"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">

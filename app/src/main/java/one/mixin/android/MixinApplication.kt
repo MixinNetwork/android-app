@@ -47,8 +47,11 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 @HiltAndroidApp
-class MixinApplication : Application(), Application.ActivityLifecycleCallbacks,
-    Configuration.Provider, CameraXConfig.Provider {
+class MixinApplication :
+    Application(),
+    Application.ActivityLifecycleCallbacks,
+    Configuration.Provider,
+    CameraXConfig.Provider {
 
     @Inject
     @JvmField

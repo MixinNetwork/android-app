@@ -6,13 +6,11 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import com.uber.autodispose.android.lifecycle.scope
-import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultThemeId
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.web.WebFragment
-import one.mixin.android.ui.web.refreshClip
 import one.mixin.android.util.SystemUIManager
 
 @SuppressLint("Registered")

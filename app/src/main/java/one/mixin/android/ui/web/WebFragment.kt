@@ -446,11 +446,11 @@ class WebFragment : BaseFragment() {
 
                 requireActivity().window.decorView.systemUiVisibility =
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                        View.SYSTEM_UI_FLAG_FULLSCREEN or
-                        View.SYSTEM_UI_FLAG_IMMERSIVE
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_IMMERSIVE
                 requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
             }
 
@@ -678,7 +678,7 @@ class WebFragment : BaseFragment() {
         )
     }
 
-    private var titleColor:Int = 0xFFFFFF
+    private var titleColor: Int = 0xFFFFFF
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onDestroyView() {
         webView.stopLoading()
@@ -1130,7 +1130,7 @@ class WebFragment : BaseFragment() {
         val currency: String = Session.getFiatCurrency(),
         @SerializedName("locale")
         val locale: String = "${Lingver.getInstance().getLocale().language}-${
-            Lingver.getInstance().getLocale().country
+        Lingver.getInstance().getLocale().country
         }"
     )
 }

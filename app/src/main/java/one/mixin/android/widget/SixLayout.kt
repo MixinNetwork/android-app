@@ -1,6 +1,7 @@
 package one.mixin.android.widget
 
 import android.content.Context
+import android.graphics.Color
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.graphics.ColorUtils
 import kotlinx.android.synthetic.main.view_six.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dp
@@ -103,12 +105,20 @@ class SixLayout : ConstraintLayout {
     fun loadData(clips: List<WebClip>, expandAction: (Int) -> Unit) {
         repeat(6) { index ->
             if (index < clips.size) {
-                clips[index].app.notNullWithElse({ app ->
-                    avatars[index].loadImage(app.iconUrl, R.drawable.ic_link_place_holder, true)
-                }, {
-                    avatars[index].setImageResource(R.drawable.ic_link_place_holder)
-                })
+                clips[index].app.notNullWithElse(
+                    { app ->
+                        avatars[index].loadImage(app.iconUrl, R.drawable.ic_link_place_holder, true)
+                    },
+                    {
+                        avatars[index].setImageResource(R.drawable.ic_link_place_holder)
+                    }
+                )
                 titles[index].text = clips[index].name
+                if (isDark(clips[index].titleColor)) {
+                    titles[index].setTextColor(Color.WHITE)
+                } else {
+                    titles[index].setTextColor(Color.BLACK)
+                }
                 titlesLayouts[index].setBackgroundColor(clips[index].titleColor)
                 layouts[index].visibility = View.VISIBLE
                 thumbs[index].setImageBitmap(clips[index].thumb)
@@ -119,6 +129,10 @@ class SixLayout : ConstraintLayout {
                 layouts[index].visibility = View.INVISIBLE
             }
         }
+    }
+
+    private fun isDark(color: Int): Boolean {
+        return ColorUtils.calculateLuminance(color) < 0.5
     }
 
     fun setOnCloseListener(onCloseListener: OnCloseListener?) {
