@@ -16,6 +16,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.provider.Settings
 import android.util.Base64
 import android.view.ContextMenu
 import android.view.LayoutInflater
@@ -41,6 +42,7 @@ import android.webkit.WebViewClient.ERROR_IO
 import android.webkit.WebViewClient.ERROR_TIMEOUT
 import android.widget.Toast
 import androidx.activity.result.ActivityResultRegistry
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
 import androidx.core.graphics.ColorUtils
@@ -68,6 +70,7 @@ import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_CAMERA
+import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
@@ -678,6 +681,7 @@ class WebFragment : BaseFragment() {
     }
 
     private var titleColor: Int = 0xFFFFFF
+
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onDestroyView() {
         webView.stopLoading()
@@ -835,9 +839,11 @@ class WebFragment : BaseFragment() {
                     releaseClip(index)
                     bottomSheet.dismiss()
                 } else {
-                    hold = true
-                    bottomSheet.dismiss()
-                    requireActivity().finish()
+                    if (checkFloatingPermission()) {
+                        hold = true
+                        bottomSheet.dismiss()
+                        requireActivity().finish()
+                    }
                 }
             }
         }
@@ -875,6 +881,30 @@ class WebFragment : BaseFragment() {
         }
         bottomSheet.show()
     }
+
+    private var permissionAlert: AlertDialog? = null
+
+    private fun checkFloatingPermission() =
+        requireContext().checkInlinePermissions {
+            if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
+
+            permissionAlert = AlertDialog.Builder(requireContext())
+                .setTitle(R.string.app_name)
+                .setMessage(R.string.web_floating_permission)
+                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                    try {
+                        startActivity(
+                            Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:${requireContext().packageName}")
+                            )
+                        )
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                    }
+                    dialog.dismiss()
+                }.show()
+        }
 
     private fun isHold(): Boolean {
         val clip = clips.elementAtOrNull(index)

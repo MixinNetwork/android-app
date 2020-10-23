@@ -894,4 +894,5 @@
     <string name="web_contact_developer">联系开发者</string>
     <string name="web_clear">全部删除</string>
     <string name="web_delete_tip">确定删除全部浮窗？</string>
+    <string name="web_floating_permission">你的手机没有授权 Mixin 获得浮窗权限，浮窗不能正常使用</string>
 </resources>
