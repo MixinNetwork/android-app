@@ -1007,6 +1007,7 @@ class WebFragment : BaseFragment() {
         dark: Boolean,
         color: Int
     ) {
+        requireActivity().window.statusBarColor = color
         requireActivity().window.decorView.let {
             if (dark) {
                 contentView.title_tv.setTextColor(Color.WHITE)
