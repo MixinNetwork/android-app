@@ -579,12 +579,6 @@ class WebFragment : BaseFragment() {
             }
         }
 
-        // dialog.setOnDismissListener {
-        //     contentView.hideKeyboard()
-        //     webView.stopLoading()
-        //     webView.webViewClient = object : WebViewClient() {}
-        //     webView.webChromeClient = null
-        // }
     }
 
     @Override
