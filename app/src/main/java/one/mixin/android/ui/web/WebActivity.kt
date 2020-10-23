@@ -24,6 +24,7 @@ class WebActivity : BaseActivity() {
                     if (context !is Activity) {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 }
             )
         }
@@ -40,6 +41,7 @@ class WebActivity : BaseActivity() {
                     if (context !is Activity) {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                     putExtras(
                         Bundle().apply {
                             putString(WebFragment.URL, url)
@@ -100,16 +102,7 @@ class WebActivity : BaseActivity() {
                 }
                 .show()
         }
-        intent.extras.notNullWithElse({ extras ->
-            isExpand = true
-            supportFragmentManager.beginTransaction().add(
-                R.id.container,
-                WebFragment.newInstance(extras),
-                WebFragment.TAG
-            ).commit()
-        }, {
-            FloatingWebClip.getInstance().hide()
-        })
+
         six.loadData(clips) { i ->
             val extras = Bundle()
             val clip = clips[i]
@@ -123,6 +116,27 @@ class WebActivity : BaseActivity() {
                 WebFragment.TAG
             ).commit()
         }
+    }
+
+    private fun handleExtras(intent: Intent) {
+        intent.extras.notNullWithElse({ extras ->
+            isExpand = true
+            supportFragmentManager.beginTransaction().add(
+                R.id.container,
+                WebFragment.newInstance(extras),
+                WebFragment.TAG
+            ).commit()
+        }, {
+            FloatingWebClip.getInstance().hide()
+            supportFragmentManager.findFragmentByTag(WebFragment.TAG)?.let {
+                supportFragmentManager.beginTransaction().remove(it).commit()
+            }
+        })
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleExtras(intent)
     }
 
     private var isExpand = false
