@@ -116,6 +116,7 @@ class WebActivity : BaseActivity() {
                 WebFragment.TAG
             ).commit()
         }
+        handleExtras(intent)
     }
 
     private fun handleExtras(intent: Intent) {
