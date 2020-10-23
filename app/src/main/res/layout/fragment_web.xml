@@ -4,13 +4,6 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <View
-        android:id="@+id/ph"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/bg_white" />
-
     <LinearLayout
         android:id="@+id/web_ll"
         android:layout_width="match_parent"

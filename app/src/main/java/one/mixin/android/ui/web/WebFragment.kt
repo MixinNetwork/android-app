@@ -88,7 +88,6 @@ import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.supportsQ
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
@@ -274,12 +273,8 @@ class WebFragment : BaseFragment() {
             MixinWebView(requireContext())
         }
         contentView.web_ll.addView(webView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
-        val statusBarHeight = requireContext().statusBarHeight()
-        contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = statusBarHeight
-        }
         contentView.web_control.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-            topMargin = requireContext().dpToPx(6f) + statusBarHeight
+            topMargin = requireContext().dpToPx(6f)
         }
         registerForContextMenu(webView)
 
@@ -1029,7 +1024,6 @@ class WebFragment : BaseFragment() {
         }
         titleColor = color
         contentView.title_ll.setBackgroundColor(color)
-        contentView.ph.setBackgroundColor(color)
         contentView.web_control.mode = dark
     }
 

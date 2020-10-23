@@ -53,9 +53,9 @@ class WebActivity : BaseActivity() {
         }
     }
 
-    override fun getNightThemeId(): Int = R.style.AppTheme_Night_Transparent
+    override fun getNightThemeId(): Int = R.style.AppTheme_Night_Web
 
-    override fun getDefaultThemeId(): Int = R.style.AppTheme_Transparent
+    override fun getDefaultThemeId(): Int = R.style.AppTheme_Web
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (intent.extras != null) {
