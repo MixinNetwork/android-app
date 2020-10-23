@@ -298,6 +298,11 @@ class WebFragment : BaseFragment() {
                 loadWebView()
             }
         )
+        if (requireContext().checkInlinePermissions()) {
+            if (clips.size > 0) {
+                FloatingWebClip.getInstance().show(requireActivity())
+            }
+        }
     }
 
     private fun checkAppCard(appCard: AppCardData) = lifecycleScope.launch {

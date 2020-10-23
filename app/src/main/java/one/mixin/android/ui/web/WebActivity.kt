@@ -8,6 +8,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_web.*
 import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
@@ -49,7 +50,6 @@ class WebActivity : BaseActivity() {
                     )
                 }
             )
-            FloatingWebClip.getInstance().hide()
         }
     }
 
@@ -100,15 +100,16 @@ class WebActivity : BaseActivity() {
                 }
                 .show()
         }
-
-        intent.extras?.let { extras ->
+        intent.extras.notNullWithElse({ extras ->
             isExpand = true
             supportFragmentManager.beginTransaction().add(
                 R.id.container,
                 WebFragment.newInstance(extras),
                 WebFragment.TAG
             ).commit()
-        }
+        }, {
+            FloatingWebClip.getInstance().hide()
+        })
         six.loadData(clips) { i ->
             val extras = Bundle()
             val clip = clips[i]
