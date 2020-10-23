@@ -676,7 +676,7 @@ class WebFragment : BaseFragment() {
         )
     }
 
-    private var titleColor: Int = 0xFFFFFF
+    private var titleColor: Int = Color.WHITE
 
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onDestroyView() {
