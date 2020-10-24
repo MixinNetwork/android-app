@@ -95,8 +95,8 @@ class FloatingWebClip {
     }
 
     private fun updateSize(count: Int) {
-        windowLayoutParams.width = (48 + 24 * min((count - 1), 2) + 1).dp
-        windowLayoutParams.height = (48 + 1).dp
+        windowLayoutParams.width = (40 + 16  * min((count - 1), 2) + 1).dp
+        windowLayoutParams.height = (40 + 1).dp
         windowManager.updateViewLayout(windowView, windowLayoutParams)
     }
 
@@ -191,8 +191,8 @@ class FloatingWebClip {
                 addView(
                     avatarsView,
                     ViewGroup.MarginLayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                        topMargin = 8.dp
-                        bottomMargin = 8.dp
+                        topMargin = 4.dp
+                        bottomMargin = 4.dp
                     }
                 )
             },

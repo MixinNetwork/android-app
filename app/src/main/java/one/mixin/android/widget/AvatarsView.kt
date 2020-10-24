@@ -1,12 +1,12 @@
 package one.mixin.android.widget
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.FrameLayout
+import android.widget.ImageView
 import androidx.core.view.marginBottom
 import androidx.core.view.marginTop
 import kotlinx.android.synthetic.main.view_avatar.view.*
@@ -15,10 +15,11 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.User
 import org.jetbrains.anko.collections.forEachReversedWithIndex
+import kotlin.math.abs
 
 class AvatarsView : ViewGroup {
     companion object {
-        const val DEFAULT_BORDER_WIDTH = 0
+        const val DEFAULT_BORDER_WIDTH = 1
         const val DEFAULT_BORDER_COLOR = Color.WHITE
         const val DEFAULT_AVATAR_SIZE = 32
 
@@ -31,7 +32,7 @@ class AvatarsView : ViewGroup {
     private var borderColor: Int
 
     private var avatarSize: Int = 0
-    private var ratio = 3f / 4
+    private var ratio = 1f / 2
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
@@ -93,8 +94,8 @@ class AvatarsView : ViewGroup {
         removeAllViews()
         val overSize = data.size > MAX_VISIBLE_COUNT
         if (overSize) {
-            val textView = getTextView(data.size - MAX_VISIBLE_COUNT + 1)
-            addView(textView)
+            val overView = getOverView()
+            addView(overView)
         }
         val takeCount = if (overSize) MAX_VISIBLE_COUNT - 1 else data.size
         data.toMutableList()
@@ -119,11 +120,26 @@ class AvatarsView : ViewGroup {
             }
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun getTextView(num: Int) = TextView(context).apply {
-        text = "+$num"
-        setTextColor(resources.getColor(R.color.wallet_pending_text_color, null))
-        setBackgroundResource(R.drawable.bg_multisigs_gray)
-        gravity = Gravity.CENTER
+    private fun getOverView() = object : ViewGroup(context) {
+
+        init {
+            for (i in 0..2) {
+                addView(ImageView(context).apply {
+                    setBackgroundResource(R.drawable.bg_multisigs_gray)
+                })
+            }
+        }
+
+        override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+            val offset = measuredWidth / 6
+            for (i in 0 until childCount) {
+                getChildAt(i).layout(
+                    measuredWidth - offset * i - measuredWidth,
+                    0,
+                    measuredWidth - offset * i,
+                    measuredHeight
+                )
+            }
+        }
     }
 }
