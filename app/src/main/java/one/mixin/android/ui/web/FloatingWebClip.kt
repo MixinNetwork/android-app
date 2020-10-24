@@ -95,7 +95,7 @@ class FloatingWebClip {
     }
 
     private fun updateSize(count: Int) {
-        windowLayoutParams.width = (40 + 16  * min((count - 1), 2) + 1).dp
+        windowLayoutParams.width = (40 + 16 * min((count - 1), 2) + 1).dp
         windowLayoutParams.height = (40 + 1).dp
         windowManager.updateViewLayout(windowView, windowLayoutParams)
     }

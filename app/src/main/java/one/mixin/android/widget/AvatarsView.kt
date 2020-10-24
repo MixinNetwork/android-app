@@ -1,12 +1,13 @@
 package one.mixin.android.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.core.view.marginBottom
 import androidx.core.view.marginTop
 import kotlinx.android.synthetic.main.view_avatar.view.*
@@ -15,7 +16,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.User
 import org.jetbrains.anko.collections.forEachReversedWithIndex
-import kotlin.math.abs
 
 class AvatarsView : ViewGroup {
     companion object {
@@ -32,7 +32,8 @@ class AvatarsView : ViewGroup {
     private var borderColor: Int
 
     private var avatarSize: Int = 0
-    private var ratio = 1f / 2
+    private val ratio
+        get() = if (isUser()) 3f / 4 else 1f / 2
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
@@ -90,11 +91,17 @@ class AvatarsView : ViewGroup {
         }
     }
 
+    private fun isUser(): Boolean = data.isNotEmpty() && data[0] is User
+
     private fun initWithList() {
         removeAllViews()
         val overSize = data.size > MAX_VISIBLE_COUNT
         if (overSize) {
-            val overView = getOverView()
+            val overView = if (isUser()) {
+                getTextView(data.size - MAX_VISIBLE_COUNT + 1)
+            } else {
+                getOverView()
+            }
             addView(overView)
         }
         val takeCount = if (overSize) MAX_VISIBLE_COUNT - 1 else data.size
@@ -120,13 +127,23 @@ class AvatarsView : ViewGroup {
             }
     }
 
+    @SuppressLint("SetTextI18n")
+    private fun getTextView(num: Int) = TextView(context).apply {
+        text = "+$num"
+        setTextColor(resources.getColor(R.color.wallet_pending_text_color, null))
+        setBackgroundResource(R.drawable.bg_multisigs_gray)
+        gravity = Gravity.CENTER
+    }
+
     private fun getOverView() = object : ViewGroup(context) {
 
         init {
             for (i in 0..2) {
-                addView(ImageView(context).apply {
-                    setBackgroundResource(R.drawable.bg_multisigs_gray)
-                })
+                addView(
+                    ImageView(context).apply {
+                        setBackgroundResource(R.drawable.bg_multisigs_gray)
+                    }
+                )
             }
         }
 
