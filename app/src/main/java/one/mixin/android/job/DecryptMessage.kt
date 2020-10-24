@@ -32,6 +32,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
 import one.mixin.android.extension.putString
@@ -217,6 +218,7 @@ class DecryptMessage : Injector() {
             data.status
         )
         val appCardData = gson.fromJson(message.content, AppCardData::class.java)
+        checkUUID(appCardData.appId)
         appCardData.appId?.let { id ->
             runBlocking {
                 var app = appDao.findAppById(id)
@@ -566,6 +568,7 @@ class DecryptMessage : Injector() {
                         return
                     }
                 } else {
+                    checkUUID(mediaData.stickerId)
                     val sticker = stickerDao.getStickerByUnique(mediaData.stickerId)
                     if (sticker == null) {
                         jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
@@ -581,6 +584,7 @@ class DecryptMessage : Injector() {
             data.category.endsWith("_CONTACT") -> {
                 val decoded = Base64.decode(plainText)
                 val contactData = gson.fromJson(String(decoded), ContactMessagePayload::class.java)
+                checkUUID(contactData.userId)
                 val user = syncUser(contactData.userId)
                 val message = generateMessage(data) { quoteMessageItem ->
                     createContactMessage(
@@ -757,27 +761,28 @@ class DecryptMessage : Injector() {
                 keyType,
                 cipherText,
                 data.category,
-                data.sessionId,
-                DecryptionCallback {
-                    if (data.category == MessageCategory.SIGNAL_KEY.name && data.userId != Session.getAccountId()) {
-                        RxBus.publish(SenderKeyChange(data.conversationId, data.userId, data.sessionId))
-                    }
-                    if (data.category != MessageCategory.SIGNAL_KEY.name) {
-                        val plaintext = String(it)
-                        if (resendMessageId != null) {
-                            processRedecryptMessage(data, resendMessageId, plaintext)
-                            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-                            messageHistoryDao.insert(MessageHistory(data.messageId))
-                        } else {
-                            try {
-                                processDecryptSuccess(data, plaintext)
-                            } catch (e: JsonSyntaxException) {
-                                insertInvalidMessage(data)
-                            }
+                data.sessionId
+            ) {
+                if (data.category == MessageCategory.SIGNAL_KEY.name && data.userId != Session.getAccountId()) {
+                    RxBus.publish(SenderKeyChange(data.conversationId, data.userId, data.sessionId))
+                }
+                if (data.category != MessageCategory.SIGNAL_KEY.name) {
+                    val plaintext = String(it)
+                    if (resendMessageId != null) {
+                        processRedecryptMessage(data, resendMessageId, plaintext)
+                        updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+                        messageHistoryDao.insert(MessageHistory(data.messageId))
+                    } else {
+                        try {
+                            processDecryptSuccess(data, plaintext)
+                        } catch (e: JsonSyntaxException) {
+                            insertInvalidMessage(data)
+                        } catch (e: IllegalArgumentException) {
+                            insertInvalidMessage(data)
                         }
                     }
                 }
-            )
+            }
 
             val address = SignalProtocolAddress(data.userId, deviceId)
             val status = ratchetSenderKeyDao.getRatchetSenderKey(data.conversationId, address.toString())?.status
@@ -881,6 +886,7 @@ class DecryptMessage : Injector() {
             val decoded = Base64.decode(plainText)
             val stickerData = gson.fromJson(String(decoded), StickerMessagePayload::class.java)
             if (stickerData.stickerId != null) {
+                checkUUID(stickerData.stickerId)
                 val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
                 if (sticker == null) {
                     jobManager.addJobInBackground(RefreshStickerJob(stickerData.stickerId))
@@ -890,6 +896,7 @@ class DecryptMessage : Injector() {
         } else if (data.category == MessageCategory.SIGNAL_CONTACT.name) {
             val decoded = Base64.decode(plainText)
             val contactData = gson.fromJson(String(decoded), ContactMessagePayload::class.java)
+            checkUUID(contactData.userId)
             messageDao.updateContactMessage(contactData.userId, data.status, messageId)
             syncUser(contactData.userId)
         } else if (data.category == MessageCategory.SIGNAL_LIVE.name) {
@@ -970,5 +977,11 @@ class DecryptMessage : Injector() {
             return
         }
         jobManager.addJobInBackground(NotificationJob(message, userMap, force))
+    }
+
+    private fun checkUUID(vararg ids: String?) {
+        for (id in ids) {
+            if (id?.isUUID() != true) throw IllegalArgumentException("Error data, \"$id\"'s not a UUID")
+        }
     }
 }
