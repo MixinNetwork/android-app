@@ -38,6 +38,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.postOptimize
@@ -288,6 +289,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 resolveMentionUsers(identityNumbers, userApi, userDao, appDao)
             }
         }
+        checkUUID(appCardData.appId)
         appCardData.appId?.let { id ->
             runBlocking {
                 var app = appDao.findAppById(id)
@@ -892,6 +894,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         String(Base64.decode(plainText))
                     }
                 val mediaData = gson.fromJson(decoded, StickerMessagePayload::class.java)
+                checkUUID(mediaData.stickerId)
                 val sticker = stickerDao.getStickerByUnique(mediaData.stickerId)
                 if (sticker == null || sticker.albumId.isNullOrBlank()) {
                     jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
@@ -918,6 +921,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                         String(Base64.decode(plainText))
                     }
                 val contactData = gson.fromJson(decoded, ContactMessagePayload::class.java)
+                checkUUID(contactData.userId)
                 val user = syncUser(contactData.userId)
                 val message =
                     generateQuoteMessageItem(data) { quoteMessageItem ->
@@ -1361,6 +1365,8 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 processDecryptSuccess(data, plaintext)
             } catch (e: JsonSyntaxException) {
                 insertInvalidMessage(data)
+            } catch (e: IllegalArgumentException) {
+                insertInvalidMessage(data)
             }
         } catch (e: Exception) {
             reportDecryptFailed(data, e, null)
@@ -1566,6 +1572,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         } else if (data.category == MessageCategory.SIGNAL_STICKER.name) {
             val decoded = Base64.decode(plainText)
             val stickerData = gson.fromJson(String(decoded), StickerMessagePayload::class.java)
+            checkUUID(stickerData.stickerId)
             val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
             if (sticker == null || sticker.albumId.isNullOrBlank()) {
                 jobManager.addJobInBackground(RefreshStickerJob(stickerData.stickerId))
@@ -1576,6 +1583,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         } else if (data.category == MessageCategory.SIGNAL_CONTACT.name) {
             val decoded = Base64.decode(plainText)
             val contactData = gson.fromJson(String(decoded), ContactMessagePayload::class.java)
+            checkUUID(contactData.userId)
             pendingMessagesDao.updateContactMessage(contactData.userId, data.status, messageId)
             messageDao.updateContactMessage(contactData.userId, data.status, messageId)
             syncUser(contactData.userId)
@@ -1727,6 +1735,12 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             } else {
                 return messageDao.findMessageById(messageId)
             }
+        }
+    }
+
+    private fun checkUUID(vararg ids: String?) {
+        for (id in ids) {
+            if (id?.isUUID() != true) throw IllegalArgumentException("Error data, \"$id\"'s not a UUID")
         }
     }
 }
