@@ -578,6 +578,12 @@ class ConversationFragment() :
                 url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
             }
 
+            override fun onUrlLongClick(url: String) {
+                requireContext().getClipboardManager()
+                    .setPrimaryClip(ClipData.newPlainText(null, url))
+                requireContext().toast(R.string.copy_success)
+            }
+
             override fun onMentionClick(identityNumber: String) {
                 chatViewModel.viewModelScope.launch {
                     chatViewModel.findUserByIdentityNumberSuspend(identityNumber)?.let { user ->
