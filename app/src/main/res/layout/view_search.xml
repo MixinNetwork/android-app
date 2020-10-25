@@ -40,7 +40,7 @@
             android:layout_gravity="center_vertical|start"
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
-            android:layout_toStartOf="@+id/group_ib"
+            android:layout_toStartOf="@+id/avatar"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
             app:srcCompat="@drawable/ic_search_home"
@@ -95,17 +95,14 @@
             app:srcCompat="@drawable/ic_back"
             tools:ignore="ContentDescription" />
 
-        <ImageButton
-            android:id="@+id/group_ib"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/avatar"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
             android:layout_centerVertical="true"
             android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
+            android:layout_marginEnd="@dimen/margin20"
             android:layout_alignParentEnd="true"
-            android:background="@drawable/mixin_ripple"
-            android:padding="8dp"
-            app:srcCompat="@drawable/ic_group"
             tools:ignore="ContentDescription" />
 
         <ViewAnimator

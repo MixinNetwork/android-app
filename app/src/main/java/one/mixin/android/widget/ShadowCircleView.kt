@@ -28,7 +28,7 @@ class ShadowCircleView : RelativeLayout {
         if (disposable == null) {
             disposable = RxBus.listen(BotEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { _ ->
+                .subscribe {
                 }
         }
     }

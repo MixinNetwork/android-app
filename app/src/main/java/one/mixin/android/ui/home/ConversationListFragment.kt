@@ -235,7 +235,7 @@ class ConversationListFragment : LinkFragment() {
                 down_iv.scaleY = 1f
             }
         }
-        shadow_view.bot.setOnClickListener {
+        shadow_view.more.setOnClickListener {
             BotManagerBottomSheetDialogFragment()
                 .show(parentFragmentManager, BotManagerBottomSheetDialogFragment.TAG)
         }
@@ -445,16 +445,23 @@ class ConversationListFragment : LinkFragment() {
 
     private fun refreshBot() {
         lifecycleScope.launch {
-            shadow_view.right_icon.isInvisible = true
-            shadow_view.left_icon.isInvisible = true
+            shadow_view.first_iv.isGone = true
+            shadow_view.second_iv.isGone = true
+            shadow_view.third_iv.isGone = true
             requireContext().defaultSharedPreferences.getString(TOP_BOT, DefaultTopBots)?.let {
                 GsonHelper.customGson.fromJson(it, Array<String>::class.java).forEachIndexed { index, id ->
-                    if (index > 1) return@launch
+                    if (index > 2) return@launch
                     val view: ImageView =
-                        if (index == 0) {
-                            shadow_view.left_icon
-                        } else {
-                            shadow_view.right_icon
+                        when (index) {
+                            0 -> {
+                                shadow_view.first_iv
+                            }
+                            1 -> {
+                                shadow_view.second_iv
+                            }
+                            else -> {
+                                shadow_view.third_iv
+                            }
                         }
 
                     when (id) {
