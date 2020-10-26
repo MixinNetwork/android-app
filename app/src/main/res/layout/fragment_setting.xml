@@ -165,6 +165,53 @@
                 android:background="?attr/bg_window" />
 
             <RelativeLayout
+                android:id="@+id/feedback_rl"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:background="?attr/bg_white"
+                android:foreground="?attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/feedback_tv"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="@string/setting_feedback"
+                    tools:ignore="RelativeOverlap"
+                    android:drawablePadding="@dimen/margin12"
+                    app:drawableStartCompat="@drawable/ic_setting_feedback" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/share_rl"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:background="?attr/bg_white"
+                android:foreground="?attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/share_tv"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="@string/setting_share"
+                    tools:ignore="RelativeOverlap"
+                    android:drawablePadding="@dimen/margin12"
+                    app:drawableStartCompat="@drawable/ic_setting_share" />
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/setting_divider"
+                android:background="?attr/bg_window" />
+
+            <RelativeLayout
                 android:id="@+id/about_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"

@@ -585,6 +585,9 @@
     <string name="setting_phone_number_privacy">Who can find me by my number</string>
     <string name="setting_transfer_large_summary">Show confirmation dialog when transfer greater than or equal to %1$s</string>
     <string name="setting_duplicate_transfer_desc">Display confirmation dialog when you transfer the same amount to the same person within 6 hours</string>
+    <string name="setting_feedback">Feedback</string>
+    <string name="setting_share">Share This App</string>
+    <string name="setting_share_text">Let\'s chat on Mixin Messenger! Simple, safe, and easy to use. It also supports Bitcoin, Ethereum, and other cryptocurrencies, download https://mixin.one/messenger and search %1$s to add me as a friend.</string>
     <string-array name="setting_night_array">
         <item>Light</item>
         <item>Dark</item>

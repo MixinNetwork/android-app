@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,8 +8,11 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.R
 import one.mixin.android.extension.navTo
+import one.mixin.android.session.Session
+import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
 
 class SettingFragment : Fragment() {
@@ -50,6 +54,16 @@ class SettingFragment : Fragment() {
         }
         notification_rl.setOnClickListener {
             navTo(NotificationsFragment.newInstance(), NotificationsFragment.TAG)
+        }
+        share_rl.setOnClickListener {
+            val sendIntent = Intent()
+            sendIntent.action = Intent.ACTION_SEND
+            sendIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.setting_share_text, Session.getAccount()?.identityNumber))
+            sendIntent.type = "text/plain"
+            startActivity(Intent.createChooser(sendIntent, resources.getText(R.string.setting_share)))
+        }
+        feedback_rl.setOnClickListener {
+            ConversationActivity.show(requireContext(), recipientId = TEAM_MIXIN_USER_ID)
         }
     }
 }
