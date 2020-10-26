@@ -135,7 +135,7 @@ class LocationActivity : BaseActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_location)
         if (location != null) {
-            motion.loadLayoutDescription(0)
+            motion.loadLayoutDescription(R.xml.scene_location_none)
         }
         MapsInitializer.initialize(MixinApplication.appContext)
         map_view.onCreate(savedInstanceState)
