@@ -53,6 +53,7 @@
                 android:paddingEnd="12dp"
                 android:paddingBottom="2dp"
                 android:textColor="?attr/text_primary"
+                android:textColorHint="?attr/text_minor"
                 android:textSize="14sp"
                 tools:ignore="LabelFor" />
 
