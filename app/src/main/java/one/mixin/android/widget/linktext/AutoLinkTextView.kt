@@ -250,6 +250,6 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
 
         private const val DEFAULT_COLOR = Color.RED
 
-        private const val LONG_CLICK_TIME = 1000L
+        private const val LONG_CLICK_TIME = 200L
     }
 }

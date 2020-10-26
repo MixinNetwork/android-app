@@ -107,15 +107,15 @@ class TextHolder constructor(containerView: View) : BaseMentionHolder(containerV
                 }
             }
         }
-        // clash
-        // itemView.chat_tv.setOnLongClickListener {
-        //     if (!hasSelect) {
-        //         onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
-        //     } else {
-        //         onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
-        //         true
-        //     }
-        // }
+
+        itemView.chat_tv.setOnLongClickListener {
+            if (!hasSelect) {
+                onItemListener.onLongClick(messageItem, absoluteAdapterPosition)
+            } else {
+                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+                true
+            }
+        }
 
         itemView.chat_tv.setOnClickListener {
             if (hasSelect) {
