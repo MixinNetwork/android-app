@@ -1,0 +1,8 @@
+<MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:motion="http://schemas.android.com/apk/res-auto">
+
+    <Transition
+        motion:constraintSetEnd="@+id/none"
+        motion:constraintSetStart="@+id/none"
+        motion:duration="1000" />
+</MotionScene>
