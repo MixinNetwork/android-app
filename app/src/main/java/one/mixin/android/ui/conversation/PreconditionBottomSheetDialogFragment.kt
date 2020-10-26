@@ -141,7 +141,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.warning_tv.text = getString(
             R.string.wallet_transaction_tip,
             t.user.fullName,
-            "$fiatAmount${Fiats.getSymbol()}",
+            "${Fiats.getSymbol()}$fiatAmount",
             t.asset.symbol
         )
         contentView.continue_tv.setOnClickListener {
