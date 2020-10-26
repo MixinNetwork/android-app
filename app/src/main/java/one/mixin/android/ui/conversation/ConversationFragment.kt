@@ -1043,7 +1043,9 @@ class ConversationFragment() :
             }
         }
         AudioPlayer.release()
-        audioSwitch.stop()
+        if (callState.isIdle()) {
+            audioSwitch.stop()
+        }
     }
 
     override fun onBackPressed(): Boolean {
