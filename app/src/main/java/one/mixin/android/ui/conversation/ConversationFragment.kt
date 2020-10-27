@@ -598,7 +598,7 @@ class ConversationFragment() :
                     )
                     bottomSheet.dismiss()
                 }
-                view.open_tv.setOnClickListener {
+                view.copy_tv.setOnClickListener {
                     requireContext().getClipboardManager()
                         .setPrimaryClip(ClipData.newPlainText(null, url))
                     requireContext().toast(R.string.copy_success)

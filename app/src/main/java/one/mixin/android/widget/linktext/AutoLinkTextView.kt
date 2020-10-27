@@ -10,6 +10,7 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.ColorInt
 import androidx.appcompat.widget.AppCompatTextView
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -22,7 +23,7 @@ import java.util.regex.Pattern
 open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
     AppCompatTextView(context, attrs) {
 
-    private val coroutineScope = MainScope()
+    private var coroutineScope: CoroutineScope? = null
     private var autoLinkOnClickListener: ((AutoLinkMode, String) -> Unit)? = null
     private var autoLinkOnLongClickListener: ((AutoLinkMode, String) -> Unit)? = null
 
@@ -54,10 +55,25 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         super.setText(spannableString as CharSequence, type)
     }
 
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        coroutineScope = MainScope()
+    }
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        coroutineScope.cancel()
+        coroutineScope?.cancel()
     }
+
+    override fun performLongClick(): Boolean {
+        return if (handleLongClick) {
+            handleLongClick = false
+            true
+        } else {
+            super.performLongClick()
+        }
+    }
+
+    private var handleLongClick = false
 
     private fun makeSpannableString(
         text: CharSequence,
@@ -81,14 +97,16 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
                     }
 
                     override fun startLongClick() {
-                        job = coroutineScope.launch {
+                        job = coroutineScope?.launch {
                             setLongPressed(false)
+                            handleLongClick = false
                             delay(LONG_CLICK_TIME)
                             autoLinkOnLongClickListener?.let {
                                 context.vibrate(longArrayOf(0, 30))
                                 it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText)
                             }
                             setLongPressed(true)
+                            handleLongClick = true
                         }
                     }
 
@@ -99,6 +117,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
                             if (job?.isActive == true) {
                                 job?.cancel()
                                 setLongPressed(false)
+                                handleLongClick = false
                             }
                             true
                         }
