@@ -51,7 +51,7 @@
     <one.mixin.android.widget.ShadowCircleView
         android:id="@+id/shadow_view"
         android:layout_width="wrap_content"
-        android:layout_height="80dp"
+        android:layout_height="88dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>

@@ -3,14 +3,14 @@ package one.mixin.android.widget
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.widget.RelativeLayout
+import androidx.appcompat.widget.LinearLayoutCompat
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.BotEvent
 
-class ShadowCircleView : RelativeLayout {
+class ShadowCircleView : LinearLayoutCompat {
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
