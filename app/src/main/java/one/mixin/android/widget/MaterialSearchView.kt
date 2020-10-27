@@ -31,7 +31,9 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.translationX
 import one.mixin.android.extension.translationY
+import one.mixin.android.session.Session
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
+import one.mixin.android.vo.toUser
 import org.jetbrains.annotations.NotNull
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
@@ -143,6 +145,9 @@ class MaterialSearchView : FrameLayout {
             onSubmitQuery()
             true
         }
+        Session.getAccount()?.toUser()?.let { u ->
+            avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+        }
 
         disposable = search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
@@ -171,7 +176,7 @@ class MaterialSearchView : FrameLayout {
         containerDisplay = false
         container_shadow.fadeOut()
         action_va.fadeOut()
-        group_ib.fadeIn()
+        avatar.fadeIn()
         search_ib.fadeIn()
         container_circle.translationY(-containerHeight) {
             container_circle.isVisible = false
@@ -186,7 +191,7 @@ class MaterialSearchView : FrameLayout {
         container_circle.isVisible = true
         container_shadow.fadeIn()
         action_va.fadeIn()
-        group_ib.fadeOut()
+        avatar.fadeOut()
         search_ib.fadeOut()
         container_circle.translationY(0f) {
         }
@@ -201,7 +206,7 @@ class MaterialSearchView : FrameLayout {
     private var oldSearchWidth = 0
 
     fun dragSearch(progress: Float) {
-        group_ib.translationX = context.dpToPx(88f) * progress
+        avatar.translationX = context.dpToPx(88f) * progress
         search_ib.translationX = context.dpToPx(88f) * progress
         val fastFadeOut = (1 - 2 * progress).coerceAtLeast(0f)
         val fastFadeIn = (progress.coerceAtLeast(.5f) - .5f) * 2
@@ -260,7 +265,7 @@ class MaterialSearchView : FrameLayout {
         search_et.setText("")
         oldLeftX = logo_layout.x
         oldSearchWidth = search_et.measuredWidth
-        group_ib.translationX(context.dpToPx(88f).toFloat())
+        avatar.translationX(context.dpToPx(88f).toFloat())
         search_ib.translationX(context.dpToPx(88f).toFloat())
         mSearchViewListener?.onSearchViewOpened()
         isOpen = true
@@ -316,7 +321,7 @@ class MaterialSearchView : FrameLayout {
         }.setDuration(150L).alpha(0f).start()
         right_clear.visibility = View.GONE
 
-        group_ib.translationX(0f)
+        avatar.translationX(0f)
         search_ib.translationX(0f)
         clearFocus()
         search_et.hideKeyboard()
@@ -393,7 +398,7 @@ class MaterialSearchView : FrameLayout {
     }
 
     fun setOnGroupClickListener(onClickListener: OnClickListener) {
-        group_ib.setOnClickListener(onClickListener)
+        avatar.setOnClickListener(onClickListener)
     }
 
     fun setOnAddClickListener(onClickListener: OnClickListener) {

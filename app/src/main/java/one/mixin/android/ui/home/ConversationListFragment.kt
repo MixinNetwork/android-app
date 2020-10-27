@@ -14,10 +14,13 @@ import android.view.animation.BounceInterpolator
 import android.widget.ImageView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.view.children
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.core.view.setPadding
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
@@ -55,6 +58,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.networkConnected
@@ -235,7 +239,7 @@ class ConversationListFragment : LinkFragment() {
                 down_iv.scaleY = 1f
             }
         }
-        shadow_view.bot.setOnClickListener {
+        shadow_view.more.setOnClickListener {
             BotManagerBottomSheetDialogFragment()
                 .show(parentFragmentManager, BotManagerBottomSheetDialogFragment.TAG)
         }
@@ -445,16 +449,24 @@ class ConversationListFragment : LinkFragment() {
 
     private fun refreshBot() {
         lifecycleScope.launch {
-            shadow_view.right_icon.isInvisible = true
-            shadow_view.left_icon.isInvisible = true
+            shadow_view.first_iv.isGone = true
+            shadow_view.second_iv.isGone = true
+            shadow_view.third_iv.isGone = true
             requireContext().defaultSharedPreferences.getString(TOP_BOT, DefaultTopBots)?.let {
-                GsonHelper.customGson.fromJson(it, Array<String>::class.java).forEachIndexed { index, id ->
-                    if (index > 1) return@launch
+                val bots = GsonHelper.customGson.fromJson(it, Array<String>::class.java)
+                bots.forEachIndexed { index, id ->
+                    if (index > 2) return@launch
                     val view: ImageView =
-                        if (index == 0) {
-                            shadow_view.left_icon
-                        } else {
-                            shadow_view.right_icon
+                        when (index) {
+                            0 -> {
+                                shadow_view.first_iv
+                            }
+                            1 -> {
+                                shadow_view.second_iv
+                            }
+                            else -> {
+                                shadow_view.third_iv
+                            }
                         }
 
                     when (id) {
@@ -496,6 +508,27 @@ class ConversationListFragment : LinkFragment() {
                                 }
                             )
                         }
+                    }
+                }
+                if (bots.size < 3) {
+                    val dp88 = 88.dp
+                    val dp32 = 32.dp
+                    shadow_view.children.forEach { v ->
+                        v.updateLayoutParams<LinearLayoutCompat.LayoutParams> {
+                            width = dp88
+                            height = dp88
+                        }
+                        v.setPadding(dp32)
+                    }
+                } else {
+                    val dp80 = 80.dp
+                    val dp28 = 28.dp
+                    shadow_view.children.forEach { v ->
+                        v.updateLayoutParams<LinearLayoutCompat.LayoutParams> {
+                            width = dp80
+                            height = dp80
+                        }
+                        v.setPadding(dp28)
                     }
                 }
             }
