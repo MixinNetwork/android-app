@@ -7,7 +7,7 @@ import one.mixin.android.vo.AssetItem
 
 abstract class DepositFragment : Fragment() {
 
-    protected val asset: AssetItem by lazy {
+    val asset: AssetItem by lazy {
         requireArguments().getParcelable(ARGS_ASSET)!!
     }
 

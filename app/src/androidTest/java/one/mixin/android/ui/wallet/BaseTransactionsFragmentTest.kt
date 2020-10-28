@@ -14,11 +14,9 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.util.EspressoIdlingResource
+import one.mixin.android.util.waitMillis
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -108,13 +106,7 @@ abstract class BaseTransactionsFragmentTest {
 
         // for paging reload
         if (isAllTransactions()) {
-            EspressoIdlingResource.increment()
-            val job = GlobalScope.launch {
-                delay(1000)
-            }
-            job.invokeOnCompletion {
-                EspressoIdlingResource.decrement()
-            }
+            waitMillis(1000)
         }
     }
 

@@ -15,14 +15,12 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import junit.framework.Assert.assertTrue
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.util.EspressoIdlingResource
 import one.mixin.android.util.swipeRight
+import one.mixin.android.util.waitMillis
 import org.junit.After
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -68,13 +66,7 @@ class HiddenAssetsFragmentTest {
             onView(withId(com.google.android.material.R.id.snackbar_action))
                 .check(matches(withText(ctx.getString(R.string.undo_capital))))
 
-            EspressoIdlingResource.increment()
-            val job = GlobalScope.launch {
-                delay(1000)
-            }
-            job.invokeOnCompletion {
-                EspressoIdlingResource.decrement()
-            }
+            waitMillis(1000)
             onView(withId(com.google.android.material.R.id.snackbar_action))
                 .perform(click())
         }
