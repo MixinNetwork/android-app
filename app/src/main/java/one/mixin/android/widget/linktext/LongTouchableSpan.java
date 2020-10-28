@@ -5,7 +5,6 @@ import androidx.annotation.NonNull;
 
 public abstract class LongTouchableSpan extends TouchableSpan {
 
-    protected boolean isPressed;
     protected boolean isLongPressed;
 
     protected LongTouchableSpan(int normalTextColor, int pressedTextColor, boolean isUnderLineEnabled) {
