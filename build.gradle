@@ -88,7 +88,7 @@ buildscript {
         ext.webrtcVersion = '1.0.30039'
         ext.bitcoinPaymentURI = '1.0.3'
         ext.svgVersion = '1.4'
-        ext.startupVersion ='1.0.0-rc01'
+        ext.startupVersion ='1.0.0'
         ext.dnsVersion = '2.1.9'
         ext.appCenterSdkVersion = '3.3.1'
         ext.audioSwitchVersion = '1.1.1'
