@@ -19,7 +19,6 @@ import android.hardware.Sensor.TYPE_PROXIMITY
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -260,7 +259,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
                 when (state) {
                     CallService.CallState.STATE_DIALING -> {
-                        volumeControlStream = AudioManager.STREAM_VOICE_CALL
                         call_cl.post { handleDialing() }
                     }
                     CallService.CallState.STATE_RINGING -> {
@@ -284,8 +282,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 }
             }
         )
-
-        volumeControlStream = AudioManager.STREAM_VOICE_CALL
 
         window.decorView.systemUiVisibility =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

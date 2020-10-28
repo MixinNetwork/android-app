@@ -9,6 +9,8 @@ import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.gson.JsonSyntaxException
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
+import com.twilio.audioswitch.AudioDevice
+import com.twilio.audioswitch.AudioSwitch
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -381,4 +383,17 @@ object AppModule {
     @Provides
     @Singleton
     fun provideCallState() = CallStateLiveData()
+
+    @Provides
+    @Singleton
+    fun provideAudioSwitch(app: Application): AudioSwitch =
+        AudioSwitch(
+            app.applicationContext, BuildConfig.DEBUG,
+            preferredDeviceList = listOf(
+                AudioDevice.BluetoothHeadset::class.java,
+                AudioDevice.WiredHeadset::class.java,
+                AudioDevice.Speakerphone::class.java,
+                AudioDevice.Earpiece::class.java
+            )
+        )
 }

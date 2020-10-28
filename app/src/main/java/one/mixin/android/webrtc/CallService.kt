@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.LifecycleService
 import com.google.gson.Gson
+import com.twilio.audioswitch.AudioSwitch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.AccountService
@@ -41,13 +42,14 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     protected val timeoutExecutor = Executors.newScheduledThreadPool(1)
     protected var timeoutFuture: ScheduledFuture<*>? = null
 
-    protected val audioManager: CallAudioManager by lazy {
-        CallAudioManager(this)
-    }
     protected val peerConnectionClient: PeerConnectionClient by lazy {
         PeerConnectionClient(this, this)
     }
 
+    protected lateinit var audioManager: CallAudioManager
+
+    @Inject
+    lateinit var audioSwitch: AudioSwitch
     @Inject
     lateinit var jobManager: MixinJobManager
     @Inject
@@ -78,6 +80,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         callExecutor.execute {
             peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
         }
+        audioManager = CallAudioManager(this, audioSwitch)
         audioManager.callback = object : CallAudioManager.Callback {
             override fun customAudioDeviceAvailable(available: Boolean) {
                 callState.customAudioDeviceAvailable = available
