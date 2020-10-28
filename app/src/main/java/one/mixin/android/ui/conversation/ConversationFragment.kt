@@ -589,6 +589,7 @@ class ConversationFragment() :
                 )
                 builder.setCustomView(view)
                 val bottomSheet = builder.create()
+                view.url_tv.text = url
                 view.open_tv.setOnClickListener {
                     url.openAsUrlOrWeb(
                         requireContext(),
