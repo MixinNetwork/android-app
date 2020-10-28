@@ -19,6 +19,7 @@ import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings
 import android.text.method.LinkMovementMethod
+import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -57,6 +58,7 @@ import kotlinx.android.synthetic.main.view_flag.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
+import kotlinx.android.synthetic.main.view_url_bottom.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -576,6 +578,34 @@ class ConversationFragment() :
 
             override fun onUrlClick(url: String) {
                 url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
+            }
+
+            override fun onUrlLongClick(url: String) {
+                val builder = BottomSheet.Builder(requireActivity())
+                val view = View.inflate(
+                    ContextThemeWrapper(requireActivity(), R.style.Custom),
+                    R.layout.view_url_bottom,
+                    null
+                )
+                builder.setCustomView(view)
+                val bottomSheet = builder.create()
+                view.url_tv.text = url
+                view.open_tv.setOnClickListener {
+                    url.openAsUrlOrWeb(
+                        requireContext(),
+                        conversationId,
+                        parentFragmentManager,
+                        lifecycleScope
+                    )
+                    bottomSheet.dismiss()
+                }
+                view.copy_tv.setOnClickListener {
+                    requireContext().getClipboardManager()
+                        .setPrimaryClip(ClipData.newPlainText(null, url))
+                    requireContext().toast(R.string.copy_success)
+                    bottomSheet.dismiss()
+                }
+                bottomSheet.show()
             }
 
             override fun onMentionClick(identityNumber: String) {

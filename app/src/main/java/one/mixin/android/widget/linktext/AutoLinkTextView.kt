@@ -10,12 +10,22 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.annotation.ColorInt
 import androidx.appcompat.widget.AppCompatTextView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import one.mixin.android.extension.vibrate
 import java.util.LinkedList
 import java.util.regex.Pattern
 
-open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextView(context, attrs) {
+open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
+    AppCompatTextView(context, attrs) {
 
+    private var coroutineScope: CoroutineScope? = null
     private var autoLinkOnClickListener: ((AutoLinkMode, String) -> Unit)? = null
+    private var autoLinkOnLongClickListener: ((AutoLinkMode, String) -> Unit)? = null
 
     private var autoLinkModes: Array<out AutoLinkMode>? = null
 
@@ -45,7 +55,30 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
         super.setText(spannableString as CharSequence, type)
     }
 
-    private fun makeSpannableString(text: CharSequence, spannable: SpannableString? = null): SpannableString {
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        coroutineScope = MainScope()
+    }
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        coroutineScope?.cancel()
+    }
+
+    override fun performLongClick(): Boolean {
+        return if (handleLongClick) {
+            handleLongClick = false
+            true
+        } else {
+            super.performLongClick()
+        }
+    }
+
+    private var handleLongClick = false
+
+    private fun makeSpannableString(
+        text: CharSequence,
+        spannable: SpannableString? = null
+    ): SpannableString {
         val spannableString = spannable ?: SpannableString(text)
 
         val autoLinkItems = matchedRanges(text)
@@ -53,19 +86,66 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
         for (autoLinkItem in autoLinkItems) {
             val currentColor = getColorByMode(autoLinkItem.autoLinkMode)
 
-            val clickableSpan = object : TouchableSpan(currentColor, defaultSelectedColor, isUnderLineEnabled) {
-                override fun onClick(widget: View) {
-                    autoLinkOnClickListener?.let {
-                        it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText)
+            val clickableSpan = if (autoLinkItem.autoLinkMode == AutoLinkMode.MODE_URL) {
+                object : LongTouchableSpan(currentColor, defaultSelectedColor, isUnderLineEnabled) {
+                    var job: Job? = null
+                    override fun onClick(widget: View) {
+                        if (isLongPressed) return
+                        autoLinkOnClickListener?.let {
+                            it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText)
+                        }
+                    }
+
+                    override fun startLongClick() {
+                        job = coroutineScope?.launch {
+                            setLongPressed(false)
+                            handleLongClick = false
+                            delay(LONG_CLICK_TIME)
+                            autoLinkOnLongClickListener?.let {
+                                context.vibrate(longArrayOf(0, 30))
+                                it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText)
+                            }
+                            setLongPressed(true)
+                            handleLongClick = true
+                        }
+                    }
+
+                    override fun cancelLongClick(): Boolean {
+                        return if (isLongPressed) {
+                            false
+                        } else {
+                            if (job?.isActive == true) {
+                                job?.cancel()
+                                setLongPressed(false)
+                                handleLongClick = false
+                            }
+                            true
+                        }
+                    }
+
+                    override fun updateDrawState(textPaint: TextPaint) {
+                        super.updateDrawState(textPaint)
+                        val textColor = if (isPressed) pressedTextColor else normalTextColor
+                        textPaint.color = textColor
+                        textPaint.bgColor = Color.TRANSPARENT
+                        textPaint.isUnderlineText = isUnderLineEnabled
                     }
                 }
+            } else {
+                object : TouchableSpan(currentColor, defaultSelectedColor, isUnderLineEnabled) {
+                    override fun onClick(widget: View) {
+                        autoLinkOnClickListener?.let {
+                            it(autoLinkItem.autoLinkMode, autoLinkItem.matchedText)
+                        }
+                    }
 
-                override fun updateDrawState(textPaint: TextPaint) {
-                    super.updateDrawState(textPaint)
-                    val textColor = if (isPressed) pressedTextColor else normalTextColor
-                    textPaint.color = textColor
-                    textPaint.bgColor = Color.TRANSPARENT
-                    textPaint.isUnderlineText = isUnderLineEnabled
+                    override fun updateDrawState(textPaint: TextPaint) {
+                        super.updateDrawState(textPaint)
+                        val textColor = if (isPressed) pressedTextColor else normalTextColor
+                        textPaint.color = textColor
+                        textPaint.bgColor = Color.TRANSPARENT
+                        textPaint.isUnderlineText = isUnderLineEnabled
+                    }
                 }
             }
 
@@ -173,6 +253,10 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
         this.autoLinkOnClickListener = autoLinkOnClickListener
     }
 
+    fun setAutoLinkOnLongClickListener(autoLinkOnLongClickListener: (AutoLinkMode, String) -> Unit) {
+        this.autoLinkOnLongClickListener = autoLinkOnLongClickListener
+    }
+
     fun enableUnderLine() {
         isUnderLineEnabled = true
     }
@@ -184,5 +268,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
         private const val MIN_PHONE_NUMBER_LENGTH = 8
 
         private const val DEFAULT_COLOR = Color.RED
+
+        private const val LONG_CLICK_TIME = 200L
     }
 }

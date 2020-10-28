@@ -98,6 +98,16 @@ class TextHolder constructor(containerView: View) : BaseMentionHolder(containerV
             }
         }
 
+        itemView.chat_tv.setAutoLinkOnLongClickListener { autoLinkMode, matchedText ->
+            when (autoLinkMode) {
+                AutoLinkMode.MODE_URL -> {
+                    onItemListener.onUrlLongClick(matchedText)
+                }
+                else -> {
+                }
+            }
+        }
+
         itemView.chat_tv.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, absoluteAdapterPosition)

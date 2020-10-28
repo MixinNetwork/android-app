@@ -938,6 +938,8 @@ class ConversationAdapter(
 
         open fun onUrlClick(url: String) {}
 
+        open fun onUrlLongClick(url: String) {}
+
         open fun onAddClick() {}
 
         open fun onBlockClick() {}
