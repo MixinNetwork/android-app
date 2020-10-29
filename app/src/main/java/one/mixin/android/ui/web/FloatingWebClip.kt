@@ -210,8 +210,8 @@ class FloatingWebClip {
 
     private fun initWindowLayoutParams() {
         windowLayoutParams = WindowManager.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-        windowLayoutParams.x = preferences.getInt(FX, 0)
-        windowLayoutParams.y = preferences.getInt(FY, 0)
+        windowLayoutParams.x = preferences.getInt(FX, appContext.realSize().x)
+        windowLayoutParams.y = preferences.getInt(FY, 120.dp)
         windowLayoutParams.format = PixelFormat.TRANSLUCENT
         windowLayoutParams.gravity = Gravity.TOP or Gravity.START
         if (Build.VERSION.SDK_INT >= 26) {
