@@ -218,7 +218,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
         try {
             messageService.acknowledgements(ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) })
-            jobDao.deleteListSuspend(ackMessages)
+            jobDao.deleteList(ackMessages)
         } catch (e: Exception) {
             Timber.e(e, "Send ack exception")
         }
