@@ -20,6 +20,10 @@ import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.android.components.ApplicationComponent
 import io.reactivex.plugins.RxJavaPlugins
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
@@ -31,7 +35,8 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
-import one.mixin.android.ui.web.refreshClip
+import one.mixin.android.ui.web.FloatingWebClip
+import one.mixin.android.ui.web.refresh
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
@@ -110,7 +115,6 @@ class MixinApplication :
     override fun getCameraXConfig() = Camera2Config.defaultConfig()
 
     var onlining = AtomicBoolean(false)
-    var activitiesCount = 0
 
     fun gotoTimeWrong(serverTime: Long) {
         if (onlining.compareAndSet(true, false)) {
@@ -181,7 +185,6 @@ class MixinApplication :
 
     private var activityInForeground = true
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-        activitiesCount ++
     }
 
     override fun onActivityStarted(activity: Activity) {
@@ -189,10 +192,19 @@ class MixinApplication :
 
     override fun onActivityResumed(activity: Activity) {
         activityInForeground = true
+        GlobalScope.launch(Dispatchers.Main) {
+            refresh(activity)
+        }
     }
 
     override fun onActivityPaused(activity: Activity) {
         activityInForeground = false
+        GlobalScope.launch {
+            delay(200)
+            if (!activityInForeground) {
+                FloatingWebClip.getInstance().hide()
+            }
+        }
     }
 
     override fun onActivityStopped(activity: Activity) {
@@ -202,7 +214,5 @@ class MixinApplication :
     }
 
     override fun onActivityDestroyed(activity: Activity) {
-        activitiesCount --
-        refreshClip()
     }
 }

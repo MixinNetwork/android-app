@@ -53,7 +53,7 @@ fun holdClip(activity: Activity, webClip: WebClip) {
     }
 }
 
-fun initClips(activity: Activity) {
+private fun initClips(activity: Activity) {
     val content = activity.defaultSharedPreferences.getString("floating", null) ?: return
     val type = object : TypeToken<List<WebClip>>() {}.type
     val list = GsonHelper.customGson.fromJson<List<WebClip>>(content, type)
@@ -63,6 +63,14 @@ fun initClips(activity: Activity) {
     FloatingWebClip.getInstance().show(activity)
 }
 
+fun refresh(activity: Activity) {
+    if (clips.isEmpty()) {
+        initClips(activity)
+    } else {
+        FloatingWebClip.getInstance().show(activity, false)
+    }
+}
+
 fun releaseClip(index: Int) {
     if (index < clips.size) {
         clips.removeAt(index)
@@ -70,12 +78,6 @@ fun releaseClip(index: Int) {
             FloatingWebClip.getInstance().hide()
         }
         saveClips(MixinApplication.appContext)
-    }
-}
-
-fun refreshClip() {
-    if (MixinApplication.get().activitiesCount <= 0) {
-        FloatingWebClip.getInstance().hide()
     }
 }
 
