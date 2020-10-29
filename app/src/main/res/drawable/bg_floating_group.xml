@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <solid android:color="?attr/bg_window" />
+    <solid android:color="?attr/bg_white" />
 
-    <corners android:radius="48dp" />
-
-    <size android:height="48dp" />
+    <corners android:radius="52dp" />
 
     <padding
         android:left="4dp"

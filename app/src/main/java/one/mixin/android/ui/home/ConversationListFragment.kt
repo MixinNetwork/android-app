@@ -497,10 +497,7 @@ class ConversationListFragment : LinkFragment() {
                                     view.isVisible = true
                                     view.setImageResource(app.getCategoryIcon())
                                     view.setOnClickListener {
-                                        WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app).show(
-                                            parentFragmentManager,
-                                            WebBottomSheetDialogFragment.TAG
-                                        )
+                                        WebActivity.show(requireContext(), app.homeUri, null, app)
                                     }
                                 },
                                 {
