@@ -10,7 +10,7 @@ buildscript {
         ext.roomVersion = '2.3.0-alpha03'
         ext.navigationVersion = '2.3.1'
         ext.workManagerVersion = '2.4.0'
-        ext.constraintLayoutVersion = '2.0.2'
+        ext.constraintLayoutVersion = '2.0.3'
         ext.supportLibVersion = '1.0.0'
         ext.recyclerViewVersion = '1.2.0-alpha06'
         ext.browser_version = '1.2.0'
