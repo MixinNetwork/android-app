@@ -19,8 +19,6 @@ import one.mixin.android.db.insertUpdateList
 import one.mixin.android.db.insertUpdateSuspend
 import one.mixin.android.db.runInTransaction
 import one.mixin.android.db.updateRelationship
-import one.mixin.android.di.type.DatabaseCategory
-import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
@@ -41,7 +39,6 @@ constructor(
     private val appDao: AppDao,
     private val circleDao: CircleDao,
     private val userService: UserService,
-    @DatabaseCategory(DatabaseCategoryEnum.BASE)
     private val conversationDao: ConversationDao,
     private val circleService: CircleService,
     private val circleConversationDao: CircleConversationDao

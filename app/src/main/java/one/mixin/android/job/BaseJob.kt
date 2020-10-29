@@ -50,8 +50,6 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.di.type.DatabaseCategory
-import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.LinkState
@@ -100,7 +98,6 @@ abstract class BaseJob(params: Params) : Job(params) {
     lateinit var circleService: CircleService
     @Inject
     @Transient
-    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var messageDao: MessageDao
     @Inject
     @Transient
@@ -110,7 +107,6 @@ abstract class BaseJob(params: Params) : Job(params) {
     lateinit var userDao: UserDao
     @Inject
     @Transient
-    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var conversationDao: ConversationDao
     @Inject
     @Transient
@@ -180,7 +176,6 @@ abstract class BaseJob(params: Params) : Job(params) {
     lateinit var signalProtocol: SignalProtocol
     @Transient
     @Inject
-    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var appDatabase: MixinDatabase
     @Transient
     @Inject

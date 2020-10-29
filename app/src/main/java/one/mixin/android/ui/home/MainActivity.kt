@@ -67,8 +67,6 @@ import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.di.type.DatabaseCategory
-import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.checkStorageNotLow
@@ -151,7 +149,6 @@ class MainActivity : BlazeBaseActivity() {
     lateinit var userService: UserService
 
     @Inject
-    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var conversationDao: ConversationDao
 
     @Inject

@@ -51,8 +51,6 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.OffsetDao
-import one.mixin.android.di.type.DatabaseCategory
-import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.show
@@ -84,7 +82,7 @@ import javax.inject.Singleton
 import kotlin.math.abs
 
 @InstallIn(ApplicationComponent::class)
-@Module(includes = [(BaseDbModule::class), (ReadDbModule::class)])
+@Module(includes = [(BaseDbModule::class)])
 object AppModule {
 
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
@@ -328,9 +326,7 @@ object AppModule {
         okHttp: OkHttpClient,
         app: Application,
         accountService: AccountService,
-        @DatabaseCategory(DatabaseCategoryEnum.BASE)
         conversationDao: ConversationDao,
-        @DatabaseCategory(DatabaseCategoryEnum.BASE)
         messageDao: MessageDao,
         offsetDao: OffsetDao,
         floodMessageDao: FloodMessageDao,
