@@ -30,9 +30,6 @@ interface BaseDao<T> {
     @Delete
     fun deleteList(obj: List<T>)
 
-    @Delete
-    suspend fun deleteListSuspend(obj: List<T>)
-
     companion object {
         const val ESCAPE_SUFFIX = " ESCAPE '\\'"
     }
