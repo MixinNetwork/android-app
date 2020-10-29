@@ -100,7 +100,7 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
             }
         }
 
-        itemView.chat_tv.setAutoLinkOnLongClickListener {  autoLinkMode, matchedText ->
+        itemView.chat_tv.setAutoLinkOnLongClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlLongClick(matchedText)

@@ -4,8 +4,6 @@ import android.content.Context
 import androidx.work.WorkerParameters
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
-import one.mixin.android.di.type.DatabaseCategory
-import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.md5
 import one.mixin.android.vo.User
@@ -20,7 +18,6 @@ abstract class AvatarWorker(context: Context, parameters: WorkerParameters) : Ba
     @Inject
     lateinit var participantDao: ParticipantDao
     @Inject
-    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var conversationDao: ConversationDao
 
     val users = mutableListOf<User>()

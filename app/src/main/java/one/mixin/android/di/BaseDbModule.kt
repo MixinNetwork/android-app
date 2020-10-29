@@ -7,8 +7,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.di.type.DatabaseCategory
-import one.mixin.android.di.type.DatabaseCategoryEnum
 import javax.inject.Singleton
 
 @InstallIn(ApplicationComponent::class)
@@ -25,112 +23,109 @@ internal object BaseDbModule {
 
     @Singleton
     @Provides
-    @DatabaseCategory(DatabaseCategoryEnum.BASE)
     fun provideDb(app: Application) = MixinDatabase.getDatabase(app)
 
     @Singleton
     @Provides
-    fun provideUserDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.userDao()
+    fun provideUserDao(db: MixinDatabase) = db.userDao()
 
     @Singleton
     @Provides
-    fun provideSessionParticipantDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.participantSessionDao()
+    fun provideSessionParticipantDao(db: MixinDatabase) = db.participantSessionDao()
 
     @Singleton
     @Provides
-    @DatabaseCategory(DatabaseCategoryEnum.BASE)
-    fun provideConversationDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.conversationDao()
+    fun provideConversationDao(db: MixinDatabase) = db.conversationDao()
 
     @Singleton
     @Provides
-    @DatabaseCategory(DatabaseCategoryEnum.BASE)
-    fun provideMessageDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.messageDao()
+    fun provideMessageDao(db: MixinDatabase) = db.messageDao()
 
     @Singleton
     @Provides
-    fun provideParticipantDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.participantDao()
+    fun provideParticipantDao(db: MixinDatabase) = db.participantDao()
 
     @Singleton
     @Provides
-    fun provideOffsetDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.offsetDao()
+    fun provideOffsetDao(db: MixinDatabase) = db.offsetDao()
 
     @Singleton
     @Provides
-    fun provideAssetExtraDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.assetsExtraDao()
+    fun provideAssetExtraDao(db: MixinDatabase) = db.assetsExtraDao()
 
     @Singleton
     @Provides
-    fun provideAssetDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.assetDao()
+    fun provideAssetDao(db: MixinDatabase) = db.assetDao()
 
     @Singleton
     @Provides
-    fun provideSnapshotDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.snapshotDao()
+    fun provideSnapshotDao(db: MixinDatabase) = db.snapshotDao()
 
     @Singleton
     @Provides
-    fun provideMessageHistoryDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.messageHistoryDao()
+    fun provideMessageHistoryDao(db: MixinDatabase) = db.messageHistoryDao()
 
     @Singleton
     @Provides
-    fun provideStickerAlbumDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.stickerAlbumDao()
+    fun provideStickerAlbumDao(db: MixinDatabase) = db.stickerAlbumDao()
 
     @Singleton
     @Provides
-    fun provideStickerDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.stickerDao()
+    fun provideStickerDao(db: MixinDatabase) = db.stickerDao()
 
     @Singleton
     @Provides
-    fun provideHyperlinkDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.hyperlinkDao()
+    fun provideHyperlinkDao(db: MixinDatabase) = db.hyperlinkDao()
 
     @Singleton
     @Provides
-    fun providesAppDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.appDao()
+    fun providesAppDao(db: MixinDatabase) = db.appDao()
 
     @Singleton
     @Provides
-    fun providesFloodMessageDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.floodMessageDao()
+    fun providesFloodMessageDao(db: MixinDatabase) = db.floodMessageDao()
 
     @Singleton
     @Provides
-    fun providesJobDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.jobDao()
+    fun providesJobDao(db: MixinDatabase) = db.jobDao()
 
     @Singleton
     @Provides
-    fun providesAddressDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.addressDao()
+    fun providesAddressDao(db: MixinDatabase) = db.addressDao()
 
     @Singleton
     @Provides
-    fun providesResendSessionMessageDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.resendSessionMessageDao()
+    fun providesResendSessionMessageDao(db: MixinDatabase) = db.resendSessionMessageDao()
 
     @Singleton
     @Provides
-    fun providesStickerRelationshipDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.stickerRelationshipDao()
+    fun providesStickerRelationshipDao(db: MixinDatabase) = db.stickerRelationshipDao()
 
     @Singleton
     @Provides
-    fun providesHotAssetDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.topAssetDao()
+    fun providesHotAssetDao(db: MixinDatabase) = db.topAssetDao()
 
     @Singleton
     @Provides
-    fun providesFavoriteAppDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.favoriteAppDao()
+    fun providesFavoriteAppDao(db: MixinDatabase) = db.favoriteAppDao()
 
     @Singleton
     @Provides
-    fun providesMentionMessageDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.mentionMessageDao()
+    fun providesMentionMessageDao(db: MixinDatabase) = db.mentionMessageDao()
 
     @Singleton
     @Provides
-    fun providesMessageFts4Dao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.messageFts4Dao()
+    fun providesMessageFts4Dao(db: MixinDatabase) = db.messageFts4Dao()
 
     @Singleton
     @Provides
-    fun providesCircleDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.circleDao()
+    fun providesCircleDao(db: MixinDatabase) = db.circleDao()
 
     @Singleton
     @Provides
-    fun providesCircleConversationDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.circleConversationDao()
+    fun providesCircleConversationDao(db: MixinDatabase) = db.circleConversationDao()
 
     @Singleton
     @Provides
-    fun providesTraceDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.traceDao()
+    fun providesTraceDao(db: MixinDatabase) = db.traceDao()
 }

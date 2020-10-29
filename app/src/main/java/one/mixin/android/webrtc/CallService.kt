@@ -11,8 +11,6 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.di.type.DatabaseCategory
-import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.vibrate
 import one.mixin.android.job.MixinJobManager
@@ -53,7 +51,6 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
     @Inject
     lateinit var jobManager: MixinJobManager
     @Inject
-    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var database: MixinDatabase
     @Inject
     lateinit var accountService: AccountService

@@ -32,8 +32,6 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.TraceDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
-import one.mixin.android.di.type.DatabaseCategory
-import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ConversationCategory
@@ -53,7 +51,6 @@ open class Injector {
     @Inject
     lateinit var jobManager: MixinJobManager
     @Inject
-    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var messageDao: MessageDao
     @Inject
     lateinit var messageHistoryDao: MessageHistoryDao
@@ -64,7 +61,6 @@ open class Injector {
     @Inject
     lateinit var jobDao: JobDao
     @Inject
-    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var conversationDao: ConversationDao
     @Inject
     lateinit var participantDao: ParticipantDao
@@ -101,7 +97,6 @@ open class Injector {
     @Inject
     lateinit var conversationService: ConversationService
     @Inject
-    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var database: MixinDatabase
 
     @InstallIn(ApplicationComponent::class)
