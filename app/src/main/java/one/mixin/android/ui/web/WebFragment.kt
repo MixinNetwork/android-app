@@ -834,8 +834,9 @@ class WebFragment : BaseFragment() {
                 } else {
                     if (checkFloatingPermission()) {
                         hold = true
-                        bottomSheet.dismiss()
-                        requireActivity().finish()
+                        bottomSheet.fakeDismiss(false) {
+                            requireActivity().finish()
+                        }
                     }
                 }
             }
