@@ -8,8 +8,6 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.view.marginBottom
-import androidx.core.view.marginTop
 import kotlinx.android.synthetic.main.view_avatar.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dp
@@ -84,9 +82,9 @@ class AvatarsView : ViewGroup {
             val offsetRight = i * avatarSize * ratio
             c.layout(
                 offsetLeft.toInt(),
-                t - marginTop,
+                0,
                 (r - offsetRight - l).toInt(),
-                b - marginBottom
+                measuredHeight
             )
         }
     }
@@ -136,7 +134,6 @@ class AvatarsView : ViewGroup {
     }
 
     private fun getOverView() = object : ViewGroup(context) {
-
         init {
             for (i in 0..2) {
                 addView(

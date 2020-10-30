@@ -21,6 +21,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getPixelsInCM
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.realSize
@@ -59,6 +60,8 @@ class FloatingWebClip {
         appContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     }
 
+    private var isNightMode = true
+
     private lateinit var windowView: ViewGroup
     private lateinit var avatarsView: AvatarsView
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
@@ -67,6 +70,7 @@ class FloatingWebClip {
     }
     private var isShown = false
     fun init(activity: Activity) {
+        isNightMode = activity.isNightMode()
         if (!::windowView.isInitialized) {
             initWindowView(activity)
         }
@@ -76,6 +80,7 @@ class FloatingWebClip {
     }
 
     fun show(activity: Activity, force: Boolean = true) {
+        isNightMode = activity.isNightMode()
         if (!isShown) {
             init(activity)
             isShown = true
@@ -97,8 +102,8 @@ class FloatingWebClip {
     }
 
     private fun updateSize(count: Int) {
-        windowLayoutParams.width = (50 + 18 * min((count - 1), 2) + 4).dp
-        windowLayoutParams.height = (50 + 4).dp
+        windowLayoutParams.width = (68 + 24 * min((count - 1), 2) + 4).dp
+        windowLayoutParams.height = (68 + 4).dp
         windowManager.updateViewLayout(windowView, windowLayoutParams)
     }
 
@@ -188,13 +193,18 @@ class FloatingWebClip {
 
         windowView.addView(
             FrameLayout(activity).apply {
-                setBackgroundResource(R.drawable.bg_floating_group)
-                z = 1.dp.toFloat()
+                if (isNightMode) {
+                    setBackgroundResource(R.drawable.bg_floating_shadow_night)
+                } else {
+                    setBackgroundResource(R.drawable.bg_floating_shadow)
+                }
                 addView(
                     avatarsView,
-                    ViewGroup.MarginLayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                        topMargin = 4.dp
-                        bottomMargin = 4.dp
+                    FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                        gravity = Gravity.CENTER_HORIZONTAL
+                        topMargin = 5.dp
+                        marginStart = 6.dp
+                        marginEnd = 6.dp
                     }
                 )
             },
