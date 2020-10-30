@@ -72,7 +72,7 @@ fun refresh(activity: Activity) {
 }
 
 fun releaseClip(index: Int) {
-    if (index < clips.size) {
+    if (index < clips.size && index >= 0) {
         clips.removeAt(index)
         if (clips.isEmpty()) {
             FloatingWebClip.getInstance().hide()

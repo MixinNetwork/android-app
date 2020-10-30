@@ -358,8 +358,7 @@ class WebFragment : BaseFragment() {
                         val user = bottomViewModel.refreshUser(app.creatorId)
                         if (user != null) {
                             ConversationActivity.show(requireContext(), recipientId = app.creatorId)
-                            // todo
-                            // dismiss()
+                            this@WebFragment.requireActivity().finish()
                         }
                     }
                 }
@@ -901,8 +900,7 @@ class WebFragment : BaseFragment() {
         }
 
     private fun isHold(): Boolean {
-        val clip = clips.elementAtOrNull(index)
-        return clip?.webView == webView
+        return index >= 0
     }
 
     private fun refresh() {
