@@ -3,8 +3,12 @@ package one.mixin.android.ui.web
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
+import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
+import io.alterac.blurkit.BlurKit
 import kotlinx.android.synthetic.main.activity_web.*
 import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
@@ -67,6 +71,13 @@ class WebActivity : BaseActivity() {
         }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web)
+        screenshot?.let {
+            container.background =
+                BitmapDrawable(resources, BlurKit.getInstance().blur(it, 25))
+            window.decorView.systemUiVisibility =
+                window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+            window.statusBarColor = Color.parseColor("#CC000000")
+        }
         container.setOnClickListener {
             finish()
         }

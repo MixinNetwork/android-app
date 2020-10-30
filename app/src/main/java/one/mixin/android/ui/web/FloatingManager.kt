@@ -3,6 +3,10 @@ package one.mixin.android.ui.web
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.view.View
 import com.google.gson.reflect.TypeToken
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -13,7 +17,26 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
 
+var screenshot: Bitmap? = null
 fun expand(context: Context) {
+    MixinApplication.get().currentActivity?.let { activity ->
+        val rootView: View = activity.window.decorView.findViewById(android.R.id.content)
+        rootView.isDrawingCacheEnabled = true
+        val screenBitmap = Bitmap.createBitmap(rootView.drawingCache)
+        rootView.isDrawingCacheEnabled = false
+        val resultBitmap = Bitmap.createBitmap(screenBitmap.width, screenBitmap.height, Bitmap.Config.ARGB_8888)
+        val cv = Canvas(resultBitmap)
+        cv.drawBitmap(screenBitmap, 0f, 0f, Paint())
+        cv.drawRect(
+            0f,
+            0f,
+            screenBitmap.width.toFloat(),
+            screenBitmap.height.toFloat(),
+            Paint().apply {
+                color = Color.parseColor("#CC000000")
+            })
+        screenshot = resultBitmap
+    }
     WebActivity.show(context)
     FloatingWebClip.getInstance().hide()
 }

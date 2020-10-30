@@ -19,6 +19,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.android.components.ApplicationComponent
+import io.alterac.blurkit.BlurKit
 import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -36,6 +37,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.web.FloatingWebClip
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.refresh
 import one.mixin.android.util.language.Lingver
 import one.mixin.android.util.reportException
@@ -91,6 +93,7 @@ class MixinApplication :
         appContext = applicationContext
         Lingver.init(this)
         RxJavaPlugins.setErrorHandler {}
+        BlurKit.init(this)
         AppCenter.start(
             this,
             BuildConfig.APPCENTER_API_KEY,
@@ -184,6 +187,7 @@ class MixinApplication :
     }
 
     private var activityInForeground = true
+    var currentActivity: Activity? = null
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
     }
 
@@ -192,8 +196,11 @@ class MixinApplication :
 
     override fun onActivityResumed(activity: Activity) {
         activityInForeground = true
-        GlobalScope.launch(Dispatchers.Main) {
-            refresh(activity)
+        if (activity !is WebActivity) {
+            currentActivity = activity
+            GlobalScope.launch(Dispatchers.Main) {
+                refresh(activity)
+            }
         }
     }
 
@@ -214,5 +221,6 @@ class MixinApplication :
     }
 
     override fun onActivityDestroyed(activity: Activity) {
+        if (activity == currentActivity) currentActivity = null
     }
 }
