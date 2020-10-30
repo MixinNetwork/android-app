@@ -34,7 +34,8 @@ fun expand(context: Context) {
             screenBitmap.height.toFloat(),
             Paint().apply {
                 color = Color.parseColor("#CC000000")
-            })
+            }
+        )
         screenshot = resultBitmap
     }
     WebActivity.show(context)

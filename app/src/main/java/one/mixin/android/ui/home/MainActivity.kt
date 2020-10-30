@@ -284,7 +284,6 @@ class MainActivity : BlazeBaseActivity() {
         sendSafetyNetRequest()
         checkBatteryOptimization()
         refreshStickerAlbum()
-
     }
 
     override fun onStart() {

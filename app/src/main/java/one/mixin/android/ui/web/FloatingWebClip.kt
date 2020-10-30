@@ -97,8 +97,8 @@ class FloatingWebClip {
     }
 
     private fun updateSize(count: Int) {
-        windowLayoutParams.width = (44 + 18 * min((count - 1), 2) + 2).dp
-        windowLayoutParams.height = (44 + 2).dp
+        windowLayoutParams.width = (50 + 18 * min((count - 1), 2) + 4).dp
+        windowLayoutParams.height = (50 + 4).dp
         windowManager.updateViewLayout(windowView, windowLayoutParams)
     }
 
@@ -183,7 +183,7 @@ class FloatingWebClip {
         }
 
         avatarsView = AvatarsView(activity).apply {
-            initParams(1, 36)
+            initParams(2, 42)
         }
 
         windowView.addView(
