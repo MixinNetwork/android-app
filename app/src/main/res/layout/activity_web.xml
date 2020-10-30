@@ -11,16 +11,33 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/clear"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="40dp"
-            android:layout_gravity="end"
-            android:textColor="?attr/text_primary"
-            android:text="@string/web_clear"
-            android:foreground="?attr/selectableItemBackground"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+        <RelativeLayout
+            android:layout_marginTop="24dp"
+            android:layout_width="match_parent"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/close"
+                android:layout_alignParentStart="true"
+                android:textColor="?attr/text_primary"
+                android:text="@string/web_close"
+                android:padding="8dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/clear"
+                android:textColor="?attr/text_primary"
+                android:layout_alignParentEnd="true"
+                android:text="@string/web_clear"
+                android:padding="8dp"
+                android:foreground="?attr/selectableItemBackground"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
 
         <one.mixin.android.widget.SixLayout
             android:id="@+id/six"

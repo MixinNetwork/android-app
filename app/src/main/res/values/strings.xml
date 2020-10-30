@@ -913,5 +913,6 @@
     <string name="web_full">Floating limit reached. Close some before adding new ones.</string>
     <string name="web_delete_tip">Remove all floats?</string>
     <string name="web_floating_permission">You can\'t floting as Mixin isn\'t authorized to use floating windows</string>
+    <string name="web_close">close</string>
 </resources>
 

@@ -91,6 +91,10 @@ class WebActivity : BaseActivity() {
                 .show()
         }
 
+        close.setOnClickListener {
+            finish()
+        }
+
         handleExtras(intent)
     }
 
