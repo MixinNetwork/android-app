@@ -20,7 +20,6 @@ class ShadowCircleView : LinearLayoutCompat {
         defStyleAttr
     ) {
         LayoutInflater.from(context).inflate(R.layout.view_shadow_circle, this, true)
-        setBackgroundResource(R.drawable.shadow_bottom)
     }
 
     private var disposable: Disposable? = null
