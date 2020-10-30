@@ -258,7 +258,7 @@
         <activity
             android:name=".ui.web.WebActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:theme="@style/AppTheme.Transparent"
+            android:theme="@style/AppTheme.Web"
             android:windowSoftInputMode="stateAlwaysHidden|adjustNothing" />
 
         <provider

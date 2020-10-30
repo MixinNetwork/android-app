@@ -65,9 +65,9 @@ class WebActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (intent.extras != null) {
-            overridePendingTransition(R.anim.slide_in_bottom, 0)
+            overridePendingTransition(R.anim.slide_in_bottom, R.anim.stay)
         } else {
-            overridePendingTransition(R.anim.fade_in, 0)
+            overridePendingTransition(R.anim.fade_in, R.anim.stay)
         }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web)
@@ -151,12 +151,12 @@ class WebActivity : BaseActivity() {
     private var isExpand = false
 
     override fun finish() {
-        collapse()
+        collapse(this)
         super.finish()
         if (isExpand) {
-            overridePendingTransition(0, R.anim.slide_out_bottom)
+            overridePendingTransition(R.anim.stay, R.anim.slide_out_bottom)
         } else {
-            overridePendingTransition(0, R.anim.fade_out)
+            overridePendingTransition(R.anim.stay, R.anim.fade_out)
         }
     }
 }

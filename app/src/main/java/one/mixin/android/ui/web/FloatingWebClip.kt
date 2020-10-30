@@ -75,9 +75,9 @@ class FloatingWebClip {
         }
     }
 
-    fun show(activity: Activity? = null, force: Boolean = true) {
+    fun show(activity: Activity, force: Boolean = true) {
         if (!isShown) {
-            if (activity != null) init(activity)
+            init(activity)
             isShown = true
             windowManager.addView(windowView, windowLayoutParams)
         }

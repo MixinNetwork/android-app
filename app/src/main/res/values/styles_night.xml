@@ -86,6 +86,5 @@
     <style name="AppTheme.Night.Web" parent="AppTheme.Night.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
     </style>
 </resources>

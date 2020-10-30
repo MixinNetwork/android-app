@@ -41,9 +41,9 @@ fun expand(context: Context) {
     FloatingWebClip.getInstance().hide()
 }
 
-fun collapse() {
+fun collapse(activity: Activity) {
     if (clips.size > 0) {
-        FloatingWebClip.getInstance().show()
+        FloatingWebClip.getInstance().show(activity)
     }
 }
 
