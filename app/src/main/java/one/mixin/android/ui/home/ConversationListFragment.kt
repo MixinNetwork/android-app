@@ -172,11 +172,11 @@ class ConversationListFragment : LinkFragment() {
             object : RecyclerView.OnScrollListener() {
                 override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                     if (distance < -touchSlop && !shadowVisible) {
-                        shadow_view.animate().translationY(0f).duration = 200
+                        shadow_fl.animate().translationY(0f).duration = 200
                         distance = 0
                         shadowVisible = true
                     } else if (distance > touchSlop && shadowVisible) {
-                        shadow_view.animate().translationY(shadow_view.height.toFloat()).duration = 200
+                        shadow_fl.animate().translationY(shadow_fl.height.toFloat()).duration = 200
                         distance = 0
                         shadowVisible = false
                     }
@@ -413,7 +413,7 @@ class ConversationListFragment : LinkFragment() {
                     if (lastCompleteVisibleItem - firstCompleteVisibleItem <= messageAdapter.itemCount &&
                         lm.findFirstVisibleItemPosition() == 0
                     ) {
-                        shadow_view.animate().translationY(0f).duration = 200
+                        shadow_fl.animate().translationY(0f).duration = 200
                     }
                     messagesViewModel.deleteConversation(conversationId)
                     bottomSheet.dismiss()

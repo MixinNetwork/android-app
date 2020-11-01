@@ -3,24 +3,24 @@
     android:height="24dp"
     android:viewportWidth="24"
     android:viewportHeight="24">
-  <path
-      android:pathData="M6,4L9,4A2,2 0,0 1,11 6L11,9A2,2 0,0 1,9 11L6,11A2,2 0,0 1,4 9L4,6A2,2 0,0 1,6 4z"
-      android:strokeWidth="2"
-      android:fillColor="#00000000"
-      android:strokeColor="#2F3032"/>
-  <path
-      android:pathData="M6,14L9,14A2,2 0,0 1,11 16L11,19A2,2 0,0 1,9 21L6,21A2,2 0,0 1,4 19L4,16A2,2 0,0 1,6 14z"
-      android:strokeWidth="2"
-      android:fillColor="#00000000"
-      android:strokeColor="#2F3032"/>
-  <path
-      android:pathData="M16,14L19,14A2,2 0,0 1,21 16L21,19A2,2 0,0 1,19 21L16,21A2,2 0,0 1,14 19L14,16A2,2 0,0 1,16 14z"
-      android:strokeWidth="2"
-      android:fillColor="#00000000"
-      android:strokeColor="#2F3032"/>
-  <path
-      android:pathData="M13.9645,6.0858L16.0858,3.9645A2,2 84.6902,0 1,18.9143 3.9645L21.0356,6.0858A2,2 0,0 1,21.0356 8.9142L18.9143,11.0355A2,2 0,0 1,16.0858 11.0355L13.9645,8.9142A2,2 86.4375,0 1,13.9645 6.0858z"
-      android:strokeWidth="2"
-      android:fillColor="#00000000"
-      android:strokeColor="#2F3032"/>
+    <path
+        android:pathData="M6,4L9,4A2,2 0,0 1,11 6L11,9A2,2 0,0 1,9 11L6,11A2,2 0,0 1,4 9L4,6A2,2 0,0 1,6 4z"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:strokeColor="?attr/icon_default" />
+    <path
+        android:pathData="M6,14L9,14A2,2 0,0 1,11 16L11,19A2,2 0,0 1,9 21L6,21A2,2 0,0 1,4 19L4,16A2,2 0,0 1,6 14z"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:strokeColor="?attr/icon_default" />
+    <path
+        android:pathData="M16,14L19,14A2,2 0,0 1,21 16L21,19A2,2 0,0 1,19 21L16,21A2,2 0,0 1,14 19L14,16A2,2 0,0 1,16 14z"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:strokeColor="?attr/icon_default" />
+    <path
+        android:pathData="M13.9645,6.0858L16.0858,3.9645A2,2 84.6902,0 1,18.9143 3.9645L21.0356,6.0858A2,2 0,0 1,21.0356 8.9142L18.9143,11.0355A2,2 0,0 1,16.0858 11.0355L13.9645,8.9142A2,2 86.4375,0 1,13.9645 6.0858z"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:strokeColor="?attr/icon_default" />
 </vector>
