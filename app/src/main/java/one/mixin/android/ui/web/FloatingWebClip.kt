@@ -25,7 +25,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.realSize
-import one.mixin.android.widget.AvatarsView
+import one.mixin.android.widget.FloatingAvatarsView
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -63,7 +63,7 @@ class FloatingWebClip {
     private var isNightMode = true
 
     private lateinit var windowView: ViewGroup
-    private lateinit var avatarsView: AvatarsView
+    private lateinit var avatarsView: FloatingAvatarsView
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
     private val preferences by lazy {
         appContext.defaultSharedPreferences
@@ -102,7 +102,11 @@ class FloatingWebClip {
     }
 
     private fun updateSize(count: Int) {
-        windowLayoutParams.width = (60 + 21 * min((count - 1), 2) + 4).dp
+        windowLayoutParams.width = if (count > 3) {
+            (64 + 13.3 + 6.6 * 3 + 4).toInt().dp
+        } else {
+            (64 + 13.3 * min((count - 1), 2) + 4).toInt().dp
+        }
         windowLayoutParams.height = (60 + 4).dp
         windowManager.updateViewLayout(windowView, windowLayoutParams)
     }
@@ -177,8 +181,8 @@ class FloatingWebClip {
             }
         }
 
-        avatarsView = AvatarsView(activity).apply {
-            initParams(2, 42)
+        avatarsView = FloatingAvatarsView(activity).apply {
+            initParams(2, 40)
         }
 
         windowView.addView(

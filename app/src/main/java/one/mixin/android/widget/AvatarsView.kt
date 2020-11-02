@@ -33,7 +33,7 @@ class AvatarsView : ViewGroup {
     private var avatarSize: Int = 0
     private var rtl: Boolean
     private val ratio
-        get() = if (isUser()) 3f / 4 else 1f / 2
+        get() = if (isUser()) 3f / 4 else 1f / 3
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {

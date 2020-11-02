@@ -1008,6 +1008,8 @@ class WebFragment : BaseFragment() {
         dark: Boolean,
         color: Int
     ) {
+        if (!isAdded) return
+
         requireActivity().window.statusBarColor = color
         requireActivity().window.decorView.let {
             if (dark) {
