@@ -73,7 +73,11 @@ class WebActivity : BaseActivity() {
         setContentView(R.layout.activity_web)
         screenshot?.let {
             container.background =
-                BitmapDrawable(resources, BlurKit.getInstance().blur(it, 25))
+                BitmapDrawable(resources, BlurKit.getInstance().blur(it, 25).run {
+                    BlurKit.getInstance().blur(this, 25)
+                }.run {
+                    BlurKit.getInstance().blur(this, 25)
+                })
         }
         container.setOnClickListener {
             finish()
@@ -135,7 +139,7 @@ class WebActivity : BaseActivity() {
                 FloatingWebClip.getInstance().hide()
                 window.decorView.systemUiVisibility =
                     window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                window.statusBarColor = Color.parseColor("#CC000000")
+                window.statusBarColor = Color.parseColor("#CC1C1C1C")
                 supportFragmentManager.findFragmentByTag(WebFragment.TAG)?.let {
                     supportFragmentManager.beginTransaction().remove(it).commit()
                 }

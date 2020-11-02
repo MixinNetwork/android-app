@@ -33,7 +33,7 @@ fun expand(context: Context) {
             screenBitmap.width.toFloat(),
             screenBitmap.height.toFloat(),
             Paint().apply {
-                color = Color.parseColor("#CC000000")
+                color = Color.parseColor("#CC1C1C1C")
             }
         )
         screenshot = resultBitmap

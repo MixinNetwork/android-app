@@ -635,6 +635,9 @@ class WebFragment : BaseFragment() {
             extraHeaders[Mixin_Conversation_ID_HEADER] = it
         }
         if (webView.url != null && webView.progress == 100) {
+            if (index >= 0) {
+                refreshByLuminance(requireContext().isNightMode(), clips[index].titleColor)
+            }
             return
         }
         webView.loadUrl(url, extraHeaders)
