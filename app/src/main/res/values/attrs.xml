@@ -111,6 +111,7 @@
         <attr name="avatar_border_width" format="dimension" />
         <attr name="avatar_border_color" format="color" />
         <attr name="avatar_size" format="dimension" />
+        <attr name="avatar_rtl" format="boolean" />
     </declare-styleable>
     <declare-styleable name="AvatarsGroup">
         <attr name="avatar_group_size" format="dimension" />

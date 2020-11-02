@@ -20,6 +20,7 @@ class AvatarsView : ViewGroup {
         const val DEFAULT_BORDER_WIDTH = 1
         const val DEFAULT_BORDER_COLOR = Color.WHITE
         const val DEFAULT_AVATAR_SIZE = 32
+        const val DEFAULT_AVATAR_RTL = false
 
         private const val MAX_VISIBLE_COUNT = 3
     }
@@ -30,6 +31,7 @@ class AvatarsView : ViewGroup {
     private var borderColor: Int
 
     private var avatarSize: Int = 0
+    private var rtl: Boolean
     private val ratio
         get() = if (isUser()) 3f / 4 else 1f / 2
 
@@ -44,7 +46,7 @@ class AvatarsView : ViewGroup {
         borderColor = ta.getColor(R.styleable.AvatarsView_avatar_border_color, DEFAULT_BORDER_COLOR)
         avatarSize =
             ta.getDimensionPixelSize(R.styleable.AvatarsView_avatar_size, DEFAULT_AVATAR_SIZE)
-
+        rtl = ta.getBoolean(R.styleable.AvatarsView_avatar_rtl, DEFAULT_AVATAR_RTL)
         ta.recycle()
     }
 
@@ -57,6 +59,12 @@ class AvatarsView : ViewGroup {
     fun initParams(borderWith: Int, avatarSize: Int) {
         this.borderWidth = borderWith.dp
         this.avatarSize = avatarSize.dp
+    }
+
+    fun setRTL(rtl: Boolean) {
+        this.rtl = rtl
+        overView?.setRTL(rtl)
+        requestLayout()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -76,14 +84,19 @@ class AvatarsView : ViewGroup {
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        val offset = avatarSize * ratio
         for (i in 0 until childCount) {
+            val index = if (rtl) {
+                i
+            } else {
+                childCount - i - 1
+            }
             val c = getChildAt(i)
-            val offsetLeft = (childCount - i - 1) * avatarSize * ratio
-            val offsetRight = i * avatarSize * ratio
+            val offsetLeft = index * offset
             c.layout(
                 offsetLeft.toInt(),
                 0,
-                (r - offsetRight - l).toInt(),
+                (offsetLeft + avatarSize).toInt(),
                 measuredHeight
             )
         }
@@ -91,14 +104,18 @@ class AvatarsView : ViewGroup {
 
     private fun isUser(): Boolean = data.isNotEmpty() && data[0] is User
 
+    private var overView: OverView? = null
     private fun initWithList() {
         removeAllViews()
+        overView = null
         val overSize = data.size > MAX_VISIBLE_COUNT
         if (overSize) {
             val overView = if (isUser()) {
                 getTextView(data.size - MAX_VISIBLE_COUNT + 1)
             } else {
-                getOverView()
+                getOverView(context, rtl).apply {
+                    overView = this
+                }
             }
             addView(overView)
         }
@@ -133,7 +150,16 @@ class AvatarsView : ViewGroup {
         gravity = Gravity.CENTER
     }
 
-    private fun getOverView() = object : ViewGroup(context) {
+    private fun getOverView(context: Context, rtl: Boolean) = OverView(context, rtl)
+
+    @SuppressLint("ViewConstructor")
+    class OverView(context: Context, private var rtl: Boolean) : ViewGroup(context) {
+
+        fun setRTL(rtl: Boolean) {
+            this.rtl = rtl
+            requestLayout()
+        }
+
         init {
             for (i in 0..2) {
                 addView(
@@ -147,12 +173,21 @@ class AvatarsView : ViewGroup {
         override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
             val offset = measuredWidth / 6
             for (i in 0 until childCount) {
-                getChildAt(i).layout(
-                    measuredWidth - offset * i - measuredWidth,
-                    0,
-                    measuredWidth - offset * i,
-                    measuredHeight
-                )
+                if (rtl) {
+                    getChildAt(i).layout(
+                        0 + offset * i,
+                        0,
+                        measuredWidth + offset * i,
+                        measuredHeight
+                    )
+                } else {
+                    getChildAt(i).layout(
+                        0 - i * offset,
+                        0,
+                        measuredWidth - i * offset,
+                        measuredHeight
+                    )
+                }
             }
         }
     }

@@ -156,16 +156,6 @@ class FloatingWebClip {
                     } else if (windowLayoutParams.x > realX - windowLayoutParams.width + maxDiff) {
                         windowLayoutParams.x = realX - windowLayoutParams.width + maxDiff
                     }
-                    var alpha = 1.0f
-                    if (windowLayoutParams.x < 0) {
-                        alpha = 1.0f + windowLayoutParams.x / maxDiff.toFloat() * 0.5f
-                    } else if (windowLayoutParams.x > realX - windowLayoutParams.width) {
-                        alpha =
-                            1.0f - (windowLayoutParams.x - realX + windowLayoutParams.width) / maxDiff.toFloat() * 0.5f
-                    }
-                    if (windowView.alpha != alpha) {
-                        windowView.alpha = alpha
-                    }
                     maxDiff = 0
                     if (windowLayoutParams.y < -maxDiff) {
                         windowLayoutParams.y = -maxDiff
@@ -224,6 +214,11 @@ class FloatingWebClip {
         windowLayoutParams.y = preferences.getInt(FY, 120.dp)
         windowLayoutParams.format = PixelFormat.TRANSLUCENT
         windowLayoutParams.gravity = Gravity.TOP or Gravity.START
+        if (windowLayoutParams.x >= appContext.realSize().x / 2) {
+            avatarsView.setRTL(false)
+        } else {
+            avatarsView.setRTL(true)
+        }
         if (Build.VERSION.SDK_INT >= 26) {
             windowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         } else {
@@ -239,8 +234,10 @@ class FloatingWebClip {
         val realX = realSize.x
         val startX = windowLayoutParams.x
         val endX = if (startX >= realX / 2) {
+            avatarsView.setRTL(false)
             realSize.x - windowLayoutParams.width
         } else {
+            avatarsView.setRTL(true)
             0
         }
         preferences.putInt(FX, endX)
