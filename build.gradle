@@ -7,7 +7,7 @@ buildscript {
         ext.appcompatVersion = '1.2.0'
         ext.pagingVersion = '2.1.2'
         ext.collectionx = '1.1.0'
-        ext.roomVersion = '2.3.0-SNAPSHOT'
+        ext.roomVersion = '2.3.0-20201101.080944-1'
         ext.navigationVersion = '2.3.1'
         ext.workManagerVersion = '2.4.0'
         ext.constraintLayoutVersion = '2.0.4'
@@ -103,10 +103,10 @@ buildscript {
         google()
         jcenter()
         maven { url "https://jitpack.io" }
-        maven { url 'https://ci.android.com/builds/submitted/6938104/androidx_snapshot/latest/raw/repository' }
+        maven { url 'https://ci.android.com/builds/submitted/6944776/androidx_snapshot/latest/raw/repository/' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.2'
+        classpath 'com.android.tools.build:gradle:4.1.0'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
         classpath 'com.google.gms:google-services:4.3.4'
@@ -120,7 +120,7 @@ allprojects {
         google()
         jcenter()
         maven { url "https://jitpack.io" }
-        maven { url 'https://ci.android.com/builds/submitted/6938104/androidx_snapshot/latest/raw/repository' }
+        maven { url 'https://ci.android.com/builds/submitted/6944776/androidx_snapshot/latest/raw/repository/' }
     }
 }
 
