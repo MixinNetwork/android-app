@@ -73,11 +73,7 @@ class WebActivity : BaseActivity() {
         setContentView(R.layout.activity_web)
         screenshot?.let {
             container.background =
-                BitmapDrawable(resources, BlurKit.getInstance().blur(it, 25).run {
-                    BlurKit.getInstance().blur(this, 25)
-                }.run {
-                    BlurKit.getInstance().blur(this, 25)
-                })
+                BitmapDrawable(resources, BlurKit.getInstance().blur(it, 25))
         }
         container.setOnClickListener {
             finish()
