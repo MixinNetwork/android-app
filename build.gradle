@@ -106,7 +106,7 @@ buildscript {
         maven { url 'https://ci.android.com/builds/submitted/6944776/androidx_snapshot/latest/raw/repository/' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.0'
+        classpath 'com.android.tools.build:gradle:4.0.2'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
         classpath 'com.google.gms:google-services:4.3.4'
