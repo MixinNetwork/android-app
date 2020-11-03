@@ -7,11 +7,13 @@ import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.View
+import androidx.core.graphics.ColorUtils
 import dagger.hilt.android.AndroidEntryPoint
 import io.alterac.blurkit.BlurKit
 import kotlinx.android.synthetic.main.activity_web.*
 import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.vo.App
@@ -113,6 +115,18 @@ class WebActivity : BaseActivity() {
         extras.putParcelable(WebFragment.ARGS_APP, clip.app)
         extras.putInt(WebFragment.ARGS_INDEX, index)
         isExpand = true
+
+
+        window.statusBarColor = clip.titleColor.apply {
+            val dark = isDarkColor(this)
+            if (dark) {
+                window.decorView.systemUiVisibility =
+                    window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+            } else {
+                window.decorView.systemUiVisibility =
+                    window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            }
+        }
         supportFragmentManager.beginTransaction().add(
             R.id.container,
             WebFragment.newInstance(extras),

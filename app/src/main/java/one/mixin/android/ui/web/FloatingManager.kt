@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.view.View
+import androidx.annotation.ColorInt
 import com.google.gson.reflect.TypeToken
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -54,6 +55,7 @@ data class WebClip(
     val url: String,
     val thumb: Bitmap?,
     val app: App?,
+    @ColorInt
     val titleColor: Int,
     val name: String?,
     @Transient val webView: MixinWebView?

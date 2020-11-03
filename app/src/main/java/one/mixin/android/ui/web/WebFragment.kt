@@ -78,6 +78,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getPublicPicturePath
+import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
@@ -995,7 +996,7 @@ class WebFragment : BaseFragment() {
         try {
             val color = content.replace("\"", "")
             val c = Color.parseColor(color)
-            val dark = ColorUtils.calculateLuminance(c) < 0.5
+            val dark = isDarkColor(c)
             refreshByLuminance(dark, c)
         } catch (e: Exception) {
             context?.let {

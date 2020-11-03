@@ -14,6 +14,7 @@ import androidx.core.graphics.ColorUtils
 import kotlinx.android.synthetic.main.view_six.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
@@ -114,7 +115,7 @@ class SixLayout : ConstraintLayout {
                     }
                 )
                 titles[index].text = clips[index].name
-                if (isDark(clips[index].titleColor)) {
+                if (isDarkColor(clips[index].titleColor)) {
                     titles[index].setTextColor(Color.WHITE)
                 } else {
                     titles[index].setTextColor(Color.BLACK)
@@ -129,10 +130,6 @@ class SixLayout : ConstraintLayout {
                 layouts[index].visibility = View.INVISIBLE
             }
         }
-    }
-
-    private fun isDark(color: Int): Boolean {
-        return ColorUtils.calculateLuminance(color) < 0.5
     }
 
     fun setOnCloseListener(onCloseListener: OnCloseListener?) {
