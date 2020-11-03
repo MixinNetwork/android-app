@@ -51,9 +51,10 @@ class FloatingAvatarsView : ViewGroup {
         initWithList()
     }
 
-    fun initParams(borderWith: Int, avatarSize: Int) {
+    fun initParams(borderWith: Int, avatarSize: Int, borderColor: Int) {
         this.borderWidth = borderWith.dp
         this.avatarSize = avatarSize.dp
+        this.borderColor = borderColor
     }
 
     fun setRTL(rtl: Boolean) {

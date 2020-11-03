@@ -6,6 +6,7 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Build
 import android.view.Gravity
@@ -121,11 +122,11 @@ class FloatingWebClip(private var isNightMode: Boolean) {
 
     private fun updateSize(count: Int) {
         windowLayoutParams.width = if (count > 3) {
-            (64 + 13.3 + 6.6 * 3 + 4).toInt().dp
+            (64 + 13.3 + 6.6 * 3).toInt().dp
         } else {
-            (64 + 13.3 * min((count - 1), 2) + 4).toInt().dp
+            (64 + 13.3 * min((count - 1), 2)).toInt().dp
         }
-        windowLayoutParams.height = (60 + 4).dp
+        windowLayoutParams.height = 64.dp
         windowManager.updateViewLayout(windowView, windowLayoutParams)
     }
 
@@ -200,7 +201,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         }
 
         avatarsView = FloatingAvatarsView(activity).apply {
-            initParams(2, 40)
+            initParams(2, 40, if (isNightMode) appContext.getColor(R.color.bgWindowNight) else Color.WHITE)
         }
 
         windowView.addView(
@@ -213,8 +214,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
                 addView(
                     avatarsView,
                     FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                        gravity = Gravity.CENTER_HORIZONTAL
-                        topMargin = 6.dp
+                        gravity = Gravity.CENTER
                         marginStart = 6.dp
                         marginEnd = 6.dp
                     }
