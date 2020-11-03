@@ -29,7 +29,7 @@ import one.mixin.android.widget.FloatingAvatarsView
 import kotlin.math.abs
 import kotlin.math.min
 
-class FloatingWebClip {
+class FloatingWebClip(private var isNightMode: Boolean) {
     companion object {
         private val appContext by lazy {
             MixinApplication.appContext
@@ -38,16 +38,34 @@ class FloatingWebClip {
         @SuppressLint("StaticFieldLeak")
         private var Instance: FloatingWebClip? = null
 
-        fun getInstance(): FloatingWebClip {
+        fun getInstance(isNightMode: Boolean = false): FloatingWebClip {
             var localInstance = Instance
             if (localInstance == null) {
                 synchronized(FloatingWebClip::class.java) {
                     localInstance = Instance
                     if (localInstance == null) {
-                        localInstance = FloatingWebClip()
+                        localInstance = FloatingWebClip(isNightMode)
                         Instance = localInstance
                     }
                 }
+            }
+            return requireNotNull(localInstance)
+        }
+
+        fun recreate(isNightMode: Boolean): FloatingWebClip {
+            var localInstance = Instance
+            if (localInstance != null) {
+                synchronized(FloatingWebClip::class.java) {
+                    localInstance = Instance
+                    if (localInstance != null) {
+                        Instance?.hide()
+                        Instance = null
+                        localInstance = FloatingWebClip(isNightMode)
+                        Instance = localInstance
+                    }
+                }
+            } else {
+                localInstance = getInstance(isNightMode)
             }
             return requireNotNull(localInstance)
         }
@@ -60,8 +78,6 @@ class FloatingWebClip {
         appContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     }
 
-    private var isNightMode = true
-
     private lateinit var windowView: ViewGroup
     private lateinit var avatarsView: FloatingAvatarsView
     private lateinit var windowLayoutParams: WindowManager.LayoutParams
@@ -70,7 +86,6 @@ class FloatingWebClip {
     }
     private var isShown = false
     fun init(activity: Activity) {
-        isNightMode = activity.isNightMode()
         if (!::windowView.isInitialized) {
             initWindowView(activity)
         }
@@ -80,14 +95,17 @@ class FloatingWebClip {
     }
 
     fun show(activity: Activity, force: Boolean = true) {
-        isNightMode = activity.isNightMode()
-        if (!isShown) {
-            init(activity)
-            isShown = true
-            windowManager.addView(windowView, windowLayoutParams)
-        }
-        if (force) {
-            reload()
+        if (isNightMode != activity.isNightMode()) {
+            recreate(activity.isNightMode()).show(activity, true)
+        } else {
+            if (!isShown) {
+                init(activity)
+                isShown = true
+                windowManager.addView(windowView, windowLayoutParams)
+            }
+            if (force) {
+                reload()
+            }
         }
     }
 

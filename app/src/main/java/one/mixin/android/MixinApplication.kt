@@ -30,6 +30,7 @@ import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
@@ -209,7 +210,7 @@ class MixinApplication :
         GlobalScope.launch {
             delay(200)
             if (!activityInForeground) {
-                FloatingWebClip.getInstance().hide()
+                FloatingWebClip.getInstance(activity.isNightMode()).hide()
             }
         }
     }

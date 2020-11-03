@@ -14,6 +14,7 @@ import kotlinx.android.synthetic.main.activity_web.*
 import one.mixin.android.R
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.isDarkColor
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.vo.App
@@ -146,7 +147,7 @@ class WebActivity : BaseActivity() {
                 ).commit()
             },
             {
-                FloatingWebClip.getInstance().hide()
+                FloatingWebClip.getInstance(this.isNightMode()).hide()
                 window.decorView.systemUiVisibility =
                     window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
                 window.statusBarColor = Color.parseColor("#CC1C1C1C")
