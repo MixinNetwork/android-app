@@ -27,9 +27,11 @@ import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
 import android.widget.TextView
+import androidx.annotation.ColorInt
 import androidx.annotation.LayoutRes
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewPropertyAnimatorListener
 import androidx.core.view.updateLayoutParams
@@ -363,3 +365,5 @@ fun TextView.renderMessage(text: CharSequence?, mentionRenderContext: MentionRen
     }
     this.text = sp
 }
+
+fun isDarkColor(@ColorInt color: Int) = ColorUtils.calculateLuminance(color) < 0.5

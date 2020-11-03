@@ -144,13 +144,14 @@ import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.location.LocationActivity
 import one.mixin.android.ui.conversation.markdown.MarkdownActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.wallet.TransactionFragment
+import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.ui.web.WebFragment
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
@@ -823,7 +824,7 @@ class ConversationFragment() :
         }
     private var positionBeforeClickQuote: String? = null
 
-    private var botWebBottomSheet: WebBottomSheetDialogFragment? = null
+    private var botWebBottomSheet: WebFragment? = null
 
     private val sensorManager: SensorManager by lazy {
         requireContext().getSystemService()!!
@@ -1044,7 +1045,6 @@ class ConversationFragment() :
     }
 
     override fun onDestroyView() {
-        botWebBottomSheet?.dismiss()
         chat_rv?.let { rv ->
             rv.children.forEach {
                 val vh = rv.getChildViewHolder(it)
@@ -2108,11 +2108,12 @@ class ConversationFragment() :
                     MenuType.App -> {
                         menu.app?.let { app ->
                             chat_control.chat_et.hideKeyboard()
-                            WebBottomSheetDialogFragment.newInstance(
+                            WebActivity.show(
+                                requireActivity(),
                                 app.homeUri,
                                 conversationId,
                                 app.toApp()
-                            ).showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                            )
                         }
                     }
                 }

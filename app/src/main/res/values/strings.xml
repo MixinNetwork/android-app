@@ -123,6 +123,8 @@
     <string name="upload_timeout">Upload timeout</string>
     <string name="copy_link">Copy Link</string>
     <string name="type_a_message">Type message</string>
+    <string name="open_floating">Floating</string>
+    <string name="cancel_floating">Cancel Floating</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -907,5 +909,10 @@
     <string name="web_cannot_reached_title">This webpage can\'t be reached</string>
     <string name="web_cannot_reached_desc">%1$s took too long to respond. Please check your network and try to switch 4G, Wi-Fi or VPN to reload the page.</string>
     <string name="web_contact_developer">Contact Developer</string>
+    <string name="web_clear">Remove All</string>
+    <string name="web_full">Floating limit reached. Close some before adding new ones.</string>
+    <string name="web_delete_tip">Remove all floats?</string>
+    <string name="web_floating_permission">You can\'t floting as Mixin isn\'t authorized to use floating windows</string>
+    <string name="web_close">close</string>
 </resources>
 

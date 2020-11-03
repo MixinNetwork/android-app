@@ -61,7 +61,7 @@ class UrlInterpreterActivity : BaseActivity() {
 
     private fun interpretIntent(uri: Uri) {
         when (uri.host) {
-            USER, APPS -> uri.checkUserOrApp(supportFragmentManager, lifecycleScope)
+            USER, APPS -> uri.checkUserOrApp(this, supportFragmentManager, lifecycleScope)
             CODE, PAY, WITHDRAWAL, ADDRESS, SNAPSHOTS -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)

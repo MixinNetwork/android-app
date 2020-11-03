@@ -40,6 +40,7 @@
         <item name="bg_bubble">@color/bgBubbleNight</item>
         <item name="bg_bot">@color/bgPostNight</item>
         <item name="bg_divider">@color/dividerNight</item>
+        <item name="bg_translucence">@color/bgTranslucenceNight</item>
 
         <item name="icon_emergency">@drawable/ic_emergency_avatar_night</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact_night</item>
@@ -78,9 +79,12 @@
 
     <style name="AppTheme.Night.Transparent" parent="AppTheme.Night.FullScreen">
         <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
     </style>
 
+    <style name="AppTheme.Night.Web" parent="AppTheme.Night.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
 </resources>

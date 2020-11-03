@@ -62,11 +62,11 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.PreconditionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionBottomSheetDialogFragment
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
@@ -172,8 +172,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment() {
                         lifecycleScope.launch {
                             val app = linkViewModel.findAppById(user.appId!!)
                             if (app != null) {
-                                WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app)
-                                    .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
+                                WebActivity.show(requireActivity(), app.homeUri, null, app)
                             } else {
                                 UserBottomSheetDialogFragment.newInstance(user)
                                     .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)

@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:clickable="true"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <View
-        android:id="@+id/ph"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?attr/bg_white" />
+    android:layout_height="match_parent"
+    android:focusable="true">
 
     <LinearLayout
         android:id="@+id/web_ll"
@@ -16,6 +13,7 @@
         android:layout_height="match_parent"
         android:layout_below="@id/ph"
         android:orientation="vertical">
+
         <LinearLayout
             android:id="@+id/title_ll"
             android:layout_width="match_parent"
@@ -47,11 +45,6 @@
                 android:textColor="?attr/text_primary" />
         </LinearLayout>
 
-        <one.mixin.android.widget.MixinWebView
-            android:id="@+id/chat_web_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/white"/>
     </LinearLayout>
 
     <FrameLayout
@@ -66,21 +59,21 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
-        android:layout_below="@id/ph"/>
+        android:layout_below="@id/ph" />
 
     <one.mixin.android.widget.FailLoadView
         android:id="@+id/fail_load_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"
-        android:layout_below="@id/ph"/>
+        android:layout_below="@id/ph" />
 
     <ProgressBar
         android:id="@+id/pb"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true" />
 
     <one.mixin.android.widget.WebControlView
         android:id="@+id/web_control"

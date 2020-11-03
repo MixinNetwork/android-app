@@ -5,7 +5,7 @@
     android:layout_height="match_parent">
 
     <one.mixin.android.widget.CircleImageView
-        android:id="@+id/avatar1"
+        android:id="@+id/avatar_1"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@drawable/ic_avatar_place_holder"
@@ -13,19 +13,17 @@
         app:border_width="1dp" />
 
     <one.mixin.android.widget.CircleImageView
-        android:id="@+id/avatar2"
+        android:id="@+id/avatar_2"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_marginStart="16dp"
         android:src="@drawable/ic_avatar_place_holder"
         app:border_color="?attr/bg_gray_light"
         app:border_width="1dp" />
 
     <one.mixin.android.widget.CircleImageView
-        android:id="@+id/avatar3"
+        android:id="@+id/avatar_3"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_marginStart="32dp"
         android:src="@drawable/ic_avatar_place_holder"
         app:border_color="?attr/bg_gray_light"
         app:border_width="1dp" />

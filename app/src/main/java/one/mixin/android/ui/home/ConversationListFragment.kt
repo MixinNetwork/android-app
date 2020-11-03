@@ -80,7 +80,6 @@ import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.home.bot.BotManagerBottomSheetDialogFragment
 import one.mixin.android.ui.home.bot.DefaultTopBots
 import one.mixin.android.ui.home.bot.INTERNAL_CAMERA_ID
@@ -88,6 +87,7 @@ import one.mixin.android.ui.home.bot.INTERNAL_SCAN_ID
 import one.mixin.android.ui.home.bot.INTERNAL_WALLET_ID
 import one.mixin.android.ui.home.bot.TOP_BOT
 import one.mixin.android.ui.home.bot.getCategoryIcon
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.markdown.MarkwonUtil
 import one.mixin.android.util.mention.MentionRenderCache
@@ -497,10 +497,7 @@ class ConversationListFragment : LinkFragment() {
                                     view.isVisible = true
                                     view.setImageResource(app.getCategoryIcon())
                                     view.setOnClickListener {
-                                        WebBottomSheetDialogFragment.newInstance(app.homeUri, null, app).show(
-                                            parentFragmentManager,
-                                            WebBottomSheetDialogFragment.TAG
-                                        )
+                                        WebActivity.show(requireContext(), app.homeUri, null, app)
                                     }
                                 },
                                 {

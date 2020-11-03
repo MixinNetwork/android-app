@@ -65,7 +65,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.toUser
@@ -373,7 +373,11 @@ class CallActivity : BaseActivity(), SensorEventListener {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
         supportsOreo {
-            val channel = NotificationChannel(CHANNEL_PIP_PERMISSION, getString(R.string.other), NotificationManager.IMPORTANCE_HIGH)
+            val channel = NotificationChannel(
+                CHANNEL_PIP_PERMISSION,
+                getString(R.string.other),
+                NotificationManager.IMPORTANCE_HIGH
+            )
             notificationManager.createNotificationChannel(channel)
         }
         notificationManager.notify(ID_PIP_PERMISSION, builder.build())
@@ -461,8 +465,11 @@ class CallActivity : BaseActivity(), SensorEventListener {
         alertDialogBuilder()
             .setMessage(R.string.end_to_end_encryption_tip)
             .setNeutralButton(R.string.chat_learn) { dialog, _ ->
-                WebBottomSheetDialogFragment.newInstance(getString(R.string.chat_waiting_url), callState.conversationId)
-                    .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+                WebActivity.show(
+                    this,
+                    getString(R.string.chat_waiting_url),
+                    callState.conversationId
+                )
                 dialog.dismiss()
             }
             .setPositiveButton(R.string.ok) { dialog, _ ->

@@ -53,6 +53,7 @@
         <item name="bg_bubble">@color/bgBubble</item>
         <item name="bg_bot">@color/bgBot</item>
         <item name="bg_divider">@color/divider</item>
+        <item name="bg_translucence">@color/bgTranslucence</item>
 
         <item name="icon_emergency">@drawable/ic_emergency_avatar</item>
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
@@ -220,9 +221,13 @@
 
     <style name="AppTheme.Transparent" parent="AppTheme.FullScreen">
         <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
+    </style>
+
+    <style name="AppTheme.Web" parent="AppTheme.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
     </style>
 
     <style name="BoxStyle" parent="AppTheme">

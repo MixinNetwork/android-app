@@ -116,6 +116,8 @@
     <string name="upload_timeout">上传超时</string>
     <string name="copy_link">复制链接</string>
     <string name="type_a_message">输入消息</string>
+    <string name="open_floating">浮窗</string>
+    <string name="cancel_floating">取消浮窗</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -890,4 +892,8 @@
     <string name="web_cannot_reached_title">无法访问此网页</string>
     <string name="web_cannot_reached_desc">无法访问 %1$s，请检查你的网络并尝试切换 4G、Wi-Fi 或 VPN 后重新载入页面。</string>
     <string name="web_contact_developer">联系开发者</string>
+    <string name="web_clear">全部删除</string>
+    <string name="web_delete_tip">确定删除全部浮窗？</string>
+    <string name="web_floating_permission">你的手机没有授权 Mixin 获得浮窗权限，浮窗不能正常使用</string>
+    <string name="web_close">关闭</string>
 </resources>

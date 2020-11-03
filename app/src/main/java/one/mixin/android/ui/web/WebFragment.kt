@@ -1,9 +1,8 @@
-package one.mixin.android.ui.conversation.web
+package one.mixin.android.ui.web
 
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
@@ -11,18 +10,23 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.provider.MediaStore
+import android.provider.Settings
 import android.util.Base64
 import android.view.ContextMenu
+import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.webkit.JavascriptInterface
 import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
@@ -37,6 +41,8 @@ import android.webkit.WebViewClient.ERROR_HOST_LOOKUP
 import android.webkit.WebViewClient.ERROR_IO
 import android.webkit.WebViewClient.ERROR_TIMEOUT
 import android.widget.Toast
+import androidx.activity.result.ActivityResultRegistry
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
 import androidx.core.graphics.ColorUtils
@@ -44,6 +50,7 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
@@ -63,6 +70,7 @@ import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_CAMERA
+import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
@@ -70,7 +78,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getPublicPicturePath
-import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isWebUrl
@@ -81,17 +89,17 @@ import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.supportsQ
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.util.GsonHelper
@@ -106,6 +114,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.matchResourcePattern
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
+import one.mixin.android.widget.MixinWebView
 import one.mixin.android.widget.SuspiciousLinkView
 import one.mixin.android.widget.WebControlView
 import org.jetbrains.anko.doAsync
@@ -117,7 +126,7 @@ import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
-class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class WebFragment : BaseFragment() {
 
     companion object {
         const val TAG = "WebBottomSheetDialogFragment"
@@ -127,10 +136,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val CONTEXT_MENU_ID_SCAN_IMAGE = 0x11
         private const val CONTEXT_MENU_ID_SAVE_IMAGE = 0x12
 
-        private const val URL = "url"
-        private const val CONVERSATION_ID = "conversation_id"
-        private const val ARGS_APP = "args_app"
-        private const val ARGS_APP_CARD = "args_app_card"
+        const val URL = "url"
+        const val CONVERSATION_ID = "conversation_id"
+        const val ARGS_APP = "args_app"
+        const val ARGS_APP_CARD = "args_app_card"
+        const val ARGS_INDEX = "args_index"
 
         const val themeColorScript =
             """
@@ -146,17 +156,13 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             """
 
         fun newInstance(
-            url: String,
-            conversationId: String?,
-            app: App? = null,
-            appCard: AppCardData? = null
-        ) = WebBottomSheetDialogFragment().withArgs {
-            putString(URL, url)
-            putString(CONVERSATION_ID, conversationId)
-            putParcelable(ARGS_APP, app)
-            putParcelable(ARGS_APP_CARD, appCard)
+            bundle: Bundle
+        ) = WebFragment().apply {
+            arguments = bundle
         }
     }
+
+    private val bottomViewModel by viewModels<BottomSheetViewModel>()
 
     private val url: String by lazy {
         requireArguments().getString(URL)!!
@@ -168,6 +174,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val appCard: AppCardData? by lazy {
         requireArguments().getParcelable(ARGS_APP_CARD)
     }
+    private val index: Int by lazy {
+        requireArguments().getInt(ARGS_INDEX, -1)
+    }
     private var currentUrl: String? = null
 
     private val processor = QRCodeProcessor()
@@ -178,7 +187,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         menuInfo: ContextMenu.ContextMenuInfo?
     ) {
         super.onCreateContextMenu(menu, v, menuInfo)
-        contentView.chat_web_view.hitTestResult?.let {
+        webView.hitTestResult.let {
             when (it.type) {
                 WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
                     menu.add(0, CONTEXT_MENU_ID_SCAN_IMAGE, 0, R.string.contact_sq_scan_title)
@@ -197,16 +206,16 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    fun onBackPressed(): Boolean {
-        if (contentView.chat_web_view.canGoBack()) {
-            contentView.chat_web_view.goBack()
+    override fun onBackPressed(): Boolean {
+        if (webView.canGoBack()) {
+            webView.goBack()
             return true
         }
         return false
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        contentView.chat_web_view.hitTestResult?.let {
+        webView.hitTestResult.let {
             val url = it.extra
             if (item.itemId == CONTEXT_MENU_ID_SCAN_IMAGE) {
                 lifecycleScope.launch {
@@ -224,7 +233,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             lifecycleScope,
                             bitmap,
                             onSuccess = { result ->
-                                result.openAsUrlOrQrScan(requireContext(), parentFragmentManager, lifecycleScope)
+                                result.openAsUrlOrQrScan(
+                                    requireActivity(),
+                                    parentFragmentManager,
+                                    lifecycleScope
+                                )
                             },
                             onFailure = {
                                 if (isAdded) toast(R.string.can_not_recognize)
@@ -244,26 +257,34 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     var uploadMessage: ValueCallback<Array<Uri>>? = null
 
-    @SuppressLint("RestrictedApi", "SetJavaScriptEnabled")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_web, null)
-        val statusBarHeight = requireContext().statusBarHeight()
-        contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = statusBarHeight
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View =
+        layoutInflater.inflate(R.layout.fragment_web, container, false)
+
+    private lateinit var contentView: ViewGroup
+    private lateinit var webView: MixinWebView
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        contentView = view.container
+        webView = if (index >= 0) {
+            clips[index].webView ?: MixinWebView(requireContext())
+        } else {
+            MixinWebView(requireContext())
         }
+        contentView.web_ll.addView(webView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         contentView.web_control.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-            topMargin = requireContext().dpToPx(6f) + statusBarHeight
+            topMargin = requireContext().dpToPx(6f)
         }
-        registerForContextMenu(contentView.chat_web_view)
-        (dialog as BottomSheet).apply {
-            setCustomView(contentView)
-        }
+        registerForContextMenu(webView)
 
         if (BuildConfig.DEBUG) {
             WebView.setWebContentsDebuggingEnabled(true)
         }
         app = requireArguments().getParcelable(ARGS_APP)
+
+        initView()
 
         appCard.notNullWithElse(
             {
@@ -271,9 +292,13 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             },
             {
                 loadWebView()
-                initView()
             }
         )
+        if (requireContext().checkInlinePermissions()) {
+            if (clips.size > 0) {
+                FloatingWebClip.getInstance(requireActivity().isNightMode()).show(requireActivity())
+            }
+        }
     }
 
     private fun checkAppCard(appCard: AppCardData) = lifecycleScope.launch {
@@ -290,7 +315,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         } else {
             loadWebView()
         }
-        initView()
     }
 
     private fun controlSuspiciousView(show: Boolean) {
@@ -308,7 +332,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun initView() {
         contentView.suspicious_link_view.listener = object : SuspiciousLinkView.SuspiciousListener {
             override fun onBackClick() {
-                dismiss()
+                requireActivity().finish()
             }
 
             override fun onContinueClick() {
@@ -335,7 +359,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         val user = bottomViewModel.refreshUser(app.creatorId)
                         if (user != null) {
                             ConversationActivity.show(requireContext(), recipientId = app.creatorId)
-                            dismiss()
+                            this@WebFragment.requireActivity().finish()
                         }
                     }
                 }
@@ -348,34 +372,38 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
             override fun onCloseClick() {
-                dismiss()
+                requireActivity().finish()
             }
         }
-        contentView.chat_web_view.settings.javaScriptEnabled = true
-        contentView.chat_web_view.settings.domStorageEnabled = true
-        contentView.chat_web_view.settings.useWideViewPort = true
-        contentView.chat_web_view.settings.loadWithOverviewMode = true
+        webView.settings.javaScriptEnabled = true
+        webView.settings.domStorageEnabled = true
+        webView.settings.useWideViewPort = true
+        webView.settings.loadWithOverviewMode = true
         supportsQ {
-            contentView.chat_web_view.settings.forceDark = if (requireContext().isNightMode()) {
+            webView.settings.forceDark = if (requireContext().isNightMode()) {
                 FORCE_DARK_ON
             } else {
                 FORCE_DARK_AUTO
             }
         }
-        contentView.chat_web_view.settings.mixedContentMode =
+        webView.settings.mixedContentMode =
             WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
-        contentView.chat_web_view.settings.mediaPlaybackRequiresUserGesture = false
-        contentView.chat_web_view.settings.userAgentString =
-            contentView.chat_web_view.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME
+        webView.settings.mediaPlaybackRequiresUserGesture = false
+        webView.settings.userAgentString =
+            webView.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME
 
-        contentView.chat_web_view.webViewClient =
+        webView.webViewClient =
             WebViewClientImpl(
                 object : WebViewClientImpl.OnPageFinishedListener {
                     override fun onPageFinished() {
                         reloadTheme()
                     }
                 },
-                conversationId, app, requireContext(), this.parentFragmentManager, lifecycleScope,
+                conversationId,
+                requireContext(),
+                this.parentFragmentManager,
+                requireActivity().activityResultRegistry,
+                lifecycleScope,
                 { url ->
                     currentUrl = url
                 },
@@ -386,16 +414,21 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         errorCode == ERROR_IO ||
                         errorCode == ERROR_TIMEOUT
                     ) {
-                        contentView.fail_load_view.web_fail_description.text = getString(R.string.web_cannot_reached_desc, failingUrl)
+                        contentView.fail_load_view.web_fail_description.text =
+                            getString(R.string.web_cannot_reached_desc, failingUrl)
                         contentView.fail_load_view.isVisible = true
                     }
                     description?.let { reportException(Exception(it)) }
                 }
             )
 
-        contentView.chat_web_view.webChromeClient = object : WebChromeClient() {
+        webView.webChromeClient = object : WebChromeClient() {
 
-            override fun onShowCustomView(view: View, requestedOrientation: Int, callback: CustomViewCallback?) {
+            override fun onShowCustomView(
+                view: View,
+                requestedOrientation: Int,
+                callback: CustomViewCallback?
+            ) {
                 onShowCustomView(view, callback)
             }
 
@@ -413,7 +446,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 contentView.web_ll.isVisible = false
                 contentView.web_control.isVisible = false
 
-                requireActivity().window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                requireActivity().window.decorView.systemUiVisibility =
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
                     View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
@@ -544,13 +578,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 return true
             }
         }
-
-        dialog?.setOnDismissListener {
-            contentView.hideKeyboard()
-            contentView.chat_web_view.stopLoading()
-            contentView.chat_web_view.webViewClient = object : WebViewClient() {}
-            contentView.chat_web_view.webChromeClient = null
-        }
     }
 
     @Override
@@ -594,7 +621,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.title_ll.isGone = immersive
 
-        contentView.chat_web_view.addJavascriptInterface(
+        webView.addJavascriptInterface(
             WebAppInterface(
                 requireContext(),
                 conversationId,
@@ -608,14 +635,20 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         conversationId?.let {
             extraHeaders[Mixin_Conversation_ID_HEADER] = it
         }
-        contentView.chat_web_view.loadUrl(url, extraHeaders)
+        if (webView.url != null && webView.progress == 100) {
+            if (index >= 0) {
+                refreshByLuminance(requireContext().isNightMode(), clips[index].titleColor)
+            }
+            return
+        }
+        webView.loadUrl(url, extraHeaders)
     }
 
     private fun reloadTheme() {
         if (!isAdded) return
 
         lifecycleScope.launch {
-            contentView.chat_web_view.evaluateJavascript(themeColorScript) {
+            webView.evaluateJavascript(themeColorScript) {
                 setStatusBarColor(it)
             }
         }
@@ -630,13 +663,41 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun isBot() = app != null
+    private var hold = false
 
+    private fun generateWebClip(): WebClip {
+        val currentUrl = webView.url ?: url
+        val v = webView
+        val screenshot = Bitmap.createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
+        val c = Canvas(screenshot)
+        c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
+        v.draw(c)
+        return WebClip(
+            currentUrl, screenshot, app, titleColor,
+            app?.name ?: contentView.title_tv.text.toString(), webView
+        )
+    }
+
+    private var titleColor: Int = Color.WHITE
+
+    @SuppressLint("SourceLockedOrientationActivity")
     override fun onDestroyView() {
-        contentView.chat_web_view.stopLoading()
-        contentView.chat_web_view.destroy()
-        contentView.chat_web_view.webViewClient = object : WebViewClient() {}
-        contentView.chat_web_view.webChromeClient = null
-        unregisterForContextMenu(contentView.chat_web_view)
+        webView.stopLoading()
+        when {
+            hold -> {
+                holdClip(requireActivity(), generateWebClip())
+            }
+            index < 0 -> {
+                webView.destroy()
+                webView.webViewClient = object : WebViewClient() {}
+                webView.webChromeClient = null
+            }
+            else -> {
+                updateClip(requireActivity(), index, generateWebClip())
+            }
+        }
+        unregisterForContextMenu(webView)
+        contentView.web_ll.removeView(webView)
         processor.close()
         if (requireActivity().requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
             requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
@@ -663,7 +724,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             view.avatar.isVisible = true
         } else {
             view.name_tv.text = contentView.title_tv.text
-            view.desc_tv.text = contentView.chat_web_view.url
+            view.desc_tv.text = webView.url
             view.avatar.isVisible = false
         }
         builder.setCustomView(view)
@@ -681,8 +742,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         ShareCompat.IntentBuilder
                             .from(it)
                             .setType("text/plain")
-                            .setChooserTitle(contentView.chat_web_view.title)
-                            .setText(contentView.chat_web_view.url)
+                            .setChooserTitle(webView.title)
+                            .setText(webView.url)
                             .startChooser()
                         bottomSheet.dismiss()
                     }
@@ -694,17 +755,29 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             title = getString(R.string.forward)
             icon = R.drawable.ic_web_forward
             action = {
-                val currentUrl = contentView.chat_web_view.url ?: url
+                val currentUrl = webView.url ?: url
                 if (isBot()) {
                     app?.appId?.let { id ->
                         lifecycleScope.launch {
                             val app = bottomViewModel.getAppAndCheckUser(id, app?.updatedAt)
                             if (app.matchResourcePattern(currentUrl)) {
-                                val webTitle = contentView.chat_web_view.title ?: app.name
-                                val appCardData = AppCardData(app.appId, app.iconUrl, webTitle, app.name, currentUrl, app.updatedAt)
+                                val webTitle = webView.title ?: app.name
+                                val appCardData = AppCardData(
+                                    app.appId,
+                                    app.iconUrl,
+                                    webTitle,
+                                    app.name,
+                                    currentUrl,
+                                    app.updatedAt
+                                )
                                 ForwardActivity.show(
                                     requireContext(),
-                                    arrayListOf(ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCardData))),
+                                    arrayListOf(
+                                        ForwardMessage(
+                                            ShareCategory.AppCard,
+                                            GsonHelper.customGson.toJson(appCardData)
+                                        )
+                                    ),
                                     ForwardAction.App.Resultless()
                                 )
                             } else {
@@ -730,7 +803,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             title = getString(R.string.action_open)
             icon = R.drawable.ic_web_browser
             action = {
-                (contentView.chat_web_view.url ?: currentUrl)?.let {
+                (webView.url ?: currentUrl)?.let {
                     context?.openUrl(it)
                 }
                 bottomSheet.dismiss()
@@ -740,9 +813,36 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             title = getString(R.string.copy_link)
             icon = R.drawable.ic_content_copy
             action = {
-                requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, url))
+                requireContext().getClipboardManager()
+                    .setPrimaryClip(ClipData.newPlainText(null, url))
                 requireContext().toast(R.string.copy_success)
                 bottomSheet.dismiss()
+            }
+        }
+        val isHold = isHold()
+        val floatingMenu = menu {
+            title = if (isHold) {
+                getString(R.string.cancel_floating)
+            } else {
+                getString(R.string.open_floating)
+            }
+            icon = if (isHold) {
+                R.drawable.ic_web_floating_cancel
+            } else {
+                R.drawable.ic_web_floating
+            }
+            action = {
+                if (isHold) {
+                    releaseClip(index)
+                    bottomSheet.dismiss()
+                } else {
+                    if (checkFloatingPermission()) {
+                        hold = true
+                        bottomSheet.fakeDismiss(false) {
+                            requireActivity().finish()
+                        }
+                    }
+                }
             }
         }
 
@@ -753,6 +853,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
                 menuGroup {
                     menu(shareMenu)
+                    menu(floatingMenu)
                     menu(refreshMenu)
                 }
             }
@@ -763,6 +864,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
                 menuGroup {
                     menu(shareMenu)
+                    menu(floatingMenu)
                     menu(copyMenu)
                     menu(refreshMenu)
                     menu(openMenu)
@@ -778,9 +880,37 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         bottomSheet.show()
     }
 
+    private var permissionAlert: AlertDialog? = null
+
+    private fun checkFloatingPermission() =
+        requireContext().checkInlinePermissions {
+            if (permissionAlert != null && permissionAlert!!.isShowing) return@checkInlinePermissions
+
+            permissionAlert = AlertDialog.Builder(requireContext())
+                .setTitle(R.string.app_name)
+                .setMessage(R.string.web_floating_permission)
+                .setPositiveButton(R.string.live_setting) { dialog, _ ->
+                    try {
+                        startActivity(
+                            Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:${requireContext().packageName}")
+                            )
+                        )
+                    } catch (e: Exception) {
+                        Timber.e(e)
+                    }
+                    dialog.dismiss()
+                }.show()
+        }
+
+    private fun isHold(): Boolean {
+        return index >= 0
+    }
+
     private fun refresh() {
-        contentView.chat_web_view.clearCache(true)
-        contentView.chat_web_view.reload()
+        webView.clearCache(true)
+        webView.reload()
         contentView.fail_load_view.isVisible = false
     }
 
@@ -798,16 +928,16 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     override fun onPause() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N || !requireActivity().isInMultiWindowMode) {
-            contentView.chat_web_view.onResume()
-            contentView.chat_web_view.resumeTimers()
+            webView.onResume()
+            webView.resumeTimers()
         }
         super.onPause()
     }
 
     override fun onResume() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N || !requireActivity().isInMultiWindowMode) {
-            contentView.chat_web_view.onResume()
-            contentView.chat_web_view.resumeTimers()
+            webView.onResume()
+            webView.resumeTimers()
         }
         super.onResume()
     }
@@ -844,7 +974,14 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                     Uri.fromFile(outFile)
                                 )
                             )
-                            uiThread { if (isAdded) toast(getString(R.string.save_to, outFile.absolutePath)) }
+                            uiThread {
+                                if (isAdded) toast(
+                                    getString(
+                                        R.string.save_to,
+                                        outFile.absolutePath
+                                    )
+                                )
+                            }
                         } catch (e: Exception) {
                             uiThread { if (isAdded) toast(R.string.save_failure) }
                         }
@@ -859,7 +996,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         try {
             val color = content.replace("\"", "")
             val c = Color.parseColor(color)
-            val dark = ColorUtils.calculateLuminance(c) < 0.5
+            val dark = isDarkColor(c)
             refreshByLuminance(dark, c)
         } catch (e: Exception) {
             context?.let {
@@ -872,7 +1009,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         dark: Boolean,
         color: Int
     ) {
-        dialog?.window?.decorView?.let {
+        if (!isAdded) return
+
+        requireActivity().window.statusBarColor = color
+        requireActivity().window.decorView.let {
             if (dark) {
                 contentView.title_tv.setTextColor(Color.WHITE)
                 it.systemUiVisibility =
@@ -882,8 +1022,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
         }
+        titleColor = color
         contentView.title_ll.setBackgroundColor(color)
-        contentView.ph.setBackgroundColor(color)
         contentView.web_control.mode = dark
     }
 
@@ -891,9 +1031,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     class WebViewClientImpl(
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
-        private val app: App?,
         private val context: Context,
         private val fragmentManager: FragmentManager,
+        private val registry: ActivityResultRegistry,
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
         private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit
@@ -905,7 +1045,12 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             onFinished(url)
         }
 
-        override fun onReceivedError(view: WebView?, errorCode: Int, description: String?, failingUrl: String?) {
+        override fun onReceivedError(
+            view: WebView?,
+            errorCode: Int,
+            description: String?,
+            failingUrl: String?
+        ) {
             super.onReceivedError(view, errorCode, description, failingUrl)
             onReceivedError(errorCode, description, failingUrl)
         }
@@ -921,7 +1066,13 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             if (url.isMixinUrl()) {
                 val host = view.url?.run { Uri.parse(this).host }
-                url.openAsUrl(context, fragmentManager, scope, host = host, app = app, currentConversation = conversationId) {}
+                url.openAsUrl(
+                    context,
+                    fragmentManager,
+                    scope,
+                    host = host,
+                    currentConversation = conversationId
+                ) {}
                 return true
             }
             val extraHeaders = HashMap<String, String>()
@@ -1005,6 +1156,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         @SerializedName("currency")
         val currency: String = Session.getFiatCurrency(),
         @SerializedName("locale")
-        val locale: String = "${Lingver.getInstance().getLocale().language}-${Lingver.getInstance().getLocale().country}"
+        val locale: String = "${Lingver.getInstance().getLocale().language}-${
+        Lingver.getInstance().getLocale().country
+        }"
     )
 }

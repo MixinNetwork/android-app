@@ -712,6 +712,16 @@ val defaultThemeId = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
     Constants.Theme.THEME_AUTO_ID
 }
 
+fun Context.checkInlinePermissions(): Boolean {
+    if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+        return false
+    }
+    if (Settings.canDrawOverlays(this)) {
+        return true
+    }
+    return false
+}
+
 fun Context.checkInlinePermissions(showAlert: () -> Unit): Boolean {
     if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
         var intent = XiaomiUtilities.getPermissionManagerIntent()
