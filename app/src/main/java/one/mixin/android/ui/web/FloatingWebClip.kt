@@ -121,6 +121,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
     }
 
     private fun updateSize(count: Int) {
+        if (!isShown) return
         windowLayoutParams.width = if (count > 3) {
             (64 + 13.3 + 6.6 * 3).toInt().dp
         } else {
