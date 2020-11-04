@@ -96,7 +96,6 @@ buildscript {
         ext.bcVersion = '1.45'
         ext.jsonVersion = '20200518'
 
-        ext.blurkitVersion = '1.1.0'
     }
 
     repositories {

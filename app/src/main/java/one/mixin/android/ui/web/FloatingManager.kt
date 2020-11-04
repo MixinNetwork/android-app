@@ -12,6 +12,7 @@ import com.google.gson.reflect.TypeToken
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.initRenderScript
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.util.GsonHelper
@@ -25,9 +26,15 @@ fun expand(context: Context) {
         rootView.isDrawingCacheEnabled = true
         val screenBitmap = Bitmap.createBitmap(rootView.drawingCache)
         rootView.isDrawingCacheEnabled = false
-        val resultBitmap = Bitmap.createBitmap(screenBitmap.width, screenBitmap.height, Bitmap.Config.ARGB_8888)
+        val resultBitmap = Bitmap.createScaledBitmap(
+            screenBitmap,
+            screenBitmap.width / 3,
+            screenBitmap.height / 3,
+            false
+        )
+
         val cv = Canvas(resultBitmap)
-        cv.drawBitmap(screenBitmap, 0f, 0f, Paint())
+        cv.drawBitmap(resultBitmap, 0f, 0f, Paint())
         cv.drawRect(
             0f,
             0f,
@@ -39,6 +46,7 @@ fun expand(context: Context) {
         )
         screenshot = resultBitmap
     }
+    initRenderScript()
     WebActivity.show(context)
     FloatingWebClip.getInstance().hide()
 }
