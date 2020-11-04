@@ -307,7 +307,7 @@ class NotificationJob(val message: Message, private val userMap: Map<String, Str
             }
         }
         notificationBuilder.setSmallIcon(R.drawable.ic_msg_default)
-        notificationBuilder.color = ContextCompat.getColor(context, R.color.gray_light)
+        notificationBuilder.color = ContextCompat.getColor(context, R.color.colorLightBlue)
         notificationBuilder.setWhen(System.currentTimeMillis())
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
