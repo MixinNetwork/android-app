@@ -836,7 +836,10 @@ class WebFragment : BaseFragment() {
                     releaseClip(index)
                     bottomSheet.dismiss()
                 } else {
-                    if (checkFloatingPermission()) {
+                    if (clips.size >= 6) {
+                        requireActivity().toast(R.string.web_full)
+                        bottomSheet.dismiss()
+                    } else if (checkFloatingPermission()) {
                         hold = true
                         bottomSheet.fakeDismiss(false) {
                             requireActivity().finish()
