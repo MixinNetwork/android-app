@@ -19,7 +19,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.android.components.ApplicationComponent
-import io.alterac.blurkit.BlurKit
 import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -94,7 +93,6 @@ class MixinApplication :
         appContext = applicationContext
         Lingver.init(this)
         RxJavaPlugins.setErrorHandler {}
-        BlurKit.init(this)
         AppCenter.start(
             this,
             BuildConfig.APPCENTER_API_KEY,

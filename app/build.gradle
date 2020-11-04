@@ -296,7 +296,6 @@ dependencies {
     kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hiltVersion"
     kaptAndroidTest "androidx.hilt:hilt-compiler:$hiltAndroidxVersion"
 
-    implementation "io.alterac.blurkit:blurkit:${blurkitVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

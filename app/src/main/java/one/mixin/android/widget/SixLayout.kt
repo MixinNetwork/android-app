@@ -10,7 +10,6 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.graphics.ColorUtils
 import kotlinx.android.synthetic.main.view_six.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dp

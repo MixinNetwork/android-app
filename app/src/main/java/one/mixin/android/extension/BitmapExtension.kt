@@ -3,6 +3,11 @@ package one.mixin.android.extension
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.renderscript.Allocation
+import android.renderscript.Element
+import android.renderscript.RenderScript
+import android.renderscript.ScriptIntrinsicBlur
+import androidx.annotation.IntRange
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.DecodeHintType
@@ -13,6 +18,7 @@ import com.google.zxing.Result
 import com.google.zxing.common.GlobalHistogramBinarizer
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
+import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
@@ -169,4 +175,25 @@ fun Bitmap.base64Encode(): String? {
 fun decodeBitmapFromBase64(base64Data: String): Bitmap {
     val bytes = Base64.decode(base64Data)
     return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+}
+
+fun Bitmap.blurBitmap(
+    context: Context,
+    @IntRange(from = 0, to = 25) radius: Int
+): Bitmap {
+    val input = Allocation.createFromBitmap(rs, this)
+    val output = Allocation.createTyped(rs, input.type)
+    val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
+    script.setRadius(radius.toFloat())
+    script.setInput(input)
+    script.forEach(output)
+    output.copyTo(this)
+    return this
+}
+
+private lateinit var rs: RenderScript
+fun initRenderScript() {
+    if (!::rs.isInitialized) {
+        rs = RenderScript.create(MixinApplication.get())
+    }
 }
