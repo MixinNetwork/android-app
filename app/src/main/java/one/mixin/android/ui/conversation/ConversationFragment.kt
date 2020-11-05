@@ -112,6 +112,7 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.safeActivate
+import one.mixin.android.extension.safeStop
 import one.mixin.android.extension.scamPreferences
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.selectDocument
@@ -1074,7 +1075,7 @@ class ConversationFragment() :
         }
         AudioPlayer.release()
         if (callState.isIdle()) {
-            audioSwitch.stop()
+            audioSwitch.safeStop()
         }
     }
 
