@@ -74,8 +74,7 @@ class WebActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web)
         screenshot?.let {
-            container.background =
-                BitmapDrawable(resources, it.blurBitmap(this, 25))
+            container.background = BitmapDrawable(resources, it.blurBitmap(25))
         }
         container.setOnClickListener {
             finish()
