@@ -76,6 +76,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         super.onViewCreated(view, savedInstanceState)
         title_view.right_animator.setOnClickListener { showBottom() }
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        search_ib.setOnClickListener { view.navigate(R.id.action_wallet_to_wallet_search) }
 
         header = layoutInflater.inflate(R.layout.view_wallet_fragment_header, coins_rv, false)
         assetsAdapter.headerView = header

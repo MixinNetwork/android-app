@@ -3,6 +3,7 @@ package one.mixin.android.repository
 import androidx.paging.DataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.TransferRequest
@@ -21,6 +22,7 @@ import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
+import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.AssetsExtra
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
@@ -55,6 +57,25 @@ constructor(
     }
 
     suspend fun asset(id: String) = assetService.getAssetByIdSuspend(id)
+
+    suspend fun findOrSyncAsset(id: String): AssetItem? {
+        var assetItem = assetDao.findAssetItemById(id)
+        if (assetItem != null) return assetItem
+
+        return handleMixinResponse(
+            invokeNetwork = {
+                assetService.getAssetByIdSuspend(id)
+            },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                it.data?.let { a ->
+                    insert(a)
+                    assetItem = assetDao.findAssetItemById(id)
+                    return@handleMixinResponse assetItem
+                }
+            }
+        )
+    }
 
     suspend fun simpleAsset(id: String) = assetDao.simpleAsset(id)
 
@@ -115,6 +136,8 @@ constructor(
 
     suspend fun fuzzySearchAsset(query: String) = assetDao.fuzzySearchAsset(query, query)
 
+    suspend fun fuzzySearchAssetIgnoreAmount(query: String) = assetDao.fuzzySearchAssetIgnoreAmount(query, query)
+
     fun assetItem(id: String) = assetDao.assetItem(id)
 
     suspend fun simpleAssetItem(id: String) = assetDao.simpleAssetItem(id)
@@ -159,6 +182,8 @@ constructor(
     suspend fun findAddressById(addressId: String, assetId: String) = addressDao.findAddressById(addressId, assetId)
 
     suspend fun findAssetItemById(assetId: String) = assetDao.findAssetItemById(assetId)
+
+    suspend fun findAssetsByIds(assetIds: List<String>) = assetDao.suspendFindAssetsByIds(assetIds)
 
     suspend fun findSnapshotById(snapshotId: String) = snapshotDao.findSnapshotById(snapshotId)
 

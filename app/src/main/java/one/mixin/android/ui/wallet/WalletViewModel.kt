@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import android.content.SharedPreferences
 import androidx.collection.ArraySet
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
@@ -13,9 +14,12 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
+import one.mixin.android.extension.escapeSql
+import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshSnapshotsJob
@@ -206,6 +210,12 @@ internal constructor(
         }
     }
 
+    suspend fun findOrSyncAsset(assetId: String): AssetItem? {
+        return withContext(Dispatchers.IO) {
+            assetRepository.findOrSyncAsset(assetId)
+        }
+    }
+
     fun upsetAsset(asset: Asset) = viewModelScope.launch(Dispatchers.IO) {
         assetRepository.insert(asset)
     }
@@ -237,4 +247,44 @@ internal constructor(
                 tag
             }
         )
+
+    suspend fun findAssetsByIds(ids: List<String>) = assetRepository.findAssetsByIds(ids)
+
+    suspend fun fuzzySearchAssets(query: String?): List<AssetItem>? =
+        if (query.isNullOrBlank()) {
+            null
+        } else {
+            val escapedQuery = query.trim().escapeSql()
+            assetRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
+        }
+
+    fun updateRecentSearchAssets(
+        defaultSharedPreferences: SharedPreferences,
+        assetId: String
+    ) = viewModelScope.launch(Dispatchers.IO) {
+        val assetsString =
+            defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)
+        if (assetsString != null) {
+            val assetsList = assetsString.split("=")
+            if (assetsList.isNullOrEmpty()) {
+                defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, assetId)
+                return@launch
+            }
+
+            val arr = assetsList.filter { it != assetId }
+                .toMutableList()
+                .also {
+                    if (it.size >= Constants.RECENT_SEARCH_ASSETS_MAX_COUNT) {
+                        it.dropLast(1)
+                    }
+                    it.add(0, assetId)
+                }
+            defaultSharedPreferences.putString(
+                Constants.Account.PREF_RECENT_SEARCH_ASSETS,
+                arr.joinToString("=")
+            )
+        } else {
+            defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, assetId)
+        }
+    }
 }

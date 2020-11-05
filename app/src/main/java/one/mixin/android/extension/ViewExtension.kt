@@ -35,6 +35,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewPropertyAnimatorListener
 import androidx.core.view.updateLayoutParams
+import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import com.facebook.rebound.SimpleSpringListener
@@ -253,6 +254,17 @@ fun ViewGroup.inflate(
     @LayoutRes layoutRes: Int,
     attachToRoot: Boolean = false
 ) = LayoutInflater.from(context).inflate(layoutRes, this, attachToRoot)!!
+
+fun View.nav(action: NavController.() -> Unit = {}) {
+    try {
+        val navController = findNavController()
+        action.invoke(navController)
+    } catch (e: IllegalArgumentException) {
+        // Workaround with https://issuetracker.google.com/issues/128881182
+    } catch (e: IllegalStateException) {
+        Timber.w("View $this does not have a NavController set")
+    }
+}
 
 fun View.navigate(
     resId: Int,
