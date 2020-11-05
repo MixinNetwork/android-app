@@ -46,7 +46,7 @@ fun expand(context: Context) {
         )
         screenshot = resultBitmap
     }
-    initRenderScript()
+    initRenderScript(context)
     WebActivity.show(context)
     FloatingWebClip.getInstance().hide()
 }

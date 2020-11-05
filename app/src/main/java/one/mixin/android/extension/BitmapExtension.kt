@@ -178,22 +178,22 @@ fun decodeBitmapFromBase64(base64Data: String): Bitmap {
 }
 
 fun Bitmap.blurBitmap(
-    context: Context,
     @IntRange(from = 0, to = 25) radius: Int
 ): Bitmap {
     val input = Allocation.createFromBitmap(rs, this)
     val output = Allocation.createTyped(rs, input.type)
     val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
+    val result = Bitmap.createBitmap(width, height, config)
     script.setRadius(radius.toFloat())
     script.setInput(input)
     script.forEach(output)
-    output.copyTo(this)
-    return this
+    output.copyTo(result)
+    return result
 }
 
 private lateinit var rs: RenderScript
-fun initRenderScript() {
+fun initRenderScript(context: Context) {
     if (!::rs.isInitialized) {
-        rs = RenderScript.create(MixinApplication.get())
+        rs = RenderScript.create(context.applicationContext)
     }
 }
