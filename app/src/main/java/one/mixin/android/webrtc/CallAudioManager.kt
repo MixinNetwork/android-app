@@ -13,6 +13,7 @@ import com.twilio.audioswitch.AudioSwitch
 import one.mixin.android.R
 import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
 import one.mixin.android.extension.safeActivate
+import one.mixin.android.extension.safeStop
 import one.mixin.android.extension.selectEarpiece
 import one.mixin.android.extension.selectSpeakerphone
 import timber.log.Timber
@@ -112,7 +113,7 @@ class CallAudioManager(
             stop()
         }
         if (hasStarted) {
-            audioSwitch.stop()
+            audioSwitch.safeStop()
         }
         hasStarted = false
         mediaPlayerStopped = false
