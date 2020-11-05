@@ -15,7 +15,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
-import one.mixin.android.ui.common.recyclerview.HeaderFooterAdapter
+import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.common.recyclerview.HeaderListUpdateCallback
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.AssetItem
@@ -23,7 +23,7 @@ import one.mixin.android.vo.Fiats
 import org.jetbrains.anko.textColorResource
 import java.math.BigDecimal
 
-class WalletAssetAdapter(private val slideShow: Boolean) : HeaderFooterAdapter<AssetItem>() {
+class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<AssetItem>() {
 
     fun setAssetList(newAssets: List<AssetItem>) {
         if (data == null) {

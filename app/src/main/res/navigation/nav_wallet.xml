@@ -29,12 +29,6 @@
             app:popExitAnim="@anim/slide_out_right"/>
 
         <action
-            android:id="@+id/action_wallet_to_asset_add"
-            app:destination="@id/asset_add_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-
-        <action
             android:id="@+id/action_wallet_to_wallet_search"
             app:destination="@id/wallet_search_fragment"
             app:enterAnim="@anim/fade_in"
@@ -178,11 +172,6 @@
         android:id="@+id/single_friend_select_fragment"
         android:name="one.mixin.android.ui.wallet.SingleFriendSelectFragment"
         tools:layout="@layout/fragment_friends"/>
-
-    <fragment
-        android:id="@+id/asset_add_fragment"
-        android:name="one.mixin.android.ui.wallet.AssetAddFragment"
-        tools:layout="@layout/fragment_asset_add"/>
 
     <fragment
         android:id="@+id/user_transactions_fragment"
