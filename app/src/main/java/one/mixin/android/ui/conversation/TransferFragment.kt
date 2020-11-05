@@ -524,7 +524,7 @@ class TransferFragment() : MixinBottomSheetDialogFragment() {
             val dust = address!!.dust?.toDoubleOrNull()
             val amountDouble = amount.toDoubleOrNull()
             if (dust != null && amountDouble != null && amountDouble < dust) {
-                toast(getString(R.string.bottom_withdrawal_least_tip, address!!.dust))
+                toast(getString(R.string.bottom_withdrawal_least_tip, address!!.dust, currentAsset!!.symbol))
                 return@launch
             }
         }
