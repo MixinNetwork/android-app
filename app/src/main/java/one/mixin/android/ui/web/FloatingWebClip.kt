@@ -110,7 +110,7 @@ class FloatingWebClip(private var isNightMode: Boolean) {
         }
     }
 
-    private fun reload() {
+    fun reload() {
         avatarsView.addList(
             clips.map {
                 it.app?.iconUrl ?: ""
@@ -293,12 +293,14 @@ class FloatingWebClip(private var isNightMode: Boolean) {
     @Keep
     fun setX(value: Int) {
         windowLayoutParams.x = value
+        if (!isShown) return
         windowManager.updateViewLayout(windowView, windowLayoutParams)
     }
 
     @Keep
     fun setY(value: Int) {
         windowLayoutParams.y = value
+        if (!isShown) return
         windowManager.updateViewLayout(windowView, windowLayoutParams)
     }
 }
