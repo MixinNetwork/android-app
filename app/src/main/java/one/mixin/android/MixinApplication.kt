@@ -33,8 +33,10 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
+import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
+import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.ui.web.FloatingWebClip
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.refresh
@@ -193,7 +195,9 @@ class MixinApplication :
 
     override fun onActivityResumed(activity: Activity) {
         activityInForeground = true
-        if (activity !is WebActivity) {
+        if (activity is MediaPagerActivity || activity is CallActivity) {
+            FloatingWebClip.getInstance(activity.isNightMode()).hide()
+        } else if (activity !is WebActivity) {
             currentActivity = activity
             GlobalScope.launch(Dispatchers.Main) {
                 refresh(activity)

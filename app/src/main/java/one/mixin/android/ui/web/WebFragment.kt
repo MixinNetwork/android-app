@@ -12,6 +12,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -173,9 +174,7 @@ class WebFragment : BaseFragment() {
     private val appCard: AppCardData? by lazy {
         requireArguments().getParcelable(ARGS_APP_CARD)
     }
-    private val index: Int by lazy {
-        requireArguments().getInt(ARGS_INDEX, -1)
-    }
+    private var index: Int = -1
     private var currentUrl: String? = null
 
     private val processor = QRCodeProcessor()
@@ -256,6 +255,11 @@ class WebFragment : BaseFragment() {
 
     var uploadMessage: ValueCallback<Array<Uri>>? = null
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        index = requireArguments().getInt(ARGS_INDEX, -1)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -268,7 +272,14 @@ class WebFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         contentView = view.container
         webView = if (index >= 0) {
-            clips[index].webView ?: MixinWebView(requireContext())
+            clips[index].let { clip ->
+                contentView.title_tv.text = clip.name
+                clip.icon?.let { icon ->
+                    contentView.icon_iv.isVisible = true
+                    contentView.icon_iv.setImageBitmap(icon)
+                }
+                clip.webView ?: MixinWebView(requireContext())
+            }
         } else {
             MixinWebView(requireContext())
         }
@@ -672,8 +683,13 @@ class WebFragment : BaseFragment() {
         c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
         v.draw(c)
         return WebClip(
-            currentUrl, screenshot, app, titleColor,
-            app?.name ?: contentView.title_tv.text.toString(), webView
+            currentUrl,
+            screenshot,
+            app,
+            titleColor,
+            app?.name ?: contentView.title_tv.text.toString(),
+            (contentView.icon_iv.drawable as BitmapDrawable?)?.bitmap,
+            webView
         )
     }
 
@@ -833,6 +849,7 @@ class WebFragment : BaseFragment() {
             action = {
                 if (isHold) {
                     releaseClip(index)
+                    index = -1
                     bottomSheet.dismiss()
                 } else {
                     if (clips.size >= 6) {

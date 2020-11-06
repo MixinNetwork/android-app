@@ -19,6 +19,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.App
 import one.mixin.android.widget.MixinWebView
 
+private const val PREF_FLOATING = "floating"
 var screenshot: Bitmap? = null
 fun expand(context: Context) {
     MixinApplication.get().currentActivity?.let { activity ->
@@ -66,13 +67,16 @@ data class WebClip(
     @ColorInt
     val titleColor: Int,
     val name: String?,
+    val icon:Bitmap?,
     @Transient val webView: MixinWebView?
 )
 
 fun updateClip(activity: Activity, index: Int, webClip: WebClip) {
-    clips.removeAt(index)
-    clips.add(index, webClip)
-    saveClips(activity)
+    if (index < clips.size) {
+        clips.removeAt(index)
+        clips.add(index, webClip)
+        saveClips(activity)
+    }
 }
 
 fun holdClip(activity: Activity, webClip: WebClip) {
@@ -88,7 +92,7 @@ fun holdClip(activity: Activity, webClip: WebClip) {
 }
 
 private fun initClips(activity: Activity) {
-    val content = activity.defaultSharedPreferences.getString("floating", null) ?: return
+    val content = activity.defaultSharedPreferences.getString(PREF_FLOATING, null) ?: return
     val type = object : TypeToken<List<WebClip>>() {}.type
     val list = GsonHelper.customGson.fromJson<List<WebClip>>(content, type)
     clips.clear()
@@ -110,13 +114,15 @@ fun releaseClip(index: Int) {
         clips.removeAt(index)
         if (clips.isEmpty()) {
             FloatingWebClip.getInstance().hide()
+        } else {
+            FloatingWebClip.getInstance().reload()
         }
         saveClips(MixinApplication.appContext)
     }
 }
 
 private fun saveClips(context: Context) {
-    context.defaultSharedPreferences.putString("floating", GsonHelper.customGson.toJson(clips))
+    context.defaultSharedPreferences.putString(PREF_FLOATING, GsonHelper.customGson.toJson(clips))
 }
 
 fun releaseAll() {
