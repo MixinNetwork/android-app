@@ -71,9 +71,11 @@ data class WebClip(
 )
 
 fun updateClip(activity: Activity, index: Int, webClip: WebClip) {
-    clips.removeAt(index)
-    clips.add(index, webClip)
-    saveClips(activity)
+    if (index < clips.size) {
+        clips.removeAt(index)
+        clips.add(index, webClip)
+        saveClips(activity)
+    }
 }
 
 fun holdClip(activity: Activity, webClip: WebClip) {

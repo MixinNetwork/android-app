@@ -173,9 +173,7 @@ class WebFragment : BaseFragment() {
     private val appCard: AppCardData? by lazy {
         requireArguments().getParcelable(ARGS_APP_CARD)
     }
-    private val index: Int by lazy {
-        requireArguments().getInt(ARGS_INDEX, -1)
-    }
+    private var index: Int = -1
     private var currentUrl: String? = null
 
     private val processor = QRCodeProcessor()
@@ -255,6 +253,11 @@ class WebFragment : BaseFragment() {
     }
 
     var uploadMessage: ValueCallback<Array<Uri>>? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        index = requireArguments().getInt(ARGS_INDEX, -1)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -833,6 +836,7 @@ class WebFragment : BaseFragment() {
             action = {
                 if (isHold) {
                     releaseClip(index)
+                    index = -1
                     bottomSheet.dismiss()
                 } else {
                     if (clips.size >= 6) {
