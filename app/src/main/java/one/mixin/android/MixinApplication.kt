@@ -10,7 +10,6 @@ import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.CameraXConfig
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import com.facebook.stetho.Stetho
 import com.microsoft.appcenter.AppCenter
 import com.microsoft.appcenter.analytics.Analytics
 import com.microsoft.appcenter.crashes.Crashes
@@ -103,7 +102,6 @@ class MixinApplication :
 
     private fun init() {
         if (BuildConfig.DEBUG) {
-            Stetho.initializeWithDefaults(this)
             Timber.plant(Timber.DebugTree())
         }
     }

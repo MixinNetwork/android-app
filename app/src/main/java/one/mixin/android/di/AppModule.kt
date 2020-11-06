@@ -5,7 +5,6 @@ import android.content.ContentResolver
 import android.provider.Settings
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
-import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.gson.JsonSyntaxException
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
@@ -112,22 +111,10 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideStethoInterceptor(): StethoInterceptor? {
-        if (!BuildConfig.DEBUG) {
-            return null
-        }
-        return StethoInterceptor()
-    }
-
-    @Singleton
-    @Provides
-    fun provideOkHttp(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?, stethoInterceptor: StethoInterceptor?): OkHttpClient {
+    fun provideOkHttp(resolver: ContentResolver, httpLoggingInterceptor: HttpLoggingInterceptor?): OkHttpClient {
         val builder = OkHttpClient.Builder()
         builder.addInterceptor(HostSelectionInterceptor.get())
         httpLoggingInterceptor?.let { interceptor ->
-            builder.addNetworkInterceptor(interceptor)
-        }
-        stethoInterceptor?.let { interceptor ->
             builder.addNetworkInterceptor(interceptor)
         }
         builder.connectTimeout(10, TimeUnit.SECONDS)
@@ -338,12 +325,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideGiphyService(httpLoggingInterceptor: HttpLoggingInterceptor?, stethoInterceptor: StethoInterceptor?): GiphyService {
+    fun provideGiphyService(httpLoggingInterceptor: HttpLoggingInterceptor?): GiphyService {
         val client = OkHttpClient.Builder().apply {
             httpLoggingInterceptor?.let { interceptor ->
-                addNetworkInterceptor(interceptor)
-            }
-            stethoInterceptor?.let { interceptor ->
                 addNetworkInterceptor(interceptor)
             }
         }.build()
@@ -358,12 +342,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFoursquareService(httpLoggingInterceptor: HttpLoggingInterceptor?, stethoInterceptor: StethoInterceptor?): FoursquareService {
+    fun provideFoursquareService(httpLoggingInterceptor: HttpLoggingInterceptor??): FoursquareService {
         val client = OkHttpClient.Builder().apply {
             httpLoggingInterceptor?.let { interceptor ->
-                addNetworkInterceptor(interceptor)
-            }
-            stethoInterceptor?.let { interceptor ->
                 addNetworkInterceptor(interceptor)
             }
         }.build()
