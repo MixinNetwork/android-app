@@ -202,9 +202,9 @@ class FloatingPlayer(private var isNightMode: Boolean) {
         windowView?.addView(
             FrameLayout(appContext).apply {
                 if (isNightMode) {
-                    setBackgroundResource(R.drawable.bg_floating_shadow_night)
+                    setBackgroundResource(R.drawable.bg_floating_shadow_night_0)
                 } else {
-                    setBackgroundResource(R.drawable.bg_floating_shadow)
+                    setBackgroundResource(R.drawable.bg_floating_shadow_0)
                 }
                 addView(musicBgView, FrameLayout.LayoutParams(48.dp, 48.dp).apply { gravity = Gravity.CENTER })
                 addView(musicView, FrameLayout.LayoutParams(30.dp, 30.dp).apply { gravity = Gravity.CENTER })
