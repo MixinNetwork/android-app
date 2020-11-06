@@ -12,7 +12,6 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -275,6 +274,7 @@ class WebFragment : BaseFragment() {
             clips[index].let { clip ->
                 contentView.title_tv.text = clip.name
                 clip.icon?.let { icon ->
+                    this.icon = icon
                     contentView.icon_iv.isVisible = true
                     contentView.icon_iv.setImageBitmap(icon)
                 }
@@ -495,6 +495,7 @@ class WebFragment : BaseFragment() {
                     icon?.let {
                         contentView.icon_iv.isVisible = true
                         contentView.icon_iv.setImageBitmap(it)
+                        this@WebFragment.icon = it
                     }
                 }
             }
@@ -674,6 +675,7 @@ class WebFragment : BaseFragment() {
 
     private fun isBot() = app != null
     private var hold = false
+    private var icon: Bitmap? = null
 
     private fun generateWebClip(): WebClip {
         val currentUrl = webView.url ?: url
@@ -688,7 +690,7 @@ class WebFragment : BaseFragment() {
             app,
             titleColor,
             app?.name ?: contentView.title_tv.text.toString(),
-            (contentView.icon_iv.drawable as BitmapDrawable?)?.bitmap,
+            icon,
             webView
         )
     }
