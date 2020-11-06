@@ -67,7 +67,7 @@ data class WebClip(
     @ColorInt
     val titleColor: Int,
     val name: String?,
-    val icon:Bitmap?,
+    val icon: Bitmap?,
     @Transient val webView: MixinWebView?
 )
 

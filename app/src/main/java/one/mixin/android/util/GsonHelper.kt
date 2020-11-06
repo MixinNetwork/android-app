@@ -26,7 +26,7 @@ object GsonHelper {
             typeOfSrc: Type,
             context: JsonSerializationContext
         ): JsonElement {
-            return JsonPrimitive(src.base64Encode())
+            return JsonPrimitive(src.base64Encode(Bitmap.CompressFormat.PNG))
         }
 
         override fun deserialize(

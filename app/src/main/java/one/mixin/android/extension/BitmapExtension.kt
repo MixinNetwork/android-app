@@ -18,7 +18,6 @@ import com.google.zxing.Result
 import com.google.zxing.common.GlobalHistogramBinarizer
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
-import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
@@ -147,12 +146,13 @@ fun Bitmap.maxSizeScale(maxWidth: Int, maxHeight: Int): Bitmap {
     }
 }
 
-fun Bitmap.base64Encode(): String? {
+fun Bitmap.base64Encode(format: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG): String? {
     var result: String? = null
     var baos: ByteArrayOutputStream? = null
     try {
+        if (isRecycled) return null
         baos = ByteArrayOutputStream()
-        compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        compress(format, 100, baos)
         baos.flush()
         baos.close()
         val bitmapBytes = baos.toByteArray()
