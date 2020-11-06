@@ -763,7 +763,7 @@
     <string name="bottom_withdrawal_change_amount">Ubah Jumlah</string>
     <string name="bottom_withdrawal_change_amount_count">Ubah Jumlah (%1$d)</string>
     <string name="bottom_withdrawal_address_tips">Untuk penarikan pertama ke alamat baru, harap coba jumlah yang kecil.</string>
-    <string name="bottom_withdrawal_least_tip">Jumlah penarikan minimum adalah %1$s</string>
+    <string name="bottom_withdrawal_least_tip">Jumlah penarikan minimum adalah %1$s %2$s</string>
     <string name="bottom_deposit_title">%1$s Deposit</string>
     <string name="bottom_deposit_tip_eos">Alamat ini mendukung semua token berbasis EOS, seperti EOS, IQ, BLACK, OCT, KARMA, dll.</string>
     <string name="bottom_deposit_tip_eth">Alamat ini mendukung semua token ERC-20, seperti ETH, XIN, TUSD, HT, LOOM, LEO, dll.</string>

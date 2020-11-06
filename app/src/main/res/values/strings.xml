@@ -774,7 +774,7 @@
     <string name="bottom_withdrawal_change_amount_count">Change Amount (%1$d)</string>
     <string name="bottom_withdrawal_address_tips">For the first withdrawal to a new address, please try small amounts! If you withdraw the assets to the wrong address, that would not be recovered!</string>
     <string name="bottom_withdrawal_address_continue">Continue</string>
-    <string name="bottom_withdrawal_least_tip">Minimum withdraw amount is %1$s</string>
+    <string name="bottom_withdrawal_least_tip">Minimum withdraw amount is %1$s %2$s</string>
     <string name="bottom_deposit_title">%1$s Deposit</string>
     <string name="bottom_deposit_tip_eos">This address supports all base on EOS tokens, such as EOS, IQ, BLACK, OCT, KARMA, etc.</string>
     <string name="bottom_deposit_tip_eth">This address supports all ERC-20 tokens, such as ETH, XIN, TUSD, HT, LOOM, LEO, etc.</string>
