@@ -77,7 +77,7 @@ class WebActivity : BaseActivity() {
             container.background = BitmapDrawable(resources, it.blurBitmap(25))
         }
         container.setOnClickListener {
-            finish()
+            onBackPressed()
         }
 
         six.setOnCloseListener(object : SixLayout.OnCloseListener {
@@ -101,10 +101,36 @@ class WebActivity : BaseActivity() {
         }
 
         close.setOnClickListener {
-            finish()
+            onBackPressed()
         }
 
         handleExtras(intent)
+    }
+
+    override fun onBackPressed() {
+        if (!isExpand) {
+            supportFragmentManager.findFragmentByTag(WebFragment.TAG).notNullWithElse({
+                FloatingWebClip.getInstance(this.isNightMode()).show(this)
+                isExpand = true
+                supportFragmentManager.beginTransaction().show(it).commit()
+            }, {
+                super.onBackPressed()
+            })
+        } else {
+            super.onBackPressed()
+        }
+    }
+
+    private fun hideWeb() {
+        supportFragmentManager.findFragmentByTag(WebFragment.TAG)?.let {
+            supportFragmentManager.beginTransaction().hide(it).commit()
+        }
+    }
+
+    private fun releaseWeb() {
+        supportFragmentManager.findFragmentByTag(WebFragment.TAG)?.let {
+            supportFragmentManager.beginTransaction().remove(it).commit()
+        }
     }
 
     private var loadViewAction = fun(index: Int) {
@@ -125,6 +151,7 @@ class WebActivity : BaseActivity() {
                     window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
         }
+        releaseWeb()
         supportFragmentManager.beginTransaction().add(
             R.id.container,
             WebFragment.newInstance(extras),
@@ -137,6 +164,7 @@ class WebActivity : BaseActivity() {
         intent.extras.notNullWithElse(
             { extras ->
                 isExpand = true
+                releaseWeb()
                 supportFragmentManager.beginTransaction().add(
                     R.id.container,
                     WebFragment.newInstance(extras),
@@ -144,13 +172,12 @@ class WebActivity : BaseActivity() {
                 ).commit()
             },
             {
+                isExpand = false
                 FloatingWebClip.getInstance(this.isNightMode()).hide()
                 window.decorView.systemUiVisibility =
                     window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
                 window.statusBarColor = Color.parseColor("#CC1C1C1C")
-                supportFragmentManager.findFragmentByTag(WebFragment.TAG)?.let {
-                    supportFragmentManager.beginTransaction().remove(it).commit()
-                }
+                hideWeb()
             }
         )
     }
