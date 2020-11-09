@@ -16,6 +16,7 @@ abstract class DebugClickListener : View.OnClickListener {
             clickCount++
             handler.removeCallbacks(runnable)
             if (clickCount >= 5) {
+                clickCount = 0
                 onDebugClick()
             }
         } else {
