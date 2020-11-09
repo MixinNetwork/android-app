@@ -37,9 +37,9 @@ import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
+import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
+import one.mixin.android.widget.CaptchaView
 import one.mixin.android.widget.Keyboard
-import one.mixin.android.widget.RecaptchaView
 
 @AndroidEntryPoint
 class MobileFragment : BaseFragment() {
@@ -67,7 +67,7 @@ class MobileFragment : BaseFragment() {
 
     private var pin: String? = null
 
-    private var recaptchaView: RecaptchaView? = null
+    private var captchaView: CaptchaView? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_mobile, container, false) as ViewGroup
@@ -112,7 +112,7 @@ class MobileFragment : BaseFragment() {
     }
 
     override fun onBackPressed(): Boolean {
-        if (recaptchaView?.isVisible() == true) {
+        if (captchaView?.isVisible() == true) {
             hideLoading()
             return true
         }
@@ -139,7 +139,7 @@ class MobileFragment : BaseFragment() {
             .show()
     }
 
-    private fun requestSend(gRecaptchaResponse: String? = null) {
+    private fun requestSend(captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null) {
         if (!isAdded) return
 
         mobile_fab.show()
@@ -147,15 +147,21 @@ class MobileFragment : BaseFragment() {
         val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
         val verificationRequest = VerificationRequest(
             phoneNum,
-            if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name,
-            gRecaptchaResponse
+            if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name
         )
+        if (captchaResponse != null) {
+            if (captchaResponse.first.isG()) {
+                verificationRequest.gRecaptchaResponse = captchaResponse.second
+            } else {
+                verificationRequest.hCaptchaResponse = captchaResponse.second
+            }
+        }
         mobileViewModel.loginVerification(verificationRequest)
             .autoDispose(stopScope).subscribe(
                 { r: MixinResponse<VerificationResponse> ->
                     if (!r.isSuccess) {
-                        if (r.errorCode == NEED_RECAPTCHA) {
-                            initAndLoadRecaptcha()
+                        if (r.errorCode == NEED_CAPTCHA) {
+                            initAndLoadCaptcha()
                         } else {
                             hideLoading()
                             ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
@@ -182,30 +188,30 @@ class MobileFragment : BaseFragment() {
             )
     }
 
-    private fun initAndLoadRecaptcha() {
-        if (recaptchaView == null) {
-            recaptchaView = RecaptchaView(
+    private fun initAndLoadCaptcha() {
+        if (captchaView == null) {
+            captchaView = CaptchaView(
                 requireContext(),
-                object : RecaptchaView.Callback {
+                object : CaptchaView.Callback {
                     override fun onStop() {
                         mobile_fab?.hide()
                         mobile_cover?.visibility = GONE
                     }
 
-                    override fun onPostToken(value: String) {
+                    override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
                         requestSend(value)
                     }
                 }
             )
-            (view as ViewGroup).addView(recaptchaView?.webView, MATCH_PARENT, MATCH_PARENT)
+            (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
         }
-        recaptchaView?.loadRecaptcha()
+        captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
     }
 
     private fun hideLoading() {
         mobile_fab?.hide()
         mobile_cover?.visibility = GONE
-        recaptchaView?.hide()
+        captchaView?.hide()
     }
 
     private fun handleEditView(str: String) {

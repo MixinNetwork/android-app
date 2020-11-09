@@ -1,0 +1,44 @@
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script type="text/javascript">
+
+        var postToken = function (response) {
+            window.MixinContext.postToken(response);
+        }
+
+        var postMessage = function (value) {
+            window.MixinContext.postMessage(value);
+        }
+
+        var renderCallback = {
+            'sitekey': '#apiKey',
+            'callback': postToken,
+            'expired-callback': postMessage,
+            'error-callback': postMessage,
+            'size': 'invisible'
+        }
+
+        var onGCaptchaLoad = function () {
+            grecaptcha.render('html_element', window.renderCallback);
+            grecaptcha.execute();
+        }
+
+        var onHCaptchaLoad = function () {
+            var widgetID = hcaptcha.render('html_element', window.renderCallback);
+            hcaptcha.execute(widgetID);
+        }
+
+    </script>
+</head>
+
+<body>
+<form action="?" method="POST" style="hidden">
+    <div id="html_element"></div>
+</form>
+<script src="#src" async defer>
+</script>
+</body>
+
+</html>

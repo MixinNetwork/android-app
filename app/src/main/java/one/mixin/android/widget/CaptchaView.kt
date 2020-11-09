@@ -18,9 +18,9 @@ import one.mixin.android.extension.toast
 import java.nio.charset.Charset
 
 @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
-class RecaptchaView(private val context: Context, private val callback: Callback) {
+class CaptchaView(private val context: Context, private val callback: Callback) {
     companion object {
-        private const val WEB_VIEW_TIME_OUT = 30000L
+        private const val WEB_VIEW_TIME_OUT = 15000L
     }
 
     val webView: WebView by lazy {
@@ -30,20 +30,28 @@ class RecaptchaView(private val context: Context, private val callback: Callback
             }
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
-            addJavascriptInterface(this@RecaptchaView, "MixinContext")
+            addJavascriptInterface(this@CaptchaView, "MixinContext")
             translationY = context.screenHeight().toFloat()
         }
     }
 
     private val stopWebViewRunnable = Runnable {
-        webView.loadUrl("about:blank")
-        hide()
-        webView.webViewClient = object : WebViewClient() {}
-        context.toast(R.string.error_recaptcha_timeout)
-        callback.onStop()
+        if (captchaType.isG()) {
+            loadCaptcha(CaptchaType.HCaptcha)
+        } else {
+            webView.loadUrl("about:blank")
+            hide()
+            webView.webViewClient = object : WebViewClient() {}
+            context.toast(R.string.error_recaptcha_timeout)
+            callback.onStop()
+        }
     }
 
-    fun loadRecaptcha() {
+    private var captchaType = CaptchaType.GCaptcha
+
+    fun loadCaptcha(captchaType: CaptchaType) {
+        this.captchaType = captchaType
+        val isG = captchaType.isG()
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
@@ -54,12 +62,18 @@ class RecaptchaView(private val context: Context, private val callback: Callback
                 super.onPageFinished(view, url)
                 context.cancelRunOnUIThread(stopWebViewRunnable)
                 webView.animate().translationY(0f)
-                webView.evaluateJavascript("javascript:grecaptcha.execute()", null)
             }
         }
-        val input = context.assets.open("recaptcha.html")
+        val input = context.assets.open("captcha.html")
         var html = input.source().buffer().readByteString().string(Charset.forName("utf-8"))
-        html = html.replace("#apiKey", BuildConfig.RECAPTCHA_KEY)
+        val apiKey = if (isG) BuildConfig.RECAPTCHA_KEY else BuildConfig.HCAPTCHA_KEY
+        val src = if (isG) {
+            "https://www.recaptcha.net/recaptcha/api.js?onload=onGCaptchaLoad&render=explicit"
+        } else {
+            "https://hcaptcha.com/1/api.js?onload=onHCaptchaLoad&render=explicit"
+        }
+        html = html.replace("#src", src)
+        html = html.replace("#apiKey", apiKey)
         webView.clearCache(true)
         webView.loadDataWithBaseURL(Constants.API.DOMAIN, html, "text/html", "UTF-8", null)
     }
@@ -85,12 +99,18 @@ class RecaptchaView(private val context: Context, private val callback: Callback
             hide()
             webView.loadUrl("about:blank")
             webView.webViewClient = object : WebViewClient() {}
-            callback.onPostToken(value)
+            callback.onPostToken(Pair(captchaType, value))
         }
+    }
+
+    enum class CaptchaType {
+        GCaptcha, HCaptcha;
+
+        fun isG() = this == GCaptcha
     }
 
     interface Callback {
         fun onStop()
-        fun onPostToken(value: String)
+        fun onPostToken(value: Pair<CaptchaType, String>)
     }
 }

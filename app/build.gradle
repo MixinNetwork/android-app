@@ -36,6 +36,7 @@ android {
         buildConfigField 'String', 'BUGSNAG_API_KEY', "\"${propOrEmpty('MIXIN_BUGSNAG_API_KEY')}\""
         buildConfigField 'String', 'APPCENTER_API_KEY', "\"${propOrEmpty('MIXIN_APPCENTER_API_KEY')}\""
         buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('MIXIN_RECAPTCHA_KEY')}\""
+        buildConfigField 'String', 'HCAPTCHA_KEY', "\"${propOrEmpty('MIXIN_HCAPTCHA_KEY')}\""
         buildConfigField 'String', 'GIPHY_KEY', "\"${propOrEmpty('MIXIN_GIPHY_KEY')}\""
         buildConfigField 'String', 'SafetyNet_API_KEY', "\"${propOrEmpty('MIXIN_SAFETYNET_API_KEY')}\""
         buildConfigField 'String', 'FS_CLIENT_ID', "\"${propOrEmpty('MIXIN_FS_CLIENT_ID')}\""
