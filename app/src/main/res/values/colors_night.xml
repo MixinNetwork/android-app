@@ -40,4 +40,6 @@
     <color name="codeBorderNight">#545859</color>
 
     <color name="dividerNight">#424649</color>
+
+    <color name="highlight_night">#33FFFFFF</color>
 </resources>

@@ -61,6 +61,8 @@
         <item name="code_border">@color/codeBorder</item>
 
         <item name="map_default">@drawable/ic_map_default_night</item>
+
+        <item name="android:colorControlHighlight">@color/highlight</item>
     </style>
 
 
