@@ -173,6 +173,7 @@ class WalletSearchFragment : BaseFragment() {
                     R.id.action_wallet_search_to_transactions,
                     Bundle().apply { putParcelable(ARGS_ASSET, assetItem) }
                 )
+                viewModel.updateRecentSearchAssets(defaultSharedPreferences, assetId)
             } else {
                 lifecycleScope.launch {
                     val dialog = indeterminateProgressDialog(
@@ -190,10 +191,9 @@ class WalletSearchFragment : BaseFragment() {
                         R.id.action_wallet_search_to_transactions,
                         Bundle().apply { putParcelable(ARGS_ASSET, asset) }
                     )
+                    viewModel.updateRecentSearchAssets(defaultSharedPreferences, assetId)
                 }
             }
-
-            viewModel.updateRecentSearchAssets(defaultSharedPreferences, assetId)
         }
     }
 }
