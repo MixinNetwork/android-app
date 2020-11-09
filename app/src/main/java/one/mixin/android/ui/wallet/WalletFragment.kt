@@ -63,7 +63,6 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     private var assets: List<AssetItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
     private lateinit var header: View
-    private lateinit var footer: View
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -76,14 +75,10 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         super.onViewCreated(view, savedInstanceState)
         title_view.right_animator.setOnClickListener { showBottom() }
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        search_ib.setOnClickListener { view.navigate(R.id.action_wallet_to_wallet_search) }
 
         header = layoutInflater.inflate(R.layout.view_wallet_fragment_header, coins_rv, false)
         assetsAdapter.headerView = header
-        footer = layoutInflater.inflate(R.layout.layout_wallet_asset_foot, coins_rv, false)
-        footer.setOnClickListener {
-            view.navigate(R.id.action_wallet_to_asset_add)
-        }
-        assetsAdapter.footerView = footer
         (coins_rv.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
         coins_rv.setHasFixedSize(true)
         ItemTouchHelper(
@@ -192,7 +187,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         }.toMutableList()
         if (list.isNotEmpty()) {
             header.pie_item_container.removeAllViews()
-            list.sortWith(Comparator { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() })
+            list.sortWith { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() }
             context?.mainThread {
                 header.percent_view.setPercents(list)
             }
@@ -265,10 +260,6 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         val rootView = this.view
-        view.add.setOnClickListener {
-            rootView?.navigate(R.id.action_wallet_to_asset_add)
-            bottomSheet.dismiss()
-        }
         view.hide.setOnClickListener {
             rootView?.navigate(R.id.action_wallet_fragment_to_hidden_assets_fragment)
             bottomSheet.dismiss()

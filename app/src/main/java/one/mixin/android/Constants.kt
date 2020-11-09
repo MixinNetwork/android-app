@@ -45,6 +45,7 @@ object Constants {
         const val PREF_CHECK_STORAGE = "pref_check_storage"
         const val PREF_TRIED_UPDATE_KEY = "pref_tried_update_key"
         const val PREF_DUPLICATE_TRANSFER = "pref_duplicate_transfer"
+        const val PREF_RECENT_SEARCH_ASSETS = "pref_recent_search_assets"
     }
 
     object Scheme {
@@ -166,6 +167,7 @@ object Constants {
     const val BIOMETRIC_PIN_CHECK = "biometric_pin_check"
 
     const val RECENT_USED_BOTS_MAX_COUNT = 12
+    const val RECENT_SEARCH_ASSETS_MAX_COUNT = 8
 
     const val PIN_ERROR_MAX = 5
 

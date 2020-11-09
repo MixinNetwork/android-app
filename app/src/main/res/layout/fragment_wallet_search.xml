@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?attr/bg_white">
+
+    <RelativeLayout
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="?attr/bg_white"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageButton
+            android:id="@+id/back_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center_vertical|start"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_back"
+            tools:ignore="ContentDescription" />
+
+        <one.mixin.android.widget.SearchView
+            android:id="@+id/search_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="16dp"
+            android:layout_toEndOf="@+id/back_ib"
+            android:background="@null"
+            android:drawablePadding="6dp"
+            android:gravity="center_vertical"
+            android:hint="@string/wallet_search_hint"
+            android:imeOptions="actionSearch|flagNoExtractUi"
+            android:inputType="text"
+            android:maxLines="1"
+            android:textColor="?attr/text_primary"
+            android:textColorHint="?attr/text_minor"
+            android:textSize="14sp" />
+    </RelativeLayout>
+
+    <ViewAnimator
+        android:id="@+id/rv_va"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/default_rv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:listitem="@layout/item_wallet_search" />
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/search_ll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/search_rv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:listitem="@layout/item_wallet_search" />
+
+            <ProgressBar
+                android:id="@+id/pb"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center_horizontal"
+                android:theme="@style/AppTheme.GrayProgress"/>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </ViewAnimator>
+</androidx.appcompat.widget.LinearLayoutCompat>

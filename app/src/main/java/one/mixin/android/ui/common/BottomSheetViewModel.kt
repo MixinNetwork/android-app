@@ -301,19 +301,7 @@ class BottomSheetViewModel @ViewModelInject internal constructor(
 
     suspend fun refreshAsset(assetId: String): AssetItem? {
         return withContext(Dispatchers.IO) {
-            var result: AssetItem? = null
-            handleMixinResponse(
-                invokeNetwork = {
-                    assetRepository.asset(assetId)
-                },
-                successBlock = { response ->
-                    response.data?.let {
-                        assetRepository.insert(it)
-                        result = assetRepository.findAssetItemById(assetId)
-                    }
-                }
-            )
-            result
+            assetRepository.findOrSyncAsset(assetId)
         }
     }
 

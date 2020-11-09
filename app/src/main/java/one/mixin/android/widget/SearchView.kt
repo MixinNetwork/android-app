@@ -10,6 +10,7 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView.OnEditorActionListener
 import androidx.appcompat.widget.AppCompatEditText
+import androidx.core.content.ContextCompat
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
@@ -18,13 +19,13 @@ class SearchView(context: Context, attrs: AttributeSet?) : AppCompatEditText(con
 
     private val iconClear: Drawable by lazy {
         val size = context.dpToPx(16f)
-        context.getDrawable(R.drawable.ic_asset_add_search_clear).apply {
+        ContextCompat.getDrawable(context, R.drawable.ic_asset_add_search_clear).apply {
             this?.setBounds(0, 0, size, size)
         }!!
     }
     private val iconSearch: Drawable by lazy {
         val size = context.dpToPx(16f)
-        context.getDrawable(R.drawable.ic_asset_add_search).apply {
+        ContextCompat.getDrawable(context, R.drawable.ic_asset_add_search).apply {
             this?.setBounds(0, 0, size, size)
         }!!
     }

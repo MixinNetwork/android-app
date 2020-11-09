@@ -62,6 +62,17 @@ interface AssetDao : BaseDao<Asset> {
     suspend fun fuzzySearchAsset(name: String, symbol: String): List<AssetItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query(
+        """$PREFIX_ASSET_ITEM 
+        WHERE (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
+        ORDER BY 
+            a1.symbol = :symbol COLLATE NOCASE OR a1.name = :name COLLATE NOCASE DESC,
+            a1.price_usd*a1.balance DESC
+        """
+    )
+    suspend fun fuzzySearchAssetIgnoreAmount(name: String, symbol: String): List<AssetItem>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :id")
     fun assetItem(id: String): LiveData<AssetItem>
 
@@ -87,4 +98,7 @@ interface AssetDao : BaseDao<Asset> {
 
     @Query("UPDATE assets SET balance = 0 WHERE asset_id IN (:assetIds)")
     suspend fun zeroClearSuspend(assetIds: List<String>)
+
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:assetIds)")
+    suspend fun suspendFindAssetsByIds(assetIds: List<String>): List<AssetItem>
 }

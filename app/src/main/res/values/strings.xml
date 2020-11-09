@@ -429,6 +429,9 @@
     <string name="wallet_biometric_invalid">Invalid biometrics state, please reset in wallet setting.</string>
     <string name="wallet_setting_currency_desc" translatable="false">%1$s (%2$s)</string>
     <string name="wallet_transactions_asset_key_warning">Asset key is NOT a deposit address!</string>
+    <string name="wallet_search_hint">Name, Symbol</string>
+    <string name="wallet_trending">Trending</string>
+    <string name="wallet_recent_search">Recent searches</string>
     <!--pin logs-->
     <string name="logs">Logs</string>
     <string name="log_category_pin_incorrect">PIN incorrect</string>
