@@ -28,6 +28,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navigate
+import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
@@ -70,6 +71,7 @@ class WalletSearchFragment : BaseFragment() {
             activity?.onBackPressed()
         }
         search_et.hint = getString(R.string.wallet_search_hint)
+        search_et.showKeyboard()
         @SuppressLint("AutoDispose")
         disposable = search_et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
