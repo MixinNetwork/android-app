@@ -57,15 +57,27 @@ class WalletSearchFragment : BaseFragment() {
     private var disposable: Disposable? = null
     private var currentSearch: Job? = null
 
+    private var currentQuery: String = ""
+
+    private var hasInitializedRootView = false
+    private var rootView: View? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? =
-        inflater.inflate(R.layout.fragment_wallet_search, container, false)
+        getPersistentView(inflater, container, R.layout.fragment_wallet_search)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        if (!hasInitializedRootView) {
+            hasInitializedRootView = true
+            initViews()
+        }
+    }
+
+    private fun initViews() {
         back_ib.setOnClickListener {
             search_et.hideKeyboard()
             activity?.onBackPressed()
@@ -81,7 +93,10 @@ class WalletSearchFragment : BaseFragment() {
                         rv_va?.displayedChild = POS_DEFAULT
                     } else {
                         rv_va?.displayedChild = POS_SEARCH
-                        search(it.toString())
+                        if (it.toString() != currentQuery) {
+                            currentQuery = it.toString()
+                            search(it.toString())
+                        }
                     }
                 },
                 {}
@@ -106,6 +121,11 @@ class WalletSearchFragment : BaseFragment() {
     override fun onStop() {
         super.onStop()
         currentSearch?.cancel()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        disposable?.dispose()
     }
 
     private fun loadDefaultRvData() = lifecycleScope.launch {
@@ -197,5 +217,15 @@ class WalletSearchFragment : BaseFragment() {
                 }
             }
         }
+    }
+
+    private fun getPersistentView(inflater: LayoutInflater?, container: ViewGroup?, @Suppress("SameParameterValue") layout: Int): View? {
+        if (rootView == null) {
+            rootView = inflater?.inflate(layout, container, false)
+        } else {
+            (rootView?.parent as? ViewGroup)?.removeView(rootView)
+        }
+
+        return rootView
     }
 }
