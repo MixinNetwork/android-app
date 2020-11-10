@@ -11,7 +11,6 @@ import androidx.test.espresso.NoMatchingViewException
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
-import androidx.test.espresso.contrib.RecyclerViewActions.scrollToPosition
 import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
@@ -26,7 +25,6 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.util.EspressoIdlingResource
 import one.mixin.android.util.swipeRight
 import one.mixin.android.util.waitMillis
-import one.mixin.android.util.withRecyclerView
 import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
@@ -90,22 +88,23 @@ class WalletFragmentTest {
     }
 
     @Test
-    fun testBottomMenuNavigate() {
+    fun testOpenWalletSearch() {
         var navController: NavController? = null
         val activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
             navController = it.navController
         }
 
-        // open AssetAddFragment
-        onView(withId(R.id.right_animator)).perform(click())
-        onView(withId(R.id.add))
-            .inRoot(isDialog())
-            .check(matches(isDisplayed()))
+        onView(withId(R.id.search_ib)).perform(click())
+        assertTrue(navController?.currentDestination?.id == R.id.wallet_search_fragment)
 
-        onView(withId(R.id.add)).perform(click())
-        assertTrue(navController?.currentDestination?.id == R.id.asset_add_fragment)
-        activityScenario.onActivity {
-            navController?.navigateUp()
+        activityScenario.close()
+    }
+
+    @Test
+    fun testBottomMenuNavigate() {
+        var navController: NavController? = null
+        val activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
+            navController = it.navController
         }
 
         // open HiddenAssetFragment
@@ -146,26 +145,6 @@ class WalletFragmentTest {
         assertTrue(navController?.currentDestination?.id == R.id.transactions_fragment)
         activityScenario.onActivity {
             navController?.navigateUp()
-        }
-
-        // open AssetAddFragment
-        var itemCount = 1
-        activityScenario.onActivity { activity ->
-            val recyclerView = activity.findViewById<RecyclerView>(R.id.coins_rv)
-            itemCount = recyclerView.adapter?.itemCount ?: 1
-        }
-        if (itemCount > 1) {
-            onView(withId(R.id.coins_rv))
-                .perform(scrollToPosition<RecyclerView.ViewHolder>(itemCount - 1))
-            onView(
-                withRecyclerView(R.id.coins_rv)
-                    .atPosition(itemCount - 1)
-            )
-                .perform(click())
-            assertTrue(navController?.currentDestination?.id == R.id.asset_add_fragment)
-            activityScenario.onActivity {
-                navController?.navigateUp()
-            }
         }
 
         // swipe asset item

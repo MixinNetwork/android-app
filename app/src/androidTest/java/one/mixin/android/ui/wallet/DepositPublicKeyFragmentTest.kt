@@ -3,7 +3,9 @@ package one.mixin.android.ui.wallet
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -71,6 +73,19 @@ class DepositPublicKeyFragmentTest : DepositFragmentTest() {
             }
             onView(withId(R.id.warning_tv))
                 .check(matches(ViewMatchers.withText(warningText)))
+        }
+    }
+
+    @Test
+    fun testClickImage() {
+        go2Deposit(false) { _, _ ->
+            closeTipBottom()
+
+            onView(withId(R.id.qr)).perform(ViewActions.click())
+
+            onView(withId(R.id.content_ll))
+                .inRoot(RootMatchers.isDialog())
+                .check(matches(ViewMatchers.isDisplayed()))
         }
     }
 }

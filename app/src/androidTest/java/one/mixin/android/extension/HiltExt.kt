@@ -1,4 +1,4 @@
-package one.mixin.android
+package one.mixin.android.extension
 
 import android.content.ComponentName
 import android.content.Intent
@@ -8,6 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
+import one.mixin.android.HiltTestActivity
+import one.mixin.android.R
 
 inline fun <reified T : Fragment> launchFragmentInHiltContainer(
     fragment: T,

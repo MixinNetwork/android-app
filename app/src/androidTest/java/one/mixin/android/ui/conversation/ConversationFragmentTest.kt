@@ -5,7 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import one.mixin.android.R
-import one.mixin.android.launchFragmentInHiltContainer
+import one.mixin.android.extension.launchFragmentInHiltContainer
 import one.mixin.android.ui.TestRegistry
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_RESULT
 import one.mixin.android.vo.ForwardCategory

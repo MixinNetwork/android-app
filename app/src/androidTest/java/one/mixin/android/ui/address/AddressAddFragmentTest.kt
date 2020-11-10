@@ -9,8 +9,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import one.mixin.android.R
+import one.mixin.android.extension.launchFragmentInHiltContainer
 import one.mixin.android.extension.withArgs
-import one.mixin.android.launchFragmentInHiltContainer
 import one.mixin.android.mock.mockAsset
 import one.mixin.android.ui.TestRegistry
 import one.mixin.android.ui.qr.CaptureActivity

@@ -13,7 +13,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.getTipsByAsset
-import one.mixin.android.launchFragmentInHiltContainer
+import one.mixin.android.extension.launchFragmentInHiltContainer
 import one.mixin.android.mock.mockAssetWithDestinationAndTag
 import one.mixin.android.util.waitMillis
 import one.mixin.android.vo.needShowReserve
