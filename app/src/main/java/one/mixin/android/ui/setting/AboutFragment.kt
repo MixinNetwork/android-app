@@ -32,6 +32,7 @@ class AboutFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         val versionName = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName
         title_view.setSubTitle(getString(R.string.app_name), getString(R.string.about_version, versionName))
+        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         imageView.setOnClickListener(object : DebugClickListener() {
             override fun onDebugClick() {
                 if (defaultSharedPreferences.getBoolean(Constants.Debug.WEB_DEBUG, false)) {
@@ -45,11 +46,6 @@ class AboutFragment : BaseFragment() {
 
             override fun onSingleClick() {}
         })
-        title_view.setSubTitle(
-            getString(R.string.app_name),
-            getString(R.string.about_version, versionName)
-        )
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         twitter.setOnClickListener { context?.openUrl("https://twitter.com/MixinMessenger") }
         facebook.setOnClickListener { context?.openUrl("https://fb.com/MixinMessenger") }
         help_center.setOnClickListener { context?.openUrl(Constants.HelpLink.CENTER) }
