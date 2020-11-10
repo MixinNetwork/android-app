@@ -107,6 +107,17 @@ class WebActivity : BaseActivity() {
         handleExtras(intent)
     }
 
+    override fun onResume() {
+        super.onResume()
+        supportFragmentManager.findFragmentByTag(WebFragment.TAG).run {
+            if (this != null && this.isVisible) {
+                FloatingWebClip.getInstance(this@WebActivity.isNightMode()).show(this@WebActivity)
+            } else {
+                FloatingWebClip.getInstance(this@WebActivity.isNightMode()).hide()
+            }
+        }
+    }
+
     override fun onBackPressed() {
         if (!isExpand) {
             supportFragmentManager.findFragmentByTag(WebFragment.TAG).notNullWithElse({
