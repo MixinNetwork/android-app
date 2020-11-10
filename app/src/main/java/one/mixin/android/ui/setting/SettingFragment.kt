@@ -11,18 +11,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.Debug.WEB_DEBUG
 import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.R
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
-import one.mixin.android.widget.DebugClickListener
 
 @AndroidEntryPoint
 class SettingFragment : BaseFragment() {
@@ -46,21 +42,9 @@ class SettingFragment : BaseFragment() {
         title_view.left_ib.setOnClickListener {
             activity?.onBackPressed()
         }
-        about_rl.setOnClickListener(object : DebugClickListener() {
-            override fun onDebugClick() {
-                if (defaultSharedPreferences.getBoolean(WEB_DEBUG, false)) {
-                    defaultSharedPreferences.putBoolean(WEB_DEBUG, false)
-                    toast(R.string.web_debug_disable)
-                } else {
-                    defaultSharedPreferences.putBoolean(WEB_DEBUG, true)
-                    toast(R.string.web_debug_enable)
-                }
-            }
-
-            override fun onSingleClick() {
-                navTo(AboutFragment.newInstance(), AboutFragment.TAG)
-            }
-        })
+        about_rl.setOnClickListener {
+            navTo(AboutFragment.newInstance(), AboutFragment.TAG)
+        }
         desktop_rl.setOnClickListener {
             DeviceFragment.newInstance().showNow(parentFragmentManager, DeviceFragment.TAG)
         }
