@@ -65,6 +65,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -73,6 +74,7 @@ import one.mixin.android.extension.checkInlinePermissions
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
@@ -289,7 +291,7 @@ class WebFragment : BaseFragment() {
         }
         registerForContextMenu(webView)
 
-        if (BuildConfig.DEBUG) {
+        if (defaultSharedPreferences.getBoolean(Constants.Debug.WEB_DEBUG, false)) {
             WebView.setWebContentsDebuggingEnabled(true)
         }
         app = requireArguments().getParcelable(ARGS_APP)

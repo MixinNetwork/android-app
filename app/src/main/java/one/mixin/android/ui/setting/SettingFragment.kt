@@ -66,9 +66,17 @@ class SettingFragment : BaseFragment() {
         share_rl.setOnClickListener {
             val sendIntent = Intent()
             sendIntent.action = Intent.ACTION_SEND
-            sendIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.setting_share_text, Session.getAccount()?.identityNumber))
+            sendIntent.putExtra(
+                Intent.EXTRA_TEXT,
+                getString(R.string.setting_share_text, Session.getAccount()?.identityNumber)
+            )
             sendIntent.type = "text/plain"
-            startActivity(Intent.createChooser(sendIntent, resources.getText(R.string.setting_share)))
+            startActivity(
+                Intent.createChooser(
+                    sendIntent,
+                    resources.getText(R.string.setting_share)
+                )
+            )
         }
         feedback_rl.setOnClickListener {
             lifecycleScope.launch {
