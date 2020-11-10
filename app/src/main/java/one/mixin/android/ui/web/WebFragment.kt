@@ -272,7 +272,7 @@ class WebFragment : BaseFragment() {
     private lateinit var webView: MixinWebView
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         contentView = view.container
-        webView = if (index >= 0) {
+        webView = if (index >= 0 && index < clips.size) {
             clips[index].let { clip ->
                 contentView.title_tv.text = clip.name
                 clip.icon?.let { icon ->
