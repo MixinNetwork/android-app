@@ -223,7 +223,6 @@
             android:id="@+id/action_wallet_search_to_transactions"
             app:destination="@id/transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"
-            app:popUpTo="@id/wallet_fragment"/>
+            app:popExitAnim="@anim/slide_out_right"/>
     </fragment>
 </navigation>
