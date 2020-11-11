@@ -80,8 +80,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }
 
         headerView = layoutInflater.inflate(R.layout.view_transactions_fragment_header, transactions_rv, false)
-        headerView.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        headerView.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         headerView.group_info_member_title_sort.setOnClickListener {
             showFiltersSheet()
         }
@@ -189,6 +187,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         } catch (ignored: NumberFormatException) {
             "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
         }
+        header.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
+        header.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
     }
 
     private fun refreshPendingDeposits(asset: AssetItem) {
