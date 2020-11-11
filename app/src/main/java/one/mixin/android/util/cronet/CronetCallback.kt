@@ -1,6 +1,7 @@
 package one.mixin.android.util.cronet
 
 import android.os.ConditionVariable
+import android.util.Log.getStackTraceString
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.EventListener
@@ -12,6 +13,7 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.chromium.net.CronetException
+import org.chromium.net.RequestFinishedInfo
 import org.chromium.net.UrlRequest
 import org.chromium.net.UrlResponseInfo
 import timber.log.Timber
@@ -37,8 +39,6 @@ class CronetCallback(
     private var followCount = 0
 
     override fun onResponseStarted(request: UrlRequest, info: UrlResponseInfo) {
-        Timber.d("$TAG onResponseStarted $info")
-
         response = responseFromResponse(info)
 
         eventListener?.responseHeadersEnd(call, response)
@@ -159,5 +159,47 @@ class CronetCallback(
         const val TAG = "CronetCallback"
 
         const val MAX_FOLLOW_COUNT = 20
+
+        fun onRequestFinishedHandle(requestInfo: RequestFinishedInfo) {
+            Timber.d("$TAG ############# url: ${requestInfo.url} #############")
+            Timber.d("$TAG onRequestFinished: ${requestInfo.finishedReason}")
+            val metrics = requestInfo.metrics
+            if (metrics != null) {
+                Timber.d("$TAG RequestStart: ${if (metrics.requestStart == null) -1 else metrics.requestStart!!.time}")
+                Timber.d("$TAG DnsStart: ${if (metrics.dnsStart == null) -1 else metrics.dnsStart!!.time}")
+                Timber.d("$TAG DnsEnd: ${if (metrics.dnsEnd == null) -1 else metrics.dnsEnd!!.time}")
+                Timber.d("$TAG ConnectStart: ${if (metrics.connectStart == null) -1 else metrics.connectStart!!.time}")
+                Timber.d("$TAG ConnectEnd: ${if (metrics.connectEnd == null) -1 else metrics.connectEnd!!.time}")
+                Timber.d("$TAG SslStart: ${if (metrics.sslStart == null) -1 else metrics.sslStart!!.time}")
+                Timber.d("$TAG SslEnd: ${if (metrics.sslEnd == null) -1 else metrics.sslEnd!!.time}")
+                Timber.d("$TAG SendingStart: ${if (metrics.sendingStart == null) -1 else metrics.sendingStart!!.time}")
+                Timber.d("$TAG SendingEnd: ${if (metrics.sendingEnd == null) -1 else metrics.sendingEnd!!.time}")
+                Timber.d("$TAG PushStart: ${if (metrics.pushStart == null) -1 else metrics.pushStart!!.time}")
+                Timber.d("$TAG PushEnd: ${if (metrics.pushEnd == null) -1 else metrics.pushEnd!!.time}")
+                Timber.d("$TAG ResponseStart: ${if (metrics.responseStart == null) -1 else metrics.responseStart!!.time}")
+                Timber.d("$TAG RequestEnd: ${if (metrics.requestEnd == null) -1 else metrics.requestEnd!!.time}")
+                Timber.d("$TAG TotalTimeMs: ${metrics.totalTimeMs}")
+                Timber.d("$TAG RecvByteCount: ${metrics.receivedByteCount}")
+                Timber.d("$TAG SentByteCount: ${metrics.sentByteCount}")
+                Timber.d("$TAG SocketReused: ${metrics.socketReused}")
+                Timber.d("$TAG TtfbMs: ${metrics.ttfbMs}")
+            }
+            val exception: java.lang.Exception? = requestInfo.exception
+            if (exception != null) {
+                Timber.e(getStackTraceString(exception))
+            }
+            val urlResponseInfo = requestInfo.responseInfo
+            if (urlResponseInfo != null) {
+                Timber.d("$TAG Cache: ${urlResponseInfo.wasCached()}")
+                Timber.d("$TAG Protocol: ${urlResponseInfo.negotiatedProtocol}")
+                Timber.d("$TAG HttpCode: ${urlResponseInfo.httpStatusCode}")
+                Timber.d("$TAG ProxyServer: ${urlResponseInfo.proxyServer}")
+                val headers = urlResponseInfo.allHeadersAsList
+                for ((key, value) in headers) {
+                    Timber.d("$TAG === $key : $value ===")
+                }
+            }
+            Timber.d("$TAG ############# END #############")
+        }
     }
 }

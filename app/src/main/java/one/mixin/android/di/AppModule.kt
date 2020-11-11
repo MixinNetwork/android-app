@@ -50,11 +50,14 @@ import one.mixin.android.job.MyJobService
 import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.internal.MusicServiceConnection
 import one.mixin.android.util.LiveDataCallAdapterFactory
+import one.mixin.android.util.cronet.CronetCallback
 import one.mixin.android.util.cronet.CronetInterceptor
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
 import org.chromium.net.CronetEngine
+import org.chromium.net.ExperimentalCronetEngine
+import org.chromium.net.RequestFinishedInfo
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -85,17 +88,21 @@ object AppModule {
 
     @Singleton
     @Provides
+    fun provideDispatcher(): Dispatcher = Dispatcher()
+
+    @Singleton
+    @Provides
     fun provideOkHttp(
         resolver: ContentResolver,
-        cronetEngine: CronetEngine,
+        dispatcher: Dispatcher,
+        cronetEngine: ExperimentalCronetEngine,
         httpLoggingInterceptor: HttpLoggingInterceptor?,
     ): OkHttpClient {
         val builder = OkHttpClient.Builder()
-        val dispatcher = Dispatcher()
         builder.dispatcher(dispatcher)
         builder.addInterceptor(HostSelectionInterceptor.get())
         httpLoggingInterceptor?.let { interceptor ->
-            builder.addNetworkInterceptor(interceptor)
+            builder.addInterceptor(interceptor)
         }
         builder.connectTimeout(10, TimeUnit.SECONDS)
         builder.writeTimeout(10, TimeUnit.SECONDS)
@@ -122,15 +129,28 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideCronetEngine(app: Application): CronetEngine {
+    fun provideCronetEngine(
+        app: Application,
+        dispatcher: Dispatcher
+    ): ExperimentalCronetEngine {
         val cacheDir = app.applicationContext.cacheDir.resolve("cronet-cache")
         cacheDir.mkdir()
-        return CronetEngine.Builder(app.applicationContext)
-            // .enableHttp2(false)
+        return ExperimentalCronetEngine.Builder(app.applicationContext)
+            .enableNetworkQualityEstimator(true)
+            .enableHttp2(true)
             .enableQuic(true)
             .setStoragePath(cacheDir.path)
             // .enableBrotli(true)
-            .build()
+            .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 10 * 1024 * 1024)
+            .build().apply {
+                if (BuildConfig.DEBUG) {
+                    addRequestFinishedListener(object : RequestFinishedInfo.Listener(dispatcher.executorService) {
+                        override fun onRequestFinished(requestInfo: RequestFinishedInfo) {
+                            CronetCallback.onRequestFinishedHandle(requestInfo)
+                        }
+                    })
+                }
+            }
     }
 
     @Singleton
