@@ -306,9 +306,7 @@ class WebFragment : BaseFragment() {
             }
         )
         if (requireContext().checkInlinePermissions()) {
-            if (clips.size > 0) {
-                FloatingWebClip.getInstance(requireActivity().isNightMode()).show(requireActivity())
-            }
+            showClip(requireActivity())
         }
     }
 
