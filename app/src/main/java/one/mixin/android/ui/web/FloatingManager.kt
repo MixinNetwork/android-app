@@ -13,6 +13,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.initRenderScript
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.util.GsonHelper
@@ -77,6 +78,10 @@ fun updateClip(activity: Activity, index: Int, webClip: WebClip) {
         clips.add(index, webClip)
         saveClips(activity)
     }
+}
+
+fun showClip(activity: Activity) {
+    collapse(activity)
 }
 
 fun holdClip(activity: Activity, webClip: WebClip) {

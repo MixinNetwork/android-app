@@ -95,7 +95,7 @@ class WebActivity : BaseActivity() {
                 }
                 .setPositiveButton(R.string.confirm) { _, _ ->
                     releaseAll()
-                    finish()
+                    onBackPressed()
                 }
                 .show()
         }
@@ -110,7 +110,7 @@ class WebActivity : BaseActivity() {
         super.onResume()
         supportFragmentManager.findFragmentByTag(WebFragment.TAG).run {
             if (this != null && this.isVisible) {
-                FloatingWebClip.getInstance(this@WebActivity.isNightMode()).show(this@WebActivity)
+                showClip(this@WebActivity)
             }
         }
     }
@@ -118,7 +118,7 @@ class WebActivity : BaseActivity() {
     override fun onBackPressed() {
         if (!isExpand) {
             supportFragmentManager.findFragmentByTag(WebFragment.TAG).notNullWithElse({
-                FloatingWebClip.getInstance(this.isNightMode()).show(this)
+                showClip(this@WebActivity)
                 isExpand = true
                 supportFragmentManager.beginTransaction().show(it).commit()
                 if (it is WebFragment) {
