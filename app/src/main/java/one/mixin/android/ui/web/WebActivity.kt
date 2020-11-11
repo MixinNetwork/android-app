@@ -103,7 +103,6 @@ class WebActivity : BaseActivity() {
         close.setOnClickListener {
             onBackPressed()
         }
-
         handleExtras(intent)
     }
 
@@ -112,8 +111,6 @@ class WebActivity : BaseActivity() {
         supportFragmentManager.findFragmentByTag(WebFragment.TAG).run {
             if (this != null && this.isVisible) {
                 FloatingWebClip.getInstance(this@WebActivity.isNightMode()).show(this@WebActivity)
-            } else {
-                FloatingWebClip.getInstance(this@WebActivity.isNightMode()).hide()
             }
         }
     }
