@@ -16,7 +16,6 @@ import com.microsoft.appcenter.crashes.Crashes
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
-import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.android.components.ApplicationComponent
 import io.reactivex.plugins.RxJavaPlugins
 import kotlinx.coroutines.Dispatchers

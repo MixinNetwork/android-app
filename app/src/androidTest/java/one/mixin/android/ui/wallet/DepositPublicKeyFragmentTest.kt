@@ -8,6 +8,7 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -52,13 +53,13 @@ class DepositPublicKeyFragmentTest : DepositFragmentTest() {
             val asset = fragment!!.asset
 
             onView(withId(R.id.title_tv))
-                .check(matches(ViewMatchers.withText(ctx.getString(R.string.filters_deposit))))
+                .check(matches(withText(ctx.getString(R.string.filters_deposit))))
             onView(withId(R.id.sub_title_tv))
-                .check(matches(ViewMatchers.withText(asset.symbol)))
+                .check(matches(withText(asset.symbol)))
 
             val tips: String = fragment!!.getTipsByAsset(asset) + " " + ctx.getString(R.string.deposit_confirmation, asset.confirmations)
             onView(withId(R.id.confirm_tv))
-                .check(matches(ViewMatchers.withText(tips)))
+                .check(matches(withText(tips)))
 
             val reserveTip = if (asset.needShowReserve()) {
                 ctx.getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
@@ -72,7 +73,7 @@ class DepositPublicKeyFragmentTest : DepositFragmentTest() {
                 }
             }
             onView(withId(R.id.warning_tv))
-                .check(matches(ViewMatchers.withText(warningText)))
+                .check(matches(withText(warningText)))
         }
     }
 

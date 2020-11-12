@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.content.Context
-import android.view.inputmethod.InputMethodManager
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.core.app.ActivityScenario
@@ -18,12 +17,12 @@ import androidx.test.espresso.matcher.ViewMatchers.withHint
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import one.mixin.android.R
 import one.mixin.android.util.ClickDrawableAction
 import one.mixin.android.util.EspressoIdlingResource
+import one.mixin.android.util.isKeyboardShown
 import one.mixin.android.util.waitMillis
 import org.hamcrest.core.IsNot.not
 import org.junit.After
@@ -63,7 +62,7 @@ class WalletSearchFragmentTest {
                 .check(matches(isFocused()))
                 .check(matches(withHint(ctx.getString(R.string.wallet_search_hint))))
                 .check(matches(withText("")))
-            isKeyboardShown()
+            assertTrue(isKeyboardShown())
 
             onView(withId(R.id.default_rv)).check(matches(isDisplayed()))
             onView(withId(R.id.search_rv)).check(matches(not(isDisplayed())))
@@ -155,11 +154,6 @@ class WalletSearchFragmentTest {
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
             assertTrue(navController?.currentDestination?.id == R.id.transactions_fragment)
         }
-    }
-
-    private fun isKeyboardShown(): Boolean {
-        val inputMethodManager = InstrumentationRegistry.getInstrumentation().targetContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        return inputMethodManager.isAcceptingText
     }
 
     private fun go2Search(action: (NavController?, ActivityScenario<WalletActivity>) -> Unit) {
