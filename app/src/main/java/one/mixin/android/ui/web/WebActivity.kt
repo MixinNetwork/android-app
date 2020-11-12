@@ -117,24 +117,27 @@ class WebActivity : BaseActivity() {
 
     override fun onBackPressed() {
         if (!isExpand) {
-            supportFragmentManager.findFragmentByTag(WebFragment.TAG).notNullWithElse({
-                showClip(this@WebActivity)
-                isExpand = true
-                supportFragmentManager.beginTransaction().show(it).commit()
-                if (it is WebFragment) {
-                    val dark = isDarkColor(it.titleColor)
-                    window.statusBarColor = it.titleColor
-                    if (dark) {
-                        window.decorView.systemUiVisibility =
-                            window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                    } else {
-                        window.decorView.systemUiVisibility =
-                            window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            supportFragmentManager.findFragmentByTag(WebFragment.TAG).notNullWithElse(
+                {
+                    showClip(this@WebActivity)
+                    isExpand = true
+                    supportFragmentManager.beginTransaction().show(it).commit()
+                    if (it is WebFragment) {
+                        val dark = isDarkColor(it.titleColor)
+                        window.statusBarColor = it.titleColor
+                        if (dark) {
+                            window.decorView.systemUiVisibility =
+                                window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                        } else {
+                            window.decorView.systemUiVisibility =
+                                window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                        }
                     }
+                },
+                {
+                    super.onBackPressed()
                 }
-            }, {
-                super.onBackPressed()
-            })
+            )
         } else {
             super.onBackPressed()
         }

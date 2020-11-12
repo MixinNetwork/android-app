@@ -292,7 +292,7 @@ class WebFragment : BaseFragment() {
         registerForContextMenu(webView)
 
         WebView.setWebContentsDebuggingEnabled(defaultSharedPreferences.getBoolean(Constants.Debug.WEB_DEBUG, false))
-    
+
         app = requireArguments().getParcelable(ARGS_APP)
 
         initView()

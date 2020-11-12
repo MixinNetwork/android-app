@@ -36,6 +36,8 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
@@ -49,6 +51,7 @@ import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
 import java.math.BigDecimal
 import java.math.RoundingMode
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
@@ -58,8 +61,10 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         fun newInstance(): WalletFragment = WalletFragment()
     }
 
-    private val walletViewModel by viewModels<WalletViewModel>()
+    @Inject
+    lateinit var jobManager: MixinJobManager
 
+    private val walletViewModel by viewModels<WalletViewModel>()
     private var assets: List<AssetItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
     private lateinit var header: View
@@ -123,6 +128,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             }
         }
         checkPin()
+        jobManager.addJobInBackground(RefreshAssetsJob())
     }
 
     private suspend fun renderPie(assets: List<AssetItem>) {

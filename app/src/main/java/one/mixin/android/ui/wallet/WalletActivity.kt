@@ -9,19 +9,13 @@ import androidx.navigation.fragment.NavHostFragment
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class WalletActivity : BlazeBaseActivity() {
-
-    @Inject
-    lateinit var jobManager: MixinJobManager
 
     private lateinit var navController: NavController
 
@@ -48,7 +42,6 @@ class WalletActivity : BlazeBaseActivity() {
             }
         )
         navController.graph = navGraph
-        jobManager.addJobInBackground(RefreshAssetsJob())
     }
 
     private val asset: AssetItem? by lazy {

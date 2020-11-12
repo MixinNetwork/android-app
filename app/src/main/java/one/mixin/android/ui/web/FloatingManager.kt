@@ -13,7 +13,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.initRenderScript
-import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.util.GsonHelper
