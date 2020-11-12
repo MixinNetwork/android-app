@@ -43,6 +43,7 @@ class WalletSearchFragment : BaseFragment() {
     companion object {
         const val POS_DEFAULT = 0
         const val POS_SEARCH = 1
+        const val POS_EMPTY = 2
     }
 
     private val viewModel by viewModels<WalletViewModel>()
@@ -184,6 +185,10 @@ class WalletSearchFragment : BaseFragment() {
                 searchAdapter.remoteAssets = filtered
             }
             pb.isVisible = false
+
+            if (localAssets.isNullOrEmpty() && remoteAssets.isNullOrEmpty()) {
+                rv_va?.displayedChild = POS_EMPTY
+            }
         }
     }
 
