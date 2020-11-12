@@ -77,5 +77,26 @@
                 android:layout_gravity="center_horizontal"
                 android:theme="@style/AppTheme.GrayProgress"/>
         </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="80dp"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ic_search_empty"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/margin16"
+                android:text="@string/no_result"
+                android:textColor="?attr/text_minor" />
+        </LinearLayout>
     </ViewAnimator>
 </androidx.appcompat.widget.LinearLayoutCompat>

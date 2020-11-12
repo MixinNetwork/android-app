@@ -69,6 +69,11 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
     private lateinit var header: View
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        jobManager.addJobInBackground(RefreshAssetsJob())
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -128,7 +133,6 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             }
         }
         checkPin()
-        jobManager.addJobInBackground(RefreshAssetsJob())
     }
 
     private suspend fun renderPie(assets: List<AssetItem>) {
