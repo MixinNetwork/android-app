@@ -7,10 +7,10 @@ import java.io.IOException
 import kotlin.jvm.Throws
 
 class Compressor {
-    private var maxWidth = 1080
-    private var maxHeight = 1080
+    private var maxWidth = 1920
+    private var maxHeight = 1920
     private var compressFormat: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG
-    private var quality = 80
+    private var quality = 85
 
     fun setMaxWidth(maxWidth: Int): Compressor {
         this.maxWidth = maxWidth
@@ -40,7 +40,11 @@ class Compressor {
             maxWidth,
             maxHeight,
             compressFormat,
-            quality,
+            if (imageFile.length() >= 2097152L) { // 2MB
+                quality
+            } else {
+                100
+            },
             compressedFilePath
         )
     }
