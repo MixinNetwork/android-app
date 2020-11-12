@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.view.View
 import androidx.annotation.ColorInt
+import androidx.core.view.drawToBitmap
 import com.google.gson.reflect.TypeToken
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -24,9 +25,7 @@ var screenshot: Bitmap? = null
 fun expand(context: Context) {
     MixinApplication.get().currentActivity?.let { activity ->
         val rootView: View = activity.window.decorView.findViewById(android.R.id.content)
-        rootView.isDrawingCacheEnabled = true
-        val screenBitmap = Bitmap.createBitmap(rootView.drawingCache)
-        rootView.isDrawingCacheEnabled = false
+        val screenBitmap = rootView.drawToBitmap()
         val resultBitmap = Bitmap.createScaledBitmap(
             screenBitmap,
             screenBitmap.width / 3,
