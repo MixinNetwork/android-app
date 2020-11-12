@@ -147,6 +147,7 @@ class MaterialSearchView : FrameLayout {
         }
         Session.getAccount()?.toUser()?.let { u ->
             avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+            avatar.setTextSize(14f)
         }
 
         disposable = search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
