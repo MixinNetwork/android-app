@@ -128,7 +128,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroup
 import one.mixin.android.widget.MaterialSearchView
-import one.mixin.android.worker.RefreshAssetsWorker
 import one.mixin.android.worker.RefreshContactWorker
 import one.mixin.android.worker.RefreshFcmWorker
 import timber.log.Timber
@@ -270,8 +269,6 @@ class MainActivity : BlazeBaseActivity() {
                 .enqueueUniqueOneTimeNetworkWorkRequest<RefreshContactWorker>("RefreshContactWorker")
             WorkManager.getInstance(this@MainActivity)
                 .enqueueUniqueOneTimeNetworkWorkRequest<RefreshFcmWorker>("RefreshFcmWorker")
-            WorkManager.getInstance(this@MainActivity)
-                .enqueueUniqueOneTimeNetworkWorkRequest<RefreshAssetsWorker>("RefreshAssetsWorker")
             WorkManager.getInstance(this@MainActivity).pruneWork()
         }
         checkRoot()
