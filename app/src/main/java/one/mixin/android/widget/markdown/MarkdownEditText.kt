@@ -9,7 +9,7 @@ import io.noties.markwon.editor.MarkwonEditor
 import io.noties.markwon.editor.MarkwonEditorTextWatcher
 import io.noties.markwon.editor.handler.EmphasisEditHandler
 import io.noties.markwon.editor.handler.StrongEmphasisEditHandler
-import one.mixin.android.widget.markdown.handler.BlockQuoteEditHandler
+import one.mixin.android.widget.markdown.handler.CodeEditHandler
 import one.mixin.android.widget.markdown.handler.StrikethroughEditHandler
 import java.util.concurrent.Executors
 
@@ -28,7 +28,7 @@ class MarkdownEditText : AppCompatEditText {
             .useEditHandler(EmphasisEditHandler())
             .useEditHandler(StrongEmphasisEditHandler())
             .useEditHandler(StrikethroughEditHandler())
-            .useEditHandler(BlockQuoteEditHandler())
+            .useEditHandler(CodeEditHandler())
             .build()
 
         addTextChangedListener(
