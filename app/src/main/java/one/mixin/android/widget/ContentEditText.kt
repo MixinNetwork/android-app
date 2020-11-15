@@ -6,13 +6,13 @@ import android.os.Bundle
 import android.util.AttributeSet
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
-import androidx.appcompat.widget.AppCompatEditText
 import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.core.view.inputmethod.InputConnectionCompat
 import androidx.core.view.inputmethod.InputContentInfoCompat
 import one.mixin.android.widget.gallery.MimeType
+import one.mixin.android.widget.markdown.MarkdownEditText
 
-class ContentEditText : AppCompatEditText {
+class ContentEditText : MarkdownEditText {
 
     constructor(context: Context) : super(context)
 
