@@ -40,6 +40,13 @@ import org.commonmark.node.SoftLineBreak
 class MarkwonUtil {
     companion object {
 
+        fun getBaseMarkwon(context: Context): Markwon {
+            return Markwon.builder(context).usePlugin(
+                object : AbstractMarkwonPlugin() {
+                }
+            ).build()
+        }
+
         fun getMarkwon(
             context: Activity,
             mixinLinkResolver: (String) -> Unit,
@@ -62,14 +69,29 @@ class MarkwonUtil {
                     object : AbstractMarkwonPlugin() {
                         override fun configureTheme(builder: MarkwonTheme.Builder) {
                             builder.headingBreakHeight(0)
-                                .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
+                                .headingTextSizeMultipliers(
+                                    floatArrayOf(
+                                        1.32F,
+                                        1.24F,
+                                        1.18F,
+                                        1.1F,
+                                        1.0F,
+                                        0.9F
+                                    )
+                                )
                         }
 
                         override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {
                             val spansFactory = builder.getFactory(Link::class.java)
                             if (spansFactory != null) {
                                 builder.setFactory(Link::class.java) { configuration, props ->
-                                    arrayOf(RemoveUnderlineSpan(), spansFactory.getSpans(configuration, props))
+                                    arrayOf(
+                                        RemoveUnderlineSpan(),
+                                        spansFactory.getSpans(
+                                            configuration,
+                                            props
+                                        )
+                                    )
                                 }
                             }
                         }
@@ -126,7 +148,16 @@ class MarkwonUtil {
                             builder.headingBreakHeight(0)
                                 .codeBlockBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
                                 .codeBackgroundColor(context.colorFromAttribute(R.attr.bg_block))
-                                .headingTextSizeMultipliers(floatArrayOf(1.32F, 1.24F, 1.18F, 1.1F, 1.0F, 0.9F))
+                                .headingTextSizeMultipliers(
+                                    floatArrayOf(
+                                        1.32F,
+                                        1.24F,
+                                        1.18F,
+                                        1.1F,
+                                        1.0F,
+                                        0.9F
+                                    )
+                                )
                         }
 
                         override fun configureConfiguration(builder: MarkwonConfiguration.Builder) {
@@ -137,7 +168,13 @@ class MarkwonUtil {
                             val spansFactory = builder.getFactory(Link::class.java)
                             if (spansFactory != null) {
                                 builder.setFactory(Link::class.java) { configuration, props ->
-                                    arrayOf(RemoveUnderlineSpan(), spansFactory.getSpans(configuration, props))
+                                    arrayOf(
+                                        RemoveUnderlineSpan(),
+                                        spansFactory.getSpans(
+                                            configuration,
+                                            props
+                                        )
+                                    )
                                 }
                             }
                         }
