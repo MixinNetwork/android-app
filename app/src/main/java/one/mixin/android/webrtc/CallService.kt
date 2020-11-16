@@ -11,6 +11,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.extension.isServiceRunning
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.vibrate
 import one.mixin.android.job.MixinJobManager
@@ -77,12 +78,14 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         callExecutor.execute {
             peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
         }
-        audioManager = CallAudioManager(this, audioSwitch)
-        audioManager.callback = object : CallAudioManager.Callback {
-            override fun customAudioDeviceAvailable(available: Boolean) {
-                callState.customAudioDeviceAvailable = available
+        audioManager = CallAudioManager(
+            this, audioSwitch,
+            object : CallAudioManager.Callback {
+                override fun customAudioDeviceAvailable(available: Boolean) {
+                    callState.customAudioDeviceAvailable = available
+                }
             }
-        }
+        )
         Session.getAccount()?.toUser().let { user ->
             if (user == null) {
                 stopSelf()
@@ -118,6 +121,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
         super.onDestroy()
         if (isDestroyed.compareAndSet(false, true)) {
             Timber.d("$TAG_CALL real onDestroy")
+            audioManager.release()
             peerConnectionClient.release()
 
             onDestroyed()
@@ -130,7 +134,7 @@ abstract class CallService : LifecycleService(), PeerConnectionClient.PeerConnec
             Timber.d("$TAG_CALL real disconnect")
             stopForeground(true)
             callState.reset()
-            audioManager.release()
+            audioManager.reset()
             pipCallView.close()
             peerConnectionClient.dispose()
             timeoutFuture?.cancel(true)
@@ -331,3 +335,9 @@ inline fun <reified T : CallService> startService(
     }
     ctx.startService(intent)
 }
+
+fun anyCallServiceRunning(context: Context) = isVoiceCallServiceRunning(context) || isGroupCallServiceRunning(context)
+
+fun isVoiceCallServiceRunning(context: Context) = context.isServiceRunning(VoiceCallService::class.java)
+
+fun isGroupCallServiceRunning(context: Context) = context.isServiceRunning(GroupCallService::class.java)

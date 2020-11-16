@@ -186,6 +186,7 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.webrtc.SelectItem
 import one.mixin.android.webrtc.TAG_AUDIO
+import one.mixin.android.webrtc.anyCallServiceRunning
 import one.mixin.android.webrtc.checkPeers
 import one.mixin.android.webrtc.outgoingCall
 import one.mixin.android.webrtc.receiveInvite
@@ -870,7 +871,7 @@ class ConversationFragment() :
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (callState.isIdle()) {
+        if (!anyCallServiceRunning(requireContext())) {
             audioSwitch.start { audioDevices, selectedAudioDevice ->
                 Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
             }
@@ -1074,8 +1075,10 @@ class ConversationFragment() :
             }
         }
         AudioPlayer.release()
-        if (callState.isIdle()) {
-            audioSwitch.safeStop()
+        context?.let {
+            if (!anyCallServiceRunning(it)) {
+                audioSwitch.safeStop()
+            }
         }
     }
 

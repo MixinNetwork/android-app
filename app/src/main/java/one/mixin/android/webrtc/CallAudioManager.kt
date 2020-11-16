@@ -20,7 +20,8 @@ import timber.log.Timber
 
 class CallAudioManager(
     private val context: Context,
-    private val audioSwitch: AudioSwitch
+    private val audioSwitch: AudioSwitch,
+    private val callback: Callback,
 ) {
 
     private val audioManager: AudioManager? = context.getSystemService()
@@ -29,8 +30,6 @@ class CallAudioManager(
     private var mediaPlayer: MediaPlayer? = null
     private var mediaPlayerStopped = false
     private var hasStarted = false
-
-    var callback: Callback? = null
 
     private var isInitiator = false
     private var playRingtone = false
@@ -44,11 +43,7 @@ class CallAudioManager(
             setSpeaker(value)
         }
 
-    fun start(isInitiator: Boolean, playRingtone: Boolean = true) {
-        hasStarted = true
-        this.playRingtone = playRingtone
-        this.isInitiator = isInitiator
-
+    init {
         audioSwitch.start { audioDevices, selectedAudioDevice ->
             Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
             if (selectedAudioDevice !is AudioDevice.BluetoothHeadset) {
@@ -74,8 +69,14 @@ class CallAudioManager(
                 }
             }
 
-            callback?.customAudioDeviceAvailable(selectedAudioDevice.isBluetoothHeadsetOrWiredHeadset())
+            callback.customAudioDeviceAvailable(selectedAudioDevice.isBluetoothHeadsetOrWiredHeadset())
         }
+    }
+
+    fun start(isInitiator: Boolean, playRingtone: Boolean = true) {
+        hasStarted = true
+        this.playRingtone = playRingtone
+        this.isInitiator = isInitiator
 
         if (playRingtone && !isInitiator && vibrator != null && audioManager?.ringerMode != AudioManager.RINGER_MODE_SILENT) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -89,7 +90,9 @@ class CallAudioManager(
 
         setSpeaker(!isInitiator)
 
-        updateMediaPlayer()
+        if (playRingtone) {
+            updateMediaPlayer()
+        }
     }
 
     fun stop() {
@@ -108,18 +111,20 @@ class CallAudioManager(
         audioSwitch.safeActivate()
     }
 
-    fun release() {
+    fun reset() {
         if (!mediaPlayerStopped) {
             stop()
         }
-        if (hasStarted) {
-            audioSwitch.safeStop()
-        }
+
         hasStarted = false
         mediaPlayerStopped = false
         isInitiator = false
         isSpeakerOn = false
         playRingtone = false
+    }
+
+    fun release() {
+        audioSwitch.safeStop()
     }
 
     private fun setSpeaker(enable: Boolean) {
