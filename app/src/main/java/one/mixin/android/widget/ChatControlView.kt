@@ -52,7 +52,7 @@ import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.audio.SlidePanelView
-import one.mixin.android.widget.keyboard.InputAwareLayout
+import one.mixin.android.widget.keyboard.KeyboardLayout
 import org.jetbrains.anko.dip
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
@@ -76,10 +76,10 @@ class ChatControlView : LinearLayout {
     }
 
     lateinit var callback: Callback
-    lateinit var inputLayout: InputAwareLayout
-    lateinit var stickerContainer: InputAwareFrameLayout
-    lateinit var menuContainer: InputAwareFrameLayout
-    lateinit var galleryContainer: InputAwareFrameLayout
+    lateinit var inputLayout: KeyboardLayout
+    lateinit var stickerContainer: FrameLayout
+    lateinit var menuContainer: FrameLayout
+    lateinit var galleryContainer: FrameLayout
     lateinit var recordTipView: View
 
     private var sendStatus = AUDIO
@@ -143,6 +143,7 @@ class ChatControlView : LinearLayout {
         chat_bot_iv.clicks()
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(1, TimeUnit.SECONDS)
+            .autoDispose(this)
             .subscribe {
                 callback.onBotClick()
             }
@@ -169,7 +170,8 @@ class ChatControlView : LinearLayout {
         stickerStatus = STICKER
         currentChecked = NONE
         setSend()
-        inputLayout.hideCurrentInput(chat_et)
+        // Todo
+        // inputLayout.hideCurrentInput(chat_et)
     }
 
     fun cancelExternal() {
@@ -499,11 +501,13 @@ class ChatControlView : LinearLayout {
     private val onChatMenuClickListener = OnClickListener {
         if (currentChecked != MENU) {
             currentChecked = MENU
-            inputLayout.show(chat_et, menuContainer)
+            // Todo
+            // inputLayout.show(chat_et, menuContainer)
             callback.onMenuClick()
         } else {
             currentChecked = NONE
-            inputLayout.showSoftKey(chat_et)
+            // Todo
+            // inputLayout.showSoftKey(chat_et)
         }
         remainFocusable()
     }
@@ -511,10 +515,12 @@ class ChatControlView : LinearLayout {
     private val onStickerClickListener = OnClickListener {
         if (stickerStatus == KEYBOARD) {
             stickerStatus = STICKER
-            inputLayout.showSoftKey(chat_et)
+            // Todo
+            // inputLayout.showSoftKey(chat_et)
         } else {
             stickerStatus = KEYBOARD
-            inputLayout.show(chat_et, stickerContainer)
+            // Todo
+            // inputLayout.show(chat_et, stickerContainer)
             callback.onStickerClick()
 
             if (stickerStatus == KEYBOARD && inputLayout.isInputOpen &&
@@ -545,12 +551,14 @@ class ChatControlView : LinearLayout {
     private fun clickGallery() {
         if (currentChecked != IMAGE) {
             currentChecked = IMAGE
-            inputLayout.show(chat_et, galleryContainer)
+            // Todo
+            // inputLayout.show(chat_et, galleryContainer)
             callback.onGalleryClick()
         } else {
             currentChecked = NONE
             stickerStatus = STICKER
-            inputLayout.hideCurrentInput(chat_et)
+            // Todo
+            // inputLayout.hideCurrentInput(chat_et)
         }
         remainFocusable()
     }
@@ -721,6 +729,7 @@ class ChatControlView : LinearLayout {
     private var maxScrollX = context.dip(100f)
     var calling = false
 
+    @SuppressLint("ClickableViewAccessibility")
     private val sendOnTouchListener = OnTouchListener { _, event ->
         if (calling && sendStatus == AUDIO) {
             callback.onCalling()

@@ -130,11 +130,11 @@
 
         <activity
             android:name=".ui.conversation.ConversationActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"
+            android:screenOrientation="fullSensor"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="stateUnchanged" />
+            android:windowSoftInputMode="adjustResize"/>
+
         <activity
             android:name=".ui.forward.ForwardActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"

@@ -10,8 +10,13 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.LinearLayout
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.statusBarHeight
+import timber.log.Timber
 import kotlin.math.ceil
 
 class SizeNotifierFrameLayout : FrameLayout {
@@ -33,22 +38,22 @@ class SizeNotifierFrameLayout : FrameLayout {
         setWillNotDraw(false)
     }
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
         setWillNotDraw(false)
     }
 
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        super.onLayout(changed, l, t, r, b)
-        keyboardHeight = getKeyboardHeight()
-        setBottomClip(keyboardHeight)
-    }
-
-    private fun getKeyboardHeight(): Int {
-        val rootView = rootView
-        getWindowVisibleDisplayFrame(rect)
-        val usableViewHeight = rootView.height -
-            (if (rect.top != 0) context.statusBarHeight() else 0) - getViewInset(rootView)
-        return usableViewHeight - (rect.bottom - rect.top)
+    init {
+        ViewCompat.setOnApplyWindowInsetsListener(this) { _: View?, insets: WindowInsetsCompat ->
+            val windowInsets = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars()
+            )
+            updatePadding(top = windowInsets.top, bottom = windowInsets.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
     }
 
     private fun setBottomClip(value: Int) {
@@ -84,11 +89,14 @@ class SizeNotifierFrameLayout : FrameLayout {
                 } else {
                     val actionBarHeight = context.appCompatActionBarHeight()
                     val viewHeight = measuredHeight - actionBarHeight
-                    val scaleX = measuredWidth.toFloat() / backgroundImage!!.intrinsicWidth.toFloat()
-                    val scaleY = (viewHeight + keyboardHeight).toFloat() / backgroundImage!!.intrinsicHeight.toFloat()
+                    val scaleX =
+                        measuredWidth.toFloat() / backgroundImage!!.intrinsicWidth.toFloat()
+                    val scaleY =
+                        (viewHeight + keyboardHeight).toFloat() / backgroundImage!!.intrinsicHeight.toFloat()
                     val scale = if (scaleX < scaleY) scaleY else scaleX
                     val width = ceil((backgroundImage!!.intrinsicWidth * scale).toDouble()).toInt()
-                    val height = ceil((backgroundImage!!.intrinsicHeight * scale).toDouble()).toInt()
+                    val height =
+                        ceil((backgroundImage!!.intrinsicHeight * scale).toDouble()).toInt()
                     val x = (measuredWidth - width) / 2
                     val y = (viewHeight - height + keyboardHeight) / 2 + actionBarHeight
                     if (bottomClip != 0) {
@@ -106,6 +114,4 @@ class SizeNotifierFrameLayout : FrameLayout {
             super.onDraw(canvas)
         }
     }
-
-    private fun getViewInset(view: View?) = view?.rootWindowInsets?.stableInsetBottom ?: 0
 }
