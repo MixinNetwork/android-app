@@ -19,8 +19,7 @@ internal object ImageUtil {
         imageFile: File,
         reqWidth: Int,
         reqHeight: Int,
-        compressFormat:
-            Bitmap.CompressFormat,
+        compressFormat: Bitmap.CompressFormat,
         quality: Int,
         destinationPath: String
     ): File {
