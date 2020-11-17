@@ -8,8 +8,11 @@ import android.widget.LinearLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.preference.PreferenceManager
 import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
+import one.mixin.android.R
+import one.mixin.android.extension.putInt
 import kotlin.math.max
 
 class KeyboardLayout : LinearLayout {
@@ -23,17 +26,28 @@ class KeyboardLayout : LinearLayout {
         defStyleAttr
     )
 
-    private var keyboardHeight: Int = 0
+    private val defaultCustomKeyboardSize =
+        resources.getDimensionPixelSize(R.dimen.default_custom_keyboard_size)
+    private var systemBottom = 0
+
+    var keyboardHeight: Int = PreferenceManager.getDefaultSharedPreferences(context)
+        .getInt("keyboard_height_portrait", defaultCustomKeyboardSize)
+        private set(value) {
+            if (field != value) {
+                field = value
+                PreferenceManager.getDefaultSharedPreferences(context)
+                    .putInt("keyboard_height_portrait", value)
+            }
+        }
+
+    var isInputOpen = false
+        private set
+
+    private var inputAreaHeight: Int = 0
         set(value) {
             if (value != field) {
                 field = value
                 (getChildAt(1).layoutParams as MarginLayoutParams).bottomMargin = value
-                isInputOpen = value > 0
-                if (isInputOpen) {
-                    onKeyboardShownListener?.onKeyboardShown(value)
-                } else {
-                    onKeyboardHiddenListener?.onKeyboardHidden()
-                }
                 TransitionManager.beginDelayedTransition(
                     this, AutoTransition()
                         .setInterpolator(
@@ -51,9 +65,9 @@ class KeyboardLayout : LinearLayout {
             }
         }
 
-    private var systemBottom = 0
-    var isInputOpen = false
-        private set
+    fun displayInputArea() {
+        inputAreaHeight = keyboardHeight - systemBottom
+    }
 
     init {
         orientation = VERTICAL
@@ -66,7 +80,20 @@ class KeyboardLayout : LinearLayout {
                 )
             }
             insets.getInsets(WindowInsetsCompat.Type.ime())
-                .let { imeInserts -> keyboardHeight = max(imeInserts.bottom - systemBottom, 0) }
+                .let { imeInserts ->
+                    max(imeInserts.bottom - systemBottom, 0).let { value ->
+                        isInputOpen = value > 0
+                        if (isInputOpen) {
+                            onKeyboardShownListener?.onKeyboardShown(value)
+                        } else {
+                            onKeyboardHiddenListener?.onKeyboardHidden()
+                        }
+                        inputAreaHeight = value
+                    }
+                    if (imeInserts.bottom > 0) {
+                        keyboardHeight = imeInserts.bottom
+                    }
+                }
             WindowInsetsCompat.CONSUMED
         }
     }

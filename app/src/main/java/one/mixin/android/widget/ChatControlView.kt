@@ -30,6 +30,8 @@ import android.view.View.OnTouchListener
 import android.view.ViewConfiguration
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import android.view.inputmethod.InputMethodManager
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.core.animation.addListener
@@ -502,12 +504,15 @@ class ChatControlView : LinearLayout {
         if (currentChecked != MENU) {
             currentChecked = MENU
             // Todo
-            // inputLayout.show(chat_et, menuContainer)
+            inputLayout.displayInputArea()
             callback.onMenuClick()
         } else {
             currentChecked = NONE
             // Todo
-            // inputLayout.showSoftKey(chat_et)
+            (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(
+                inputLayout.windowToken,
+                0
+            )
         }
         remainFocusable()
     }
@@ -517,10 +522,12 @@ class ChatControlView : LinearLayout {
             stickerStatus = STICKER
             // Todo
             // inputLayout.showSoftKey(chat_et)
+            inputLayout.displayInputArea()
         } else {
             stickerStatus = KEYBOARD
             // Todo
             // inputLayout.show(chat_et, stickerContainer)
+            inputLayout.displayInputArea()
             callback.onStickerClick()
 
             if (stickerStatus == KEYBOARD && inputLayout.isInputOpen &&
@@ -553,11 +560,13 @@ class ChatControlView : LinearLayout {
             currentChecked = IMAGE
             // Todo
             // inputLayout.show(chat_et, galleryContainer)
+            inputLayout.displayInputArea()
             callback.onGalleryClick()
         } else {
             currentChecked = NONE
             stickerStatus = STICKER
             // Todo
+            inputLayout.displayInputArea()
             // inputLayout.hideCurrentInput(chat_et)
         }
         remainFocusable()
