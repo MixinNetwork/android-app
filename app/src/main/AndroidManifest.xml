@@ -36,6 +36,7 @@
         android:theme="@style/AppTheme"
         android:hasFragileUserData="true"
         android:requestLegacyExternalStorage="true"
+        tools:ignore="LockedOrientationActivity,UnusedAttribute"
         android:extractNativeLibs="true"
         tools:replace="allowBackup">
         <activity
@@ -131,7 +132,7 @@
         <activity
             android:name=".ui.conversation.ConversationActivity"
             android:launchMode="singleTask"
-            android:screenOrientation="fullSensor"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize"/>
 
@@ -228,7 +229,8 @@
             android:name=".widget.gallery.ui.GalleryActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+           />
         <activity
             android:name=".ui.common.AvatarActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"

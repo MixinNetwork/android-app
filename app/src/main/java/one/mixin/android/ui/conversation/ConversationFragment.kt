@@ -89,6 +89,7 @@ import one.mixin.android.extension.REQUEST_LOCATION
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.animateHeight
+import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -1150,6 +1151,13 @@ class ConversationFragment() :
     private var firstPosition = 0
 
     private fun initView() {
+        if (requireActivity().booleanFromAttribute(R.attr.flag_night)) {
+            input_layout.backgroundImage =
+                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat_night)
+        } else {
+            input_layout.backgroundImage =
+                ContextCompat.getDrawable(requireContext(), R.drawable.bg_chat)
+        }
         chat_rv.visibility = INVISIBLE
         if (chat_rv.adapter == null) {
             chat_rv.adapter = chatAdapter

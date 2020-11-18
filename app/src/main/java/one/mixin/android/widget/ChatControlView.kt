@@ -30,7 +30,6 @@ import android.view.View.OnTouchListener
 import android.view.ViewConfiguration
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
-import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -883,8 +882,8 @@ class ChatControlView : LinearLayout {
             if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO) || !RxPermissions(
                     activity!! as FragmentActivity
                 ).isGranted(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
             ) {
                 RxPermissions(activity!! as FragmentActivity)
                     .request(

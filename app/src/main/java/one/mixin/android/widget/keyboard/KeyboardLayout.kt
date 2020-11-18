@@ -1,6 +1,8 @@
 package one.mixin.android.widget.keyboard
 
 import android.content.Context
+import android.graphics.Canvas
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.DecelerateInterpolator
@@ -15,8 +17,11 @@ import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
 import kotlinx.android.synthetic.main.fragment_conversation.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.appCompatActionBarHeight
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putInt
 import one.mixin.android.widget.ContentEditText
+import kotlin.math.ceil
 import kotlin.math.max
 
 class KeyboardLayout : LinearLayout {
@@ -33,6 +38,7 @@ class KeyboardLayout : LinearLayout {
     private val defaultCustomKeyboardSize =
         resources.getDimensionPixelSize(R.dimen.default_custom_keyboard_size)
     private var systemBottom = 0
+    private var systemTop = 0
 
     var keyboardHeight: Int = PreferenceManager.getDefaultSharedPreferences(context)
         .getInt("keyboard_height_portrait", defaultCustomKeyboardSize)
@@ -89,12 +95,14 @@ class KeyboardLayout : LinearLayout {
     private var displayInput = false
 
     init {
+        setWillNotDraw(false)
         orientation = VERTICAL
         ViewCompat.setOnApplyWindowInsetsListener(this) { _: View?, insets: WindowInsetsCompat ->
             insets.getInsets(WindowInsetsCompat.Type.systemBars()).let { systemInserts ->
                 systemBottom = systemInserts.bottom
+                systemTop = systemInserts.top
                 updatePadding(
-                    top = systemInserts.top,
+                    top = systemTop,
                     bottom = systemBottom
                 )
             }
@@ -117,6 +125,41 @@ class KeyboardLayout : LinearLayout {
                 }
             WindowInsetsCompat.CONSUMED
         }
+    }
+
+    var backgroundImage: Drawable? = null
+        set(bitmap) {
+            field = bitmap
+            invalidate()
+        }
+
+    override fun onDraw(canvas: Canvas) {
+        backgroundImage.notNullWithElse(
+            { backgroundImage ->
+                val actionBarHeight = context.appCompatActionBarHeight()
+                val viewHeight = measuredHeight - actionBarHeight - systemBottom
+                val scaleX = measuredWidth.toFloat() / backgroundImage.intrinsicWidth.toFloat()
+                val scaleY = (viewHeight).toFloat() / backgroundImage.intrinsicHeight.toFloat()
+                val scale = if (scaleX < scaleY) scaleY else scaleX
+                val width = ceil((backgroundImage.intrinsicWidth * scale).toDouble()).toInt()
+                val height =
+                    ceil((backgroundImage.intrinsicHeight * scale).toDouble()).toInt()
+                val x = (measuredWidth - width) / 2
+                val y = (viewHeight - height) / 2
+                if (systemBottom != 0) {
+                    canvas.save()
+                    canvas.clipRect(0, actionBarHeight, width, measuredHeight - systemBottom)
+                }
+                backgroundImage.setBounds(x, y, x + width, y + height)
+                backgroundImage.draw(canvas)
+                if (systemBottom != 0) {
+                    canvas.restore()
+                }
+            },
+            {
+                super.onDraw(canvas)
+            }
+        )
     }
 
     private var onKeyboardHiddenListener: OnKeyboardHiddenListener? = null
@@ -144,9 +187,9 @@ class KeyboardLayout : LinearLayout {
                 inputTarget.context
                     .getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 ).showSoftInput(
-                    inputTarget,
-                    0
-                )
+                inputTarget,
+                0
+            )
         }
     }
 
