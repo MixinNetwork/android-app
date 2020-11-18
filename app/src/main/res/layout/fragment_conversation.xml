@@ -291,6 +291,7 @@
     <FrameLayout
         android:id="@+id/input_area"
         android:layout_width="match_parent"
+        android:background="?attr/bg_white"
         android:layout_height="0dp">
 
         <FrameLayout

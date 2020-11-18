@@ -228,7 +228,7 @@ class ChatControlView : LinearLayout {
             stickerStatus = STICKER
             currentChecked = NONE
         } else {
-            if (inputLayout.isInputOpen) {
+            if (inputLayout.keyboardOpened()) {
                 stickerStatus = KEYBOARD
             }
         }
@@ -557,9 +557,7 @@ class ChatControlView : LinearLayout {
             callback.onStickerClick()
             inputLayout.displayInputArea(chat_et)
 
-            if (stickerStatus == KEYBOARD && inputLayout.isInputOpen &&
-                sendStatus == AUDIO && lastSendStatus == AUDIO
-            ) {
+            if (inputLayout.keyboardOpened() && stickerStatus == KEYBOARD && sendStatus == AUDIO && lastSendStatus == AUDIO) {
                 setSend()
             }
             remainFocusable()
