@@ -12,8 +12,8 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import kotlinx.android.synthetic.main.fragment_deposit_account.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.vo.needShowReserve
@@ -47,9 +47,9 @@ class DepositAccountFragmentTest : DepositFragmentTest() {
         go2Deposit(true) { _, activityScenario ->
             closeTipBottom()
 
-            var fragment: DepositPublicKeyFragment? = null
+            var fragment: DepositAccountFragment? = null
             activityScenario.onActivity { activity ->
-                fragment = activity.supportFragmentManager.primaryNavigationFragment?.childFragmentManager?.fragments?.first() as DepositPublicKeyFragment
+                fragment = activity.supportFragmentManager.primaryNavigationFragment?.childFragmentManager?.fragments?.first() as DepositAccountFragment
             }
             val asset = fragment!!.asset
 
@@ -59,20 +59,13 @@ class DepositAccountFragmentTest : DepositFragmentTest() {
                 .check(matches(withText(asset.symbol)))
 
             val tips: String = fragment!!.getTipsByAsset(asset) + " " + ctx.getString(R.string.deposit_confirmation, asset.confirmations)
-            onView(withId(R.id.confirm_tv))
+            onView(withId(R.id.tip_tv))
                 .check(matches(withText(tips)))
 
             val reserveTip = if (asset.needShowReserve()) {
                 ctx.getString(R.string.deposit_reserve, asset.reserve, asset.symbol)
             } else ""
-            val warningText = when (asset.chainId) {
-                Constants.ChainId.EOS_CHAIN_ID -> {
-                    "${ctx.getString(R.string.deposit_account_attention, asset.symbol)} $reserveTip"
-                }
-                else -> {
-                    "${ctx.getString(R.string.deposit_attention)} $reserveTip"
-                }
-            }
+            val warningText = "${ctx.getString(R.string.deposit_account_attention, asset.symbol)} $reserveTip"
             onView(withId(R.id.warning_tv))
                 .check(matches(withText(warningText)))
         }

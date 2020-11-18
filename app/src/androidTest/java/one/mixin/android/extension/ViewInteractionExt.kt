@@ -1,8 +1,11 @@
 package one.mixin.android.extension
 
+import android.app.Activity
 import android.view.View
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.RecyclerView
+import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.NoMatchingViewException
 import androidx.test.espresso.ViewInteraction
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -32,4 +35,13 @@ fun withTextColor(expectedId: Int): Matcher<View?>? {
             description.appendValue(expectedId)
         }
     }
+}
+
+fun <T : Activity> ActivityScenario<T>.getRVCount(recyclerViewId: Int): Int {
+    var count = 0
+    onActivity { activity ->
+        val rv = activity.findViewById<RecyclerView>(recyclerViewId)
+        count = rv?.adapter?.itemCount ?: 0
+    }
+    return count
 }
