@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -11,8 +13,10 @@ import androidx.core.view.updatePadding
 import androidx.preference.PreferenceManager
 import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
+import kotlinx.android.synthetic.main.fragment_conversation.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.putInt
+import one.mixin.android.widget.ContentEditText
 import kotlin.math.max
 
 class KeyboardLayout : LinearLayout {
@@ -47,9 +51,10 @@ class KeyboardLayout : LinearLayout {
         set(value) {
             if (value != field) {
                 field = value
-                (getChildAt(1).layoutParams as MarginLayoutParams).bottomMargin = value
+                input_area.layoutParams.height = value
                 TransitionManager.beginDelayedTransition(
-                    this, AutoTransition()
+                    this,
+                    AutoTransition()
                         .setInterpolator(
                             DecelerateInterpolator()
                         ).setDuration(
@@ -65,9 +70,23 @@ class KeyboardLayout : LinearLayout {
             }
         }
 
-    fun displayInputArea() {
+    fun displayInputArea(inputTarget: EditText) {
         inputAreaHeight = keyboardHeight - systemBottom
+        displayInput = true
+        if (isInputOpen){
+            hideSoftKey(inputTarget)
+        }
     }
+
+    fun hideInputArea(inputTarget: EditText?) {
+        inputAreaHeight = 0
+        displayInput = false
+        if (inputTarget != null) {
+            hideSoftKey(inputTarget)
+        }
+    }
+
+    private var displayInput = false
 
     init {
         orientation = VERTICAL
@@ -88,7 +107,9 @@ class KeyboardLayout : LinearLayout {
                         } else {
                             onKeyboardHiddenListener?.onKeyboardHidden()
                         }
-                        inputAreaHeight = value
+                        if (!displayInput) {
+                            inputAreaHeight = value
+                        }
                     }
                     if (imeInserts.bottom > 0) {
                         keyboardHeight = imeInserts.bottom
@@ -106,6 +127,34 @@ class KeyboardLayout : LinearLayout {
     private var onKeyboardShownListener: OnKeyboardShownListener? = null
     fun setOnKeyboardShownListener(onKeyboardShownListener: OnKeyboardShownListener?) {
         this.onKeyboardShownListener = onKeyboardShownListener
+    }
+
+    fun hideCurrentInput(inputTarget: ContentEditText) {
+        if (isInputOpen) {
+            hideSoftKey(inputTarget)
+        } else {
+            inputAreaHeight = 0
+        }
+    }
+
+    fun showSoftKey(inputTarget: ContentEditText) {
+        inputTarget.post {
+            inputTarget.requestFocus()
+            (
+                inputTarget.context
+                    .getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                ).showSoftInput(
+                    inputTarget,
+                    0
+                )
+        }
+    }
+
+    private fun hideSoftKey(inputTarget: EditText) {
+        (inputTarget.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(
+            inputTarget.windowToken,
+            0
+        )
     }
 
     interface OnKeyboardHiddenListener {

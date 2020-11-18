@@ -10,13 +10,10 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.widget.FrameLayout
-import android.widget.LinearLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import one.mixin.android.extension.appCompatActionBarHeight
-import one.mixin.android.extension.statusBarHeight
-import timber.log.Timber
 import kotlin.math.ceil
 
 class SizeNotifierFrameLayout : FrameLayout {

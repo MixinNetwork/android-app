@@ -117,11 +117,35 @@ class ChatControlView : LinearLayout {
     private var upBeforeGrant = false
     private var keyboardShown = false
 
-    private val sendDrawable: Drawable by lazy { ResourcesCompat.getDrawable(resources, R.drawable.ic_chat_send_checked, context.theme)!! }
-    private val audioDrawable: Drawable by lazy { ResourcesCompat.getDrawable(resources, R.drawable.ic_chat_mic, context.theme)!! }
+    private val sendDrawable: Drawable by lazy {
+        ResourcesCompat.getDrawable(
+            resources,
+            R.drawable.ic_chat_send_checked,
+            context.theme
+        )!!
+    }
+    private val audioDrawable: Drawable by lazy {
+        ResourcesCompat.getDrawable(
+            resources,
+            R.drawable.ic_chat_mic,
+            context.theme
+        )!!
+    }
 
-    private val stickerDrawable: Drawable by lazy { ResourcesCompat.getDrawable(resources, R.drawable.ic_chat_sticker, context.theme)!! }
-    private val keyboardDrawable: Drawable by lazy { ResourcesCompat.getDrawable(resources, R.drawable.ic_chat_keyboard, context.theme)!! }
+    private val stickerDrawable: Drawable by lazy {
+        ResourcesCompat.getDrawable(
+            resources,
+            R.drawable.ic_chat_sticker,
+            context.theme
+        )!!
+    }
+    private val keyboardDrawable: Drawable by lazy {
+        ResourcesCompat.getDrawable(
+            resources,
+            R.drawable.ic_chat_keyboard,
+            context.theme
+        )!!
+    }
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -172,8 +196,8 @@ class ChatControlView : LinearLayout {
         stickerStatus = STICKER
         currentChecked = NONE
         setSend()
-        // Todo
-        // inputLayout.hideCurrentInput(chat_et)
+        inputLayout.hideInputArea(chat_et)
+        getVisibleContainer()?.isVisible = false
     }
 
     fun cancelExternal() {
@@ -423,7 +447,10 @@ class ChatControlView : LinearLayout {
         return getLayoutTransition(scaleUp, scaleDown)
     }
 
-    private fun getLayoutTransition(scaleUp: ObjectAnimator, scaleDown: ObjectAnimator): LayoutTransition {
+    private fun getLayoutTransition(
+        scaleUp: ObjectAnimator,
+        scaleDown: ObjectAnimator
+    ): LayoutTransition {
         val layoutTransition = LayoutTransition()
         layoutTransition.setAnimator(LayoutTransition.APPEARING, scaleUp)
         layoutTransition.setAnimator(LayoutTransition.DISAPPEARING, scaleDown)
@@ -504,15 +531,16 @@ class ChatControlView : LinearLayout {
         if (currentChecked != MENU) {
             currentChecked = MENU
             // Todo
-            inputLayout.displayInputArea()
+            menuContainer.isVisible = true
+            stickerContainer.isVisible = false
+            galleryContainer.isVisible = false
+            inputLayout.displayInputArea(chat_et)
             callback.onMenuClick()
         } else {
             currentChecked = NONE
             // Todo
-            (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(
-                inputLayout.windowToken,
-                0
-            )
+            menuContainer.isVisible = false
+            inputLayout.hideInputArea(chat_et)
         }
         remainFocusable()
     }
@@ -520,15 +548,15 @@ class ChatControlView : LinearLayout {
     private val onStickerClickListener = OnClickListener {
         if (stickerStatus == KEYBOARD) {
             stickerStatus = STICKER
-            // Todo
-            // inputLayout.showSoftKey(chat_et)
-            inputLayout.displayInputArea()
+            stickerContainer.isVisible = false
+            inputLayout.showSoftKey(chat_et)
         } else {
             stickerStatus = KEYBOARD
-            // Todo
-            // inputLayout.show(chat_et, stickerContainer)
-            inputLayout.displayInputArea()
+            menuContainer.isVisible = false
+            stickerContainer.isVisible = true
+            galleryContainer.isVisible = false
             callback.onStickerClick()
+            inputLayout.displayInputArea(chat_et)
 
             if (stickerStatus == KEYBOARD && inputLayout.isInputOpen &&
                 sendStatus == AUDIO && lastSendStatus == AUDIO
@@ -542,7 +570,10 @@ class ChatControlView : LinearLayout {
 
     private val onChatImgClickListener = OnClickListener {
         RxPermissions(activity!! as FragmentActivity)
-            .request(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            .request(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
             .subscribe(
                 { granted ->
                     if (granted) {
@@ -559,15 +590,17 @@ class ChatControlView : LinearLayout {
         if (currentChecked != IMAGE) {
             currentChecked = IMAGE
             // Todo
-            // inputLayout.show(chat_et, galleryContainer)
-            inputLayout.displayInputArea()
+            menuContainer.isVisible = false
+            stickerContainer.isVisible = false
+            galleryContainer.isVisible = true
+            inputLayout.displayInputArea(chat_et)
             callback.onGalleryClick()
         } else {
             currentChecked = NONE
             stickerStatus = STICKER
             // Todo
-            inputLayout.displayInputArea()
-            // inputLayout.hideCurrentInput(chat_et)
+            galleryContainer.isVisible = false
+            inputLayout.hideInputArea(chat_et)
         }
         remainFocusable()
     }
@@ -847,12 +880,17 @@ class ChatControlView : LinearLayout {
 
             if (activity == null || !currentAudio()) return@Runnable
 
-            if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO) || !RxPermissions(activity!! as FragmentActivity).isGranted(
+            if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO) || !RxPermissions(
+                    activity!! as FragmentActivity
+                ).isGranted(
                     Manifest.permission.WRITE_EXTERNAL_STORAGE
                 )
             ) {
                 RxPermissions(activity!! as FragmentActivity)
-                    .request(Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .request(
+                        Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
                     .autoDispose(this)
                     .subscribe({}, { Bugsnag.notify(it) })
                 return@Runnable
