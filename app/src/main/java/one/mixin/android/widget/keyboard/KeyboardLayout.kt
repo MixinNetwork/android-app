@@ -49,7 +49,7 @@ class KeyboardLayout : LinearLayout {
 
     private var inputAreaHeight: Int = 0
         set(value) {
-            if (value != field) {
+            if (value != field || input_area.layoutParams.height != value) {
                 field = value
                 input_area.layoutParams.height = value
                 TransitionManager.beginDelayedTransition(
@@ -73,7 +73,7 @@ class KeyboardLayout : LinearLayout {
     fun displayInputArea(inputTarget: EditText) {
         inputAreaHeight = keyboardHeight - systemBottom
         displayInput = true
-        if (isInputOpen){
+        if (isInputOpen) {
             hideSoftKey(inputTarget)
         }
     }
