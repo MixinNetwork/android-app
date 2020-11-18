@@ -7,9 +7,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.viewModels
 import android.webkit.CookieManager
-import androidx.core.net.toUri
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -120,10 +119,8 @@ class PermissionListFragment : BaseFragment() {
             val kv = c.split("=")
             keys.add(kv[0].trim())
         }
-        val domain = ".${app.homeUri.toUri().host}"
         keys.forEach { k ->
-            // TODO not working when setting some cookies
-            cm.setCookie(domain, "$k=")
+            cm.setCookie(app.homeUri, "$k=")
         }
     }
 
