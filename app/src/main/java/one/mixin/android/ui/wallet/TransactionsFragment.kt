@@ -60,7 +60,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     private val adapter = TransactionsAdapter()
-    private lateinit var asset: AssetItem
+    lateinit var asset: AssetItem
 
     private lateinit var headerView: View
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =

@@ -47,9 +47,8 @@ class AddressAddFragment() : BaseFragment() {
         const val ARGS_ADDRESS = "args_address"
     }
 
-    private val asset: AssetItem by lazy {
-        requireArguments().getParcelable(ARGS_ASSET)!!
-    }
+    lateinit var asset: AssetItem
+
     private var memoEnabled = true
 
     // for testing
@@ -70,6 +69,11 @@ class AddressAddFragment() : BaseFragment() {
         if (!::resultRegistry.isInitialized) resultRegistry = requireActivity().activityResultRegistry
 
         getScanResult = registerForActivityResult(CaptureActivity.CaptureContract(), resultRegistry, ::callbackScan)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        asset = requireArguments().getParcelable(ARGS_ASSET)!!
     }
 
     override fun onCreateView(

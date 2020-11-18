@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 19,
-    "identityHash": "2ea4031d8d52f41288a65d14ce12d2ff",
+    "identityHash": "a5bb4942506a74d8fcbceeba1b511adc",
     "entities": [
       {
         "tableName": "users",
@@ -1231,110 +1231,6 @@
         "foreignKeys": []
       },
       {
-        "tableName": "top_assets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `balance` TEXT NOT NULL, `public_key` TEXT, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `hidden` INTEGER, `confirmations` INTEGER NOT NULL, `account_name` TEXT, `account_tag` TEXT, PRIMARY KEY(`asset_id`))",
-        "fields": [
-          {
-            "fieldPath": "assetId",
-            "columnName": "asset_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "symbol",
-            "columnName": "symbol",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "iconUrl",
-            "columnName": "icon_url",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "balance",
-            "columnName": "balance",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "publicKey",
-            "columnName": "public_key",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "priceBtc",
-            "columnName": "price_btc",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "priceUsd",
-            "columnName": "price_usd",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "chainId",
-            "columnName": "chain_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "changeUsd",
-            "columnName": "change_usd",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "changeBtc",
-            "columnName": "change_btc",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "hidden",
-            "columnName": "hidden",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
-            "fieldPath": "confirmations",
-            "columnName": "confirmations",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "accountName",
-            "columnName": "account_name",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "accountTag",
-            "columnName": "account_tag",
-            "affinity": "TEXT",
-            "notNull": false
-          }
-        ],
-        "primaryKey": {
-          "columnNames": [
-            "asset_id"
-          ],
-          "autoGenerate": false
-        },
-        "indices": [],
-        "foreignKeys": []
-      },
-      {
         "tableName": "jobs",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`job_id` TEXT NOT NULL, `action` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_id` INTEGER, `priority` INTEGER NOT NULL, `user_id` TEXT, `blaze_message` TEXT, `conversation_id` TEXT, `resend_message_id` TEXT, `run_count` INTEGER NOT NULL, PRIMARY KEY(`job_id`))",
         "fields": [
@@ -1409,10 +1305,9 @@
         "foreignKeys": []
       }
     ],
-    "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"2ea4031d8d52f41288a65d14ce12d2ff\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"a5bb4942506a74d8fcbceeba1b511adc\")"
     ]
   }
 }

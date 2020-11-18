@@ -246,7 +246,7 @@ class Migration30Test : BaseMigrationTest() {
 
     @Test
     fun migrate_29_30() {
-        create28()
+        create29()
         migrationTestHelper.runMigrationsAndValidate(
             Constants.DataBase.DB_NAME,
             30,
