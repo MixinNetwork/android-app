@@ -16,6 +16,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import one.mixin.android.R
+import one.mixin.android.extension.getRVCount
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.EspressoIdlingResource
 import one.mixin.android.util.swipeRight
@@ -68,12 +69,8 @@ class AddressManagementFragmentTest {
     @Test
     fun testAddressRV() {
         go2AddressManagement { navController, activityScenario ->
-            var itemCount = 0
-            activityScenario.onActivity { activity ->
-                val rv = activity.findViewById<RecyclerView>(R.id.addr_rv)
-                itemCount = rv.adapter?.itemCount ?: 1
-            }
-            if (itemCount > 0) {
+            val count = activityScenario.getRVCount(R.id.addr_rv)
+            if (count > 0) {
                 onView(withId(R.id.search_et)).check(matches(isDisplayed()))
                 onView(withId(R.id.empty_tv)).check(matches(not(isDisplayed())))
                 onView(withId(R.id.addr_rv))

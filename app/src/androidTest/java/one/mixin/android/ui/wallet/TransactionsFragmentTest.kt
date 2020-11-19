@@ -18,6 +18,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import one.mixin.android.R
+import one.mixin.android.extension.getRVCount
 import one.mixin.android.mock.mockAsset
 import one.mixin.android.mock.mockAssetWithDestination
 import one.mixin.android.mock.mockAssetWithDestinationAndTag
@@ -83,11 +84,7 @@ class TransactionsFragmentTest : BaseTransactionsFragmentTest() {
     fun testTransactionsRv() {
         go2Transactions { navController, activityScenario ->
             // open first transaction item
-            var itemCount = 0
-            activityScenario.onActivity {
-                val rv = it.findViewById<RecyclerView>(R.id.transactions_rv)
-                itemCount = rv.adapter?.itemCount ?: 0
-            }
+            val itemCount = activityScenario.getRVCount(R.id.transactions_rv)
             if (itemCount < 1) return@go2Transactions
 
             onView(withId(R.id.transactions_rv))

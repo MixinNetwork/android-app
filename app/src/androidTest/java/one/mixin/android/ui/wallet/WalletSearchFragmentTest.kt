@@ -20,6 +20,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import one.mixin.android.R
+import one.mixin.android.extension.getRVCount
 import one.mixin.android.util.ClickDrawableAction
 import one.mixin.android.util.EspressoIdlingResource
 import one.mixin.android.util.isKeyboardShown
@@ -138,21 +139,28 @@ class WalletSearchFragmentTest {
             //     }
             // }
 
-            onView(withId(R.id.default_rv))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(2, click()))
-            // onView(withId(R.id.progress))
-            //     .inRoot(isDialog())
-            //     .check(matches(isDisplayed()))
-            assertTrue(navController?.currentDestination?.id == R.id.transactions_fragment)
+            val count = activityScenario.getRVCount(R.id.default_rv)
+            if (count > 2) {
+                onView(withId(R.id.default_rv))
+                    .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(2, click()))
+
+                // onView(withId(R.id.progress))
+                //     .inRoot(isDialog())
+                //     .check(matches(isDisplayed()))
+                // assertTrue(navController?.currentDestination?.id == R.id.transactions_fragment)
+            }
         }
     }
 
     @Test
     fun testSearchRv() {
         go2Search { navController, activityScenario ->
-            onView(withId(R.id.search_rv))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
-            assertTrue(navController?.currentDestination?.id == R.id.transactions_fragment)
+            val count = activityScenario.getRVCount(R.id.search_rv)
+            if (count > 0) {
+                onView(withId(R.id.search_rv))
+                    .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+                assertTrue(navController?.currentDestination?.id == R.id.transactions_fragment)
+            }
         }
     }
 

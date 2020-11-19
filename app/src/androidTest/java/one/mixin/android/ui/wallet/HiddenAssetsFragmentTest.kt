@@ -16,6 +16,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import one.mixin.android.R
+import one.mixin.android.extension.getRVCount
 import one.mixin.android.util.EspressoIdlingResource
 import one.mixin.android.util.swipeRight
 import one.mixin.android.util.waitMillis
@@ -50,16 +51,18 @@ class HiddenAssetsFragmentTest {
 
     @Test
     fun testClickItem() {
-        go2Hidden { navController ->
-            onView(withId(R.id.assets_rv))
-                .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
-            assertTrue(navController?.currentDestination?.id == R.id.transactions_fragment)
+        go2Hidden { navController, activityScenario ->
+            if (activityScenario.getRVCount(R.id.assets_rv) > 0) {
+                onView(withId(R.id.assets_rv))
+                    .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, click()))
+                assertTrue(navController?.currentDestination?.id == R.id.transactions_fragment)
+            }
         }
     }
 
     @Test
     fun testSwipeItem() {
-        go2Hidden {
+        go2Hidden { _, _ ->
             val ctx: Context = ApplicationProvider.getApplicationContext()
             onView(withId(R.id.assets_rv))
                 .perform(actionOnItemAtPosition<RecyclerView.ViewHolder>(0, swipeRight()))
@@ -72,7 +75,7 @@ class HiddenAssetsFragmentTest {
         }
     }
 
-    private fun go2Hidden(action: (NavController?) -> Unit) {
+    private fun go2Hidden(action: (NavController?, ActivityScenario<WalletActivity>) -> Unit) {
         var navController: NavController? = null
         val activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
             navController = it.navController
@@ -82,7 +85,7 @@ class HiddenAssetsFragmentTest {
         onView(withId(R.id.hide)).perform(click())
         assertTrue(navController?.currentDestination?.id == R.id.hidden_assets_fragment)
 
-        action.invoke(navController)
+        action.invoke(navController, activityScenario)
 
         activityScenario.close()
     }

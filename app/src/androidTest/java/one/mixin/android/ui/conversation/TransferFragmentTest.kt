@@ -10,6 +10,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import one.mixin.android.R
 import one.mixin.android.extension.launchFragmentInHiltContainer
+import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.TestRegistry
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
 import org.junit.Before
@@ -35,7 +36,7 @@ class TransferFragmentTest {
             putExtra(ARGS_FOR_SCAN_RESULT, "abc")
         }
         val testRegistry = TestRegistry(expectedResult)
-        launchFragmentInHiltContainer(TransferFragment.newInstance(testRegistry), R.style.AppTheme_NoActionBar) {
+        launchFragmentInHiltContainer(TransferFragment.newInstance(testRegistry).withArgs { }, R.style.AppTheme_NoActionBar) {
             this.getScanResult.launch(Pair(ARGS_FOR_SCAN_RESULT, true))
         }
         onView(withId(R.id.transfer_memo)).check(matches(withText("abc")))
