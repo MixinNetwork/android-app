@@ -71,6 +71,10 @@ internal object ImageUtil {
         val width = options.outWidth
         var inSampleSize = 1
 
+        if (height / width >= 3 || width / height >= 3) {
+            return inSampleSize
+        }
+
         if (height > reqHeight || width > reqWidth) {
 
             val halfHeight = height / 2
