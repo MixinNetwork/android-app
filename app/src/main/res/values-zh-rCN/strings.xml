@@ -96,6 +96,7 @@
     <string name="call_who">呼叫 %1$s</string>
     <string name="click_lock">点击锁定</string>
     <string name="click_unlock">点击解锁</string>
+    <string name="click_retry">点击重试</string>
     <string name="follow_system">跟随系统</string>
     <string name="nobody">没有人</string>
     <string name="analyzing">解析中…</string>
@@ -363,6 +364,9 @@
     <string name="wallet_transaction_continue">继续</string>
     <string name="wallet_transaction_continue_count">继续 （%1$d）</string>
     <string name="wallet_transaction_tip_title">大额转账确认</string>
+    <string name="wallet_transaction_current_value">价值 %1$s</string>
+    <string name="wallet_transaction_that_time_value">当时价值 %1$s</string>
+    <string name="wallet_transaction_that_time_value_tip">交易时的价值</string>
     <string name="transfer_duplicate_title">重复转账确认</string>
     <string name="withdraw_duplicate_title">重复提现确认</string>
     <string name="wallet_transaction_tip_title_with_symbol">大额转账确认(%1$s)</string>

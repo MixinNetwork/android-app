@@ -7,6 +7,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
+import java.math.BigDecimal
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -54,7 +55,11 @@ data class Asset(
     @SerializedName("reserve")
     @ColumnInfo(name = "reserve")
     val reserve: String?
-) : Parcelable
+) : Parcelable {
+    fun priceFiat(): BigDecimal = if (priceUsd == "0") {
+        BigDecimal.ZERO
+    } else BigDecimal(priceUsd).multiply(BigDecimal(Fiats.getRate()))
+}
 
 fun Asset.toAssetItem(): AssetItem = AssetItem(
     assetId, symbol, name, iconUrl, balance, destination, tag, priceBtc, priceUsd, chainId, changeUsd, changeBtc, false,

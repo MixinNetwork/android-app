@@ -240,4 +240,6 @@ constructor(
     suspend fun deletePreviousTraces() = traceDao.deletePreviousTraces()
 
     suspend fun suspendDeleteTraceById(traceId: String) = traceDao.suspendDeleteById(traceId)
+
+    suspend fun ticker(assetId: String, offset: String?) = assetService.ticker(assetId, offset)
 }

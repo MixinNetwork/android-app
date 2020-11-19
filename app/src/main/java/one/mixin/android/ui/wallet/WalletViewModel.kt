@@ -287,4 +287,6 @@ internal constructor(
             defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, assetId)
         }
     }
+
+    suspend fun ticker(assetId: String, offset: String?) = assetRepository.ticker(assetId, offset)
 }

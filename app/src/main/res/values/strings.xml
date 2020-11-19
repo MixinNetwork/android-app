@@ -101,6 +101,7 @@
     <string name="call_who">Call %1$s</string>
     <string name="click_lock">Click to lock</string>
     <string name="click_unlock">Click to unlock</string>
+    <string name="click_retry">Click to retry</string>
     <string name="pin" translatable="false">PIN</string>
     <string name="follow_system">Follow System</string>
     <string name="nobody">Nobody</string>
@@ -379,6 +380,9 @@
     <string name="wallet_transaction_continue">Continue</string>
     <string name="wallet_transaction_continue_count">Continue (%1$d)</string>
     <string name="wallet_transaction_tip_title">Large Amount Confirmation</string>
+    <string name="wallet_transaction_current_value">Current value %1$s</string>
+    <string name="wallet_transaction_that_time_value">Historical value %1$s</string>
+    <string name="wallet_transaction_that_time_value_tip">historical value at the time of transaction</string>
     <string name="transfer_duplicate_title">Duplicate Transfer Confirmation</string>
     <string name="withdraw_duplicate_title">Duplicate Withdraw Confirmation</string>
     <string name="wallet_transaction_tip_title_with_symbol">Large Amount Confirmation(%1$s)</string>
