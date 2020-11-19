@@ -52,7 +52,8 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import kotlin.jvm.Throws
 
-const val ANIMATION_DURATION_SHORTEST = 260L
+const val ANIMATION_DURATION_SHORT = 260L
+const val ANIMATION_DURATION_SHORTEST = 120L
 
 const val FLAGS_FULLSCREEN =
     View.SYSTEM_UI_FLAG_LOW_PROFILE or
@@ -74,7 +75,7 @@ fun View.showKeyboard() {
 }
 
 fun View.fadeIn(maxAlpha: Float = 1f) {
-    this.fadeIn(ANIMATION_DURATION_SHORTEST, maxAlpha)
+    this.fadeIn(ANIMATION_DURATION_SHORT, maxAlpha)
 }
 
 fun View.fadeIn(duration: Long, maxAlpha: Float = 1f) {
@@ -94,7 +95,7 @@ fun View.fadeIn(duration: Long, maxAlpha: Float = 1f) {
 }
 
 fun View.fadeOut(isGone: Boolean = false) {
-    this.fadeOut(ANIMATION_DURATION_SHORTEST, isGone = isGone)
+    this.fadeOut(ANIMATION_DURATION_SHORT, isGone = isGone)
 }
 
 fun View.fadeOut(duration: Long, delay: Long = 0, isGone: Boolean = false) {
@@ -117,7 +118,7 @@ fun View.fadeOut(duration: Long, delay: Long = 0, isGone: Boolean = false) {
 }
 
 fun View.translationX(value: Float) {
-    this.translationX(value, ANIMATION_DURATION_SHORTEST)
+    this.translationX(value, ANIMATION_DURATION_SHORT)
 }
 
 fun View.translationX(value: Float, duration: Long) {
@@ -125,7 +126,7 @@ fun View.translationX(value: Float, duration: Long) {
 }
 
 fun View.translationY(value: Float, endAction: (() -> Unit)? = null) {
-    this.translationY(value, ANIMATION_DURATION_SHORTEST, endAction)
+    this.translationY(value, ANIMATION_DURATION_SHORT, endAction)
 }
 
 fun View.translationY(value: Float, duration: Long, endAction: (() -> Unit)? = null) {
@@ -162,7 +163,7 @@ fun View.shakeAnimator() =
     }
 
 fun View.animateWidth(form: Int, to: Int) {
-    this.animateWidth(form, to, ANIMATION_DURATION_SHORTEST)
+    this.animateWidth(form, to, ANIMATION_DURATION_SHORT)
 }
 
 fun View.animateWidth(form: Int, to: Int, duration: Long) {
@@ -178,7 +179,7 @@ fun View.animateWidth(form: Int, to: Int, duration: Long) {
 fun View.animateHeight(
     from: Int,
     to: Int,
-    duration: Long = ANIMATION_DURATION_SHORTEST,
+    duration: Long = ANIMATION_DURATION_SHORT,
     interpolator: Interpolator = DecelerateInterpolator(),
     action: ((ValueAnimator) -> Unit)? = null,
     onEndAction: (() -> Unit)? = null

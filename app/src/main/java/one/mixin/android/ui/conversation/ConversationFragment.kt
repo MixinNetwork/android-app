@@ -1859,7 +1859,7 @@ class ConversationFragment() :
     override fun onKeyboardHidden() {
         chat_control.toggleKeyboard(false)
         if (chat_control.getVisibleContainer() == null) {
-            input_layout.hideInputArea(null)
+            input_layout.closeInputArea(null)
         }
     }
 
@@ -2170,8 +2170,7 @@ class ConversationFragment() :
                 override fun onStickerClick(stickerId: String) {
                     if (isAdded) {
                         if (sticker_container.height != input_layout.keyboardHeight) {
-                            // Todo test
-                            input_layout.displayInputArea(chat_control.chat_et)
+                            input_layout.openInputArea(chat_control.chat_et)
                         }
                         sendStickerMessage(stickerId)
                     }

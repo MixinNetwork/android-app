@@ -1,16 +1,19 @@
 package one.mixin.android.widget.keyboard
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.preference.PreferenceManager
 import androidx.transition.AutoTransition
@@ -19,7 +22,7 @@ import kotlinx.android.synthetic.main.fragment_conversation.view.*
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.DragReleaseEvent
-import one.mixin.android.extension.animateHeight
+import one.mixin.android.extension.ANIMATION_DURATION_SHORTEST
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putInt
@@ -75,28 +78,42 @@ class KeyboardLayout : LinearLayout {
                         .setInterpolator(
                             LinearInterpolator()
                         ).setDuration(
-                            (
-                                context.resources.getInteger(android.R.integer.config_shortAnimTime)
-                                    .toLong() * 0.6f
-                                ).toLong()
+                            (ANIMATION_DURATION_SHORTEST)
                         )
                 )
                 requestLayout()
             }
         }
 
-    fun displayInputArea(inputTarget: EditText) {
+    fun openInputArea(inputTarget: EditText) {
         inputAreaHeight = keyboardHeight - systemBottom
         status = STATUS.OPENED
         hideSoftKey(inputTarget)
     }
 
-    fun hideInputArea(inputTarget: EditText?) {
+    fun closeInputArea(inputTarget: EditText?) {
         inputAreaHeight = 0
         status = STATUS.CLOSED
         if (inputTarget != null) {
             hideSoftKey(inputTarget)
         }
+    }
+
+    fun showSoftKey(inputTarget: ContentEditText) {
+        post {
+            inputTarget.requestFocus()
+            (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).showSoftInput(
+                inputTarget,
+                0
+            )
+        }
+    }
+
+    private fun hideSoftKey(inputTarget: EditText) {
+        (inputTarget.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(
+            inputTarget.windowToken,
+            0
+        )
     }
 
     init {
@@ -146,24 +163,24 @@ class KeyboardLayout : LinearLayout {
         backgroundImage.notNullWithElse(
             { backgroundImage ->
                 val actionBarHeight = context.appCompatActionBarHeight()
-                val viewHeight = measuredHeight - actionBarHeight - systemBottom
                 val scaleX = measuredWidth.toFloat() / backgroundImage.intrinsicWidth.toFloat()
-                val scaleY = (viewHeight).toFloat() / backgroundImage.intrinsicHeight.toFloat()
+                val scaleY = (measuredHeight).toFloat() / backgroundImage.intrinsicHeight.toFloat()
                 val scale = if (scaleX < scaleY) scaleY else scaleX
                 val width = ceil((backgroundImage.intrinsicWidth * scale).toDouble()).toInt()
                 val height =
                     ceil((backgroundImage.intrinsicHeight * scale).toDouble()).toInt()
                 val x = (measuredWidth - width) / 2
-                val y = (viewHeight - height) / 2
-                if (systemBottom != 0) {
-                    canvas.save()
-                    canvas.clipRect(0, actionBarHeight, width, measuredHeight - systemBottom)
-                }
+                val y = (measuredHeight - height) / 2
+                canvas.save()
+                canvas.clipRect(
+                    0,
+                    systemTop + actionBarHeight,
+                    measuredWidth,
+                    measuredHeight - systemBottom
+                )
                 backgroundImage.setBounds(x, y, x + width, y + height)
                 backgroundImage.draw(canvas)
-                if (systemBottom != 0) {
-                    canvas.restore()
-                }
+                canvas.restore()
             },
             {
                 super.onDraw(canvas)
@@ -181,23 +198,8 @@ class KeyboardLayout : LinearLayout {
         this.onKeyboardShownListener = onKeyboardShownListener
     }
 
-    fun showSoftKey(inputTarget: ContentEditText) {
-        post {
-            (context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).showSoftInput(
-                inputTarget,
-                0
-            )
-        }
-    }
-
-    private fun hideSoftKey(inputTarget: EditText) {
-        (inputTarget.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(
-            inputTarget.windowToken,
-            0
-        )
-    }
-
     fun drag(dis: Float) {
+        if (status == STATUS.KEYBOARD_OPENED) return
         val params = input_area.layoutParams
         val targetH = params.height - dis.toInt()
         val total = context.screenHeight() * 2 / 3
@@ -208,6 +210,7 @@ class KeyboardLayout : LinearLayout {
     }
 
     fun releaseDrag(fling: Int, resetCallback: () -> Unit) {
+        if (status == STATUS.KEYBOARD_OPENED) return
         val curH = input_area.height
         val max = (context.screenHeight() * 2) / 3
         val maxMid = keyboardHeight + (max - keyboardHeight) / 2
@@ -216,22 +219,22 @@ class KeyboardLayout : LinearLayout {
             if (fling == FLING_UP) {
                 max
             } else if (fling == FLING_DOWN) {
-                input_layout.keyboardHeight
+                keyboardHeight - systemBottom
             } else {
                 if (curH <= maxMid) {
-                    input_layout.keyboardHeight
+                    keyboardHeight - systemBottom
                 } else {
                     max
                 }
             }
         } else if (curH < input_layout.keyboardHeight) {
             if (fling == FLING_UP) {
-                input_layout.keyboardHeight
+                keyboardHeight
             } else if (fling == FLING_DOWN) {
                 0
             } else {
                 if (curH > minMid) {
-                    input_layout.keyboardHeight
+                    keyboardHeight - systemBottom
                 } else {
                     0
                 }
@@ -261,7 +264,17 @@ class KeyboardLayout : LinearLayout {
                 status = STATUS.OPENED
             }
         }
-        input_area.animateHeight(curH, targetH)
+
+        ValueAnimator.ofInt(curH, targetH).apply {
+            this.duration = duration
+            this.interpolator = interpolator
+            addUpdateListener { valueAnimator ->
+                input_area.updateLayoutParams<ViewGroup.LayoutParams> {
+                    this.height = valueAnimator.animatedValue as Int
+                }
+            }
+        }.start()
+
         RxBus.publish(DragReleaseEvent(targetH == max))
     }
 

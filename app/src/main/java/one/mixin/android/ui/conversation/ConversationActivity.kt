@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.os.Bundle
-import android.view.WindowManager
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_chat.*
@@ -32,8 +32,8 @@ class ConversationActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
         setContentView(R.layout.activity_chat)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         if (intent.getBooleanExtra(ARGS_FAST_SHOW, false)) {
             replaceFragment(
                 ConversationFragment.newInstance(intent.extras!!),

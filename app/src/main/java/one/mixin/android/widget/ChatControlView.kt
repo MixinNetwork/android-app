@@ -195,7 +195,7 @@ class ChatControlView : LinearLayout {
         stickerStatus = STICKER
         currentChecked = NONE
         setSend()
-        inputLayout.hideInputArea(chat_et)
+        inputLayout.closeInputArea(chat_et)
         getVisibleContainer()?.isVisible = false
     }
 
@@ -529,18 +529,17 @@ class ChatControlView : LinearLayout {
     private val onChatMenuClickListener = OnClickListener {
         if (currentChecked != MENU) {
             currentChecked = MENU
-            // Todo
             menuContainer.isVisible = true
             stickerContainer.isVisible = false
             galleryContainer.isVisible = false
-            inputLayout.displayInputArea(chat_et)
+            inputLayout.openInputArea(chat_et)
             callback.onMenuClick()
         } else {
             currentChecked = NONE
-            // Todo
             menuContainer.isVisible = false
-            inputLayout.hideInputArea(chat_et)
+            inputLayout.closeInputArea(chat_et)
         }
+        stickerStatus = STICKER
         remainFocusable()
     }
 
@@ -555,7 +554,7 @@ class ChatControlView : LinearLayout {
             stickerContainer.isVisible = true
             galleryContainer.isVisible = false
             callback.onStickerClick()
-            inputLayout.displayInputArea(chat_et)
+            inputLayout.openInputArea(chat_et)
 
             if (inputLayout.keyboardOpened() && stickerStatus == KEYBOARD && sendStatus == AUDIO && lastSendStatus == AUDIO) {
                 setSend()
@@ -586,19 +585,18 @@ class ChatControlView : LinearLayout {
     private fun clickGallery() {
         if (currentChecked != IMAGE) {
             currentChecked = IMAGE
-            // Todo
             menuContainer.isVisible = false
             stickerContainer.isVisible = false
             galleryContainer.isVisible = true
-            inputLayout.displayInputArea(chat_et)
+            inputLayout.openInputArea(chat_et)
             callback.onGalleryClick()
         } else {
             currentChecked = NONE
             stickerStatus = STICKER
-            // Todo
             galleryContainer.isVisible = false
-            inputLayout.hideInputArea(chat_et)
+            inputLayout.closeInputArea(chat_et)
         }
+        stickerStatus = STICKER
         remainFocusable()
     }
 
