@@ -168,7 +168,6 @@ class ChatControlView : LinearLayout {
         chat_bot_iv.clicks()
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(1, TimeUnit.SECONDS)
-            .autoDispose(this)
             .subscribe {
                 callback.onBotClick()
             }
