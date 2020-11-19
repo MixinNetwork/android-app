@@ -7,6 +7,8 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
+import android.view.WindowInsetsAnimation
 import android.view.animation.LinearInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -27,9 +29,11 @@ import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.supportsR
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
+import timber.log.Timber
 import kotlin.math.ceil
 import kotlin.math.max
 
@@ -119,38 +123,75 @@ class KeyboardLayout : LinearLayout {
     init {
         setWillNotDraw(false)
         orientation = VERTICAL
-        ViewCompat.setOnApplyWindowInsetsListener(this) { _: View?, insets: WindowInsetsCompat ->
-            insets.getInsets(WindowInsetsCompat.Type.systemBars()).let { systemInserts ->
-                systemBottom = systemInserts.bottom
-                systemTop = systemInserts.top
-                updatePadding(
-                    top = systemTop,
-                    bottom = systemBottom
-                )
+        supportsR({
+            ViewCompat.setOnApplyWindowInsetsListener(this) { _: View?, insets: WindowInsetsCompat ->
+                insets.getInsets(WindowInsetsCompat.Type.systemBars()).let { systemInserts ->
+                    systemBottom = systemInserts.bottom
+                    systemTop = systemInserts.top
+                    updatePadding(
+                        top = systemTop,
+                        bottom = systemBottom
+                    )
+                }
+                WindowInsetsCompat.CONSUMED
             }
-            insets.getInsets(WindowInsetsCompat.Type.ime())
-                .let { imeInserts ->
-                    max(imeInserts.bottom - systemBottom, 0).let { value ->
-                        if (value > 0) {
-                            if (status != STATUS.KEYBOARD_OPENED) {
-                                status = STATUS.KEYBOARD_OPENED
-                                if (inputAreaHeight != value)
-                                    onKeyboardShownListener?.onKeyboardShown(imeInserts.bottom)
-                            }
-                            inputAreaHeight = value
-                        } else {
-                            if (status == STATUS.KEYBOARD_OPENED) {
-                                status = STATUS.CLOSED
-                                onKeyboardHiddenListener?.onKeyboardHidden()
+            setWindowInsetsAnimationCallback(object :
+                WindowInsetsAnimation.Callback(DISPATCH_MODE_STOP) {
+                override fun onProgress(
+                    insets: WindowInsets,
+                    runningAnimations: MutableList<WindowInsetsAnimation>
+                ): WindowInsets {
+                    input_area.layoutParams.height = keyboardHeight- insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+                    return insets
+                }
+
+                override fun onEnd(animation: WindowInsetsAnimation) {
+                    super.onEnd(animation)
+                    // todo
+                }
+
+                override fun onStart(
+                    animation: WindowInsetsAnimation,
+                    bounds: WindowInsetsAnimation.Bounds
+                ): WindowInsetsAnimation.Bounds {
+                    keyboardHeight = bounds.upperBound.bottom - systemBottom
+                    return super.onStart(animation, bounds)
+                }
+            })
+        }, {
+            ViewCompat.setOnApplyWindowInsetsListener(this) { _: View?, insets: WindowInsetsCompat ->
+                insets.getInsets(WindowInsetsCompat.Type.systemBars()).let { systemInserts ->
+                    systemBottom = systemInserts.bottom
+                    systemTop = systemInserts.top
+                    updatePadding(
+                        top = systemTop,
+                        bottom = systemBottom
+                    )
+                }
+                insets.getInsets(WindowInsetsCompat.Type.ime())
+                    .let { imeInserts ->
+                        max(imeInserts.bottom - systemBottom, 0).let { value ->
+                            if (value > 0) {
+                                if (status != STATUS.KEYBOARD_OPENED) {
+                                    status = STATUS.KEYBOARD_OPENED
+                                    if (inputAreaHeight != value)
+                                        onKeyboardShownListener?.onKeyboardShown(imeInserts.bottom)
+                                }
+                                inputAreaHeight = value
+                            } else {
+                                if (status == STATUS.KEYBOARD_OPENED) {
+                                    status = STATUS.CLOSED
+                                    onKeyboardHiddenListener?.onKeyboardHidden()
+                                }
                             }
                         }
+                        if (imeInserts.bottom > 0) {
+                            keyboardHeight = imeInserts.bottom
+                        }
                     }
-                    if (imeInserts.bottom > 0) {
-                        keyboardHeight = imeInserts.bottom
-                    }
-                }
-            WindowInsetsCompat.CONSUMED
-        }
+                WindowInsetsCompat.CONSUMED
+            }
+        })
     }
 
     var backgroundImage: Drawable? = null
