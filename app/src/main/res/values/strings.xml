@@ -381,7 +381,8 @@
     <string name="wallet_transaction_continue_count">Continue (%1$d)</string>
     <string name="wallet_transaction_tip_title">Large Amount Confirmation</string>
     <string name="wallet_transaction_current_value">Current value %1$s</string>
-    <string name="wallet_transaction_that_time_value">That time value %1$s</string>
+    <string name="wallet_transaction_that_time_value">Historical value %1$s</string>
+    <string name="wallet_transaction_that_time_value_tip">historical value at the time of transaction</string>
     <string name="transfer_duplicate_title">Duplicate Transfer Confirmation</string>
     <string name="withdraw_duplicate_title">Duplicate Withdraw Confirmation</string>
     <string name="wallet_transaction_tip_title_with_symbol">Large Amount Confirmation(%1$s)</string>

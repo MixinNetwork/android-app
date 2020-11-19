@@ -91,6 +91,7 @@ buildscript {
         ext.dnsVersion = '2.1.9'
         ext.appCenterSdkVersion = '4.0.0'
         ext.audioSwitchVersion = '1.1.1'
+        ext.balloonVersion = '1.2.5'
 
         ext.bcVersion = '1.45'
         ext.jsonVersion = '20200518'

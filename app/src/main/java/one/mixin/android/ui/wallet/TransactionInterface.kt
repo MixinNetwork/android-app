@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import com.skydoves.balloon.BalloonAnimation
+import com.skydoves.balloon.createBalloon
 import kotlinx.android.synthetic.main.fragment_transaction.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -80,8 +82,26 @@ interface TransactionInterface {
                     contentView.that_tv?.apply {
                         val amount = (BigDecimal(snapshot.amount) * a.priceFiat()).priceFormat()
                         text = fragment.getString(R.string.wallet_transaction_that_time_value, "${Fiats.getSymbol()}$amount")
-                        fragment.context?.let { c -> setTextColor(c.colorFromAttribute(R.attr.text_minor)) }
-                        setOnClickListener(null)
+                        fragment.context?.let { c ->
+                            setTextColor(c.colorFromAttribute(R.attr.text_minor))
+                            setOnClickListener {
+                                val balloon = createBalloon(c) {
+                                    setArrowSize(10)
+                                    setHeight(45)
+                                    setCornerRadius(4f)
+                                    setAlpha(0.9f)
+                                    setAutoDismissDuration(3000L)
+                                    setBalloonAnimation(BalloonAnimation.FADE)
+                                    setText(fragment.getString(R.string.wallet_transaction_that_time_value_tip))
+                                    setTextColorResource(R.color.white)
+                                    setPaddingLeft(10)
+                                    setPaddingRight(10)
+                                    setBackgroundColorResource(R.color.colorLightBlue)
+                                    setLifecycleOwner(fragment.viewLifecycleOwner)
+                                }
+                                balloon.show(this)
+                            }
+                        }
                     }
                 } else {
                     showRetry(fragment, lifecycleScope, walletViewModel, contentView, assetId, snapshot)
