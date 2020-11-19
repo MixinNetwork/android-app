@@ -8,8 +8,11 @@ import kotlinx.android.synthetic.main.fragment_transaction.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
@@ -44,6 +47,7 @@ interface TransactionInterface {
                         fragment.context?.toast(R.string.error_data)
                     } else {
                         updateUI(fragment, contentView, asset, snapshot)
+                        fetchThatTimePrice(fragment, lifecycleScope, walletViewModel, contentView, asset.assetId, snapshot)
                     }
                 }
             } else {
@@ -51,6 +55,62 @@ interface TransactionInterface {
             }
         } else {
             updateUI(fragment, contentView, assetItem, snapshotItem)
+            fetchThatTimePrice(fragment, lifecycleScope, walletViewModel, contentView, assetItem.assetId, snapshotItem)
+        }
+    }
+
+    private fun fetchThatTimePrice(
+        fragment: Fragment,
+        lifecycleScope: CoroutineScope,
+        walletViewModel: WalletViewModel,
+        contentView: View,
+        assetId: String,
+        snapshot: SnapshotItem,
+    ) = lifecycleScope.launch {
+        if (!fragment.isAdded) return@launch
+
+        contentView.that_va?.displayedChild = POS_PB
+        handleMixinResponse(
+            invokeNetwork = { walletViewModel.ticker(assetId, snapshot.createdAt) },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                val a = it.data
+                if (a != null) {
+                    contentView.that_va?.displayedChild = POS_TEXT
+                    contentView.that_tv?.apply {
+                        val amount = (BigDecimal(snapshot.amount) * a.priceFiat()).priceFormat()
+                        text = fragment.getString(R.string.wallet_transaction_that_time_value, "${Fiats.getSymbol()}$amount")
+                        fragment.context?.let { c -> setTextColor(c.colorFromAttribute(R.attr.text_minor)) }
+                        setOnClickListener(null)
+                    }
+                } else {
+                    showRetry(fragment, lifecycleScope, walletViewModel, contentView, assetId, snapshot)
+                }
+            },
+            exceptionBlock = {
+                showRetry(fragment, lifecycleScope, walletViewModel, contentView, assetId, snapshot)
+                return@handleMixinResponse false
+            },
+            failureBlock = {
+                showRetry(fragment, lifecycleScope, walletViewModel, contentView, assetId, snapshot)
+                return@handleMixinResponse false
+            }
+        )
+    }
+
+    private fun showRetry(
+        fragment: Fragment,
+        lifecycleScope: CoroutineScope,
+        walletViewModel: WalletViewModel,
+        contentView: View,
+        assetId: String,
+        snapshot: SnapshotItem,
+    ) {
+        contentView.that_va?.displayedChild = POS_TEXT
+        contentView.that_tv?.apply {
+            text = fragment.getString(R.string.click_retry)
+            setTextColor(fragment.resources.getColor(R.color.colorDarkBlue, null))
+            setOnClickListener { fetchThatTimePrice(fragment, lifecycleScope, walletViewModel, contentView, assetId, snapshot) }
         }
     }
 
@@ -77,7 +137,7 @@ interface TransactionInterface {
             }
         }
         val amount = (BigDecimal(snapshot.amount) * asset.priceFiat()).priceFormat()
-        contentView.value_as_tv.text = "≈ ${Fiats.getSymbol()}$amount"
+        contentView.value_as_tv.text = fragment.getString(R.string.wallet_transaction_current_value, "${Fiats.getSymbol()}$amount")
         contentView.transaction_id_tv.text = snapshot.snapshotId
         contentView.transaction_type_tv.text = getSnapshotType(fragment, snapshot.type)
         contentView.memo_tv.text = snapshot.memo
@@ -131,5 +191,10 @@ interface TransactionInterface {
             else -> R.string.not_any
         }
         return fragment.requireContext().getString(s)
+    }
+
+    companion object {
+        const val POS_PB = 0
+        const val POS_TEXT = 1
     }
 }

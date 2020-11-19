@@ -85,9 +85,31 @@
                         android:layout_height="wrap_content"
                         android:layout_below="@+id/value_rl"
                         android:layout_centerHorizontal="true"
-                        android:layout_marginTop="@dimen/margin12"
-                        android:layout_marginBottom="32dp"
+                        android:layout_marginTop="@dimen/margin10"
+                        android:layout_marginBottom="6dp"
                         android:textColor="?attr/text_minor" />
+
+                    <ViewAnimator
+                        android:id="@+id/that_va"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="32dp"
+                        android:layout_below="@id/value_as_tv"
+                        android:layout_centerHorizontal="true">
+
+                        <ProgressBar
+                            style="?android:attr/progressBarStyleSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:theme="@style/AppTheme.BlueAccent"/>
+
+                        <TextView
+                            android:id="@+id/that_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="?attr/text_minor" />
+                    </ViewAnimator>
                 </RelativeLayout>
             </FrameLayout>
 
