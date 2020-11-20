@@ -122,6 +122,7 @@ import one.mixin.android.extension.selectEarpiece
 import one.mixin.android.extension.selectSpeakerphone
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.supportsNougat
 import one.mixin.android.extension.toast
 import one.mixin.android.job.FavoriteAppJob
 import one.mixin.android.job.MixinJobManager
@@ -937,6 +938,9 @@ class ConversationFragment() :
             sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY),
             SensorManager.SENSOR_DELAY_NORMAL
         )
+        supportsNougat {
+            input_layout.onMultiWindowModeChanged(requireActivity().isInMultiWindowMode)
+        }
         input_layout.setOnKeyboardShownListener(this)
         input_layout.setOnKeyBoardHiddenListener(this)
         MixinApplication.conversationId = conversationId
