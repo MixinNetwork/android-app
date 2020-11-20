@@ -141,20 +141,53 @@ class KeyboardLayout : LinearLayout {
                     insets: WindowInsets,
                     runningAnimations: MutableList<WindowInsetsAnimation>
                 ): WindowInsets {
-                    input_area.layoutParams.height = keyboardHeight- insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+                    if (status == STATUS.CLOSED || status == STATUS.KEYBOARD_OPENED) {
+                        input_area.layoutParams.height = max(
+                            0,
+                            insets.getInsets(WindowInsetsCompat.Type.ime()).bottom - systemBottom
+                        )
+                        requestLayout()
+                    } else if (status == STATUS.EXPANDED) {
+                        val percent =
+                            insets.getInsets(WindowInsetsCompat.Type.ime()).bottom / keyboardHeight.toFloat()
+                        input_area.layoutParams.height =
+                            (keyboardHeight - systemBottom + gap * (1 - percent)).toInt()
+                        requestLayout()
+                    }
                     return insets
+                }
+
+                private var gap = 0
+                override fun onPrepare(animation: WindowInsetsAnimation) {
+                    super.onPrepare(animation)
+                    if (status == STATUS.EXPANDED) {
+                        gap = input_area.layoutParams.height - keyboardHeight
+                    }
                 }
 
                 override fun onEnd(animation: WindowInsetsAnimation) {
                     super.onEnd(animation)
-                    // todo
+                    ViewCompat.getRootWindowInsets(this@KeyboardLayout)
+                        ?.getInsets(WindowInsetsCompat.Type.ime())?.let { imeInserts ->
+                            if (imeInserts.bottom > 0) {
+                                if (status != STATUS.KEYBOARD_OPENED) {
+                                    status = STATUS.KEYBOARD_OPENED
+                                    onKeyboardShownListener?.onKeyboardShown(imeInserts.bottom)
+                                }
+                            } else {
+                                if (status == STATUS.KEYBOARD_OPENED) {
+                                    status = STATUS.CLOSED
+                                    onKeyboardHiddenListener?.onKeyboardHidden()
+                                }
+                            }
+                        }
                 }
 
                 override fun onStart(
                     animation: WindowInsetsAnimation,
                     bounds: WindowInsetsAnimation.Bounds
                 ): WindowInsetsAnimation.Bounds {
-                    keyboardHeight = bounds.upperBound.bottom - systemBottom
+                    keyboardHeight = bounds.upperBound.bottom
                     return super.onStart(animation, bounds)
                 }
             })
