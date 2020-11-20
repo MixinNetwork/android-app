@@ -40,11 +40,7 @@ class Compressor {
             maxWidth,
             maxHeight,
             compressFormat,
-            if (imageFile.length() >= 2097152L) { // 2MB
-                quality
-            } else {
-                100
-            },
+            quality,
             compressedFilePath
         )
     }
