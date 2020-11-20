@@ -64,7 +64,14 @@ android {
     }
 
     sourceSets {
-        androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
+        String sharedTestDir = 'src/sharedTest/java'
+        test {
+            java.srcDirs += sharedTestDir
+        }
+        androidTest {
+            java.srcDirs += sharedTestDir
+            assets.srcDirs += files("$projectDir/schemas".toString())
+        }
     }
 
     compileOptions {
@@ -104,6 +111,8 @@ android {
         }
     }
 
+    testBuildType "staging"
+
     buildTypes {
         if (project.hasProperty("RELEASE_STORE_FILE")) {
             release {
@@ -124,6 +133,10 @@ android {
             ndk {
                 abiFilters "arm64-v8a"
             }
+        }
+        staging {
+            initWith debug
+            applicationIdSuffix ".test"
         }
     }
 
@@ -296,8 +309,7 @@ dependencies {
     })
     androidTestImplementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
     androidTestImplementation "androidx.test.ext:junit:${androidxJunitVersion}"
-    // Once https://issuetracker.google.com/127986458 is fixed this can be testImplementation
-    debugImplementation "androidx.fragment:fragment-testing:${fragmentVersion}"
+    stagingImplementation "androidx.fragment:fragment-testing:${fragmentVersion}"
     androidTestImplementation "androidx.navigation:navigation-testing:$navigationVersion"
 
     // Hilt testing

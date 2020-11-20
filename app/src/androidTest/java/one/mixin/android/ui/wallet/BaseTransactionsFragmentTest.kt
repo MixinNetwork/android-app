@@ -120,6 +120,10 @@ abstract class BaseTransactionsFragmentTest {
                 val textView = rv.findViewHolderForAdapterPosition(i)?.itemView?.findViewById<TextView>(R.id.name)
                     ?: continue
                 val targetName = textView.text?.toString()
+                val confirmationString = it.getString(R.string.pending_confirmations).split(' ')[1]
+                if (targetName != null && targetName.endsWith(confirmationString)) { // ignore pending
+                    continue
+                }
                 assertTrue(expect == targetName)
             }
         }

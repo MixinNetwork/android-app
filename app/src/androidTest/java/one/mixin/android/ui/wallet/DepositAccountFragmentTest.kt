@@ -12,8 +12,6 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import kotlinx.android.synthetic.main.fragment_deposit_account.*
-import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.vo.needShowReserve
@@ -26,7 +24,7 @@ import org.junit.runner.RunWith
 @HiltAndroidTest
 class DepositAccountFragmentTest : DepositFragmentTest() {
 
-    @get:Rule
+    @get:Rule(order = 0)
     var hiltRule = HiltAndroidRule(this)
 
     @Before

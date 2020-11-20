@@ -21,8 +21,11 @@ import org.junit.runner.RunWith
 @HiltAndroidTest
 class AllTransactionsFragmentTest : BaseTransactionsFragmentTest() {
 
-    @get:Rule
+    @get:Rule(order = 0)
     var hiltRule = HiltAndroidRule(this)
+
+    @get:Rule(order = 1)
+    val walletRule = WalletRule()
 
     @Before
     fun init() {
@@ -40,7 +43,7 @@ class AllTransactionsFragmentTest : BaseTransactionsFragmentTest() {
 
     override fun go2Transactions(action: (NavController?, ActivityScenario<WalletActivity>) -> Unit) {
         var navController: NavController? = null
-        val activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
+        walletRule.activityScenario = ActivityScenario.launch(WalletActivity::class.java).onActivity {
             navController = it.navController
         }
 
@@ -48,9 +51,7 @@ class AllTransactionsFragmentTest : BaseTransactionsFragmentTest() {
         onView(withId(R.id.transactions_tv)).perform(click())
         assertTrue(navController?.currentDestination?.id == R.id.all_transactions_fragment)
 
-        action.invoke(navController, activityScenario)
-
-        activityScenario.close()
+        action.invoke(navController, walletRule.activityScenario)
     }
 
     override fun isAllTransactions() = true
