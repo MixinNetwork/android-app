@@ -80,7 +80,7 @@ interface TransactionInterface {
                 if (a != null) {
                     contentView.that_va?.displayedChild = POS_TEXT
                     contentView.that_tv?.apply {
-                        val amount = (BigDecimal(snapshot.amount) * a.priceFiat()).priceFormat()
+                        val amount = (BigDecimal(snapshot.amount).abs() * a.priceFiat()).priceFormat()
                         text = fragment.getString(R.string.wallet_transaction_that_time_value, "${Fiats.getSymbol()}$amount")
                         fragment.context?.let { c ->
                             setTextColor(c.colorFromAttribute(R.attr.text_minor))
@@ -156,7 +156,7 @@ interface TransactionInterface {
                 R.color.wallet_pink
             }
         }
-        val amount = (BigDecimal(snapshot.amount) * asset.priceFiat()).priceFormat()
+        val amount = (BigDecimal(snapshot.amount).abs() * asset.priceFiat()).priceFormat()
         contentView.value_as_tv.text = fragment.getString(R.string.wallet_transaction_current_value, "${Fiats.getSymbol()}$amount")
         contentView.transaction_id_tv.text = snapshot.snapshotId
         contentView.transaction_type_tv.text = getSnapshotType(fragment, snapshot.type)
