@@ -80,9 +80,9 @@ class KeyboardLayout : LinearLayout {
                     this,
                     AutoTransition()
                         .setInterpolator(
-                            LinearInterpolator()
+                            CubicBezierInterpolator.DEFAULT
                         ).setDuration(
-                            (ANIMATION_DURATION_SHORTEST)
+                            ANIMATION_DURATION_SHORTEST
                         )
                 )
                 requestLayout()

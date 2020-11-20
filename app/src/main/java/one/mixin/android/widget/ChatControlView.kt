@@ -533,12 +533,13 @@ class ChatControlView : LinearLayout {
             galleryContainer.isVisible = false
             inputLayout.openInputArea(chat_et)
             callback.onMenuClick()
+            stickerStatus = KEYBOARD
         } else {
             currentChecked = NONE
             menuContainer.isVisible = false
-            inputLayout.closeInputArea(chat_et)
+            inputLayout.showSoftKey(chat_et)
+            stickerStatus = STICKER
         }
-        stickerStatus = STICKER
         remainFocusable()
     }
 

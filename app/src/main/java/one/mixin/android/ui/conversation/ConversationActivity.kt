@@ -45,6 +45,12 @@ class ConversationActivity : BlazeBaseActivity() {
         }
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        showConversation(intent)
+    }
+
     override fun finish() {
         if (intent.getBooleanExtra(ARGS_SHORTCUT, false)) {
             MainActivity.show(this)
@@ -138,11 +144,7 @@ class ConversationActivity : BlazeBaseActivity() {
             }
         }
 
-        fun getShortcutIntent(
-            context: Context,
-            conversationId: String,
-            recipientId: String? = null
-        ): Intent {
+        fun getShortcutIntent(context: Context, conversationId: String, recipientId: String? = null): Intent {
             return putIntent(context, conversationId, recipientId = recipientId).apply {
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_CLEAR_TASK)
                 addCategory(Intent.CATEGORY_LAUNCHER)
@@ -206,8 +208,7 @@ class ConversationActivity : BlazeBaseActivity() {
         ) {
             val mainIntent = Intent(context, ConversationActivity::class.java)
             mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            val conversationIntent =
-                putIntent(context, conversationId, recipientId, messageId, keyword)
+            val conversationIntent = putIntent(context, conversationId, recipientId, messageId, keyword)
             context.startActivities(arrayOf(mainIntent, conversationIntent))
         }
     }
