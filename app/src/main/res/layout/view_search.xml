@@ -13,7 +13,7 @@
         android:background="#66000000"
         android:visibility="gone">
 
-        <FrameLayout
+        <androidx.fragment.app.FragmentContainerView
             android:id="@+id/container_circle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
