@@ -65,15 +65,26 @@ class ChatControlView : LinearLayout {
         const val SEND = 0
         const val AUDIO = 1
 
-        const val STICKER = 0
-        const val KEYBOARD = 1
-
         const val RECORD_DELAY = 200L
         const val RECORD_TIP_MILLIS = 2000L
+    }
 
-        const val NONE = 0
-        const val MENU = 1
-        const val IMAGE = 2
+    private enum class STATUS {
+        EXPANDED_KEYBOARD, // + ☺ i
+        EXPANDED_MENU, // x ☺ i
+        EXPANDED_STICKER, // + k i
+        EXPANDED_GALLERY, // + ☺ i[√]
+        COLLAPSED // + ☺ i
+    }
+
+    private enum class STICKER_STATUS {
+        STICKER,
+        KEYBOARD
+    }
+
+    private enum class MENU_STATUS {
+        EXPANDED,
+        COLLAPSED
     }
 
     lateinit var callback: Callback
@@ -83,6 +94,55 @@ class ChatControlView : LinearLayout {
     lateinit var galleryContainer: FrameLayout
     lateinit var recordTipView: View
 
+    private var controlState: STATUS = STATUS.COLLAPSED
+        set(value) {
+            if (value == field) return
+            field = value
+
+            when (value) {
+                STATUS.EXPANDED_MENU -> {
+                    menuStatus = MENU_STATUS.EXPANDED
+                    stickerStatus = STICKER_STATUS.STICKER
+                    keyboardDrawable
+                    chat_img_iv.setImageResource(R.drawable.ic_chat_img)
+                    menuContainer.isVisible = true
+                    stickerContainer.isVisible = false
+                    galleryContainer.isVisible = false
+                }
+                STATUS.EXPANDED_KEYBOARD -> {
+                    menuStatus = MENU_STATUS.COLLAPSED
+                    stickerStatus = STICKER_STATUS.STICKER
+                    chat_img_iv.setImageResource(R.drawable.ic_chat_img)
+                    menuContainer.isVisible = false
+                    stickerContainer.isVisible = false
+                    galleryContainer.isVisible = false
+                }
+                STATUS.EXPANDED_STICKER -> {
+                    menuStatus = MENU_STATUS.COLLAPSED
+                    stickerStatus = STICKER_STATUS.KEYBOARD
+                    chat_img_iv.setImageResource(R.drawable.ic_chat_img)
+                    menuContainer.isVisible = false
+                    stickerContainer.isVisible = true
+                    galleryContainer.isVisible = false
+                }
+                STATUS.EXPANDED_GALLERY -> {
+                    menuStatus = MENU_STATUS.COLLAPSED
+                    stickerStatus = STICKER_STATUS.STICKER
+                    chat_img_iv.setImageResource(R.drawable.ic_chat_img_checked)
+                    menuContainer.isVisible = false
+                    stickerContainer.isVisible = false
+                    galleryContainer.isVisible = true
+                }
+                STATUS.COLLAPSED -> {
+                    menuStatus = MENU_STATUS.COLLAPSED
+                    stickerStatus = STICKER_STATUS.STICKER
+                    chat_img_iv.setImageResource(R.drawable.ic_chat_img)
+                    menuContainer.isVisible = false
+                    stickerContainer.isVisible = false
+                    galleryContainer.isVisible = false
+                }
+            }
+        }
     private var sendStatus = AUDIO
         set(value) {
             if (value == field) return
@@ -90,7 +150,7 @@ class ChatControlView : LinearLayout {
             field = value
             checkSend()
         }
-    private var stickerStatus = STICKER
+    private var stickerStatus = STICKER_STATUS.STICKER
         set(value) {
             if (value == field) return
 
@@ -98,52 +158,68 @@ class ChatControlView : LinearLayout {
             checkSticker()
         }
 
-    private var lastSendStatus = AUDIO
-
-    private var currentChecked = NONE
+    private var menuStatus = MENU_STATUS.COLLAPSED
         set(value) {
             if (value == field) return
 
-            val lastChecked = field
             field = value
-            checkChecked(lastChecked)
+            val anim =
+                chat_menu_iv.animate().rotation(if (value == MENU_STATUS.EXPANDED) 45f else -45f)
+            anim.setListener(
+                object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator?) {
+                        chat_menu_iv.rotation = 0f
+                        chat_menu_iv.setImageResource(if (value == MENU_STATUS.EXPANDED) R.drawable.ic_chat_more_checked else R.drawable.ic_chat_more)
+                    }
+                }
+            )
+            anim.start()
         }
+
+    private var lastSendStatus = AUDIO
 
     var isRecording = false
 
     var activity: Activity? = null
     private lateinit var recordCircle: RecordCircleView
     private var upBeforeGrant = false
-    private var keyboardShown = false
 
     private val sendDrawable: Drawable by lazy {
-        ResourcesCompat.getDrawable(
-            resources,
-            R.drawable.ic_chat_send_checked,
-            context.theme
-        )!!
+        requireNotNull(
+            ResourcesCompat.getDrawable(
+                resources,
+                R.drawable.ic_chat_send_checked,
+                context.theme
+            )
+        )
     }
     private val audioDrawable: Drawable by lazy {
-        ResourcesCompat.getDrawable(
-            resources,
-            R.drawable.ic_chat_mic,
-            context.theme
-        )!!
+        requireNotNull(
+            ResourcesCompat.getDrawable(
+                resources,
+                R.drawable.ic_chat_mic,
+                context.theme
+            )
+        )
     }
 
     private val stickerDrawable: Drawable by lazy {
-        ResourcesCompat.getDrawable(
-            resources,
-            R.drawable.ic_chat_sticker,
-            context.theme
-        )!!
+        requireNotNull(
+            ResourcesCompat.getDrawable(
+                resources,
+                R.drawable.ic_chat_sticker,
+                context.theme
+            )
+        )
     }
     private val keyboardDrawable: Drawable by lazy {
-        ResourcesCompat.getDrawable(
-            resources,
-            R.drawable.ic_chat_keyboard,
-            context.theme
-        )!!
+        requireNotNull(
+            ResourcesCompat.getDrawable(
+                resources,
+                R.drawable.ic_chat_keyboard,
+                context.theme
+            )
+        )
     }
 
     constructor(context: Context) : this(context, null)
@@ -160,7 +236,6 @@ class ChatControlView : LinearLayout {
 
         chat_et.addTextChangedListener(editTextWatcher)
         chat_et.setOnKeyListener(keyListener)
-        chat_et.setOnClickListener(onChatEtClickListener)
         chat_send_ib.setOnTouchListener(sendOnTouchListener)
         chat_menu_iv.setOnClickListener(onChatMenuClickListener)
         chat_sticker_ib.setOnClickListener(onStickerClickListener)
@@ -191,8 +266,7 @@ class ChatControlView : LinearLayout {
     }
 
     fun reset() {
-        stickerStatus = STICKER
-        currentChecked = NONE
+        controlState = STATUS.COLLAPSED
         setSend()
         inputLayout.closeInputArea(chat_et)
         getVisibleContainer()?.isVisible = false
@@ -222,14 +296,11 @@ class ChatControlView : LinearLayout {
     }
 
     fun toggleKeyboard(shown: Boolean) {
-        keyboardShown = shown
         if (shown) {
-            stickerStatus = STICKER
-            currentChecked = NONE
-        } else {
-            if (inputLayout.keyboardOpened()) {
-                stickerStatus = KEYBOARD
-            }
+            controlState = STATUS.EXPANDED_KEYBOARD
+        } else if (controlState == STATUS.EXPANDED_KEYBOARD) {
+            controlState = STATUS.COLLAPSED
+            inputLayout.closeInputArea(chat_et)
         }
         setSend()
     }
@@ -280,35 +351,11 @@ class ChatControlView : LinearLayout {
 
     private fun checkSticker() {
         val d = when (stickerStatus) {
-            STICKER -> stickerDrawable
-            KEYBOARD -> keyboardDrawable
-            else -> null
+            STICKER_STATUS.STICKER -> stickerDrawable
+            STICKER_STATUS.KEYBOARD -> keyboardDrawable
         }
-        d?.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
+        d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
         startScaleAnim(chat_sticker_ib, d)
-    }
-
-    private fun checkChecked(lastChecked: Int) {
-        when (currentChecked) {
-            MENU -> {
-                if (lastChecked != MENU) {
-                    rotateChatMenu(true)
-                }
-                chat_img_iv.setImageResource(R.drawable.ic_chat_img)
-            }
-            IMAGE -> {
-                if (lastChecked == MENU) {
-                    rotateChatMenu(false)
-                }
-                chat_img_iv.setImageResource(R.drawable.ic_chat_img_checked)
-            }
-            else -> {
-                if (lastChecked == MENU) {
-                    rotateChatMenu(false)
-                }
-                chat_img_iv.setImageResource(R.drawable.ic_chat_img)
-            }
-        }
     }
 
     private fun startScaleAnim(v: ImageView, d: Drawable?) {
@@ -480,19 +527,6 @@ class ChatControlView : LinearLayout {
         }
     }
 
-    private fun rotateChatMenu(checked: Boolean) {
-        val anim = chat_menu_iv.animate().rotation(if (checked) 45f else -45f)
-        anim.setListener(
-            object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator?) {
-                    chat_menu_iv.rotation = 0f
-                    chat_menu_iv.setImageResource(if (checked) R.drawable.ic_chat_more_checked else R.drawable.ic_chat_more)
-                }
-            }
-        )
-        anim.start()
-    }
-
     private fun isEditEmpty() = chat_et.text.toString().trim().isEmpty()
 
     private fun realSetSend() {
@@ -526,42 +560,31 @@ class ChatControlView : LinearLayout {
     }
 
     private val onChatMenuClickListener = OnClickListener {
-        if (currentChecked != MENU) {
-            currentChecked = MENU
-            menuContainer.isVisible = true
-            stickerContainer.isVisible = false
-            galleryContainer.isVisible = false
+        if (controlState == STATUS.EXPANDED_MENU) {
+            controlState = STATUS.EXPANDED_KEYBOARD
+            inputLayout.showSoftKey(chat_et)
+        } else {
+            controlState = STATUS.EXPANDED_MENU
             inputLayout.openInputArea(chat_et)
             callback.onMenuClick()
-            stickerStatus = KEYBOARD
-        } else {
-            currentChecked = NONE
-            menuContainer.isVisible = false
-            inputLayout.showSoftKey(chat_et)
-            stickerStatus = STICKER
         }
         remainFocusable()
     }
 
     private val onStickerClickListener = OnClickListener {
-        if (stickerStatus == KEYBOARD) {
-            stickerStatus = STICKER
-            stickerContainer.isVisible = false
+        if (controlState == STATUS.EXPANDED_KEYBOARD || controlState == STATUS.COLLAPSED) {
+            controlState = STATUS.EXPANDED_STICKER
+            inputLayout.openInputArea(chat_et)
+            callback.onStickerClick()
+        } else if (controlState == STATUS.EXPANDED_STICKER) {
+            controlState = STATUS.EXPANDED_KEYBOARD
             inputLayout.showSoftKey(chat_et)
         } else {
-            stickerStatus = KEYBOARD
-            menuContainer.isVisible = false
-            stickerContainer.isVisible = true
-            galleryContainer.isVisible = false
-            callback.onStickerClick()
+            controlState = STATUS.EXPANDED_STICKER
             inputLayout.openInputArea(chat_et)
-
-            if (inputLayout.keyboardOpened() && stickerStatus == KEYBOARD && sendStatus == AUDIO && lastSendStatus == AUDIO) {
-                setSend()
-            }
-            remainFocusable()
+            callback.onStickerClick()
         }
-        currentChecked = NONE
+        remainFocusable()
     }
 
     private val onChatImgClickListener = OnClickListener {
@@ -583,20 +606,14 @@ class ChatControlView : LinearLayout {
     }
 
     private fun clickGallery() {
-        if (currentChecked != IMAGE) {
-            currentChecked = IMAGE
-            menuContainer.isVisible = false
-            stickerContainer.isVisible = false
-            galleryContainer.isVisible = true
+        if (controlState == STATUS.EXPANDED_GALLERY) {
+            controlState = STATUS.COLLAPSED
+            inputLayout.closeInputArea(null)
+        } else {
+            controlState = STATUS.EXPANDED_GALLERY
             inputLayout.openInputArea(chat_et)
             callback.onGalleryClick()
-        } else {
-            currentChecked = NONE
-            stickerStatus = STICKER
-            galleryContainer.isVisible = false
-            inputLayout.closeInputArea(chat_et)
         }
-        stickerStatus = STICKER
         remainFocusable()
     }
 
@@ -620,10 +637,6 @@ class ChatControlView : LinearLayout {
         } else {
             FLING_NONE
         }
-    }
-
-    private val onChatEtClickListener = OnClickListener {
-        currentChecked = NONE
     }
 
     private val keyListener = OnKeyListener { _, keyCode, _ ->

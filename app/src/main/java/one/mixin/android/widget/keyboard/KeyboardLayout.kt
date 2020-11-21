@@ -58,8 +58,6 @@ class KeyboardLayout : LinearLayout {
 
     private var status = STATUS.CLOSED
 
-    fun keyboardOpened() = status == STATUS.KEYBOARD_OPENED
-
     var keyboardHeight: Int = PreferenceManager.getDefaultSharedPreferences(context)
         .getInt("keyboard_height_portrait", defaultCustomKeyboardSize)
         private set(value) {
@@ -96,9 +94,11 @@ class KeyboardLayout : LinearLayout {
 
     fun closeInputArea(inputTarget: EditText?) {
         inputAreaHeight = 0
-        status = STATUS.CLOSED
         if (inputTarget != null) {
+            status = STATUS.CLOSED
             hideSoftKey(inputTarget)
+        } else {
+            status = STATUS.OPENED
         }
     }
 
@@ -337,20 +337,21 @@ class KeyboardLayout : LinearLayout {
         RxBus.publish(DragReleaseEvent(targetH == max))
     }
 
+    private var lastKeyboardHeight = 0
     private fun calculateInsertBottom(imeInserts: Insets) {
         max(imeInserts.bottom - systemBottom, 0).let { value ->
+            if (lastKeyboardHeight == value) return@let
+            lastKeyboardHeight = value
             if (value > 0) {
-                if (status != STATUS.KEYBOARD_OPENED) {
-                    status = STATUS.KEYBOARD_OPENED
-                    if (inputAreaHeight != value)
-                        onKeyboardShownListener?.onKeyboardShown(imeInserts.bottom)
-                }
+                status = STATUS.KEYBOARD_OPENED
+                onKeyboardShownListener?.onKeyboardShown(imeInserts.bottom)
                 inputAreaHeight = value
             } else {
                 if (status == STATUS.KEYBOARD_OPENED) {
                     status = STATUS.CLOSED
-                    onKeyboardHiddenListener?.onKeyboardHidden()
+                    inputAreaHeight = value
                 }
+                onKeyboardHiddenListener?.onKeyboardHidden()
             }
         }
         if (imeInserts.bottom > 0) {

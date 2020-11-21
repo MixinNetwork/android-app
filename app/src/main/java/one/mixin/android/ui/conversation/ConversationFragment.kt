@@ -1862,9 +1862,6 @@ class ConversationFragment() :
 
     override fun onKeyboardHidden() {
         chat_control.toggleKeyboard(false)
-        if (chat_control.getVisibleContainer() == null) {
-            input_layout.closeInputArea(null)
-        }
     }
 
     override fun onKeyboardShown(height: Int) {
