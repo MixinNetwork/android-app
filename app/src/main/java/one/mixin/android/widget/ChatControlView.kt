@@ -608,7 +608,7 @@ class ChatControlView : LinearLayout {
     private fun clickGallery() {
         if (controlState == STATUS.EXPANDED_GALLERY) {
             controlState = STATUS.COLLAPSED
-            inputLayout.closeInputArea(null)
+            inputLayout.closeInputArea(chat_et)
         } else {
             controlState = STATUS.EXPANDED_GALLERY
             inputLayout.openInputArea(chat_et)
