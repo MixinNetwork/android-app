@@ -1,6 +1,7 @@
 package one.mixin.android.widget.keyboard
 
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
@@ -18,8 +19,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.preference.PreferenceManager
-import androidx.transition.AutoTransition
-import androidx.transition.TransitionManager
 import kotlinx.android.synthetic.main.fragment_conversation.view.*
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -69,20 +68,19 @@ class KeyboardLayout : LinearLayout {
         }
 
     private var inputAreaHeight: Int = 0
+        @SuppressLint("Recycle")
         set(value) {
             if (value != field || input_area.layoutParams.height != value) {
                 field = value
-                input_area.layoutParams.height = value
-                TransitionManager.beginDelayedTransition(
-                    this,
-                    AutoTransition()
-                        .setInterpolator(
-                            CubicBezierInterpolator.DEFAULT
-                        ).setDuration(
-                            ANIMATION_DURATION_SHORTEST
-                        )
-                )
-                requestLayout()
+                ValueAnimator.ofInt(input_area.layoutParams.height, value)
+                    .apply {
+                        addUpdateListener { valueAnimator ->
+                            input_area.layoutParams.height = valueAnimator.animatedValue as Int
+                            requestLayout()
+                        }
+                        interpolator = CubicBezierInterpolator.DEFAULT
+                        duration = ANIMATION_DURATION_SHORTEST
+                    }.start()
             }
         }
 
