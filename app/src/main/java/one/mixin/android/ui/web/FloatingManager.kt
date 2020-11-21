@@ -72,6 +72,9 @@ data class WebClip(
 
 fun updateClip(activity: Activity, index: Int, webClip: WebClip) {
     if (index < clips.size) {
+        if (clips[index].webView != webClip.webView) {
+            clips[index].webView?.destroy()
+        }
         clips.removeAt(index)
         clips.add(index, webClip)
         saveClips(activity)
@@ -114,6 +117,7 @@ fun refresh(activity: Activity) {
 
 fun releaseClip(index: Int) {
     if (index < clips.size && index >= 0) {
+        clips[index].webView?.destroy()
         clips.removeAt(index)
         if (clips.isEmpty()) {
             FloatingWebClip.getInstance().hide()
@@ -129,6 +133,9 @@ private fun saveClips(context: Context) {
 }
 
 fun releaseAll() {
+    clips.forEach { clip ->
+        clip.webView?.destroy()
+    }
     clips.clear()
     saveClips(MixinApplication.appContext)
     FloatingWebClip.getInstance().hide()

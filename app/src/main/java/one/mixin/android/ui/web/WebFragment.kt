@@ -948,8 +948,8 @@ class WebFragment : BaseFragment() {
 
     override fun onPause() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N || !requireActivity().isInMultiWindowMode) {
-            webView.onResume()
-            webView.resumeTimers()
+            webView.onPause()
+            webView.pauseTimers()
         }
         super.onPause()
     }
