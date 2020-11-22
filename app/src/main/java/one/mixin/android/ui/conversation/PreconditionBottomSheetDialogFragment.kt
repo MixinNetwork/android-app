@@ -12,7 +12,6 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_DUPLICATE_TRANSFER
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getRelativeTimeSpan
@@ -194,9 +193,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun startCountDown() {
         contentView.continue_tv.isEnabled = false
-        contentView.cancel_tv.isEnabled = false
         contentView.continue_tv.textColor = ContextCompat.getColor(requireContext(), R.color.wallet_text_gray)
-        contentView.cancel_tv.textColor = requireContext().colorFromAttribute(R.attr.text_minor)
         mCountDownTimer?.cancel()
         mCountDownTimer = object : CountDownTimer(4000, 1000) {
 
@@ -210,9 +207,7 @@ class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (isAdded) {
                     contentView.continue_tv.text = getString(R.string.common_continue)
                     contentView.continue_tv.textColor = ContextCompat.getColor(requireContext(), R.color.white)
-                    contentView.cancel_tv.setTextColor(resources.getColor(R.color.colorDarkBlue, null))
                     contentView.continue_tv.isEnabled = true
-                    contentView.cancel_tv.isEnabled = true
                 }
             }
         }

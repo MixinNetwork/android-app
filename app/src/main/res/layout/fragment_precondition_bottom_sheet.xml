@@ -62,9 +62,8 @@
                 android:padding="8dp"
                 android:layout_marginBottom="40dp"
                 android:layout_marginTop="@dimen/margin16"
-                android:enabled="false"
                 android:layout_gravity="center_horizontal"
-                android:textColor="?attr/text_minor"
+                android:textColor="@color/colorDarkBlue"
                 android:text="@string/cancel"/>
         </LinearLayout>
     </ScrollView>
